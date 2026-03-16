@@ -45,7 +45,18 @@ const TagsManager = () => {
         .select("content")
         .eq("section_key", "tags_config")
         .maybeSingle() as any;
-      if (data?.content) setTags(data.content);
+      if (data?.content) {
+        // Migrate old string-based blog_categories to objects
+        const raw = data.content;
+        if (raw.blog_categories && raw.blog_categories.length > 0 && typeof raw.blog_categories[0] === "string") {
+          raw.blog_categories = raw.blog_categories.map((label: string) => ({
+            label,
+            bgColor: "#4D1B5E",
+            textColor: "#F9F0C1",
+          }));
+        }
+        setTags(raw);
+      }
     };
     load();
   }, []);
