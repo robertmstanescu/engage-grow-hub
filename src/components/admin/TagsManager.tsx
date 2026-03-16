@@ -186,7 +186,7 @@ const TagsManager = () => {
                 </div>
                 <span
                   className="ml-auto font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium"
-                  style={{ backgroundColor: `${tag.bgColor || "#4D1B5E"}CC`, color: tag.textColor || "#FFFFFF" }}>
+                  style={{ backgroundColor: tag.bgColor || "#4D1B5E", color: tag.textColor || "#FFFFFF" }}>
                   {tag.label}
                 </span>
               </div>
