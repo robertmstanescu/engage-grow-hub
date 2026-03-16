@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
-const Deliverables = ({ label, items }: {label: string; items: string[];}) => {
+const Deliverables = ({ label, items }: {label: string;items: string[];}) => {
   const [open, setOpen] = useState(false);
   return (
     <div
@@ -21,8 +21,8 @@ const Deliverables = ({ label, items }: {label: string; items: string[];}) => {
         </span>
         <ChevronDown
           className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          style={{ color: "hsl(var(--pillar-primary) / 0.4)" }}
-        />
+          style={{ color: "hsl(var(--pillar-primary) / 0.4)" }} />
+        
       </button>
       <motion.div
         initial={false}
@@ -57,9 +57,9 @@ interface ServiceCardProps {
   note?: string;
 }
 
-const FALLBACK_COLORS: Record<string, { bg: string; fg: string }> = {
+const FALLBACK_COLORS: Record<string, {bg: string;fg: string;}> = {
   fixed: { bg: "hsl(var(--pillar-tag-fixed-bg) / 0.2)", fg: "hsl(var(--pillar-tag-fixed-fg))" },
-  retainer: { bg: "hsl(var(--pillar-tag-retainer-bg) / 0.12)", fg: "hsl(var(--pillar-tag-retainer-fg))" },
+  retainer: { bg: "hsl(var(--pillar-tag-retainer-bg) / 0.12)", fg: "hsl(var(--pillar-tag-retainer-fg))" }
 };
 
 const ServiceCard = ({
@@ -94,10 +94,10 @@ const ServiceCard = ({
       {/* Top */}
       <div className="p-7">
         <span
-          className="inline-block font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full mb-4 font-medium"
+          className="inline-block font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full mb-4 font-medium opacity-100 bg-accent text-primary"
           style={{
             backgroundColor: resolvedBg,
-            color: resolvedFg,
+            color: resolvedFg
           }}>
           {tag}
         </span>
