@@ -4,14 +4,14 @@ import { useSiteContent } from "@/hooks/useSiteContent";
 const ease = [0.16, 1, 0.3, 1] as const;
 
 interface VowsContent {
-  title_line1: string;
-  title_line2: string;
+  title_line1?: string;
+  title_line2?: string;
+  title_lines?: string[];
   cards: { title: string; body: string }[];
 }
 
 const fallback: VowsContent = {
-  title_line1: "Before we shake hands,",
-  title_line2: "here is what we vow.",
+  title_lines: ["Before we shake hands,", "here is what we vow."],
   cards: [
     { title: "Precision over pomp", body: "Our reports are as clear as a glass prism and as sharp as a stake. No buzzwords. No padding. No synergy." },
     { title: "The human trace", body: "Behind every strategy is a handwritten insight. Your people are not capital. They are the life-force." },
@@ -21,6 +21,8 @@ const fallback: VowsContent = {
 
 const VowsSection = () => {
   const c = useSiteContent<VowsContent>("vows", fallback);
+
+  const titleLines = c.title_lines || [c.title_line1 || "", c.title_line2 || ""];
 
   return (
     <section
@@ -35,9 +37,12 @@ const VowsSection = () => {
           transition={{ duration: 0.6, ease }}
           className="font-display text-xl md:text-2xl font-bold leading-tight mb-10"
           style={{ color: "hsl(var(--vows-title))" }}>
-          {c.title_line1}
-          <br />
-          {c.title_line2}
+          {titleLines.map((line, i) => (
+            <span key={i}>
+              {i > 0 && <br />}
+              {line}
+            </span>
+          ))}
         </motion.h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
           {c.cards.map((vow, i) => (
@@ -54,11 +59,11 @@ const VowsSection = () => {
                 style={{ color: "hsl(var(--vows-card-title))" }}>
                 {vow.title}
               </p>
-              <p
+              <div
                 className="font-body text-xs leading-relaxed"
-                style={{ color: "hsl(var(--vows-card-body))" }}>
-                {vow.body}
-              </p>
+                style={{ color: "hsl(var(--vows-card-body))" }}
+                dangerouslySetInnerHTML={{ __html: vow.body }}
+              />
             </motion.div>
           ))}
         </div>

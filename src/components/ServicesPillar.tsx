@@ -32,6 +32,11 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
+  // Guard against empty services
+  if (!services || services.length === 0) return null;
+
+  const safeCurrent = Math.min(current, services.length - 1);
+
   const prev = () => {
     setDirection(-1);
     setCurrent((c) => c === 0 ? services.length - 1 : c - 1);
@@ -50,9 +55,7 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
   return (
     <div id={id} className={colorScope || ""} style={{ scrollMarginTop: "4rem" }}>
       <div className="gradient-divider" />
-      <div
-        className="pt-12 pb-6"
-        style={{ backgroundColor: "hsl(var(--pillar-section-bg))" }}>
+      <div className="pt-12 pb-6" style={{ backgroundColor: "hsl(var(--pillar-section-bg))" }}>
         <div className="max-w-[900px] mx-auto px-6 text-center">
           <motion.span
             initial={{ opacity: 0 }}
@@ -71,72 +74,52 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
             style={{ color: "hsl(var(--pillar-heading))" }}>
             {title}
           </motion.h3>
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1, ease }}
             className="font-body-heading text-base max-w-[700px] mx-auto"
-            style={{ color: "hsl(var(--pillar-heading-sub) / 0.65)" }}>
-            {description}
-          </motion.p>
+            style={{ color: "hsl(var(--pillar-heading-sub) / 0.65)" }}
+            dangerouslySetInnerHTML={{ __html: description }}
+          />
         </div>
       </div>
-      <div
-        className="px-6 pb-16"
-        style={{ backgroundColor: "hsl(var(--pillar-section-bg))" }}>
+      <div className="px-6 pb-16" style={{ backgroundColor: "hsl(var(--pillar-section-bg))" }}>
         <div className="max-w-[900px] mx-auto">
-          {/* Dots + Arrows */}
           <div className="flex items-center justify-center gap-4 mb-6">
-            <button
-              onClick={prev}
-              aria-label="Previous service"
-              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-              style={{
-                border: "1px solid hsl(var(--pillar-primary) / 0.2)",
-                color: "hsl(var(--pillar-primary))"
-              }}>
+            <button onClick={prev} aria-label="Previous service" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ border: "1px solid hsl(var(--pillar-primary) / 0.2)", color: "hsl(var(--pillar-primary))" }}>
               <ChevronLeft className="w-4 h-4" />
             </button>
             <div className="flex gap-2">
-              {services.map((_, i) =>
-              <button
-                key={i}
-                onClick={() => {setDirection(i > current ? 1 : -1);setCurrent(i);}}
-                className="w-2 h-2 rounded-full transition-all"
-                style={{
-                  backgroundColor: i === current
-                    ? "hsl(var(--pillar-primary))"
-                    : "hsl(var(--pillar-primary) / 0.25)",
-                  transform: i === current ? "scale(1.25)" : "scale(1)"
-                }}
-                aria-label={`Go to service ${i + 1}`} />
-              )}
+              {services.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setDirection(i > safeCurrent ? 1 : -1); setCurrent(i); }}
+                  className="w-2 h-2 rounded-full transition-all"
+                  style={{
+                    backgroundColor: i === safeCurrent ? "hsl(var(--pillar-primary))" : "hsl(var(--pillar-primary) / 0.25)",
+                    transform: i === safeCurrent ? "scale(1.25)" : "scale(1)"
+                  }}
+                  aria-label={`Go to service ${i + 1}`}
+                />
+              ))}
             </div>
-            <button
-              onClick={next}
-              aria-label="Next service"
-              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-              style={{
-                border: "1px solid hsl(var(--pillar-primary) / 0.2)",
-                color: "hsl(var(--pillar-primary))"
-              }}>
+            <button onClick={next} aria-label="Next service" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ border: "1px solid hsl(var(--pillar-primary) / 0.2)", color: "hsl(var(--pillar-primary))" }}>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-
-          {/* Sliding card */}
           <div className="relative overflow-hidden">
             <AnimatePresence custom={direction} mode="wait">
               <motion.div
-                key={current}
+                key={safeCurrent}
                 custom={direction}
                 variants={variants}
                 initial="enter"
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.35, ease }}>
-                <ServiceCard {...services[current]} />
+                <ServiceCard {...services[safeCurrent]} />
               </motion.div>
             </AnimatePresence>
           </div>
