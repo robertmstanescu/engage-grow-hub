@@ -5,7 +5,7 @@ import { ChevronDown } from "lucide-react";
 const Deliverables = ({ label, items }: {label: string;items: string[];}) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="bg-background border-t border-primary/8 px-7 py-4">
+    <div className="border-t border-primary/8 px-7 py-4 bg-primary-foreground">
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center justify-between w-full text-left">
