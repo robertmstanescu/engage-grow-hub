@@ -7,53 +7,53 @@
 @layer base {
   :root {
     /* Brand: The Magic Coffin */
-    --background: 30 15% 95%; /* Isabelline #F4F0EC */
-    --foreground: 216 15% 12%; /* Stygian #1B1F24 */
+    --background: #F4F0EC; /* Isabelline */
+    --foreground: #1B1F24; /* Stygian */
 
-    --card: 0 0% 100%; /* White */
-    --card-foreground: 216 15% 12%;
+    --card: #FFFFFF; /* White */
+    --card-foreground: #1B1F24;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 216 15% 12%;
+    --popover: #FFFFFF;
+    --popover-foreground: #1B1F24;
 
-    --primary: 278 56% 24%; /* Authentic Violet #4D1B5E */
-    --primary-foreground: 46 89% 85%; /* Intense Cream #F9F0C1 */
+    --primary: #4D1B5E; /* Authentic Violet */
+    --primary-foreground: #F9F0C1; /* Intense Cream */
 
-    --secondary: 288 55% 13%; /* Revolver #2A0E33 */
-    --secondary-foreground: 46 89% 85%;
+    --secondary: #2A0E33; /* Revolver */
+    --secondary-foreground: #F9F0C1;
 
-    --muted: 30 10% 90%; /* White Marble */
-    --muted-foreground: 216 5% 40%;
+    --muted: #E8E5E0; /* White Marble */
+    --muted-foreground: #61666B;
 
-    --accent: 46 76% 57%; /* Eliza #E5C54F */
-    --accent-foreground: 288 55% 13%;
+    --accent: #E5C54F; /* Eliza */
+    --accent-foreground: #2A0E33;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
 
-    --border: 278 20% 85%;
-    --input: 278 20% 85%;
-    --ring: 278 56% 24%;
+    --border: #D9C5E0;
+    --input: #D9C5E0;
+    --ring: #4D1B5E;
 
     --radius: 0.75rem;
 
     /* Extended brand tokens */
-    --valentino: 285 43% 40%; /* #7B3A91 */
-    --eliza: 46 76% 57%; /* #E5C54F */
-    --gold-crush: 45 78% 67%; /* #EAD06E */
-    --revolver: 288 55% 13%; /* #2A0E33 */
-    --violet: 278 56% 24%; /* #4D1B5E */
-    --plum: 312 52% 17%; /* #43143B */
-    --isabelline: 30 15% 95%; /* #F4F0EC */
+    --valentino: #7B3A91;
+    --eliza: #E5C54F;
+    --gold-crush: #EAD06E;
+    --revolver: #2A0E33;
+    --violet: #4D1B5E;
+    --plum: #43143B;
+    --isabelline: #F4F0EC;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: #FAFAFA;
+    --sidebar-foreground: #3F3F46;
+    --sidebar-primary: #18181B;
+    --sidebar-primary-foreground: #FAFAFA;
+    --sidebar-accent: #F4F4F5;
+    --sidebar-accent-foreground: #18181B;
+    --sidebar-border: #E4E4E7;
+    --sidebar-ring: #3B82F6;
   }
 }
 
