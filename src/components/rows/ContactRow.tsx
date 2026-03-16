@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteContent } from "@/hooks/useSiteContent";
-import type { PageRow, ContactField, DEFAULT_CONTACT_FIELDS } from "@/types/rows";
+import type { PageRow, ContactField } from "@/types/rows";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");

@@ -119,18 +119,15 @@ const SiteEditor = () => {
   const hasChanges = sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
 
   // Ensure page_rows section exists in state
-  const ensurePageRows = () => {
-    if (!getSection("page_rows")) {
-      const { DEFAULT_ROWS: defaultRows } = require("@/types/rows");
+  useEffect(() => {
+    if (sections.length > 0 && !getSection("page_rows")) {
       setSections((prev) => [...prev, {
         section_key: "page_rows",
-        content: { rows: defaultRows },
-        draft_content: { rows: defaultRows },
+        content: { rows: DEFAULT_ROWS },
+        draft_content: { rows: DEFAULT_ROWS },
       }]);
     }
-  };
-
-  useEffect(() => { ensurePageRows(); }, [sections.length]);
+  }, [sections.length]);
 
   const pageRows: PageRow[] = (getDraft("page_rows") as any)?.rows || [];
 
