@@ -5,8 +5,9 @@ import BlogEditor from "./BlogEditor";
 import ContactsList from "./ContactsList";
 import EmailCampaigns from "./EmailCampaigns";
 import SiteEditor from "./SiteEditor";
+import TagsManager from "./TagsManager";
 
-type Tab = "site" | "blog" | "contacts" | "emails";
+type Tab = "site" | "blog" | "contacts" | "emails" | "tags";
 
 interface Props {
   session: any;
@@ -23,6 +24,7 @@ const AdminDashboard = ({ session }: Props) => {
   const tabs: { key: Tab; label: string }[] = [
     { key: "site", label: "Main Page" },
     { key: "blog", label: "Blog Posts" },
+    { key: "tags", label: "Tags & Categories" },
     { key: "contacts", label: "Contacts" },
     { key: "emails", label: "Email Campaigns" },
   ];
@@ -40,7 +42,7 @@ const AdminDashboard = ({ session }: Props) => {
       </header>
 
       <div className="max-w-[1000px] mx-auto px-6 py-6">
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 flex-wrap">
           {tabs.map((tab) => (
             <button
               key={tab.key}
@@ -58,6 +60,7 @@ const AdminDashboard = ({ session }: Props) => {
 
         {activeTab === "site" && <SiteEditor />}
         {activeTab === "blog" && <BlogEditor />}
+        {activeTab === "tags" && <TagsManager />}
         {activeTab === "contacts" && <ContactsList />}
         {activeTab === "emails" && <EmailCampaigns />}
       </div>

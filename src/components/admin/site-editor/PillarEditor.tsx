@@ -1,10 +1,11 @@
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Field, TextArea, RichField, ArrayField, SelectField, SectionBox } from "./FieldComponents";
 
 interface Service {
   tag: string;
-  tagType: "fixed" | "retainer";
+  tagType: string;
   title: string;
   subtitle: string;
   description: string;
@@ -22,9 +23,29 @@ interface Props {
   onServicesChange: (services: Service[]) => void;
 }
 
+const DEFAULT_TAG_TYPES = [
+  { label: "Fixed project", value: "fixed" },
+  { label: "Monthly retainer", value: "retainer" },
+];
+
 const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServicesChange }: Props) => {
   const [openCard, setOpenCard] = useState<number | null>(null);
+  const [tagTypes, setTagTypes] = useState(DEFAULT_TAG_TYPES);
   const services: Service[] = servicesContent?.services || [];
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("site_content")
+        .select("content")
+        .eq("section_key", "tags_config")
+        .maybeSingle() as any;
+      if (data?.content?.service_tag_types) {
+        setTagTypes(data.content.service_tag_types);
+      }
+    };
+    load();
+  }, []);
 
   const updateService = (idx: number, field: string, value: any) => {
     const next = [...services];
@@ -34,8 +55,8 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
 
   const addService = () => {
     onServicesChange([...services, {
-      tag: "Fixed project",
-      tagType: "fixed",
+      tag: tagTypes[0]?.label || "New",
+      tagType: tagTypes[0]?.value || "fixed",
       title: "New Service",
       subtitle: "",
       description: "",
@@ -52,14 +73,12 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
 
   return (
     <div className="space-y-4">
-      {/* Pillar header fields */}
       <SectionBox label="Pillar Header">
         <Field label="Pillar Number" value={pillarContent.pillar_number || ""} onChange={(v) => onPillarChange("pillar_number", v)} />
         <Field label="Title" value={pillarContent.title || ""} onChange={(v) => onPillarChange("title", v)} />
         <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} />
       </SectionBox>
 
-      {/* Services */}
       <div>
         <div className="flex items-center justify-between mb-2">
           <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Service Cards</label>
@@ -90,7 +109,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
                   <span
                     className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full"
                     style={{
-                      backgroundColor: svc.tagType === "retainer" ? "hsl(var(--primary) / 0.15)" : "hsl(var(--muted) / 0.4)",
+                      backgroundColor: "hsl(var(--muted) / 0.4)",
                       color: "hsl(var(--muted-foreground))",
                     }}>
                     {svc.tag}
@@ -107,10 +126,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
                       label="Tag Type"
                       value={svc.tagType}
                       onChange={(v) => updateService(i, "tagType", v)}
-                      options={[
-                        { label: "Fixed project", value: "fixed" },
-                        { label: "Monthly retainer", value: "retainer" },
-                      ]}
+                      options={tagTypes}
                     />
                   </div>
                   <Field label="Title" value={svc.title} onChange={(v) => updateService(i, "title", v)} />
