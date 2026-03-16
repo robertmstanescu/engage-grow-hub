@@ -4,15 +4,16 @@ import { toast } from "sonner";
 import BlogEditor from "./BlogEditor";
 import ContactsList from "./ContactsList";
 import EmailCampaigns from "./EmailCampaigns";
+import SiteEditor from "./SiteEditor";
 
-type Tab = "blog" | "contacts" | "emails";
+type Tab = "site" | "blog" | "contacts" | "emails";
 
 interface Props {
   session: any;
 }
 
 const AdminDashboard = ({ session }: Props) => {
-  const [activeTab, setActiveTab] = useState<Tab>("blog");
+  const [activeTab, setActiveTab] = useState<Tab>("site");
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -20,6 +21,7 @@ const AdminDashboard = ({ session }: Props) => {
   };
 
   const tabs: { key: Tab; label: string }[] = [
+    { key: "site", label: "Main Page" },
     { key: "blog", label: "Blog Posts" },
     { key: "contacts", label: "Contacts" },
     { key: "emails", label: "Email Campaigns" },
@@ -54,6 +56,7 @@ const AdminDashboard = ({ session }: Props) => {
           ))}
         </div>
 
+        {activeTab === "site" && <SiteEditor />}
         {activeTab === "blog" && <BlogEditor />}
         {activeTab === "contacts" && <ContactsList />}
         {activeTab === "emails" && <EmailCampaigns />}
