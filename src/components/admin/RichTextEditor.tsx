@@ -81,7 +81,23 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: false }),
+      Document,
+      Paragraph,
+      Text,
+      History,
+      Dropcursor,
+      Gapcursor,
+      Bold,
+      Italic,
+      Strike,
+      Code,
+      CodeBlock,
+      Blockquote,
+      BulletList,
+      OrderedList,
+      ListItem,
+      HardBreak,
+      HorizontalRule,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" },
