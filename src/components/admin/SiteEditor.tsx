@@ -6,6 +6,7 @@ import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import SocialLinksEditor from "./site-editor/SocialLinksEditor";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
+import BrandingEditor from "./BrandingEditor";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
 
 interface SectionData {
@@ -18,9 +19,10 @@ const SECTION_LABELS: Record<string, string> = {
   hero: "Hero Section",
   social_links: "Social Media Links",
   page_rows: "Page Rows",
+  branding: "Logo & Favicon",
 };
 
-const EDITABLE_SECTIONS = ["hero", "social_links"];
+const EDITABLE_SECTIONS = ["hero", "social_links", "branding"];
 
 const SiteEditor = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
