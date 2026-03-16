@@ -1,6 +1,22 @@
 import { useCallback, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import Document from "@tiptap/extension-document";
+import Paragraph from "@tiptap/extension-paragraph";
+import Text from "@tiptap/extension-text";
+import History from "@tiptap/extension-history";
+import Dropcursor from "@tiptap/extension-dropcursor";
+import Gapcursor from "@tiptap/extension-gapcursor";
+import TiptapBold from "@tiptap/extension-bold";
+import TiptapItalic from "@tiptap/extension-italic";
+import Strike from "@tiptap/extension-strike";
+import Code from "@tiptap/extension-code";
+import CodeBlock from "@tiptap/extension-code-block";
+import Blockquote from "@tiptap/extension-blockquote";
+import BulletList from "@tiptap/extension-bullet-list";
+import OrderedList from "@tiptap/extension-ordered-list";
+import ListItem from "@tiptap/extension-list-item";
+import HardBreak from "@tiptap/extension-hard-break";
+import HorizontalRule from "@tiptap/extension-horizontal-rule";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import { TextStyle } from "@tiptap/extension-text-style";
@@ -63,7 +79,23 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: false }),
+      Document,
+      Paragraph,
+      Text,
+      History,
+      Dropcursor,
+      Gapcursor,
+      TiptapBold,
+      TiptapItalic,
+      Strike,
+      Code,
+      CodeBlock,
+      Blockquote,
+      BulletList,
+      OrderedList,
+      ListItem,
+      HardBreak,
+      HorizontalRule,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" },
