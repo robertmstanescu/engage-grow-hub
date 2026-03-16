@@ -27,14 +27,14 @@ const Navbar = () => {
 
     if (href.startsWith("#")) {
       const id = href.slice(1);
-      // If we're on the home page, scroll directly
       if (location.pathname === "/") {
         setTimeout(() => {
           const el = document.getElementById(id);
           if (el) el.scrollIntoView({ behavior: "smooth" });
         }, 50);
       } else {
-        navigate("/" + href);
+        // Use window.location for cross-page hash navigation
+        window.location.href = "/" + href;
       }
     } else {
       navigate(href);
