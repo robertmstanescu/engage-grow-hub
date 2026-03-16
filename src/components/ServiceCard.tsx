@@ -2,6 +2,38 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
+const Deliverables = ({ label, items }: { label: string; items: string[] }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="bg-background border-t border-primary/8 px-7 py-4">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full text-left"
+      >
+        <span className="font-body text-[10px] tracking-[0.18em] uppercase text-primary/50">
+          {label}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-primary/40 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <motion.div
+        initial={false}
+        animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        className="overflow-hidden"
+      >
+        <ul className="space-y-1.5 pt-3">
+          {items.map((item, i) => (
+            <li key={i} className="font-body text-sm text-foreground/70 leading-snug pl-5 relative">
+              <span className="absolute left-0 text-valentino text-xs">—</span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </motion.div>
+    </div>
+  );
+};
+
 const ease = [0.16, 1, 0.3, 1] as const;
 interface ServiceCardProps {
   tag: string;
