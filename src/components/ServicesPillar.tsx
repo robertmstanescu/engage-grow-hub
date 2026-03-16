@@ -19,7 +19,6 @@ interface Service {
 }
 
 interface ServicesPillarProps {
-  id?: string;
   pillarNumber: string;
   title: string;
   description: string;
@@ -27,36 +26,36 @@ interface ServicesPillarProps {
   bgClass?: string;
 }
 
-const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClass = "bg-card" }: ServicesPillarProps) => {
+const ServicesPillar = ({ pillarNumber, title, description, services, bgClass = "bg-card" }: ServicesPillarProps) => {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
   const prev = () => {
     setDirection(-1);
-    setCurrent((c) => (c === 0 ? services.length - 1 : c - 1));
+    setCurrent((c) => c === 0 ? services.length - 1 : c - 1);
   };
   const next = () => {
     setDirection(1);
-    setCurrent((c) => (c === services.length - 1 ? 0 : c + 1));
+    setCurrent((c) => c === services.length - 1 ? 0 : c + 1);
   };
 
   const variants = {
     enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
+    exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 })
   };
 
   return (
     <>
       <div className="gradient-divider" />
-      <div id={id} className={`${bgClass} pt-16 pb-4`}>
+      <div className="">
         <div className="max-w-[900px] mx-auto px-6 text-center">
           <motion.span
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="font-body text-[11px] tracking-[0.2em] uppercase text-valentino block mb-3"
-          >
+            className="font-body text-[11px] tracking-[0.2em] uppercase text-valentino block mb-3">
+            
             {pillarNumber}
           </motion.span>
           <motion.h3
@@ -64,8 +63,8 @@ const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClas
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease }}
-            className="font-display text-2xl md:text-3xl font-bold text-secondary leading-tight mb-3"
-          >
+            className="font-display text-2xl md:text-3xl font-bold text-secondary leading-tight mb-3">
+            
             {title}
           </motion.h3>
           <motion.p
@@ -73,8 +72,8 @@ const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClas
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1, ease }}
-            className="font-body-heading text-base text-secondary/65 max-w-[700px] mx-auto"
-          >
+            className="font-body-heading text-base text-secondary/65 max-w-[700px] mx-auto">
+            
             {description}
           </motion.p>
         </div>
@@ -86,25 +85,25 @@ const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClas
             <button
               onClick={prev}
               aria-label="Previous service"
-              className="w-9 h-9 rounded-full border border-primary/20 flex items-center justify-center text-primary hover:bg-primary/10 transition-colors"
-            >
+              className="w-9 h-9 rounded-full border border-primary/20 flex items-center justify-center text-primary hover:bg-primary/10 transition-colors">
+              
               <ChevronLeft className="w-4 h-4" />
             </button>
             <div className="flex gap-2">
-              {services.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
-                  className={`w-2.5 h-2.5 rounded-full transition-all ${i === current ? "bg-primary scale-125" : "bg-primary/40 border border-primary/30"}`}
-                  aria-label={`Go to service ${i + 1}`}
-                />
-              ))}
+              {services.map((_, i) =>
+              <button
+                key={i}
+                onClick={() => {setDirection(i > current ? 1 : -1);setCurrent(i);}}
+                className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-primary scale-125" : "bg-primary/25"}`}
+                aria-label={`Go to service ${i + 1}`} />
+
+              )}
             </div>
             <button
               onClick={next}
               aria-label="Next service"
-              className="w-9 h-9 rounded-full border border-primary/20 flex items-center justify-center text-primary hover:bg-primary/10 transition-colors"
-            >
+              className="w-9 h-9 rounded-full border border-primary/20 flex items-center justify-center text-primary hover:bg-primary/10 transition-colors">
+              
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -119,16 +118,16 @@ const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClas
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.35, ease }}
-              >
+                transition={{ duration: 0.35, ease }}>
+                
                 <ServiceCard {...services[current]} />
               </motion.div>
             </AnimatePresence>
           </div>
         </div>
       </div>
-    </>
-  );
+    </>);
+
 };
 
 export default ServicesPillar;
