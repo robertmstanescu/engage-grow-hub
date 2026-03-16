@@ -161,6 +161,7 @@ const Index = () => {
       <IntroStrip />
       <div id="services">
         <ServicesPillar
+          id="internal-comms"
           pillarNumber="Pillar 01"
           title="Internal Communications"
           description="Most internal comms is noise dressed up as signal. We help you cut through it — designing communication systems that actually reach people, move them, and mean something."
