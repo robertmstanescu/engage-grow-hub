@@ -122,12 +122,21 @@ const SiteEditor = () => {
 
   // Ensure page_rows section exists in state
   useEffect(() => {
-    if (sections.length > 0 && !getSection("page_rows")) {
-      setSections((prev) => [...prev, {
-        section_key: "page_rows",
-        content: { rows: DEFAULT_ROWS },
-        draft_content: { rows: DEFAULT_ROWS },
-      }]);
+    if (sections.length > 0) {
+      if (!getSection("page_rows")) {
+        setSections((prev) => [...prev, {
+          section_key: "page_rows",
+          content: { rows: DEFAULT_ROWS },
+          draft_content: { rows: DEFAULT_ROWS },
+        }]);
+      }
+      if (!getSection("branding")) {
+        setSections((prev) => [...prev, {
+          section_key: "branding",
+          content: {},
+          draft_content: {},
+        }]);
+      }
     }
   }, [sections.length]);
 
