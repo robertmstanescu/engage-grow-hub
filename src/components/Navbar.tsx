@@ -2,8 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 const Navbar = () => {
+  const branding = useSiteContent<Record<string, any>>("branding", {});
+  const logoUrl = branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
   const [isOpen, setIsOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -60,7 +63,7 @@ const Navbar = () => {
       }}>
       <div className="max-w-[900px] mx-auto px-6 flex items-center justify-between h-16">
         <a href="/" className="flex items-center gap-2 min-w-0">
-          <img alt="The Magic Coffin" className="h-8 brightness-200 object-fill border-0 shadow-none rounded-none flex-shrink-0" src="/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png" />
+          <img alt="The Magic Coffin" className="h-8 brightness-200 object-fill border-0 shadow-none rounded-none flex-shrink-0" src={logoUrl} />
         </a>
 
         {/* Desktop — hidden below lg (1024px) */}

@@ -6,6 +6,7 @@ import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import SocialLinksEditor from "./site-editor/SocialLinksEditor";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
+import BrandingEditor from "./BrandingEditor";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
 
 interface SectionData {
@@ -18,9 +19,10 @@ const SECTION_LABELS: Record<string, string> = {
   hero: "Hero Section",
   social_links: "Social Media Links",
   page_rows: "Page Rows",
+  branding: "Logo & Favicon",
 };
 
-const EDITABLE_SECTIONS = ["hero", "social_links"];
+const EDITABLE_SECTIONS = ["hero", "social_links", "branding"];
 
 const SiteEditor = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
@@ -120,12 +122,21 @@ const SiteEditor = () => {
 
   // Ensure page_rows section exists in state
   useEffect(() => {
-    if (sections.length > 0 && !getSection("page_rows")) {
-      setSections((prev) => [...prev, {
-        section_key: "page_rows",
-        content: { rows: DEFAULT_ROWS },
-        draft_content: { rows: DEFAULT_ROWS },
-      }]);
+    if (sections.length > 0) {
+      if (!getSection("page_rows")) {
+        setSections((prev) => [...prev, {
+          section_key: "page_rows",
+          content: { rows: DEFAULT_ROWS },
+          draft_content: { rows: DEFAULT_ROWS },
+        }]);
+      }
+      if (!getSection("branding")) {
+        setSections((prev) => [...prev, {
+          section_key: "branding",
+          content: {},
+          draft_content: {},
+        }]);
+      }
     }
   }, [sections.length]);
 
@@ -183,6 +194,22 @@ const SiteEditor = () => {
             />
             <button onClick={() => saveDraft("page_rows")} disabled={saving === "page_rows"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
               <Save size={13} /> {saving === "page_rows" ? "Saving…" : "Save Draft"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Branding (Logo & Favicon) */}
+      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+        <button onClick={() => setOpenSection(openSection === "branding" ? null : "branding")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
+          <span className="font-body text-sm font-medium">Logo & Favicon</span>
+          {openSection === "branding" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {openSection === "branding" && (
+          <div className="px-4 pb-4 space-y-4">
+            <BrandingEditor content={getDraft("branding")} onChange={(f, v) => updateField("branding", f, v)} />
+            <button onClick={() => saveDraft("branding")} disabled={saving === "branding"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+              <Save size={13} /> {saving === "branding" ? "Saving…" : "Save Draft"}
             </button>
           </div>
         )}
