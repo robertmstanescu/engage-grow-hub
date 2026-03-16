@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const SENDER_EMAIL = "robertmarianstanescu@gmail.com";
+const SENDER_EMAIL = "hello@themagiccoffin.com";
 const SENDER_NAME = "The Magic Coffin";
 
 serve(async (req) => {
