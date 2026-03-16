@@ -76,6 +76,10 @@
   .font-body { font-family: var(--font-body); }
 
   html { scroll-behavior: smooth; }
+
+  [id] {
+    scroll-margin-top: 5rem;
+  }
 }
 
 @layer components {
