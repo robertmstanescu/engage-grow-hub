@@ -32,8 +32,23 @@ const BlogEditor = () => {
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [previewing, setPreviewing] = useState(false);
+  const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "" });
   const coverInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      const { data } = await supabase
+        .from("site_content")
+        .select("content")
+        .eq("section_key", "tags_config")
+        .maybeSingle() as any;
+      if (data?.content?.blog_categories) {
+        setBlogCategories(data.content.blog_categories);
+      }
+    };
+    loadCategories();
+  }, []);
 
   const fetchPosts = async () => {
     const { data } = await supabase
@@ -272,9 +287,9 @@ const BlogEditor = () => {
           onChange={(e) => setForm({ ...form, category: e.target.value })}
           className="w-full px-4 py-3 rounded-lg font-body text-sm border"
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}>
-          <option>Internal Communications</option>
-          <option>Employee Experience</option>
-          <option>General</option>
+          {blogCategories.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
         </select>
 
         <div>

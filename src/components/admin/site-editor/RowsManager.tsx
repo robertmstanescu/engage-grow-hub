@@ -291,6 +291,24 @@ const ContactRowFields = ({ content, onChange }: { content: Record<string, any>;
     onChange("fields", next);
   };
 
+  const addField = () => {
+    const key = `custom_${Date.now()}`;
+    onChange("fields", [...fields, { key, label: "New field", type: "text", required: false, visible: true }]);
+  };
+
+  const removeField = (idx: number) => {
+    onChange("fields", fields.filter((_: any, i: number) => i !== idx));
+  };
+
+  const FIELD_TYPES = [
+    { label: "Text", value: "text" },
+    { label: "Email", value: "email" },
+    { label: "Textarea", value: "textarea" },
+    { label: "Checkbox", value: "checkbox" },
+    { label: "Phone", value: "tel" },
+    { label: "URL", value: "url" },
+  ];
+
   return (
     <div className="space-y-3">
       <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} />
@@ -300,7 +318,7 @@ const ContactRowFields = ({ content, onChange }: { content: Record<string, any>;
       <SectionBox label="Form Fields">
         <div className="space-y-2">
           {fields.map((f: any, i: number) => (
-            <div key={f.key} className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: "hsl(var(--background))" }}>
+            <div key={f.key || i} className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: "hsl(var(--background))" }}>
               <input
                 type="checkbox"
                 checked={f.visible}
@@ -314,6 +332,15 @@ const ContactRowFields = ({ content, onChange }: { content: Record<string, any>;
                 className="flex-1 px-2 py-1 rounded font-body text-xs border"
                 style={{ borderColor: "hsl(var(--border))", backgroundColor: "transparent" }}
               />
+              <select
+                value={f.type}
+                onChange={(e) => updateFieldConfig(i, "type", e.target.value)}
+                className="px-2 py-1 rounded font-body text-[10px] border"
+                style={{ borderColor: "hsl(var(--border))", backgroundColor: "transparent" }}>
+                {FIELD_TYPES.map((ft) => (
+                  <option key={ft.value} value={ft.value}>{ft.label}</option>
+                ))}
+              </select>
               <label className="flex items-center gap-1 font-body text-[9px] uppercase tracking-wider text-muted-foreground">
                 <input
                   type="checkbox"
@@ -324,9 +351,19 @@ const ContactRowFields = ({ content, onChange }: { content: Record<string, any>;
                 />
                 Req
               </label>
+              <button type="button" onClick={() => removeField(i)} className="p-1 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
+                <Trash2 size={11} />
+              </button>
             </div>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={addField}
+          className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity mt-2"
+          style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
+          <Plus size={10} /> Add Field
+        </button>
       </SectionBox>
 
       <SectionBox label="Success State">
