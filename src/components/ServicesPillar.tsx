@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import ServiceCard from "./ServiceCard";
 
+const ease = [0.16, 1, 0.3, 1] as const;
+
 interface Service {
   tag: string;
   tagType: "fixed" | "retainer";
