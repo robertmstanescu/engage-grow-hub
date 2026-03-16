@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 
+const ease = [0.16, 1, 0.3, 1] as const;
+
 const IntroStrip = () => (
   <div className="bg-accent py-8 px-6 text-center">
     <motion.p
