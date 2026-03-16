@@ -51,7 +51,7 @@ const ServicesPillar = ({ pillarNumber, title, description, services, bgClass = 
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.6, delay: 0.1, ease }}
             className="font-body-heading text-base text-secondary/65 max-w-[700px] mx-auto"
           >
             {description}
