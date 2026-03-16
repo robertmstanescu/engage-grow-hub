@@ -49,7 +49,7 @@ const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClas
   return (
     <>
       <div className="gradient-divider" />
-      <div className={`${bgClass} pt-16 pb-4`}>
+      <div id={id} className={`${bgClass} pt-16 pb-4`}>
         <div className="max-w-[900px] mx-auto px-6 text-center">
           <motion.span
             initial={{ opacity: 0 }}
