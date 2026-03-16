@@ -89,12 +89,12 @@ const TagsManager = () => {
   };
 
   const addBlogCategory = () => {
-    setTags({ ...tags, blog_categories: [...tags.blog_categories, "New Category"] });
+    setTags({ ...tags, blog_categories: [...tags.blog_categories, { label: "New Category", bgColor: "#4D1B5E", textColor: "#F9F0C1" }] });
   };
 
-  const updateBlogCategory = (idx: number, val: string) => {
+  const updateBlogCategory = (idx: number, field: keyof BlogCategory, val: string) => {
     const next = [...tags.blog_categories];
-    next[idx] = val;
+    next[idx] = { ...next[idx], [field]: val };
     setTags({ ...tags, blog_categories: next });
   };
 
