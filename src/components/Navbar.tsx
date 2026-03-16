@@ -139,16 +139,6 @@ const Navbar = () => {
 
         {/* Mobile/Tablet toggle — visible below lg */}
         <div className="flex lg:hidden items-center gap-4">
-          <a
-            href="#contact"
-            onClick={(e) => handleNavClick(e, "#contact")}
-            className="font-display text-[10px] uppercase tracking-[0.08em] font-bold px-4 py-2 rounded-full hover:opacity-85 transition-opacity"
-            style={{
-              backgroundColor: "hsl(var(--nav-cta-bg))",
-              color: "hsl(var(--nav-cta-text))"
-            }}>
-            Book a consultation
-          </a>
           <button
             onClick={() => setIsOpen(!isOpen)}
             style={{ color: "hsl(var(--nav-text) / 0.7)" }}>
