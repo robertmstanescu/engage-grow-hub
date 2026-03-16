@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Send, Edit, Trash2 } from "lucide-react";
+import RichTextEditor from "./RichTextEditor";
 
 interface Campaign {
   id: string;
@@ -19,6 +20,7 @@ const EmailCampaigns = () => {
   const [isNew, setIsNew] = useState(false);
   const [form, setForm] = useState({ subject: "", html_content: "" });
   const [sending, setSending] = useState(false);
+  const [editorMode, setEditorMode] = useState<"visual" | "html">("visual");
 
   const fetchCampaigns = async () => {
     const { data } = await supabase
@@ -34,6 +36,7 @@ const EmailCampaigns = () => {
     setIsNew(true);
     setEditing(null);
     setForm({ subject: "", html_content: getDefaultTemplate() });
+    setEditorMode("visual");
   };
 
   const handleEdit = (campaign: Campaign) => {
@@ -41,6 +44,7 @@ const EmailCampaigns = () => {
     setIsNew(false);
     setEditing(campaign);
     setForm({ subject: campaign.subject, html_content: campaign.html_content });
+    setEditorMode("visual");
   };
 
   const handleSave = async () => {
@@ -75,7 +79,6 @@ const EmailCampaigns = () => {
       const { data, error } = await supabase.functions.invoke("send-campaign", {
         body: { campaignId },
       });
-
       if (error) throw error;
       toast.success(`Campaign sent to ${data?.recipientCount || 0} subscribers`);
       fetchCampaigns();
@@ -111,15 +114,48 @@ const EmailCampaigns = () => {
           className="w-full px-4 py-3 rounded-lg font-body text-sm border"
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
         />
+
         <div>
-          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">HTML Content</label>
-          <textarea
-            value={form.html_content}
-            onChange={(e) => setForm({ ...form, html_content: e.target.value })}
-            rows={20}
-            className="w-full px-4 py-3 rounded-lg font-mono text-xs border resize-none"
-            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
-          />
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Email Content</label>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => setEditorMode("visual")}
+                className="font-body text-[10px] uppercase tracking-wider px-2 py-1 rounded transition-colors"
+                style={{
+                  backgroundColor: editorMode === "visual" ? "hsl(var(--primary) / 0.1)" : "transparent",
+                  color: editorMode === "visual" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                }}>
+                Visual
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditorMode("html")}
+                className="font-body text-[10px] uppercase tracking-wider px-2 py-1 rounded transition-colors"
+                style={{
+                  backgroundColor: editorMode === "html" ? "hsl(var(--primary) / 0.1)" : "transparent",
+                  color: editorMode === "html" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                }}>
+                HTML
+              </button>
+            </div>
+          </div>
+
+          {editorMode === "visual" ? (
+            <RichTextEditor
+              content={form.html_content}
+              onChange={(html) => setForm({ ...form, html_content: html })}
+            />
+          ) : (
+            <textarea
+              value={form.html_content}
+              onChange={(e) => setForm({ ...form, html_content: e.target.value })}
+              rows={20}
+              className="w-full px-4 py-3 rounded-lg font-mono text-xs border resize-none"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
+            />
+          )}
         </div>
 
         {/* Preview */}
@@ -211,38 +247,7 @@ const EmailCampaigns = () => {
   );
 };
 
-const getDefaultTemplate = () => `<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: 'Inter', Arial, sans-serif; margin: 0; padding: 0; background-color: #F4F0EC; }
-    .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-    .header { text-align: center; padding: 20px 0; }
-    .content { background: #ffffff; border-radius: 12px; padding: 32px; margin: 20px 0; }
-    h1 { font-family: 'Unbounded', sans-serif; color: #2A0E33; font-size: 22px; }
-    p { color: #1B1F24; font-size: 14px; line-height: 1.7; }
-    .footer { text-align: center; padding: 20px 0; font-size: 11px; color: #999; }
-    .btn { display: inline-block; background: #4D1B5E; color: #F9F0C1; padding: 12px 28px; border-radius: 50px; text-decoration: none; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <img src="" alt="The Magic Coffin" height="32" />
-    </div>
-    <div class="content">
-      <h1>Your headline here</h1>
-      <p>Write your email content here. Keep it concise and valuable.</p>
-      <p style="text-align: center; margin-top: 24px;">
-        <a href="https://themagiccoffin.com" class="btn">Read More</a>
-      </p>
-    </div>
-    <div class="footer">
-      <p>The Magic Coffin · Internal Communications & Employee Experience</p>
-      <p>You received this because you opted in to our mailing list.</p>
-    </div>
-  </div>
-</body>
-</html>`;
+const getDefaultTemplate = () =>
+  `<h1>Your headline here</h1><p>Write your email content here. Keep it concise and valuable.</p><p>— The Magic Coffin</p>`;
 
 export default EmailCampaigns;

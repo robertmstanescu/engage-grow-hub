@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Trash2, Edit, Plus, Eye } from "lucide-react";
+import { Trash2, Edit, Plus } from "lucide-react";
+import RichTextEditor from "./RichTextEditor";
 
 const generateSlug = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-const calculateReadTime = (content: string) => {
-  const words = content.trim().split(/\s+/).length;
+const calculateReadTime = (html: string) => {
+  const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const words = text.split(/\s+/).length;
   const minutes = Math.max(1, Math.ceil(words / 200));
   return `${minutes} min read`;
 };
@@ -58,7 +60,7 @@ const BlogEditor = () => {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (status: string) => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
 
     const slug = generateSlug(form.title);
@@ -68,8 +70,8 @@ const BlogEditor = () => {
       excerpt: form.excerpt || null,
       content: form.content,
       category: form.category,
-      status: form.status,
-      published_at: form.status === "published" ? new Date().toISOString() : null,
+      status,
+      published_at: status === "published" ? new Date().toISOString() : null,
     };
 
     if (isNew) {
@@ -114,7 +116,7 @@ const BlogEditor = () => {
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
         />
         <input
-          placeholder="Excerpt (short summary)"
+          placeholder="Excerpt (short summary for listing page)"
           value={form.excerpt}
           onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
           className="w-full px-4 py-3 rounded-lg font-body text-sm border"
@@ -129,26 +131,29 @@ const BlogEditor = () => {
           <option>Employee Experience</option>
           <option>General</option>
         </select>
-        <textarea
-          placeholder="Write your article content here... (each paragraph separated by a blank line)"
-          value={form.content}
-          onChange={(e) => setForm({ ...form, content: e.target.value })}
-          rows={16}
-          className="w-full px-4 py-3 rounded-lg font-body text-sm border resize-none"
-          style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
-        />
+
+        <div>
+          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">Article Content</label>
+          <RichTextEditor
+            content={form.content}
+            onChange={(html) => setForm({ ...form, content: html })}
+            placeholder="Write your article..."
+          />
+        </div>
+
         <p className="font-body text-xs text-muted-foreground">
           Estimated read time: {calculateReadTime(form.content)}
         </p>
+
         <div className="flex gap-3">
           <button
-            onClick={() => { setForm({ ...form, status: "draft" }); handleSave(); }}
+            onClick={() => handleSave("draft")}
             className="font-body text-xs uppercase tracking-wider px-5 py-2.5 rounded-full border hover:opacity-80 transition-opacity"
             style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}>
             Save as Draft
           </button>
           <button
-            onClick={() => { setForm({ ...form, status: "published" }); handleSave(); }}
+            onClick={() => handleSave("published")}
             className="font-body text-xs uppercase tracking-wider px-5 py-2.5 rounded-full hover:opacity-80 transition-opacity"
             style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
             Publish
