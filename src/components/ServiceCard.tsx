@@ -2,14 +2,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
-const Deliverables = ({ label, items }: { label: string; items: string[] }) => {
+const Deliverables = ({ label, items }: {label: string;items: string[];}) => {
   const [open, setOpen] = useState(false);
   return (
     <div className="bg-background border-t border-primary/8 px-7 py-4">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between w-full text-left"
-      >
+        className="flex items-center justify-between w-full text-left">
+        
         <span className="font-body text-[10px] tracking-[0.18em] uppercase text-primary/50">
           {label}
         </span>
@@ -19,19 +19,19 @@ const Deliverables = ({ label, items }: { label: string; items: string[] }) => {
         initial={false}
         animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
         transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-        className="overflow-hidden"
-      >
+        className="overflow-hidden">
+        
         <ul className="space-y-1.5 pt-3">
-          {items.map((item, i) => (
-            <li key={i} className="font-body text-sm text-foreground/70 leading-snug pl-5 relative">
+          {items.map((item, i) =>
+          <li key={i} className="font-body text-sm text-foreground/70 leading-snug pl-5 relative">
               <span className="absolute left-0 text-valentino text-xs">—</span>
               {item}
             </li>
-          ))}
+          )}
         </ul>
       </motion.div>
-    </div>
-  );
+    </div>);
+
 };
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -58,7 +58,7 @@ const ServiceCard = ({
   deliverablesLabel = "What's inside",
   price,
   time,
-  note,
+  note
 }: ServiceCardProps) => {
   return (
     <motion.div
@@ -66,20 +66,20 @@ const ServiceCard = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, ease }}
-      className="border-[1.5px] border-primary/15 rounded-lg overflow-hidden"
-    >
+      className="border-[1.5px] border-primary/15 rounded-lg overflow-hidden">
+      
       {/* Top */}
       <div className="p-7">
         <span
           className={`inline-block font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full mb-4 font-medium ${
-            tagType === "fixed"
-              ? "bg-accent/20 text-accent-foreground"
-              : "bg-primary/12 text-primary"
-          }`}
-        >
+          tagType === "fixed" ?
+          "bg-accent/20 text-accent-foreground" :
+          "bg-primary/12 text-primary"}`
+          }>
+          
           {tag}
         </span>
-        <h4 className="font-display text-lg font-bold text-secondary leading-tight mb-1">
+        <h4 className="font-display text-lg font-bold leading-tight mb-1 text-[#2b0e34]">
           {title}
         </h4>
         <p className="font-body-heading text-sm text-valentino font-medium mb-4">
@@ -94,7 +94,7 @@ const ServiceCard = ({
       <Deliverables label={deliverablesLabel} items={deliverables} />
 
       {/* Meta */}
-      <div className="bg-secondary px-7 py-5 flex justify-between items-center flex-wrap gap-2">
+      <div className="px-7 py-5 flex justify-between items-center flex-wrap gap-2 bg-[#2b0e34]">
         <a href="#contact" className="font-display text-xs text-accent font-bold tracking-wide hover:opacity-80 transition-opacity">
           {price} →
         </a>
@@ -104,13 +104,13 @@ const ServiceCard = ({
       </div>
 
       {/* Note */}
-      {note && (
-        <div className="bg-primary/[0.06] border-l-[3px] border-valentino rounded-r-lg mx-7 my-4 px-4 py-3">
+      {note &&
+      <div className="bg-primary/[0.06] border-l-[3px] border-valentino rounded-r-lg mx-7 my-4 px-4 py-3">
           <p className="font-body text-xs text-foreground/65 italic leading-relaxed">{note}</p>
         </div>
-      )}
-    </motion.div>
-  );
+      }
+    </motion.div>);
+
 };
 
 export default ServiceCard;

@@ -13,10 +13,10 @@ const Navbar = () => {
 
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-secondary/95 backdrop-blur-sm border-b border-primary/20">
+    <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b border-primary/20 bg-[#2b0e34]">
       <div className="max-w-[900px] mx-auto px-6 flex items-center justify-between h-16">
         <a href="#" className="flex items-center gap-2">
-          <img alt="The Magic Coffin" className="h-8 brightness-200" src="/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png" />
+          <img alt="The Magic Coffin" className="h-8 brightness-200 object-fill border-0 shadow-none rounded-none" src="/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png" />
         </a>
         
         {/* Desktop */}
@@ -25,14 +25,14 @@ const Navbar = () => {
           <a
             key={link.label}
             href={link.href}
-            className="font-body text-xs uppercase tracking-[0.15em] text-primary-foreground/60 hover:text-accent transition-colors duration-200">
+            className="font-body text-xs uppercase tracking-[0.15em] transition-colors duration-200 font-semibold text-[#f9f0c3]">
             
               {link.label}
             </a>
           )}
           <a
             href="#contact"
-            className="font-display text-[10px] uppercase tracking-[0.08em] font-bold bg-accent text-accent-foreground px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity">
+            className="font-display text-[10px] uppercase tracking-[0.08em] font-bold text-accent-foreground px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity bg-[#e4c44e]">
             
             Book a consultation
           </a>
