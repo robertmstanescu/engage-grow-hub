@@ -33,6 +33,7 @@ const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const [article, setArticle] = useState<BlogArticle | null>(null);
   const [loading, setLoading] = useState(true);
+  const { getCategoryColors } = useTagColors();
 
   useEffect(() => {
     const fetchArticle = async () => {
