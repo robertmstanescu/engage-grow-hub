@@ -95,14 +95,19 @@ const Blog = () => {
                       border: "1px solid hsl(var(--border) / 0.5)"
                     }}>
                     <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
-                      <span
-                        className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 md:px-2.5 md:py-1 rounded-full font-medium"
-                        style={{
-                          backgroundColor: "hsl(var(--accent) / 0.15)",
-                          color: "hsl(var(--accent-foreground))"
-                        }}>
-                        {post.category}
-                      </span>
+                      {(() => {
+                        const catColors = getCategoryColors(post.category);
+                        return (
+                          <span
+                            className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 md:px-2.5 md:py-1 rounded-full font-medium"
+                            style={{
+                              backgroundColor: `${catColors.bgColor}CC`,
+                              color: catColors.textColor
+                            }}>
+                            {post.category}
+                          </span>
+                        );
+                      })()}
                       {post.published_at && (
                         <span className="font-body text-xs text-muted-foreground">{formatDate(post.published_at)}</span>
                       )}
