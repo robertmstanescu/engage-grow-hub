@@ -44,7 +44,9 @@ const BlogEditor = () => {
         .eq("section_key", "tags_config")
         .maybeSingle() as any;
       if (data?.content?.blog_categories) {
-        setBlogCategories(data.content.blog_categories);
+        const cats = data.content.blog_categories;
+        // Support both old string[] and new object[] formats
+        setBlogCategories(cats.map((c: any) => typeof c === "string" ? c : c.label));
       }
     };
     loadCategories();
