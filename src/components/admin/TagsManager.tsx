@@ -57,11 +57,11 @@ const TagsManager = () => {
   const addServiceTag = () => {
     setTags({
       ...tags,
-      service_tag_types: [...tags.service_tag_types, { label: "New Tag", value: `tag-${Date.now()}` }],
+      service_tag_types: [...tags.service_tag_types, { label: "New Tag", value: `tag-${Date.now()}`, bgColor: "#4D1B5E", textColor: "#FFFFFF" }],
     });
   };
 
-  const updateServiceTag = (idx: number, field: "label" | "value", val: string) => {
+  const updateServiceTag = (idx: number, field: keyof ServiceTagType, val: string) => {
     const next = [...tags.service_tag_types];
     next[idx] = { ...next[idx], [field]: val };
     setTags({ ...tags, service_tag_types: next });
