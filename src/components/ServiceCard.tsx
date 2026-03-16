@@ -57,9 +57,16 @@ interface ServiceCardProps {
   note?: string;
 }
 
+const FALLBACK_COLORS: Record<string, { bg: string; fg: string }> = {
+  fixed: { bg: "hsl(var(--pillar-tag-fixed-bg) / 0.2)", fg: "hsl(var(--pillar-tag-fixed-fg))" },
+  retainer: { bg: "hsl(var(--pillar-tag-retainer-bg) / 0.12)", fg: "hsl(var(--pillar-tag-retainer-fg))" },
+};
+
 const ServiceCard = ({
   tag,
   tagType,
+  tagBgColor,
+  tagTextColor,
   title,
   subtitle,
   description,
@@ -69,6 +76,9 @@ const ServiceCard = ({
   time,
   note
 }: ServiceCardProps) => {
+  const fallback = FALLBACK_COLORS[tagType] || FALLBACK_COLORS.fixed;
+  const resolvedBg = tagBgColor ? `${tagBgColor}33` : fallback.bg;
+  const resolvedFg = tagTextColor || fallback.fg;
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
