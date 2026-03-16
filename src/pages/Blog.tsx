@@ -90,9 +90,9 @@ const Blog = () => {
                     backgroundColor: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border) / 0.5)"
                   }}>
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
                     <span
-                      className="font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium"
+                      className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 md:px-2.5 md:py-1 rounded-full font-medium"
                       style={{
                         backgroundColor: "hsl(var(--accent) / 0.15)",
                         color: "hsl(var(--accent-foreground))"
