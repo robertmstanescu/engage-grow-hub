@@ -1,38 +1,24 @@
-import { useCallback, useRef } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import Document from "@tiptap/extension-document";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import History from "@tiptap/extension-history";
-import Dropcursor from "@tiptap/extension-dropcursor";
-import Gapcursor from "@tiptap/extension-gapcursor";
-import TiptapBold from "@tiptap/extension-bold";
-import TiptapItalic from "@tiptap/extension-italic";
-import Strike from "@tiptap/extension-strike";
-import Code from "@tiptap/extension-code";
-import CodeBlock from "@tiptap/extension-code-block";
-import Blockquote from "@tiptap/extension-blockquote";
-import BulletList from "@tiptap/extension-bullet-list";
-import OrderedList from "@tiptap/extension-ordered-list";
-import ListItem from "@tiptap/extension-list-item";
-import HardBreak from "@tiptap/extension-hard-break";
-import HorizontalRule from "@tiptap/extension-horizontal-rule";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import { TextStyle } from "@tiptap/extension-text-style";
-import Color from "@tiptap/extension-color";
-import Underline from "@tiptap/extension-underline";
-import TextAlign from "@tiptap/extension-text-align";
-import Highlight from "@tiptap/extension-highlight";
-import FontFamily from "@tiptap/extension-font-family";
+import { useCallback, useEffect, useRef } from "react";
+import {
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  List,
+  ListOrdered,
+  Quote,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Palette,
+  Highlighter,
+  Undo,
+  Redo,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  Bold, Italic, Underline as UnderlineIcon, Strikethrough,
-  List, ListOrdered, Quote,
-  Link as LinkIcon, Image as ImageIcon, AlignLeft, AlignCenter,
-  AlignRight, Palette, Highlighter, Undo, Redo, Type,
-} from "lucide-react";
 
 const FONT_OPTIONS = [
   { label: "Inter", value: "Inter, sans-serif" },
@@ -51,23 +37,6 @@ const SIZE_OPTIONS = [
   { label: "3XL", value: "36px" },
 ];
 
-/* Custom fontSize extension using TextStyle */
-const FontSize = TextStyle.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      fontSize: {
-        default: null,
-        parseHTML: (element) => element.style.fontSize || null,
-        renderHTML: (attributes) => {
-          if (!attributes.fontSize) return {};
-          return { style: `font-size: ${attributes.fontSize}` };
-        },
-      },
-    };
-  },
-});
-
 interface RichTextEditorProps {
   content: string;
   onChange: (html: string) => void;
@@ -75,236 +44,272 @@ interface RichTextEditorProps {
 }
 
 const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps) => {
+  const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectionRef = useRef<Range | null>(null);
 
-  const editor = useEditor({
-    extensions: [
-      Document,
-      Paragraph,
-      Text,
-      History,
-      Dropcursor,
-      Gapcursor,
-      TiptapBold,
-      TiptapItalic,
-      Strike,
-      Code,
-      CodeBlock,
-      Blockquote,
-      BulletList,
-      OrderedList,
-      ListItem,
-      HardBreak,
-      HorizontalRule,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" },
-      }),
-      Image.configure({ inline: false, allowBase64: false }),
-      FontSize,
-      FontFamily,
-      Color,
-      Underline,
-      TextAlign.configure({ types: ["paragraph"] }),
-      Highlight.configure({ multicolor: true }),
-    ],
-    content,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+  const emitChange = useCallback(() => {
+    onChange(editorRef.current?.innerHTML || "");
+  }, [onChange]);
+
+  const saveSelection = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || !editorRef.current) return;
+
+    const range = selection.getRangeAt(0);
+    if (editorRef.current.contains(range.commonAncestorContainer)) {
+      selectionRef.current = range.cloneRange();
+    }
+  }, []);
+
+  const restoreSelection = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || !selectionRef.current) return;
+
+    selection.removeAllRanges();
+    selection.addRange(selectionRef.current);
+  }, []);
+
+  const focusEditor = useCallback(() => {
+    editorRef.current?.focus();
+  }, []);
+
+  const runCommand = useCallback(
+    (command: string, value?: string) => {
+      focusEditor();
+      restoreSelection();
+      document.execCommand("styleWithCSS", false, "true");
+      document.execCommand(command, false, value);
+      saveSelection();
+      emitChange();
     },
-    editorProps: {
-      attributes: {
-        class: "prose prose-sm max-w-none focus:outline-none min-h-[300px] px-4 py-3",
-      },
+    [emitChange, focusEditor, restoreSelection, saveSelection]
+  );
+
+  const applyFontSize = useCallback(
+    (fontSize: string) => {
+      focusEditor();
+      restoreSelection();
+      document.execCommand("styleWithCSS", false, "true");
+      document.execCommand("fontSize", false, "7");
+
+      editorRef.current
+        ?.querySelectorAll('font[size="7"]')
+        .forEach((node) => {
+          const span = document.createElement("span");
+          span.style.fontSize = fontSize;
+          span.innerHTML = node.innerHTML;
+          node.replaceWith(span);
+        });
+
+      saveSelection();
+      emitChange();
     },
-  });
+    [emitChange, focusEditor, restoreSelection, saveSelection]
+  );
 
-  const handleImageUpload = useCallback(async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
-      return;
-    }
+  const handleImageUpload = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please upload an image file");
+        return;
+      }
 
-    const ext = file.name.split(".").pop();
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image must be under 5MB");
+        return;
+      }
 
-    const { error } = await supabase.storage.from("editor-images").upload(path, file);
-    if (error) {
-      toast.error("Failed to upload image");
-      return;
-    }
+      const ext = file.name.split(".").pop();
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("editor-images").upload(path, file);
 
-    const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
-    editor?.chain().focus().setImage({ src: publicUrl }).run();
-    toast.success("Image uploaded");
-  }, [editor]);
+      if (error) {
+        toast.error("Failed to upload image");
+        return;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("editor-images").getPublicUrl(path);
+
+      runCommand("insertImage", publicUrl);
+      toast.success("Image uploaded");
+    },
+    [runCommand]
+  );
 
   const addLink = useCallback(() => {
-    const previousUrl = editor?.getAttributes("link").href || "";
-    const url = window.prompt("Enter URL:", previousUrl);
+    const selection = window.getSelection();
+    const selectedText = selection?.toString() || "";
+    const url = window.prompt("Enter URL:", "https://");
     if (url === null) return;
-    if (url === "") {
-      editor?.chain().focus().extendMarkRange("link").unsetLink().run();
+
+    if (!url) {
+      runCommand("unlink");
       return;
     }
-    editor?.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  }, [editor]);
+
+    if (!selectedText) {
+      runCommand("insertHTML", `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+      return;
+    }
+
+    runCommand("createLink", url);
+  }, [runCommand]);
 
   const setTextColor = useCallback(() => {
     const color = window.prompt("Enter color (hex, e.g. #4D1B5E):", "#000000");
-    if (color) editor?.chain().focus().setColor(color).run();
-  }, [editor]);
+    if (color) runCommand("foreColor", color);
+  }, [runCommand]);
 
   const setHighlightColor = useCallback(() => {
     const color = window.prompt("Enter highlight color (hex):", "#E5C54F");
-    if (color) editor?.chain().focus().toggleHighlight({ color }).run();
-  }, [editor]);
+    if (!color) return;
 
-  if (!editor) return null;
+    focusEditor();
+    restoreSelection();
+    document.execCommand("styleWithCSS", false, "true");
+    document.execCommand("hiliteColor", false, color) || document.execCommand("backColor", false, color);
+    saveSelection();
+    emitChange();
+  }, [emitChange, focusEditor, restoreSelection, saveSelection]);
 
-  const currentFont = editor.getAttributes("textStyle").fontFamily || "";
-  const currentSize = editor.getAttributes("textStyle").fontSize || "";
+  useEffect(() => {
+    if (!editorRef.current) return;
+    if (editorRef.current.innerHTML !== (content || "")) {
+      editorRef.current.innerHTML = content || "";
+    }
+  }, [content]);
 
   const ToolbarButton = ({
     onClick,
-    isActive = false,
     children,
     title,
   }: {
     onClick: () => void;
-    isActive?: boolean;
     children: React.ReactNode;
     title: string;
   }) => (
     <button
       type="button"
-      onClick={onClick}
       title={title}
+      onMouseDown={(event) => event.preventDefault()}
+      onClick={onClick}
       className="p-1.5 rounded transition-colors"
-      style={{
-        backgroundColor: isActive ? "hsl(var(--primary) / 0.15)" : "transparent",
-        color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-      }}>
+      style={{ color: "hsl(var(--muted-foreground))" }}
+    >
       {children}
     </button>
   );
 
   return (
-    <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}>
-      {/* Toolbar */}
+    <div
+      className="rounded-lg border overflow-hidden"
+      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
+    >
       <div
         className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b"
-        style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.3)" }}>
-        {/* Undo / Redo */}
-        <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Undo">
+        style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.3)" }}
+      >
+        <ToolbarButton onClick={() => runCommand("undo")} title="Undo">
           <Undo size={15} />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().redo().run()} title="Redo">
+        <ToolbarButton onClick={() => runCommand("redo")} title="Redo">
           <Redo size={15} />
         </ToolbarButton>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        {/* Font family */}
         <select
-          value={currentFont}
-          onChange={(e) => {
-            if (e.target.value) {
-              editor.chain().focus().setFontFamily(e.target.value).run();
-            } else {
-              editor.chain().focus().unsetFontFamily().run();
-            }
+          defaultValue=""
+          onMouseDown={(event) => event.preventDefault()}
+          onChange={(event) => {
+            if (event.target.value) runCommand("fontName", event.target.value);
+            event.target.value = "";
           }}
           className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
           style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "120px" }}
-          title="Font Family">
-          <option value="">Default</option>
-          {FONT_OPTIONS.map((f) => (
-            <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>
-              {f.label}
+          title="Font Family"
+        >
+          <option value="">Font</option>
+          {FONT_OPTIONS.map((font) => (
+            <option key={font.value} value={font.value}>
+              {font.label}
             </option>
           ))}
         </select>
 
-        {/* Font size */}
         <select
-          value={currentSize}
-          onChange={(e) => {
-            if (e.target.value) {
-              editor.chain().focus().setMark("textStyle", { fontSize: e.target.value }).run();
-            } else {
-              editor.chain().focus().unsetMark("textStyle").run();
-            }
+          defaultValue=""
+          onMouseDown={(event) => event.preventDefault()}
+          onChange={(event) => {
+            if (event.target.value) applyFontSize(event.target.value);
+            event.target.value = "";
           }}
           className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
           style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "65px" }}
-          title="Font Size">
+          title="Font Size"
+        >
           <option value="">Size</option>
-          {SIZE_OPTIONS.map((s) => (
-            <option key={s.value} value={s.value}>{s.label}</option>
+          {SIZE_OPTIONS.map((size) => (
+            <option key={size.value} value={size.value}>
+              {size.label}
+            </option>
           ))}
         </select>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        {/* Formatting */}
-        <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive("bold")} title="Bold">
+        <ToolbarButton onClick={() => runCommand("bold")} title="Bold">
           <Bold size={15} />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive("italic")} title="Italic">
+        <ToolbarButton onClick={() => runCommand("italic")} title="Italic">
           <Italic size={15} />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive("underline")} title="Underline">
+        <ToolbarButton onClick={() => runCommand("underline")} title="Underline">
           <UnderlineIcon size={15} />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive("strike")} title="Strikethrough">
+        <ToolbarButton onClick={() => runCommand("strikeThrough")} title="Strikethrough">
           <Strikethrough size={15} />
         </ToolbarButton>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        {/* Colors */}
         <ToolbarButton onClick={setTextColor} title="Text Color">
           <Palette size={15} />
         </ToolbarButton>
-        <ToolbarButton onClick={setHighlightColor} isActive={editor.isActive("highlight")} title="Highlight">
+        <ToolbarButton onClick={setHighlightColor} title="Highlight">
           <Highlighter size={15} />
         </ToolbarButton>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        {/* Alignment */}
-        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("left").run()} isActive={editor.isActive({ textAlign: "left" })} title="Align Left">
+        <ToolbarButton onClick={() => runCommand("justifyLeft")} title="Align Left">
           <AlignLeft size={15} />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("center").run()} isActive={editor.isActive({ textAlign: "center" })} title="Align Center">
+        <ToolbarButton onClick={() => runCommand("justifyCenter")} title="Align Center">
           <AlignCenter size={15} />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("right").run()} isActive={editor.isActive({ textAlign: "right" })} title="Align Right">
+        <ToolbarButton onClick={() => runCommand("justifyRight")} title="Align Right">
           <AlignRight size={15} />
         </ToolbarButton>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        {/* Lists */}
-        <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive("bulletList")} title="Bullet List">
+        <ToolbarButton onClick={() => runCommand("insertUnorderedList")} title="Bullet List">
           <List size={15} />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive("orderedList")} title="Numbered List">
+        <ToolbarButton onClick={() => runCommand("insertOrderedList")} title="Numbered List">
           <ListOrdered size={15} />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} isActive={editor.isActive("blockquote")} title="Blockquote">
+        <ToolbarButton onClick={() => runCommand("formatBlock", "blockquote")} title="Blockquote">
           <Quote size={15} />
         </ToolbarButton>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        {/* Link & Image */}
-        <ToolbarButton onClick={addLink} isActive={editor.isActive("link")} title="Add Link">
+        <ToolbarButton onClick={addLink} title="Add Link">
           <LinkIcon size={15} />
         </ToolbarButton>
         <ToolbarButton onClick={() => fileInputRef.current?.click()} title="Upload Image">
@@ -312,19 +317,33 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
         </ToolbarButton>
       </div>
 
-      {/* Editor content */}
-      <EditorContent editor={editor} />
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        role="textbox"
+        aria-multiline="true"
+        data-placeholder={placeholder || "Start writing..."}
+        className="prose prose-sm max-w-none min-h-[300px] px-4 py-3 focus:outline-none"
+        onInput={emitChange}
+        onBlur={() => {
+          saveSelection();
+          emitChange();
+        }}
+        onKeyUp={saveSelection}
+        onMouseUp={saveSelection}
+        style={{ color: "hsl(var(--foreground))" }}
+      />
 
-      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
         className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
+        onChange={(event) => {
+          const file = event.target.files?.[0];
           if (file) handleImageUpload(file);
-          e.target.value = "";
+          event.target.value = "";
         }}
       />
     </div>
