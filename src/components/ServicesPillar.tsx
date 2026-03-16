@@ -127,7 +127,7 @@ const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClas
           </div>
         </div>
       </div>
-    </>);
+    </section>);
 
 };
 
