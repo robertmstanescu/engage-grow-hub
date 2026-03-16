@@ -120,13 +120,9 @@ const BlogPost = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease }}
-            className="max-w-[700px] mx-auto space-y-6">
-            {paragraphs.map((paragraph, i) => (
-              <p key={i} className="font-body text-base text-foreground/80 leading-[1.8]">
-                {paragraph}
-              </p>
-            ))}
-          </motion.div>
+            className="max-w-[700px] mx-auto prose prose-sm md:prose-base prose-headings:font-display prose-headings:text-secondary prose-p:text-foreground/80 prose-p:leading-[1.8] prose-a:text-primary prose-img:rounded-lg"
+            dangerouslySetInnerHTML={{ __html: article.content }}
+          />
 
           <div className="max-w-[700px] mx-auto mt-12 pt-8" style={{ borderTop: "1px solid hsl(var(--border))" }}>
             <Link
