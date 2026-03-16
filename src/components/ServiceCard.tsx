@@ -96,12 +96,8 @@ const ServiceCard = ({
         <span
           className="inline-block font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full mb-4 font-medium"
           style={{
-            backgroundColor: tagType === "fixed"
-              ? "hsl(var(--pillar-tag-fixed-bg) / 0.2)"
-              : "hsl(var(--pillar-tag-retainer-bg) / 0.12)",
-            color: tagType === "fixed"
-              ? "hsl(var(--pillar-tag-fixed-fg))"
-              : "hsl(var(--pillar-tag-retainer-fg))"
+            backgroundColor: resolvedBg,
+            color: resolvedFg,
           }}>
           {tag}
         </span>
