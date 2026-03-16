@@ -77,7 +77,7 @@ const ServiceCard = ({
   note
 }: ServiceCardProps) => {
   const fallback = FALLBACK_COLORS[tagType] || FALLBACK_COLORS.fixed;
-  const resolvedBg = tagBgColor ? `${tagBgColor}33` : fallback.bg;
+  const resolvedBg = tagBgColor ? `${tagBgColor}CC` : fallback.bg;
   const resolvedFg = tagTextColor || fallback.fg;
   return (
     <motion.div

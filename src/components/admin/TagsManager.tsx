@@ -126,7 +126,7 @@ const TagsManager = () => {
                   <Trash2 size={13} />
                 </button>
               </div>
-              <div className="flex items-center gap-3 pl-5">
+              <div className="flex items-center gap-3 pl-5 flex-wrap">
                 <div className="flex items-center gap-1.5">
                   <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">BG</label>
                   <input
@@ -134,6 +134,17 @@ const TagsManager = () => {
                     value={tag.bgColor || "#4D1B5E"}
                     onChange={(e) => updateServiceTag(i, "bgColor", e.target.value)}
                     className="w-7 h-7 rounded cursor-pointer border-0 p-0"
+                  />
+                  <input
+                    type="text"
+                    value={tag.bgColor || "#4D1B5E"}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) updateServiceTag(i, "bgColor", v);
+                    }}
+                    placeholder="#HEX"
+                    className="w-20 px-2 py-1 rounded font-mono text-xs border"
+                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
                   />
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -144,10 +155,21 @@ const TagsManager = () => {
                     onChange={(e) => updateServiceTag(i, "textColor", e.target.value)}
                     className="w-7 h-7 rounded cursor-pointer border-0 p-0"
                   />
+                  <input
+                    type="text"
+                    value={tag.textColor || "#FFFFFF"}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) updateServiceTag(i, "textColor", v);
+                    }}
+                    placeholder="#HEX"
+                    className="w-20 px-2 py-1 rounded font-mono text-xs border"
+                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+                  />
                 </div>
                 <span
                   className="ml-auto font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium"
-                  style={{ backgroundColor: tag.bgColor || "#4D1B5E", color: tag.textColor || "#FFFFFF" }}>
+                  style={{ backgroundColor: `${tag.bgColor || "#4D1B5E"}CC`, color: tag.textColor || "#FFFFFF" }}>
                   {tag.label}
                 </span>
               </div>
