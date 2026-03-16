@@ -3,15 +3,17 @@ import { useSiteContent } from "@/hooks/useSiteContent";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
+const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
+
 interface VowsContent {
   title_line1?: string;
   title_line2?: string;
-  title_lines?: string[];
+  title_lines?: any[];
   cards: { title: string; body: string }[];
 }
 
 const fallback: VowsContent = {
-  title_lines: ["Before we shake hands,", "here is what we vow."],
+  title_lines: ["<p>Before we shake hands,</p>", "<p>here is what we vow.</p>"],
   cards: [
     { title: "Precision over pomp", body: "Our reports are as clear as a glass prism and as sharp as a stake. No buzzwords. No padding. No synergy." },
     { title: "The human trace", body: "Behind every strategy is a handwritten insight. Your people are not capital. They are the life-force." },
@@ -22,7 +24,10 @@ const fallback: VowsContent = {
 const VowsSection = () => {
   const c = useSiteContent<VowsContent>("vows", fallback);
 
-  const titleLines = c.title_lines || [c.title_line1 || "", c.title_line2 || ""];
+  // Normalise: support plain strings and HTML strings
+  const titleLines: string[] = (c.title_lines || [c.title_line1 || "", c.title_line2 || ""]).map(
+    (l: any) => (typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`)
+  );
 
   return (
     <section
@@ -40,7 +45,7 @@ const VowsSection = () => {
           {titleLines.map((line, i) => (
             <span key={i}>
               {i > 0 && <br />}
-              {line}
+              <span dangerouslySetInnerHTML={{ __html: stripP(line) }} />
             </span>
           ))}
         </motion.h3>

@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
-import { RichField } from "./FieldComponents";
+import { RichField, SectionBox } from "./FieldComponents";
+import TitleLineEditor from "./TitleLineEditor";
 
 interface Props {
   content: Record<string, any>;
@@ -7,15 +8,17 @@ interface Props {
 }
 
 const ContactEditor = ({ content, onChange }: Props) => {
-  const titleLines: string[] = content.title_lines || [content.title_line1 || "", content.title_line2 || ""];
+  const titleLines: string[] = (content.title_lines || []).map((l: any) =>
+    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
+  );
 
-  const updateTitleLine = (idx: number, value: string) => {
+  const updateTitleLine = (idx: number, html: string) => {
     const next = [...titleLines];
-    next[idx] = value;
+    next[idx] = html;
     onChange("title_lines", next);
   };
 
-  const addTitleLine = () => onChange("title_lines", [...titleLines, ""]);
+  const addTitleLine = () => onChange("title_lines", [...titleLines, "<p></p>"]);
   const removeTitleLine = (idx: number) => onChange("title_lines", titleLines.filter((_, i) => i !== idx));
 
   return (
@@ -31,23 +34,22 @@ const ContactEditor = ({ content, onChange }: Props) => {
             <Plus size={10} /> Add Line
           </button>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {titleLines.map((line, i) => (
-            <div key={i} className="flex gap-1.5">
-              <input
-                value={line}
-                onChange={(e) => updateTitleLine(i, e.target.value)}
-                className="flex-1 px-3 py-1.5 rounded-lg font-body text-sm border"
-                style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
-              />
-              <button
-                type="button"
-                onClick={() => removeTitleLine(i)}
-                className="p-1.5 rounded hover:opacity-70 transition-opacity"
-                style={{ color: "hsl(var(--destructive))" }}>
-                <Trash2 size={13} />
-              </button>
-            </div>
+            <SectionBox key={i} label={`Line ${i + 1}`}>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <TitleLineEditor value={line} onChange={(v) => updateTitleLine(i, v)} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeTitleLine(i)}
+                  className="self-end p-2 rounded hover:opacity-70 transition-opacity"
+                  style={{ color: "hsl(var(--destructive))" }}>
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </SectionBox>
           ))}
         </div>
       </div>
@@ -58,3 +60,5 @@ const ContactEditor = ({ content, onChange }: Props) => {
 };
 
 export default ContactEditor;
+
+

@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
-import { Field, RichField, SectionBox, ArrayField } from "./FieldComponents";
+import { RichField, SectionBox } from "./FieldComponents";
+import TitleLineEditor from "./TitleLineEditor";
 
 interface Props {
   content: Record<string, any>;
@@ -7,17 +8,18 @@ interface Props {
 }
 
 const VowsEditor = ({ content, onChange }: Props) => {
-  // Support title_lines array or fallback to old format
-  const titleLines: string[] = content.title_lines || [content.title_line1 || "", content.title_line2 || ""];
+  const titleLines: string[] = (content.title_lines || []).map((l: any) =>
+    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
+  );
   const cards: { title: string; body: string }[] = content.cards || [];
 
-  const updateTitleLine = (idx: number, value: string) => {
+  const updateTitleLine = (idx: number, html: string) => {
     const next = [...titleLines];
-    next[idx] = value;
+    next[idx] = html;
     onChange("title_lines", next);
   };
 
-  const addTitleLine = () => onChange("title_lines", [...titleLines, ""]);
+  const addTitleLine = () => onChange("title_lines", [...titleLines, "<p></p>"]);
   const removeTitleLine = (idx: number) => onChange("title_lines", titleLines.filter((_, i) => i !== idx));
 
   const updateCard = (idx: number, field: string, value: string) => {
@@ -31,7 +33,6 @@ const VowsEditor = ({ content, onChange }: Props) => {
 
   return (
     <div className="space-y-4">
-      {/* Title Lines */}
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Title Lines</label>
@@ -43,30 +44,28 @@ const VowsEditor = ({ content, onChange }: Props) => {
             <Plus size={10} /> Add Line
           </button>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {titleLines.map((line, i) => (
-            <div key={i} className="flex gap-1.5">
-              <input
-                value={line}
-                onChange={(e) => updateTitleLine(i, e.target.value)}
-                className="flex-1 px-3 py-1.5 rounded-lg font-body text-sm border"
-                style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
-              />
-              <button
-                type="button"
-                onClick={() => removeTitleLine(i)}
-                className="p-1.5 rounded hover:opacity-70 transition-opacity"
-                style={{ color: "hsl(var(--destructive))" }}>
-                <Trash2 size={13} />
-              </button>
-            </div>
+            <SectionBox key={i} label={`Line ${i + 1}`}>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <TitleLineEditor value={line} onChange={(v) => updateTitleLine(i, v)} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeTitleLine(i)}
+                  className="self-end p-2 rounded hover:opacity-70 transition-opacity"
+                  style={{ color: "hsl(var(--destructive))" }}>
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </SectionBox>
           ))}
         </div>
       </div>
 
-      {/* Vow Cards */}
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1">
           <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Vow Cards</label>
           <button
             type="button"
@@ -76,18 +75,30 @@ const VowsEditor = ({ content, onChange }: Props) => {
             <Plus size={10} /> Add Card
           </button>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {cards.map((card, i) => (
-            <SectionBox key={i} label={`Vow ${i + 1}`}>
-              <Field label="Title" value={card.title} onChange={(v) => updateCard(i, "title", v)} />
-              <RichField label="Body" value={card.body} onChange={(v) => updateCard(i, "body", v)} />
-              <button
-                type="button"
-                onClick={() => removeCard(i)}
-                className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-1 rounded-full hover:opacity-70 transition-opacity"
-                style={{ color: "hsl(var(--destructive))", border: "1px solid hsl(var(--destructive) / 0.3)" }}>
-                <Trash2 size={11} /> Remove
-              </button>
+            <SectionBox key={i} label={`Card ${i + 1}`}>
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Title</label>
+                    <input
+                      value={card.title}
+                      onChange={(e) => updateCard(i, "title", e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg font-body text-sm border"
+                      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeCard(i)}
+                    className="self-start p-2 rounded hover:opacity-70 transition-opacity mt-5"
+                    style={{ color: "hsl(var(--destructive))" }}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+                <RichField label="Body" value={card.body} onChange={(v) => updateCard(i, "body", v)} />
+              </div>
             </SectionBox>
           ))}
         </div>
@@ -97,3 +108,5 @@ const VowsEditor = ({ content, onChange }: Props) => {
 };
 
 export default VowsEditor;
+
+

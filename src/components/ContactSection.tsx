@@ -5,22 +5,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSiteContent } from "@/hooks/useSiteContent";
 
 const ease = [0.16, 1, 0.3, 1] as const;
+const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
 interface ContactContent {
   title_line1?: string;
   title_line2?: string;
-  title_lines?: string[];
+  title_lines?: any[];
   body: string;
 }
 
 const fallback: ContactContent = {
-  title_lines: ["Not sure where to start?", "Lift the lid first."],
+  title_lines: ["<p>Not sure where to start?</p>", "<p>Lift the lid first.</p>"],
   body: "Book a free 30-minute consultation. We'll identify your biggest vampire moment and tell you honestly whether we're the right fit to bury it.",
 };
 
 const ContactSection = () => {
   const c = useSiteContent<ContactContent>("contact", fallback);
-  const titleLines = c.title_lines || [c.title_line1 || "", c.title_line2 || ""];
+
+  const titleLines: string[] = (c.title_lines || [c.title_line1 || "", c.title_line2 || ""]).map(
+    (l: any) => (typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`)
+  );
 
   const [formData, setFormData] = useState({
     name: "", email: "", company: "", message: "", subscribed_to_marketing: false,
@@ -65,7 +69,10 @@ const ContactSection = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease }} className="text-center mb-10">
           <h3 className="font-display text-2xl md:text-3xl font-black leading-tight mb-4" style={{ color: "hsl(var(--contact-title))" }}>
             {titleLines.map((line, i) => (
-              <span key={i}>{i > 0 && <br />}{line}</span>
+              <span key={i}>
+                {i > 0 && <br />}
+                <span dangerouslySetInnerHTML={{ __html: stripP(line) }} />
+              </span>
             ))}
           </h3>
           <div className="font-body-heading text-base" style={{ color: "hsl(var(--contact-body))" }} dangerouslySetInnerHTML={{ __html: c.body }} />
