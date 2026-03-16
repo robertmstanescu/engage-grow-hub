@@ -5,16 +5,23 @@ import ServiceRow from "./ServiceRow";
 import BoxedRow from "./BoxedRow";
 import ContactRow from "./ContactRow";
 
+const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
 const RowRenderer = ({ row }: { row: PageRow }) => {
+  const id = row.scope || slugify(row.strip_title);
+  const wrapper = (children: React.ReactNode) => (
+    <div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>
+  );
+
   switch (row.type) {
     case "text":
-      return <TextRow row={row} />;
+      return wrapper(<TextRow row={row} />);
     case "service":
-      return <ServiceRow row={row} />;
+      return wrapper(<ServiceRow row={row} />);
     case "boxed":
-      return <BoxedRow row={row} />;
+      return wrapper(<BoxedRow row={row} />);
     case "contact":
-      return <ContactRow row={row} />;
+      return wrapper(<ContactRow row={row} />);
     default:
       return null;
   }
