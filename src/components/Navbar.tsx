@@ -25,14 +25,14 @@ const Navbar = () => {
           <a
             key={link.label}
             href={link.href}
-            className="font-body text-xs uppercase tracking-[0.15em] transition-colors duration-200 font-semibold text-[#f9f0c3]">
+            className="font-body text-xs uppercase tracking-[0.15em] transition-colors duration-200 font-semibold text-white">
             
               {link.label}
             </a>
           )}
           <a
             href="#contact"
-            className="font-display text-[10px] uppercase tracking-[0.08em] font-bold text-accent-foreground px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity bg-[#e4c44e]">
+            className="font-display text-[10px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity text-white bg-[#7c3a92]">
             
             Book a consultation
           </a>
