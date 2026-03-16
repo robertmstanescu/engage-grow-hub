@@ -16,7 +16,7 @@ const Deliverables = ({ label, items }: {label: string;items: string[];}) => {
         onClick={() => setOpen(!open)}
         className="flex items-center justify-between w-full text-left">
         <span
-          className="font-body text-[10px] tracking-[0.18em] uppercase"
+          className="font-body text-[10px] tracking-[0.18em] uppercase text-primary"
           style={{ color: "hsl(var(--pillar-primary) / 0.5)" }}>
           {label}
         </span>
@@ -73,11 +73,11 @@ const ServiceCard = ({
 }: ServiceCardProps) => {
   const { getTagColors } = useTagColors();
   const adminColors = getTagColors(tagType);
-  
+
   // Priority: per-card overrides > admin tags_config > defaults
   const bgHex = tagBgColor || adminColors.bgColor;
   const fgHex = tagTextColor || adminColors.textColor;
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
