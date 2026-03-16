@@ -11,11 +11,19 @@ const BoxedRow = ({ row }: { row: PageRow }) => {
   );
   const cards: { title: string; body: string }[] = c.cards || [];
 
+  // Determine grid columns based on card count (up to 6)
+  const getGridCols = (count: number) => {
+    if (count <= 1) return "grid-cols-1";
+    if (count === 2) return "grid-cols-1 md:grid-cols-2";
+    if (count === 3) return "grid-cols-1 md:grid-cols-3";
+    if (count === 4) return "grid-cols-1 md:grid-cols-2 lg:grid-cols-4";
+    if (count === 5) return "grid-cols-1 md:grid-cols-3 lg:grid-cols-5";
+    return "grid-cols-1 md:grid-cols-3 lg:grid-cols-6";
+  };
+
   return (
-    <section
-      className={row.scope || ""}
-      style={{ backgroundColor: row.bg_color || "hsl(var(--vows-bg))" }}>
-      <div className="max-w-[800px] mx-auto px-6 py-20 text-center">
+    <section style={{ backgroundColor: row.bg_color || "hsl(var(--vows-bg))" }}>
+      <div className="max-w-[1100px] mx-auto px-6 py-20 text-center">
         {titleLines.length > 0 && (
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
@@ -49,8 +57,8 @@ const BoxedRow = ({ row }: { row: PageRow }) => {
           </motion.p>
         )}
 
-        <div className={`grid grid-cols-1 ${cards.length >= 2 ? "md:grid-cols-2" : ""} ${cards.length >= 3 ? "md:grid-cols-3" : ""} gap-5 ${titleLines.length > 0 && !c.subtitle ? "mt-10" : "mt-4"}`}>
-          {cards.slice(0, 3).map((card, i) => (
+        <div className={`grid ${getGridCols(cards.length)} gap-5 ${titleLines.length > 0 && !c.subtitle ? "mt-10" : "mt-4"}`}>
+          {cards.slice(0, 6).map((card, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}

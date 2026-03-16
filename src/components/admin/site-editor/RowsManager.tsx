@@ -9,17 +9,8 @@ import SubtitleEditor from "./SubtitleEditor";
 const ROW_TYPES = [
   { type: "text" as const, label: "Text", icon: Type, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", body: "" } },
   { type: "service" as const, label: "Service", icon: Briefcase, defaultContent: { pillar_number: "", title: "", description: "", services: [] } },
-  { type: "boxed" as const, label: "Boxed (max 3)", icon: LayoutGrid, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", cards: [] } },
+  { type: "boxed" as const, label: "Boxed (max 6)", icon: LayoutGrid, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", cards: [] } },
   { type: "contact" as const, label: "Contact", icon: Mail, defaultContent: { title_lines: [], body: "", button_text: "Request a discovery call", success_heading: "Message received.", success_body: "We respond within 24 hours.", success_button: "Send another message", show_social: false, fields: DEFAULT_CONTACT_FIELDS } },
-];
-
-const SCOPE_OPTIONS = [
-  { label: "None", value: "" },
-  { label: "Intro (cream)", value: "scope-intro" },
-  { label: "Pillar Comms", value: "pillar-comms" },
-  { label: "Pillar EX", value: "pillar-ex" },
-  { label: "Vows (dark)", value: "scope-vows" },
-  { label: "Contact", value: "scope-contact" },
 ];
 
 interface Props {
@@ -38,7 +29,6 @@ const RowsManager = ({ rows, onChange }: Props) => {
       type,
       strip_title: `New ${template.label} Row`,
       bg_color: type === "boxed" ? "#2A0E33" : "#FFFFFF",
-      scope: type === "boxed" ? "scope-vows" : type === "contact" ? "scope-contact" : "",
       content: { ...template.defaultContent },
     };
     onChange([...rows, newRow]);
@@ -179,12 +169,6 @@ const RowsManager = ({ rows, onChange }: Props) => {
                     </div>
                   </div>
                 </div>
-                <SelectField
-                  label="Color Scope (styling theme)"
-                  value={row.scope || ""}
-                  onChange={(v) => updateRow(row.id, { scope: v })}
-                  options={SCOPE_OPTIONS}
-                />
                 {renderRowEditor(row)}
               </div>
             )}
@@ -268,8 +252,8 @@ const BoxedRowFields = ({ content, onChange }: { content: Record<string, any>; o
       />
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Cards (max 3)</label>
-          <button type="button" onClick={() => onChange("cards", [...cards, { title: "", body: "" }])} disabled={cards.length >= 3} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70 disabled:opacity-30" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
+          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Cards (max 6)</label>
+          <button type="button" onClick={() => onChange("cards", [...cards, { title: "", body: "" }])} disabled={cards.length >= 6} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70 disabled:opacity-30" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
             <Plus size={10} /> Add Card
           </button>
         </div>

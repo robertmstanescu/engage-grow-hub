@@ -50,6 +50,51 @@
     --font-title: 'Unbounded', sans-serif;
     --font-header: 'Bricolage Grotesque', sans-serif;
     --font-body: 'Inter', sans-serif;
+
+    /* ── Default pillar/service tokens ── */
+    --pillar-label: 286 42% 40%;
+    --pillar-heading: 280 57% 13%;
+    --pillar-heading-sub: 280 57% 13%;
+    --pillar-section-bg: 0 0% 100%;
+    --pillar-primary: 280 55% 24%;
+    --pillar-card-bg: 0 0% 100%;
+    --pillar-card-title: 280 57% 13%;
+    --pillar-subtitle: 286 42% 40%;
+    --pillar-body: 213 15% 12%;
+    --pillar-deliverables-bg: 50 82% 87%;
+    --pillar-deliverables-label: 280 55% 24%;
+    --pillar-tag-fixed-bg: 46 75% 60%;
+    --pillar-tag-fixed-fg: 280 57% 13%;
+    --pillar-tag-retainer-bg: 280 55% 24%;
+    --pillar-tag-retainer-fg: 50 82% 87%;
+    --pillar-meta-bg: 46 75% 60%;
+    --pillar-meta-fg: 280 57% 13%;
+    --pillar-note-border: 286 42% 40%;
+    --pillar-note-bg: 280 55% 24%;
+    --pillar-divider-from: 280 55% 24%;
+    --pillar-divider-to: 286 42% 40%;
+
+    /* ── Default vows/boxed tokens ── */
+    --vows-bg: 280 57% 13%;
+    --vows-title: 50 82% 87%;
+    --vows-card-border: 46 75% 60%;
+    --vows-card-title: 46 75% 60%;
+    --vows-card-body: 50 82% 87%;
+
+    /* ── Default contact tokens ── */
+    --contact-bg: 0 0% 100%;
+    --contact-title: 280 55% 24%;
+    --contact-body: 280 57% 13%;
+    --contact-label: 280 57% 13%;
+    --contact-input-border: 280 57% 13%;
+    --contact-input-focus: 280 55% 24%;
+    --contact-input-text: 280 57% 13%;
+    --contact-btn-bg: 280 57% 13%;
+    --contact-btn-text: 50 80% 87%;
+    --contact-success-bg: 46 75% 60%;
+    --contact-success-fg: 280 57% 13%;
+    --contact-success-btn-bg: 280 57% 13%;
+    --contact-success-btn-text: 46 75% 60%;
   }
 }
 
@@ -88,118 +133,31 @@
     background: linear-gradient(to right, hsl(var(--violet)), hsl(var(--valentino)));
   }
 
-  /* ═══════════════════════════════════════════
-     SECTION SCOPES — edit each independently
-     ═══════════════════════════════════════════ */
-
   /* ── Navbar ── */
   .scope-navbar {
-    --nav-bg: 280 60% 13%;              /* #2B0E34 */
-    --nav-text: 0 0% 100%;              /* #FFFFFF */
-    --nav-text-muted: 0 0% 100%;        /* white at 80% opacity in component */
-    --nav-dropdown-bg: 280 57% 13%;     /* #2A0E33 */
-    --nav-dropdown-hover: 280 55% 24%;  /* #4D1B5E at 20% opacity */
-    --nav-cta-bg: 286 42% 40%;          /* #7C3A92 */
-    --nav-cta-text: 0 0% 100%;          /* #FFFFFF */
-    --nav-border: 280 55% 24%;          /* #4D1B5E at 20% opacity */
+    --nav-bg: 280 60% 13%;
+    --nav-text: 0 0% 100%;
+    --nav-text-muted: 0 0% 100%;
+    --nav-dropdown-bg: 280 57% 13%;
+    --nav-dropdown-hover: 280 55% 24%;
+    --nav-cta-bg: 286 42% 40%;
+    --nav-cta-text: 0 0% 100%;
+    --nav-border: 280 55% 24%;
   }
 
   /* ── Hero ── */
   .scope-hero {
-    --hero-bg: 280 55% 24%;             /* #4E1C5F */
-    --hero-title: 30 20% 94%;           /* #F4F0EC */
-    --hero-title-accent: 46 75% 60%;    /* #E4C44E */
-    --hero-label: 46 75% 60%;           /* #E5C54F */
-    --hero-body: 50 80% 87%;            /* #F9F0C3 */
-  }
-
-  /* ── Intro strip ── */
-  .scope-intro {
-    --intro-bg: 50 80% 87%;             /* #F9F0C3 */
-    --intro-text: 213 15% 12%;          /* #1A1E23 */
-  }
-
-  /* ── Pillar 01: Internal Communications ── */
-  .pillar-comms {
-    --pillar-label: 286 42% 40%;         /* #7B3A91 pillar number */
-    --pillar-heading: 280 57% 13%;       /* #2A0E33 section title */
-    --pillar-heading-sub: 280 57% 13%;   /* #2A0E33 at 65% opacity */
-    --pillar-section-bg: 0 0% 100%;      /* #FFFFFF section bg */
-    --pillar-primary: 280 55% 24%;       /* #4D1B5E dots, arrows, borders */
-    --pillar-card-bg: 0 0% 100%;         /* #FFFFFF card */
-    --pillar-card-title: 280 57% 13%;    /* #2A0E33 */
-    --pillar-subtitle: 286 42% 40%;      /* #7B3A91 */
-    --pillar-body: 213 15% 12%;          /* #1B1F24 at 75% opacity */
-    --pillar-deliverables-bg: 50 82% 87%;/* #F9F0C1 */
-    --pillar-deliverables-label: 280 55% 24%; /* #4D1B5E at 50% opacity */
-    --pillar-tag-fixed-bg: 46 75% 60%;   /* #E5C54F */
-    --pillar-tag-fixed-fg: 280 57% 13%;  /* #2A0E33 */
-    --pillar-tag-retainer-bg: 280 55% 24%;/* #4D1B5E */
-    --pillar-tag-retainer-fg: 50 82% 87%;/* #F9F0C1 */
-    --pillar-meta-bg: 46 75% 60%;        /* #E5C54F */
-    --pillar-meta-fg: 280 57% 13%;       /* #2A0E33 */
-    --pillar-note-border: 286 42% 40%;   /* #7B3A91 */
-    --pillar-note-bg: 280 55% 24%;       /* #4D1B5E at 6% opacity */
-    --pillar-divider-from: 280 55% 24%;  /* gradient start */
-    --pillar-divider-to: 286 42% 40%;    /* gradient end */
-  }
-
-  /* ── Pillar 02: Employee Experience ── */
-  .pillar-ex {
-    --pillar-label: 286 42% 40%;
-    --pillar-heading: 280 57% 13%;
-    --pillar-heading-sub: 280 57% 13%;
-    --pillar-section-bg: 30 20% 94%;     /* #F4F0EC — different from Pillar 01 */
-    --pillar-primary: 280 55% 24%;
-    --pillar-card-bg: 0 0% 100%;
-    --pillar-card-title: 280 57% 13%;
-    --pillar-subtitle: 286 42% 40%;
-    --pillar-body: 213 15% 12%;
-    --pillar-deliverables-bg: 50 82% 87%;
-    --pillar-deliverables-label: 280 55% 24%;
-    --pillar-tag-fixed-bg: 46 75% 60%;
-    --pillar-tag-fixed-fg: 280 57% 13%;
-    --pillar-tag-retainer-bg: 280 55% 24%;
-    --pillar-tag-retainer-fg: 50 82% 87%;
-    --pillar-meta-bg: 46 75% 60%;
-    --pillar-meta-fg: 280 57% 13%;
-    --pillar-note-border: 286 42% 40%;
-    --pillar-note-bg: 280 55% 24%;
-    --pillar-divider-from: 280 55% 24%;
-    --pillar-divider-to: 286 42% 40%;
-  }
-
-  /* ── Vows section ── */
-  .scope-vows {
-    --vows-bg: 280 57% 13%;             /* #2A0E33 */
-    --vows-title: 50 82% 87%;           /* #F9F0C1 */
-    --vows-card-border: 46 75% 60%;     /* #E5C54F at 25% opacity */
-    --vows-card-title: 46 75% 60%;      /* #E5C54F */
-    --vows-card-body: 50 82% 87%;       /* #F9F0C1 */
-  }
-
-  /* ── Contact section ── */
-  .scope-contact {
-    --contact-bg: 0 0% 100%;            /* #FFFFFF */
-    --contact-title: 280 55% 24%;       /* #4D1B5E */
-    --contact-body: 280 57% 13%;        /* #2A0E33 */
-    --contact-label: 280 57% 13%;       /* at 60% opacity */
-    --contact-input-border: 280 57% 13%;/* at 20% opacity */
-    --contact-input-focus: 280 55% 24%; /* #4D1B5E */
-    --contact-input-text: 280 57% 13%;  /* #2A0E33 */
-    --contact-btn-bg: 280 57% 13%;      /* #2A0E33 */
-    --contact-btn-text: 50 80% 87%;     /* #F9F0C3 */
-    /* Success state */
-    --contact-success-bg: 46 75% 60%;   /* #E5C54F */
-    --contact-success-fg: 280 57% 13%;  /* #2A0E33 */
-    --contact-success-btn-bg: 280 57% 13%;
-    --contact-success-btn-text: 46 75% 60%;
+    --hero-bg: 280 55% 24%;
+    --hero-title: 30 20% 94%;
+    --hero-title-accent: 46 75% 60%;
+    --hero-label: 46 75% 60%;
+    --hero-body: 50 80% 87%;
   }
 
   /* ── Footer ── */
   .scope-footer {
-    --footer-bg: 280 57% 13%;           /* #2A0E33 */
-    --footer-text: 50 82% 87%;          /* #F9F0C1 at 40% opacity */
-    --footer-text-sub: 50 82% 87%;      /* #F9F0C1 at 25% opacity */
+    --footer-bg: 280 57% 13%;
+    --footer-text: 50 82% 87%;
+    --footer-text-sub: 50 82% 87%;
   }
 }
