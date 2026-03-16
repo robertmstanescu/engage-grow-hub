@@ -7,7 +7,9 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 interface Service {
   tag: string;
-  tagType: "fixed" | "retainer";
+  tagType: "fixed" | "retainer" | string;
+  tagBgColor?: string;
+  tagTextColor?: string;
   title: string;
   subtitle: string;
   description: string;

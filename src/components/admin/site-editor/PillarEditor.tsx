@@ -6,6 +6,8 @@ import { Field, TextArea, RichField, ArrayField, SelectField, SectionBox } from 
 interface Service {
   tag: string;
   tagType: string;
+  tagBgColor?: string;
+  tagTextColor?: string;
   title: string;
   subtitle: string;
   description: string;
@@ -125,7 +127,14 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
                     <SelectField
                       label="Tag Type"
                       value={svc.tagType}
-                      onChange={(v) => updateService(i, "tagType", v)}
+                      onChange={(v) => {
+                        updateService(i, "tagType", v);
+                        const matched = tagTypes.find(t => t.value === v);
+                        if (matched) {
+                          updateService(i, "tagBgColor", (matched as any).bgColor || "");
+                          updateService(i, "tagTextColor", (matched as any).textColor || "");
+                        }
+                      }}
                       options={tagTypes}
                     />
                   </div>
