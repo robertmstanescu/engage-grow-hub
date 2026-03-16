@@ -1,12 +1,3 @@
-import { useEditor, EditorContent } from "@tiptap/react";
-import Document from "@tiptap/extension-document";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import History from "@tiptap/extension-history";
-import Dropcursor from "@tiptap/extension-dropcursor";
-import Gapcursor from "@tiptap/extension-gapcursor";
-import { TextStyle } from "@tiptap/extension-text-style";
-import Color from "@tiptap/extension-color";
 import { Palette, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 
@@ -24,83 +15,118 @@ const QUICK_COLORS = [
 ];
 
 const TitleLineEditor = ({ value, onChange }: Props) => {
-  const suppressUpdate = useRef(false);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const selectionRef = useRef<Range | null>(null);
 
-  const editor = useEditor({
-    extensions: [
-      Document,
-      Paragraph,
-      Text,
-      History,
-      Dropcursor,
-      Gapcursor,
-      TextStyle,
-      Color,
-    ],
-    content: value || "",
-    onUpdate: ({ editor }) => {
-      if (!suppressUpdate.current) {
-        onChange(editor.getHTML());
-      }
-    },
-    editorProps: {
-      attributes: {
-        class: "focus:outline-none px-3 py-2 font-display text-sm min-h-[36px]",
-      },
-    },
-  });
+  const emitChange = useCallback(() => {
+    onChange(editorRef.current?.innerHTML || "");
+  }, [onChange]);
 
-  // Sync external value changes
-  useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      suppressUpdate.current = true;
-      editor.commands.setContent(value || "");
-      suppressUpdate.current = false;
+  const saveSelection = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || !editorRef.current) return;
+
+    const range = selection.getRangeAt(0);
+    if (editorRef.current.contains(range.commonAncestorContainer)) {
+      selectionRef.current = range.cloneRange();
     }
-  }, [value, editor]);
+  }, []);
+
+  const restoreSelection = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || !selectionRef.current) return;
+
+    selection.removeAllRanges();
+    selection.addRange(selectionRef.current);
+  }, []);
+
+  const applyColor = useCallback(
+    (color: string) => {
+      editorRef.current?.focus();
+      restoreSelection();
+      document.execCommand("styleWithCSS", false, "true");
+      document.execCommand("foreColor", false, color);
+      saveSelection();
+      emitChange();
+    },
+    [emitChange, restoreSelection, saveSelection]
+  );
 
   const setColor = useCallback(() => {
     const color = window.prompt("Enter color (hex):", "#E5C54F");
-    if (color) editor?.chain().focus().setColor(color).run();
-  }, [editor]);
+    if (color) applyColor(color);
+  }, [applyColor]);
 
-  if (!editor) return null;
+  const resetColor = useCallback(() => {
+    const foreground = getComputedStyle(document.documentElement).getPropertyValue("--foreground").trim();
+    applyColor(foreground ? `hsl(${foreground})` : "#111111");
+  }, [applyColor]);
+
+  useEffect(() => {
+    if (!editorRef.current) return;
+    if (editorRef.current.innerHTML !== (value || "")) {
+      editorRef.current.innerHTML = value || "";
+    }
+  }, [value]);
 
   return (
     <div
       className="rounded-lg border overflow-hidden"
-      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}>
+      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+    >
       <div
         className="flex items-center gap-0.5 px-2 py-1 border-b"
-        style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.2)" }}>
-        {QUICK_COLORS.map((c) => (
+        style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.2)" }}
+      >
+        {QUICK_COLORS.map((color) => (
           <button
-            key={c.value}
+            key={color.value}
             type="button"
-            onClick={() => editor.chain().focus().setColor(c.value).run()}
-            title={c.label}
-            className="w-4 h-4 rounded-full border border-black/10 hover:scale-110 transition-transform"
-            style={{ backgroundColor: c.value }}
+            title={color.label}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => applyColor(color.value)}
+            className="w-4 h-4 rounded-full border hover:scale-110 transition-transform"
+            style={{ backgroundColor: color.value, borderColor: "hsl(var(--border))" }}
           />
         ))}
         <button
           type="button"
-          onClick={setColor}
           title="Custom color"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={setColor}
           className="p-1 rounded hover:opacity-70"
-          style={{ color: "hsl(var(--muted-foreground))" }}>
+          style={{ color: "hsl(var(--muted-foreground))" }}
+        >
           <Palette size={12} />
         </button>
         <button
           type="button"
-          onClick={() => editor.chain().focus().unsetColor().run()}
           title="Reset color"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={resetColor}
           className="p-1 rounded hover:opacity-70"
-          style={{ color: "hsl(var(--muted-foreground))" }}>
+          style={{ color: "hsl(var(--muted-foreground))" }}
+        >
           <RotateCcw size={11} />
         </button>
       </div>
-      <EditorContent editor={editor} />
+
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        role="textbox"
+        aria-multiline="true"
+        className="focus:outline-none px-3 py-2 font-display text-sm min-h-[36px]"
+        style={{ color: "hsl(var(--foreground))" }}
+        onInput={emitChange}
+        onBlur={() => {
+          saveSelection();
+          emitChange();
+        }}
+        onKeyUp={saveSelection}
+        onMouseUp={saveSelection}
+      />
     </div>
   );
 };
