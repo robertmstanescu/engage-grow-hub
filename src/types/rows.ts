@@ -31,7 +31,6 @@ export const DEFAULT_ROWS: PageRow[] = [
     type: "text",
     strip_title: "Intro",
     bg_color: "#F9F0C1",
-    scope: "scope-intro",
     content: {
       title_lines: [],
       subtitle: "",
@@ -44,7 +43,6 @@ export const DEFAULT_ROWS: PageRow[] = [
     type: "service",
     strip_title: "Internal Communications",
     bg_color: "#FFFFFF",
-    scope: "pillar-comms",
     content: {
       pillar_number: "Pillar 01",
       title: "Internal Communications",
@@ -64,7 +62,6 @@ export const DEFAULT_ROWS: PageRow[] = [
     type: "service",
     strip_title: "Employee Experience",
     bg_color: "#F4F0EC",
-    scope: "pillar-ex",
     content: {
       pillar_number: "Pillar 02",
       title: "Employee Experience",
@@ -84,7 +81,6 @@ export const DEFAULT_ROWS: PageRow[] = [
     type: "boxed",
     strip_title: "Vows",
     bg_color: "#2A0E33",
-    scope: "scope-vows",
     content: {
       title_lines: ["<p>Before we shake hands,</p>", "<p>here is what we vow.</p>"],
       subtitle: "",
@@ -101,7 +97,6 @@ export const DEFAULT_ROWS: PageRow[] = [
     type: "contact",
     strip_title: "Contact",
     bg_color: "#FFFFFF",
-    scope: "scope-contact",
     content: {
       title_lines: ["<p>Not sure where to start?</p>", "<p>Lift the lid first.</p>"],
       body: "Book a free 30-minute consultation. We'll identify your biggest vampire moment and tell you honestly whether we're the right fit to bury it.",
