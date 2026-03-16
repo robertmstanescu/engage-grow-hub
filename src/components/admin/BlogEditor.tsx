@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Trash2, Edit, Plus } from "lucide-react";
+import { Trash2, Edit, Plus, Eye, ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
 import RichTextEditor from "./RichTextEditor";
 
 const generateSlug = (title: string) =>
