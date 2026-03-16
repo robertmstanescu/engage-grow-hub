@@ -199,6 +199,22 @@ const SiteEditor = () => {
         )}
       </div>
 
+      {/* Branding (Logo & Favicon) */}
+      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+        <button onClick={() => setOpenSection(openSection === "branding" ? null : "branding")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
+          <span className="font-body text-sm font-medium">Logo & Favicon</span>
+          {openSection === "branding" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {openSection === "branding" && (
+          <div className="px-4 pb-4 space-y-4">
+            <BrandingEditor content={getDraft("branding")} onChange={(f, v) => updateField("branding", f, v)} />
+            <button onClick={() => saveDraft("branding")} disabled={saving === "branding"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+              <Save size={13} /> {saving === "branding" ? "Saving…" : "Save Draft"}
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Social Links */}
       <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
         <button onClick={() => setOpenSection(openSection === "social_links" ? null : "social_links")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
