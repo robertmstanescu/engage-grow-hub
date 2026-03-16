@@ -15,7 +15,7 @@ const vows = [
   },
 ];
 
-const ease = [0.16, 1, 0.3, 1];
+const ease = [0.16, 1, 0.3, 1] as const;
 
 const VowsSection = () => (
   <section id="vows" className="bg-secondary py-20 text-center">
