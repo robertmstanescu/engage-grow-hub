@@ -4,15 +4,22 @@ import { toast } from "sonner";
 import { Plus, Trash2, Tag } from "lucide-react";
 import { Field, SectionBox } from "./site-editor/FieldComponents";
 
+interface ServiceTagType {
+  label: string;
+  value: string;
+  bgColor: string;
+  textColor: string;
+}
+
 interface TagsData {
-  service_tag_types: { label: string; value: string }[];
+  service_tag_types: ServiceTagType[];
   blog_categories: string[];
 }
 
 const DEFAULT_TAGS: TagsData = {
   service_tag_types: [
-    { label: "Fixed project", value: "fixed" },
-    { label: "Monthly retainer", value: "retainer" },
+    { label: "Fixed project", value: "fixed", bgColor: "#4D1B5E", textColor: "#F9F0C1" },
+    { label: "Monthly retainer", value: "retainer", bgColor: "#E5C54F", textColor: "#2A0E33" },
   ],
   blog_categories: [
     "Internal Communications",
