@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Send, Edit, Trash2 } from "lucide-react";
-import RichTextEditor from "./RichTextEditor";
+import { Plus, Send, Edit, Trash2, Eye } from "lucide-react";
+import EmailBlockEditor from "./EmailBlockEditor";
+import { EmailBlock, createBlock, blocksToHtml } from "./email-blocks";
 
 interface Campaign {
   id: string;
@@ -18,9 +19,10 @@ const EmailCampaigns = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [editing, setEditing] = useState<Campaign | null>(null);
   const [isNew, setIsNew] = useState(false);
-  const [form, setForm] = useState({ subject: "", html_content: "" });
+  const [subject, setSubject] = useState("");
+  const [blocks, setBlocks] = useState<EmailBlock[]>([]);
   const [sending, setSending] = useState(false);
-  const [editorMode, setEditorMode] = useState<"visual" | "html">("visual");
+  const [showPreview, setShowPreview] = useState(false);
 
   const fetchCampaigns = async () => {
     const { data } = await supabase
@@ -35,24 +37,40 @@ const EmailCampaigns = () => {
   const handleNew = () => {
     setIsNew(true);
     setEditing(null);
-    setForm({ subject: "", html_content: getDefaultTemplate() });
-    setEditorMode("visual");
+    setSubject("");
+    setBlocks([
+      createBlock("hero"),
+      createBlock("text"),
+      createBlock("button"),
+    ]);
   };
 
   const handleEdit = (campaign: Campaign) => {
     if (campaign.status === "sent") { toast.error("Cannot edit a sent campaign"); return; }
     setIsNew(false);
     setEditing(campaign);
-    setForm({ subject: campaign.subject, html_content: campaign.html_content });
-    setEditorMode("visual");
+    setSubject(campaign.subject);
+    // Try to parse stored blocks, otherwise start fresh
+    try {
+      const parsed = JSON.parse(campaign.html_content);
+      if (Array.isArray(parsed)) {
+        setBlocks(parsed);
+        return;
+      }
+    } catch {}
+    // Fallback: create a text block with existing HTML
+    const textBlock = createBlock("text");
+    textBlock.content = campaign.html_content;
+    setBlocks([textBlock]);
   };
 
   const handleSave = async () => {
-    if (!form.subject.trim()) { toast.error("Subject is required"); return; }
+    if (!subject.trim()) { toast.error("Subject is required"); return; }
 
+    // Store blocks as JSON so we can re-edit them, but also generate HTML
     const payload = {
-      subject: form.subject,
-      html_content: form.html_content,
+      subject,
+      html_content: JSON.stringify(blocks),
       status: "draft" as const,
     };
 
@@ -96,77 +114,52 @@ const EmailCampaigns = () => {
   };
 
   if (isNew || editing) {
+    const previewHtml = blocksToHtml(blocks);
+
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>
             {isNew ? "New Campaign" : "Edit Campaign"}
           </h2>
-          <button onClick={() => { setEditing(null); setIsNew(false); }} className="font-body text-xs text-muted-foreground hover:opacity-70">
-            Cancel
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className="flex items-center gap-1 font-body text-xs uppercase tracking-wider hover:opacity-70 transition-opacity"
+              style={{ color: "hsl(var(--primary))" }}>
+              <Eye size={14} /> {showPreview ? "Editor" : "Preview"}
+            </button>
+            <button onClick={() => { setEditing(null); setIsNew(false); }} className="font-body text-xs text-muted-foreground hover:opacity-70">
+              Cancel
+            </button>
+          </div>
         </div>
 
         <input
           placeholder="Email subject line"
-          value={form.subject}
-          onChange={(e) => setForm({ ...form, subject: e.target.value })}
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
           className="w-full px-4 py-3 rounded-lg font-body text-sm border"
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
         />
 
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Email Content</label>
-            <div className="flex gap-1">
-              <button
-                type="button"
-                onClick={() => setEditorMode("visual")}
-                className="font-body text-[10px] uppercase tracking-wider px-2 py-1 rounded transition-colors"
-                style={{
-                  backgroundColor: editorMode === "visual" ? "hsl(var(--primary) / 0.1)" : "transparent",
-                  color: editorMode === "visual" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                }}>
-                Visual
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditorMode("html")}
-                className="font-body text-[10px] uppercase tracking-wider px-2 py-1 rounded transition-colors"
-                style={{
-                  backgroundColor: editorMode === "html" ? "hsl(var(--primary) / 0.1)" : "transparent",
-                  color: editorMode === "html" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                }}>
-                HTML
-              </button>
+        {showPreview ? (
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">Email Preview</label>
+            <div
+              className="rounded-lg border overflow-auto"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "#F4F0EC", maxHeight: "600px" }}>
+              <iframe
+                srcDoc={previewHtml}
+                className="w-full border-0"
+                style={{ height: "600px" }}
+                title="Email preview"
+              />
             </div>
           </div>
-
-          {editorMode === "visual" ? (
-            <RichTextEditor
-              content={form.html_content}
-              onChange={(html) => setForm({ ...form, html_content: html })}
-            />
-          ) : (
-            <textarea
-              value={form.html_content}
-              onChange={(e) => setForm({ ...form, html_content: e.target.value })}
-              rows={20}
-              className="w-full px-4 py-3 rounded-lg font-mono text-xs border resize-none"
-              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
-            />
-          )}
-        </div>
-
-        {/* Preview */}
-        <div>
-          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Preview</label>
-          <div
-            className="rounded-lg border p-4 overflow-auto max-h-[400px]"
-            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
-            dangerouslySetInnerHTML={{ __html: form.html_content }}
-          />
-        </div>
+        ) : (
+          <EmailBlockEditor blocks={blocks} onChange={setBlocks} />
+        )}
 
         <div className="flex gap-3">
           <button
@@ -246,8 +239,5 @@ const EmailCampaigns = () => {
     </div>
   );
 };
-
-const getDefaultTemplate = () =>
-  `<h1>Your headline here</h1><p>Write your email content here. Keep it concise and valuable.</p><p>— The Magic Coffin</p>`;
 
 export default EmailCampaigns;
