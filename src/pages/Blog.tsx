@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useTagColors } from "@/hooks/useTagColors";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -30,6 +31,7 @@ const formatDate = (dateStr: string) => {
 const Blog = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const { getCategoryColors } = useTagColors();
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -93,14 +95,19 @@ const Blog = () => {
                       border: "1px solid hsl(var(--border) / 0.5)"
                     }}>
                     <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
-                      <span
-                        className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 md:px-2.5 md:py-1 rounded-full font-medium"
-                        style={{
-                          backgroundColor: "hsl(var(--accent) / 0.15)",
-                          color: "hsl(var(--accent-foreground))"
-                        }}>
-                        {post.category}
-                      </span>
+                      {(() => {
+                        const catColors = getCategoryColors(post.category);
+                        return (
+                          <span
+                            className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 md:px-2.5 md:py-1 rounded-full font-medium"
+                            style={{
+                              backgroundColor: `${catColors.bgColor}CC`,
+                              color: catColors.textColor
+                            }}>
+                            {post.category}
+                          </span>
+                        );
+                      })()}
                       {post.published_at && (
                         <span className="font-body text-xs text-muted-foreground">{formatDate(post.published_at)}</span>
                       )}
