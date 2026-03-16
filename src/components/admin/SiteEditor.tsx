@@ -6,7 +6,7 @@ import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import SocialLinksEditor from "./site-editor/SocialLinksEditor";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
-import type { PageRow, DEFAULT_ROWS } from "@/types/rows";
+import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
 
 interface SectionData {
   section_key: string;
