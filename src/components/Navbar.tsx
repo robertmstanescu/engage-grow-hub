@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const subLinks = [
     { label: "Internal Communications", href: "#internal-comms" },
@@ -16,6 +19,27 @@ const Navbar = () => {
     { label: "Our Vows", href: "#vows" },
     { label: "Contact", href: "#contact" },
   ];
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    setIsOpen(false);
+    setServicesOpen(false);
+
+    if (href.startsWith("#")) {
+      const id = href.slice(1);
+      // If we're on the home page, scroll directly
+      if (location.pathname === "/") {
+        setTimeout(() => {
+          const el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: "smooth" });
+        }, 50);
+      } else {
+        navigate("/" + href);
+      }
+    } else {
+      navigate(href);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -35,12 +59,12 @@ const Navbar = () => {
         borderBottom: "1px solid hsl(var(--nav-border) / 0.2)"
       }}>
       <div className="max-w-[900px] mx-auto px-6 flex items-center justify-between h-16">
-        <a href="#" className="flex items-center gap-2">
+        <a href="/" className="flex items-center gap-2">
           <img alt="The Magic Coffin" className="h-8 brightness-200 object-fill border-0 shadow-none rounded-none" src="/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png" />
         </a>
 
-        {/* Desktop */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Desktop — hidden below lg (1024px) */}
+        <div className="hidden lg:flex items-center gap-8">
           <div ref={dropdownRef} className="relative">
             <button
               onClick={() => setServicesOpen(!servicesOpen)}
@@ -65,7 +89,7 @@ const Navbar = () => {
                     <a
                       key={link.label}
                       href={link.href}
-                      onClick={() => setServicesOpen(false)}
+                      onClick={(e) => handleNavClick(e, link.href)}
                       className="block px-4 py-3 font-body text-xs uppercase tracking-[0.12em] transition-colors"
                       style={{ color: "hsl(var(--nav-text-muted) / 0.8)" }}
                       onMouseEnter={(e) => {
@@ -88,13 +112,22 @@ const Navbar = () => {
             <a
               key={link.label}
               href={link.href}
+              onClick={(e) => handleNavClick(e, link.href)}
               className="font-body text-xs uppercase tracking-[0.15em] transition-colors duration-200 font-semibold"
               style={{ color: "hsl(var(--nav-text))" }}>
               {link.label}
             </a>
           ))}
           <a
+            href="/blog"
+            onClick={(e) => { e.preventDefault(); navigate("/blog"); }}
+            className="font-body text-xs uppercase tracking-[0.15em] transition-colors duration-200 font-semibold"
+            style={{ color: "hsl(var(--nav-text))" }}>
+            Blog
+          </a>
+          <a
             href="#contact"
+            onClick={(e) => handleNavClick(e, "#contact")}
             className="font-display text-[10px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
             style={{
               backgroundColor: "hsl(var(--nav-cta-bg))",
@@ -104,13 +137,24 @@ const Navbar = () => {
           </a>
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden"
-          style={{ color: "hsl(var(--nav-text) / 0.7)" }}>
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile/Tablet toggle — visible below lg */}
+        <div className="flex lg:hidden items-center gap-4">
+          <a
+            href="#contact"
+            onClick={(e) => handleNavClick(e, "#contact")}
+            className="font-display text-[10px] uppercase tracking-[0.08em] font-bold px-4 py-2 rounded-full hover:opacity-85 transition-opacity"
+            style={{
+              backgroundColor: "hsl(var(--nav-cta-bg))",
+              color: "hsl(var(--nav-cta-text))"
+            }}>
+            Book a consultation
+          </a>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            style={{ color: "hsl(var(--nav-text) / 0.7)" }}>
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -120,7 +164,7 @@ const Navbar = () => {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden overflow-hidden"
+            className="lg:hidden overflow-hidden"
             style={{ backgroundColor: "hsl(var(--nav-dropdown-bg))" }}>
             <div className="px-6 py-4 flex flex-col gap-4">
               <span className="font-body text-[10px] uppercase tracking-[0.15em]" style={{ color: "hsl(var(--nav-text) / 0.4)" }}>Services</span>
@@ -128,7 +172,7 @@ const Navbar = () => {
                 <a
                   key={link.label}
                   href={link.href}
-                  onClick={() => setIsOpen(false)}
+                  onClick={(e) => handleNavClick(e, link.href)}
                   className="font-body text-xs uppercase tracking-[0.12em] transition-colors pl-3"
                   style={{ color: "hsl(var(--nav-text) / 0.6)" }}>
                   {link.label}
@@ -138,21 +182,18 @@ const Navbar = () => {
                 <a
                   key={link.label}
                   href={link.href}
-                  onClick={() => setIsOpen(false)}
+                  onClick={(e) => handleNavClick(e, link.href)}
                   className="font-body text-xs uppercase tracking-[0.15em] transition-colors"
                   style={{ color: "hsl(var(--nav-text) / 0.6)" }}>
                   {link.label}
                 </a>
               ))}
               <a
-                href="#contact"
-                onClick={() => setIsOpen(false)}
-                className="font-display text-[10px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full text-center hover:opacity-85 transition-opacity"
-                style={{
-                  backgroundColor: "hsl(var(--nav-cta-bg))",
-                  color: "hsl(var(--nav-cta-text))"
-                }}>
-                Book a consultation
+                href="/blog"
+                onClick={(e) => { e.preventDefault(); setIsOpen(false); navigate("/blog"); }}
+                className="font-body text-xs uppercase tracking-[0.15em] transition-colors"
+                style={{ color: "hsl(var(--nav-text) / 0.6)" }}>
+                Blog
               </a>
             </div>
           </motion.div>
