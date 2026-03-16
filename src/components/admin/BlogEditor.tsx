@@ -289,9 +289,9 @@ const BlogEditor = () => {
           onChange={(e) => setForm({ ...form, category: e.target.value })}
           className="w-full px-4 py-3 rounded-lg font-body text-sm border"
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}>
-          <option>Internal Communications</option>
-          <option>Employee Experience</option>
-          <option>General</option>
+          {blogCategories.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
         </select>
 
         <div>
