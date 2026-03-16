@@ -58,20 +58,8 @@ const ServiceCard = ({
         </p>
       </div>
 
-      {/* Deliverables */}
-      <div className="bg-background border-t border-primary/8 px-7 py-4">
-        <span className="font-body text-[10px] tracking-[0.18em] uppercase text-primary/50 block mb-3">
-          {deliverablesLabel}
-        </span>
-        <ul className="space-y-1.5">
-          {deliverables.map((item, i) => (
-            <li key={i} className="font-body text-sm text-foreground/70 leading-snug pl-5 relative">
-              <span className="absolute left-0 text-valentino text-xs">—</span>
-              {item}
-            </li>
-          ))}
-        </ul>
-      </div>
+      {/* Deliverables (collapsible) */}
+      <Deliverables label={deliverablesLabel} items={deliverables} />
 
       {/* Meta */}
       <div className="bg-secondary px-7 py-5 flex justify-between items-center flex-wrap gap-2">
