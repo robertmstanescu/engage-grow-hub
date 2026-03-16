@@ -209,17 +209,34 @@ const TagsManager = () => {
         </p>
         <div className="space-y-2">
           {tags.blog_categories.map((cat, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <Tag size={12} className="text-muted-foreground flex-shrink-0" />
-              <input
-                value={cat}
-                onChange={(e) => updateBlogCategory(i, e.target.value)}
-                className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
-                style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
-              />
-              <button type="button" onClick={() => removeBlogCategory(i)} className="p-1.5 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
-                <Trash2 size={13} />
-              </button>
+            <div key={i} className="space-y-2 p-3 rounded-lg border mb-2" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+              <div className="flex items-center gap-2">
+                <Tag size={12} className="text-muted-foreground flex-shrink-0" />
+                <input
+                  value={cat.label}
+                  onChange={(e) => updateBlogCategory(i, "label", e.target.value)}
+                  className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
+                  style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+                />
+                <button type="button" onClick={() => removeBlogCategory(i)} className="p-1.5 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
+                  <Trash2 size={13} />
+                </button>
+              </div>
+              <div className="flex items-center gap-3 pl-5 flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">BG</label>
+                  <input type="color" value={cat.bgColor || "#4D1B5E"} onChange={(e) => updateBlogCategory(i, "bgColor", e.target.value)} className="w-7 h-7 rounded cursor-pointer border-0 p-0" />
+                  <input type="text" value={cat.bgColor || "#4D1B5E"} onChange={(e) => { const v = e.target.value; if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) updateBlogCategory(i, "bgColor", v); }} placeholder="#HEX" className="w-20 px-2 py-1 rounded font-mono text-xs border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Text</label>
+                  <input type="color" value={cat.textColor || "#F9F0C1"} onChange={(e) => updateBlogCategory(i, "textColor", e.target.value)} className="w-7 h-7 rounded cursor-pointer border-0 p-0" />
+                  <input type="text" value={cat.textColor || "#F9F0C1"} onChange={(e) => { const v = e.target.value; if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) updateBlogCategory(i, "textColor", v); }} placeholder="#HEX" className="w-20 px-2 py-1 rounded font-mono text-xs border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+                </div>
+                <span className="ml-auto font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: `${cat.bgColor || "#4D1B5E"}CC`, color: cat.textColor || "#F9F0C1" }}>
+                  {cat.label}
+                </span>
+              </div>
             </div>
           ))}
         </div>
