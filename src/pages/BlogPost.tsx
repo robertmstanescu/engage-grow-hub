@@ -103,14 +103,19 @@ const BlogPost = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease }}>
               <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-4">
-                <span
-                  className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 md:px-2.5 md:py-1 rounded-full font-medium"
-                  style={{
-                    backgroundColor: "hsl(var(--accent) / 0.2)",
-                    color: "hsl(var(--accent))"
-                  }}>
-                  {article.category}
-                </span>
+                {(() => {
+                  const catColors = getCategoryColors(article.category);
+                  return (
+                    <span
+                      className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 md:px-2.5 md:py-1 rounded-full font-medium"
+                      style={{
+                        backgroundColor: `${catColors.bgColor}CC`,
+                        color: catColors.textColor
+                      }}>
+                      {article.category}
+                    </span>
+                  );
+                })()}
                 <span className="font-body text-xs" style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}>
                   {article.published_at ? formatDate(article.published_at) : ""} · {calculateReadTime(article.content)}
                 </span>
