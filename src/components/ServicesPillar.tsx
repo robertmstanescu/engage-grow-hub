@@ -24,11 +24,10 @@ interface ServicesPillarProps {
   title: string;
   description: string;
   services: Service[];
-  bgClass?: string;
   colorScope?: string;
 }
 
-const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClass = "bg-card", colorScope = "" }: ServicesPillarProps) => {
+const ServicesPillar = ({ id, pillarNumber, title, description, services, colorScope = "" }: ServicesPillarProps) => {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -49,7 +48,12 @@ const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClas
 
   return (
     <section id={id} className={colorScope}>
-      <div className="gradient-divider" />
+      <div
+        className="h-[6px]"
+        style={{
+          background: `linear-gradient(to right, hsl(var(--pillar-divider-from)), hsl(var(--pillar-divider-to)))`
+        }}
+      />
       <div className="mt-[20px]" style={{ backgroundColor: "hsl(var(--pillar-heading) / 0.03)" }}>
         <div className="max-w-[900px] mx-auto px-6 text-center">
           <motion.span
@@ -80,7 +84,7 @@ const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClas
           </motion.p>
         </div>
       </div>
-      <div className={`${bgClass} px-6 pb-16`}>
+      <div className="px-6 pb-16" style={{ backgroundColor: "hsl(var(--pillar-section-bg))" }}>
         <div className="max-w-[900px] mx-auto">
           {/* Dots + Arrows */}
           <div className="flex items-center justify-center gap-4 mb-6">
@@ -139,7 +143,8 @@ const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClas
           </div>
         </div>
       </div>
-    </section>);
+    </section>
+  );
 };
 
 export default ServicesPillar;
