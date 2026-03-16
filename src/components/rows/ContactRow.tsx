@@ -54,7 +54,7 @@ const ContactRow = ({ row }: { row: PageRow }) => {
 
   if (submitted) {
     return (
-      <section className={row.scope || "scope-contact"} style={{ backgroundColor: "hsl(var(--contact-success-bg))" }}>
+      <section style={{ backgroundColor: "hsl(var(--contact-success-bg))" }}>
         <div className="max-w-[520px] mx-auto px-6 py-20 text-center">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, ease }}>
             <h3 className="font-display text-2xl md:text-3xl font-black leading-tight mb-4" style={{ color: "hsl(var(--contact-success-fg))" }}>{successHeading}</h3>
@@ -72,7 +72,7 @@ const ContactRow = ({ row }: { row: PageRow }) => {
   }
 
   return (
-    <section id="contact" className={row.scope || "scope-contact"} style={{ backgroundColor: row.bg_color || "hsl(var(--contact-bg))" }}>
+    <section id="contact" style={{ backgroundColor: row.bg_color || "hsl(var(--contact-bg))" }}>
       <div className="max-w-[520px] mx-auto px-6 py-20">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease }} className="text-center mb-10">
           {titleLines.length > 0 && (

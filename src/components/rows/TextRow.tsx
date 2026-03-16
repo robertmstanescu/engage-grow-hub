@@ -11,9 +11,7 @@ const TextRow = ({ row }: { row: PageRow }) => {
   );
 
   return (
-    <section
-      className={row.scope || ""}
-      style={{ backgroundColor: row.bg_color || "hsl(var(--background))" }}>
+    <section style={{ backgroundColor: row.bg_color || "hsl(var(--background))" }}>
       <div className="max-w-[800px] mx-auto px-6 py-12 text-center">
         {titleLines.length > 0 && (
           <motion.h3

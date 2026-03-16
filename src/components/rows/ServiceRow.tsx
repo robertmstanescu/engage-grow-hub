@@ -25,7 +25,7 @@ const ServiceRow = ({ row }: { row: PageRow }) => {
   };
 
   return (
-    <div className={row.scope || ""} style={{ scrollMarginTop: "4rem" }}>
+    <div style={{ scrollMarginTop: "4rem" }}>
       <div className="gradient-divider" />
       <div className="pt-12 pb-6" style={{ backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
         <div className="max-w-[900px] mx-auto px-6 text-center">
