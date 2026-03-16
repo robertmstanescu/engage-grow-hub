@@ -48,7 +48,7 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
   };
 
   return (
-    <div id={id} className={colorScope || ""}>
+    <div id={id} className={colorScope || ""} style={{ scrollMarginTop: "4rem" }}>
       <div className="gradient-divider" />
       <div
         className="pt-12 pb-6"
