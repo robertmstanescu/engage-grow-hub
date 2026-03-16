@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 const ease = [0.16, 1, 0.3, 1] as const;
 
 const IntroStrip = () =>
-<div className="py-8 px-6 text-center bg-[#e4c44e]">
+<div className="py-8 px-6 text-center bg-[#f9f0c3]">
     <motion.p
     initial={{ opacity: 0, y: 10 }}
     whileInView={{ opacity: 1, y: 0 }}
