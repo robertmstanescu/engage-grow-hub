@@ -101,7 +101,7 @@ const Blog = () => {
                           <span
                             className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 md:px-2.5 md:py-1 rounded-full font-medium"
                             style={{
-                              backgroundColor: `${catColors.bgColor}CC`,
+                              backgroundColor: catColors.bgColor,
                               color: catColors.textColor
                             }}>
                             {post.category}
