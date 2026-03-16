@@ -47,7 +47,7 @@ const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClas
   };
 
   return (
-    <>
+    <section id={id}>
       <div className="gradient-divider" />
       <div className="mt-[20px] bg-destructive-foreground">
         <div className="max-w-[900px] mx-auto px-6 text-center">
