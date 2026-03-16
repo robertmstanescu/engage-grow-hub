@@ -19,6 +19,7 @@ interface Service {
 }
 
 interface ServicesPillarProps {
+  id?: string;
   pillarNumber: string;
   title: string;
   description: string;
@@ -26,7 +27,7 @@ interface ServicesPillarProps {
   bgClass?: string;
 }
 
-const ServicesPillar = ({ pillarNumber, title, description, services, bgClass = "bg-card" }: ServicesPillarProps) => {
+const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClass = "bg-card" }: ServicesPillarProps) => {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -46,7 +47,7 @@ const ServicesPillar = ({ pillarNumber, title, description, services, bgClass = 
   };
 
   return (
-    <>
+    <section id={id}>
       <div className="gradient-divider" />
       <div className="mt-[20px] bg-destructive-foreground">
         <div className="max-w-[900px] mx-auto px-6 text-center">
@@ -94,7 +95,7 @@ const ServicesPillar = ({ pillarNumber, title, description, services, bgClass = 
               <button
                 key={i}
                 onClick={() => {setDirection(i > current ? 1 : -1);setCurrent(i);}}
-                className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-primary scale-125" : "bg-primary/25"}`}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${i === current ? "bg-primary scale-125" : "bg-primary/40 border border-primary/30"}`}
                 aria-label={`Go to service ${i + 1}`} />
 
               )}
@@ -126,7 +127,7 @@ const ServicesPillar = ({ pillarNumber, title, description, services, bgClass = 
           </div>
         </div>
       </div>
-    </>);
+    </section>);
 
 };
 

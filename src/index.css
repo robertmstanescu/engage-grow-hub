@@ -6,54 +6,54 @@
 
 @layer base {
   :root {
-    /* Brand: The Magic Coffin */
-    --background: #F4F0EC; /* Isabelline */
-    --foreground: #1B1F24; /* Stygian */
+    /* Brand: The Magic Coffin — HEX references in comments */
+    --background: 30 20% 94%;        /* #F4F0EC Isabelline */
+    --foreground: 213 15% 12%;       /* #1B1F24 Stygian */
 
-    --card: #FFFFFF; /* White */
-    --card-foreground: #1B1F24;
+    --card: 0 0% 100%;               /* #FFFFFF */
+    --card-foreground: 213 15% 12%;  /* #1B1F24 */
 
-    --popover: #FFFFFF;
-    --popover-foreground: #1B1F24;
+    --popover: 0 0% 100%;            /* #FFFFFF */
+    --popover-foreground: 213 15% 12%;
 
-    --primary: #4D1B5E; /* Authentic Violet */
-    --primary-foreground: #F9F0C1; /* Intense Cream */
+    --primary: 280 55% 24%;          /* #4D1B5E Authentic Violet */
+    --primary-foreground: 50 82% 87%; /* #F9F0C1 Intense Cream */
 
-    --secondary: #2A0E33; /* Revolver */
-    --secondary-foreground: #F9F0C1;
+    --secondary: 280 57% 13%;        /* #2A0E33 Revolver */
+    --secondary-foreground: 50 82% 87%;
 
-    --muted: #E8E5E0; /* White Marble */
-    --muted-foreground: #61666B;
+    --muted: 30 8% 89%;              /* #E8E5E0 White Marble */
+    --muted-foreground: 213 5% 40%;  /* #61666B */
 
-    --accent: #E5C54F; /* Eliza */
-    --accent-foreground: #2A0E33;
+    --accent: 46 75% 60%;            /* #E5C54F Eliza */
+    --accent-foreground: 280 57% 13%;
 
-    --destructive: #EF4444;
-    --destructive-foreground: #FFFFFF;
+    --destructive: 0 84% 60%;        /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: #D9C5E0;
-    --input: #D9C5E0;
-    --ring: #4D1B5E;
+    --border: 280 30% 83%;           /* #D9C5E0 */
+    --input: 280 30% 83%;
+    --ring: 280 55% 24%;
 
     --radius: 0.75rem;
 
     /* Extended brand tokens */
-    --valentino: #7B3A91;
-    --eliza: #E5C54F;
-    --gold-crush: #EAD06E;
-    --revolver: #2A0E33;
-    --violet: #4D1B5E;
-    --plum: #43143B;
-    --isabelline: #F4F0EC;
+    --valentino: 286 42% 40%;        /* #7B3A91 */
+    --eliza: 46 75% 60%;             /* #E5C54F */
+    --gold-crush: 46 73% 67%;        /* #EAD06E */
+    --revolver: 280 57% 13%;         /* #2A0E33 */
+    --violet: 280 55% 24%;           /* #4D1B5E */
+    --plum: 310 52% 17%;             /* #43143B */
+    --isabelline: 30 20% 94%;        /* #F4F0EC */
 
-    --sidebar-background: #FAFAFA;
-    --sidebar-foreground: #3F3F46;
-    --sidebar-primary: #18181B;
-    --sidebar-primary-foreground: #FAFAFA;
-    --sidebar-accent: #F4F4F5;
-    --sidebar-accent-foreground: #18181B;
-    --sidebar-border: #E4E4E7;
-    --sidebar-ring: #3B82F6;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 4% 26%;
+    --sidebar-primary: 240 6% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 6% 10%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
@@ -92,5 +92,8 @@
   .gradient-divider {
     height: 6px;
     background: linear-gradient(to right, hsl(var(--violet)), hsl(var(--valentino)));
+  }
+  html {
+    scroll-behavior: smooth;
   }
 }
