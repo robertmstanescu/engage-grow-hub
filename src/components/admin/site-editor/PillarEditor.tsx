@@ -6,6 +6,8 @@ import { Field, TextArea, RichField, ArrayField, SelectField, SectionBox } from 
 interface Service {
   tag: string;
   tagType: string;
+  tagBgColor?: string;
+  tagTextColor?: string;
   title: string;
   subtitle: string;
   description: string;
