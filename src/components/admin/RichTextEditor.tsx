@@ -25,10 +25,6 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import FontFamily from "@tiptap/extension-font-family";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   List, ListOrdered, Quote,
