@@ -31,6 +31,7 @@ const formatDate = (dateStr: string) => {
 const Blog = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const { getCategoryColors } = useTagColors();
 
   useEffect(() => {
     const fetchPosts = async () => {
