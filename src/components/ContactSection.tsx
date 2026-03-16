@@ -53,7 +53,7 @@ const ContactSection = () => {
   }
 
   return (
-    <section id="contact" className="py-20 bg-destructive-foreground">
+    <section id="contact" className="py-20 bg-white">
       <div className="max-w-[520px] mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -67,7 +67,7 @@ const ContactSection = () => {
             <br />
             Lift the lid first.
           </h3>
-          <p className="font-body-heading text-base text-accent-foreground/70">
+          <p className="font-body-heading text-base text-secondary">
             Book a free 30-minute consultation. We'll identify your biggest vampire moment
             and tell you honestly whether we're the right fit to bury it.
           </p>
@@ -114,7 +114,7 @@ const ContactSection = () => {
           <div className="pt-4 text-center">
             <button
               type="submit"
-              className="font-display text-[11px] uppercase tracking-[0.08em] font-bold bg-secondary text-accent px-8 py-3.5 rounded-full hover:opacity-85 transition-opacity">
+              className="font-display text-[11px] uppercase tracking-[0.08em] font-bold bg-secondary px-8 py-3.5 rounded-full hover:opacity-85 transition-opacity text-[#f9f0c3]">
               
               Request a discovery call
             </button>

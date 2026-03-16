@@ -95,10 +95,10 @@ const ServiceCard = ({
 
       {/* Meta */}
       <div className="px-7 py-5 flex justify-between items-center flex-wrap gap-2 text-[#4e1c5f] bg-[#e4c44e]">
-        <a href="#contact" className="font-display text-xs font-bold tracking-wide hover:opacity-80 transition-opacity text-[#4e1c5e]">
+        <a href="#contact" className="font-display text-xs font-bold tracking-wide hover:opacity-80 transition-opacity text-secondary">
           {price} →
         </a>
-        <span className="font-body text-xs text-primary-foreground/50 tracking-wide">
+        <span className="font-body text-xs tracking-wide text-secondary">
           {time}
         </span>
       </div>
