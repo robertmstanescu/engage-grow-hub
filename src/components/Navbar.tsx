@@ -11,7 +11,7 @@ const Navbar = () => {
   const location = useLocation();
 
   const subLinks = [
-    { label: "Internal Communications", href: "#internal-comms" },
+    { label: "Internal Communications", href: "#internal-communications" },
     { label: "Employee Experience", href: "#employee-experience" },
   ];
 
