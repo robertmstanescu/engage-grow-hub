@@ -28,9 +28,9 @@ const DEFAULT_TAGS: TagsData = {
     { label: "Monthly retainer", value: "retainer", bgColor: "#E5C54F", textColor: "#2A0E33" },
   ],
   blog_categories: [
-    "Internal Communications",
-    "Employee Experience",
-    "General",
+    { label: "Internal Communications", bgColor: "#4D1B5E", textColor: "#F9F0C1" },
+    { label: "Employee Experience", bgColor: "#E5C54F", textColor: "#2A0E33" },
+    { label: "General", bgColor: "#7B3A91", textColor: "#FFFFFF" },
   ],
 };
 
