@@ -169,6 +169,7 @@ const Index = () => {
           bgClass="bg-card"
         />
         <ServicesPillar
+          id="employee-experience"
           pillarNumber="Pillar 02"
           title="Employee Experience"
           description="The modern workplace is haunted by zombie journeys — onboarding processes that disappear after week one, surveys nobody acts on, and employees who feel invisible by month three."
