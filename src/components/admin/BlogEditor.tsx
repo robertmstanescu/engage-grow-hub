@@ -31,6 +31,7 @@ const BlogEditor = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [isNew, setIsNew] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft" });
 
   const fetchPosts = async () => {
