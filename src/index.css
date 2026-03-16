@@ -96,4 +96,42 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* ── Pillar 01: Internal Communications ── */
+  .pillar-comms {
+    --pillar-label: 286 42% 40%;         /* #7B3A91 pillar number */
+    --pillar-heading: 280 57% 13%;       /* #2A0E33 section title */
+    --pillar-heading-sub: 280 57% 13%;   /* #2A0E33 section description (with opacity) */
+    --pillar-primary: 280 55% 24%;       /* #4D1B5E dots, arrows, borders */
+    --pillar-card-title: 280 57% 13%;    /* #2A0E33 card title */
+    --pillar-subtitle: 286 42% 40%;      /* #7B3A91 card subtitle */
+    --pillar-tag-fixed-bg: 46 75% 60%;   /* #E5C54F fixed tag background */
+    --pillar-tag-fixed-fg: 280 57% 13%;  /* #2A0E33 fixed tag text */
+    --pillar-tag-retainer-bg: 280 55% 24%; /* #4D1B5E retainer tag bg */
+    --pillar-tag-retainer-fg: 50 82% 87%; /* #F9F0C1 retainer tag text */
+    --pillar-meta-bg: 46 75% 60%;        /* #E5C54F meta bar */
+    --pillar-meta-fg: 280 57% 13%;       /* #2A0E33 meta bar text */
+    --pillar-note-border: 286 42% 40%;   /* #7B3A91 note accent */
+    --pillar-card-bg: 0 0% 100%;         /* #FFFFFF card background */
+    --pillar-deliverables-bg: 50 82% 87%; /* #F9F0C1 deliverables bg */
+  }
+
+  /* ── Pillar 02: Employee Experience ── */
+  .pillar-ex {
+    --pillar-label: 286 42% 40%;         /* #7B3A91 pillar number */
+    --pillar-heading: 280 57% 13%;       /* #2A0E33 section title */
+    --pillar-heading-sub: 280 57% 13%;   /* #2A0E33 section description */
+    --pillar-primary: 280 55% 24%;       /* #4D1B5E dots, arrows, borders */
+    --pillar-card-title: 280 57% 13%;    /* #2A0E33 card title */
+    --pillar-subtitle: 286 42% 40%;      /* #7B3A91 card subtitle */
+    --pillar-tag-fixed-bg: 46 75% 60%;   /* #E5C54F fixed tag background */
+    --pillar-tag-fixed-fg: 280 57% 13%;  /* #2A0E33 fixed tag text */
+    --pillar-tag-retainer-bg: 280 55% 24%; /* #4D1B5E retainer tag bg */
+    --pillar-tag-retainer-fg: 50 82% 87%; /* #F9F0C1 retainer tag text */
+    --pillar-meta-bg: 46 75% 60%;        /* #E5C54F meta bar */
+    --pillar-meta-fg: 280 57% 13%;       /* #2A0E33 meta bar text */
+    --pillar-note-border: 286 42% 40%;   /* #7B3A91 note accent */
+    --pillar-card-bg: 0 0% 100%;         /* #FFFFFF card background */
+    --pillar-deliverables-bg: 50 82% 87%; /* #F9F0C1 deliverables bg */
+  }
 }
