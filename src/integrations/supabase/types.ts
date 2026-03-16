@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           category: string
           content: string
+          cover_image: string | null
           created_at: string
           excerpt: string | null
           id: string
@@ -30,6 +31,7 @@ export type Database = {
         Insert: {
           category?: string
           content?: string
+          cover_image?: string | null
           created_at?: string
           excerpt?: string | null
           id?: string
@@ -42,6 +44,7 @@ export type Database = {
         Update: {
           category?: string
           content?: string
+          cover_image?: string | null
           created_at?: string
           excerpt?: string | null
           id?: string
@@ -112,6 +115,27 @@ export type Database = {
           sent_at?: string | null
           status?: string
           subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_content: {
+        Row: {
+          content: Json
+          id: string
+          section_key: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          id?: string
+          section_key: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          id?: string
+          section_key?: string
           updated_at?: string
         }
         Relationships: []
