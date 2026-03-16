@@ -72,7 +72,7 @@ const BlogPost = () => {
     );
   }
 
-  const paragraphs = article.content.split(/\n\n+/).filter(p => p.trim());
+  
 
   return (
     <div className="min-h-screen mt-[20px]">
