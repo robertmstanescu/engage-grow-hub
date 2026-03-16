@@ -5,6 +5,7 @@ import ServicesPillar from "@/components/ServicesPillar";
 import VowsSection from "@/components/VowsSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 const internalCommsServices = [
 {
@@ -152,8 +153,25 @@ const employeeExperienceServices = [
   time: "Minimum 3-month commitment · ~10–14 hrs/mo"
 }];
 
+interface PillarContent {
+  pillar_number: string;
+  title: string;
+  description: string;
+}
 
 const Index = () => {
+  const commsContent = useSiteContent<PillarContent>("pillar_comms", {
+    pillar_number: "Pillar 01",
+    title: "Internal Communications",
+    description: "Most internal comms is noise dressed up as signal. We help you cut through it — designing communication systems that actually reach people, move them, and mean something.",
+  });
+
+  const exContent = useSiteContent<PillarContent>("pillar_ex", {
+    pillar_number: "Pillar 02",
+    title: "Employee Experience",
+    description: "The modern workplace is haunted by zombie journeys — onboarding processes that disappear after week one, surveys nobody acts on, and employees who feel invisible by month three.",
+  });
+
   return (
     <div className="min-h-screen mt-[20px]">
       <Navbar />
@@ -163,17 +181,17 @@ const Index = () => {
         <ServicesPillar
           id="internal-comms"
           colorScope="pillar-comms"
-          pillarNumber="Pillar 01"
-          title="Internal Communications"
-          description="Most internal comms is noise dressed up as signal. We help you cut through it — designing communication systems that actually reach people, move them, and mean something."
+          pillarNumber={commsContent.pillar_number}
+          title={commsContent.title}
+          description={commsContent.description}
           services={internalCommsServices} />
         
         <ServicesPillar
           id="employee-experience"
           colorScope="pillar-ex"
-          pillarNumber="Pillar 02"
-          title="Employee Experience"
-          description="The modern workplace is haunted by zombie journeys — onboarding processes that disappear after week one, surveys nobody acts on, and employees who feel invisible by month three."
+          pillarNumber={exContent.pillar_number}
+          title={exContent.title}
+          description={exContent.description}
           services={employeeExperienceServices} />
         
       </div>

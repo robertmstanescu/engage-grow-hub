@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Trash2, Edit, Plus, Eye, ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
+import { Trash2, Edit, Plus, Eye, ArrowLeft, Upload } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 
 const generateSlug = (title: string) =>
@@ -25,6 +24,7 @@ interface BlogPost {
   status: string;
   published_at: string | null;
   created_at: string;
+  cover_image: string | null;
 }
 
 const BlogEditor = () => {
@@ -32,14 +32,15 @@ const BlogEditor = () => {
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [previewing, setPreviewing] = useState(false);
-  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft" });
+  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "" });
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const fetchPosts = async () => {
     const { data } = await supabase
       .from("blog_posts")
       .select("*")
       .order("created_at", { ascending: false });
-    if (data) setPosts(data);
+    if (data) setPosts(data as BlogPost[]);
   };
 
   useEffect(() => { fetchPosts(); }, []);
@@ -47,7 +48,7 @@ const BlogEditor = () => {
   const handleNew = () => {
     setIsNew(true);
     setEditing(null);
-    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft" });
+    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "" });
   };
 
   const handleEdit = (post: BlogPost) => {
@@ -59,8 +60,23 @@ const BlogEditor = () => {
       content: post.content,
       category: post.category,
       status: post.status,
+      cover_image: post.cover_image || "",
     });
   };
+
+  const handleCoverUpload = useCallback(async (file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Max 5MB"); return; }
+
+    const ext = file.name.split(".").pop();
+    const path = `covers/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("editor-images").upload(path, file);
+    if (error) { toast.error("Upload failed"); return; }
+
+    const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
+    setForm((f) => ({ ...f, cover_image: publicUrl }));
+    toast.success("Cover image uploaded");
+  }, []);
 
   const handleSave = async (status: string) => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
@@ -73,6 +89,7 @@ const BlogEditor = () => {
       content: form.content,
       category: form.category,
       status,
+      cover_image: form.cover_image || null,
       published_at: status === "published" ? new Date().toISOString() : null,
     };
 
@@ -129,9 +146,14 @@ const BlogEditor = () => {
           </div>
         </div>
 
-        {/* Simulated blog post preview */}
         <div className="rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
-          <header className="pt-10 pb-8 px-6" style={{ backgroundColor: "hsl(var(--primary))" }}>
+          {form.cover_image && (
+            <div className="relative h-48 md:h-64 overflow-hidden">
+              <img src={form.cover_image} alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 40%, hsl(var(--primary)))" }} />
+            </div>
+          )}
+          <header className={`${form.cover_image ? "pt-4" : "pt-10"} pb-8 px-6`} style={{ backgroundColor: "hsl(var(--primary))" }}>
             <div className="max-w-[600px] mx-auto">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span
@@ -186,6 +208,49 @@ const BlogEditor = () => {
               Cancel
             </button>
           </div>
+        </div>
+
+        {/* Cover image */}
+        <div>
+          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">Cover Image</label>
+          {form.cover_image ? (
+            <div className="relative rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
+              <img src={form.cover_image} alt="" className="w-full h-40 object-cover" />
+              <div className="absolute bottom-2 right-2 flex gap-1.5">
+                <button
+                  onClick={() => coverInputRef.current?.click()}
+                  className="font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full backdrop-blur-sm hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: "hsl(var(--card) / 0.9)", color: "hsl(var(--foreground))" }}>
+                  Replace
+                </button>
+                <button
+                  onClick={() => setForm({ ...form, cover_image: "" })}
+                  className="font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full backdrop-blur-sm hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: "hsl(var(--destructive) / 0.9)", color: "hsl(var(--destructive-foreground))" }}>
+                  Remove
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => coverInputRef.current?.click()}
+              className="w-full py-8 rounded-lg border-2 border-dashed flex flex-col items-center gap-2 hover:opacity-70 transition-opacity"
+              style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
+              <Upload size={20} />
+              <span className="font-body text-xs">Upload cover image</span>
+            </button>
+          )}
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleCoverUpload(file);
+              e.target.value = "";
+            }}
+          />
         </div>
 
         <input
@@ -264,19 +329,24 @@ const BlogEditor = () => {
               key={post.id}
               className="flex items-center justify-between p-4 rounded-lg border"
               style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border) / 0.5)" }}>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span
-                    className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full"
-                    style={{
-                      backgroundColor: post.status === "published" ? "hsl(var(--accent) / 0.15)" : "hsl(var(--muted))",
-                      color: post.status === "published" ? "hsl(var(--accent-foreground))" : "hsl(var(--muted-foreground))",
-                    }}>
-                    {post.status}
-                  </span>
-                  <span className="font-body text-[10px] text-muted-foreground">{post.category}</span>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {post.cover_image && (
+                  <img src={post.cover_image} alt="" className="w-12 h-12 rounded object-cover flex-shrink-0" />
+                )}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full"
+                      style={{
+                        backgroundColor: post.status === "published" ? "hsl(var(--accent) / 0.15)" : "hsl(var(--muted))",
+                        color: post.status === "published" ? "hsl(var(--accent-foreground))" : "hsl(var(--muted-foreground))",
+                      }}>
+                      {post.status}
+                    </span>
+                    <span className="font-body text-[10px] text-muted-foreground">{post.category}</span>
+                  </div>
+                  <p className="font-body text-sm font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>{post.title}</p>
                 </div>
-                <p className="font-body text-sm font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>{post.title}</p>
               </div>
               <div className="flex items-center gap-2 ml-4">
                 <button onClick={() => handleEdit(post)} className="p-2 hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>

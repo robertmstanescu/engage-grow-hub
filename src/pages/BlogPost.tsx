@@ -14,6 +14,7 @@ interface BlogArticle {
   published_at: string | null;
   content: string;
   category: string;
+  cover_image: string | null;
 }
 
 const calculateReadTime = (content: string) => {
@@ -37,11 +38,11 @@ const BlogPost = () => {
       if (!slug) { setLoading(false); return; }
       const { data } = await supabase
         .from("blog_posts")
-        .select("slug, title, published_at, content, category")
+        .select("slug, title, published_at, content, category, cover_image")
         .eq("slug", slug)
         .eq("status", "published")
         .maybeSingle();
-      setArticle(data);
+      setArticle(data as BlogArticle | null);
       setLoading(false);
     };
     fetchArticle();
@@ -72,14 +73,20 @@ const BlogPost = () => {
     );
   }
 
-  
-
   return (
     <div className="min-h-screen mt-[20px]">
       <Navbar />
       <article>
+        {/* Cover image with gradient fade */}
+        {article.cover_image && (
+          <div className="relative h-64 md:h-80 lg:h-96 overflow-hidden">
+            <img src={article.cover_image} alt="" className="w-full h-full object-cover" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 30%, hsl(var(--primary)))" }} />
+          </div>
+        )}
+
         <header
-          className="pt-32 pb-12 px-6"
+          className={`${article.cover_image ? "pt-6" : "pt-32"} pb-12 px-6`}
           style={{ backgroundColor: "hsl(var(--primary))" }}>
           <div className="max-w-[700px] mx-auto">
             <Link
