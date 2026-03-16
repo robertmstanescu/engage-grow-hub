@@ -11,9 +11,15 @@ interface ServiceTagType {
   textColor: string;
 }
 
+interface BlogCategory {
+  label: string;
+  bgColor: string;
+  textColor: string;
+}
+
 interface TagsData {
   service_tag_types: ServiceTagType[];
-  blog_categories: string[];
+  blog_categories: BlogCategory[];
 }
 
 const DEFAULT_TAGS: TagsData = {
