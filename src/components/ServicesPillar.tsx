@@ -95,7 +95,7 @@ const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClas
               <button
                 key={i}
                 onClick={() => {setDirection(i > current ? 1 : -1);setCurrent(i);}}
-                className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-primary scale-125" : "bg-primary/25"}`}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${i === current ? "bg-primary scale-125" : "bg-primary/40 border border-primary/30"}`}
                 aria-label={`Go to service ${i + 1}`} />
 
               )}
