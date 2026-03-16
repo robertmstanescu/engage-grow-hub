@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -8,38 +10,17 @@ const ease = [0.16, 1, 0.3, 1] as const;
 interface BlogPost {
   slug: string;
   title: string;
-  excerpt: string;
-  date: string;
-  readTime: string;
+  excerpt: string | null;
+  published_at: string | null;
+  content: string;
   category: string;
 }
 
-const posts: BlogPost[] = [
-  {
-    slug: "why-internal-comms-fails",
-    title: "Why Your Internal Comms Strategy Is Failing (And What to Do About It)",
-    excerpt: "Most internal communications strategies are built on assumptions. They assume employees read emails. They assume town halls inspire. They assume the intranet is alive. Here's why those assumptions are costing you.",
-    date: "2026-03-10",
-    readTime: "6 min read",
-    category: "Internal Communications",
-  },
-  {
-    slug: "onboarding-first-90-days",
-    title: "The First 90 Days: Why Onboarding Is Your Most Expensive Blind Spot",
-    excerpt: "Bad onboarding doesn't just frustrate new hires — it costs you between 50% and 200% of their annual salary when they leave. Here's how to design an onboarding experience that actually retains talent.",
-    date: "2026-03-03",
-    readTime: "8 min read",
-    category: "Employee Experience",
-  },
-  {
-    slug: "engagement-surveys-done-right",
-    title: "Stop Running Engagement Surveys You Never Act On",
-    excerpt: "The survey isn't the problem. The problem is what happens after. Most organisations collect engagement data, look at a number, and move on. Here's how to turn survey results into real change.",
-    date: "2026-02-24",
-    readTime: "5 min read",
-    category: "Employee Experience",
-  },
-];
+const calculateReadTime = (content: string) => {
+  const words = content.trim().split(/\s+/).length;
+  const minutes = Math.max(1, Math.ceil(words / 200));
+  return `${minutes} min read`;
+};
 
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
@@ -47,6 +28,22 @@ const formatDate = (dateStr: string) => {
 };
 
 const Blog = () => {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const { data } = await supabase
+        .from("blog_posts")
+        .select("slug, title, excerpt, published_at, content, category")
+        .eq("status", "published")
+        .order("published_at", { ascending: false });
+      if (data) setPosts(data);
+      setLoading(false);
+    };
+    fetchPosts();
+  }, []);
+
   return (
     <div className="min-h-screen mt-[20px]">
       <Navbar />
@@ -75,45 +72,55 @@ const Blog = () => {
 
       <section className="py-16 px-6" style={{ backgroundColor: "hsl(var(--background))" }}>
         <div className="max-w-[800px] mx-auto">
-          <div className="space-y-8">
-            {posts.map((post, i) => (
-              <motion.article
-                key={post.slug}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1, ease }}>
-                <Link
-                  to={`/blog/${post.slug}`}
-                  className="block rounded-lg p-6 md:p-8 transition-all duration-200 hover:shadow-lg group"
-                  style={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border) / 0.5)"
-                  }}>
-                  <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
-                    <span
-                      className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 md:px-2.5 md:py-1 rounded-full font-medium"
-                      style={{
-                        backgroundColor: "hsl(var(--accent) / 0.15)",
-                        color: "hsl(var(--accent-foreground))"
-                      }}>
-                      {post.category}
-                    </span>
-                    <span className="font-body text-xs text-muted-foreground">{formatDate(post.date)}</span>
-                    <span className="font-body text-xs text-muted-foreground">· {post.readTime}</span>
-                  </div>
-                  <h2
-                    className="font-display text-lg md:text-xl font-bold leading-tight mb-2 group-hover:opacity-80 transition-opacity"
-                    style={{ color: "hsl(var(--secondary))" }}>
-                    {post.title}
-                  </h2>
-                  <p className="font-body text-sm text-foreground/70 leading-relaxed">
-                    {post.excerpt}
-                  </p>
-                </Link>
-              </motion.article>
-            ))}
-          </div>
+          {loading ? (
+            <p className="font-body text-sm text-muted-foreground text-center py-12">Loading articles...</p>
+          ) : posts.length === 0 ? (
+            <p className="font-body text-sm text-muted-foreground text-center py-12">No articles published yet. Check back soon!</p>
+          ) : (
+            <div className="space-y-8">
+              {posts.map((post, i) => (
+                <motion.article
+                  key={post.slug}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1, ease }}>
+                  <Link
+                    to={`/blog/${post.slug}`}
+                    className="block rounded-lg p-6 md:p-8 transition-all duration-200 hover:shadow-lg group"
+                    style={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border) / 0.5)"
+                    }}>
+                    <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
+                      <span
+                        className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 md:px-2.5 md:py-1 rounded-full font-medium"
+                        style={{
+                          backgroundColor: "hsl(var(--accent) / 0.15)",
+                          color: "hsl(var(--accent-foreground))"
+                        }}>
+                        {post.category}
+                      </span>
+                      {post.published_at && (
+                        <span className="font-body text-xs text-muted-foreground">{formatDate(post.published_at)}</span>
+                      )}
+                      <span className="font-body text-xs text-muted-foreground">· {calculateReadTime(post.content)}</span>
+                    </div>
+                    <h2
+                      className="font-display text-lg md:text-xl font-bold leading-tight mb-2 group-hover:opacity-80 transition-opacity"
+                      style={{ color: "hsl(var(--secondary))" }}>
+                      {post.title}
+                    </h2>
+                    {post.excerpt && (
+                      <p className="font-body text-sm text-foreground/70 leading-relaxed">
+                        {post.excerpt}
+                      </p>
+                    )}
+                  </Link>
+                </motion.article>
+              ))}
+            </div>
+          )}
         </div>
       </section>
       <Footer />
