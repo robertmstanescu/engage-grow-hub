@@ -2,10 +2,24 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
+interface ContactContent {
+  title_line1: string;
+  title_line2: string;
+  body: string;
+}
+
+const fallback: ContactContent = {
+  title_line1: "Not sure where to start?",
+  title_line2: "Lift the lid first.",
+  body: "Book a free 30-minute consultation. We'll identify your biggest vampire moment and tell you honestly whether we're the right fit to bury it.",
+};
+
 const ContactSection = () => {
+  const c = useSiteContent<ContactContent>("contact", fallback);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20,7 +34,6 @@ const ContactSection = () => {
     e.preventDefault();
     setSubmitting(true);
 
-    // Save to database
     const { error } = await supabase.from("contacts").insert({
       name: formData.name,
       email: formData.email,
@@ -94,15 +107,14 @@ const ContactSection = () => {
           <h3
             className="font-display text-2xl md:text-3xl font-black leading-tight mb-4"
             style={{ color: "hsl(var(--contact-title))" }}>
-            Not sure where to start?
+            {c.title_line1}
             <br />
-            Lift the lid first.
+            {c.title_line2}
           </h3>
           <p
             className="font-body-heading text-base"
             style={{ color: "hsl(var(--contact-body))" }}>
-            Book a free 30-minute consultation. We'll identify your biggest vampire moment
-            and tell you honestly whether we're the right fit to bury it.
+            {c.body}
           </p>
         </motion.div>
 
