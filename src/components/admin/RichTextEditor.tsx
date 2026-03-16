@@ -8,14 +8,49 @@ import Color from "@tiptap/extension-color";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
+import FontFamily from "@tiptap/extension-font-family";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
-  List, ListOrdered, Quote, Heading1, Heading2, Heading3,
+  List, ListOrdered, Quote,
   Link as LinkIcon, Image as ImageIcon, AlignLeft, AlignCenter,
   AlignRight, Palette, Highlighter, Undo, Redo, Type,
 } from "lucide-react";
+
+const FONT_OPTIONS = [
+  { label: "Inter", value: "Inter, sans-serif" },
+  { label: "Unbounded", value: "Unbounded, sans-serif" },
+  { label: "Architects Daughter", value: "'Architects Daughter', cursive" },
+  { label: "Bricolage Grotesque", value: "'Bricolage Grotesque', sans-serif" },
+];
+
+const SIZE_OPTIONS = [
+  { label: "XS", value: "11px" },
+  { label: "S", value: "13px" },
+  { label: "M", value: "15px" },
+  { label: "L", value: "18px" },
+  { label: "XL", value: "22px" },
+  { label: "2XL", value: "28px" },
+  { label: "3XL", value: "36px" },
+];
+
+/* Custom fontSize extension using TextStyle */
+const FontSize = TextStyle.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      fontSize: {
+        default: null,
+        parseHTML: (element) => element.style.fontSize || null,
+        renderHTML: (attributes) => {
+          if (!attributes.fontSize) return {};
+          return { style: `font-size: ${attributes.fontSize}` };
+        },
+      },
+    };
+  },
+});
 
 interface RichTextEditorProps {
   content: string;
@@ -28,18 +63,17 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
-      }),
+      StarterKit.configure({ heading: false }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" },
       }),
       Image.configure({ inline: false, allowBase64: false }),
-      TextStyle,
+      FontSize,
+      FontFamily,
       Color,
       Underline,
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      TextAlign.configure({ types: ["paragraph"] }),
       Highlight.configure({ multicolor: true }),
     ],
     content,
@@ -100,6 +134,9 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
 
   if (!editor) return null;
 
+  const currentFont = editor.getAttributes("textStyle").fontFamily || "";
+  const currentSize = editor.getAttributes("textStyle").fontSize || "";
+
   const ToolbarButton = ({
     onClick,
     isActive = false,
@@ -128,7 +165,7 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
     <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}>
       {/* Toolbar */}
       <div
-        className="flex flex-wrap gap-0.5 px-2 py-1.5 border-b"
+        className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b"
         style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.3)" }}>
         {/* Undo / Redo */}
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Undo">
@@ -138,131 +175,107 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
           <Redo size={15} />
         </ToolbarButton>
 
-        <div className="w-px mx-1" style={{ backgroundColor: "hsl(var(--border))" }} />
+        <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        {/* Headings */}
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setParagraph().run()}
-          isActive={editor.isActive("paragraph") && !editor.isActive("heading")}
-          title="Paragraph">
-          <Type size={15} />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          isActive={editor.isActive("heading", { level: 1 })}
-          title="Heading 1">
-          <Heading1 size={15} />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          isActive={editor.isActive("heading", { level: 2 })}
-          title="Heading 2">
-          <Heading2 size={15} />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          isActive={editor.isActive("heading", { level: 3 })}
-          title="Heading 3">
-          <Heading3 size={15} />
-        </ToolbarButton>
+        {/* Font family */}
+        <select
+          value={currentFont}
+          onChange={(e) => {
+            if (e.target.value) {
+              editor.chain().focus().setFontFamily(e.target.value).run();
+            } else {
+              editor.chain().focus().unsetFontFamily().run();
+            }
+          }}
+          className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
+          style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "120px" }}
+          title="Font Family">
+          <option value="">Default</option>
+          {FONT_OPTIONS.map((f) => (
+            <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>
+              {f.label}
+            </option>
+          ))}
+        </select>
 
-        <div className="w-px mx-1" style={{ backgroundColor: "hsl(var(--border))" }} />
+        {/* Font size */}
+        <select
+          value={currentSize}
+          onChange={(e) => {
+            if (e.target.value) {
+              editor.chain().focus().setMark("textStyle", { fontSize: e.target.value }).run();
+            } else {
+              editor.chain().focus().unsetMark("textStyle").run();
+            }
+          }}
+          className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
+          style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "65px" }}
+          title="Font Size">
+          <option value="">Size</option>
+          {SIZE_OPTIONS.map((s) => (
+            <option key={s.value} value={s.value}>{s.label}</option>
+          ))}
+        </select>
+
+        <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
         {/* Formatting */}
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          isActive={editor.isActive("bold")}
-          title="Bold">
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive("bold")} title="Bold">
           <Bold size={15} />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          isActive={editor.isActive("italic")}
-          title="Italic">
+        <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive("italic")} title="Italic">
           <Italic size={15} />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          isActive={editor.isActive("underline")}
-          title="Underline">
+        <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive("underline")} title="Underline">
           <UnderlineIcon size={15} />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          isActive={editor.isActive("strike")}
-          title="Strikethrough">
+        <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive("strike")} title="Strikethrough">
           <Strikethrough size={15} />
         </ToolbarButton>
 
-        <div className="w-px mx-1" style={{ backgroundColor: "hsl(var(--border))" }} />
+        <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
         {/* Colors */}
         <ToolbarButton onClick={setTextColor} title="Text Color">
           <Palette size={15} />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={setHighlightColor}
-          isActive={editor.isActive("highlight")}
-          title="Highlight">
+        <ToolbarButton onClick={setHighlightColor} isActive={editor.isActive("highlight")} title="Highlight">
           <Highlighter size={15} />
         </ToolbarButton>
 
-        <div className="w-px mx-1" style={{ backgroundColor: "hsl(var(--border))" }} />
+        <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
         {/* Alignment */}
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
-          isActive={editor.isActive({ textAlign: "left" })}
-          title="Align Left">
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("left").run()} isActive={editor.isActive({ textAlign: "left" })} title="Align Left">
           <AlignLeft size={15} />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-          isActive={editor.isActive({ textAlign: "center" })}
-          title="Align Center">
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("center").run()} isActive={editor.isActive({ textAlign: "center" })} title="Align Center">
           <AlignCenter size={15} />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-          isActive={editor.isActive({ textAlign: "right" })}
-          title="Align Right">
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("right").run()} isActive={editor.isActive({ textAlign: "right" })} title="Align Right">
           <AlignRight size={15} />
         </ToolbarButton>
 
-        <div className="w-px mx-1" style={{ backgroundColor: "hsl(var(--border))" }} />
+        <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
         {/* Lists */}
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          isActive={editor.isActive("bulletList")}
-          title="Bullet List">
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive("bulletList")} title="Bullet List">
           <List size={15} />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          isActive={editor.isActive("orderedList")}
-          title="Numbered List">
+        <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive("orderedList")} title="Numbered List">
           <ListOrdered size={15} />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          isActive={editor.isActive("blockquote")}
-          title="Blockquote">
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} isActive={editor.isActive("blockquote")} title="Blockquote">
           <Quote size={15} />
         </ToolbarButton>
 
-        <div className="w-px mx-1" style={{ backgroundColor: "hsl(var(--border))" }} />
+        <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
         {/* Link & Image */}
-        <ToolbarButton
-          onClick={addLink}
-          isActive={editor.isActive("link")}
-          title="Add Link">
+        <ToolbarButton onClick={addLink} isActive={editor.isActive("link")} title="Add Link">
           <LinkIcon size={15} />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={() => fileInputRef.current?.click()}
-          title="Upload Image">
+        <ToolbarButton onClick={() => fileInputRef.current?.click()} title="Upload Image">
           <ImageIcon size={15} />
         </ToolbarButton>
       </div>

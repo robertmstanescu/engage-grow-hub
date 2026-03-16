@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Trash2, Edit, Plus } from "lucide-react";
+import { Trash2, Edit, Plus, Eye, ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
 import RichTextEditor from "./RichTextEditor";
 
 const generateSlug = (title: string) =>
@@ -30,6 +31,7 @@ const BlogEditor = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [isNew, setIsNew] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft" });
 
   const fetchPosts = async () => {
@@ -96,6 +98,76 @@ const BlogEditor = () => {
     fetchPosts();
   };
 
+  /* ── Preview Mode ── */
+  if (previewing && (isNew || editing)) {
+    const formatDate = (dateStr: string) => {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    };
+
+    return (
+      <div className="space-y-0">
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => setPreviewing(false)}
+            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider text-muted-foreground hover:opacity-70">
+            <ArrowLeft size={14} /> Back to editor
+          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setPreviewing(false); handleSave("draft"); }}
+              className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full border hover:opacity-80 transition-opacity"
+              style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}>
+              Save Draft
+            </button>
+            <button
+              onClick={() => { setPreviewing(false); handleSave("published"); }}
+              className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+              style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+              Publish
+            </button>
+          </div>
+        </div>
+
+        {/* Simulated blog post preview */}
+        <div className="rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
+          <header className="pt-10 pb-8 px-6" style={{ backgroundColor: "hsl(var(--primary))" }}>
+            <div className="max-w-[600px] mx-auto">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span
+                  className="font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium"
+                  style={{ backgroundColor: "hsl(var(--accent) / 0.2)", color: "hsl(var(--accent))" }}>
+                  {form.category}
+                </span>
+                <span className="font-body text-xs" style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}>
+                  {formatDate(new Date().toISOString())} · {calculateReadTime(form.content)}
+                </span>
+              </div>
+              <h1
+                className="font-display text-xl md:text-2xl font-black leading-tight"
+                style={{ color: "hsl(var(--primary-foreground))" }}>
+                {form.title || "Untitled Post"}
+              </h1>
+              {form.excerpt && (
+                <p className="mt-2 font-body text-sm" style={{ color: "hsl(var(--primary-foreground) / 0.7)" }}>
+                  {form.excerpt}
+                </p>
+              )}
+            </div>
+          </header>
+
+          <div className="py-8 px-6" style={{ backgroundColor: "hsl(var(--background))" }}>
+            <div
+              className="max-w-[600px] mx-auto prose prose-sm prose-headings:font-display prose-headings:text-secondary prose-p:text-foreground/80 prose-p:leading-[1.8] prose-a:text-primary prose-img:rounded-lg"
+              dangerouslySetInnerHTML={{ __html: form.content || "<p>No content yet.</p>" }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Editor Mode ── */
   if (isNew || editing) {
     return (
       <div className="space-y-4">
@@ -103,9 +175,17 @@ const BlogEditor = () => {
           <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>
             {isNew ? "New Post" : "Edit Post"}
           </h2>
-          <button onClick={() => { setEditing(null); setIsNew(false); }} className="font-body text-xs text-muted-foreground hover:opacity-70">
-            Cancel
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPreviewing(true)}
+              className="flex items-center gap-1 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"
+              style={{ borderColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))", backgroundColor: "hsl(var(--accent) / 0.1)" }}>
+              <Eye size={13} /> Preview
+            </button>
+            <button onClick={() => { setEditing(null); setIsNew(false); setPreviewing(false); }} className="font-body text-xs text-muted-foreground hover:opacity-70">
+              Cancel
+            </button>
+          </div>
         </div>
 
         <input

@@ -433,17 +433,48 @@ const EmailBlockEditor = ({ blocks, onChange }: EmailBlockEditorProps) => {
                 </>
               )}
 
-              {/* Blog preview URL */}
+              {/* Blog preview settings */}
               {selectedBlock.type === "blog-preview" && (
-                <div>
-                  <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Article URL</label>
-                  <input
-                    value={selectedBlock.settings.blogUrl || ""}
-                    onChange={(e) => updateSettings(selectedBlock.id, { blogUrl: e.target.value })}
-                    className="w-full px-2 py-1.5 rounded border font-body text-xs"
-                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
-                  />
-                </div>
+                <>
+                  <div>
+                    <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Title</label>
+                    <input
+                      value={selectedBlock.settings.blogTitle || ""}
+                      onChange={(e) => updateSettings(selectedBlock.id, { blogTitle: e.target.value })}
+                      className="w-full px-2 py-1.5 rounded border font-body text-xs"
+                      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+                    />
+                  </div>
+                  <div>
+                    <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Excerpt</label>
+                    <textarea
+                      value={selectedBlock.settings.blogExcerpt || ""}
+                      onChange={(e) => updateSettings(selectedBlock.id, { blogExcerpt: e.target.value })}
+                      rows={3}
+                      className="w-full px-2 py-1.5 rounded border font-body text-xs resize-none"
+                      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+                      placeholder="Customise the excerpt for the newsletter..."
+                    />
+                  </div>
+                  <div>
+                    <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Category</label>
+                    <input
+                      value={selectedBlock.settings.blogCategory || ""}
+                      onChange={(e) => updateSettings(selectedBlock.id, { blogCategory: e.target.value })}
+                      className="w-full px-2 py-1.5 rounded border font-body text-xs"
+                      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+                    />
+                  </div>
+                  <div>
+                    <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Article URL</label>
+                    <input
+                      value={selectedBlock.settings.blogUrl || ""}
+                      onChange={(e) => updateSettings(selectedBlock.id, { blogUrl: e.target.value })}
+                      className="w-full px-2 py-1.5 rounded border font-body text-xs"
+                      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+                    />
+                  </div>
+                </>
               )}
             </div>
           )}
