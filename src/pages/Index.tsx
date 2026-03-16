@@ -166,8 +166,7 @@ const Index = () => {
           pillarNumber="Pillar 01"
           title="Internal Communications"
           description="Most internal comms is noise dressed up as signal. We help you cut through it — designing communication systems that actually reach people, move them, and mean something."
-          services={internalCommsServices}
-          bgClass="bg-card" />
+          services={internalCommsServices} />
         
         <ServicesPillar
           id="employee-experience"
@@ -175,8 +174,7 @@ const Index = () => {
           pillarNumber="Pillar 02"
           title="Employee Experience"
           description="The modern workplace is haunted by zombie journeys — onboarding processes that disappear after week one, surveys nobody acts on, and employees who feel invisible by month three."
-          services={employeeExperienceServices}
-          bgClass="bg-background" />
+          services={employeeExperienceServices} />
         
       </div>
       <VowsSection />
