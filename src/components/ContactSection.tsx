@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -9,19 +10,34 @@ const ContactSection = () => {
     name: "",
     email: "",
     company: "",
-    message: ""
+    message: "",
+    subscribed_to_marketing: false,
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`Consultation request from ${formData.name} — ${formData.company}`);
-    const body = encodeURIComponent(
-      `Name: ${formData.name}\nEmail: ${formData.email}\nCompany: ${formData.company}\n\nMessage:\n${formData.message}`
-    );
-    window.location.href = `mailto:hello@themagiccoffin.com?subject=${subject}&body=${body}`;
+    setSubmitting(true);
+
+    // Save to database
+    const { error } = await supabase.from("contacts").insert({
+      name: formData.name,
+      email: formData.email,
+      company: formData.company || null,
+      message: formData.message || null,
+      subscribed_to_marketing: formData.subscribed_to_marketing,
+    });
+
+    if (error) {
+      toast.error("Something went wrong. Please try again.");
+      setSubmitting(false);
+      return;
+    }
+
     setSubmitted(true);
-    toast.success("Opening your email client…");
+    setSubmitting(false);
+    toast.success("Message sent successfully!");
   };
 
   if (submitted) {
@@ -43,10 +59,13 @@ const ContactSection = () => {
             <p
               className="font-body-heading text-base mb-6"
               style={{ color: "hsl(var(--contact-success-fg) / 0.7)" }}>
-              We respond within 24 hours. In the meantime, check your email client to send the message.
+              We respond within 24 hours. Thank you for reaching out.
             </p>
             <button
-              onClick={() => setSubmitted(false)}
+              onClick={() => {
+                setSubmitted(false);
+                setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false });
+              }}
               className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-8 py-3.5 rounded-full hover:opacity-85 transition-opacity"
               style={{
                 backgroundColor: "hsl(var(--contact-success-btn-bg))",
@@ -107,8 +126,8 @@ const ContactSection = () => {
               </label>
               <input
                 type={field.type}
-                required
-                value={formData[field.key as keyof typeof formData]}
+                required={field.key !== "company"}
+                value={formData[field.key as keyof typeof formData] as string}
                 onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
                 className="w-full bg-transparent pb-2 font-body text-sm outline-none transition-colors duration-200"
                 style={{
@@ -140,15 +159,30 @@ const ContactSection = () => {
               onBlur={(e) => e.currentTarget.style.borderBottomColor = `hsl(var(--contact-input-border) / 0.2)`}
             />
           </div>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.subscribed_to_marketing}
+              onChange={(e) => setFormData({ ...formData, subscribed_to_marketing: e.target.checked })}
+              className="rounded"
+              style={{ accentColor: "hsl(var(--primary))" }}
+            />
+            <span className="font-body text-xs" style={{ color: "hsl(var(--contact-label) / 0.6)" }}>
+              Keep me updated with insights and articles
+            </span>
+          </label>
+
           <div className="pt-4 text-center">
             <button
               type="submit"
-              className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-8 py-3.5 rounded-full hover:opacity-85 transition-opacity"
+              disabled={submitting}
+              className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-8 py-3.5 rounded-full hover:opacity-85 transition-opacity disabled:opacity-50"
               style={{
                 backgroundColor: "hsl(var(--contact-btn-bg))",
                 color: "hsl(var(--contact-btn-text))"
               }}>
-              Request a discovery call
+              {submitting ? "Sending…" : "Request a discovery call"}
             </button>
           </div>
         </motion.form>
