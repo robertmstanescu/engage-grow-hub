@@ -19,6 +19,7 @@ interface Service {
 }
 
 interface ServicesPillarProps {
+  id?: string;
   pillarNumber: string;
   title: string;
   description: string;
@@ -26,7 +27,7 @@ interface ServicesPillarProps {
   bgClass?: string;
 }
 
-const ServicesPillar = ({ pillarNumber, title, description, services, bgClass = "bg-card" }: ServicesPillarProps) => {
+const ServicesPillar = ({ id, pillarNumber, title, description, services, bgClass = "bg-card" }: ServicesPillarProps) => {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -48,7 +49,7 @@ const ServicesPillar = ({ pillarNumber, title, description, services, bgClass = 
   return (
     <>
       <div className="gradient-divider" />
-      <div className={`${bgClass} pt-16 pb-4`}>
+      <div id={id} className={`${bgClass} pt-16 pb-4`}>
         <div className="max-w-[900px] mx-auto px-6 text-center">
           <motion.span
             initial={{ opacity: 0 }}
