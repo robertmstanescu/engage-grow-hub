@@ -1,4 +1,6 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "./ServiceCard";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -25,6 +27,24 @@ interface ServicesPillarProps {
 }
 
 const ServicesPillar = ({ pillarNumber, title, description, services, bgClass = "bg-card" }: ServicesPillarProps) => {
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(0);
+
+  const prev = () => {
+    setDirection(-1);
+    setCurrent((c) => (c === 0 ? services.length - 1 : c - 1));
+  };
+  const next = () => {
+    setDirection(1);
+    setCurrent((c) => (c === services.length - 1 ? 0 : c + 1));
+  };
+
+  const variants = {
+    enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
+  };
+
   return (
     <>
       <div className="gradient-divider" />
@@ -59,10 +79,51 @@ const ServicesPillar = ({ pillarNumber, title, description, services, bgClass = 
         </div>
       </div>
       <div className={`${bgClass} px-6 pb-16`}>
-        <div className="max-w-[900px] mx-auto space-y-6">
-          {services.map((service, i) => (
-            <ServiceCard key={i} {...service} />
-          ))}
+        <div className="max-w-[900px] mx-auto">
+          {/* Dots + Arrows */}
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <button
+              onClick={prev}
+              aria-label="Previous service"
+              className="w-9 h-9 rounded-full border border-primary/20 flex items-center justify-center text-primary hover:bg-primary/10 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <div className="flex gap-2">
+              {services.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
+                  className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-primary scale-125" : "bg-primary/25"}`}
+                  aria-label={`Go to service ${i + 1}`}
+                />
+              ))}
+            </div>
+            <button
+              onClick={next}
+              aria-label="Next service"
+              className="w-9 h-9 rounded-full border border-primary/20 flex items-center justify-center text-primary hover:bg-primary/10 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Sliding card */}
+          <div className="relative overflow-hidden">
+            <AnimatePresence custom={direction} mode="wait">
+              <motion.div
+                key={current}
+                custom={direction}
+                variants={variants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.35, ease }}
+              >
+                <ServiceCard {...services[current]} />
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </>
