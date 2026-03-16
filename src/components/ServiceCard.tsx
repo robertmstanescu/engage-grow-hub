@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 
+const ease = [0.16, 1, 0.3, 1] as const;
 interface ServiceCardProps {
   tag: string;
   tagType: "fixed" | "retainer";
