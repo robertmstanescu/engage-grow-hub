@@ -44,7 +44,9 @@ const Deliverables = ({ label, items }: {label: string; items: string[];}) => {
 const ease = [0.16, 1, 0.3, 1] as const;
 interface ServiceCardProps {
   tag: string;
-  tagType: "fixed" | "retainer";
+  tagType: "fixed" | "retainer" | string;
+  tagBgColor?: string;
+  tagTextColor?: string;
   title: string;
   subtitle: string;
   description: string;
