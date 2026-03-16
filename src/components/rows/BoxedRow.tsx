@@ -23,7 +23,7 @@ const BoxedRow = ({ row }: { row: PageRow }) => {
 
   return (
     <section style={{ backgroundColor: row.bg_color || "hsl(var(--vows-bg))" }}>
-      <div className="max-w-[1100px] mx-auto px-6 py-20 text-center">
+      <div className="max-w-[1100px] mx-auto px-6 py-16 text-center">
         {titleLines.length > 0 && (
           <motion.h3
             initial={{ opacity: 0, y: 20 }}

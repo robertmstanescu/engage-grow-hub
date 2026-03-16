@@ -73,7 +73,7 @@ const ContactRow = ({ row }: { row: PageRow }) => {
 
   return (
     <section style={{ backgroundColor: row.bg_color || "hsl(var(--contact-bg))" }}>
-      <div className="max-w-[520px] mx-auto px-6 py-20">
+      <div className="max-w-[520px] mx-auto px-6 py-16">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease }} className="text-center mb-10">
           {titleLines.length > 0 && (
             <h3 className="font-display text-2xl md:text-3xl font-black leading-tight mb-4" style={{ color: "hsl(var(--contact-title))" }}>

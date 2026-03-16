@@ -12,7 +12,7 @@ const TextRow = ({ row }: { row: PageRow }) => {
 
   return (
     <section style={{ backgroundColor: row.bg_color || "hsl(var(--background))" }}>
-      <div className="max-w-[800px] mx-auto px-6 py-12 text-center">
+      <div className="max-w-[800px] mx-auto px-6 py-16 text-center">
         {titleLines.length > 0 && (
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
