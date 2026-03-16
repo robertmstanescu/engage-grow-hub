@@ -55,7 +55,7 @@ const ContactRow = ({ row }: { row: PageRow }) => {
   if (submitted) {
     return (
       <section style={{ backgroundColor: "hsl(var(--contact-success-bg))" }}>
-        <div className="max-w-[520px] mx-auto px-6 py-20 text-center">
+        <div className="max-w-[520px] mx-auto px-6 py-16 text-center">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, ease }}>
             <h3 className="font-display text-2xl md:text-3xl font-black leading-tight mb-4" style={{ color: "hsl(var(--contact-success-fg))" }}>{successHeading}</h3>
             <p className="font-body-heading text-base mb-6" style={{ color: "hsl(var(--contact-success-fg) / 0.7)" }}>{successBody}</p>
