@@ -28,19 +28,12 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        heading: false,
-        bold: false,
-        italic: false,
-        strike: false,
-        bulletList: false,
-        orderedList: false,
-        blockquote: false,
-        codeBlock: false,
-        code: false,
-        horizontalRule: false,
-        hardBreak: false,
-      }),
+      Document,
+      Paragraph,
+      Text,
+      History,
+      Dropcursor,
+      Gapcursor,
       TextStyle,
       Color,
     ],
