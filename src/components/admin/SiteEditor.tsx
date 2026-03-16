@@ -5,10 +5,8 @@ import { Save, ChevronDown, ChevronUp, Eye, Send, FileText } from "lucide-react"
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import SocialLinksEditor from "./site-editor/SocialLinksEditor";
 import HeroEditor from "./site-editor/HeroEditor";
-import IntroEditor from "./site-editor/IntroEditor";
-import PillarEditor from "./site-editor/PillarEditor";
-import VowsEditor from "./site-editor/VowsEditor";
-import ContactEditor from "./site-editor/ContactEditor";
+import RowsManager from "./site-editor/RowsManager";
+import type { PageRow, DEFAULT_ROWS } from "@/types/rows";
 
 interface SectionData {
   section_key: string;
@@ -18,16 +16,11 @@ interface SectionData {
 
 const SECTION_LABELS: Record<string, string> = {
   hero: "Hero Section",
-  intro: "Intro Strip",
-  pillar_comms: "Pillar 01 — Internal Communications",
-  pillar_ex: "Pillar 02 — Employee Experience",
-  vows: "Vows Section",
-  contact: "Contact Section",
   social_links: "Social Media Links",
+  page_rows: "Page Rows",
 };
 
-const SECTION_ORDER = ["hero", "intro", "pillar_comms", "services_comms", "pillar_ex", "services_ex", "vows", "contact", "social_links"];
-const HIDDEN_SECTIONS = new Set(["services_comms", "services_ex"]);
+const EDITABLE_SECTIONS = ["hero", "social_links"];
 
 const SiteEditor = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
@@ -42,7 +35,6 @@ const SiteEditor = () => {
         .select("section_key, content, draft_content")
         .order("section_key") as any;
       if (data) {
-        // Initialise editing state from draft_content (fallback to content)
         const mapped = data.map((s: any) => ({
           section_key: s.section_key,
           content: s.content,
@@ -73,125 +65,74 @@ const SiteEditor = () => {
     );
   };
 
-  // Save draft only
   const saveDraft = async (sectionKey: string) => {
     setSaving(sectionKey);
     const section = getSection(sectionKey);
     if (!section) { setSaving(null); return; }
 
-    const { error } = await supabase
+    // Upsert: if section doesn't exist yet, create it
+    const draft = (section.draft_content || section.content) as any;
+    const { data: existing } = await supabase
       .from("site_content")
-      .update({ draft_content: (section.draft_content || section.content) as any })
-      .eq("section_key", sectionKey);
+      .select("id")
+      .eq("section_key", sectionKey)
+      .maybeSingle();
 
-    if (error) toast.error(error.message);
-    else toast.success(`${SECTION_LABELS[sectionKey] || sectionKey} draft saved`);
+    if (existing) {
+      await supabase.from("site_content").update({ draft_content: draft }).eq("section_key", sectionKey);
+    } else {
+      await supabase.from("site_content").insert({ section_key: sectionKey, content: draft, draft_content: draft } as any);
+    }
+
+    toast.success(`${SECTION_LABELS[sectionKey] || sectionKey} draft saved`);
     setSaving(null);
   };
 
-  const savePillarDraft = async (pillarKey: string, servicesKey: string) => {
-    setSaving(pillarKey);
-    const pillar = getSection(pillarKey);
-    const services = getSection(servicesKey);
-
-    await Promise.all([
-      pillar ? supabase.from("site_content").update({ draft_content: (pillar.draft_content || pillar.content) as any }).eq("section_key", pillarKey) : Promise.resolve({ error: null }),
-      services ? supabase.from("site_content").update({ draft_content: (services.draft_content || services.content) as any }).eq("section_key", servicesKey) : Promise.resolve({ error: null }),
-    ]);
-
-    toast.success(`${SECTION_LABELS[pillarKey] || pillarKey} draft saved`);
-    setSaving(null);
-  };
-
-  // Publish all drafts → content
   const publishAll = async () => {
     setPublishing(true);
-
-    // First save all current draft states
-    const updates = sections.map((s) =>
-      supabase
+    const updates = sections.map((s) => {
+      const data = (s.draft_content || s.content) as any;
+      return supabase
         .from("site_content")
-        .update({
-          content: (s.draft_content || s.content) as any,
-          draft_content: (s.draft_content || s.content) as any,
-        })
-        .eq("section_key", s.section_key)
-    );
+        .upsert({ section_key: s.section_key, content: data, draft_content: data } as any, { onConflict: "section_key" });
+    });
 
     const results = await Promise.all(updates);
     const err = results.find((r) => r.error);
     if (err?.error) {
       toast.error((err.error as any).message);
     } else {
-      // Update local state
-      setSections((prev) =>
-        prev.map((s) => ({ ...s, content: s.draft_content || s.content }))
-      );
-      // Invalidate all caches
+      setSections((prev) => prev.map((s) => ({ ...s, content: s.draft_content || s.content })));
       sections.forEach((s) => invalidateSiteContent(s.section_key));
       toast.success("All changes published!");
     }
     setPublishing(false);
   };
 
-  // Preview draft in new tab
   const openPreview = () => {
-    // Save all drafts first, then open preview
     const saveAll = sections.map((s) =>
-      supabase
-        .from("site_content")
-        .update({ draft_content: (s.draft_content || s.content) as any })
-        .eq("section_key", s.section_key)
+      supabase.from("site_content").update({ draft_content: (s.draft_content || s.content) as any }).eq("section_key", s.section_key)
     );
-    Promise.all(saveAll).then(() => {
-      window.open("/?preview=1", "_blank");
-    });
+    Promise.all(saveAll).then(() => window.open("/?preview=1", "_blank"));
   };
 
-  // Check if any section has unsaved changes (draft differs from content)
-  const hasChanges = sections.some(
-    (s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content)
-  );
+  const hasChanges = sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
 
-  const renderEditor = (sectionKey: string) => {
-    const draft = getDraft(sectionKey);
-    const onChange = (field: string, value: any) => updateField(sectionKey, field, value);
-
-    switch (sectionKey) {
-      case "hero":
-        return <HeroEditor content={draft} onChange={onChange} />;
-      case "intro":
-        return <IntroEditor content={draft} onChange={onChange} />;
-      case "pillar_comms":
-        return (
-          <PillarEditor
-            pillarContent={draft}
-            servicesContent={getDraft("services_comms")}
-            onPillarChange={onChange}
-            onServicesChange={(svcs) => updateFullDraft("services_comms", { services: svcs })}
-          />
-        );
-      case "pillar_ex":
-        return (
-          <PillarEditor
-            pillarContent={draft}
-            servicesContent={getDraft("services_ex")}
-            onPillarChange={onChange}
-            onServicesChange={(svcs) => updateFullDraft("services_ex", { services: svcs })}
-          />
-        );
-      case "vows":
-        return <VowsEditor content={draft} onChange={onChange} />;
-      case "contact":
-        return <ContactEditor content={draft} onChange={onChange} />;
-      case "social_links":
-        return <SocialLinksEditor content={draft} onChange={onChange} />;
-      default:
-        return <p className="font-body text-xs text-muted-foreground">Unknown section</p>;
+  // Ensure page_rows section exists in state
+  const ensurePageRows = () => {
+    if (!getSection("page_rows")) {
+      const { DEFAULT_ROWS: defaultRows } = require("@/types/rows");
+      setSections((prev) => [...prev, {
+        section_key: "page_rows",
+        content: { rows: defaultRows },
+        draft_content: { rows: defaultRows },
+      }]);
     }
   };
 
-  const visibleSections = SECTION_ORDER.filter((k) => !HIDDEN_SECTIONS.has(k) && getSection(k));
+  useEffect(() => { ensurePageRows(); }, [sections.length]);
+
+  const pageRows: PageRow[] = (getDraft("page_rows") as any)?.rows || [];
 
   return (
     <div className="space-y-3">
@@ -200,63 +141,71 @@ const SiteEditor = () => {
           Edit Main Page
         </h2>
         <div className="flex items-center gap-2">
-          <button
-            onClick={openPreview}
-            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
-            style={{ border: "1px solid hsl(var(--border))", color: "hsl(var(--foreground))" }}>
+          <button onClick={openPreview} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity" style={{ border: "1px solid hsl(var(--border))", color: "hsl(var(--foreground))" }}>
             <Eye size={13} /> Preview
           </button>
-          <button
-            onClick={publishAll}
-            disabled={publishing || !hasChanges}
-            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40"
-            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+          <button onClick={publishAll} disabled={publishing || !hasChanges} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40" style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
             <Send size={13} /> {publishing ? "Publishing…" : "Publish All"}
           </button>
         </div>
       </div>
 
       {hasChanges && (
-        <div
-          className="flex items-center gap-2 px-3 py-2 rounded-lg font-body text-xs"
-          style={{ backgroundColor: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent-foreground))" }}>
-          <FileText size={13} />
-          You have unpublished draft changes. Preview or publish when ready.
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg font-body text-xs" style={{ backgroundColor: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent-foreground))" }}>
+          <FileText size={13} /> You have unpublished draft changes. Preview or publish when ready.
         </div>
       )}
 
-      {visibleSections.map((key) => {
-        const isPillar = key === "pillar_comms" || key === "pillar_ex";
-        const servicesKey = key === "pillar_comms" ? "services_comms" : key === "pillar_ex" ? "services_ex" : "";
-
-        return (
-          <div
-            key={key}
-            className="rounded-lg border overflow-hidden"
-            style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
-            <button
-              onClick={() => setOpenSection(openSection === key ? null : key)}
-              className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity"
-              style={{ color: "hsl(var(--foreground))" }}>
-              <span className="font-body text-sm font-medium">{SECTION_LABELS[key] || key}</span>
-              {openSection === key ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+      {/* Hero section */}
+      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+        <button onClick={() => setOpenSection(openSection === "hero" ? null : "hero")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
+          <span className="font-body text-sm font-medium">Hero Section</span>
+          {openSection === "hero" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {openSection === "hero" && (
+          <div className="px-4 pb-4 space-y-4">
+            <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
+            <button onClick={() => saveDraft("hero")} disabled={saving === "hero"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+              <Save size={13} /> {saving === "hero" ? "Saving…" : "Save Draft"}
             </button>
-
-            {openSection === key && (
-              <div className="px-4 pb-4 space-y-4">
-                {renderEditor(key)}
-                <button
-                  onClick={() => isPillar ? savePillarDraft(key, servicesKey) : saveDraft(key)}
-                  disabled={saving === key}
-                  className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50"
-                  style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-                  <Save size={13} /> {saving === key ? "Saving…" : "Save Draft"}
-                </button>
-              </div>
-            )}
           </div>
-        );
-      })}
+        )}
+      </div>
+
+      {/* Page Rows */}
+      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+        <button onClick={() => setOpenSection(openSection === "page_rows" ? null : "page_rows")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
+          <span className="font-body text-sm font-medium">Page Rows</span>
+          {openSection === "page_rows" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {openSection === "page_rows" && (
+          <div className="px-4 pb-4 space-y-4">
+            <RowsManager
+              rows={pageRows}
+              onChange={(rows) => updateFullDraft("page_rows", { rows })}
+            />
+            <button onClick={() => saveDraft("page_rows")} disabled={saving === "page_rows"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+              <Save size={13} /> {saving === "page_rows" ? "Saving…" : "Save Draft"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Social Links */}
+      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+        <button onClick={() => setOpenSection(openSection === "social_links" ? null : "social_links")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
+          <span className="font-body text-sm font-medium">Social Media Links</span>
+          {openSection === "social_links" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {openSection === "social_links" && (
+          <div className="px-4 pb-4 space-y-4">
+            <SocialLinksEditor content={getDraft("social_links")} onChange={(f, v) => updateField("social_links", f, v)} />
+            <button onClick={() => saveDraft("social_links")} disabled={saving === "social_links"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+              <Save size={13} /> {saving === "social_links" ? "Saving…" : "Save Draft"}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -7,10 +7,10 @@ interface HeroContent {
   label: string;
   title_lines?: any[];
   subtitle?: string;
+  subtitle_color?: string;
   body: string;
   bg_type?: "none" | "image" | "video";
   bg_url?: string;
-  // legacy
   title_line1?: string;
   title_accent?: string;
   title_line2?: string;
@@ -26,23 +26,18 @@ const fallback: HeroContent = {
   body: "Dead meetings. Blood-sucking cultures. Communications that say everything while meaning nothing. We bury all of it — and build something with an actual pulse in its place.",
 };
 
-/** Strip <p> wrappers so content renders inline inside h1 */
-const stripP = (html: string) =>
-  html.replace(/^<p>/, "").replace(/<\/p>$/, "");
+const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
 const HeroSection = () => {
   const c = useSiteContent<HeroContent>("hero", fallback);
 
-  // Normalise title_lines: support old {text,type} objects and new HTML strings
   const titleLines: string[] = (c.title_lines || []).map((line: any) => {
     if (typeof line === "string") return line;
-    // Legacy TitleLine object
     return line.type === "accent"
       ? `<p><span style="color: hsl(var(--hero-title-accent))">${line.text}</span></p>`
       : `<p>${line.text}</p>`;
   });
 
-  // Fallback for very old flat fields
   if (titleLines.length === 0 && (c.title_line1 || c.title_accent || c.title_line2)) {
     if (c.title_line1) titleLines.push(`<p>${c.title_line1}</p>`);
     if (c.title_accent) titleLines.push(`<p><span style="color: hsl(var(--hero-title-accent))">${c.title_accent}</span></p>`);
@@ -55,7 +50,6 @@ const HeroSection = () => {
     <section
       className="scope-hero relative pt-32 pb-20 md:py-32 md:pt-40 text-center overflow-hidden"
       style={{ backgroundColor: "hsl(var(--hero-bg))" }}>
-      {/* Background media */}
       {hasBg && c.bg_type === "image" && (
         <div className="absolute inset-0 z-0">
           <img src={c.bg_url} alt="" className="w-full h-full object-cover" />
@@ -64,14 +58,7 @@ const HeroSection = () => {
       )}
       {hasBg && c.bg_type === "video" && (
         <div className="absolute inset-0 z-0">
-          <video
-            src={c.bg_url}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover"
-          />
+          <video src={c.bg_url} autoPlay muted loop playsInline className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/50" />
         </div>
       )}
@@ -105,10 +92,11 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease }}
-            className="text-lg md:text-xl leading-tight mt-0"
+            className="text-lg md:text-xl leading-tight"
             style={{
               fontFamily: "'Architects Daughter', cursive",
-              color: "hsl(var(--hero-body))",
+              color: c.subtitle_color || "hsl(var(--hero-body))",
+              paddingTop: "10px",
             }}>
             {c.subtitle}
           </motion.p>
