@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 interface ServiceCardProps {
