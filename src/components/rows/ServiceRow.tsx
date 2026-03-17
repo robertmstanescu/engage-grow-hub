@@ -6,6 +6,54 @@ import type { PageRow } from "@/types/rows";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
+/** Convert "#RRGGBB" → "H S% L%" HSL channel string for CSS variables */
+const hexToHslChannels = (hex: string): string | null => {
+  if (!hex || !hex.startsWith("#") || hex.length < 7) return null;
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return `0 0% ${Math.round(l * 100)}%`;
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / d + 2) / 6;
+  else h = ((r - g) / d + 4) / 6;
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+};
+
+const COLOR_MAP: Record<string, string> = {
+  color_section_bg: "--pillar-section-bg",
+  color_label: "--pillar-label",
+  color_heading: "--pillar-heading",
+  color_heading_sub: "--pillar-heading-sub",
+  color_primary: "--pillar-primary",
+  color_card_bg: "--pillar-card-bg",
+  color_card_title: "--pillar-card-title",
+  color_subtitle: "--pillar-subtitle",
+  color_deliverables_bg: "--pillar-deliverables-bg",
+  color_deliverables_label: "--pillar-deliverables-label",
+  color_meta_bg: "--pillar-meta-bg",
+  color_meta_fg: "--pillar-meta-fg",
+  color_note_border: "--pillar-note-border",
+  color_divider_from: "--pillar-divider-from",
+  color_divider_to: "--pillar-divider-to",
+};
+
+const buildColorOverrides = (content: Record<string, any>): Record<string, string> => {
+  const overrides: Record<string, string> = {};
+  for (const [key, cssVar] of Object.entries(COLOR_MAP)) {
+    const hex = content[key];
+    if (hex) {
+      const hsl = hexToHslChannels(hex);
+      if (hsl) overrides[cssVar] = hsl;
+    }
+  }
+  return overrides;
+};
+
 const ServiceRow = ({ row }: { row: PageRow }) => {
   const c = row.content;
   const services = c.services || [];
@@ -24,9 +72,18 @@ const ServiceRow = ({ row }: { row: PageRow }) => {
     exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
   };
 
+  const colorOverrides = buildColorOverrides(c);
+
   return (
-    <div style={{ scrollMarginTop: "4rem" }}>
-      <div className="gradient-divider" />
+    <div style={{ scrollMarginTop: "4rem", ...colorOverrides } as React.CSSProperties}>
+      <div
+        className="gradient-divider"
+        style={
+          (c.color_divider_from || c.color_divider_to)
+            ? { background: `linear-gradient(to right, hsl(var(--pillar-divider-from)), hsl(var(--pillar-divider-to)))` }
+            : undefined
+        }
+      />
       <div className="pt-16 pb-6" style={{ backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
         <div className="max-w-[900px] mx-auto px-6 text-center">
           <motion.span
