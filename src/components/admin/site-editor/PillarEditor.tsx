@@ -1,7 +1,7 @@
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Field, TextArea, RichField, ArrayField, SelectField, SectionBox } from "./FieldComponents";
+import { Field, TextArea, RichField, ArrayField, SelectField, SectionBox, ColorField } from "./FieldComponents";
 
 interface Service {
   tag: string;
@@ -30,8 +30,27 @@ const DEFAULT_TAG_TYPES = [
   { label: "Monthly retainer", value: "retainer" },
 ];
 
+const PILLAR_COLOR_FIELDS = [
+  { key: "color_section_bg", label: "Section Background", description: "Background of the entire pillar section", fallback: "#FFFFFF" },
+  { key: "color_label", label: "Pillar Label", description: "The small pillar number text (e.g. 'Pillar 01')", fallback: "#7B3A91" },
+  { key: "color_heading", label: "Pillar Title", description: "The main heading of the pillar section", fallback: "#2A0E33" },
+  { key: "color_heading_sub", label: "Pillar Description", description: "The description text below the title", fallback: "#2A0E33" },
+  { key: "color_primary", label: "Primary Accent", description: "Used for navigation dots, card borders, and arrow buttons", fallback: "#4D1B5E" },
+  { key: "color_card_bg", label: "Card Background", description: "Background of each service card", fallback: "#FFFFFF" },
+  { key: "color_card_title", label: "Card Title", description: "Title text inside each service card", fallback: "#2A0E33" },
+  { key: "color_subtitle", label: "Card Subtitle", description: "Subtitle text and bullet markers in cards", fallback: "#7B3A91" },
+  { key: "color_deliverables_bg", label: "Deliverables Background", description: "Background of the collapsible deliverables section", fallback: "#F9F0C1" },
+  { key: "color_deliverables_label", label: "Deliverables Label", description: "The 'What's inside' toggle text color", fallback: "#4D1B5E" },
+  { key: "color_meta_bg", label: "Meta Bar Background", description: "Background of the price/timeline footer bar", fallback: "#E5C54F" },
+  { key: "color_meta_fg", label: "Meta Bar Text", description: "Text color in the price/timeline footer bar", fallback: "#2A0E33" },
+  { key: "color_note_border", label: "Note Border", description: "Left border color of the optional note section", fallback: "#7B3A91" },
+  { key: "color_divider_from", label: "Divider Gradient Start", description: "Starting color of the gradient divider line above the section", fallback: "#4D1B5E" },
+  { key: "color_divider_to", label: "Divider Gradient End", description: "Ending color of the gradient divider line", fallback: "#7B3A91" },
+];
+
 const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServicesChange }: Props) => {
   const [openCard, setOpenCard] = useState<number | null>(null);
+  const [showColors, setShowColors] = useState(false);
   const [tagTypes, setTagTypes] = useState(DEFAULT_TAG_TYPES);
   const services: Service[] = servicesContent?.services || [];
 
@@ -80,6 +99,34 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
         <Field label="Title" value={pillarContent.title || ""} onChange={(v) => onPillarChange("title", v)} />
         <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} />
       </SectionBox>
+
+      {/* Color overrides */}
+      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.15)" }}>
+        <button
+          type="button"
+          onClick={() => setShowColors(!showColors)}
+          className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:opacity-80 transition-opacity"
+          style={{ color: "hsl(var(--foreground))" }}>
+          <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground">Section Colors</span>
+          {showColors ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </button>
+        {showColors && (
+          <div className="px-3 pb-3 space-y-2 border-t" style={{ borderColor: "hsl(var(--border) / 0.3)" }}>
+            <p className="font-body text-[9px] text-muted-foreground/60 pt-2">Customize every color in this pillar section. Leave empty to use defaults.</p>
+            <div className="grid grid-cols-2 gap-3">
+              {PILLAR_COLOR_FIELDS.map((cf) => (
+                <ColorField
+                  key={cf.key}
+                  label={cf.label}
+                  description={cf.description}
+                  value={pillarContent[cf.key] || ""}
+                  onChange={(v) => onPillarChange(cf.key, v)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       <div>
         <div className="flex items-center justify-between mb-2">
