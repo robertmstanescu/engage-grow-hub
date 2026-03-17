@@ -17,7 +17,7 @@ const Deliverables = ({ label, items }: {label: string;items: string[];}) => {
         className="flex items-center justify-between w-full text-left">
         <span
           className="font-body text-[10px] tracking-[0.18em] uppercase text-secondary"
-          style={{ color: "hsl(var(--pillar-primary) / 0.5)" }}>
+          style={{ color: "hsl(var(--pillar-deliverables-label))" }}>
           {label}
         </span>
         <ChevronDown
