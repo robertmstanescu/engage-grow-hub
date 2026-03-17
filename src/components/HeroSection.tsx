@@ -48,7 +48,7 @@ const HeroSection = () => {
 
   return (
     <section
-      className="scope-hero relative pt-32 pb-20 md:py-32 md:pt-40 text-center overflow-hidden"
+      className="scope-hero relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden"
       style={{ backgroundColor: "hsl(var(--hero-bg))" }}>
       {hasBg && c.bg_type === "image" && (
         <div className="absolute inset-0 z-0">
