@@ -96,25 +96,28 @@ export const SectionBox = ({ children, label }: { children: React.ReactNode; lab
   </div>
 );
 
-export const ColorField = ({ label, value, onChange, description }: { label: string; value: string; onChange: (v: string) => void; description?: string }) => (
-  <div>
-    <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5 block">{label}</label>
-    {description && <p className="font-body text-[9px] text-muted-foreground/70 mb-1">{description}</p>}
-    <div className="flex gap-1.5">
-      <input
-        type="color"
-        value={value || "#000000"}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-10 h-9 rounded border cursor-pointer"
-        style={{ borderColor: "hsl(var(--border))" }}
-      />
-      <input
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="#000000"
-        className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
-        style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
-      />
+export const ColorField = ({ label, value, onChange, description, fallback }: { label: string; value: string; onChange: (v: string) => void; description?: string; fallback?: string }) => {
+  const displayValue = value || fallback || "#000000";
+  return (
+    <div>
+      <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5 block">{label}</label>
+      {description && <p className="font-body text-[9px] text-muted-foreground/70 mb-1">{description}</p>}
+      <div className="flex gap-1.5">
+        <input
+          type="color"
+          value={displayValue}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-10 h-9 rounded border cursor-pointer"
+          style={{ borderColor: "hsl(var(--border))" }}
+        />
+        <input
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={fallback || "#000000"}
+          className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
+          style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+        />
+      </div>
     </div>
-  </div>
-);
+  );
+};

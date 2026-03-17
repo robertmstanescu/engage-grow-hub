@@ -120,6 +120,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
                   label={cf.label}
                   description={cf.description}
                   value={pillarContent[cf.key] || ""}
+                  fallback={cf.fallback}
                   onChange={(v) => onPillarChange(cf.key, v)}
                 />
               ))}
