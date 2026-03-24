@@ -24,7 +24,7 @@ const TextRow = ({ row }: { row: PageRow }) => {
             {titleLines.map((line, i) => (
               <span key={i}>
                 {i > 0 && <br />}
-                <span dangerouslySetInnerHTML={{ __html: stripP(line) }} />
+                <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
               </span>
             ))}
           </motion.h3>
