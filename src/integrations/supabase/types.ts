@@ -274,7 +274,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      site_content_public: {
+        Row: {
+          content: Json | null
+          draft_content: Json | null
+          id: string | null
+          section_key: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content?: Json | null
+          draft_content?: never
+          id?: string | null
+          section_key?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: Json | null
+          draft_content?: never
+          id?: string | null
+          section_key?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_email: {

@@ -37,6 +37,20 @@ serve(async (req) => {
       });
     }
 
+    // Verify caller is an admin
+    const { data: adminRow } = await supabase
+      .from('admin_users')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!adminRow) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { campaignId } = await req.json();
 
     // Get campaign
