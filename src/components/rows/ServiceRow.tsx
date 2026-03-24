@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "@/components/ServiceCard";
 import type { PageRow } from "@/types/rows";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
