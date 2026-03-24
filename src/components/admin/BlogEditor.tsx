@@ -199,7 +199,7 @@ const BlogEditor = () => {
           <div className="py-8 px-6" style={{ backgroundColor: "hsl(var(--background))" }}>
             <div
               className="max-w-[600px] mx-auto prose prose-sm prose-headings:font-display prose-headings:text-secondary prose-p:text-foreground/80 prose-p:leading-[1.8] prose-a:text-primary prose-img:rounded-lg"
-              dangerouslySetInnerHTML={{ __html: form.content || "<p>No content yet.</p>" }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(form.content || "<p>No content yet.</p>") }}
             />
           </div>
         </div>

@@ -68,7 +68,7 @@ const VowsSection = () => {
               <div
                 className="font-body text-xs leading-relaxed"
                 style={{ color: "hsl(var(--vows-card-body))" }}
-                dangerouslySetInnerHTML={{ __html: vow.body }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(vow.body) }}
               />
             </motion.div>
           ))}

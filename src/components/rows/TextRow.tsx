@@ -53,7 +53,7 @@ const TextRow = ({ row }: { row: PageRow }) => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1, ease }}
             className="font-body-heading text-base font-medium max-w-[700px] mx-auto leading-relaxed mt-4"
-            dangerouslySetInnerHTML={{ __html: c.body }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
           />
         )}
       </div>

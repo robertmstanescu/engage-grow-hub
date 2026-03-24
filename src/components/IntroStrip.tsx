@@ -22,7 +22,7 @@ const IntroStrip = () => {
         transition={{ duration: 0.6, ease }}
         className="font-body-heading text-base font-medium max-w-[700px] mx-auto"
         style={{ color: "hsl(var(--intro-text))" }}
-        dangerouslySetInnerHTML={{ __html: c.text }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.text) }}
       />
     </div>
   );

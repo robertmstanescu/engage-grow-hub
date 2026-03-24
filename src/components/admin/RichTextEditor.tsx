@@ -178,8 +178,9 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
 
   useEffect(() => {
     if (!editorRef.current) return;
-    if (editorRef.current.innerHTML !== (content || "")) {
-      editorRef.current.innerHTML = content || "";
+    const sanitized = sanitizeHtml(content || "");
+    if (editorRef.current.innerHTML !== sanitized) {
+      editorRef.current.innerHTML = sanitized;
     }
   }, [content]);
 

@@ -76,7 +76,7 @@ const BoxedRow = ({ row }: {row: PageRow;}) => {
               <div
               className="font-body text-xs leading-relaxed"
               style={{ color: "hsl(var(--vows-card-body))" }}
-              dangerouslySetInnerHTML={{ __html: card.body }} />
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
             
             </motion.div>
           )}

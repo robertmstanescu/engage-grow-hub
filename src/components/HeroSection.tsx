@@ -109,7 +109,7 @@ const HeroSection = () => {
           transition={{ duration: 0.6, delay: 0.2, ease }}
           className="font-body-heading text-lg max-w-[620px] mx-auto leading-relaxed mt-6"
           style={{ color: "hsl(var(--hero-body))" }}
-          dangerouslySetInnerHTML={{ __html: c.body }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
         />
       </div>
     </section>

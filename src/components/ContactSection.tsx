@@ -76,7 +76,7 @@ const ContactSection = () => {
               </span>
             ))}
           </h3>
-          <div className="font-body-heading text-base" style={{ color: "hsl(var(--contact-body))" }} dangerouslySetInnerHTML={{ __html: c.body }} />
+          <div className="font-body-heading text-base" style={{ color: "hsl(var(--contact-body))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
         </motion.div>
 
         <motion.form initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.15, ease }} onSubmit={handleSubmit} className="space-y-5">
