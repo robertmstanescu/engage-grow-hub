@@ -83,7 +83,7 @@ const ContactRow = ({ row }: {row: PageRow;}) => {
             <p className="font-body-heading text-base mb-6" style={{ color: "hsl(var(--contact-success-fg) / 0.7)" }}>{successBody}</p>
             <button
               onClick={() => {setSubmitted(false);setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false });}}
-              className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-8 py-3.5 rounded-full hover:opacity-85 transition-opacity bg-secondary text-white">
+              className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-8 py-3.5 rounded-full hover:opacity-85 transition-opacity bg-secondary text-primary-foreground">
               {successButton}
             </button>
           </motion.div>
