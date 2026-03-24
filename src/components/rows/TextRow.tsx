@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { PageRow } from "@/types/rows";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
@@ -23,7 +24,7 @@ const TextRow = ({ row }: { row: PageRow }) => {
             {titleLines.map((line, i) => (
               <span key={i}>
                 {i > 0 && <br />}
-                <span dangerouslySetInnerHTML={{ __html: stripP(line) }} />
+                <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
               </span>
             ))}
           </motion.h3>
@@ -52,7 +53,7 @@ const TextRow = ({ row }: { row: PageRow }) => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1, ease }}
             className="font-body-heading text-base font-medium max-w-[700px] mx-auto leading-relaxed mt-4"
-            dangerouslySetInnerHTML={{ __html: c.body }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
           />
         )}
       </div>

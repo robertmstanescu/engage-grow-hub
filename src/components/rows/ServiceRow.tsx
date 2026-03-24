@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "@/components/ServiceCard";
 import type { PageRow } from "@/types/rows";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -110,7 +111,7 @@ const ServiceRow = ({ row }: { row: PageRow }) => {
             transition={{ duration: 0.6, delay: 0.1, ease }}
             className="font-body-heading text-base max-w-[700px] mx-auto"
             style={{ color: "hsl(var(--pillar-heading-sub) / 0.65)" }}
-            dangerouslySetInnerHTML={{ __html: c.description }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
           />
         </div>
       </div>

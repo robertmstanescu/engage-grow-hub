@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const FONT_OPTIONS = [
   { label: "Inter", value: "Inter, sans-serif" },
@@ -177,8 +178,9 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
 
   useEffect(() => {
     if (!editorRef.current) return;
-    if (editorRef.current.innerHTML !== (content || "")) {
-      editorRef.current.innerHTML = content || "";
+    const sanitized = sanitizeHtml(content || "");
+    if (editorRef.current.innerHTML !== sanitized) {
+      editorRef.current.innerHTML = sanitized;
     }
   }, [content]);
 

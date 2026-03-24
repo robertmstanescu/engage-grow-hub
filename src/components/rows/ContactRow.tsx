@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import { sanitizeHtml } from "@/lib/sanitize";
 import type { PageRow, ContactField } from "@/types/rows";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -78,11 +79,11 @@ const ContactRow = ({ row }: { row: PageRow }) => {
           {titleLines.length > 0 && (
             <h3 className="font-display text-2xl md:text-3xl font-black leading-tight mb-4" style={{ color: "hsl(var(--contact-title))" }}>
               {titleLines.map((line, i) => (
-                <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: stripP(line) }} /></span>
+                <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>
               ))}
             </h3>
           )}
-          {c.body && <div className="font-body-heading text-base" style={{ color: "hsl(var(--contact-body))" }} dangerouslySetInnerHTML={{ __html: c.body }} />}
+          {c.body && <div className="font-body-heading text-base" style={{ color: "hsl(var(--contact-body))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
         </motion.div>
 
         <motion.form initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.15, ease }} onSubmit={handleSubmit} className="space-y-5">

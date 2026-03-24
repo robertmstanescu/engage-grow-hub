@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -45,7 +46,7 @@ const VowsSection = () => {
           {titleLines.map((line, i) => (
             <span key={i}>
               {i > 0 && <br />}
-              <span dangerouslySetInnerHTML={{ __html: stripP(line) }} />
+              <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
             </span>
           ))}
         </motion.h3>
@@ -67,7 +68,7 @@ const VowsSection = () => {
               <div
                 className="font-body text-xs leading-relaxed"
                 style={{ color: "hsl(var(--vows-card-body))" }}
-                dangerouslySetInnerHTML={{ __html: vow.body }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(vow.body) }}
               />
             </motion.div>
           ))}

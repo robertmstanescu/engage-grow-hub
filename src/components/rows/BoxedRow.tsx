@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { PageRow } from "@/types/rows";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
@@ -35,7 +36,7 @@ const BoxedRow = ({ row }: {row: PageRow;}) => {
             {titleLines.map((line, i) =>
           <span key={i}>
                 {i > 0 && <br />}
-                <span dangerouslySetInnerHTML={{ __html: stripP(line) }} />
+                <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
               </span>
           )}
           </motion.h3>
@@ -75,7 +76,7 @@ const BoxedRow = ({ row }: {row: PageRow;}) => {
               <div
               className="font-body text-xs leading-relaxed"
               style={{ color: "hsl(var(--vows-card-body))" }}
-              dangerouslySetInnerHTML={{ __html: card.body }} />
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
             
             </motion.div>
           )}

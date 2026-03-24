@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "./ServiceCard";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -83,7 +84,7 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
             transition={{ duration: 0.6, delay: 0.1, ease }}
             className="font-body-heading text-base max-w-[700px] mx-auto"
             style={{ color: "hsl(var(--pillar-heading-sub) / 0.65)" }}
-            dangerouslySetInnerHTML={{ __html: description }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
           />
         </div>
       </div>

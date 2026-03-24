@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -21,7 +22,7 @@ const IntroStrip = () => {
         transition={{ duration: 0.6, ease }}
         className="font-body-heading text-base font-medium max-w-[700px] mx-auto"
         style={{ color: "hsl(var(--intro-text))" }}
-        dangerouslySetInnerHTML={{ __html: c.text }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.text) }}
       />
     </div>
   );

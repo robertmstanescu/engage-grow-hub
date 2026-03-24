@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -82,7 +83,7 @@ const HeroSection = () => {
           {titleLines.map((line, i) => (
             <span key={i}>
               {i > 0 && <br />}
-              <span dangerouslySetInnerHTML={{ __html: stripP(line) }} />{" "}
+              <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />{" "}
             </span>
           ))}
         </motion.h1>
@@ -108,7 +109,7 @@ const HeroSection = () => {
           transition={{ duration: 0.6, delay: 0.2, ease }}
           className="font-body-heading text-lg max-w-[620px] mx-auto leading-relaxed mt-6"
           style={{ color: "hsl(var(--hero-body))" }}
-          dangerouslySetInnerHTML={{ __html: c.body }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
         />
       </div>
     </section>
