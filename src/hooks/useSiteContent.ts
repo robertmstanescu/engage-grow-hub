@@ -18,7 +18,7 @@ export const useSiteContent = <T = any>(sectionKey: string, fallback: T): T => {
     const load = async () => {
       const preview = isPreviewMode();
       const { data } = await supabase
-        .from("site_content")
+        .from("site_content_public")
         .select("content, draft_content")
         .eq("section_key", sectionKey)
         .maybeSingle() as any;
