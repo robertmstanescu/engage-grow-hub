@@ -10,6 +10,53 @@ const SITE_NAME = "The Magic Coffin";
 const SENDER_DOMAIN = "notify.themagiccoffin.com";
 const FROM_DOMAIN = "themagiccoffin.com";
 
+function generateToken(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes)
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function getOrCreateUnsubscribeToken(supabase: ReturnType<typeof createClient>, email: string) {
+  const normalizedEmail = email.toLowerCase();
+
+  const { data: existingToken, error: lookupError } = await supabase
+    .from('email_unsubscribe_tokens')
+    .select('token, used_at')
+    .eq('email', normalizedEmail)
+    .maybeSingle();
+
+  if (lookupError) {
+    throw new Error(`Failed to look up unsubscribe token: ${lookupError.message}`);
+  }
+
+  if (existingToken?.token && !existingToken.used_at) {
+    return existingToken.token;
+  }
+
+  const token = generateToken();
+  const { error: upsertError } = await supabase
+    .from('email_unsubscribe_tokens')
+    .upsert({ email: normalizedEmail, token }, { onConflict: 'email' });
+
+  if (upsertError) {
+    throw new Error(`Failed to store unsubscribe token: ${upsertError.message}`);
+  }
+
+  const { data: storedToken, error: storedTokenError } = await supabase
+    .from('email_unsubscribe_tokens')
+    .select('token')
+    .eq('email', normalizedEmail)
+    .single();
+
+  if (storedTokenError || !storedToken?.token) {
+    throw new Error(`Failed to confirm unsubscribe token storage: ${storedTokenError?.message || 'Unknown error'}`);
+  }
+
+  return storedToken.token;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -20,7 +67,6 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify auth
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -38,7 +84,6 @@ serve(async (req) => {
       });
     }
 
-    // Verify caller is an admin
     const { data: adminRow } = await supabase
       .from('admin_users')
       .select('id')
@@ -54,7 +99,6 @@ serve(async (req) => {
 
     const { campaignId } = await req.json();
 
-    // Get campaign
     const { data: campaign, error: campaignError } = await supabase
       .from('email_campaigns')
       .select('*')
@@ -69,47 +113,47 @@ serve(async (req) => {
       });
     }
 
-    // Get marketing subscribers
     const { data: subscribers } = await supabase
       .from('contacts')
       .select('email, name')
       .eq('subscribed_to_marketing', true);
 
-    if (!subscribers || subscribers.length === 0) {
+    const uniqueSubscribers = Array.from(
+      new Map((subscribers || []).map((subscriber) => [subscriber.email.toLowerCase(), subscriber])).values()
+    );
+
+    if (uniqueSubscribers.length === 0) {
       return new Response(JSON.stringify({ error: 'No marketing subscribers found' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Parse blocks to generate HTML
     let htmlContent = campaign.html_content;
     try {
       const blocks = JSON.parse(campaign.html_content);
       if (Array.isArray(blocks)) {
-        // Generate HTML from blocks (same logic as client-side blocksToHtml)
         htmlContent = blocksToHtml(blocks);
       }
     } catch {
-      // Already HTML, use as-is
     }
 
-    console.log(`Sending campaign to ${subscribers.length} subscribers`);
+    console.log(`Sending campaign to ${uniqueSubscribers.length} subscribers`);
 
-    // Check suppressed emails
     const { data: suppressedEmails } = await supabase
       .from('suppressed_emails')
       .select('email');
-    const suppressedSet = new Set((suppressedEmails || []).map(s => s.email.toLowerCase()));
+    const suppressedSet = new Set((suppressedEmails || []).map((s) => s.email.toLowerCase()));
 
     let sentCount = 0;
-    for (const subscriber of subscribers) {
-      if (suppressedSet.has(subscriber.email.toLowerCase())) continue;
+    for (const subscriber of uniqueSubscribers) {
+      const normalizedEmail = subscriber.email.toLowerCase();
+      if (suppressedSet.has(normalizedEmail)) continue;
 
+      const unsubscribeToken = await getOrCreateUnsubscribeToken(supabase, normalizedEmail);
       const messageId = crypto.randomUUID();
-      const idempotencyKey = `campaign-${campaignId}-${subscriber.email}`;
+      const idempotencyKey = `campaign-${campaignId}-${normalizedEmail}`;
 
-      // Log pending
       await supabase.from('email_send_log').insert({
         message_id: messageId,
         template_name: `campaign-${campaignId}`,
@@ -117,7 +161,6 @@ serve(async (req) => {
         status: 'pending',
       });
 
-      // Enqueue via transactional queue
       await supabase.rpc('enqueue_email', {
         queue_name: 'transactional_emails',
         payload: {
@@ -131,6 +174,7 @@ serve(async (req) => {
           purpose: 'transactional',
           label: `campaign-${campaignId}`,
           idempotency_key: idempotencyKey,
+          unsubscribe_token: unsubscribeToken,
           queued_at: new Date().toISOString(),
         },
       });
@@ -138,7 +182,6 @@ serve(async (req) => {
       sentCount++;
     }
 
-    // Mark campaign as sent
     await supabase
       .from('email_campaigns')
       .update({
@@ -161,7 +204,6 @@ serve(async (req) => {
   }
 });
 
-// Minimal block-to-HTML converter (mirrors client-side email-blocks.ts)
 function blocksToHtml(blocks: any[]): string {
   const rows = blocks.map((b: any) => {
     const s = b.settings || {};

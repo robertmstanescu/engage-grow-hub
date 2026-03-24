@@ -46,7 +46,7 @@ const ContactSection = () => {
     if (error) { toast.error("Something went wrong. Please try again."); setSubmitting(false); return; }
 
     // Send notification email to hello@themagiccoffin.com
-    await supabase.functions.invoke("send-transactional-email", {
+    const { error: notificationError } = await supabase.functions.invoke("send-transactional-email", {
       body: {
         templateName: "contact-notification",
         recipientEmail: formData.email,
@@ -59,6 +59,12 @@ const ContactSection = () => {
         },
       },
     });
+
+    if (notificationError) {
+      toast.error("Your message was saved, but the email notification failed. Please contact hello@themagiccoffin.com directly.");
+      setSubmitting(false);
+      return;
+    }
 
     setSubmitted(true); setSubmitting(false); toast.success("Message sent successfully!");
   };
