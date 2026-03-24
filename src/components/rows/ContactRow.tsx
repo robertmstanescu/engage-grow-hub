@@ -128,7 +128,7 @@ const ContactRow = ({ row }: { row: PageRow }) => {
             </label>
           ))}
 
-          <div className="pt-4 text-center text-white bg-secondary">
+          <div className="pt-4 text-center bg-transparent text-transparent">
             <button type="submit" disabled={submitting} className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-8 py-3.5 rounded-full hover:opacity-85 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--contact-btn-bg))", color: "hsl(var(--contact-btn-text))" }}>
               {submitting ? "Sending…" : buttonText}
             </button>
