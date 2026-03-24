@@ -79,7 +79,7 @@ const ContactRow = ({ row }: { row: PageRow }) => {
           {titleLines.length > 0 && (
             <h3 className="font-display text-2xl md:text-3xl font-black leading-tight mb-4" style={{ color: "hsl(var(--contact-title))" }}>
               {titleLines.map((line, i) => (
-                <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: stripP(line) }} /></span>
+                <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>
               ))}
             </h3>
           )}
