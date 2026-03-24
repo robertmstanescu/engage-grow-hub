@@ -84,12 +84,7 @@ serve(async (req) => {
     // Send emails using Supabase's built-in email (via auth admin)
     // For now, we'll log the send intent - you'll want to integrate a proper
     // email service (Resend, SendGrid, etc.) for production
-    console.log(`Sending campaign "${campaign.subject}" to ${subscribers.length} subscribers`);
-    console.log(`From: ${SENDER_NAME} <${SENDER_EMAIL}>`);
-    
-    for (const subscriber of subscribers) {
-      console.log(`Would send to: ${subscriber.email} (${subscriber.name})`);
-    }
+    console.log(`Sending campaign to ${subscribers.length} subscribers`);
 
     // Mark campaign as sent
     await supabase
