@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeHtml } from "@/lib/sanitize";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
