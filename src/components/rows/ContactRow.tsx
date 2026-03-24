@@ -93,7 +93,7 @@ const ContactRow = ({ row }: { row: PageRow }) => {
   }
 
   return (
-    <section style={{ backgroundColor: row.bg_color || "hsl(var(--contact-bg))" }}>
+    <section className="bg-white" style={{ backgroundColor: row.bg_color || "hsl(var(--contact-bg))" }}>
       <div className="max-w-[520px] mx-auto px-6 py-16">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease }} className="text-center mb-10">
           {titleLines.length > 0 && (
@@ -150,7 +150,7 @@ const ContactRow = ({ row }: { row: PageRow }) => {
           ))}
 
           <div className="pt-4 text-center bg-transparent text-transparent">
-            <button type="submit" disabled={submitting} className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-8 py-3.5 rounded-full hover:opacity-85 transition-opacity disabled:opacity-50 bg-secondary text-destructive-foreground" style={{ backgroundColor: "hsl(var(--contact-btn-bg))", color: "hsl(var(--contact-btn-text))" }}>
+            <button type="submit" disabled={submitting} className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-8 py-3.5 rounded-full hover:opacity-85 transition-opacity disabled:opacity-50 bg-secondary text-white" style={{ backgroundColor: "hsl(var(--contact-btn-bg))", color: "hsl(var(--contact-btn-text))" }}>
               {submitting ? "Sending…" : buttonText}
             </button>
           </div>
