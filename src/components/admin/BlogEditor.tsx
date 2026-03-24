@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { toast } from "sonner";
 import { Trash2, Edit, Plus, Eye, ArrowLeft, Upload } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
