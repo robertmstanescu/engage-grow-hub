@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { PageRow } from "@/types/rows";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
