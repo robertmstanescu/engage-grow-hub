@@ -187,13 +187,15 @@ const Navbar = () => {
                   {link.label}
                 </a>
               ))}
-              <a
-                href="/blog"
-                onClick={(e) => { e.preventDefault(); setIsOpen(false); navigate("/blog"); }}
-                className="font-body text-xs uppercase tracking-[0.15em] transition-colors"
-                style={{ color: "hsl(var(--nav-text) / 0.6)" }}>
-                Blog
-              </a>
+              {showBlogLink && (
+                <a
+                  href="/blog"
+                  onClick={(e) => { e.preventDefault(); setIsOpen(false); navigate("/blog"); }}
+                  className="font-body text-xs uppercase tracking-[0.15em] transition-colors"
+                  style={{ color: "hsl(var(--nav-text) / 0.6)" }}>
+                  Blog
+                </a>
+              )}
             </div>
           </motion.div>
         )}
