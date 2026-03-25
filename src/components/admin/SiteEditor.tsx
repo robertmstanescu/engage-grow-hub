@@ -18,6 +18,7 @@ interface SectionData {
 
 const SECTION_LABELS: Record<string, string> = {
   hero: "Hero Section",
+  navbar: "Navigation Bar",
   social_links: "Social Media Links",
   page_rows: "Page Rows",
   branding: "Logo & Favicon",
