@@ -166,7 +166,7 @@ const Navbar = () => {
             className="lg:hidden overflow-hidden"
             style={{ backgroundColor: "hsl(var(--nav-dropdown-bg))" }}>
             <div className="px-6 py-4 flex flex-col gap-4">
-              <span className="font-body text-[10px] uppercase tracking-[0.15em]" style={{ color: "hsl(var(--nav-text) / 0.4)" }}>Services</span>
+              <span className="font-body text-[10px] uppercase tracking-[0.15em]" style={{ color: "hsl(var(--nav-text) / 0.4)" }}>{servicesLabel}</span>
               {subLinks.map((link) => (
                 <a
                   key={link.label}
