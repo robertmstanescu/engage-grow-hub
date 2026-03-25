@@ -77,7 +77,7 @@ const Navbar = () => {
               onClick={() => setServicesOpen(!servicesOpen)}
               className="font-body text-xs uppercase tracking-[0.15em] font-semibold flex items-center gap-1 transition-colors duration-200"
               style={{ color: "hsl(var(--nav-text))" }}>
-              Services
+              {servicesLabel}
               <ChevronDown size={14} className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} />
             </button>
             <AnimatePresence>
