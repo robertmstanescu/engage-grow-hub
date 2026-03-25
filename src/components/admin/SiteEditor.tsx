@@ -7,6 +7,7 @@ import SocialLinksEditor from "./site-editor/SocialLinksEditor";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
 import BrandingEditor from "./BrandingEditor";
+import NavbarEditor from "./site-editor/NavbarEditor";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
 
 interface SectionData {
