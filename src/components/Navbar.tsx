@@ -6,6 +6,7 @@ import { useSiteContent } from "@/hooks/useSiteContent";
 
 const Navbar = () => {
   const branding = useSiteContent<Record<string, any>>("branding", {});
+  const navConfig = useSiteContent<Record<string, any>>("navbar", {});
   const logoUrl = branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
   const [isOpen, setIsOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
@@ -13,15 +14,18 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const subLinks = [
+  const servicesLabel = navConfig.services_label || "Services";
+  const subLinks = navConfig.sub_links || [
     { label: "Internal Communications", href: "#internal-communications" },
     { label: "Employee Experience", href: "#employee-experience" },
   ];
-
-  const links = [
+  const links = navConfig.links || [
     { label: "Our Vows", href: "#vows" },
     { label: "Contact", href: "#contact" },
   ];
+  const showBlogLink = navConfig.show_blog_link !== false;
+  const ctaText = navConfig.cta_text || "Book a consultation";
+  const ctaHref = navConfig.cta_href || "#contact";
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
