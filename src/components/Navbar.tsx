@@ -6,6 +6,7 @@ import { useSiteContent } from "@/hooks/useSiteContent";
 
 const Navbar = () => {
   const branding = useSiteContent<Record<string, any>>("branding", {});
+  const navConfig = useSiteContent<Record<string, any>>("navbar", {});
   const logoUrl = branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
   const [isOpen, setIsOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
@@ -13,15 +14,18 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const subLinks = [
+  const servicesLabel = navConfig.services_label || "Services";
+  const subLinks = navConfig.sub_links || [
     { label: "Internal Communications", href: "#internal-communications" },
     { label: "Employee Experience", href: "#employee-experience" },
   ];
-
-  const links = [
+  const links = navConfig.links || [
     { label: "Our Vows", href: "#vows" },
     { label: "Contact", href: "#contact" },
   ];
+  const showBlogLink = navConfig.show_blog_link !== false;
+  const ctaText = navConfig.cta_text || "Book a consultation";
+  const ctaHref = navConfig.cta_href || "#contact";
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -73,7 +77,7 @@ const Navbar = () => {
               onClick={() => setServicesOpen(!servicesOpen)}
               className="font-body text-xs uppercase tracking-[0.15em] font-semibold flex items-center gap-1 transition-colors duration-200"
               style={{ color: "hsl(var(--nav-text))" }}>
-              Services
+              {servicesLabel}
               <ChevronDown size={14} className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} />
             </button>
             <AnimatePresence>
@@ -121,22 +125,24 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
+          {showBlogLink && (
+            <a
+              href="/blog"
+              onClick={(e) => { e.preventDefault(); navigate("/blog"); }}
+              className="font-body text-xs uppercase tracking-[0.15em] transition-colors duration-200 font-semibold"
+              style={{ color: "hsl(var(--nav-text))" }}>
+              Blog
+            </a>
+          )}
           <a
-            href="/blog"
-            onClick={(e) => { e.preventDefault(); navigate("/blog"); }}
-            className="font-body text-xs uppercase tracking-[0.15em] transition-colors duration-200 font-semibold"
-            style={{ color: "hsl(var(--nav-text))" }}>
-            Blog
-          </a>
-          <a
-            href="#contact"
-            onClick={(e) => handleNavClick(e, "#contact")}
+            href={ctaHref}
+            onClick={(e) => handleNavClick(e, ctaHref)}
             className="font-display text-[10px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
             style={{
               backgroundColor: "hsl(var(--nav-cta-bg))",
               color: "hsl(var(--nav-cta-text))"
             }}>
-            Book a consultation
+            {ctaText}
           </a>
         </div>
 
@@ -160,7 +166,7 @@ const Navbar = () => {
             className="lg:hidden overflow-hidden"
             style={{ backgroundColor: "hsl(var(--nav-dropdown-bg))" }}>
             <div className="px-6 py-4 flex flex-col gap-4">
-              <span className="font-body text-[10px] uppercase tracking-[0.15em]" style={{ color: "hsl(var(--nav-text) / 0.4)" }}>Services</span>
+              <span className="font-body text-[10px] uppercase tracking-[0.15em]" style={{ color: "hsl(var(--nav-text) / 0.4)" }}>{servicesLabel}</span>
               {subLinks.map((link) => (
                 <a
                   key={link.label}
@@ -181,13 +187,15 @@ const Navbar = () => {
                   {link.label}
                 </a>
               ))}
-              <a
-                href="/blog"
-                onClick={(e) => { e.preventDefault(); setIsOpen(false); navigate("/blog"); }}
-                className="font-body text-xs uppercase tracking-[0.15em] transition-colors"
-                style={{ color: "hsl(var(--nav-text) / 0.6)" }}>
-                Blog
-              </a>
+              {showBlogLink && (
+                <a
+                  href="/blog"
+                  onClick={(e) => { e.preventDefault(); setIsOpen(false); navigate("/blog"); }}
+                  className="font-body text-xs uppercase tracking-[0.15em] transition-colors"
+                  style={{ color: "hsl(var(--nav-text) / 0.6)" }}>
+                  Blog
+                </a>
+              )}
             </div>
           </motion.div>
         )}

@@ -7,6 +7,7 @@ import SocialLinksEditor from "./site-editor/SocialLinksEditor";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
 import BrandingEditor from "./BrandingEditor";
+import NavbarEditor from "./site-editor/NavbarEditor";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
 
 interface SectionData {
@@ -17,6 +18,7 @@ interface SectionData {
 
 const SECTION_LABELS: Record<string, string> = {
   hero: "Hero Section",
+  navbar: "Navigation Bar",
   social_links: "Social Media Links",
   page_rows: "Page Rows",
   branding: "Logo & Favicon",
@@ -130,6 +132,13 @@ const SiteEditor = () => {
           draft_content: { rows: DEFAULT_ROWS },
         }]);
       }
+      if (!getSection("navbar")) {
+        setSections((prev) => [...prev, {
+          section_key: "navbar",
+          content: {},
+          draft_content: {},
+        }]);
+      }
       if (!getSection("branding")) {
         setSections((prev) => [...prev, {
           section_key: "branding",
@@ -175,6 +184,22 @@ const SiteEditor = () => {
             <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
             <button onClick={() => saveDraft("hero")} disabled={saving === "hero"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
               <Save size={13} /> {saving === "hero" ? "Saving…" : "Save Draft"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Navbar */}
+      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+        <button onClick={() => setOpenSection(openSection === "navbar" ? null : "navbar")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
+          <span className="font-body text-sm font-medium">Navigation Bar</span>
+          {openSection === "navbar" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {openSection === "navbar" && (
+          <div className="px-4 pb-4 space-y-4">
+            <NavbarEditor content={getDraft("navbar")} onChange={(f, v) => updateField("navbar", f, v)} />
+            <button onClick={() => saveDraft("navbar")} disabled={saving === "navbar"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+              <Save size={13} /> {saving === "navbar" ? "Saving…" : "Save Draft"}
             </button>
           </div>
         )}
