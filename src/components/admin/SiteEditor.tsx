@@ -189,6 +189,22 @@ const SiteEditor = () => {
         )}
       </div>
 
+      {/* Navbar */}
+      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+        <button onClick={() => setOpenSection(openSection === "navbar" ? null : "navbar")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
+          <span className="font-body text-sm font-medium">Navigation Bar</span>
+          {openSection === "navbar" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {openSection === "navbar" && (
+          <div className="px-4 pb-4 space-y-4">
+            <NavbarEditor content={getDraft("navbar")} onChange={(f, v) => updateField("navbar", f, v)} />
+            <button onClick={() => saveDraft("navbar")} disabled={saving === "navbar"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+              <Save size={13} /> {saving === "navbar" ? "Saving…" : "Save Draft"}
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Page Rows */}
       <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
         <button onClick={() => setOpenSection(openSection === "page_rows" ? null : "page_rows")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
