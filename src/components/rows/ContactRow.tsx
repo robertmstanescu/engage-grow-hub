@@ -40,33 +40,21 @@ const ContactRow = ({ row }: {row: PageRow;}) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const id = crypto.randomUUID();
-    const { error } = await supabase.from("contacts").insert({
-      id,
-      name: formData.name,
-      email: formData.email,
-      company: formData.company || null,
-      message: formData.message || null,
-      subscribed_to_marketing: formData.subscribed_to_marketing || false
-    });
-    if (error) {toast.error("Something went wrong.");setSubmitting(false);return;}
 
-    const { error: notificationError } = await supabase.functions.invoke("send-transactional-email", {
+    const { data, error } = await supabase.functions.invoke("submit-contact", {
       body: {
-        templateName: "contact-notification",
-        recipientEmail: formData.email,
-        idempotencyKey: `contact-notify-${id}`,
-        templateData: {
-          name: formData.name,
-          email: formData.email,
-          company: formData.company || undefined,
-          message: formData.message || undefined
-        }
+        name: formData.name,
+        email: formData.email,
+        company: formData.company || null,
+        message: formData.message || null,
+        subscribed_to_marketing: formData.subscribed_to_marketing || false
       }
     });
 
-    if (notificationError) {
-      console.error("Email notification failed:", notificationError);
+    if (error) {
+      toast.error("Something went wrong.");
+      setSubmitting(false);
+      return;
     }
 
     setSubmitted(true);

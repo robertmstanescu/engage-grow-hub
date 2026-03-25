@@ -36,32 +36,19 @@ const ContactSection = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const id = crypto.randomUUID();
-    const { error } = await supabase.from("contacts").insert({
-      id,
-      name: formData.name, email: formData.email,
-      company: formData.company || null, message: formData.message || null,
-      subscribed_to_marketing: formData.subscribed_to_marketing,
-    });
-    if (error) { toast.error("Something went wrong. Please try again."); setSubmitting(false); return; }
 
-    // Send notification email to hello@themagiccoffin.com
-    const { error: notificationError } = await supabase.functions.invoke("send-transactional-email", {
+    const { data, error } = await supabase.functions.invoke("submit-contact", {
       body: {
-        templateName: "contact-notification",
-        recipientEmail: formData.email,
-        idempotencyKey: `contact-notify-${id}`,
-        templateData: {
-          name: formData.name,
-          email: formData.email,
-          company: formData.company || undefined,
-          message: formData.message || undefined,
-        },
+        name: formData.name,
+        email: formData.email,
+        company: formData.company || null,
+        message: formData.message || null,
+        subscribed_to_marketing: formData.subscribed_to_marketing,
       },
     });
 
-    if (notificationError) {
-      toast.error("Your message was saved, but the email notification failed. Please contact hello@themagiccoffin.com directly.");
+    if (error) {
+      toast.error("Something went wrong. Please try again.");
       setSubmitting(false);
       return;
     }
