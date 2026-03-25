@@ -125,22 +125,24 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
+          {showBlogLink && (
+            <a
+              href="/blog"
+              onClick={(e) => { e.preventDefault(); navigate("/blog"); }}
+              className="font-body text-xs uppercase tracking-[0.15em] transition-colors duration-200 font-semibold"
+              style={{ color: "hsl(var(--nav-text))" }}>
+              Blog
+            </a>
+          )}
           <a
-            href="/blog"
-            onClick={(e) => { e.preventDefault(); navigate("/blog"); }}
-            className="font-body text-xs uppercase tracking-[0.15em] transition-colors duration-200 font-semibold"
-            style={{ color: "hsl(var(--nav-text))" }}>
-            Blog
-          </a>
-          <a
-            href="#contact"
-            onClick={(e) => handleNavClick(e, "#contact")}
+            href={ctaHref}
+            onClick={(e) => handleNavClick(e, ctaHref)}
             className="font-display text-[10px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
             style={{
               backgroundColor: "hsl(var(--nav-cta-bg))",
               color: "hsl(var(--nav-cta-text))"
             }}>
-            Book a consultation
+            {ctaText}
           </a>
         </div>
 
