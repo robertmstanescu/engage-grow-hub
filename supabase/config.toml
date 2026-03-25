@@ -4,6 +4,9 @@ project_id = "mbxqjjmjywsxibttjrgr"
 verify_jwt = true
 
 [functions.send-transactional-email]
+verify_jwt = true
+
+[functions.submit-contact]
 verify_jwt = false
 
 [functions.preview-transactional-email]
