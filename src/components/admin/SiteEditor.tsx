@@ -132,6 +132,13 @@ const SiteEditor = () => {
           draft_content: { rows: DEFAULT_ROWS },
         }]);
       }
+      if (!getSection("navbar")) {
+        setSections((prev) => [...prev, {
+          section_key: "navbar",
+          content: {},
+          draft_content: {},
+        }]);
+      }
       if (!getSection("branding")) {
         setSections((prev) => [...prev, {
           section_key: "branding",
