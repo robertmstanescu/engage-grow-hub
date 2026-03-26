@@ -33,8 +33,8 @@ const PageRows = () => {
 
   return (
     <>
-      {rows.map((row) => (
-        <RowRenderer key={row.id} row={row} />
+      {rows.map((row, index) => (
+        <RowRenderer key={row.id} row={row} rowIndex={index} />
       ))}
     </>
   );
