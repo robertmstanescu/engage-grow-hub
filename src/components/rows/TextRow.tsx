@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
 import type { PageRow } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
+import EditableText from "@/components/admin/EditableText";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
-const TextRow = ({ row }: { row: PageRow }) => {
+const TextRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
   const c = row.content;
+  const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const titleLines: string[] = (c.title_lines || []).map((l: any) =>
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
   );
@@ -31,19 +33,24 @@ const TextRow = ({ row }: { row: PageRow }) => {
         )}
 
         {c.subtitle && (
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.05, ease }}
-            className="text-base md:text-lg leading-tight"
-            style={{
-              fontFamily: "'Architects Daughter', cursive",
-              color: c.subtitle_color || "inherit",
-              paddingTop: "10px",
-            }}>
-            {c.subtitle}
-          </motion.p>
+            transition={{ duration: 0.6, delay: 0.05, ease }}>
+            <EditableText
+              sectionKey="page_rows"
+              fieldPath={`${prefix}.subtitle`}
+              as="p"
+              className="text-base md:text-lg leading-tight"
+              style={{
+                fontFamily: "'Architects Daughter', cursive",
+                color: c.subtitle_color || "inherit",
+                paddingTop: "10px",
+              }}>
+              {c.subtitle}
+            </EditableText>
+          </motion.div>
         )}
 
         {c.body && (
@@ -51,10 +58,16 @@ const TextRow = ({ row }: { row: PageRow }) => {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1, ease }}
-            className="font-body-heading text-base font-medium max-w-[700px] mx-auto leading-relaxed mt-4"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
-          />
+            transition={{ duration: 0.6, delay: 0.1, ease }}>
+            <EditableText
+              sectionKey="page_rows"
+              fieldPath={`${prefix}.body`}
+              html
+              as="div"
+              className="font-body-heading text-base font-medium max-w-[700px] mx-auto leading-relaxed mt-4"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
+            />
+          </motion.div>
         )}
       </div>
     </section>
