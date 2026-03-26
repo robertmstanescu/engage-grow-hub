@@ -7,7 +7,7 @@ import ContactRow from "./ContactRow";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-const RowRenderer = ({ row }: { row: PageRow }) => {
+const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
   const id = row.scope || slugify(row.strip_title);
   const wrapper = (children: React.ReactNode) => (
     <div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>
@@ -15,11 +15,11 @@ const RowRenderer = ({ row }: { row: PageRow }) => {
 
   switch (row.type) {
     case "text":
-      return wrapper(<TextRow row={row} />);
+      return wrapper(<TextRow row={row} rowIndex={rowIndex} />);
     case "service":
-      return wrapper(<ServiceRow row={row} />);
+      return wrapper(<ServiceRow row={row} rowIndex={rowIndex} />);
     case "boxed":
-      return wrapper(<BoxedRow row={row} />);
+      return wrapper(<BoxedRow row={row} rowIndex={rowIndex} />);
     case "contact":
       return wrapper(<ContactRow row={row} />);
     default:
