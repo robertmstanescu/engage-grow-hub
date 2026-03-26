@@ -11,7 +11,7 @@ interface EditableTextProps {
   /** The element to render (default: span) */
   as?: keyof JSX.IntrinsicElements;
   /** All other props passed to the underlying element */
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
   dangerouslySetInnerHTML?: { __html: string };
