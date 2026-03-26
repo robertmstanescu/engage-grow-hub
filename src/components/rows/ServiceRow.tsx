@@ -4,10 +4,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "@/components/ServiceCard";
 import type { PageRow } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
+import EditableText from "@/components/admin/EditableText";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
-/** Convert "#RRGGBB" → "H S% L%" HSL channel string for CSS variables */
 const hexToHslChannels = (hex: string): string | null => {
   if (!hex || !hex.startsWith("#") || hex.length < 7) return null;
   const r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -55,8 +55,9 @@ const buildColorOverrides = (content: Record<string, any>): Record<string, strin
   return overrides;
 };
 
-const ServiceRow = ({ row }: { row: PageRow }) => {
+const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
   const c = row.content;
+  const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -93,7 +94,9 @@ const ServiceRow = ({ row }: { row: PageRow }) => {
             viewport={{ once: true }}
             className="font-body text-[11px] tracking-[0.2em] uppercase block mb-3"
             style={{ color: "hsl(var(--pillar-label))" }}>
-            {c.pillar_number}
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span">
+              {c.pillar_number}
+            </EditableText>
           </motion.span>
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
@@ -102,17 +105,25 @@ const ServiceRow = ({ row }: { row: PageRow }) => {
             transition={{ duration: 0.6, ease }}
             className="font-display text-2xl md:text-3xl font-bold leading-tight mb-3"
             style={{ color: "hsl(var(--pillar-heading))" }}>
-            {c.title}
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
+              {c.title}
+            </EditableText>
           </motion.h3>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1, ease }}
-            className="font-body-heading text-base max-w-[700px] mx-auto"
-            style={{ color: "hsl(var(--pillar-heading-sub) / 0.65)" }}
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
-          />
+            transition={{ duration: 0.6, delay: 0.1, ease }}>
+            <EditableText
+              sectionKey="page_rows"
+              fieldPath={`${prefix}.description`}
+              html
+              as="div"
+              className="font-body-heading text-base max-w-[700px] mx-auto"
+              style={{ color: "hsl(var(--pillar-heading-sub) / 0.65)" }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
+            />
+          </motion.div>
         </div>
       </div>
       <div className="px-6 pb-16" style={{ backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>

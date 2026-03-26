@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/lib/sanitize";
+import EditableText from "@/components/admin/EditableText";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -71,7 +72,9 @@ const HeroSection = () => {
           transition={{ duration: 0.6, ease }}
           className="font-body text-[11px] tracking-[0.2em] uppercase mb-6"
           style={{ color: "hsl(var(--hero-label))" }}>
-          {c.label}
+          <EditableText sectionKey="hero" fieldPath="label" as="span">
+            {c.label}
+          </EditableText>
         </motion.p>
 
         <motion.h1
@@ -89,28 +92,39 @@ const HeroSection = () => {
         </motion.h1>
 
         {c.subtitle && (
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15, ease }}
-            className="text-lg md:text-xl leading-tight"
-            style={{
-              fontFamily: "'Architects Daughter', cursive",
-              color: c.subtitle_color || "hsl(var(--hero-body))",
-              paddingTop: "10px",
-            }}>
-            {c.subtitle}
-          </motion.p>
+            transition={{ duration: 0.6, delay: 0.15, ease }}>
+            <EditableText
+              sectionKey="hero"
+              fieldPath="subtitle"
+              as="p"
+              className="text-lg md:text-xl leading-tight"
+              style={{
+                fontFamily: "'Architects Daughter', cursive",
+                color: c.subtitle_color || "hsl(var(--hero-body))",
+                paddingTop: "10px",
+              }}>
+              {c.subtitle}
+            </EditableText>
+          </motion.div>
         )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2, ease }}
-          className="font-body-heading text-lg max-w-[620px] mx-auto leading-relaxed mt-6"
-          style={{ color: "hsl(var(--hero-body))" }}
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
-        />
+          transition={{ duration: 0.6, delay: 0.2, ease }}>
+          <EditableText
+            sectionKey="hero"
+            fieldPath="body"
+            html
+            as="div"
+            className="font-body-heading text-lg max-w-[620px] mx-auto leading-relaxed mt-6"
+            style={{ color: "hsl(var(--hero-body))" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
+          />
+        </motion.div>
       </div>
     </section>
   );
