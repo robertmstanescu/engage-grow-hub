@@ -41,7 +41,7 @@ const RowsManager = ({ rows, onChange }: Props) => {
   const [openRow, setOpenRow] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
 
-  const addRow = (type: "text" | "service" | "boxed" | "contact") => {
+  const addRow = (type: PageRow["type"]) => {
     const template = ROW_TYPES.find((t) => t.type === type)!;
     const newRow: PageRow = {
       id: generateRowId(),
