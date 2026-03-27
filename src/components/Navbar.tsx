@@ -40,9 +40,10 @@ const Navbar = () => {
           if (el) el.scrollIntoView({ behavior: "smooth" });
         }, 50);
       } else {
-        // Use window.location for cross-page hash navigation
         window.location.href = "/" + href;
       }
+    } else if (href.startsWith("/")) {
+      navigate(href);
     } else {
       navigate(href);
     }
