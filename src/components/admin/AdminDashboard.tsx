@@ -71,6 +71,7 @@ const AdminDashboard = ({ session }: Props) => {
         {activeTab === "navigation" && <NavigationManager />}
         {activeTab === "blog" && <BlogEditor />}
         {activeTab === "tags" && <TagsManager />}
+        {activeTab === "media" && <MediaGallery />}
         {activeTab === "contacts" && <ContactsList />}
         {activeTab === "emails" && <EmailCampaigns />}
         {activeTab === "settings" && <GlobalSettings />}
