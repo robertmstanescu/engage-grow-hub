@@ -153,6 +153,13 @@ const PagesManager = () => {
           <Field label="Header Subtitle" value={blogContent.header_subtitle} onChange={(v) => saveBlogPage({ header_subtitle: v })} />
         </div>
 
+        <SeoFields
+          metaTitle={blogContent.meta_title}
+          metaDescription={blogContent.meta_description}
+          onTitleChange={(v) => saveBlogPage({ meta_title: v })}
+          onDescriptionChange={(v) => saveBlogPage({ meta_description: v })}
+        />
+
         <SectionBox label="Rows Above Blog Listing">
           <RowsManager rows={blogContent.rows_above} onChange={(rows) => saveBlogPage({ rows_above: rows })} />
         </SectionBox>
