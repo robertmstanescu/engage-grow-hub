@@ -29,15 +29,13 @@ const VowsSection = () => {
 
   return (
     <section id="vows" className="snap-section grain relative py-32 md:py-40" style={{ backgroundColor: "hsl(var(--vows-bg))" }}>
-      {/* Gradient mesh background */}
       <div className="absolute inset-0 opacity-60" style={{
         background: "radial-gradient(ellipse 80% 60% at 10% 90%, hsl(280 55% 18% / 0.6), transparent), radial-gradient(ellipse 60% 50% at 80% 20%, hsl(286 42% 20% / 0.4), transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)"
       }} />
-      {/* Ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
-      <div className="relative z-10 max-w-[900px] mx-auto px-8 lg:pl-24 text-center">
+      <div className="relative z-10 max-w-[900px] mr-auto ml-0 px-3 text-left">
         <motion.h3
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

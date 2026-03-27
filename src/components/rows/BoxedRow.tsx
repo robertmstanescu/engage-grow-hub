@@ -4,11 +4,12 @@ import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
+import type { Alignment } from "./PageRows";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
-const BoxedRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
+const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: number; align?: Alignment }) => {
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const titleLines: string[] = (c.title_lines || []).map((l: any) =>
@@ -26,6 +27,7 @@ const BoxedRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
 
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
+  const alignClass = align === "right" ? "ml-auto mr-0 text-right" : "mr-auto ml-0 text-left";
 
   return (
     <section className="snap-section grain relative"
@@ -35,14 +37,13 @@ const BoxedRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
         marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined,
         ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
       }}>
-      {/* Gradient mesh */}
       <div className="absolute inset-0 opacity-60" style={{
         background: "radial-gradient(ellipse 80% 60% at 10% 90%, hsl(280 55% 18% / 0.6), transparent), radial-gradient(ellipse 60% 50% at 80% 20%, hsl(286 42% 20% / 0.4), transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)"
       }} />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
-      <div className={`relative z-10 ${maxW} mx-auto px-8 lg:pl-24 text-center`}>
+      <div className={`relative z-10 ${maxW} px-3 ${alignClass}`}>
         {titleLines.length > 0 && (
           <motion.h3 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }}
             className="font-display text-2xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4" style={{ color: "hsl(var(--vows-title))" }}>

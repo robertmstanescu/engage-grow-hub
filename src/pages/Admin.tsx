@@ -46,25 +46,29 @@ const Admin = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(var(--background))" }}>
-        <p className="font-body text-sm text-muted-foreground">Loading...</p>
+      <div className="admin-light min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(30 20% 96%)" }}>
+        <p className="font-body text-sm" style={{ color: "hsl(260 20% 40%)" }}>Loading...</p>
       </div>
     );
   }
 
   if (!session) {
-    return <AdminLogin />;
+    return <div className="admin-light"><AdminLogin /></div>;
   }
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(var(--background))" }}>
-        <p className="font-body text-sm text-muted-foreground">Access denied. You are not an admin.</p>
+      <div className="admin-light min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(30 20% 96%)" }}>
+        <p className="font-body text-sm" style={{ color: "hsl(260 20% 40%)" }}>Access denied. You are not an admin.</p>
       </div>
     );
   }
 
-  return <AdminDashboard session={session} />;
+  return (
+    <div className="admin-light">
+      <AdminDashboard session={session} />
+    </div>
+  );
 };
 
 export default Admin;
