@@ -69,16 +69,31 @@ const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number;
   }
 };
 
-const PageRows = () => {
+const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
   const data = useSiteContent<{ rows: PageRow[] }>("page_rows", { rows: DEFAULT_ROWS });
   const rows = data.rows || [];
   const autoAlignments = computeAutoAlignments(rows);
+  const lastIndex = rows.length - 1;
 
   return (
     <>
-      {rows.map((row, index) => (
-        <RowRenderer key={row.id} row={row} rowIndex={index} align={resolveAlignment(row, autoAlignments[index])} />
-      ))}
+      {rows.map((row, index) => {
+        const rendered = (
+          <RowRenderer key={row.id} row={row} rowIndex={index} align={resolveAlignment(row, autoAlignments[index])} />
+        );
+        // Group the last row with the footer in one snap section
+        if (index === lastIndex && footerSlot) {
+          return (
+            <div key={row.id} className="snap-section" style={{ scrollSnapAlign: "start" }}>
+              {rendered}
+              {footerSlot}
+            </div>
+          );
+        }
+        return rendered;
+      })}
+      {/* Fallback if no rows */}
+      {rows.length === 0 && footerSlot}
     </>
   );
 };
