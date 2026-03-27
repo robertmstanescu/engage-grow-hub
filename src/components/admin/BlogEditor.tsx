@@ -82,6 +82,8 @@ const BlogEditor = () => {
       category: post.category,
       status: post.status,
       cover_image: post.cover_image || "",
+      author_name: post.author_name || "",
+      author_image: post.author_image || "",
     });
   };
 
