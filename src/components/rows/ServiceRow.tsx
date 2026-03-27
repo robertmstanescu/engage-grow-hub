@@ -7,6 +7,7 @@ import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
+import type { Alignment } from "./PageRows";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -44,7 +45,7 @@ const buildColorOverrides = (content: Record<string, any>): Record<string, strin
   return overrides;
 };
 
-const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
+const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: number; align?: Alignment }) => {
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
@@ -64,16 +65,16 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
   const colorOverrides = buildColorOverrides(c);
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
 
+  // Pillars are always left-aligned
   return (
     <div className="snap-section grain relative" style={{ scrollMarginTop: "4rem", ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined } as React.CSSProperties}>
-      {/* Ambient glows */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px]"
         style={{ background: "radial-gradient(circle, hsl(286 42% 30%), transparent)" }} />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px]"
         style={{ background: "radial-gradient(circle, hsl(280 55% 25%), transparent)" }} />
 
       <div className="relative z-10" style={{ paddingTop: `${l.paddingTop}px`, paddingBottom: "24px" }}>
-        <div className="max-w-[900px] mx-auto px-8 lg:pl-24 text-center">
+        <div className="max-w-[900px] mr-auto ml-0 px-3 text-left">
           <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
             className="font-body text-[10px] tracking-[0.35em] uppercase block mb-5" style={{ color: "hsl(var(--pillar-label))" }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span">{c.pillar_number}</EditableText>
@@ -84,17 +85,17 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
           </motion.h3>
           <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.1, ease }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
-              className="font-body-heading text-base md:text-lg max-w-[600px] mx-auto leading-relaxed"
+              className="font-body-heading text-base md:text-lg max-w-[600px] leading-relaxed"
               style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }} />
           </motion.div>
         </div>
       </div>
 
-      <div className="relative z-10 px-8 lg:pl-24" style={{ paddingBottom: `${l.paddingBottom}px` }}>
-        <div className="max-w-[900px] mx-auto">
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <button onClick={prev} className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ color: "hsl(var(--pillar-primary))", backgroundColor: "hsl(260 25% 12% / 0.5)", backdropFilter: "blur(12px)", border: "1px solid hsl(280 20% 25% / 0.3)" }}><ChevronLeft className="w-4 h-4" /></button>
+      <div className="relative z-10 px-3" style={{ paddingBottom: `${l.paddingBottom}px` }}>
+        <div className="max-w-[900px] mr-auto ml-0">
+          <div className="flex items-center gap-4 mb-8">
+            <button onClick={prev} className="btn-glass w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ color: "hsl(var(--pillar-primary))" }}><ChevronLeft className="w-4 h-4" /></button>
             <div className="flex gap-2.5">
               {services.map((_: any, i: number) => (
                 <button key={i} onClick={() => { setDirection(i > safeCurrent ? 1 : -1); setCurrent(i); }}
@@ -102,7 +103,7 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
                   style={{ backgroundColor: i === safeCurrent ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.15)", transform: i === safeCurrent ? "scale(1.5)" : "scale(1)", boxShadow: i === safeCurrent ? "0 0 12px hsl(46 75% 60% / 0.4)" : "none" }} />
               ))}
             </div>
-            <button onClick={next} className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ color: "hsl(var(--pillar-primary))", backgroundColor: "hsl(260 25% 12% / 0.5)", backdropFilter: "blur(12px)", border: "1px solid hsl(280 20% 25% / 0.3)" }}><ChevronRight className="w-4 h-4" /></button>
+            <button onClick={next} className="btn-glass w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ color: "hsl(var(--pillar-primary))" }}><ChevronRight className="w-4 h-4" /></button>
           </div>
           <div className="relative overflow-hidden">
             <AnimatePresence custom={direction} mode="wait">
@@ -111,7 +112,7 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
               </motion.div>
             </AnimatePresence>
           </div>
-          {c.show_subscribe && <div className="text-center mt-8"><SubscribeWidget /></div>}
+          {c.show_subscribe && <div className="mt-8"><SubscribeWidget /></div>}
         </div>
       </div>
     </div>

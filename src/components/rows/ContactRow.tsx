@@ -2,10 +2,10 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useSiteContent } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/lib/sanitize";
 import type { PageRow, ContactField } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import type { Alignment } from "./PageRows";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
@@ -18,7 +18,9 @@ const defaultFields: ContactField[] = [
   { key: "marketing", label: "Keep me updated with insights and articles", type: "checkbox", required: false, visible: true },
 ];
 
-const ContactRow = ({ row }: { row: PageRow }) => {
+const CREAM = "#F4F0EC";
+
+const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }) => {
   const c = row.content;
   const titleLines: string[] = (c.title_lines || []).map((l: any) =>
     typeof l === "string" ? l.startsWith("<") ? l : `<p>${l}</p>` : `<p>${l}</p>`
@@ -45,11 +47,7 @@ const ContactRow = ({ row }: { row: PageRow }) => {
   };
 
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
-
-  const inputStyle = {
-    borderBottom: "1px solid hsl(var(--foreground) / 0.15)",
-    color: "hsl(var(--foreground) / 0.9)",
-  };
+  const alignClass = align === "right" ? "ml-auto mr-0 text-right" : "mr-auto ml-0 text-left";
 
   const leftFields = visibleFields.filter((f) => f.type !== "textarea" && f.type !== "checkbox");
   const textareaField = visibleFields.find((f) => f.type === "textarea");
@@ -57,14 +55,14 @@ const ContactRow = ({ row }: { row: PageRow }) => {
 
   if (submitted) {
     return (
-      <section className="snap-section section-light relative py-32 md:py-40 text-center">
+      <section className="snap-section section-light relative py-32 md:py-40">
         <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
-        <div className="relative z-10 max-w-[520px] mx-auto px-8 lg:pl-24">
+        <div className={`relative z-10 max-w-[520px] px-3 ${alignClass}`}>
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease }}>
             <h3 className="font-display text-3xl md:text-4xl font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))" }}>{successHeading}</h3>
             <p className="font-body-heading text-base mb-8" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>{successBody}</p>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
-              className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-4 rounded-full transition-all duration-500 hover:opacity-85"
+              className="btn-glass font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-4 rounded-full transition-all duration-500 hover:opacity-85"
               style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>{successButton}</button>
           </motion.div>
         </div>
@@ -76,8 +74,8 @@ const ContactRow = ({ row }: { row: PageRow }) => {
     <section className="snap-section section-light relative" style={{ paddingTop: `${l.paddingTop}px`, paddingBottom: `${l.paddingBottom}px` }}>
       <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
 
-      <div className="relative z-10 max-w-[900px] mx-auto px-8 lg:pl-24">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }} className="text-center mb-14">
+      <div className={`relative z-10 max-w-[900px] px-3 ${alignClass}`}>
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }} className="mb-14">
           {titleLines.length > 0 && (
             <h3 className="font-display text-3xl md:text-4xl font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))" }}>
               {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
@@ -86,65 +84,68 @@ const ContactRow = ({ row }: { row: PageRow }) => {
           {c.body && <div className="font-body-heading text-base md:text-lg leading-relaxed" style={{ color: "hsl(var(--light-fg) / 0.7)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
         </motion.div>
 
-        {/* Purple glass form panel */}
+        {/* Purple glass form panel with inner glass gradient */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.15, ease }}
-          className="rounded-2xl p-8 md:p-10"
+          className="rounded-2xl p-8 md:p-10 relative overflow-hidden"
           style={{
-            backgroundColor: "hsl(280 55% 24% / 0.85)",
+            backgroundColor: "hsl(280 55% 24% / 0.9)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
             border: "1px solid hsl(280 55% 35% / 0.4)",
             boxShadow: "0 20px 60px -15px hsl(280 55% 15% / 0.5), 0 0 80px -20px hsl(280 55% 30% / 0.2)",
           }}>
-          <form onSubmit={handleSubmit}>
+          {/* Inner glass gradient */}
+          <div className="absolute inset-0 opacity-30 pointer-events-none" style={{
+            background: "linear-gradient(135deg, hsl(280 55% 40% / 0.4) 0%, transparent 50%, hsl(280 55% 30% / 0.2) 100%)",
+          }} />
+          <div className="absolute top-0 left-0 right-0 h-px pointer-events-none" style={{ background: "linear-gradient(to right, transparent, hsl(280 55% 60% / 0.3), transparent)" }} />
+
+          <form onSubmit={handleSubmit} className="relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Left column: short fields */}
               <div className="space-y-7">
                 {leftFields.map((field) => (
                   <div key={field.key}>
-                    <label className="block font-body text-[10px] uppercase tracking-[0.25em] mb-2" style={{ color: "hsl(var(--foreground) / 0.45)" }}>{field.label}</label>
+                    <label className="block font-body text-[10px] uppercase tracking-[0.25em] mb-2" style={{ color: `${CREAM}99` }}>{field.label}</label>
                     <input type={field.type} required={field.required} value={formData[field.key] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                      className="w-full bg-transparent pb-3 font-body text-sm outline-none transition-all duration-500"
-                      style={inputStyle}
+                      className="w-full bg-transparent pb-3 font-body text-sm outline-none transition-all duration-500 text-left"
+                      style={{ borderBottom: `1px solid ${CREAM}30`, color: CREAM }}
                       onFocus={(e) => e.currentTarget.style.borderBottomColor = "hsl(var(--accent))"}
-                      onBlur={(e) => e.currentTarget.style.borderBottomColor = "hsl(var(--foreground) / 0.15)"} />
+                      onBlur={(e) => e.currentTarget.style.borderBottomColor = `${CREAM}30`} />
                   </div>
                 ))}
               </div>
 
-              {/* Right column: textarea */}
               {textareaField && (
                 <div className="flex flex-col">
-                  <label className="block font-body text-[10px] uppercase tracking-[0.25em] mb-2" style={{ color: "hsl(var(--foreground) / 0.45)" }}>{textareaField.label}</label>
+                  <label className="block font-body text-[10px] uppercase tracking-[0.25em] mb-2 text-left" style={{ color: `${CREAM}99` }}>{textareaField.label}</label>
                   <textarea required={textareaField.required} rows={8} value={formData[textareaField.key] || ""}
                     onChange={(e) => setFormData({ ...formData, [textareaField.key]: e.target.value })}
-                    className="w-full bg-transparent pb-3 font-body text-sm outline-none transition-all duration-500 resize-none flex-1"
-                    style={inputStyle}
+                    className="w-full bg-transparent pb-3 font-body text-sm outline-none transition-all duration-500 resize-none flex-1 text-left"
+                    style={{ borderBottom: `1px solid ${CREAM}30`, color: CREAM }}
                     onFocus={(e) => e.currentTarget.style.borderBottomColor = "hsl(var(--accent))"}
-                    onBlur={(e) => e.currentTarget.style.borderBottomColor = "hsl(var(--foreground) / 0.15)"} />
+                    onBlur={(e) => e.currentTarget.style.borderBottomColor = `${CREAM}30`} />
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-6" style={{ borderTop: "1px solid hsl(var(--foreground) / 0.08)" }}>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-6" style={{ borderTop: `1px solid ${CREAM}15` }}>
               <div className="space-y-2">
                 {checkboxFields.map((field) => (
                   <label key={field.key} className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={formData.subscribed_to_marketing || false}
                       onChange={(e) => setFormData({ ...formData, subscribed_to_marketing: e.target.checked })}
                       className="rounded" style={{ accentColor: "hsl(var(--accent))" }} />
-                    <span className="font-body text-xs" style={{ color: "hsl(var(--foreground) / 0.45)" }}>{field.label}</span>
+                    <span className="font-body text-xs" style={{ color: `${CREAM}99` }}>{field.label}</span>
                   </label>
                 ))}
               </div>
               <button type="submit" disabled={submitting}
-                className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-10 py-4 rounded-full transition-all duration-500 hover:scale-105 hover:shadow-lg disabled:opacity-50"
-                style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+                className="btn-glass font-display text-[11px] uppercase tracking-[0.1em] font-bold px-10 py-4 rounded-full transition-all duration-500 hover:scale-105 disabled:opacity-50">
                 {submitting ? "Sending…" : buttonText}
               </button>
             </div>

@@ -49,14 +49,13 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
 
   return (
     <div id={id} className={`snap-section grain relative ${colorScope || ""}`} style={{ scrollMarginTop: "4rem", backgroundColor: "hsl(var(--pillar-section-bg))" }}>
-      {/* Ambient glow */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px]"
         style={{ background: "radial-gradient(circle, hsl(286 42% 30%), transparent)" }} />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px]"
         style={{ background: "radial-gradient(circle, hsl(280 55% 25%), transparent)" }} />
 
-      <div className="relative z-10 pt-20 md:pt-28 pb-8 px-8 lg:pl-24">
-        <div className="max-w-[900px] mx-auto text-center">
+      <div className="relative z-10 pt-20 md:pt-28 pb-8 px-3">
+        <div className="max-w-[900px] mr-auto ml-0 text-left">
           <motion.span
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -79,17 +78,17 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.1, ease }}
-            className="font-body-heading text-base md:text-lg max-w-[600px] mx-auto leading-relaxed"
+            className="font-body-heading text-base md:text-lg max-w-[600px] leading-relaxed"
             style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
           />
         </div>
       </div>
 
-      <div className="relative z-10 px-8 lg:pl-24 pb-24 md:pb-32">
-        <div className="max-w-[900px] mx-auto">
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <button onClick={prev} className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ color: "hsl(var(--pillar-primary))", backgroundColor: "hsl(260 25% 12% / 0.5)", backdropFilter: "blur(12px)", border: "1px solid hsl(280 20% 25% / 0.3)" }}>
+      <div className="relative z-10 px-3 pb-24 md:pb-32">
+        <div className="max-w-[900px] mr-auto ml-0">
+          <div className="flex items-center gap-4 mb-8">
+            <button onClick={prev} className="btn-glass w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ color: "hsl(var(--pillar-primary))" }}>
               <ChevronLeft className="w-4 h-4" />
             </button>
             <div className="flex gap-2.5">
@@ -107,7 +106,7 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
                 />
               ))}
             </div>
-            <button onClick={next} className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ color: "hsl(var(--pillar-primary))", backgroundColor: "hsl(260 25% 12% / 0.5)", backdropFilter: "blur(12px)", border: "1px solid hsl(280 20% 25% / 0.3)" }}>
+            <button onClick={next} className="btn-glass w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ color: "hsl(var(--pillar-primary))" }}>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
