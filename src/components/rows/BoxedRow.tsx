@@ -28,12 +28,17 @@ const BoxedRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
 
   return (
-    <section className="snap-section grain relative mesh-dark"
+    <section className="snap-section grain relative"
       style={{
+        backgroundColor: row.bg_color || "hsl(var(--background))",
         paddingTop: `${l.paddingTop}px`, paddingBottom: `${l.paddingBottom}px`,
         marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined,
         ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
       }}>
+      {/* Gradient mesh */}
+      <div className="absolute inset-0 opacity-60" style={{
+        background: "radial-gradient(ellipse 80% 60% at 10% 90%, hsl(280 55% 18% / 0.6), transparent), radial-gradient(ellipse 60% 50% at 80% 20%, hsl(286 42% 20% / 0.4), transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)"
+      }} />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
@@ -59,7 +64,14 @@ const BoxedRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
           {cards.slice(0, 6).map((card, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               transition={{ duration: 0.8, delay: i * 0.12, ease }}
-              className="glass rounded-xl p-7 text-left glow-subtle">
+              className="rounded-xl p-7 text-left"
+              style={{
+                backgroundColor: "hsl(260 25% 12% / 0.5)",
+                backdropFilter: "blur(24px)",
+                WebkitBackdropFilter: "blur(24px)",
+                border: "1px solid hsl(280 20% 25% / 0.35)",
+                boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4)",
+              }}>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
                 className="font-body-heading font-bold mb-3 text-lg" style={{ color: "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"

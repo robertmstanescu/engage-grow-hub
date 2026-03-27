@@ -35,25 +35,9 @@ interface FooterContent {
 }
 
 const defaultColumns: FooterColumn[] = [
-  {
-    title: "Services",
-    links: [
-      { label: "Internal Communications", href: "#internal-communications" },
-      { label: "Employee Experience", href: "#employee-experience" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "Our Vows", href: "#vows" },
-      { label: "Blog", href: "/blog" },
-      { label: "Contact", href: "#contact" },
-    ],
-  },
-  {
-    title: "Connect",
-    links: [],
-  },
+  { title: "Services", links: [{ label: "Internal Communications", href: "#internal-communications" }, { label: "Employee Experience", href: "#employee-experience" }] },
+  { title: "Company", links: [{ label: "Our Vows", href: "#vows" }, { label: "Blog", href: "/blog" }, { label: "Contact", href: "#contact" }] },
+  { title: "Connect", links: [] },
 ];
 
 const Footer = () => {
@@ -64,28 +48,29 @@ const Footer = () => {
     columns: defaultColumns,
   });
   const branding = useSiteContent<Record<string, any>>("branding", {});
-  const logoUrl = branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
+  // Footer uses emblem logo (small icon) on all sizes
+  const emblemUrl = branding.emblem_logo_url || branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
 
   const columns = footer.columns || defaultColumns;
   const activeLinks = PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
-
-  // Merge social links into the "Connect" column if it exists
   const connectColumn = columns.find((c) => c.title.toLowerCase() === "connect");
 
   return (
     <footer className="grain relative border-t" style={{ backgroundColor: "hsl(260 20% 4%)", borderColor: "hsl(var(--border) / 0.2)" }}>
+      {/* Ambient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full opacity-8 blur-[120px]"
+        style={{ background: "radial-gradient(circle, hsl(280 55% 20%), transparent)" }} />
+
       <div className="relative z-10 max-w-[1100px] mx-auto px-8 lg:pl-24 py-16 md:py-20">
-        {/* Top: Logo + columns */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">
-          {/* Logo column */}
+          {/* Logo column — emblem */}
           <div className="col-span-2 md:col-span-1">
-            <img alt="Logo" className="w-8 h-8 object-contain brightness-200 mb-4" src={logoUrl} />
-            <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.3)" }}>
+            <img alt="Logo" className="w-8 h-8 object-contain brightness-200 mb-4" src={emblemUrl} />
+            <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.35)" }}>
               {footer.tagline || "Based in Sweden 🇸🇪 · Operating globally"}
             </p>
           </div>
 
-          {/* Dynamic columns */}
           {columns.map((col, i) => (
             <div key={i}>
               <h4 className="font-body text-[10px] uppercase tracking-[0.25em] font-semibold mb-4" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
@@ -94,25 +79,16 @@ const Footer = () => {
               <ul className="space-y-2.5">
                 {col.links.map((link, j) => (
                   <li key={j}>
-                    <a
-                      href={link.href}
-                      className="font-body text-xs transition-all duration-500 hover:opacity-100"
-                      style={{ color: "hsl(var(--foreground) / 0.35)" }}>
+                    <a href={link.href} className="font-body text-xs transition-all duration-500 hover:opacity-100" style={{ color: "hsl(var(--foreground) / 0.35)" }}>
                       {link.label}
                     </a>
                   </li>
                 ))}
-                {/* Add social links to Connect column */}
                 {col === connectColumn && activeLinks.map((p) => {
                   const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;
                   return (
                     <li key={p.key}>
-                      <a
-                        href={socialLinks[p.key]}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-body text-xs transition-all duration-500 hover:opacity-100 inline-flex items-center gap-1.5"
-                        style={{ color: "hsl(var(--foreground) / 0.35)" }}>
+                      <a href={socialLinks[p.key]} target="_blank" rel="noopener noreferrer" className="font-body text-xs transition-all duration-500 hover:opacity-100 inline-flex items-center gap-1.5" style={{ color: "hsl(var(--foreground) / 0.35)" }}>
                         {Icon && <Icon />}
                         {p.label}
                       </a>
@@ -124,7 +100,6 @@ const Footer = () => {
           ))}
         </div>
 
-        {/* Bottom bar */}
         <div className="pt-6 flex flex-wrap items-center justify-between gap-4" style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}>
           <p className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--foreground) / 0.2)" }}>
             {footer.copyright || `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires`}

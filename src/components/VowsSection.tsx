@@ -28,7 +28,11 @@ const VowsSection = () => {
   );
 
   return (
-    <section id="vows" className="snap-section grain relative py-32 md:py-40 mesh-dark" style={{ backgroundColor: "hsl(var(--vows-bg))" }}>
+    <section id="vows" className="snap-section grain relative py-32 md:py-40" style={{ backgroundColor: "hsl(var(--vows-bg))" }}>
+      {/* Gradient mesh background */}
+      <div className="absolute inset-0 opacity-60" style={{
+        background: "radial-gradient(ellipse 80% 60% at 10% 90%, hsl(280 55% 18% / 0.6), transparent), radial-gradient(ellipse 60% 50% at 80% 20%, hsl(286 42% 20% / 0.4), transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)"
+      }} />
       {/* Ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
@@ -57,7 +61,14 @@ const VowsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: i * 0.15, ease }}
-              className="glass rounded-xl p-7 text-left glow-subtle">
+              className="rounded-xl p-7 text-left"
+              style={{
+                backgroundColor: "hsl(260 25% 12% / 0.5)",
+                backdropFilter: "blur(24px)",
+                WebkitBackdropFilter: "blur(24px)",
+                border: "1px solid hsl(280 20% 25% / 0.35)",
+                boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4)",
+              }}>
               <p className="font-body-heading text-sm font-bold mb-3" style={{ color: "hsl(var(--vows-card-title))" }}>{vow.title}</p>
               <div className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--vows-card-body))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(vow.body) }} />
             </motion.div>
