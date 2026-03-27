@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles } from "lucide-react";
 import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
 import RowLayoutSettings from "./RowLayoutSettings";
 import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea } from "./FieldComponents";
@@ -25,6 +25,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const ROW_TYPES = [
+  { type: "hero" as const, label: "Hero", icon: Sparkles, defaultContent: { label: "", title_lines: [], subtitle: "", subtitle_color: "", body: "", body_color: "", title_color: "", label_color: "", bg_type: "none", bg_url: "" } },
   { type: "text" as const, label: "Text", icon: Type, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", body: "" } },
   { type: "service" as const, label: "Service", icon: Briefcase, defaultContent: { pillar_number: "", title: "", description: "", services: [] } },
   { type: "boxed" as const, label: "Boxed (max 6)", icon: LayoutGrid, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", cards: [] } },
@@ -40,7 +41,7 @@ const RowsManager = ({ rows, onChange }: Props) => {
   const [openRow, setOpenRow] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
 
-  const addRow = (type: "text" | "service" | "boxed" | "contact") => {
+  const addRow = (type: PageRow["type"]) => {
     const template = ROW_TYPES.find((t) => t.type === type)!;
     const newRow: PageRow = {
       id: generateRowId(),
@@ -71,6 +72,8 @@ const RowsManager = ({ rows, onChange }: Props) => {
     const onContentChange = (field: string, value: any) => updateRowContent(row.id, field, value);
 
     switch (row.type) {
+      case "hero":
+        return <HeroRowFields content={row.content} onChange={onContentChange} />;
       case "text":
         return <TextRowFields content={row.content} onChange={onContentChange} />;
       case "service":
@@ -289,6 +292,36 @@ const TitleLinesEditor = ({ titleLines, onChange }: { titleLines: string[]; onCh
           </SectionBox>
         ))}
       </div>
+    </div>
+  );
+};
+
+const HeroRowFields = ({ content, onChange }: { content: Record<string, any>; onChange: (field: string, value: any) => void }) => {
+  const titleLines: string[] = (content.title_lines || []).map((l: any) =>
+    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
+  );
+  const BG_TYPES = [
+    { label: "None", value: "none" },
+    { label: "Image", value: "image" },
+    { label: "Video", value: "video" },
+  ];
+  return (
+    <div className="space-y-3">
+      <Field label="Label (small text above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
+      <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} />
+      <SubtitleEditor
+        subtitle={content.subtitle || ""}
+        subtitleColor={content.subtitle_color || ""}
+        onSubtitleChange={(v) => onChange("subtitle", v)}
+        onColorChange={(v) => onChange("subtitle_color", v)}
+      />
+      <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
+      <SectionBox label="Background">
+        <SelectField label="Type" value={content.bg_type || "none"} options={BG_TYPES} onChange={(v) => onChange("bg_type", v)} />
+        {content.bg_type && content.bg_type !== "none" && (
+          <Field label="URL" value={content.bg_url || ""} onChange={(v) => onChange("bg_url", v)} />
+        )}
+      </SectionBox>
     </div>
   );
 };

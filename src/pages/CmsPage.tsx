@@ -7,6 +7,7 @@ import TextRow from "@/components/rows/TextRow";
 import ServiceRow from "@/components/rows/ServiceRow";
 import BoxedRow from "@/components/rows/BoxedRow";
 import ContactRow from "@/components/rows/ContactRow";
+import HeroRow from "@/components/rows/HeroRow";
 import type { PageRow } from "@/types/rows";
 import NotFound from "./NotFound";
 
@@ -20,6 +21,7 @@ const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
       <div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>
     );
     switch (row.type) {
+      case "hero": return wrapper(<HeroRow row={row} />);
       case "text": return wrapper(<TextRow row={row} rowIndex={rowIndex} />);
       case "service": return wrapper(<ServiceRow row={row} rowIndex={rowIndex} />);
       case "boxed": return wrapper(<BoxedRow row={row} rowIndex={rowIndex} />);
