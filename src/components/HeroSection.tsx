@@ -7,6 +7,8 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 interface HeroContent {
   label: string;
+  tagline?: string;
+  tagline_color?: string;
   title_lines?: any[];
   subtitle?: string;
   subtitle_color?: string;
