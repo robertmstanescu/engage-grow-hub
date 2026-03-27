@@ -9,6 +9,7 @@ export interface RowLayout {
   alignment?: "auto" | "left" | "center" | "right";
   gradientStart?: string;
   gradientEnd?: string;
+  carouselTheme?: "auto" | "light" | "dark";
 }
 
 export const DEFAULT_ROW_LAYOUT: RowLayout = {

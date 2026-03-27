@@ -91,6 +91,29 @@ const RowLayoutSettings = ({ layout, onChange }: Props) => {
             <span className="font-body text-xs" style={{ color: "hsl(var(--foreground))" }}>Full Width</span>
           </label>
 
+          {/* Carousel Theme */}
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+              Carousel Theme
+            </label>
+            <div className="flex gap-1.5">
+              {([{ label: "Auto", value: "auto" }, { label: "Light", value: "light" }, { label: "Dark", value: "dark" }] as const).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => update({ carouselTheme: opt.value as RowLayout["carouselTheme"] })}
+                  className="flex-1 py-1.5 rounded text-[10px] font-body font-medium transition-all"
+                  style={{
+                    backgroundColor: (l.carouselTheme || "auto") === opt.value ? "hsl(var(--primary))" : "hsl(var(--background))",
+                    color: (l.carouselTheme || "auto") === opt.value ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
+                    border: `1px solid ${(l.carouselTheme || "auto") === opt.value ? "hsl(var(--primary))" : "hsl(var(--border))"}`,
+                  }}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Gradient Colours */}
           <div>
             <label className="font-body text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
