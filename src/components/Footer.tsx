@@ -23,10 +23,14 @@ const ThreadsIcon = () => (
   </svg>
 );
 
-const fallback: Record<string, string> = {};
+const defaultFooter = {
+  copyright: `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires. All rights reserved.`,
+  tagline: "Based in Sweden 🇸🇪 · Operating globally",
+};
 
 const Footer = () => {
-  const links = useSiteContent<Record<string, string>>("social_links", fallback);
+  const links = useSiteContent<Record<string, string>>("social_links", {});
+  const footer = useSiteContent<Record<string, string>>("footer", defaultFooter);
 
   const activeLinks = PLATFORMS.filter((p) => links[p.key]?.trim());
 
@@ -51,10 +55,10 @@ const Footer = () => {
         </div>
       )}
       <p className="font-body text-xs text-primary-foreground/40">
-        © {new Date().getFullYear()} The Magic Coffin for Silly Vampires. All rights reserved.
+        {footer.copyright || defaultFooter.copyright}
       </p>
       <p className="font-body text-[10px] text-primary-foreground/25 mt-1">
-        Based in Sweden 🇸🇪 · Operating globally
+        {footer.tagline || defaultFooter.tagline}
       </p>
     </footer>
   );
