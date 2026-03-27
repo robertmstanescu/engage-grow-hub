@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/lib/sanitize";
 import type { PageRow, ContactField } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
