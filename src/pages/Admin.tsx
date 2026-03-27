@@ -46,8 +46,8 @@ const Admin = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(var(--background))" }}>
-        <p className="font-body text-sm text-muted-foreground">Loading...</p>
+      <div className="admin-light min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(30 20% 96%)" }}>
+        <p className="font-body text-sm" style={{ color: "hsl(260 20% 40%)" }}>Loading...</p>
       </div>
     );
   }
