@@ -40,7 +40,7 @@ const BlogEditor = () => {
   const [isNew, setIsNew] = useState(false);
   const [previewing, setPreviewing] = useState(false);
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
-  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", author_name: "", author_image: "" });
+  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", author_name: "", author_image: "", meta_title: "", meta_description: "", og_image: "", tags: [] as string[], newTag: "" });
   const authorInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
