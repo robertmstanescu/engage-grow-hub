@@ -161,7 +161,6 @@ const BlogPost = () => {
 
           {/* Subscribe widget */}
           <div className="max-w-[700px] mx-auto mt-10 pt-8 flex flex-col items-center" style={{ borderTop: "1px solid hsl(var(--border))" }}>
-            <p className="font-body text-sm text-muted-foreground mb-4">Enjoyed this article?</p>
             <SubscribeWidget />
           </div>
 

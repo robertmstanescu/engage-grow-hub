@@ -169,6 +169,16 @@ const RowsManager = ({ rows, onChange }: Props) => {
                     </div>
                   </div>
                 </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={row.content.show_subscribe || false}
+                    onChange={(e) => updateRowContent(row.id, "show_subscribe", e.target.checked)}
+                    className="rounded"
+                    style={{ accentColor: "hsl(var(--primary))" }}
+                  />
+                  <span className="font-body text-xs" style={{ color: "hsl(var(--foreground))" }}>Show Subscribe widget</span>
+                </label>
                 {renderRowEditor(row)}
               </div>
             )}
