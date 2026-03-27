@@ -85,20 +85,20 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px]"
         style={{ background: `radial-gradient(circle, ${gradEnd}, transparent)` }} />
 
-      <div className="relative z-10" style={{ paddingTop: `${l.paddingTop}px`, paddingBottom: "24px" }}>
+      <div className="relative z-10" style={{ paddingTop: `clamp(16px, 3vh, ${l.paddingTop}px)`, paddingBottom: "clamp(8px, 1.5vh, 24px)" }}>
         <div className="max-w-[900px] mr-auto ml-0 px-6 text-left">
           <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            className="font-body tracking-[0.35em] uppercase block mb-5" style={{ color: "hsl(var(--pillar-label))", fontSize: "clamp(8px, 1vw, 10px)" }}>
+            className="font-body tracking-[0.35em] uppercase block mb-2" style={{ color: "hsl(var(--pillar-label))", fontSize: "clamp(7px, 0.9vw, 10px)" }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span">{c.pillar_number}</EditableText>
           </motion.span>
           <motion.h3 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }}
-            className="font-display font-bold leading-tight mb-5" style={{ color: "hsl(var(--pillar-heading))", fontSize: "clamp(1.5rem, 4vw, 2.5rem)" }}>
+            className="font-display font-bold leading-tight mb-2" style={{ color: "hsl(var(--pillar-heading))", fontSize: "clamp(1.2rem, 3.5vw, 2.2rem)" }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">{c.title}</EditableText>
           </motion.h3>
           <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.1, ease }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
               className="font-body-heading max-w-[600px] leading-relaxed"
-              style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.85rem, 1.8vw, 1.15rem)" }}
+              style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.75rem, 1.5vw, 1rem)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }} />
           </motion.div>
         </div>
