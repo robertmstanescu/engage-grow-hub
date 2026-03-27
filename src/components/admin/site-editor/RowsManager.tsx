@@ -1,10 +1,27 @@
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Type, Briefcase, LayoutGrid, Mail } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail } from "lucide-react";
 import { generateRowId, DEFAULT_CONTACT_FIELDS, type PageRow } from "@/types/rows";
 import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
 import PillarEditor from "./PillarEditor";
 import SubtitleEditor from "./SubtitleEditor";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const ROW_TYPES = [
   { type: "text" as const, label: "Text", icon: Type, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", body: "" } },
@@ -49,14 +66,6 @@ const RowsManager = ({ rows, onChange }: Props) => {
     if (openRow === id) setOpenRow(null);
   };
 
-  const moveRow = (id: string, dir: -1 | 1) => {
-    const idx = rows.findIndex((r) => r.id === id);
-    if ((dir === -1 && idx === 0) || (dir === 1 && idx === rows.length - 1)) return;
-    const next = [...rows];
-    [next[idx], next[idx + dir]] = [next[idx + dir], next[idx]];
-    onChange(next);
-  };
-
   const renderRowEditor = (row: PageRow) => {
     const onContentChange = (field: string, value: any) => updateRowContent(row.id, field, value);
 
@@ -78,6 +87,20 @@ const RowsManager = ({ rows, onChange }: Props) => {
         return <ContactRowFields content={row.content} onChange={onContentChange} />;
       default:
         return null;
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = rows.findIndex((r) => r.id === active.id);
+      const newIndex = rows.findIndex((r) => r.id === over.id);
+      onChange(arrayMove(rows, oldIndex, newIndex));
     }
   };
 
@@ -113,78 +136,122 @@ const RowsManager = ({ rows, onChange }: Props) => {
         </div>
       </div>
 
-      {rows.map((row, idx) => {
-        const TypeIcon = ROW_TYPES.find((t) => t.type === row.type)?.icon || Type;
-        return (
-          <div
-            key={row.id}
-            className="rounded-lg border overflow-hidden"
-            style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
-            <div className="flex items-center justify-between px-3 py-2.5" style={{ color: "hsl(var(--foreground))" }}>
-              <button
-                type="button"
-                onClick={() => setOpenRow(openRow === row.id ? null : row.id)}
-                className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity">
-                <TypeIcon size={14} style={{ color: "hsl(var(--muted-foreground))" }} />
-                <span className="font-body text-xs font-medium">{row.strip_title}</span>
-                <span className="font-body text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ backgroundColor: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))" }}>
-                  {row.type}
-                </span>
-              </button>
-              <div className="flex items-center gap-0.5">
-                <button type="button" onClick={() => moveRow(row.id, -1)} disabled={idx === 0} className="p-1 rounded hover:opacity-70 disabled:opacity-20" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  <ArrowUp size={13} />
-                </button>
-                <button type="button" onClick={() => moveRow(row.id, 1)} disabled={idx === rows.length - 1} className="p-1 rounded hover:opacity-70 disabled:opacity-20" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  <ArrowDown size={13} />
-                </button>
-                <button type="button" onClick={() => removeRow(row.id)} className="p-1 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
-                  <Trash2 size={13} />
-                </button>
-                {openRow === row.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={rows.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+          {rows.map((row) => {
+            const TypeIcon = ROW_TYPES.find((t) => t.type === row.type)?.icon || Type;
+            return (
+              <SortableRowItem
+                key={row.id}
+                row={row}
+                TypeIcon={TypeIcon}
+                isOpen={openRow === row.id}
+                onToggle={() => setOpenRow(openRow === row.id ? null : row.id)}
+                onRemove={() => removeRow(row.id)}
+                onUpdateRow={(updates) => updateRow(row.id, updates)}
+                onUpdateContent={(field, value) => updateRowContent(row.id, field, value)}
+                renderEditor={() => renderRowEditor(row)}
+              />
+            );
+          })}
+        </SortableContext>
+      </DndContext>
+    </div>
+  );
+};
+
+/* ── Sortable Row Item ── */
+
+interface SortableRowItemProps {
+  row: PageRow;
+  TypeIcon: any;
+  isOpen: boolean;
+  onToggle: () => void;
+  onRemove: () => void;
+  onUpdateRow: (updates: Partial<PageRow>) => void;
+  onUpdateContent: (field: string, value: any) => void;
+  renderEditor: () => React.ReactNode;
+}
+
+const SortableRowItem = ({ row, TypeIcon, isOpen, onToggle, onRemove, onUpdateRow, onUpdateContent, renderEditor }: SortableRowItemProps) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    borderColor: "hsl(var(--border) / 0.5)",
+    backgroundColor: "hsl(var(--card))",
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="rounded-lg border overflow-hidden">
+      <div className="flex items-center justify-between px-3 py-2.5" style={{ color: "hsl(var(--foreground))" }}>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <button
+            type="button"
+            className="cursor-grab active:cursor-grabbing p-1 rounded hover:opacity-70 touch-none"
+            style={{ color: "hsl(var(--muted-foreground))" }}
+            {...attributes}
+            {...listeners}>
+            <GripVertical size={14} />
+          </button>
+          <button
+            type="button"
+            onClick={onToggle}
+            className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity min-w-0">
+            <TypeIcon size={14} style={{ color: "hsl(var(--muted-foreground))" }} />
+            <span className="font-body text-xs font-medium truncate">{row.strip_title}</span>
+            <span className="font-body text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ backgroundColor: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))" }}>
+              {row.type}
+            </span>
+          </button>
+        </div>
+        <div className="flex items-center gap-0.5">
+          <button type="button" onClick={onRemove} className="p-1 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
+            <Trash2 size={13} />
+          </button>
+          {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="px-3 pb-3 space-y-3 border-t" style={{ borderColor: "hsl(var(--border) / 0.3)" }}>
+          <div className="grid grid-cols-2 gap-2 pt-2">
+            <Field label="Strip Title" value={row.strip_title} onChange={(v) => onUpdateRow({ strip_title: v })} />
+            <div>
+              <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Background Color</label>
+              <div className="flex gap-1.5">
+                <input
+                  type="color"
+                  value={row.bg_color || "#FFFFFF"}
+                  onChange={(e) => onUpdateRow({ bg_color: e.target.value })}
+                  className="w-10 h-9 rounded border cursor-pointer"
+                  style={{ borderColor: "hsl(var(--border))" }}
+                />
+                <input
+                  value={row.bg_color || ""}
+                  onChange={(e) => onUpdateRow({ bg_color: e.target.value })}
+                  placeholder="#FFFFFF"
+                  className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
+                  style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+                />
               </div>
             </div>
-
-            {openRow === row.id && (
-              <div className="px-3 pb-3 space-y-3 border-t" style={{ borderColor: "hsl(var(--border) / 0.3)" }}>
-                <div className="grid grid-cols-2 gap-2 pt-2">
-                  <Field label="Strip Title" value={row.strip_title} onChange={(v) => updateRow(row.id, { strip_title: v })} />
-                  <div>
-                    <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Background Color</label>
-                    <div className="flex gap-1.5">
-                      <input
-                        type="color"
-                        value={row.bg_color || "#FFFFFF"}
-                        onChange={(e) => updateRow(row.id, { bg_color: e.target.value })}
-                        className="w-10 h-9 rounded border cursor-pointer"
-                        style={{ borderColor: "hsl(var(--border))" }}
-                      />
-                      <input
-                        value={row.bg_color || ""}
-                        onChange={(e) => updateRow(row.id, { bg_color: e.target.value })}
-                        placeholder="#FFFFFF"
-                        className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
-                        style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={row.content.show_subscribe || false}
-                    onChange={(e) => updateRowContent(row.id, "show_subscribe", e.target.checked)}
-                    className="rounded"
-                    style={{ accentColor: "hsl(var(--primary))" }}
-                  />
-                  <span className="font-body text-xs" style={{ color: "hsl(var(--foreground))" }}>Show Subscribe widget</span>
-                </label>
-                {renderRowEditor(row)}
-              </div>
-            )}
           </div>
-        );
-      })}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={row.content.show_subscribe || false}
+              onChange={(e) => onUpdateContent("show_subscribe", e.target.checked)}
+              className="rounded"
+              style={{ accentColor: "hsl(var(--primary))" }}
+            />
+            <span className="font-body text-xs" style={{ color: "hsl(var(--foreground))" }}>Show Subscribe widget</span>
+          </label>
+          {renderEditor()}
+        </div>
+      )}
     </div>
   );
 };

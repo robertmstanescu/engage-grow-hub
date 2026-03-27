@@ -6,8 +6,9 @@ import ContactsList from "./ContactsList";
 import EmailCampaigns from "./EmailCampaigns";
 import SiteEditor from "./SiteEditor";
 import TagsManager from "./TagsManager";
+import PagesManager from "./PagesManager";
 
-type Tab = "site" | "blog" | "contacts" | "emails" | "tags";
+type Tab = "site" | "pages" | "blog" | "contacts" | "emails" | "tags";
 
 interface Props {
   session: any;
@@ -23,6 +24,7 @@ const AdminDashboard = ({ session }: Props) => {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "site", label: "Main Page" },
+    { key: "pages", label: "Pages" },
     { key: "blog", label: "Blog Posts" },
     { key: "tags", label: "Tags & Categories" },
     { key: "contacts", label: "Contacts" },
@@ -59,6 +61,7 @@ const AdminDashboard = ({ session }: Props) => {
         </div>
 
         {activeTab === "site" && <SiteEditor />}
+        {activeTab === "pages" && <PagesManager />}
         {activeTab === "blog" && <BlogEditor />}
         {activeTab === "tags" && <TagsManager />}
         {activeTab === "contacts" && <ContactsList />}
