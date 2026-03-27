@@ -68,6 +68,16 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
   const gradStart = l.gradientStart || "hsl(286 42% 30%)";
   const gradEnd = l.gradientEnd || "hsl(280 55% 25%)";
 
+  // Carousel theme
+  const carouselTheme = l.carouselTheme || "auto";
+  const isDarkBg = !row.bg_color || row.bg_color.includes("#2") || row.bg_color.includes("#1") || row.bg_color.includes("#0") || row.bg_color.includes("#3") || row.bg_color.includes("#4") || row.bg_color.includes("#5");
+  const isLightCarousel = carouselTheme === "light" || (carouselTheme === "auto" && isDarkBg);
+  const carouselBtnBg = isLightCarousel ? "hsl(0 0% 100% / 0.15)" : "hsl(0 0% 0% / 0.1)";
+  const carouselBtnColor = isLightCarousel ? "hsl(0 0% 100% / 0.9)" : "hsl(0 0% 0% / 0.7)";
+  const carouselBtnBorder = isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)";
+  const dotActive = isLightCarousel ? "hsl(var(--accent))" : "hsl(var(--primary))";
+  const dotInactive = isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)";
+
   return (
     <div className="snap-section grain relative min-h-screen flex flex-col justify-center" style={{ scrollMarginTop: "4rem", ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined } as React.CSSProperties}>
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px]"
