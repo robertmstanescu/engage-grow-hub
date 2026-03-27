@@ -88,6 +88,11 @@ const BlogEditor = () => {
       cover_image: post.cover_image || "",
       author_name: post.author_name || "",
       author_image: post.author_image || "",
+      meta_title: post.meta_title || "",
+      meta_description: post.meta_description || "",
+      og_image: post.og_image || "",
+      tags: post.tags || [],
+      newTag: "",
     });
   };
 
