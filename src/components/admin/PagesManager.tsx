@@ -184,12 +184,39 @@ const PagesManager = () => {
         </div>
       )}
 
+      {/* System Pages */}
+      <div className="space-y-2">
+        <label className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>System Pages</label>
+        {[
+          { title: "Blog", slug: "blog", href: "/blog" },
+        ].map((sp) => (
+          <div
+            key={sp.slug}
+            className="flex items-center justify-between p-3 rounded-lg border"
+            style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+            <div className="flex items-center gap-3">
+              <Globe size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
+              <div>
+                <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>{sp.title}</span>
+                <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/{sp.slug}</span>
+              </div>
+              <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
+            </div>
+            <a href={sp.href} target="_blank" className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <ExternalLink size={14} />
+            </a>
+          </div>
+        ))}
+      </div>
+
+      {/* CMS Pages */}
       {pages.length === 0 ? (
         <div className="py-12 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
-          No pages yet. Create your first page above.
+          No custom pages yet. Create your first page above.
         </div>
       ) : (
         <div className="space-y-2">
+          <label className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>Custom Pages</label>
           {pages.map((page) => (
             <div
               key={page.id}
