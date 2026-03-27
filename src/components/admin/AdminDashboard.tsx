@@ -31,6 +31,7 @@ const AdminDashboard = ({ session }: Props) => {
     { key: "navigation", label: "Navigation" },
     { key: "blog", label: "Blog Posts" },
     { key: "tags", label: "Tags" },
+    { key: "media", label: "Media" },
     { key: "contacts", label: "Contacts" },
     { key: "emails", label: "Emails" },
     { key: "settings", label: "Settings" },
