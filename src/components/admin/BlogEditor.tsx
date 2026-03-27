@@ -26,6 +26,8 @@ interface BlogPost {
   published_at: string | null;
   created_at: string;
   cover_image: string | null;
+  author_name: string | null;
+  author_image: string | null;
 }
 
 const BlogEditor = () => {
@@ -34,7 +36,8 @@ const BlogEditor = () => {
   const [isNew, setIsNew] = useState(false);
   const [previewing, setPreviewing] = useState(false);
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
-  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "" });
+  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", author_name: "", author_image: "" });
+  const authorInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -66,7 +69,7 @@ const BlogEditor = () => {
   const handleNew = () => {
     setIsNew(true);
     setEditing(null);
-    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "" });
+    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", author_name: "", author_image: "" });
   };
 
   const handleEdit = (post: BlogPost) => {
@@ -79,6 +82,8 @@ const BlogEditor = () => {
       category: post.category,
       status: post.status,
       cover_image: post.cover_image || "",
+      author_name: post.author_name || "",
+      author_image: post.author_image || "",
     });
   };
 
@@ -96,6 +101,20 @@ const BlogEditor = () => {
     toast.success("Cover image uploaded");
   }, []);
 
+  const handleAuthorImageUpload = useCallback(async (file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
+    if (file.size > 2 * 1024 * 1024) { toast.error("Max 2MB"); return; }
+
+    const ext = file.name.split(".").pop();
+    const path = `authors/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("editor-images").upload(path, file);
+    if (error) { toast.error("Upload failed"); return; }
+
+    const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
+    setForm((f) => ({ ...f, author_image: publicUrl }));
+    toast.success("Author image uploaded");
+  }, []);
+
   const handleSave = async (status: string) => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
 
@@ -108,6 +127,8 @@ const BlogEditor = () => {
       category: form.category,
       status,
       cover_image: form.cover_image || null,
+      author_name: form.author_name || null,
+      author_image: form.author_image || null,
       published_at: status === "published" ? new Date().toISOString() : null,
     };
 
@@ -307,6 +328,50 @@ const BlogEditor = () => {
         <p className="font-body text-xs text-muted-foreground">
           Estimated read time: {calculateReadTime(form.content)}
         </p>
+
+        {/* Author */}
+        <div>
+          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">Author</label>
+          <div className="flex items-center gap-3">
+            {form.author_image ? (
+              <div className="relative">
+                <img src={form.author_image} alt="" className="w-12 h-12 rounded-full object-cover" />
+                <button
+                  onClick={() => setForm({ ...form, author_image: "" })}
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px]"
+                  style={{ backgroundColor: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
+                  ×
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => authorInputRef.current?.click()}
+                className="w-12 h-12 rounded-full border-2 border-dashed flex items-center justify-center hover:opacity-70 transition-opacity"
+                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
+                <Upload size={16} />
+              </button>
+            )}
+            <input
+              type="text"
+              placeholder="Author name"
+              value={form.author_name}
+              onChange={(e) => setForm({ ...form, author_name: e.target.value })}
+              className="flex-1 px-4 py-3 rounded-lg font-body text-sm border"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
+            />
+          </div>
+          <input
+            ref={authorInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleAuthorImageUpload(file);
+              e.target.value = "";
+            }}
+          />
+        </div>
 
         <div className="flex gap-3">
           <button

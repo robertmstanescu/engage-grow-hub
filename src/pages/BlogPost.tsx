@@ -7,6 +7,7 @@ import { sanitizeHtml } from "@/lib/sanitize";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
+import SubscribeWidget from "@/components/SubscribeWidget";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -17,6 +18,8 @@ interface BlogArticle {
   content: string;
   category: string;
   cover_image: string | null;
+  author_name: string | null;
+  author_image: string | null;
 }
 
 const calculateReadTime = (content: string) => {
@@ -41,7 +44,7 @@ const BlogPost = () => {
       if (!slug) { setLoading(false); return; }
       const { data } = await supabase
         .from("blog_posts")
-        .select("slug, title, published_at, content, category, cover_image")
+        .select("slug, title, published_at, content, category, cover_image, author_name, author_image")
         .eq("slug", slug)
         .eq("status", "published")
         .maybeSingle();
@@ -139,7 +142,32 @@ const BlogPost = () => {
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
           />
 
-          <div className="max-w-[700px] mx-auto mt-12 pt-8" style={{ borderTop: "1px solid hsl(var(--border))" }}>
+          {/* Author section */}
+          {article.author_name && (
+            <div className="max-w-[700px] mx-auto mt-10 pt-8 flex items-center gap-4" style={{ borderTop: "1px solid hsl(var(--border))" }}>
+              {article.author_image && (
+                <img
+                  src={article.author_image}
+                  alt={article.author_name}
+                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                />
+              )}
+              <div>
+                <p className="font-body text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Written by</p>
+                <p className="font-display text-sm font-bold" style={{ color: "hsl(var(--secondary))" }}>
+                  {article.author_name}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Subscribe widget */}
+          <div className="max-w-[700px] mx-auto mt-10 pt-8 flex flex-col items-center" style={{ borderTop: "1px solid hsl(var(--border))" }}>
+            <p className="font-body text-sm text-muted-foreground mb-4">Enjoyed this article?</p>
+            <SubscribeWidget />
+          </div>
+
+          <div className="max-w-[700px] mx-auto mt-8 pt-8" style={{ borderTop: "1px solid hsl(var(--border))" }}>
             <Link
               to="/blog"
               className="inline-flex items-center gap-1.5 font-body text-sm font-medium transition-opacity hover:opacity-70"

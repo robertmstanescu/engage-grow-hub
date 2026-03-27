@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/lib/sanitize";
+import SubscribeWidget from "./SubscribeWidget";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -24,6 +25,7 @@ const IntroStrip = () => {
         style={{ color: "hsl(var(--intro-text))" }}
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.text) }}
       />
+      <SubscribeWidget className="mt-6" />
     </div>
   );
 };
