@@ -309,6 +309,7 @@ const HeroRowFields = ({ content, onChange }: { content: Record<string, any>; on
     <div className="space-y-3">
       <Field label="Label (small text above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
       <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} />
+      <Field label="Tagline (small text below title)" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
       <SubtitleEditor
         subtitle={content.subtitle || ""}
         subtitleColor={content.subtitle_color || ""}
