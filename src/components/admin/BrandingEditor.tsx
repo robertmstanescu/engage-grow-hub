@@ -12,6 +12,7 @@ interface Props {
 const BrandingEditor = ({ content, onChange }: Props) => {
   const [uploading, setUploading] = useState<string | null>(null);
   const logoRef = useRef<HTMLInputElement>(null);
+  const emblemRef = useRef<HTMLInputElement>(null);
   const faviconLightRef = useRef<HTMLInputElement>(null);
   const faviconDarkRef = useRef<HTMLInputElement>(null);
 
@@ -120,12 +121,21 @@ const BrandingEditor = ({ content, onChange }: Props) => {
     <div className="space-y-4">
       <SectionBox label="Logo">
         <ImageUploadBox
-          label="Site Logo"
+          label="Full Logo (Mobile & Tablet)"
           field="logo_url"
           inputRef={logoRef}
           icon={Image}
-          hint="Used in the navbar. Recommended: PNG or SVG with transparent background."
+          hint="Shown in the mobile/tablet navbar. Recommended: PNG or SVG with transparent background."
         />
+        <div className="mt-3">
+          <ImageUploadBox
+            label="Emblem / Icon Logo (Desktop & Footer)"
+            field="emblem_logo_url"
+            inputRef={emblemRef}
+            icon={Image}
+            hint="Small icon-only logo for the desktop side nav and footer. If not set, the full logo is used."
+          />
+        </div>
       </SectionBox>
 
       <SectionBox label="Favicon">

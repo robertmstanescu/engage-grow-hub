@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -10,12 +11,13 @@ const Navbar = () => {
   const branding = useSiteContent<Record<string, any>>("branding", {});
   const navConfig = useSiteContent<Record<string, any>>("navbar", {});
   const logoUrl = branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
+  const emblemUrl = branding.emblem_logo_url || logoUrl;
+  const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
-  const servicesLabel = navConfig.services_label || "Services";
   const subLinks = (navConfig.sub_links || [
     { label: "Internal Communications", href: "#internal-communications" },
     { label: "Employee Experience", href: "#employee-experience" },
@@ -28,20 +30,15 @@ const Navbar = () => {
   const ctaText = navConfig.cta_text || "Book a consultation";
   const ctaHref = navConfig.cta_href || "#contact";
 
-  // Build all nav items for the side rail
   const allItems = [
     ...subLinks.map((l: any) => ({ label: l.label, href: l.href })),
     ...links.map((l: any) => ({ label: l.label, href: l.href })),
     ...(showBlogLink ? [{ label: "Blog", href: "/blog" }] : []),
   ];
 
-  // Track active section on scroll (homepage only)
   const handleScroll = useCallback(() => {
     if (location.pathname !== "/") return;
-    const sections = allItems
-      .filter((item) => item.href.startsWith("#"))
-      .map((item) => item.href.slice(1));
-
+    const sections = allItems.filter((item) => item.href.startsWith("#")).map((item) => item.href.slice(1));
     let current = "";
     for (const id of sections) {
       const el = document.getElementById(id);
@@ -62,14 +59,10 @@ const Navbar = () => {
   const handleNavClick = (e: React.MouseEvent<HTMLElement>, href: string) => {
     e.preventDefault();
     setMobileOpen(false);
-
     if (href.startsWith("#")) {
       const id = href.slice(1);
       if (location.pathname === "/") {
-        setTimeout(() => {
-          const el = document.getElementById(id);
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-        }, 50);
+        setTimeout(() => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: "smooth" }); }, 50);
       } else {
         window.location.href = "/" + href;
       }
@@ -85,15 +78,13 @@ const Navbar = () => {
 
   return (
     <>
-      {/* ── Desktop side navigation ── hidden below lg */}
+      {/* Desktop side navigation — emblem logo */}
       <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
         style={{ backgroundColor: "hsl(var(--background) / 0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid hsl(var(--border) / 0.3)" }}>
-        {/* Logo */}
         <a href="/" className="mb-4">
-          <img alt="Logo" className="w-8 h-8 object-contain brightness-200" src={logoUrl} />
+          <img alt="Logo" className="w-8 h-8 object-contain brightness-200" src={emblemUrl} />
         </a>
 
-        {/* Rotated labels */}
         <div className="flex-1 flex flex-col items-center justify-center gap-5">
           {allItems.map((item) => (
             <a
@@ -110,7 +101,6 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* CTA dot */}
         <a
           href={ctaHref}
           onClick={(e) => handleNavClick(e, ctaHref)}
@@ -121,10 +111,10 @@ const Navbar = () => {
         </a>
       </nav>
 
-      {/* ── Mobile top bar ── visible below lg */}
+      {/* Mobile/tablet top bar — full/long logo */}
       <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-5"
         style={{ backgroundColor: "hsl(var(--background) / 0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(var(--border) / 0.2)" }}>
-        <a href="/" className="flex items-center">
+        <a href="/" className="flex items-center flex-shrink-0">
           <img alt="Logo" className="h-7 brightness-200 object-contain" src={logoUrl} />
         </a>
         <button onClick={() => setMobileOpen(!mobileOpen)} style={{ color: "hsl(var(--foreground) / 0.7)" }}>
