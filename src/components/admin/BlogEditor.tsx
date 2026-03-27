@@ -386,6 +386,64 @@ const BlogEditor = () => {
           />
         </div>
 
+        {/* Tags */}
+        <div>
+          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">Tags</label>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {form.tags.map((tag, i) => (
+              <span key={i} className="flex items-center gap-1 font-body text-xs px-2.5 py-1 rounded-full" style={{ backgroundColor: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
+                {tag}
+                <button type="button" onClick={() => setForm({ ...form, tags: form.tags.filter((_, j) => j !== i) })} className="hover:opacity-70">×</button>
+              </span>
+            ))}
+          </div>
+          <div className="flex gap-1.5">
+            <input
+              value={form.newTag}
+              onChange={(e) => setForm({ ...form, newTag: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && form.newTag.trim()) {
+                  e.preventDefault();
+                  if (!form.tags.includes(form.newTag.trim())) {
+                    setForm({ ...form, tags: [...form.tags, form.newTag.trim()], newTag: "" });
+                  }
+                }
+              }}
+              placeholder="Add tag + Enter"
+              className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
+            />
+          </div>
+        </div>
+
+        {/* SEO & Metadata */}
+        <div className="rounded-lg border p-4 space-y-3" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.2)" }}>
+          <label className="font-body text-[10px] uppercase tracking-wider font-medium block" style={{ color: "hsl(var(--foreground))" }}>SEO & Metadata</label>
+          <input
+            placeholder="Meta Title (defaults to post title)"
+            value={form.meta_title}
+            onChange={(e) => setForm({ ...form, meta_title: e.target.value })}
+            className="w-full px-4 py-2.5 rounded-lg font-body text-sm border"
+            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+          />
+          <textarea
+            placeholder="Meta Description (for search engines & social sharing)"
+            value={form.meta_description}
+            onChange={(e) => setForm({ ...form, meta_description: e.target.value })}
+            rows={2}
+            className="w-full px-4 py-2.5 rounded-lg font-body text-sm border resize-none"
+            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+          />
+          <input
+            placeholder="OG Image URL (for social sharing previews)"
+            value={form.og_image}
+            onChange={(e) => setForm({ ...form, og_image: e.target.value })}
+            className="w-full px-4 py-2.5 rounded-lg font-body text-sm border"
+            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+          />
+          {form.meta_title && <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Title: {form.meta_title.length}/60 chars</p>}
+          {form.meta_description && <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Description: {form.meta_description.length}/160 chars</p>}
+        </div>
         <div className="flex gap-3">
           <button
             onClick={() => handleSave("draft")}
