@@ -129,11 +129,9 @@
   .font-body-heading { font-family: var(--font-header); }
   .font-body { font-family: var(--font-body); }
 
-  html, body {
+  html {
     scroll-behavior: smooth;
     scroll-snap-type: y mandatory;
-    overflow-y: scroll;
-    height: 100%;
   }
 
   [id] { scroll-margin-top: 5rem; }
