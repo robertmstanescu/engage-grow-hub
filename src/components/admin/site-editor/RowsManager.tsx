@@ -72,6 +72,8 @@ const RowsManager = ({ rows, onChange }: Props) => {
     const onContentChange = (field: string, value: any) => updateRowContent(row.id, field, value);
 
     switch (row.type) {
+      case "hero":
+        return <HeroRowFields content={row.content} onChange={onContentChange} />;
       case "text":
         return <TextRowFields content={row.content} onChange={onContentChange} />;
       case "service":

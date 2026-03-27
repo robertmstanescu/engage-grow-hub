@@ -19,7 +19,7 @@ export const DEFAULT_ROW_LAYOUT: RowLayout = {
 
 export interface PageRow {
   id: string;
-  type: "text" | "service" | "boxed" | "contact";
+  type: "hero" | "text" | "service" | "boxed" | "contact";
   strip_title: string;
   bg_color: string;
   scope?: string;
