@@ -14,6 +14,13 @@ interface SectionState {
 
 const SECTIONS = ["branding", "social_links", "footer", "theme"] as const;
 
+const ALIGNMENT_OPTIONS = [
+  { label: "Auto (alternate L/R)", value: "auto" },
+  { label: "Left", value: "left" },
+  { label: "Center", value: "center" },
+  { label: "Right", value: "right" },
+];
+
 const GlobalSettings = () => {
   const [data, setData] = useState<Record<string, SectionState>>({});
   const [saving, setSaving] = useState(false);
@@ -91,7 +98,7 @@ const GlobalSettings = () => {
   const hasChanges = SECTIONS.some((k) => JSON.stringify(data[k]?.draft) !== JSON.stringify(data[k]?.content));
 
   const AccordionSection = ({ id, label, children }: { id: string; label: string; children: React.ReactNode }) => (
-    <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+    <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}>
       <button onClick={() => setOpenSection(openSection === id ? null : id)} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
         <span className="font-body text-sm font-medium">{label}</span>
         {openSection === id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -130,68 +137,10 @@ const GlobalSettings = () => {
           onChange={(v) => updateField("footer", "tagline", v)}
         />
 
-        {/* Footer Columns */}
-        <div className="space-y-4 mt-4">
-          <label className="font-body text-xs uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>Footer Columns</label>
-          {(getDraft("footer").columns || []).map((col: any, ci: number) => (
-            <div key={ci} className="rounded-lg border p-3 space-y-2" style={{ borderColor: "hsl(var(--border))" }}>
-              <div className="flex items-center gap-2">
-                <input type="text" value={col.title} placeholder="Column title"
-                  onChange={(e) => {
-                    const cols = [...(getDraft("footer").columns || [])];
-                    cols[ci] = { ...cols[ci], title: e.target.value };
-                    updateField("footer", "columns", cols);
-                  }}
-                  className="flex-1 px-3 py-1.5 rounded font-body text-sm border"
-                  style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }} />
-                <button onClick={() => {
-                  const cols = (getDraft("footer").columns || []).filter((_: any, i: number) => i !== ci);
-                  updateField("footer", "columns", cols);
-                }} className="text-xs px-2 py-1 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>Remove</button>
-              </div>
-              {(col.links || []).map((link: any, li: number) => (
-                <div key={li} className="flex items-center gap-1.5 pl-2">
-                  <input type="text" value={link.label} placeholder="Label"
-                    onChange={(e) => {
-                      const cols = [...(getDraft("footer").columns || [])];
-                      const links = [...(cols[ci].links || [])];
-                      links[li] = { ...links[li], label: e.target.value };
-                      cols[ci] = { ...cols[ci], links };
-                      updateField("footer", "columns", cols);
-                    }}
-                    className="flex-1 px-2 py-1 rounded font-body text-xs border"
-                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
-                  <input type="text" value={link.href} placeholder="Link"
-                    onChange={(e) => {
-                      const cols = [...(getDraft("footer").columns || [])];
-                      const links = [...(cols[ci].links || [])];
-                      links[li] = { ...links[li], href: e.target.value };
-                      cols[ci] = { ...cols[ci], links };
-                      updateField("footer", "columns", cols);
-                    }}
-                    className="flex-1 px-2 py-1 rounded font-body text-xs border"
-                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
-                  <button onClick={() => {
-                    const cols = [...(getDraft("footer").columns || [])];
-                    cols[ci] = { ...cols[ci], links: (cols[ci].links || []).filter((_: any, i: number) => i !== li) };
-                    updateField("footer", "columns", cols);
-                  }} className="text-xs" style={{ color: "hsl(var(--destructive))" }}>×</button>
-                </div>
-              ))}
-              <button onClick={() => {
-                const cols = [...(getDraft("footer").columns || [])];
-                cols[ci] = { ...cols[ci], links: [...(cols[ci].links || []), { label: "", href: "#" }] };
-                updateField("footer", "columns", cols);
-              }} className="font-body text-[10px] uppercase tracking-wider px-2 py-1 rounded border hover:opacity-80"
-                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>+ Add Link</button>
-            </div>
-          ))}
-          <button onClick={() => {
-            const cols = [...(getDraft("footer").columns || []), { title: "New Column", links: [] }];
-            updateField("footer", "columns", cols);
-          }} className="font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80"
-            style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>+ Add Column</button>
-        </div>
+        <FooterColumnsEditor
+          columns={getDraft("footer").columns || []}
+          onChange={(cols) => updateField("footer", "columns", cols)}
+        />
       </AccordionSection>
 
       <AccordionSection id="social" label="Social Media Links">
@@ -202,6 +151,28 @@ const GlobalSettings = () => {
         <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
           These defaults apply to all new rows. Existing rows keep their own settings.
         </p>
+
+        {/* Default alignment */}
+        <div className="mb-4">
+          <label className="font-body text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>Default Alignment</label>
+          <div className="flex gap-1.5">
+            {ALIGNMENT_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => updateField("theme", "defaultAlignment", opt.value)}
+                className="flex-1 py-1.5 rounded text-[10px] font-body font-medium transition-all"
+                style={{
+                  backgroundColor: (getDraft("theme").defaultAlignment || "auto") === opt.value ? "hsl(var(--primary))" : "hsl(var(--background))",
+                  color: (getDraft("theme").defaultAlignment || "auto") === opt.value ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
+                  border: `1px solid ${(getDraft("theme").defaultAlignment || "auto") === opt.value ? "hsl(var(--primary))" : "hsl(var(--border))"}`,
+                }}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Default Padding Top</label>
@@ -223,20 +194,20 @@ const GlobalSettings = () => {
             <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Primary Brand Color</label>
             <div className="flex gap-1.5">
               <input type="color" value={getDraft("theme").primaryColor || "#4D1B5E"} onChange={(e) => updateField("theme", "primaryColor", e.target.value)} className="w-10 h-9 rounded border-0 cursor-pointer" />
-              <input value={getDraft("theme").primaryColor || "#4D1B5E"} onChange={(e) => updateField("theme", "primaryColor", e.target.value)} placeholder="#HEX" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+              <input value={getDraft("theme").primaryColor || "#4D1B5E"} onChange={(e) => updateField("theme", "primaryColor", e.target.value)} placeholder="#HEX" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }} />
             </div>
           </div>
           <div>
             <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Accent Color</label>
             <div className="flex gap-1.5">
               <input type="color" value={getDraft("theme").accentColor || "#E5C54F"} onChange={(e) => updateField("theme", "accentColor", e.target.value)} className="w-10 h-9 rounded border-0 cursor-pointer" />
-              <input value={getDraft("theme").accentColor || "#E5C54F"} onChange={(e) => updateField("theme", "accentColor", e.target.value)} placeholder="#HEX" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+              <input value={getDraft("theme").accentColor || "#E5C54F"} onChange={(e) => updateField("theme", "accentColor", e.target.value)} placeholder="#HEX" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }} />
             </div>
           </div>
         </div>
         <div className="mt-3">
           <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Default Font Family</label>
-          <select value={getDraft("theme").fontFamily || "default"} onChange={(e) => updateField("theme", "fontFamily", e.target.value)} className="w-full px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}>
+          <select value={getDraft("theme").fontFamily || "default"} onChange={(e) => updateField("theme", "fontFamily", e.target.value)} className="w-full px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
             <option value="default">System Default</option>
             <option value="inter">Inter</option>
             <option value="bricolage">Bricolage Grotesque</option>
@@ -245,6 +216,69 @@ const GlobalSettings = () => {
           </select>
         </div>
       </AccordionSection>
+    </div>
+  );
+};
+
+/* ── Footer Columns sub-editor ── */
+const FooterColumnsEditor = ({ columns, onChange }: { columns: any[]; onChange: (cols: any[]) => void }) => {
+  return (
+    <div className="space-y-4 mt-4">
+      <label className="font-body text-xs uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>Footer Columns</label>
+      {columns.map((col: any, ci: number) => (
+        <div key={ci} className="rounded-lg border p-3 space-y-2" style={{ borderColor: "hsl(var(--border))" }}>
+          <div className="flex items-center gap-2">
+            <input type="text" value={col.title} placeholder="Column title"
+              onChange={(e) => {
+                const cols = [...columns];
+                cols[ci] = { ...cols[ci], title: e.target.value };
+                onChange(cols);
+              }}
+              className="flex-1 px-3 py-1.5 rounded font-body text-sm border"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }} />
+            <button onClick={() => onChange(columns.filter((_: any, i: number) => i !== ci))}
+              className="text-xs px-2 py-1 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>Remove</button>
+          </div>
+          {(col.links || []).map((link: any, li: number) => (
+            <div key={li} className="flex items-center gap-1.5 pl-2">
+              <input type="text" value={link.label} placeholder="Label"
+                onChange={(e) => {
+                  const cols = [...columns];
+                  const links = [...(cols[ci].links || [])];
+                  links[li] = { ...links[li], label: e.target.value };
+                  cols[ci] = { ...cols[ci], links };
+                  onChange(cols);
+                }}
+                className="flex-1 px-2 py-1 rounded font-body text-xs border"
+                style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }} />
+              <input type="text" value={link.href} placeholder="Link"
+                onChange={(e) => {
+                  const cols = [...columns];
+                  const links = [...(cols[ci].links || [])];
+                  links[li] = { ...links[li], href: e.target.value };
+                  cols[ci] = { ...cols[ci], links };
+                  onChange(cols);
+                }}
+                className="flex-1 px-2 py-1 rounded font-body text-xs border"
+                style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }} />
+              <button onClick={() => {
+                const cols = [...columns];
+                cols[ci] = { ...cols[ci], links: (cols[ci].links || []).filter((_: any, i: number) => i !== li) };
+                onChange(cols);
+              }} className="text-xs" style={{ color: "hsl(var(--destructive))" }}>×</button>
+            </div>
+          ))}
+          <button onClick={() => {
+            const cols = [...columns];
+            cols[ci] = { ...cols[ci], links: [...(cols[ci].links || []), { label: "", href: "#" }] };
+            onChange(cols);
+          }} className="font-body text-[10px] uppercase tracking-wider px-2 py-1 rounded border hover:opacity-80"
+            style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>+ Add Link</button>
+        </div>
+      ))}
+      <button onClick={() => onChange([...columns, { title: "New Column", links: [] }])}
+        className="font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80"
+        style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>+ Add Column</button>
     </div>
   );
 };

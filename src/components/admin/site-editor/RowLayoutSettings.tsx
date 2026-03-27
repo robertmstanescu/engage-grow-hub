@@ -8,6 +8,13 @@ interface Props {
   onChange: (layout: RowLayout) => void;
 }
 
+const ALIGNMENT_OPTIONS = [
+  { label: "Auto (alternate)", value: "auto" },
+  { label: "Left", value: "left" },
+  { label: "Center", value: "center" },
+  { label: "Right", value: "right" },
+];
+
 const RowLayoutSettings = ({ layout, onChange }: Props) => {
   const [open, setOpen] = useState(false);
   const l = { ...DEFAULT_ROW_LAYOUT, ...layout };
@@ -26,6 +33,29 @@ const RowLayoutSettings = ({ layout, onChange }: Props) => {
 
       {open && (
         <div className="mt-3 p-3 rounded-lg space-y-4" style={{ backgroundColor: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.3)" }}>
+          {/* Alignment */}
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+              Alignment
+            </label>
+            <div className="flex gap-1.5">
+              {ALIGNMENT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => update({ alignment: opt.value as RowLayout["alignment"] })}
+                  className="flex-1 py-1.5 rounded text-[10px] font-body font-medium transition-all"
+                  style={{
+                    backgroundColor: (l.alignment || "auto") === opt.value ? "hsl(var(--primary))" : "hsl(var(--background))",
+                    color: (l.alignment || "auto") === opt.value ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
+                    border: `1px solid ${(l.alignment || "auto") === opt.value ? "hsl(var(--primary))" : "hsl(var(--border))"}`,
+                  }}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Columns */}
           <div>
             <label className="font-body text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -61,6 +91,51 @@ const RowLayoutSettings = ({ layout, onChange }: Props) => {
             <span className="font-body text-xs" style={{ color: "hsl(var(--foreground))" }}>Full Width</span>
           </label>
 
+          {/* Gradient Colours */}
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+              Background Gradient
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-body text-[9px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Start Colour</label>
+                <div className="flex gap-1.5">
+                  <input
+                    type="color"
+                    value={l.gradientStart || "#4D1B5E"}
+                    onChange={(e) => update({ gradientStart: e.target.value })}
+                    className="w-8 h-8 rounded border-0 cursor-pointer"
+                  />
+                  <input
+                    value={l.gradientStart || ""}
+                    onChange={(e) => update({ gradientStart: e.target.value })}
+                    placeholder="Auto"
+                    className="flex-1 px-2 py-1 rounded font-body text-xs border"
+                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="font-body text-[9px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>End Colour</label>
+                <div className="flex gap-1.5">
+                  <input
+                    type="color"
+                    value={l.gradientEnd || "#5A2370"}
+                    onChange={(e) => update({ gradientEnd: e.target.value })}
+                    className="w-8 h-8 rounded border-0 cursor-pointer"
+                  />
+                  <input
+                    value={l.gradientEnd || ""}
+                    onChange={(e) => update({ gradientEnd: e.target.value })}
+                    placeholder="Auto"
+                    className="flex-1 px-2 py-1 rounded font-body text-xs border"
+                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Spacing Sliders */}
           <div className="grid grid-cols-2 gap-3">
             <SliderField label="Padding Top" value={l.paddingTop} onChange={(v) => update({ paddingTop: v })} max={200} />
@@ -79,7 +154,7 @@ const RowLayoutSettings = ({ layout, onChange }: Props) => {
               onChange={(e) => update({ bgImage: e.target.value })}
               placeholder="https://..."
               className="w-full px-3 py-2 rounded-lg font-body text-sm border"
-              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
             />
           </div>
         </div>

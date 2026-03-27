@@ -17,15 +17,15 @@ const hexToHslChannels = (hex: string): string | null => {
   const g = parseInt(hex.slice(3, 5), 16) / 255;
   const b = parseInt(hex.slice(5, 7), 16) / 255;
   const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  const l = (max + min) / 2;
-  if (max === min) return `0 0% ${Math.round(l * 100)}%`;
+  const li = (max + min) / 2;
+  if (max === min) return `0 0% ${Math.round(li * 100)}%`;
   const d = max - min;
-  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  const s = li > 0.5 ? d / (2 - max - min) : d / (max + min);
   let h = 0;
   if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
   else if (max === g) h = ((b - r) / d + 2) / 6;
   else h = ((r - g) / d + 4) / 6;
-  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(li * 100)}%`;
 };
 
 const COLOR_MAP: Record<string, string> = {
@@ -65,34 +65,36 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
   const colorOverrides = buildColorOverrides(c);
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
 
-  // Pillars are always left-aligned
+  const gradStart = l.gradientStart || "hsl(286 42% 30%)";
+  const gradEnd = l.gradientEnd || "hsl(280 55% 25%)";
+
   return (
-    <div className="snap-section grain relative" style={{ scrollMarginTop: "4rem", ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined } as React.CSSProperties}>
+    <div className="snap-section grain relative min-h-screen flex flex-col justify-center" style={{ scrollMarginTop: "4rem", ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined } as React.CSSProperties}>
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px]"
-        style={{ background: "radial-gradient(circle, hsl(286 42% 30%), transparent)" }} />
+        style={{ background: `radial-gradient(circle, ${gradStart}, transparent)` }} />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px]"
-        style={{ background: "radial-gradient(circle, hsl(280 55% 25%), transparent)" }} />
+        style={{ background: `radial-gradient(circle, ${gradEnd}, transparent)` }} />
 
       <div className="relative z-10" style={{ paddingTop: `${l.paddingTop}px`, paddingBottom: "24px" }}>
-        <div className="max-w-[900px] mr-auto ml-0 px-3 text-left">
+        <div className="max-w-[900px] mr-auto ml-0 px-6 text-left">
           <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            className="font-body text-[10px] tracking-[0.35em] uppercase block mb-5" style={{ color: "hsl(var(--pillar-label))" }}>
+            className="font-body tracking-[0.35em] uppercase block mb-5" style={{ color: "hsl(var(--pillar-label))", fontSize: "clamp(8px, 1vw, 10px)" }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span">{c.pillar_number}</EditableText>
           </motion.span>
           <motion.h3 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }}
-            className="font-display text-2xl md:text-4xl font-bold leading-tight mb-5" style={{ color: "hsl(var(--pillar-heading))" }}>
+            className="font-display font-bold leading-tight mb-5" style={{ color: "hsl(var(--pillar-heading))", fontSize: "clamp(1.5rem, 4vw, 2.5rem)" }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">{c.title}</EditableText>
           </motion.h3>
           <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.1, ease }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
-              className="font-body-heading text-base md:text-lg max-w-[600px] leading-relaxed"
-              style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)" }}
+              className="font-body-heading max-w-[600px] leading-relaxed"
+              style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.85rem, 1.8vw, 1.15rem)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }} />
           </motion.div>
         </div>
       </div>
 
-      <div className="relative z-10 px-3" style={{ paddingBottom: `${l.paddingBottom}px` }}>
+      <div className="relative z-10 px-6" style={{ paddingBottom: `${l.paddingBottom}px` }}>
         <div className="max-w-[900px] mr-auto ml-0">
           <div className="flex items-center gap-4 mb-8">
             <button onClick={prev} className="btn-glass w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ color: "hsl(var(--pillar-primary))" }}><ChevronLeft className="w-4 h-4" /></button>

@@ -8,15 +8,15 @@ import HeroRow from "./HeroRow";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-export type Alignment = "left" | "right";
+export type Alignment = "left" | "right" | "center";
 
 /**
- * Calculate alternating alignment per row.
+ * Calculate alternating alignment per row (auto mode).
  * - Service (pillar) rows are always "left".
  * - After a group of pillar rows, resume with the opposite of the pre-pillar alignment.
  * - All other rows alternate left/right.
  */
-const computeAlignments = (rows: PageRow[]): Alignment[] => {
+const computeAutoAlignments = (rows: PageRow[]): Alignment[] => {
   const alignments: Alignment[] = [];
   let current: Alignment = "left";
   let prePillar: Alignment | null = null;
@@ -27,14 +27,10 @@ const computeAlignments = (rows: PageRow[]): Alignment[] => {
     const prevWasPillar = i > 0 && rows[i - 1].type === "service";
 
     if (isPillar) {
-      if (!prevWasPillar) {
-        // Entering pillar group — remember current alignment
-        prePillar = current;
-      }
+      if (!prevWasPillar) prePillar = current;
       alignments.push("left");
     } else {
       if (prevWasPillar && prePillar !== null) {
-        // Exiting pillar group — opposite of pre-pillar
         current = prePillar === "left" ? "right" : "left";
         prePillar = null;
       }
@@ -43,6 +39,12 @@ const computeAlignments = (rows: PageRow[]): Alignment[] => {
     }
   }
   return alignments;
+};
+
+const resolveAlignment = (row: PageRow, autoAlign: Alignment): Alignment => {
+  const explicit = row.layout?.alignment;
+  if (explicit && explicit !== "auto") return explicit;
+  return autoAlign;
 };
 
 const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number; align: Alignment }) => {
@@ -70,12 +72,12 @@ const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number;
 const PageRows = () => {
   const data = useSiteContent<{ rows: PageRow[] }>("page_rows", { rows: DEFAULT_ROWS });
   const rows = data.rows || [];
-  const alignments = computeAlignments(rows);
+  const autoAlignments = computeAutoAlignments(rows);
 
   return (
     <>
       {rows.map((row, index) => (
-        <RowRenderer key={row.id} row={row} rowIndex={index} align={alignments[index]} />
+        <RowRenderer key={row.id} row={row} rowIndex={index} align={resolveAlignment(row, autoAlignments[index])} />
       ))}
     </>
   );

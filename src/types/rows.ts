@@ -6,6 +6,9 @@ export interface RowLayout {
   marginTop: number;
   marginBottom: number;
   bgImage?: string;
+  alignment?: "auto" | "left" | "center" | "right";
+  gradientStart?: string;
+  gradientEnd?: string;
 }
 
 export const DEFAULT_ROW_LAYOUT: RowLayout = {
@@ -15,6 +18,7 @@ export const DEFAULT_ROW_LAYOUT: RowLayout = {
   paddingBottom: 64,
   marginTop: 0,
   marginBottom: 0,
+  alignment: "auto",
 };
 
 export interface PageRow {
