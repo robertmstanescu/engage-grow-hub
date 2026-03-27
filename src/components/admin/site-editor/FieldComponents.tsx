@@ -72,7 +72,7 @@ export const ArrayField = ({ label, items, onChange, placeholder }: { label: str
             }}
             placeholder={placeholder}
             className="flex-1 px-3 py-1.5 rounded-lg font-body text-sm border"
-            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "#1a1a1a" }}
           />
           <button
             type="button"
