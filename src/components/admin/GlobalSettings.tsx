@@ -118,10 +118,10 @@ const GlobalSettings = () => {
         <BrandingEditor content={getDraft("branding")} onChange={(f, v) => updateField("branding", f, v)} />
       </AccordionSection>
 
-      <AccordionSection id="footer" label="Footer Text">
+      <AccordionSection id="footer" label="Footer">
         <Field
           label="Copyright Line"
-          value={getDraft("footer").copyright || `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires. All rights reserved.`}
+          value={getDraft("footer").copyright || `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires`}
           onChange={(v) => updateField("footer", "copyright", v)}
         />
         <Field
@@ -129,6 +129,69 @@ const GlobalSettings = () => {
           value={getDraft("footer").tagline || "Based in Sweden 🇸🇪 · Operating globally"}
           onChange={(v) => updateField("footer", "tagline", v)}
         />
+
+        {/* Footer Columns */}
+        <div className="space-y-4 mt-4">
+          <label className="font-body text-xs uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>Footer Columns</label>
+          {(getDraft("footer").columns || []).map((col: any, ci: number) => (
+            <div key={ci} className="rounded-lg border p-3 space-y-2" style={{ borderColor: "hsl(var(--border))" }}>
+              <div className="flex items-center gap-2">
+                <input type="text" value={col.title} placeholder="Column title"
+                  onChange={(e) => {
+                    const cols = [...(getDraft("footer").columns || [])];
+                    cols[ci] = { ...cols[ci], title: e.target.value };
+                    updateField("footer", "columns", cols);
+                  }}
+                  className="flex-1 px-3 py-1.5 rounded font-body text-sm border"
+                  style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }} />
+                <button onClick={() => {
+                  const cols = (getDraft("footer").columns || []).filter((_: any, i: number) => i !== ci);
+                  updateField("footer", "columns", cols);
+                }} className="text-xs px-2 py-1 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>Remove</button>
+              </div>
+              {(col.links || []).map((link: any, li: number) => (
+                <div key={li} className="flex items-center gap-1.5 pl-2">
+                  <input type="text" value={link.label} placeholder="Label"
+                    onChange={(e) => {
+                      const cols = [...(getDraft("footer").columns || [])];
+                      const links = [...(cols[ci].links || [])];
+                      links[li] = { ...links[li], label: e.target.value };
+                      cols[ci] = { ...cols[ci], links };
+                      updateField("footer", "columns", cols);
+                    }}
+                    className="flex-1 px-2 py-1 rounded font-body text-xs border"
+                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+                  <input type="text" value={link.href} placeholder="Link"
+                    onChange={(e) => {
+                      const cols = [...(getDraft("footer").columns || [])];
+                      const links = [...(cols[ci].links || [])];
+                      links[li] = { ...links[li], href: e.target.value };
+                      cols[ci] = { ...cols[ci], links };
+                      updateField("footer", "columns", cols);
+                    }}
+                    className="flex-1 px-2 py-1 rounded font-body text-xs border"
+                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+                  <button onClick={() => {
+                    const cols = [...(getDraft("footer").columns || [])];
+                    cols[ci] = { ...cols[ci], links: (cols[ci].links || []).filter((_: any, i: number) => i !== li) };
+                    updateField("footer", "columns", cols);
+                  }} className="text-xs" style={{ color: "hsl(var(--destructive))" }}>×</button>
+                </div>
+              ))}
+              <button onClick={() => {
+                const cols = [...(getDraft("footer").columns || [])];
+                cols[ci] = { ...cols[ci], links: [...(cols[ci].links || []), { label: "", href: "#" }] };
+                updateField("footer", "columns", cols);
+              }} className="font-body text-[10px] uppercase tracking-wider px-2 py-1 rounded border hover:opacity-80"
+                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>+ Add Link</button>
+            </div>
+          ))}
+          <button onClick={() => {
+            const cols = [...(getDraft("footer").columns || []), { title: "New Column", links: [] }];
+            updateField("footer", "columns", cols);
+          }} className="font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80"
+            style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>+ Add Column</button>
+        </div>
       </AccordionSection>
 
       <AccordionSection id="social" label="Social Media Links">

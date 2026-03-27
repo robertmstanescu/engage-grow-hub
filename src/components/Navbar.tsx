@@ -1,16 +1,17 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSiteContent } from "@/hooks/useSiteContent";
+
+const ease = [0.16, 1, 0.3, 1] as const;
 
 const Navbar = () => {
   const branding = useSiteContent<Record<string, any>>("branding", {});
   const navConfig = useSiteContent<Record<string, any>>("navbar", {});
   const logoUrl = branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
-  const [isOpen, setIsOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,10 +28,40 @@ const Navbar = () => {
   const ctaText = navConfig.cta_text || "Book a consultation";
   const ctaHref = navConfig.cta_href || "#contact";
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  // Build all nav items for the side rail
+  const allItems = [
+    ...subLinks.map((l: any) => ({ label: l.label, href: l.href })),
+    ...links.map((l: any) => ({ label: l.label, href: l.href })),
+    ...(showBlogLink ? [{ label: "Blog", href: "/blog" }] : []),
+  ];
+
+  // Track active section on scroll (homepage only)
+  const handleScroll = useCallback(() => {
+    if (location.pathname !== "/") return;
+    const sections = allItems
+      .filter((item) => item.href.startsWith("#"))
+      .map((item) => item.href.slice(1));
+
+    let current = "";
+    for (const id of sections) {
+      const el = document.getElementById(id);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= window.innerHeight / 3) current = id;
+      }
+    }
+    setActiveSection(current);
+  }, [location.pathname, allItems]);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLElement>, href: string) => {
     e.preventDefault();
-    setIsOpen(false);
-    setServicesOpen(false);
+    setMobileOpen(false);
 
     if (href.startsWith("#")) {
       const id = href.slice(1);
@@ -44,164 +75,100 @@ const Navbar = () => {
       }
     } else if (href.startsWith("/")) {
       navigate(href);
-    } else {
-      navigate(href);
     }
   };
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setServicesOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const isActive = (href: string) => {
+    if (href.startsWith("#")) return activeSection === href.slice(1);
+    return location.pathname === href;
+  };
 
   return (
-    <nav
-      className="scope-navbar fixed top-0 left-0 right-0 z-50 backdrop-blur-sm"
-      style={{
-        backgroundColor: "hsl(var(--nav-bg))",
-        borderBottom: "1px solid hsl(var(--nav-border) / 0.2)"
-      }}>
-      <div className="max-w-[900px] mx-auto px-6 flex items-center justify-between h-16">
-        <a href="/" className="flex items-center gap-2 min-w-0">
-          <img alt="The Magic Coffin" className="h-8 brightness-200 object-fill border-0 shadow-none rounded-none flex-shrink-0" src={logoUrl} />
+    <>
+      {/* ── Desktop side navigation ── hidden below lg */}
+      <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
+        style={{ backgroundColor: "hsl(var(--background) / 0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid hsl(var(--border) / 0.3)" }}>
+        {/* Logo */}
+        <a href="/" className="mb-4">
+          <img alt="Logo" className="w-8 h-8 object-contain brightness-200" src={logoUrl} />
         </a>
 
-        {/* Desktop — hidden below lg (1024px) */}
-        <div className="hidden lg:flex items-center gap-8">
-          <div ref={dropdownRef} className="relative">
-            <button
-              onClick={() => setServicesOpen(!servicesOpen)}
-              className="font-body text-xs uppercase tracking-[0.15em] font-semibold flex items-center gap-1 transition-colors duration-200"
-              style={{ color: "hsl(var(--nav-text))" }}>
-              {servicesLabel}
-              <ChevronDown size={14} className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} />
-            </button>
-            <AnimatePresence>
-              {servicesOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-full left-0 mt-2 w-56 rounded-lg shadow-lg overflow-hidden"
-                  style={{
-                    backgroundColor: "hsl(var(--nav-dropdown-bg))",
-                    border: "1px solid hsl(var(--nav-border) / 0.2)"
-                  }}>
-                  {subLinks.map((link) => (
-                    <a
-                      key={link.label}
-                      href={link.href}
-                      onClick={(e) => handleNavClick(e, link.href)}
-                      className="block px-4 py-3 font-body text-xs uppercase tracking-[0.12em] transition-colors"
-                      style={{ color: "hsl(var(--nav-text-muted) / 0.8)" }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = `hsl(var(--nav-dropdown-hover) / 0.2)`;
-                        e.currentTarget.style.color = `hsl(var(--nav-text))`;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                        e.currentTarget.style.color = `hsl(var(--nav-text-muted) / 0.8)`;
-                      }}>
-                      {link.label}
-                    </a>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {links.map((link) => (
+        {/* Rotated labels */}
+        <div className="flex-1 flex flex-col items-center justify-center gap-5">
+          {allItems.map((item) => (
             <a
-              key={link.label}
-              href={link.href}
-              onClick={(e) => handleNavClick(e, link.href)}
-              className="font-body text-xs uppercase tracking-[0.15em] transition-colors duration-200 font-semibold"
-              style={{ color: "hsl(var(--nav-text))" }}>
-              {link.label}
+              key={item.label}
+              href={item.href}
+              onClick={(e) => handleNavClick(e, item.href)}
+              className="side-nav-label font-body"
+              style={{
+                color: isActive(item.href) ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.35)",
+                fontWeight: isActive(item.href) ? 600 : 400,
+              }}>
+              {item.label}
             </a>
           ))}
-          {showBlogLink && (
-            <a
-              href="/blog"
-              onClick={(e) => { e.preventDefault(); navigate("/blog"); }}
-              className="font-body text-xs uppercase tracking-[0.15em] transition-colors duration-200 font-semibold"
-              style={{ color: "hsl(var(--nav-text))" }}>
-              Blog
-            </a>
-          )}
-          <a
-            href={ctaHref}
-            onClick={(e) => handleNavClick(e, ctaHref)}
-            className="font-display text-[10px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
-            style={{
-              backgroundColor: "hsl(var(--nav-cta-bg))",
-              color: "hsl(var(--nav-cta-text))"
-            }}>
-            {ctaText}
-          </a>
         </div>
 
-        {/* Mobile/Tablet toggle — visible below lg */}
-        <div className="flex lg:hidden items-center gap-4">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            style={{ color: "hsl(var(--nav-text) / 0.7)" }}>
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
+        {/* CTA dot */}
+        <a
+          href={ctaHref}
+          onClick={(e) => handleNavClick(e, ctaHref)}
+          title={ctaText}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500 hover:scale-110"
+          style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+          →
+        </a>
+      </nav>
 
+      {/* ── Mobile top bar ── visible below lg */}
+      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-5"
+        style={{ backgroundColor: "hsl(var(--background) / 0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(var(--border) / 0.2)" }}>
+        <a href="/" className="flex items-center">
+          <img alt="Logo" className="h-7 brightness-200 object-contain" src={logoUrl} />
+        </a>
+        <button onClick={() => setMobileOpen(!mobileOpen)} style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      </nav>
+
+      {/* Mobile menu overlay */}
       <AnimatePresence>
-        {isOpen && (
+        {mobileOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="lg:hidden overflow-hidden"
-            style={{ backgroundColor: "hsl(var(--nav-dropdown-bg))" }}>
-            <div className="px-6 py-4 flex flex-col gap-4">
-              <span className="font-body text-[10px] uppercase tracking-[0.15em]" style={{ color: "hsl(var(--nav-text) / 0.4)" }}>{servicesLabel}</span>
-              {subLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
-                  className="font-body text-xs uppercase tracking-[0.12em] transition-colors pl-3"
-                  style={{ color: "hsl(var(--nav-text) / 0.6)" }}>
-                  {link.label}
-                </a>
-              ))}
-              {links.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
-                  className="font-body text-xs uppercase tracking-[0.15em] transition-colors"
-                  style={{ color: "hsl(var(--nav-text) / 0.6)" }}>
-                  {link.label}
-                </a>
-              ))}
-              {showBlogLink && (
-                <a
-                  href="/blog"
-                  onClick={(e) => { e.preventDefault(); setIsOpen(false); navigate("/blog"); }}
-                  className="font-body text-xs uppercase tracking-[0.15em] transition-colors"
-                  style={{ color: "hsl(var(--nav-text) / 0.6)" }}>
-                  Blog
-                </a>
-              )}
-            </div>
+            className="lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-6"
+            style={{ backgroundColor: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" }}>
+            {allItems.map((item, i) => (
+              <motion.a
+                key={item.label}
+                href={item.href}
+                onClick={(e) => handleNavClick(e, item.href)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.06, ease }}
+                className="font-body text-sm uppercase tracking-[0.2em] transition-colors duration-500"
+                style={{ color: isActive(item.href) ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.5)" }}>
+                {item.label}
+              </motion.a>
+            ))}
+            <motion.a
+              href={ctaHref}
+              onClick={(e) => handleNavClick(e, ctaHref)}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
+              className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
+              style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+              {ctaText}
+            </motion.a>
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </>
   );
 };
 

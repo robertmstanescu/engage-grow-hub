@@ -21,104 +21,55 @@ const BoxedRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
     if (count === 2) return "grid-cols-1 md:grid-cols-2";
     if (count === 3) return "grid-cols-1 md:grid-cols-3";
     if (count === 4) return "grid-cols-1 md:grid-cols-2 lg:grid-cols-4";
-    if (count === 5) return "grid-cols-1 md:grid-cols-3 lg:grid-cols-5";
-    return "grid-cols-1 md:grid-cols-3 lg:grid-cols-6";
+    return "grid-cols-1 md:grid-cols-3";
   };
 
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
 
   return (
-    <section
-      className="grain-overlay"
+    <section className="snap-section grain relative mesh-dark"
       style={{
-        backgroundColor: row.bg_color || "hsl(var(--vows-bg))",
-        paddingTop: `${l.paddingTop}px`,
-        paddingBottom: `${l.paddingBottom}px`,
-        marginTop: l.marginTop ? `${l.marginTop}px` : undefined,
-        marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined,
+        paddingTop: `${l.paddingTop}px`, paddingBottom: `${l.paddingBottom}px`,
+        marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined,
         ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
       }}>
-      <div className={`relative z-10 ${maxW} mx-auto px-8 md:px-12 text-center`}>
-        {/* Ornamental divider */}
-        <div className="ornamental-divider mb-12">
-          <span className="ornament">✦</span>
-        </div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
+        style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
+      <div className={`relative z-10 ${maxW} mx-auto px-8 lg:pl-24 text-center`}>
         {titleLines.length > 0 && (
-          <motion.h3
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease }}
-            className="font-display text-xl md:text-3xl lg:text-4xl font-bold leading-tight mb-3"
-            style={{ color: "hsl(var(--vows-title))" }}>
-            {titleLines.map((line, i) => (
-              <span key={i}>
-                {i > 0 && <br />}
-                <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
-              </span>
-            ))}
+          <motion.h3 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }}
+            className="font-display text-2xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4" style={{ color: "hsl(var(--vows-title))" }}>
+            {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
           </motion.h3>
         )}
 
         {c.subtitle && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.05, ease }}>
-            <EditableText
-              sectionKey="page_rows"
-              fieldPath={`${prefix}.subtitle`}
-              as="p"
-              className="text-base md:text-lg leading-tight mb-8"
-              style={{
-                fontFamily: "'Architects Daughter', cursive",
-                color: c.subtitle_color || "hsl(var(--vows-title))",
-                paddingTop: "10px",
-              }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.05, ease }}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="p"
+              className="text-base md:text-lg leading-tight mb-10"
+              style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--vows-title))", paddingTop: "10px" }}>
               {c.subtitle}
             </EditableText>
           </motion.div>
         )}
 
-        <div className={`grid ${getGridCols(cards.length)} gap-6 md:gap-8 ${titleLines.length > 0 && !c.subtitle ? "mt-12" : "mt-4"}`}>
+        <div className={`grid ${getGridCols(cards.length)} gap-6 ${titleLines.length > 0 && !c.subtitle ? "mt-14" : "mt-4"}`}>
           {cards.slice(0, 6).map((card, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               transition={{ duration: 0.8, delay: i * 0.12, ease }}
-              className="rounded-lg p-6 md:p-7 text-left"
-              style={{ border: "1px solid hsl(var(--vows-card-border) / 0.2)" }}>
-              <EditableText
-                sectionKey="page_rows"
-                fieldPath={`${prefix}.cards.${i}.title`}
-                as="p"
-                className="font-body-heading font-bold mb-2 text-lg text-accent"
-                style={{ color: "hsl(var(--vows-card-title))" }}>
-                {card.title}
-              </EditableText>
-              <EditableText
-                sectionKey="page_rows"
-                fieldPath={`${prefix}.cards.${i}.body`}
-                html
-                as="div"
-                className="font-body text-xs leading-relaxed"
-                style={{ color: "hsl(var(--vows-card-body))", opacity: 0.85 }}
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }}
-              />
+              className="glass rounded-xl p-7 text-left glow-subtle">
+              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
+                className="font-body-heading font-bold mb-3 text-lg" style={{ color: "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
+              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
+                className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--vows-card-body))" }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
             </motion.div>
           ))}
         </div>
 
-        {c.show_subscribe && (
-          <div className="mt-10">
-            <SubscribeWidget />
-          </div>
-        )}
+        {c.show_subscribe && <div className="mt-10"><SubscribeWidget /></div>}
       </div>
     </section>
   );
