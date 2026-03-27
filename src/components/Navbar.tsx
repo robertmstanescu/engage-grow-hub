@@ -51,9 +51,11 @@ const Navbar = () => {
   }, [location.pathname, allItems]);
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    // Listen on the snap-container (scroll container) if available, else window
+    const scrollContainer = document.querySelector('.snap-container') || window;
+    scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
   const handleNavClick = (e: React.MouseEvent<HTMLElement>, href: string) => {
