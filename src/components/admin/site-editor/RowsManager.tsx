@@ -296,6 +296,36 @@ const TitleLinesEditor = ({ titleLines, onChange }: { titleLines: string[]; onCh
   );
 };
 
+const HeroRowFields = ({ content, onChange }: { content: Record<string, any>; onChange: (field: string, value: any) => void }) => {
+  const titleLines: string[] = (content.title_lines || []).map((l: any) =>
+    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
+  );
+  const BG_TYPES = [
+    { label: "None", value: "none" },
+    { label: "Image", value: "image" },
+    { label: "Video", value: "video" },
+  ];
+  return (
+    <div className="space-y-3">
+      <Field label="Label (small text above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
+      <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} />
+      <SubtitleEditor
+        subtitle={content.subtitle || ""}
+        subtitleColor={content.subtitle_color || ""}
+        onSubtitleChange={(v) => onChange("subtitle", v)}
+        onColorChange={(v) => onChange("subtitle_color", v)}
+      />
+      <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
+      <SectionBox label="Background">
+        <SelectField label="Type" value={content.bg_type || "none"} options={BG_TYPES} onChange={(v) => onChange("bg_type", v)} />
+        {content.bg_type && content.bg_type !== "none" && (
+          <Field label="URL" value={content.bg_url || ""} onChange={(v) => onChange("bg_url", v)} />
+        )}
+      </SectionBox>
+    </div>
+  );
+};
+
 const TextRowFields = ({ content, onChange }: { content: Record<string, any>; onChange: (field: string, value: any) => void }) => {
   const titleLines: string[] = (content.title_lines || []).map((l: any) =>
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`

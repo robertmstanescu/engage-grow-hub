@@ -21,6 +21,7 @@ const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
       <div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>
     );
     switch (row.type) {
+      case "hero": return wrapper(<HeroRow row={row} />);
       case "text": return wrapper(<TextRow row={row} rowIndex={rowIndex} />);
       case "service": return wrapper(<ServiceRow row={row} rowIndex={rowIndex} />);
       case "boxed": return wrapper(<BoxedRow row={row} rowIndex={rowIndex} />);

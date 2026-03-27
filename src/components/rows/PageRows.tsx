@@ -15,6 +15,8 @@ const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
   );
 
   switch (row.type) {
+    case "hero":
+      return wrapper(<HeroRow row={row} />);
     case "text":
       return wrapper(<TextRow row={row} rowIndex={rowIndex} />);
     case "service":
