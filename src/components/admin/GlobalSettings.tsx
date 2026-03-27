@@ -12,7 +12,7 @@ interface SectionState {
   draft: Record<string, any>;
 }
 
-const SECTIONS = ["branding", "social_links", "footer"] as const;
+const SECTIONS = ["branding", "social_links", "footer", "theme"] as const;
 
 const GlobalSettings = () => {
   const [data, setData] = useState<Record<string, SectionState>>({});
