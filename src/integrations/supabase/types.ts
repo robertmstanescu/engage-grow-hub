@@ -80,6 +80,42 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_pages: {
+        Row: {
+          created_at: string
+          draft_page_rows: Json | null
+          id: string
+          page_rows: Json
+          slug: string
+          status: string
+          template_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          draft_page_rows?: Json | null
+          id?: string
+          page_rows?: Json
+          slug: string
+          status?: string
+          template_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          draft_page_rows?: Json | null
+          id?: string
+          page_rows?: Json
+          slug?: string
+          status?: string
+          template_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           company: string | null
