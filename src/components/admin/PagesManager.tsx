@@ -53,7 +53,9 @@ const PagesManager = () => {
         rows_above: c.rows_above || [],
         rows_below: c.rows_below || [],
         header_title: c.header_title || "Insights & Articles",
-        header_subtitle: c.header_subtitle || "",
+        header_subtitle: c.header_subtitle || "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.",
+        meta_title: c.meta_title || "",
+        meta_description: c.meta_description || "",
       });
     }
   };
