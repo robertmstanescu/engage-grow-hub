@@ -101,6 +101,20 @@ const BlogEditor = () => {
     toast.success("Cover image uploaded");
   }, []);
 
+  const handleAuthorImageUpload = useCallback(async (file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
+    if (file.size > 2 * 1024 * 1024) { toast.error("Max 2MB"); return; }
+
+    const ext = file.name.split(".").pop();
+    const path = `authors/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("editor-images").upload(path, file);
+    if (error) { toast.error("Upload failed"); return; }
+
+    const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
+    setForm((f) => ({ ...f, author_image: publicUrl }));
+    toast.success("Author image uploaded");
+  }, []);
+
   const handleSave = async (status: string) => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
 
