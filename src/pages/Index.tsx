@@ -14,7 +14,7 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen lg:pl-16">
+    <div className="snap-container lg:pl-16">
       <Navbar />
       <HeroSection />
       <PageRows footerSlot={<Footer />} />
