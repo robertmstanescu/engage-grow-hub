@@ -97,15 +97,15 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
       <div className="relative z-10 px-6" style={{ paddingBottom: `${l.paddingBottom}px` }}>
         <div className="max-w-[900px] mr-auto ml-0">
           <div className="flex items-center gap-4 mb-8">
-            <button onClick={prev} className="btn-glass w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ color: "hsl(var(--pillar-primary))" }}><ChevronLeft className="w-4 h-4" /></button>
+            <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-4 h-4" /></button>
             <div className="flex gap-2.5">
               {services.map((_: any, i: number) => (
                 <button key={i} onClick={() => { setDirection(i > safeCurrent ? 1 : -1); setCurrent(i); }}
                   className="w-2 h-2 rounded-full transition-all duration-500"
-                  style={{ backgroundColor: i === safeCurrent ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.15)", transform: i === safeCurrent ? "scale(1.5)" : "scale(1)", boxShadow: i === safeCurrent ? "0 0 12px hsl(46 75% 60% / 0.4)" : "none" }} />
+                  style={{ backgroundColor: i === safeCurrent ? dotActive : dotInactive, transform: i === safeCurrent ? "scale(1.5)" : "scale(1)", boxShadow: i === safeCurrent ? `0 0 12px ${dotActive}` : "none" }} />
               ))}
             </div>
-            <button onClick={next} className="btn-glass w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ color: "hsl(var(--pillar-primary))" }}><ChevronRight className="w-4 h-4" /></button>
+            <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
           </div>
           <div className="relative overflow-hidden">
             <AnimatePresence custom={direction} mode="wait">
