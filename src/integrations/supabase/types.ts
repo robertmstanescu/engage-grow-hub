@@ -97,6 +97,8 @@ export type Database = {
           created_at: string
           draft_page_rows: Json | null
           id: string
+          meta_description: string | null
+          meta_title: string | null
           page_rows: Json
           slug: string
           status: string
@@ -108,6 +110,8 @@ export type Database = {
           created_at?: string
           draft_page_rows?: Json | null
           id?: string
+          meta_description?: string | null
+          meta_title?: string | null
           page_rows?: Json
           slug: string
           status?: string
@@ -119,6 +123,8 @@ export type Database = {
           created_at?: string
           draft_page_rows?: Json | null
           id?: string
+          meta_description?: string | null
+          meta_title?: string | null
           page_rows?: Json
           slug?: string
           status?: string
