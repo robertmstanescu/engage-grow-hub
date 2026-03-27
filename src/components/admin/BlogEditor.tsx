@@ -73,7 +73,7 @@ const BlogEditor = () => {
   const handleNew = () => {
     setIsNew(true);
     setEditing(null);
-    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", author_name: "", author_image: "" });
+    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", author_name: "", author_image: "", meta_title: "", meta_description: "", og_image: "", tags: [], newTag: "" });
   };
 
   const handleEdit = (post: BlogPost) => {
