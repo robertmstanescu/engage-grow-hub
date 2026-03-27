@@ -18,6 +18,8 @@ interface BlogArticle {
   content: string;
   category: string;
   cover_image: string | null;
+  author_name: string | null;
+  author_image: string | null;
 }
 
 const calculateReadTime = (content: string) => {
