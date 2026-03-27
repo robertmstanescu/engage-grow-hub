@@ -7,6 +7,7 @@ import { sanitizeHtml } from "@/lib/sanitize";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
+import SubscribeWidget from "@/components/SubscribeWidget";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
