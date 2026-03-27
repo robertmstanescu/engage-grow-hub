@@ -47,17 +47,22 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
   };
 
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
-  const alignClass = align === "right" ? "ml-auto mr-0 text-right" : "mr-auto ml-0 text-left";
+  const alignClass = align === "center" ? "mx-auto text-center"
+    : align === "right" ? "ml-auto mr-0 text-right"
+    : "mr-auto ml-0 text-left";
 
   const leftFields = visibleFields.filter((f) => f.type !== "textarea" && f.type !== "checkbox");
   const textareaField = visibleFields.find((f) => f.type === "textarea");
   const checkboxFields = visibleFields.filter((f) => f.type === "checkbox");
 
+  const gradStart = l.gradientStart || "hsl(280 55% 24% / 0.3)";
+  const gradEnd = l.gradientEnd || "transparent";
+
   if (submitted) {
     return (
-      <section className="snap-section section-light relative py-32 md:py-40">
-        <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
-        <div className={`relative z-10 max-w-[520px] px-3 ${alignClass}`}>
+      <section className="snap-section section-light relative min-h-screen flex flex-col justify-center py-32 md:py-40">
+        <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${gradStart}, ${gradEnd})` }} />
+        <div className={`relative z-10 max-w-[520px] px-6 ${alignClass}`}>
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease }}>
             <h3 className="font-display text-3xl md:text-4xl font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))" }}>{successHeading}</h3>
             <p className="font-body-heading text-base mb-8" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>{successBody}</p>
@@ -71,20 +76,19 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
   }
 
   return (
-    <section className="snap-section section-light relative" style={{ paddingTop: `${l.paddingTop}px`, paddingBottom: `${l.paddingBottom}px` }}>
-      <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
+    <section className="snap-section section-light relative min-h-screen flex flex-col justify-center" style={{ paddingTop: `${l.paddingTop}px`, paddingBottom: `${l.paddingBottom}px` }}>
+      <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${gradStart}, ${gradEnd})` }} />
 
-      <div className={`relative z-10 max-w-[900px] px-3 ${alignClass}`}>
+      <div className={`relative z-10 max-w-[900px] px-6 ${alignClass}`}>
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }} className="mb-14">
           {titleLines.length > 0 && (
-            <h3 className="font-display text-3xl md:text-4xl font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))" }}>
+            <h3 className="font-display font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))", fontSize: "clamp(1.5rem, 4vw, 2.5rem)" }}>
               {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
             </h3>
           )}
-          {c.body && <div className="font-body-heading text-base md:text-lg leading-relaxed" style={{ color: "hsl(var(--light-fg) / 0.7)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
+          {c.body && <div className="font-body-heading leading-relaxed" style={{ color: "hsl(var(--light-fg) / 0.7)", fontSize: "clamp(0.85rem, 1.8vw, 1.15rem)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
         </motion.div>
 
-        {/* Purple glass form panel with inner glass gradient */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -98,7 +102,6 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
             border: "1px solid hsl(280 55% 35% / 0.4)",
             boxShadow: "0 20px 60px -15px hsl(280 55% 15% / 0.5), 0 0 80px -20px hsl(280 55% 30% / 0.2)",
           }}>
-          {/* Inner glass gradient */}
           <div className="absolute inset-0 opacity-30 pointer-events-none" style={{
             background: "linear-gradient(135deg, hsl(280 55% 40% / 0.4) 0%, transparent 50%, hsl(280 55% 30% / 0.2) 100%)",
           }} />

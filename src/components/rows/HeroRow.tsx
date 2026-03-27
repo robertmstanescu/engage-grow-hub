@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { sanitizeHtml } from "@/lib/sanitize";
 import type { PageRow } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
@@ -11,6 +12,7 @@ interface Props {
 
 const HeroRow = ({ row }: Props) => {
   const c = row.content;
+  const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const titleLines: string[] = (c.title_lines || []).map((line: any) =>
     typeof line === "string" ? (line.startsWith("<") ? line : `<p>${line}</p>`) : `<p>${line}</p>`
   );
@@ -19,8 +21,13 @@ const HeroRow = ({ row }: Props) => {
   const bgUrl = c.bg_url || "";
   const hasBg = bgType !== "none" && bgUrl;
 
+  const gradStart = l.gradientStart || "hsl(280 55% 20% / 0.8)";
+  const gradEnd = l.gradientEnd || "hsl(286 42% 25% / 0.5)";
+
   return (
-    <section className="snap-section grain relative h-screen flex flex-col justify-end overflow-hidden mesh-hero">
+    <section className="snap-section grain relative h-screen flex flex-col justify-end overflow-hidden" style={{
+      background: `radial-gradient(ellipse 100% 80% at 20% 100%, ${gradStart}, transparent), radial-gradient(ellipse 80% 60% at 90% 10%, ${gradEnd}, transparent), radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06), transparent), hsl(260 20% 4%)`,
+    }}>
       {hasBg && bgType === "image" && (
         <div className="absolute inset-0 z-0">
           <img src={bgUrl} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
@@ -37,7 +44,7 @@ const HeroRow = ({ row }: Props) => {
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px]"
         style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
 
-      <div className="relative z-10 w-full max-w-[1100px] px-3 pb-[4vh] pt-[15vh] flex flex-col justify-end">
+      <div className="relative z-10 w-full max-w-[1100px] px-6 pb-[4vh] pt-[15vh] flex flex-col justify-end">
         {c.label && (
           <motion.p
             initial={{ opacity: 0 }}

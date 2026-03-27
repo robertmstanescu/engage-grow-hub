@@ -27,10 +27,15 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
 
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
-  const alignClass = align === "right" ? "ml-auto mr-0 text-right" : "mr-auto ml-0 text-left";
+  const alignClass = align === "center" ? "mx-auto text-center"
+    : align === "right" ? "ml-auto mr-0 text-right"
+    : "mr-auto ml-0 text-left";
+
+  const gradStart = l.gradientStart || "hsl(280 55% 18% / 0.6)";
+  const gradEnd = l.gradientEnd || "hsl(286 42% 20% / 0.4)";
 
   return (
-    <section className="snap-section grain relative"
+    <section className="snap-section grain relative min-h-screen flex flex-col justify-center"
       style={{
         backgroundColor: row.bg_color || "hsl(var(--background))",
         paddingTop: `${l.paddingTop}px`, paddingBottom: `${l.paddingBottom}px`,
@@ -38,15 +43,15 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
         ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
       }}>
       <div className="absolute inset-0 opacity-60" style={{
-        background: "radial-gradient(ellipse 80% 60% at 10% 90%, hsl(280 55% 18% / 0.6), transparent), radial-gradient(ellipse 60% 50% at 80% 20%, hsl(286 42% 20% / 0.4), transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)"
+        background: `radial-gradient(ellipse 80% 60% at 10% 90%, ${gradStart}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${gradEnd}, transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)`
       }} />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
-      <div className={`relative z-10 ${maxW} px-3 ${alignClass}`}>
+      <div className={`relative z-10 ${maxW} px-6 ${alignClass}`}>
         {titleLines.length > 0 && (
           <motion.h3 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }}
-            className="font-display text-2xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4" style={{ color: "hsl(var(--vows-title))" }}>
+            className="font-display font-bold leading-tight mb-4" style={{ color: "hsl(var(--vows-title))", fontSize: "clamp(1.5rem, 4vw, 3rem)" }}>
             {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
           </motion.h3>
         )}
@@ -54,8 +59,8 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
         {c.subtitle && (
           <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.05, ease }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="p"
-              className="text-base md:text-lg leading-tight mb-10"
-              style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--vows-title))", paddingTop: "10px" }}>
+              className="leading-tight mb-10"
+              style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--vows-title))", paddingTop: "10px", fontSize: "clamp(0.9rem, 2vw, 1.2rem)" }}>
               {c.subtitle}
             </EditableText>
           </motion.div>
