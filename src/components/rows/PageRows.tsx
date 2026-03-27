@@ -84,11 +84,8 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
         // Group the last row with the footer in one snap section
         if (index === lastIndex && footerSlot) {
           return (
-            <div key={row.id} className="snap-section" style={{ scrollSnapAlign: "start" }}>
-              <div className="[&>.snap-section]:!scroll-snap-align-none [&_.snap-section]:!scroll-snap-align-[unset]"
-                style={{ ['--no-snap' as any]: 1 }}>
-                {rendered}
-              </div>
+            <div key={row.id} className="snap-section">
+              {rendered}
               {footerSlot}
             </div>
           );
