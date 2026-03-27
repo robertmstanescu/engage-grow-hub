@@ -1,14 +1,10 @@
 User-agent: Googlebot
 Allow: /
 
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
+User-agent: Google-Extended
 Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://themagiccoffin.com/sitemap.xml
