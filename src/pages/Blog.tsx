@@ -17,24 +17,15 @@ import HeroRow from "@/components/rows/HeroRow";
 const ease = [0.16, 1, 0.3, 1] as const;
 
 interface BlogPost {
-  slug: string;
-  title: string;
-  excerpt: string | null;
-  published_at: string | null;
-  content: string;
-  category: string;
+  slug: string; title: string; excerpt: string | null; published_at: string | null; content: string; category: string;
 }
 
 const calculateReadTime = (content: string) => {
   const words = content.trim().split(/\s+/).length;
-  const minutes = Math.max(1, Math.ceil(words / 200));
-  return `${minutes} min read`;
+  return `${Math.max(1, Math.ceil(words / 200))} min read`;
 };
 
-const formatDate = (dateStr: string) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-};
+const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -42,9 +33,7 @@ const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
   try {
     if (!row || !row.type) return null;
     const id = row.scope || slugify(row.strip_title || "section");
-    const wrapper = (children: React.ReactNode) => (
-      <div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>
-    );
+    const wrapper = (children: React.ReactNode) => (<div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>);
     switch (row.type) {
       case "hero": return wrapper(<HeroRow row={row} />);
       case "text": return wrapper(<TextRow row={row} rowIndex={rowIndex} />);
@@ -53,9 +42,7 @@ const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
       case "contact": return wrapper(<ContactRow row={row} />);
       default: return null;
     }
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 };
 
 const Blog = () => {
@@ -64,12 +51,10 @@ const Blog = () => {
   const { getCategoryColors } = useTagColors();
 
   const pageData = useSiteContent<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string; meta_title: string; meta_description: string }>("blog_page", {
-    rows_above: [],
-    rows_below: [],
+    rows_above: [], rows_below: [],
     header_title: "Insights & Articles",
     header_subtitle: "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.",
-    meta_title: "",
-    meta_description: "",
+    meta_title: "", meta_description: "",
   });
 
   usePageMeta({
@@ -90,92 +75,48 @@ const Blog = () => {
     fetchPosts();
   }, []);
 
-  const rowsAbove = pageData.rows_above || [];
-  const rowsBelow = pageData.rows_below || [];
-
   return (
-    <div className="min-h-screen mt-[20px]">
+    <div className="min-h-screen lg:pl-16">
       <Navbar />
+      {(pageData.rows_above || []).map((row, i) => <RowRenderer key={row.id} row={row} rowIndex={i} />)}
 
-      {/* CMS rows above blog listing */}
-      {rowsAbove.map((row, i) => (
-        <RowRenderer key={row.id} row={row} rowIndex={i} />
-      ))}
-
-      <section
-        className="pt-32 pb-12 text-center"
-        style={{ backgroundColor: "hsl(var(--primary))" }}>
-        <div className="max-w-[800px] mx-auto px-6">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease }}
-            className="font-display text-3xl md:text-4xl font-black leading-tight mb-4"
-            style={{ color: "hsl(var(--primary-foreground))" }}>
+      <section className="grain relative pt-36 pb-16 text-center mesh-hero">
+        <div className="relative z-10 max-w-[800px] mx-auto px-8">
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease }}
+            className="font-display text-3xl md:text-5xl font-black leading-tight mb-5" style={{ color: "hsl(var(--foreground))" }}>
             {pageData.header_title || "Insights & Articles"}
           </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease }}
-            className="font-body-heading text-base max-w-[600px] mx-auto"
-            style={{ color: "hsl(var(--primary-foreground) / 0.75)" }}>
+          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease }}
+            className="font-body-heading text-base md:text-lg max-w-[600px] mx-auto" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
             {pageData.header_subtitle || ""}
           </motion.p>
         </div>
       </section>
 
-      <section className="py-16 px-6" style={{ backgroundColor: "hsl(var(--background))" }}>
+      <section className="py-20 px-8" style={{ backgroundColor: "hsl(var(--background))" }}>
         <div className="max-w-[800px] mx-auto">
           {loading ? (
-            <p className="font-body text-sm text-muted-foreground text-center py-12">Loading articles...</p>
+            <p className="font-body text-sm text-center py-12" style={{ color: "hsl(var(--muted-foreground))" }}>Loading articles...</p>
           ) : posts.length === 0 ? (
-            <p className="font-body text-sm text-muted-foreground text-center py-12">No articles published yet. Check back soon!</p>
+            <p className="font-body text-sm text-center py-12" style={{ color: "hsl(var(--muted-foreground))" }}>No articles published yet.</p>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-6">
               {posts.map((post, i) => (
-                <motion.article
-                  key={post.slug}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.1, ease }}>
-                  <Link
-                    to={`/blog/${post.slug}`}
-                    className="block rounded-lg p-6 md:p-8 transition-all duration-200 hover:shadow-lg group"
-                    style={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border) / 0.5)"
-                    }}>
+                <motion.article key={post.slug} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.08, ease }}>
+                  <Link to={`/blog/${post.slug}`}
+                    className="block glass rounded-xl p-6 md:p-8 transition-all duration-500 hover:glow-accent group">
                     <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
                       {(() => {
                         const catColors = getCategoryColors(post.category);
-                        return (
-                          <span
-                            className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 md:px-2.5 md:py-1 rounded-full font-medium"
-                            style={{
-                              backgroundColor: catColors.bgColor,
-                              color: catColors.textColor
-                            }}>
-                            {post.category}
-                          </span>
-                        );
+                        return (<span className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 rounded-full font-medium"
+                          style={{ backgroundColor: catColors.bgColor, color: catColors.textColor }}>{post.category}</span>);
                       })()}
-                      {post.published_at && (
-                        <span className="font-body text-xs text-muted-foreground">{formatDate(post.published_at)}</span>
-                      )}
-                      <span className="font-body text-xs text-muted-foreground">· {calculateReadTime(post.content)}</span>
+                      {post.published_at && <span className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{formatDate(post.published_at)}</span>}
+                      <span className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>· {calculateReadTime(post.content)}</span>
                     </div>
-                    <h2
-                      className="font-display text-lg md:text-xl font-bold leading-tight mb-2 group-hover:opacity-80 transition-opacity"
-                      style={{ color: "hsl(var(--secondary))" }}>
-                      {post.title}
-                    </h2>
-                    {post.excerpt && (
-                      <p className="font-body text-sm text-foreground/70 leading-relaxed">
-                        {post.excerpt}
-                      </p>
-                    )}
+                    <h2 className="font-display text-lg md:text-xl font-bold leading-tight mb-2 group-hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>{post.title}</h2>
+                    {post.excerpt && <p className="font-body text-sm leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.5)" }}>{post.excerpt}</p>}
                   </Link>
                 </motion.article>
               ))}
@@ -184,11 +125,7 @@ const Blog = () => {
         </div>
       </section>
 
-      {/* CMS rows below blog listing */}
-      {rowsBelow.map((row, i) => (
-        <RowRenderer key={row.id} row={row} rowIndex={i} />
-      ))}
-
+      {(pageData.rows_below || []).map((row, i) => <RowRenderer key={row.id} row={row} rowIndex={i} />)}
       <Footer />
     </div>
   );

@@ -18,9 +18,7 @@ const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
   try {
     if (!row || !row.type) return null;
     const id = row.scope || slugify(row.strip_title || "section");
-    const wrapper = (children: React.ReactNode) => (
-      <div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>
-    );
+    const wrapper = (children: React.ReactNode) => (<div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>);
     switch (row.type) {
       case "hero": return wrapper(<HeroRow row={row} />);
       case "text": return wrapper(<TextRow row={row} rowIndex={rowIndex} />);
@@ -29,9 +27,7 @@ const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
       case "contact": return wrapper(<ContactRow row={row} />);
       default: return null;
     }
-  } catch {
-    return <div className="py-8 text-center font-body text-sm text-destructive">Row render error</div>;
-  }
+  } catch { return <div className="py-8 text-center font-body text-sm text-destructive">Row render error</div>; }
 };
 
 const SYSTEM_ROUTES = ["blog", "admin", "unsubscribe", "api", "auth", "login", "signup", "p"];
@@ -43,23 +39,10 @@ const CmsPage = () => {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!slug || SYSTEM_ROUTES.includes(slug)) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
+    if (!slug || SYSTEM_ROUTES.includes(slug)) { setNotFound(true); setLoading(false); return; }
     const load = async () => {
-      const { data, error } = await supabase
-        .from("cms_pages")
-        .select("*")
-        .eq("slug", slug)
-        .maybeSingle();
-
-      if (!data || error) {
-        setNotFound(true);
-      } else {
-        setPage(data);
-      }
+      const { data, error } = await supabase.from("cms_pages").select("*").eq("slug", slug).maybeSingle();
+      if (!data || error) setNotFound(true); else setPage(data);
       setLoading(false);
     };
     load();
@@ -67,7 +50,7 @@ const CmsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(var(--background))" }}>
+      <div className="min-h-screen lg:pl-16 flex items-center justify-center" style={{ backgroundColor: "hsl(var(--background))" }}>
         <div className="animate-pulse font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Loading…</div>
       </div>
     );
@@ -77,23 +60,18 @@ const CmsPage = () => {
 
   const rows: PageRow[] = page?.page_rows || [];
 
-  usePageMeta({
-    title: page?.meta_title || page?.title,
-    description: page?.meta_description || undefined,
-  });
+  usePageMeta({ title: page?.meta_title || page?.title, description: page?.meta_description || undefined });
 
   return (
-    <div className="min-h-screen mt-[20px]">
+    <div className="min-h-screen lg:pl-16">
       <Navbar />
-      <div className="pt-16">
+      <div>
         {rows.length === 0 ? (
-          <div className="py-20 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+          <div className="py-32 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
             This page has no content yet. Add rows in the admin panel.
           </div>
         ) : (
-          rows.map((row, index) => (
-            <RowRenderer key={row.id} row={row} rowIndex={index} />
-          ))
+          rows.map((row, index) => <RowRenderer key={row.id} row={row} rowIndex={index} />)
         )}
       </div>
       <Footer />

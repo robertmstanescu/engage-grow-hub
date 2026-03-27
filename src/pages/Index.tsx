@@ -14,7 +14,7 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen lg:pl-16">
       <Navbar />
       <HeroSection />
       <PageRows />
