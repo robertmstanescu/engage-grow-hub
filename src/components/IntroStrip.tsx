@@ -25,6 +25,7 @@ const IntroStrip = () => {
         style={{ color: "hsl(var(--intro-text))" }}
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.text) }}
       />
+      <SubscribeWidget className="mt-6" />
     </div>
   );
 };
