@@ -22,6 +22,7 @@ interface HeroContent {
 
 const fallback: HeroContent = {
   label: "What we do",
+  tagline: "HR & Internal Comms Consulting",
   title_lines: [
     "<p>Your organisation has</p>",
     '<p><span style="color: #E5C54F">vampires.</span></p>',
