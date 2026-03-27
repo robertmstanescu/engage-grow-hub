@@ -24,6 +24,7 @@ const AdminDashboard = ({ session }: Props) => {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "site", label: "Main Page" },
+    { key: "pages", label: "Pages" },
     { key: "blog", label: "Blog Posts" },
     { key: "tags", label: "Tags & Categories" },
     { key: "contacts", label: "Contacts" },
