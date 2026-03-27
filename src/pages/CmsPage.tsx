@@ -10,6 +10,7 @@ import ContactRow from "@/components/rows/ContactRow";
 import HeroRow from "@/components/rows/HeroRow";
 import type { PageRow } from "@/types/rows";
 import NotFound from "./NotFound";
+import usePageMeta from "@/hooks/usePageMeta";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
