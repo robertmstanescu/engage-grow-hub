@@ -1,9 +1,29 @@
+export interface RowLayout {
+  columns: 1 | 2 | 3 | 4;
+  fullWidth: boolean;
+  paddingTop: number;
+  paddingBottom: number;
+  marginTop: number;
+  marginBottom: number;
+  bgImage?: string;
+}
+
+export const DEFAULT_ROW_LAYOUT: RowLayout = {
+  columns: 1,
+  fullWidth: false,
+  paddingTop: 64,
+  paddingBottom: 64,
+  marginTop: 0,
+  marginBottom: 0,
+};
+
 export interface PageRow {
   id: string;
   type: "text" | "service" | "boxed" | "contact";
   strip_title: string;
   bg_color: string;
   scope?: string;
+  layout?: RowLayout;
   content: Record<string, any>;
 }
 
