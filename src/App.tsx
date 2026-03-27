@@ -31,6 +31,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/p/:slug" element={<CmsPage />} />
+            <Route path="/:slug" element={<CmsPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

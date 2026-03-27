@@ -15,9 +15,19 @@ const TextRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
   );
 
+  const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
+  const maxW = l.fullWidth ? "max-w-none" : "max-w-[800px]";
+
   return (
-    <section style={{ backgroundColor: row.bg_color || "hsl(var(--background))" }}>
-      <div className="max-w-[800px] mx-auto px-6 py-16 text-center">
+    <section style={{
+      backgroundColor: row.bg_color || "hsl(var(--background))",
+      paddingTop: `${l.paddingTop}px`,
+      paddingBottom: `${l.paddingBottom}px`,
+      marginTop: l.marginTop ? `${l.marginTop}px` : undefined,
+      marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined,
+      ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
+    }}>
+      <div className={`${maxW} mx-auto px-6 text-center`}>
         {titleLines.length > 0 && (
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
