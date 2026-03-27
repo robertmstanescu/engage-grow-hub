@@ -6,8 +6,9 @@ import ContactsList from "./ContactsList";
 import EmailCampaigns from "./EmailCampaigns";
 import SiteEditor from "./SiteEditor";
 import TagsManager from "./TagsManager";
+import PagesManager from "./PagesManager";
 
-type Tab = "site" | "blog" | "contacts" | "emails" | "tags";
+type Tab = "site" | "pages" | "blog" | "contacts" | "emails" | "tags";
 
 interface Props {
   session: any;
