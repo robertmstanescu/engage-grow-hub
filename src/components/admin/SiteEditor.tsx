@@ -5,6 +5,7 @@ import { Save, ChevronDown, ChevronUp, Eye, Send, FileText } from "lucide-react"
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
+import SeoFields from "./site-editor/SeoFields";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
 
 interface SectionData {
