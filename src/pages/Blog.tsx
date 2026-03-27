@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import usePageMeta from "@/hooks/usePageMeta";
 import type { PageRow } from "@/types/rows";
 import TextRow from "@/components/rows/TextRow";
 import ServiceRow from "@/components/rows/ServiceRow";
