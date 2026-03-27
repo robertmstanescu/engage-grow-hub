@@ -48,7 +48,7 @@ const BlogPost = () => {
       if (!slug) { setLoading(false); return; }
       const { data } = await supabase
         .from("blog_posts")
-        .select("slug, title, published_at, content, category, cover_image, author_name, author_image")
+        .select("slug, title, published_at, content, category, cover_image, author_name, author_image, meta_title, meta_description, og_image, tags")
         .eq("slug", slug)
         .eq("status", "published")
         .maybeSingle();
