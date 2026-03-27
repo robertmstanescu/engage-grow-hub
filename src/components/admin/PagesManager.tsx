@@ -268,9 +268,17 @@ const PagesManager = () => {
               </div>
               <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
             </div>
-            <a href={sp.href} target="_blank" className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
-              <ExternalLink size={14} />
-            </a>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setEditingBlog(true)}
+                className="p-2 rounded hover:opacity-70"
+                style={{ color: "hsl(var(--primary))" }}>
+                Edit
+              </button>
+              <a href={sp.href} target="_blank" className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <ExternalLink size={14} />
+              </a>
+            </div>
           </div>
         ))}
       </div>
