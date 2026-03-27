@@ -130,7 +130,7 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
           </motion.div>
         </div>
       </div>
-      <div className="px-6 pb-16" style={{ backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
+      <div className="px-6" style={{ paddingBottom: `${l.paddingBottom}px`, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
         <div className="max-w-[900px] mx-auto">
           <div className="flex items-center justify-center gap-4 mb-6">
             <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ border: "1px solid hsl(var(--pillar-primary) / 0.2)", color: "hsl(var(--pillar-primary))" }}>

@@ -26,6 +26,8 @@ const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
   }
 };
 
+const SYSTEM_ROUTES = ["blog", "admin", "unsubscribe"];
+
 const CmsPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const [page, setPage] = useState<any>(null);
@@ -33,11 +35,16 @@ const CmsPage = () => {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    if (!slug || SYSTEM_ROUTES.includes(slug)) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
     const load = async () => {
       const { data, error } = await supabase
         .from("cms_pages")
         .select("*")
-        .eq("slug", slug || "")
+        .eq("slug", slug)
         .maybeSingle();
 
       if (!data || error) {
