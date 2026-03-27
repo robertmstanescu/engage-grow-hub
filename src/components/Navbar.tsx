@@ -15,14 +15,14 @@ const Navbar = () => {
   const location = useLocation();
 
   const servicesLabel = navConfig.services_label || "Services";
-  const subLinks = navConfig.sub_links || [
+  const subLinks = (navConfig.sub_links || [
     { label: "Internal Communications", href: "#internal-communications" },
     { label: "Employee Experience", href: "#employee-experience" },
-  ];
-  const links = navConfig.links || [
+  ]).map((l: any) => ({ label: l.label, href: l.href }));
+  const links = (navConfig.links || [
     { label: "Our Vows", href: "#vows" },
     { label: "Contact", href: "#contact" },
-  ];
+  ]).map((l: any) => ({ label: l.label, href: l.href }));
   const showBlogLink = navConfig.show_blog_link !== false;
   const ctaText = navConfig.cta_text || "Book a consultation";
   const ctaHref = navConfig.cta_href || "#contact";
