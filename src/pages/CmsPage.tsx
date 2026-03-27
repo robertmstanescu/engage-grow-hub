@@ -7,6 +7,7 @@ import TextRow from "@/components/rows/TextRow";
 import ServiceRow from "@/components/rows/ServiceRow";
 import BoxedRow from "@/components/rows/BoxedRow";
 import ContactRow from "@/components/rows/ContactRow";
+import HeroRow from "@/components/rows/HeroRow";
 import type { PageRow } from "@/types/rows";
 import NotFound from "./NotFound";
 
