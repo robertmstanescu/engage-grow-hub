@@ -129,6 +129,23 @@ const BlogPost = () => {
                 style={{ color: "hsl(var(--primary-foreground))" }}>
                 {article.title}
               </h1>
+              {article.author_name && (
+                <div className="flex items-center gap-3 mt-4">
+                  {article.author_image && (
+                    <img
+                      src={article.author_image}
+                      alt={article.author_name}
+                      className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                    />
+                  )}
+                  <div>
+                    <p className="font-body text-[10px] uppercase tracking-[0.14em]" style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}>Written by</p>
+                    <p className="text-sm font-bold" style={{ color: "hsl(var(--primary-foreground))", fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+                      {article.author_name}
+                    </p>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </div>
         </header>
@@ -141,25 +158,6 @@ const BlogPost = () => {
             className="max-w-[700px] mx-auto prose prose-sm md:prose-base prose-headings:font-display prose-headings:text-secondary prose-p:text-foreground/80 prose-p:leading-[1.8] prose-a:text-primary prose-img:rounded-lg"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
           />
-
-          {/* Author section */}
-          {article.author_name && (
-            <div className="max-w-[700px] mx-auto mt-10 pt-8 flex items-center gap-4" style={{ borderTop: "1px solid hsl(var(--border))" }}>
-              {article.author_image && (
-                <img
-                  src={article.author_image}
-                  alt={article.author_name}
-                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                />
-              )}
-              <div>
-                <p className="font-body text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Written by</p>
-                <p className="font-display text-sm font-bold" style={{ color: "hsl(var(--secondary))" }}>
-                  {article.author_name}
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Subscribe widget */}
           <div className="max-w-[700px] mx-auto mt-10 pt-8 flex flex-col items-center" style={{ borderTop: "1px solid hsl(var(--border))" }}>
