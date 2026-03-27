@@ -16,16 +16,18 @@ const IntroStrip = () => {
     <div
       className="scope-intro py-8 px-6 text-center"
       style={{ backgroundColor: "hsl(var(--intro-bg))" }}>
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, ease }}
-        className="font-body-heading text-base font-medium max-w-[700px] mx-auto"
-        style={{ color: "hsl(var(--intro-text))" }}
-        dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.text) }}
-      />
-      <SubscribeWidget className="mt-6" />
+      <div className="max-w-[700px] mx-auto">
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease }}
+          className="font-body-heading text-base font-medium"
+          style={{ color: "hsl(var(--intro-text))" }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.text) }}
+        />
+        <SubscribeWidget className="mt-6" />
+      </div>
     </div>
   );
 };

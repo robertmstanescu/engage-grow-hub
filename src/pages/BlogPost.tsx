@@ -129,6 +129,23 @@ const BlogPost = () => {
                 style={{ color: "hsl(var(--primary-foreground))" }}>
                 {article.title}
               </h1>
+              {article.author_name && (
+                <div className="flex items-center gap-3 mt-4">
+                  {article.author_image && (
+                    <img
+                      src={article.author_image}
+                      alt={article.author_name}
+                      className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                    />
+                  )}
+                  <div>
+                    <p className="font-body text-[10px] uppercase tracking-[0.14em]" style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}>Written by</p>
+                    <p className="text-sm font-bold" style={{ color: "hsl(var(--primary-foreground))", fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+                      {article.author_name}
+                    </p>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </div>
         </header>
