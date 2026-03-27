@@ -5,6 +5,7 @@ import ServiceCard from "@/components/ServiceCard";
 import type { PageRow } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
+import SubscribeWidget from "@/components/SubscribeWidget";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -156,6 +157,11 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
               </motion.div>
             </AnimatePresence>
           </div>
+          {c.show_subscribe && (
+            <div className="text-center mt-8">
+              <SubscribeWidget />
+            </div>
+          )}
         </div>
       </div>
     </div>

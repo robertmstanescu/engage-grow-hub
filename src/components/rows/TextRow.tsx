@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import type { PageRow } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
+import SubscribeWidget from "@/components/SubscribeWidget";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
@@ -69,6 +70,8 @@ const TextRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
             />
           </motion.div>
         )}
+
+        {c.show_subscribe && <SubscribeWidget className="mt-6" />}
       </div>
     </section>
   );
