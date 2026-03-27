@@ -51,7 +51,8 @@ const HeroEditor = ({ content, onChange }: Props) => {
 
   return (
     <div className="space-y-4">
-      <Field label="Label" value={content.label || ""} onChange={(v) => onChange("label", v)} />
+      <Field label="Label (above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
+      <Field label="Tagline (below title)" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
 
       <div>
         <div className="flex items-center justify-between mb-1">

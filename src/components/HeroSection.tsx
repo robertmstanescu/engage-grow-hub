@@ -7,6 +7,8 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 interface HeroContent {
   label: string;
+  tagline?: string;
+  tagline_color?: string;
   title_lines?: any[];
   subtitle?: string;
   subtitle_color?: string;
@@ -20,6 +22,7 @@ interface HeroContent {
 
 const fallback: HeroContent = {
   label: "What we do",
+  tagline: "HR & Internal Comms Consulting",
   title_lines: [
     "<p>Your organisation has</p>",
     '<p><span style="color: #E5C54F">vampires.</span></p>',
@@ -91,14 +94,18 @@ const HeroSection = () => {
           ))}
         </motion.h1>
 
-        <motion.h2
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.12, ease }}
-          className="font-body text-[11px] tracking-[0.18em] uppercase mt-3 mb-4"
-          style={{ color: "hsl(var(--hero-label))", opacity: 0.75 }}>
-          HR &amp; Internal Comms Consulting
-        </motion.h2>
+        {c.tagline && (
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.12, ease }}
+            className="font-body text-[11px] tracking-[0.18em] uppercase mt-3 mb-4"
+            style={{ color: c.tagline_color || "hsl(var(--hero-label))", opacity: 0.75 }}>
+            <EditableText sectionKey="hero" fieldPath="tagline" as="span">
+              {c.tagline}
+            </EditableText>
+          </motion.h2>
+        )}
 
         {c.subtitle && (
           <motion.div
