@@ -28,7 +28,8 @@ const EditableText = ({
   dangerouslySetInnerHTML,
   ...rest
 }: EditableTextProps & Record<string, any>) => {
-  const { editMode, saveField } = useInlineEdit();
+  const { editMode, selectMode, selectedElement, setSelectedElement, saveField } = useInlineEdit();
+  const elementId = `${sectionKey}.${fieldPath}`;
   const ref = useRef<HTMLElement>(null);
   const originalRef = useRef<string>("");
 
