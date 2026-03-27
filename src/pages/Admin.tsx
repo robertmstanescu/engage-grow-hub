@@ -64,7 +64,11 @@ const Admin = () => {
     );
   }
 
-  return <AdminDashboard session={session} />;
+  return (
+    <div className="admin-light">
+      <AdminDashboard session={session} />
+    </div>
+  );
 };
 
 export default Admin;
