@@ -14,7 +14,7 @@ const Index = () => {
   });
 
   return (
-    <div className="h-screen overflow-y-auto lg:pl-16" style={{ scrollSnapType: "y mandatory", scrollBehavior: "smooth" }}>
+    <div className="min-h-screen lg:pl-16">
       <Navbar />
       <HeroSection />
       <PageRows footerSlot={<Footer />} />
