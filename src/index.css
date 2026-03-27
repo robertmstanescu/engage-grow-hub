@@ -234,6 +234,12 @@
     scroll-snap-stop: normal;
   }
 
+  /* Neutralize inner snap when grouped (e.g. last row + footer) */
+  .snap-section .snap-section {
+    scroll-snap-align: unset;
+    scroll-snap-stop: unset;
+  }
+
   /* ── Gradient divider (legacy compat) ── */
   .gradient-divider {
     height: 1px;
