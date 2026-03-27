@@ -9,8 +9,9 @@ import TagsManager from "./TagsManager";
 import PagesManager from "./PagesManager";
 import NavigationManager from "./NavigationManager";
 import GlobalSettings from "./GlobalSettings";
+import MediaGallery from "./MediaGallery";
 
-type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "tags" | "settings";
+type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "tags" | "media" | "settings";
 
 interface Props {
   session: any;
