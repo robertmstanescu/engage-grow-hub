@@ -31,8 +31,12 @@ const hexToHslChannels = (hex: string): string | null => {
 const COLOR_MAP: Record<string, string> = {
   color_section_bg: "--pillar-section-bg", color_label: "--pillar-label", color_heading: "--pillar-heading",
   color_heading_sub: "--pillar-heading-sub", color_primary: "--pillar-primary", color_card_bg: "--pillar-card-bg",
-  color_card_title: "--pillar-card-title", color_subtitle: "--pillar-subtitle", color_deliverables_bg: "--pillar-deliverables-bg",
+  color_card_title: "--pillar-card-title", color_subtitle: "--pillar-subtitle", color_card_description: "--pillar-card-description",
+  color_deliverables_bg: "--pillar-deliverables-bg",
   color_deliverables_label: "--pillar-deliverables-label", color_meta_bg: "--pillar-meta-bg", color_meta_fg: "--pillar-meta-fg",
+  color_cta_text: "--pillar-cta-text", color_cta_time: "--pillar-cta-time",
+  color_carousel_btn_bg: "--pillar-carousel-btn-bg", color_carousel_btn_fg: "--pillar-carousel-btn-fg",
+  color_dot_active: "--pillar-dot-active", color_dot_inactive: "--pillar-dot-inactive",
   color_note_border: "--pillar-note-border", color_divider_from: "--pillar-divider-from", color_divider_to: "--pillar-divider-to",
 };
 
@@ -68,15 +72,15 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
   const gradStart = l.gradientStart || "hsl(286 42% 30%)";
   const gradEnd = l.gradientEnd || "hsl(280 55% 25%)";
 
-  // Carousel theme
+  // Carousel theme — use per-row color overrides if set, else fall back to theme detection
   const carouselTheme = l.carouselTheme || "auto";
   const isDarkBg = !row.bg_color || row.bg_color.includes("#2") || row.bg_color.includes("#1") || row.bg_color.includes("#0") || row.bg_color.includes("#3") || row.bg_color.includes("#4") || row.bg_color.includes("#5");
   const isLightCarousel = carouselTheme === "light" || (carouselTheme === "auto" && isDarkBg);
-  const carouselBtnBg = isLightCarousel ? "hsl(0 0% 100% / 0.15)" : "hsl(0 0% 0% / 0.1)";
-  const carouselBtnColor = isLightCarousel ? "hsl(0 0% 100% / 0.9)" : "hsl(0 0% 0% / 0.7)";
+  const carouselBtnBg = c.color_carousel_btn_bg || (isLightCarousel ? "hsl(0 0% 100% / 0.15)" : "hsl(0 0% 0% / 0.1)");
+  const carouselBtnColor = c.color_carousel_btn_fg || (isLightCarousel ? "hsl(0 0% 100% / 0.9)" : "hsl(0 0% 0% / 0.7)");
   const carouselBtnBorder = isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)";
-  const dotActive = isLightCarousel ? "hsl(var(--accent))" : "hsl(var(--primary))";
-  const dotInactive = isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)";
+  const dotActive = c.color_dot_active || (isLightCarousel ? "hsl(var(--accent))" : "hsl(var(--primary))");
+  const dotInactive = c.color_dot_inactive || (isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)");
 
   return (
     <div className="snap-section grain relative min-h-screen flex flex-col justify-center" style={{ scrollMarginTop: "4rem", ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined } as React.CSSProperties}>
