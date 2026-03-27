@@ -78,8 +78,10 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
 
   const colorOverrides = buildColorOverrides(c);
 
+  const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
+
   return (
-    <div style={{ scrollMarginTop: "4rem", ...colorOverrides } as React.CSSProperties}>
+    <div style={{ scrollMarginTop: "4rem", ...colorOverrides, marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined } as React.CSSProperties}>
       <div
         className="gradient-divider"
         style={
