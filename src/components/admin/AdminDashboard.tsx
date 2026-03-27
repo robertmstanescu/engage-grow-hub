@@ -61,6 +61,7 @@ const AdminDashboard = ({ session }: Props) => {
         </div>
 
         {activeTab === "site" && <SiteEditor />}
+        {activeTab === "pages" && <PagesManager />}
         {activeTab === "blog" && <BlogEditor />}
         {activeTab === "tags" && <TagsManager />}
         {activeTab === "contacts" && <ContactsList />}
