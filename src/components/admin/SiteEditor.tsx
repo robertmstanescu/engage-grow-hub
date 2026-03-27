@@ -109,14 +109,17 @@ const SiteEditor = () => {
 
   const hasChanges = sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
 
-  // Ensure page_rows section exists in state
+  // Ensure page_rows and main_page_seo sections exist in state
   useEffect(() => {
-    if (sections.length > 0 && !getSection("page_rows")) {
-      setSections((prev) => [...prev, {
-        section_key: "page_rows",
-        content: { rows: DEFAULT_ROWS },
-        draft_content: { rows: DEFAULT_ROWS },
-      }]);
+    if (sections.length > 0) {
+      const toAdd: any[] = [];
+      if (!getSection("page_rows")) {
+        toAdd.push({ section_key: "page_rows", content: { rows: DEFAULT_ROWS }, draft_content: { rows: DEFAULT_ROWS } });
+      }
+      if (!getSection("main_page_seo")) {
+        toAdd.push({ section_key: "main_page_seo", content: { meta_title: "", meta_description: "" }, draft_content: { meta_title: "", meta_description: "" } });
+      }
+      if (toAdd.length) setSections((prev) => [...prev, ...toAdd]);
     }
   }, [sections.length]);
 
