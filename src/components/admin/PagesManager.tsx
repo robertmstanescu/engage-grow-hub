@@ -38,7 +38,34 @@ const PagesManager = () => {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); loadBlogPage(); }, []);
+
+  const loadBlogPage = async () => {
+    const { data } = await supabase
+      .from("site_content")
+      .select("content")
+      .eq("section_key", "blog_page")
+      .maybeSingle();
+    if (data?.content) {
+      const c = data.content as any;
+      setBlogContent({
+        rows_above: c.rows_above || [],
+        rows_below: c.rows_below || [],
+        header_title: c.header_title || "Insights & Articles",
+        header_subtitle: c.header_subtitle || "",
+      });
+    }
+  };
+
+  const saveBlogPage = async (updates: Partial<typeof blogContent>) => {
+    const next = { ...blogContent, ...updates };
+    setBlogContent(next);
+    const { error } = await supabase
+      .from("site_content")
+      .upsert({ section_key: "blog_page", content: next as any, draft_content: next as any } as any, { onConflict: "section_key" });
+    if (error) { toast.error("Save failed"); return; }
+    toast.success("Saved");
+  };
 
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
