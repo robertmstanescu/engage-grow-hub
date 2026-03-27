@@ -131,7 +131,14 @@
 
   html {
     scroll-behavior: smooth;
+  }
+
+  /* Scroll snap container - applied to the main page wrapper */
+  .snap-container {
     scroll-snap-type: y mandatory;
+    overflow-y: auto;
+    height: 100vh;
+    scroll-behavior: smooth;
   }
 
   [id] { scroll-margin-top: 5rem; }
