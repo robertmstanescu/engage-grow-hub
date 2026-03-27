@@ -16,6 +16,8 @@ interface CmsPage {
   draft_page_rows: PageRow[] | null;
   status: string;
   created_at: string;
+  meta_title?: string;
+  meta_description?: string;
 }
 
 const PagesManager = () => {
