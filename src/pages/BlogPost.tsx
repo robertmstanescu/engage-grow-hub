@@ -20,6 +20,10 @@ interface BlogArticle {
   cover_image: string | null;
   author_name: string | null;
   author_image: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  og_image: string | null;
+  tags: string[] | null;
 }
 
 const calculateReadTime = (content: string) => {
@@ -44,7 +48,7 @@ const BlogPost = () => {
       if (!slug) { setLoading(false); return; }
       const { data } = await supabase
         .from("blog_posts")
-        .select("slug, title, published_at, content, category, cover_image, author_name, author_image")
+        .select("slug, title, published_at, content, category, cover_image, author_name, author_image, meta_title, meta_description, og_image, tags")
         .eq("slug", slug)
         .eq("status", "published")
         .maybeSingle();
@@ -79,8 +83,31 @@ const BlogPost = () => {
     );
   }
 
+  const pageTitle = article.meta_title || article.title;
+  const pageDesc = article.meta_description || article.content.replace(/<[^>]*>/g, " ").slice(0, 160);
+  const pageImage = article.og_image || article.cover_image;
+
   return (
     <div className="min-h-screen mt-[20px]">
+      {/* Dynamic SEO meta tags */}
+      {typeof document !== "undefined" && (() => {
+        document.title = `${pageTitle} | The Magic Coffin for Silly Vampires`;
+        const setMeta = (name: string, content: string, property?: boolean) => {
+          const attr = property ? "property" : "name";
+          let el = document.querySelector(`meta[${attr}="${name}"]`);
+          if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+          el.setAttribute("content", content);
+        };
+        setMeta("description", pageDesc);
+        setMeta("og:title", pageTitle, true);
+        setMeta("og:description", pageDesc, true);
+        if (pageImage) setMeta("og:image", pageImage, true);
+        setMeta("og:type", "article", true);
+        setMeta("twitter:title", pageTitle);
+        setMeta("twitter:description", pageDesc);
+        if (pageImage) setMeta("twitter:image", pageImage);
+        return null;
+      })()}
       <Navbar />
       <article>
         {/* Cover image with gradient fade */}

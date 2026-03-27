@@ -28,7 +28,8 @@ const EditableText = ({
   dangerouslySetInnerHTML,
   ...rest
 }: EditableTextProps & Record<string, any>) => {
-  const { editMode, saveField } = useInlineEdit();
+  const { editMode, selectMode, selectedElement, setSelectedElement, saveField } = useInlineEdit();
+  const elementId = `${sectionKey}.${fieldPath}`;
   const ref = useRef<HTMLElement>(null);
   const originalRef = useRef<string>("");
 
@@ -63,13 +64,35 @@ const EditableText = ({
     }
   }, [html]);
 
-  if (!editMode) {
-    // Render normally, no edit capabilities
+  if (!editMode && !selectMode) {
     const El = Tag as any;
     if (dangerouslySetInnerHTML) {
       return <El className={className} style={style} dangerouslySetInnerHTML={dangerouslySetInnerHTML} {...rest} />;
     }
     return <El className={className} style={style} {...rest}>{children}</El>;
+  }
+
+  // Select mode: highlight on click
+  if (selectMode && !editMode) {
+    const isSelected = selectedElement === elementId;
+    const selectStyle: React.CSSProperties = {
+      ...style,
+      cursor: "pointer",
+      outline: isSelected ? "2px solid hsl(var(--primary))" : undefined,
+      outlineOffset: isSelected ? "3px" : undefined,
+      borderRadius: "2px",
+      transition: "outline 0.15s ease",
+    };
+    const El = Tag as any;
+    const handleClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setSelectedElement(isSelected ? null : elementId);
+    };
+    if (dangerouslySetInnerHTML) {
+      return <El className={className} style={selectStyle} onClick={handleClick} dangerouslySetInnerHTML={dangerouslySetInnerHTML} {...rest} />;
+    }
+    return <El className={className} style={selectStyle} onClick={handleClick} {...rest}>{children}</El>;
   }
 
   // Edit mode: make contentEditable

@@ -6,12 +6,20 @@ import { invalidateSiteContent } from "@/hooks/useSiteContent";
 interface InlineEditContextValue {
   editMode: boolean;
   setEditMode: (v: boolean) => void;
+  selectMode: boolean;
+  setSelectMode: (v: boolean) => void;
+  selectedElement: string | null;
+  setSelectedElement: (id: string | null) => void;
   saveField: (sectionKey: string, fieldPath: string, value: string) => Promise<void>;
 }
 
 const InlineEditContext = createContext<InlineEditContextValue>({
   editMode: false,
   setEditMode: () => {},
+  selectMode: false,
+  setSelectMode: () => {},
+  selectedElement: null,
+  setSelectedElement: () => {},
   saveField: async () => {},
 });
 
@@ -19,7 +27,6 @@ export const useInlineEdit = () => useContext(InlineEditContext);
 
 /**
  * Set a nested field on an object using dot-notation path.
- * e.g. setNestedField(obj, "rows.0.content.title", "Hello")
  */
 const setNestedField = (obj: any, path: string, value: any): any => {
   const clone = JSON.parse(JSON.stringify(obj));
@@ -39,9 +46,10 @@ const setNestedField = (obj: any, path: string, value: any): any => {
 
 export const InlineEditProvider = ({ children }: { children: React.ReactNode }) => {
   const [editMode, setEditMode] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedElement, setSelectedElement] = useState<string | null>(null);
 
   const saveField = useCallback(async (sectionKey: string, fieldPath: string, value: string) => {
-    // Read current draft
     const { data: existing } = await supabase
       .from("site_content")
       .select("content, draft_content")
@@ -68,7 +76,7 @@ export const InlineEditProvider = ({ children }: { children: React.ReactNode }) 
   }, []);
 
   return (
-    <InlineEditContext.Provider value={{ editMode, setEditMode, saveField }}>
+    <InlineEditContext.Provider value={{ editMode, setEditMode, selectMode, setSelectMode, selectedElement, setSelectedElement, saveField }}>
       {children}
     </InlineEditContext.Provider>
   );
