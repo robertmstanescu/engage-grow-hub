@@ -106,7 +106,7 @@ const BlogEditor = () => {
     if (error) { toast.error("Upload failed"); return; }
 
     const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
-    setForm((f) => ({ ...f, cover_image: publicUrl }));
+    setForm((f) => ({ ...f, cover_image: publicUrl, og_image: f.og_image || publicUrl }));
     toast.success("Cover image uploaded");
   }, []);
 
