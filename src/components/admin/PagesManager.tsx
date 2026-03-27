@@ -201,6 +201,18 @@ const PagesManager = () => {
           {editingPage.title}
           <span className="font-body text-xs font-normal ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/{editingPage.slug}</span>
         </h2>
+        <SeoFields
+          metaTitle={editingPage.meta_title || ""}
+          metaDescription={editingPage.meta_description || ""}
+          onTitleChange={(v) => {
+            setEditingPage({ ...editingPage, meta_title: v });
+            supabase.from("cms_pages").update({ meta_title: v } as any).eq("id", editingPage.id);
+          }}
+          onDescriptionChange={(v) => {
+            setEditingPage({ ...editingPage, meta_description: v });
+            supabase.from("cms_pages").update({ meta_description: v } as any).eq("id", editingPage.id);
+          }}
+        />
         <RowsManager
           rows={editingPage.page_rows || []}
           onChange={(rows) => savePageRows(editingPage, rows)}
