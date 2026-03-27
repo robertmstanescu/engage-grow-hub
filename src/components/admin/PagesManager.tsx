@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Trash2, ExternalLink, Globe, FileText } from "lucide-react";
 import RowsManager from "./site-editor/RowsManager";
+import { SectionBox, Field } from "./site-editor/FieldComponents";
 import type { PageRow } from "@/types/rows";
 
 interface CmsPage {
@@ -20,6 +21,10 @@ const PagesManager = () => {
   const [pages, setPages] = useState<CmsPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingPage, setEditingPage] = useState<CmsPage | null>(null);
+  const [editingBlog, setEditingBlog] = useState(false);
+  const [blogContent, setBlogContent] = useState<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string }>({
+    rows_above: [], rows_below: [], header_title: "Insights & Articles", header_subtitle: "",
+  });
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newSlug, setNewSlug] = useState("");
@@ -33,7 +38,34 @@ const PagesManager = () => {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); loadBlogPage(); }, []);
+
+  const loadBlogPage = async () => {
+    const { data } = await supabase
+      .from("site_content")
+      .select("content")
+      .eq("section_key", "blog_page")
+      .maybeSingle();
+    if (data?.content) {
+      const c = data.content as any;
+      setBlogContent({
+        rows_above: c.rows_above || [],
+        rows_below: c.rows_below || [],
+        header_title: c.header_title || "Insights & Articles",
+        header_subtitle: c.header_subtitle || "",
+      });
+    }
+  };
+
+  const saveBlogPage = async (updates: Partial<typeof blogContent>) => {
+    const next = { ...blogContent, ...updates };
+    setBlogContent(next);
+    const { error } = await supabase
+      .from("site_content")
+      .upsert({ section_key: "blog_page", content: next as any, draft_content: next as any } as any, { onConflict: "section_key" });
+    if (error) { toast.error("Save failed"); return; }
+    toast.success("Saved");
+  };
 
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -96,6 +128,40 @@ const PagesManager = () => {
   };
 
   if (loading) return <div className="py-8 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Loading…</div>;
+
+  if (editingBlog) {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setEditingBlog(false)}
+          className="font-body text-xs uppercase tracking-wider hover:opacity-70"
+          style={{ color: "hsl(var(--primary))" }}>
+          ← Back to Pages
+        </button>
+        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--foreground))" }}>
+          Blog Page
+          <span className="font-body text-xs font-normal ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/blog</span>
+        </h2>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Header Title" value={blogContent.header_title} onChange={(v) => saveBlogPage({ header_title: v })} />
+          <Field label="Header Subtitle" value={blogContent.header_subtitle} onChange={(v) => saveBlogPage({ header_subtitle: v })} />
+        </div>
+
+        <SectionBox label="Rows Above Blog Listing">
+          <RowsManager rows={blogContent.rows_above} onChange={(rows) => saveBlogPage({ rows_above: rows })} />
+        </SectionBox>
+
+        <div className="p-4 rounded-lg border-2 border-dashed text-center" style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
+          <span className="font-body text-xs uppercase tracking-wider">⬇ Blog Posts Listing (auto-generated) ⬇</span>
+        </div>
+
+        <SectionBox label="Rows Below Blog Listing">
+          <RowsManager rows={blogContent.rows_below} onChange={(rows) => saveBlogPage({ rows_below: rows })} />
+        </SectionBox>
+      </div>
+    );
+  }
 
   if (editingPage) {
     return (
@@ -202,9 +268,17 @@ const PagesManager = () => {
               </div>
               <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
             </div>
-            <a href={sp.href} target="_blank" className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
-              <ExternalLink size={14} />
-            </a>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setEditingBlog(true)}
+                className="p-2 rounded hover:opacity-70"
+                style={{ color: "hsl(var(--primary))" }}>
+                Edit
+              </button>
+              <a href={sp.href} target="_blank" className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <ExternalLink size={14} />
+              </a>
+            </div>
           </div>
         ))}
       </div>

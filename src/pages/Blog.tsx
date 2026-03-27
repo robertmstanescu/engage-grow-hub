@@ -5,6 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
+import { useSiteContent } from "@/hooks/useSiteContent";
+import type { PageRow } from "@/types/rows";
+import TextRow from "@/components/rows/TextRow";
+import ServiceRow from "@/components/rows/ServiceRow";
+import BoxedRow from "@/components/rows/BoxedRow";
+import ContactRow from "@/components/rows/ContactRow";
+import HeroRow from "@/components/rows/HeroRow";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -28,10 +35,39 @@ const formatDate = (dateStr: string) => {
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 };
 
+const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
+  try {
+    if (!row || !row.type) return null;
+    const id = row.scope || slugify(row.strip_title || "section");
+    const wrapper = (children: React.ReactNode) => (
+      <div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>
+    );
+    switch (row.type) {
+      case "hero": return wrapper(<HeroRow row={row} />);
+      case "text": return wrapper(<TextRow row={row} rowIndex={rowIndex} />);
+      case "service": return wrapper(<ServiceRow row={row} rowIndex={rowIndex} />);
+      case "boxed": return wrapper(<BoxedRow row={row} rowIndex={rowIndex} />);
+      case "contact": return wrapper(<ContactRow row={row} />);
+      default: return null;
+    }
+  } catch {
+    return null;
+  }
+};
+
 const Blog = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const { getCategoryColors } = useTagColors();
+
+  const pageData = useSiteContent<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string }>("blog_page", {
+    rows_above: [],
+    rows_below: [],
+    header_title: "Insights & Articles",
+    header_subtitle: "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.",
+  });
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -46,9 +82,18 @@ const Blog = () => {
     fetchPosts();
   }, []);
 
+  const rowsAbove = pageData.rows_above || [];
+  const rowsBelow = pageData.rows_below || [];
+
   return (
     <div className="min-h-screen mt-[20px]">
       <Navbar />
+
+      {/* CMS rows above blog listing */}
+      {rowsAbove.map((row, i) => (
+        <RowRenderer key={row.id} row={row} rowIndex={i} />
+      ))}
+
       <section
         className="pt-32 pb-12 text-center"
         style={{ backgroundColor: "hsl(var(--primary))" }}>
@@ -59,7 +104,7 @@ const Blog = () => {
             transition={{ duration: 0.6, ease }}
             className="font-display text-3xl md:text-4xl font-black leading-tight mb-4"
             style={{ color: "hsl(var(--primary-foreground))" }}>
-            Insights & Articles
+            {pageData.header_title || "Insights & Articles"}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 10 }}
@@ -67,7 +112,7 @@ const Blog = () => {
             transition={{ duration: 0.6, delay: 0.1, ease }}
             className="font-body-heading text-base max-w-[600px] mx-auto"
             style={{ color: "hsl(var(--primary-foreground) / 0.75)" }}>
-            Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.
+            {pageData.header_subtitle || ""}
           </motion.p>
         </div>
       </section>
@@ -130,6 +175,12 @@ const Blog = () => {
           )}
         </div>
       </section>
+
+      {/* CMS rows below blog listing */}
+      {rowsBelow.map((row, i) => (
+        <RowRenderer key={row.id} row={row} rowIndex={i} />
+      ))}
+
       <Footer />
     </div>
   );
