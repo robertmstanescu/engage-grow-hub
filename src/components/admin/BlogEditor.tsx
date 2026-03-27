@@ -329,6 +329,50 @@ const BlogEditor = () => {
           Estimated read time: {calculateReadTime(form.content)}
         </p>
 
+        {/* Author */}
+        <div>
+          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">Author</label>
+          <div className="flex items-center gap-3">
+            {form.author_image ? (
+              <div className="relative">
+                <img src={form.author_image} alt="" className="w-12 h-12 rounded-full object-cover" />
+                <button
+                  onClick={() => setForm({ ...form, author_image: "" })}
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px]"
+                  style={{ backgroundColor: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
+                  ×
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => authorInputRef.current?.click()}
+                className="w-12 h-12 rounded-full border-2 border-dashed flex items-center justify-center hover:opacity-70 transition-opacity"
+                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
+                <Upload size={16} />
+              </button>
+            )}
+            <input
+              type="text"
+              placeholder="Author name"
+              value={form.author_name}
+              onChange={(e) => setForm({ ...form, author_name: e.target.value })}
+              className="flex-1 px-4 py-3 rounded-lg font-body text-sm border"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
+            />
+          </div>
+          <input
+            ref={authorInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleAuthorImageUpload(file);
+              e.target.value = "";
+            }}
+          />
+        </div>
+
         <div className="flex gap-3">
           <button
             onClick={() => handleSave("draft")}
