@@ -1,10 +1,27 @@
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Type, Briefcase, LayoutGrid, Mail } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail } from "lucide-react";
 import { generateRowId, DEFAULT_CONTACT_FIELDS, type PageRow } from "@/types/rows";
 import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
 import PillarEditor from "./PillarEditor";
 import SubtitleEditor from "./SubtitleEditor";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const ROW_TYPES = [
   { type: "text" as const, label: "Text", icon: Type, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", body: "" } },
