@@ -113,6 +113,8 @@ const BlogEditor = () => {
       category: form.category,
       status,
       cover_image: form.cover_image || null,
+      author_name: form.author_name || null,
+      author_image: form.author_image || null,
       published_at: status === "published" ? new Date().toISOString() : null,
     };
 
