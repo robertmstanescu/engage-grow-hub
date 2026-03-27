@@ -25,6 +25,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const ROW_TYPES = [
+  { type: "hero" as const, label: "Hero", icon: Sparkles, defaultContent: { label: "", title_lines: [], subtitle: "", subtitle_color: "", body: "", body_color: "", title_color: "", label_color: "", bg_type: "none", bg_url: "" } },
   { type: "text" as const, label: "Text", icon: Type, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", body: "" } },
   { type: "service" as const, label: "Service", icon: Briefcase, defaultContent: { pillar_number: "", title: "", description: "", services: [] } },
   { type: "boxed" as const, label: "Boxed (max 6)", icon: LayoutGrid, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", cards: [] } },
