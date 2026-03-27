@@ -11,6 +11,7 @@ import Blog from "./pages/Blog.tsx";
 import BlogPost from "./pages/BlogPost.tsx";
 import Admin from "./pages/Admin.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
+import CmsPage from "./pages/CmsPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
