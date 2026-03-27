@@ -13,20 +13,25 @@ import NotFound from "./NotFound";
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
-  const id = row.scope || slugify(row.strip_title);
-  const wrapper = (children: React.ReactNode) => (
-    <div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>
-  );
-  switch (row.type) {
-    case "text": return wrapper(<TextRow row={row} rowIndex={rowIndex} />);
-    case "service": return wrapper(<ServiceRow row={row} rowIndex={rowIndex} />);
-    case "boxed": return wrapper(<BoxedRow row={row} rowIndex={rowIndex} />);
-    case "contact": return wrapper(<ContactRow row={row} />);
-    default: return null;
+  try {
+    if (!row || !row.type) return null;
+    const id = row.scope || slugify(row.strip_title || "section");
+    const wrapper = (children: React.ReactNode) => (
+      <div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>
+    );
+    switch (row.type) {
+      case "text": return wrapper(<TextRow row={row} rowIndex={rowIndex} />);
+      case "service": return wrapper(<ServiceRow row={row} rowIndex={rowIndex} />);
+      case "boxed": return wrapper(<BoxedRow row={row} rowIndex={rowIndex} />);
+      case "contact": return wrapper(<ContactRow row={row} />);
+      default: return null;
+    }
+  } catch {
+    return <div className="py-8 text-center font-body text-sm text-destructive">Row render error</div>;
   }
 };
 
-const SYSTEM_ROUTES = ["blog", "admin", "unsubscribe"];
+const SYSTEM_ROUTES = ["blog", "admin", "unsubscribe", "api", "auth", "login", "signup", "p"];
 
 const CmsPage = () => {
   const { slug } = useParams<{ slug: string }>();

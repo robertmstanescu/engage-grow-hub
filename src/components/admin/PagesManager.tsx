@@ -37,9 +37,16 @@ const PagesManager = () => {
 
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
+  const RESERVED_SLUGS = ["admin", "blog", "unsubscribe", "api", "auth", "login", "signup", "p"];
+
   const createPage = async () => {
     if (!newTitle.trim()) { toast.error("Title required"); return; }
     const slug = newSlug.trim() || slugify(newTitle);
+
+    if (RESERVED_SLUGS.includes(slug)) {
+      toast.error(`"${slug}" is a reserved system route. Choose a different slug.`);
+      return;
+    }
 
     const { error } = await supabase.from("cms_pages").insert({
       title: newTitle.trim(),

@@ -54,7 +54,7 @@ const HeroSection = () => {
       style={{ backgroundColor: "hsl(var(--hero-bg))" }}>
       {hasBg && c.bg_type === "image" && (
         <div className="absolute inset-0 z-0">
-          <img src={c.bg_url} alt="" className="w-full h-full object-cover" />
+          <img src={c.bg_url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
           <div className="absolute inset-0 bg-black/50" />
         </div>
       )}

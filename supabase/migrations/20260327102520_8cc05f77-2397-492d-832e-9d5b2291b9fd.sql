@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS cms_pages_slug_unique ON public.cms_pages (slug);

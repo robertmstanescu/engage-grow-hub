@@ -12,21 +12,21 @@ const Admin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) {
-        checkAdmin(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
         checkAdmin(session.user.id);
       } else {
         setIsAdmin(false);
+        setLoading(false);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        checkAdmin(session.user.id);
+      } else {
         setLoading(false);
       }
     });
