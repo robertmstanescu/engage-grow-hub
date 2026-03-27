@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import usePageMeta from "@/hooks/usePageMeta";
 import type { PageRow } from "@/types/rows";
 import TextRow from "@/components/rows/TextRow";
 import ServiceRow from "@/components/rows/ServiceRow";
@@ -62,11 +63,18 @@ const Blog = () => {
   const [loading, setLoading] = useState(true);
   const { getCategoryColors } = useTagColors();
 
-  const pageData = useSiteContent<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string }>("blog_page", {
+  const pageData = useSiteContent<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string; meta_title: string; meta_description: string }>("blog_page", {
     rows_above: [],
     rows_below: [],
     header_title: "Insights & Articles",
     header_subtitle: "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.",
+    meta_title: "",
+    meta_description: "",
+  });
+
+  usePageMeta({
+    title: pageData.meta_title || pageData.header_title || "Blog",
+    description: pageData.meta_description || pageData.header_subtitle || undefined,
   });
 
   useEffect(() => {

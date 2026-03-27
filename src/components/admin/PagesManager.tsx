@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, ExternalLink, Globe, FileText } from "lucide-react";
 import RowsManager from "./site-editor/RowsManager";
 import { SectionBox, Field } from "./site-editor/FieldComponents";
+import SeoFields from "./site-editor/SeoFields";
 import type { PageRow } from "@/types/rows";
 
 interface CmsPage {
@@ -15,6 +16,8 @@ interface CmsPage {
   draft_page_rows: PageRow[] | null;
   status: string;
   created_at: string;
+  meta_title?: string;
+  meta_description?: string;
 }
 
 const PagesManager = () => {
@@ -22,8 +25,8 @@ const PagesManager = () => {
   const [loading, setLoading] = useState(true);
   const [editingPage, setEditingPage] = useState<CmsPage | null>(null);
   const [editingBlog, setEditingBlog] = useState(false);
-  const [blogContent, setBlogContent] = useState<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string }>({
-    rows_above: [], rows_below: [], header_title: "Insights & Articles", header_subtitle: "",
+  const [blogContent, setBlogContent] = useState<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string; meta_title: string; meta_description: string }>({
+    rows_above: [], rows_below: [], header_title: "Insights & Articles", header_subtitle: "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.", meta_title: "", meta_description: "",
   });
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -52,7 +55,9 @@ const PagesManager = () => {
         rows_above: c.rows_above || [],
         rows_below: c.rows_below || [],
         header_title: c.header_title || "Insights & Articles",
-        header_subtitle: c.header_subtitle || "",
+        header_subtitle: c.header_subtitle || "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.",
+        meta_title: c.meta_title || "",
+        meta_description: c.meta_description || "",
       });
     }
   };
@@ -148,6 +153,13 @@ const PagesManager = () => {
           <Field label="Header Subtitle" value={blogContent.header_subtitle} onChange={(v) => saveBlogPage({ header_subtitle: v })} />
         </div>
 
+        <SeoFields
+          metaTitle={blogContent.meta_title}
+          metaDescription={blogContent.meta_description}
+          onTitleChange={(v) => saveBlogPage({ meta_title: v })}
+          onDescriptionChange={(v) => saveBlogPage({ meta_description: v })}
+        />
+
         <SectionBox label="Rows Above Blog Listing">
           <RowsManager rows={blogContent.rows_above} onChange={(rows) => saveBlogPage({ rows_above: rows })} />
         </SectionBox>
@@ -189,6 +201,18 @@ const PagesManager = () => {
           {editingPage.title}
           <span className="font-body text-xs font-normal ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/{editingPage.slug}</span>
         </h2>
+        <SeoFields
+          metaTitle={editingPage.meta_title || ""}
+          metaDescription={editingPage.meta_description || ""}
+          onTitleChange={(v) => {
+            setEditingPage({ ...editingPage, meta_title: v });
+            supabase.from("cms_pages").update({ meta_title: v } as any).eq("id", editingPage.id);
+          }}
+          onDescriptionChange={(v) => {
+            setEditingPage({ ...editingPage, meta_description: v });
+            supabase.from("cms_pages").update({ meta_description: v } as any).eq("id", editingPage.id);
+          }}
+        />
         <RowsManager
           rows={editingPage.page_rows || []}
           onChange={(rows) => savePageRows(editingPage, rows)}

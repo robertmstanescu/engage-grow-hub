@@ -5,6 +5,7 @@ import { Save, ChevronDown, ChevronUp, Eye, Send, FileText } from "lucide-react"
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
+import SeoFields from "./site-editor/SeoFields";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
 
 interface SectionData {
@@ -24,7 +25,7 @@ const SiteEditor = () => {
       const { data } = await supabase
         .from("site_content")
         .select("section_key, content, draft_content")
-        .in("section_key", ["hero", "page_rows"]) as any;
+        .in("section_key", ["hero", "page_rows", "main_page_seo"]) as any;
       if (data) {
         const mapped = data.map((s: any) => ({
           section_key: s.section_key,
@@ -108,14 +109,17 @@ const SiteEditor = () => {
 
   const hasChanges = sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
 
-  // Ensure page_rows section exists in state
+  // Ensure page_rows and main_page_seo sections exist in state
   useEffect(() => {
-    if (sections.length > 0 && !getSection("page_rows")) {
-      setSections((prev) => [...prev, {
-        section_key: "page_rows",
-        content: { rows: DEFAULT_ROWS },
-        draft_content: { rows: DEFAULT_ROWS },
-      }]);
+    if (sections.length > 0) {
+      const toAdd: any[] = [];
+      if (!getSection("page_rows")) {
+        toAdd.push({ section_key: "page_rows", content: { rows: DEFAULT_ROWS }, draft_content: { rows: DEFAULT_ROWS } });
+      }
+      if (!getSection("main_page_seo")) {
+        toAdd.push({ section_key: "main_page_seo", content: { meta_title: "", meta_description: "" }, draft_content: { meta_title: "", meta_description: "" } });
+      }
+      if (toAdd.length) setSections((prev) => [...prev, ...toAdd]);
     }
   }, [sections.length]);
 
@@ -157,6 +161,29 @@ const SiteEditor = () => {
         )}
       </div>
 
+      {/* SEO & Metadata */}
+      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+        <button onClick={() => setOpenSection(openSection === "seo" ? null : "seo")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
+          <span className="font-body text-sm font-medium">SEO & Metadata</span>
+          {openSection === "seo" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {openSection === "seo" && (
+          <div className="px-4 pb-4 space-y-4">
+            <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+              OG image for social sharing is set via the Publish button. These fields control search engine metadata only.
+            </p>
+            <SeoFields
+              metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+              metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+              onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+              onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+            />
+            <button onClick={() => saveDraft("main_page_seo")} disabled={saving === "main_page_seo"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+              <Save size={13} /> {saving === "main_page_seo" ? "Saving…" : "Save Draft"}
+            </button>
+          </div>
+        )}
+      </div>
       {/* Page Rows */}
       <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
         <button onClick={() => setOpenSection(openSection === "page_rows" ? null : "page_rows")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>

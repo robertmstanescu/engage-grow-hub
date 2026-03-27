@@ -10,6 +10,7 @@ import ContactRow from "@/components/rows/ContactRow";
 import HeroRow from "@/components/rows/HeroRow";
 import type { PageRow } from "@/types/rows";
 import NotFound from "./NotFound";
+import usePageMeta from "@/hooks/usePageMeta";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -75,6 +76,11 @@ const CmsPage = () => {
   if (notFound) return <NotFound />;
 
   const rows: PageRow[] = page?.page_rows || [];
+
+  usePageMeta({
+    title: page?.meta_title || page?.title,
+    description: page?.meta_description || undefined,
+  });
 
   return (
     <div className="min-h-screen mt-[20px]">
