@@ -14,7 +14,7 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen mt-[20px]">
+    <div className="min-h-screen">
       <Navbar />
       <HeroSection />
       <PageRows />

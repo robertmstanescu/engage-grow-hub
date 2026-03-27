@@ -13,17 +13,24 @@ const IntroStrip = () => {
 
   return (
     <div
-      className="scope-intro py-8 px-6 text-center"
+      className="scope-intro py-16 md:py-24 px-8 md:px-12"
       style={{ backgroundColor: "hsl(var(--intro-bg))" }}>
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, ease }}
-        className="font-body-heading text-base font-medium max-w-[700px] mx-auto"
-        style={{ color: "hsl(var(--intro-text))" }}
-        dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.text) }}
-      />
+      <div className="max-w-[800px] mx-auto">
+        {/* Ornamental divider */}
+        <div className="ornamental-divider mb-12">
+          <span className="ornament">✦</span>
+        </div>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease }}
+          className="font-body-heading text-lg md:text-xl font-medium leading-relaxed text-center"
+          style={{ color: "hsl(var(--intro-text))" }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.text) }}
+        />
+      </div>
     </div>
   );
 };
