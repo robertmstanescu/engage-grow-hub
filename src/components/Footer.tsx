@@ -35,31 +35,40 @@ const Footer = () => {
   const activeLinks = PLATFORMS.filter((p) => links[p.key]?.trim());
 
   return (
-    <footer className="bg-secondary py-8 px-6 text-center">
-      {activeLinks.length > 0 && (
-        <div className="flex items-center justify-center gap-4 mb-4">
-          {activeLinks.map((p) => {
-            const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;
-            return (
-              <a
-                key={p.key}
-                href={links[p.key]}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={p.label}
-                className="text-primary-foreground/40 hover:text-primary-foreground/70 transition-colors">
-                {Icon && <Icon />}
-              </a>
-            );
-          })}
+    <footer className="grain-overlay bg-secondary py-16 md:py-20 px-8 md:px-12">
+      <div className="relative z-10 max-w-[900px] mx-auto">
+        {/* Ornamental divider */}
+        <div className="ornamental-divider mb-10">
+          <span className="ornament">✦</span>
         </div>
-      )}
-      <p className="font-body text-xs text-primary-foreground/40">
-        {footer.copyright || defaultFooter.copyright}
-      </p>
-      <p className="font-body text-[10px] text-primary-foreground/25 mt-1">
-        {footer.tagline || defaultFooter.tagline}
-      </p>
+
+        <div className="text-center">
+          {activeLinks.length > 0 && (
+            <div className="flex items-center justify-center gap-5 mb-6">
+              {activeLinks.map((p) => {
+                const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;
+                return (
+                  <a
+                    key={p.key}
+                    href={links[p.key]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={p.label}
+                    className="text-primary-foreground/30 hover:text-primary-foreground/60 transition-all duration-500">
+                    {Icon && <Icon />}
+                  </a>
+                );
+              })}
+            </div>
+          )}
+          <p className="font-body text-xs text-primary-foreground/30 tracking-wide">
+            {footer.copyright || defaultFooter.copyright}
+          </p>
+          <p className="font-body text-[10px] text-primary-foreground/20 mt-1.5 tracking-wide">
+            {footer.tagline || defaultFooter.tagline}
+          </p>
+        </div>
+      </div>
     </footer>
   );
 };

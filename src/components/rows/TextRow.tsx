@@ -27,14 +27,14 @@ const TextRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
       marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined,
       ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
     }}>
-      <div className={`${maxW} mx-auto px-6 text-center`}>
+      <div className={`${maxW} mx-auto px-8 md:px-12 text-center`}>
         {titleLines.length > 0 && (
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, ease }}
-            className="font-display text-xl md:text-2xl font-bold leading-tight mb-2">
+            transition={{ duration: 0.8, ease }}
+            className="font-display text-xl md:text-3xl font-bold leading-tight mb-3">
             {titleLines.map((line, i) => (
               <span key={i}>
                 {i > 0 && <br />}
@@ -49,7 +49,7 @@ const TextRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.05, ease }}>
+            transition={{ duration: 0.8, delay: 0.05, ease }}>
             <EditableText
               sectionKey="page_rows"
               fieldPath={`${prefix}.subtitle`}
@@ -70,19 +70,19 @@ const TextRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1, ease }}>
+            transition={{ duration: 0.8, delay: 0.1, ease }}>
             <EditableText
               sectionKey="page_rows"
               fieldPath={`${prefix}.body`}
               html
               as="div"
-              className="font-body-heading text-base font-medium max-w-[700px] mx-auto leading-relaxed mt-4"
+              className="font-body-heading text-base md:text-lg font-medium max-w-[700px] mx-auto leading-relaxed mt-5"
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
             />
           </motion.div>
         )}
 
-        {c.show_subscribe && <SubscribeWidget className="mt-6" />}
+        {c.show_subscribe && <SubscribeWidget className="mt-8" />}
       </div>
     </section>
   );

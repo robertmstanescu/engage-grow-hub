@@ -77,26 +77,22 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
   };
 
   const colorOverrides = buildColorOverrides(c);
-
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
 
   return (
     <div style={{ scrollMarginTop: "4rem", ...colorOverrides, marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined } as React.CSSProperties}>
-      <div
-        className="gradient-divider"
-        style={
-          (c.color_divider_from || c.color_divider_to)
-            ? { background: `linear-gradient(to right, hsl(var(--pillar-divider-from)), hsl(var(--pillar-divider-to)))` }
-            : undefined
-        }
-      />
+      {/* Ornamental divider */}
+      <div className="ornamental-divider py-2" style={{ backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
+        <span className="ornament">✦</span>
+      </div>
+
       <div style={{ paddingTop: `${l.paddingTop}px`, paddingBottom: "24px", backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
-        <div className="max-w-[900px] mx-auto px-6 text-center">
+        <div className="max-w-[900px] mx-auto px-8 md:px-12 text-center">
           <motion.span
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="font-body text-[11px] tracking-[0.2em] uppercase block mb-3"
+            className="font-body text-[10px] tracking-[0.3em] uppercase block mb-4"
             style={{ color: "hsl(var(--pillar-label))" }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span">
               {c.pillar_number}
@@ -106,8 +102,8 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, ease }}
-            className="font-display text-2xl md:text-3xl font-bold leading-tight mb-3"
+            transition={{ duration: 0.8, ease }}
+            className="font-display text-2xl md:text-4xl font-bold leading-tight mb-4"
             style={{ color: "hsl(var(--pillar-heading))" }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
               {c.title}
@@ -117,23 +113,24 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1, ease }}>
+            transition={{ duration: 0.8, delay: 0.1, ease }}>
             <EditableText
               sectionKey="page_rows"
               fieldPath={`${prefix}.description`}
               html
               as="div"
-              className="font-body-heading text-base max-w-[700px] mx-auto"
+              className="font-body-heading text-base md:text-lg max-w-[700px] mx-auto leading-relaxed"
               style={{ color: "hsl(var(--pillar-heading-sub) / 0.65)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
             />
           </motion.div>
         </div>
       </div>
-      <div className="px-6" style={{ paddingBottom: `${l.paddingBottom}px`, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
+
+      <div className="px-8 md:px-12" style={{ paddingBottom: `${l.paddingBottom}px`, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
         <div className="max-w-[900px] mx-auto">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ border: "1px solid hsl(var(--pillar-primary) / 0.2)", color: "hsl(var(--pillar-primary))" }}>
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <button onClick={prev} className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ border: "1px solid hsl(var(--pillar-primary) / 0.2)", color: "hsl(var(--pillar-primary))" }}>
               <ChevronLeft className="w-4 h-4" />
             </button>
             <div className="flex gap-2">
@@ -141,21 +138,21 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
                 <button
                   key={i}
                   onClick={() => { setDirection(i > safeCurrent ? 1 : -1); setCurrent(i); }}
-                  className="w-2 h-2 rounded-full transition-all"
+                  className="w-2 h-2 rounded-full transition-all duration-500"
                   style={{
                     backgroundColor: i === safeCurrent ? "hsl(var(--pillar-primary))" : "hsl(var(--pillar-primary) / 0.25)",
-                    transform: i === safeCurrent ? "scale(1.25)" : "scale(1)",
+                    transform: i === safeCurrent ? "scale(1.4)" : "scale(1)",
                   }}
                 />
               ))}
             </div>
-            <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ border: "1px solid hsl(var(--pillar-primary) / 0.2)", color: "hsl(var(--pillar-primary))" }}>
+            <button onClick={next} className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500" style={{ border: "1px solid hsl(var(--pillar-primary) / 0.2)", color: "hsl(var(--pillar-primary))" }}>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           <div className="relative overflow-hidden">
             <AnimatePresence custom={direction} mode="wait">
-              <motion.div key={safeCurrent} custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35, ease }}>
+              <motion.div key={safeCurrent} custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.45, ease }}>
                 <ServiceCard {...services[safeCurrent]} />
               </motion.div>
             </AnimatePresence>
