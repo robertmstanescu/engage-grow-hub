@@ -66,14 +66,6 @@ const RowsManager = ({ rows, onChange }: Props) => {
     if (openRow === id) setOpenRow(null);
   };
 
-  const moveRow = (id: string, dir: -1 | 1) => {
-    const idx = rows.findIndex((r) => r.id === id);
-    if ((dir === -1 && idx === 0) || (dir === 1 && idx === rows.length - 1)) return;
-    const next = [...rows];
-    [next[idx], next[idx + dir]] = [next[idx + dir], next[idx]];
-    onChange(next);
-  };
-
   const renderRowEditor = (row: PageRow) => {
     const onContentChange = (field: string, value: any) => updateRowContent(row.id, field, value);
 
