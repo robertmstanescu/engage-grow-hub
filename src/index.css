@@ -75,6 +75,13 @@
     --pillar-note-bg: 260 25% 10%;
     --pillar-divider-from: 280 55% 24%;
     --pillar-divider-to: 286 42% 40%;
+    --pillar-card-description: 30 20% 70%;
+    --pillar-cta-text: 46 75% 60%;
+    --pillar-cta-time: 30 20% 55%;
+    --pillar-carousel-btn-bg: 0 0% 100%;
+    --pillar-carousel-btn-fg: 0 0% 100%;
+    --pillar-dot-active: 46 75% 60%;
+    --pillar-dot-inactive: 0 0% 100%;
 
     /* ── Vows/boxed tokens ── */
     --vows-bg: 260 20% 6%;
