@@ -85,7 +85,10 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
         if (index === lastIndex && footerSlot) {
           return (
             <div key={row.id} className="snap-section" style={{ scrollSnapAlign: "start" }}>
-              {rendered}
+              <div className="[&>.snap-section]:!scroll-snap-align-none [&_.snap-section]:!scroll-snap-align-[unset]"
+                style={{ ['--no-snap' as any]: 1 }}>
+                {rendered}
+              </div>
               {footerSlot}
             </div>
           );
