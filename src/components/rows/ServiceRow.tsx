@@ -31,8 +31,12 @@ const hexToHslChannels = (hex: string): string | null => {
 const COLOR_MAP: Record<string, string> = {
   color_section_bg: "--pillar-section-bg", color_label: "--pillar-label", color_heading: "--pillar-heading",
   color_heading_sub: "--pillar-heading-sub", color_primary: "--pillar-primary", color_card_bg: "--pillar-card-bg",
-  color_card_title: "--pillar-card-title", color_subtitle: "--pillar-subtitle", color_deliverables_bg: "--pillar-deliverables-bg",
+  color_card_title: "--pillar-card-title", color_subtitle: "--pillar-subtitle", color_card_description: "--pillar-card-description",
+  color_deliverables_bg: "--pillar-deliverables-bg",
   color_deliverables_label: "--pillar-deliverables-label", color_meta_bg: "--pillar-meta-bg", color_meta_fg: "--pillar-meta-fg",
+  color_cta_text: "--pillar-cta-text", color_cta_time: "--pillar-cta-time",
+  color_carousel_btn_bg: "--pillar-carousel-btn-bg", color_carousel_btn_fg: "--pillar-carousel-btn-fg",
+  color_dot_active: "--pillar-dot-active", color_dot_inactive: "--pillar-dot-inactive",
   color_note_border: "--pillar-note-border", color_divider_from: "--pillar-divider-from", color_divider_to: "--pillar-divider-to",
 };
 
