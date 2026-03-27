@@ -31,7 +31,7 @@ const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
   }
 };
 
-const SYSTEM_ROUTES = ["blog", "admin", "unsubscribe"];
+const SYSTEM_ROUTES = ["blog", "admin", "unsubscribe", "api", "auth", "login", "signup", "p"];
 
 const CmsPage = () => {
   const { slug } = useParams<{ slug: string }>();
