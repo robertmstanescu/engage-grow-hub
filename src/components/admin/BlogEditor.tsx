@@ -26,6 +26,8 @@ interface BlogPost {
   published_at: string | null;
   created_at: string;
   cover_image: string | null;
+  author_name: string | null;
+  author_image: string | null;
 }
 
 const BlogEditor = () => {
