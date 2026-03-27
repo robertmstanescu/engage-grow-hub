@@ -6,16 +6,16 @@ import { useTagColors } from "@/hooks/useTagColors";
 const Deliverables = ({ label, items }: { label: string; items: string[] }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-t px-7 py-5" style={{ borderColor: "hsl(var(--foreground) / 0.08)", backgroundColor: "hsl(var(--background) / 0.3)" }}>
+    <div className="border-t px-5 py-3" style={{ borderColor: "hsl(var(--foreground) / 0.08)", backgroundColor: "hsl(var(--background) / 0.3)" }}>
       <button onClick={() => setOpen(!open)} className="flex items-center justify-between w-full text-left">
-        <span className="font-body text-[10px] tracking-[0.2em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
-        <ChevronDown className={`w-4 h-4 transition-transform duration-500 ${open ? "rotate-180" : ""}`} style={{ color: "hsl(var(--foreground) / 0.25)" }} />
+        <span className="font-body text-[9px] tracking-[0.2em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-500 ${open ? "rotate-180" : ""}`} style={{ color: "hsl(var(--foreground) / 0.25)" }} />
       </button>
       <motion.div initial={false} animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="overflow-hidden">
-        <ul className="space-y-2 pt-4">
+        <ul className="space-y-1.5 pt-3">
           {items.map((item, i) => (
-            <li key={i} className="font-body text-sm leading-snug pl-5 relative" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
-              <span className="absolute left-0 text-xs" style={{ color: "hsl(var(--accent) / 0.4)" }}>—</span>
+            <li key={i} className="font-body text-xs leading-snug pl-4 relative" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
+              <span className="absolute left-0 text-[10px]" style={{ color: "hsl(var(--accent) / 0.4)" }}>—</span>
               {item}
             </li>
           ))}
