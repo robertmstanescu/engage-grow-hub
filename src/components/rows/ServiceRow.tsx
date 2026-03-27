@@ -72,15 +72,15 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
   const gradStart = l.gradientStart || "hsl(286 42% 30%)";
   const gradEnd = l.gradientEnd || "hsl(280 55% 25%)";
 
-  // Carousel theme
+  // Carousel theme — use per-row color overrides if set, else fall back to theme detection
   const carouselTheme = l.carouselTheme || "auto";
   const isDarkBg = !row.bg_color || row.bg_color.includes("#2") || row.bg_color.includes("#1") || row.bg_color.includes("#0") || row.bg_color.includes("#3") || row.bg_color.includes("#4") || row.bg_color.includes("#5");
   const isLightCarousel = carouselTheme === "light" || (carouselTheme === "auto" && isDarkBg);
-  const carouselBtnBg = isLightCarousel ? "hsl(0 0% 100% / 0.15)" : "hsl(0 0% 0% / 0.1)";
-  const carouselBtnColor = isLightCarousel ? "hsl(0 0% 100% / 0.9)" : "hsl(0 0% 0% / 0.7)";
+  const carouselBtnBg = c.color_carousel_btn_bg || (isLightCarousel ? "hsl(0 0% 100% / 0.15)" : "hsl(0 0% 0% / 0.1)");
+  const carouselBtnColor = c.color_carousel_btn_fg || (isLightCarousel ? "hsl(0 0% 100% / 0.9)" : "hsl(0 0% 0% / 0.7)");
   const carouselBtnBorder = isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)";
-  const dotActive = isLightCarousel ? "hsl(var(--accent))" : "hsl(var(--primary))";
-  const dotInactive = isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)";
+  const dotActive = c.color_dot_active || (isLightCarousel ? "hsl(var(--accent))" : "hsl(var(--primary))");
+  const dotInactive = c.color_dot_inactive || (isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)");
 
   return (
     <div className="snap-section grain relative min-h-screen flex flex-col justify-center" style={{ scrollMarginTop: "4rem", ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined } as React.CSSProperties}>

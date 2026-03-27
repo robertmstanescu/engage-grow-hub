@@ -115,7 +115,7 @@ export const ColorField = ({ label, value, onChange, description, fallback }: { 
           onChange={(e) => onChange(e.target.value)}
           placeholder={fallback || "#000000"}
           className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
-          style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+          style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "#1a1a1a" }}
         />
       </div>
     </div>
