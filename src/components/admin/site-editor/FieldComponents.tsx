@@ -40,7 +40,7 @@ export const SelectField = ({ label, value, onChange, options }: { label: string
       value={value || ""}
       onChange={(e) => onChange(e.target.value)}
       className="w-full px-3 py-2 rounded-lg font-body text-sm border bg-transparent cursor-pointer"
-      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}>
+      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "#1a1a1a" }}>
       {options.map((o) => (
         <option key={o.value} value={o.value}>{o.label}</option>
       ))}
