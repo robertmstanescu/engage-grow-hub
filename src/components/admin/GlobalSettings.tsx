@@ -134,6 +134,54 @@ const GlobalSettings = () => {
       <AccordionSection id="social" label="Social Media Links">
         <SocialLinksEditor content={getDraft("social_links")} onChange={(f, v) => updateField("social_links", f, v)} />
       </AccordionSection>
+
+      <AccordionSection id="theme" label="Global Theme Defaults">
+        <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
+          These defaults apply to all new rows. Existing rows keep their own settings.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Default Padding Top</label>
+            <div className="flex items-center gap-2">
+              <input type="range" min={0} max={200} step={4} value={getDraft("theme").defaultPaddingTop || 64} onChange={(e) => updateField("theme", "defaultPaddingTop", Number(e.target.value))} className="flex-1" style={{ accentColor: "hsl(var(--primary))" }} />
+              <span className="font-body text-xs w-10 text-right" style={{ color: "hsl(var(--foreground))" }}>{getDraft("theme").defaultPaddingTop || 64}px</span>
+            </div>
+          </div>
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Default Padding Bottom</label>
+            <div className="flex items-center gap-2">
+              <input type="range" min={0} max={200} step={4} value={getDraft("theme").defaultPaddingBottom || 64} onChange={(e) => updateField("theme", "defaultPaddingBottom", Number(e.target.value))} className="flex-1" style={{ accentColor: "hsl(var(--primary))" }} />
+              <span className="font-body text-xs w-10 text-right" style={{ color: "hsl(var(--foreground))" }}>{getDraft("theme").defaultPaddingBottom || 64}px</span>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 mt-3">
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Primary Brand Color</label>
+            <div className="flex gap-1.5">
+              <input type="color" value={getDraft("theme").primaryColor || "#4D1B5E"} onChange={(e) => updateField("theme", "primaryColor", e.target.value)} className="w-10 h-9 rounded border-0 cursor-pointer" />
+              <input value={getDraft("theme").primaryColor || "#4D1B5E"} onChange={(e) => updateField("theme", "primaryColor", e.target.value)} placeholder="#HEX" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+            </div>
+          </div>
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Accent Color</label>
+            <div className="flex gap-1.5">
+              <input type="color" value={getDraft("theme").accentColor || "#E5C54F"} onChange={(e) => updateField("theme", "accentColor", e.target.value)} className="w-10 h-9 rounded border-0 cursor-pointer" />
+              <input value={getDraft("theme").accentColor || "#E5C54F"} onChange={(e) => updateField("theme", "accentColor", e.target.value)} placeholder="#HEX" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+            </div>
+          </div>
+        </div>
+        <div className="mt-3">
+          <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Default Font Family</label>
+          <select value={getDraft("theme").fontFamily || "default"} onChange={(e) => updateField("theme", "fontFamily", e.target.value)} className="w-full px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}>
+            <option value="default">System Default</option>
+            <option value="inter">Inter</option>
+            <option value="bricolage">Bricolage Grotesque</option>
+            <option value="playfair">Playfair Display</option>
+            <option value="architects">Architects Daughter</option>
+          </select>
+        </div>
+      </AccordionSection>
     </div>
   );
 };
