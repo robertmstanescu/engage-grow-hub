@@ -53,7 +53,7 @@ const Admin = () => {
   }
 
   if (!session) {
-    return <AdminLogin />;
+    return <div className="admin-light"><AdminLogin /></div>;
   }
 
   if (!isAdmin) {
