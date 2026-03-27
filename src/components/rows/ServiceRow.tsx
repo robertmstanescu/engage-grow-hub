@@ -104,9 +104,9 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
         </div>
       </div>
 
-      <div className="relative z-10 px-6" style={{ paddingBottom: `${l.paddingBottom}px` }}>
+      <div className="relative z-10 px-6" style={{ paddingBottom: `clamp(12px, 2vh, ${l.paddingBottom}px)` }}>
         <div className="max-w-[900px] mr-auto ml-0">
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-3 mb-4">
             <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-4 h-4" /></button>
             <div className="flex gap-2.5">
               {services.map((_: any, i: number) => (
