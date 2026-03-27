@@ -6,16 +6,16 @@ import { useTagColors } from "@/hooks/useTagColors";
 const Deliverables = ({ label, items }: { label: string; items: string[] }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-t px-7 py-5" style={{ borderColor: "hsl(var(--foreground) / 0.08)", backgroundColor: "hsl(var(--background) / 0.3)" }}>
+    <div className="border-t px-5 py-3" style={{ borderColor: "hsl(var(--foreground) / 0.08)", backgroundColor: "hsl(var(--background) / 0.3)" }}>
       <button onClick={() => setOpen(!open)} className="flex items-center justify-between w-full text-left">
-        <span className="font-body text-[10px] tracking-[0.2em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
-        <ChevronDown className={`w-4 h-4 transition-transform duration-500 ${open ? "rotate-180" : ""}`} style={{ color: "hsl(var(--foreground) / 0.25)" }} />
+        <span className="font-body text-[9px] tracking-[0.2em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-500 ${open ? "rotate-180" : ""}`} style={{ color: "hsl(var(--foreground) / 0.25)" }} />
       </button>
       <motion.div initial={false} animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="overflow-hidden">
-        <ul className="space-y-2 pt-4">
+        <ul className="space-y-1.5 pt-3">
           {items.map((item, i) => (
-            <li key={i} className="font-body text-sm leading-snug pl-5 relative" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
-              <span className="absolute left-0 text-xs" style={{ color: "hsl(var(--accent) / 0.4)" }}>—</span>
+            <li key={i} className="font-body text-xs leading-snug pl-4 relative" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
+              <span className="absolute left-0 text-[10px]" style={{ color: "hsl(var(--accent) / 0.4)" }}>—</span>
               {item}
             </li>
           ))}
@@ -53,20 +53,20 @@ const ServiceCard = ({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, 
         border: "1px solid hsl(280 20% 25% / 0.35)",
         boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), 0 0 60px -20px hsl(280 55% 30% / 0.15)",
       }}>
-      <div className="p-7 md:p-8">
-        <span className="inline-block font-body text-[10px] tracking-[0.2em] uppercase px-3 py-1.5 rounded-full mb-5 font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
-        <h4 className="font-display text-lg md:text-xl font-bold leading-tight mb-1.5" style={{ color: "hsl(var(--pillar-card-title))" }}>{title}</h4>
-        <p className="font-body-heading text-sm font-medium mb-5" style={{ color: "hsl(var(--pillar-subtitle))" }}>{subtitle}</p>
-        <p className="font-body text-sm leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.65)" }}>{description}</p>
+      <div className="p-5 md:p-6">
+        <span className="inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full mb-3 font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
+        <h4 className="font-display text-base md:text-lg font-bold leading-tight mb-1" style={{ color: "hsl(var(--pillar-card-title))" }}>{title}</h4>
+        <p className="font-body-heading text-xs font-medium mb-3" style={{ color: "hsl(var(--pillar-subtitle))" }}>{subtitle}</p>
+        <p className="font-body text-xs leading-relaxed line-clamp-3" style={{ color: "hsl(var(--foreground) / 0.65)" }}>{description}</p>
       </div>
       <Deliverables label={deliverablesLabel} items={deliverables} />
-      <div className="px-7 md:px-8 py-5 flex justify-between items-center flex-wrap gap-2" style={{ backgroundColor: "hsl(var(--background) / 0.3)" }}>
-        <a href="#contact" className="font-display text-xs font-bold tracking-wide hover:opacity-80 transition-all duration-500" style={{ color: "hsl(var(--accent))" }}>{price} →</a>
-        <span className="font-body text-xs tracking-wide" style={{ color: "hsl(var(--foreground) / 0.4)" }}>{time}</span>
+      <div className="px-5 md:px-6 py-3 flex justify-between items-center flex-wrap gap-2" style={{ backgroundColor: "hsl(var(--background) / 0.3)" }}>
+        <a href="#contact" className="font-display text-[11px] font-bold tracking-wide hover:opacity-80 transition-all duration-500" style={{ color: "hsl(var(--accent))" }}>{price} →</a>
+        <span className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--foreground) / 0.4)" }}>{time}</span>
       </div>
       {note && (
-        <div className="mx-7 md:mx-8 my-5 px-4 py-3 rounded-lg" style={{ backgroundColor: "hsl(var(--background) / 0.4)", borderLeft: "2px solid hsl(var(--accent) / 0.3)" }}>
-          <p className="font-body text-xs italic leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.5)" }}>{note}</p>
+        <div className="mx-5 md:mx-6 my-3 px-3 py-2 rounded-lg" style={{ backgroundColor: "hsl(var(--background) / 0.4)", borderLeft: "2px solid hsl(var(--accent) / 0.3)" }}>
+          <p className="font-body text-[11px] italic leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.5)" }}>{note}</p>
         </div>
       )}
     </motion.div>
