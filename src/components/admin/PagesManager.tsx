@@ -129,6 +129,40 @@ const PagesManager = () => {
 
   if (loading) return <div className="py-8 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Loading…</div>;
 
+  if (editingBlog) {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setEditingBlog(false)}
+          className="font-body text-xs uppercase tracking-wider hover:opacity-70"
+          style={{ color: "hsl(var(--primary))" }}>
+          ← Back to Pages
+        </button>
+        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--foreground))" }}>
+          Blog Page
+          <span className="font-body text-xs font-normal ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/blog</span>
+        </h2>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Header Title" value={blogContent.header_title} onChange={(v) => saveBlogPage({ header_title: v })} />
+          <Field label="Header Subtitle" value={blogContent.header_subtitle} onChange={(v) => saveBlogPage({ header_subtitle: v })} />
+        </div>
+
+        <SectionBox label="Rows Above Blog Listing">
+          <RowsManager rows={blogContent.rows_above} onChange={(rows) => saveBlogPage({ rows_above: rows })} />
+        </SectionBox>
+
+        <div className="p-4 rounded-lg border-2 border-dashed text-center" style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
+          <span className="font-body text-xs uppercase tracking-wider">⬇ Blog Posts Listing (auto-generated) ⬇</span>
+        </div>
+
+        <SectionBox label="Rows Below Blog Listing">
+          <RowsManager rows={blogContent.rows_below} onChange={(rows) => saveBlogPage({ rows_below: rows })} />
+        </SectionBox>
+      </div>
+    );
+  }
+
   if (editingPage) {
     return (
       <div className="space-y-4">
