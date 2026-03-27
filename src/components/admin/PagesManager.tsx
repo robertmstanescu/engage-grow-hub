@@ -21,6 +21,10 @@ const PagesManager = () => {
   const [pages, setPages] = useState<CmsPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingPage, setEditingPage] = useState<CmsPage | null>(null);
+  const [editingBlog, setEditingBlog] = useState(false);
+  const [blogContent, setBlogContent] = useState<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string }>({
+    rows_above: [], rows_below: [], header_title: "Insights & Articles", header_subtitle: "",
+  });
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newSlug, setNewSlug] = useState("");
