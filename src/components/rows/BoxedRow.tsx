@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { PageRow } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
@@ -24,9 +25,19 @@ const BoxedRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
     return "grid-cols-1 md:grid-cols-3 lg:grid-cols-6";
   };
 
+  const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
+  const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
+
   return (
-    <section style={{ backgroundColor: row.bg_color || "hsl(var(--vows-bg))" }}>
-      <div className="max-w-[1100px] mx-auto px-6 py-16 text-center">
+    <section style={{
+      backgroundColor: row.bg_color || "hsl(var(--vows-bg))",
+      paddingTop: `${l.paddingTop}px`,
+      paddingBottom: `${l.paddingBottom}px`,
+      marginTop: l.marginTop ? `${l.marginTop}px` : undefined,
+      marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined,
+      ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
+    }}>
+      <div className={`${maxW} mx-auto px-6 text-center`}>
         {titleLines.length > 0 && (
           <motion.h3
             initial={{ opacity: 0, y: 20 }}

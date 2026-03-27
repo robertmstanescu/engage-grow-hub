@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "@/components/ServiceCard";
 import type { PageRow } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
@@ -77,8 +78,10 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
 
   const colorOverrides = buildColorOverrides(c);
 
+  const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
+
   return (
-    <div style={{ scrollMarginTop: "4rem", ...colorOverrides } as React.CSSProperties}>
+    <div style={{ scrollMarginTop: "4rem", ...colorOverrides, marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined } as React.CSSProperties}>
       <div
         className="gradient-divider"
         style={
@@ -87,7 +90,7 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
             : undefined
         }
       />
-      <div className="pt-16 pb-6" style={{ backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
+      <div style={{ paddingTop: `${l.paddingTop}px`, paddingBottom: "24px", backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
         <div className="max-w-[900px] mx-auto px-6 text-center">
           <motion.span
             initial={{ opacity: 0 }}
@@ -127,7 +130,7 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number }) => {
           </motion.div>
         </div>
       </div>
-      <div className="px-6 pb-16" style={{ backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
+      <div className="px-6" style={{ paddingBottom: `${l.paddingBottom}px`, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))" }}>
         <div className="max-w-[900px] mx-auto">
           <div className="flex items-center justify-center gap-4 mb-6">
             <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ border: "1px solid hsl(var(--pillar-primary) / 0.2)", color: "hsl(var(--pillar-primary))" }}>
