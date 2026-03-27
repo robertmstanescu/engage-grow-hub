@@ -90,7 +90,7 @@ const BlogEditor = () => {
       author_image: post.author_image || "",
       meta_title: post.meta_title || "",
       meta_description: post.meta_description || "",
-      og_image: post.og_image || "",
+      og_image: post.og_image || post.cover_image || "",
       tags: post.tags || [],
       newTag: "",
     });
