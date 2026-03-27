@@ -138,6 +138,10 @@ const BlogEditor = () => {
       cover_image: form.cover_image || null,
       author_name: form.author_name || null,
       author_image: form.author_image || null,
+      meta_title: form.meta_title || null,
+      meta_description: form.meta_description || null,
+      og_image: form.og_image || null,
+      tags: form.tags.length > 0 ? form.tags : null,
       published_at: status === "published" ? new Date().toISOString() : null,
     };
 
