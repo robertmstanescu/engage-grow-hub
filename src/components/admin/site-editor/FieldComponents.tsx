@@ -21,7 +21,7 @@ export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; 
       onChange={(e) => onChange(e.target.value)}
       rows={rows}
       className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none"
-      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "#1a1a1a" }}
     />
   </div>
 );
