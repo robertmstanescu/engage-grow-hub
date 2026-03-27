@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "@/components/ServiceCard";
 import type { PageRow } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
