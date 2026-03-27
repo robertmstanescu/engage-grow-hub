@@ -8,7 +8,7 @@ export const Field = ({ label, value, onChange }: { label: string; value: string
       value={value || ""}
       onChange={(e) => onChange(e.target.value)}
       className="w-full px-3 py-2 rounded-lg font-body text-sm border"
-      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "#1a1a1a" }}
     />
   </div>
 );
