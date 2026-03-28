@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "@/components/ServiceCard";
@@ -68,13 +68,12 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
   const [current, setCurrent] = useState(0);
-
   const { ref, isVisible } = useScrollReveal();
+  const prev = useCallback(() => setCurrent((v) => v === 0 ? services.length - 1 : v - 1), [services.length]);
+  const next = useCallback(() => setCurrent((v) => v === services.length - 1 ? 0 : v + 1), [services.length]);
 
   if (!services.length) return null;
   const safeCurrent = Math.min(current, services.length - 1);
-  const prev = () => setCurrent((v) => v === 0 ? services.length - 1 : v - 1);
-  const next = () => setCurrent((v) => v === services.length - 1 ? 0 : v + 1);
   const variants = { enter: { opacity: 0 }, center: { opacity: 1 }, exit: { opacity: 0 } };
 
   const colorOverrides = buildColorOverrides(c);
@@ -110,10 +109,10 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
       className="service-row grain relative flex items-center justify-center"
       style={{ ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", isolation: "isolate", padding: "24px 0" } as React.CSSProperties}
     >
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px]"
-        style={{ background: `radial-gradient(circle, ${gradStart}, transparent)` }} />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px]"
-        style={{ background: `radial-gradient(circle, ${gradEnd}, transparent)` }} />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px] pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${gradStart}, transparent)`, transform: "translateZ(0)", willChange: "transform" }} />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px] pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${gradEnd}, transparent)`, transform: "translateZ(0)", willChange: "transform" }} />
 
       <div className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
         <span className="font-body tracking-[0.35em] uppercase block mb-4"
