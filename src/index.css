@@ -137,6 +137,7 @@
   .snap-container {
     scroll-snap-type: y mandatory;
     overflow-y: auto;
+    overflow-x: hidden;
     height: 100vh;
     scroll-behavior: smooth;
   }
@@ -266,7 +267,7 @@
     .service-row {
       min-height: auto;
       justify-content: flex-start;
-      scroll-snap-align: start;
+      scroll-snap-align: none;
       scroll-margin-top: 0;
     }
   }
