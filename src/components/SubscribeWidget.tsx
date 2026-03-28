@@ -64,7 +64,7 @@ const SubscribeWidget = ({ className = "" }: SubscribeWidgetProps) => {
   }
 
   return (
-    <div className={`inline-flex flex-col items-center ${className}`}>
+    <div className={`inline-flex flex-col items-stretch ${className}`}>
       <AnimatePresence mode="wait">
         {!open ? (
           <motion.button
