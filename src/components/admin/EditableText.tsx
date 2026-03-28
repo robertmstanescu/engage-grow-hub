@@ -23,7 +23,7 @@ const EditableText = ({
   html = false,
   as: Tag = "span",
   children,
-  className = "",
+  className = "text-secondary",
   style,
   dangerouslySetInnerHTML,
   ...rest
