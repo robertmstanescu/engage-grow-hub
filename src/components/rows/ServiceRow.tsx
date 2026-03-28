@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "@/components/ServiceCard";
 import type { PageRow } from "@/types/rows";
@@ -8,6 +8,7 @@ import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment } from "./PageRows";
+import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -55,15 +56,13 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
   const services = c.services || [];
   const [current, setCurrent] = useState(0);
 
+  const { ref, isVisible } = useScrollReveal();
+
   if (!services.length) return null;
   const safeCurrent = Math.min(current, services.length - 1);
-  const prev = () => { setCurrent((v) => v === 0 ? services.length - 1 : v - 1); };
-  const next = () => { setCurrent((v) => v === services.length - 1 ? 0 : v + 1); };
-  const variants = {
-    enter: { opacity: 0 },
-    center: { opacity: 1 },
-    exit: { opacity: 0 },
-  };
+  const prev = () => setCurrent((v) => v === 0 ? services.length - 1 : v - 1);
+  const next = () => setCurrent((v) => v === services.length - 1 ? 0 : v + 1);
+  const variants = { enter: { opacity: 0 }, center: { opacity: 1 }, exit: { opacity: 0 } };
 
   const colorOverrides = buildColorOverrides(c);
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
@@ -71,7 +70,6 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
   const gradStart = l.gradientStart || "hsl(286 42% 30%)";
   const gradEnd = l.gradientEnd || "hsl(280 55% 25%)";
 
-  // Carousel theme — use per-row color overrides if set, else fall back to theme detection
   const carouselTheme = l.carouselTheme || "auto";
   const isDarkBg = !row.bg_color || row.bg_color.includes("#2") || row.bg_color.includes("#1") || row.bg_color.includes("#0") || row.bg_color.includes("#3") || row.bg_color.includes("#4") || row.bg_color.includes("#5");
   const isLightCarousel = carouselTheme === "light" || (carouselTheme === "auto" && isDarkBg);
@@ -82,7 +80,7 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
   const dotInactive = c.color_dot_inactive || (isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)");
 
   return (
-    <div className="grain relative min-h-screen flex flex-col" style={{ scrollMarginTop: "0px", scrollSnapAlign: "start", ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined, isolation: "isolate" } as React.CSSProperties}>
+    <div ref={ref} className="grain relative min-h-screen flex flex-col" style={{ scrollMarginTop: "0px", scrollSnapAlign: "start", ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined, isolation: "isolate" } as React.CSSProperties}>
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px]"
         style={{ background: `radial-gradient(circle, ${gradStart}, transparent)` }} />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px]"
@@ -90,26 +88,26 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
 
       <div className="relative z-10 flex-shrink-0" style={{ paddingTop: `clamp(12px, 2.5vh, ${l.paddingTop}px)`, paddingBottom: "clamp(4px, 1vh, 16px)" }}>
         <div className="max-w-[900px] mr-auto ml-0 px-6 text-left">
-          <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            className="font-body tracking-[0.35em] uppercase block mb-2" style={{ color: "hsl(var(--pillar-label))", fontSize: "clamp(7px, 0.9vw, 10px)" }}>
+          <span className="font-body tracking-[0.35em] uppercase block mb-2"
+            style={{ ...revealStyle(isVisible, 0), color: "hsl(var(--pillar-label))", fontSize: "clamp(7px, 0.9vw, 10px)" }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span">{c.pillar_number}</EditableText>
-          </motion.span>
-          <motion.h3 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }}
-            className="font-display font-bold leading-tight mb-2" style={{ color: "hsl(var(--pillar-heading))", fontSize: "clamp(1.2rem, 3.5vw, 2.2rem)" }}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span" className="text-primary">{c.title}</EditableText>
-          </motion.h3>
-          <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.1, ease }}>
+          </span>
+          <h3 className="font-display font-bold leading-tight mb-2"
+            style={{ ...revealStyle(isVisible, 1), color: "hsl(var(--pillar-heading))", fontSize: "clamp(1.2rem, 3.5vw, 2.2rem)" }}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">{c.title}</EditableText>
+          </h3>
+          <div style={revealStyle(isVisible, 2)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
-              className="font-body-heading max-w-[600px] leading-relaxed text-[#2b0e34]"
-              style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.75rem, 1.5vw, 1rem)" }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }} />
-          </motion.div>
+              className="font-body-heading max-w-[600px] leading-relaxed"
+              style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.75rem, 1.5vw, 1rem)", overflow: "visible", height: "auto" }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
+          </div>
         </div>
       </div>
 
       <div className="relative z-10 px-6 flex-1 min-h-0 flex flex-col" style={{ paddingBottom: `clamp(8px, 1.5vh, ${l.paddingBottom}px)` }}>
         <div className="max-w-[900px] mr-auto ml-0 flex flex-col flex-1 min-h-0">
-          <div className="flex items-center gap-3 mb-3 flex-shrink-0">
+          <div className="flex items-center gap-3 mb-3 flex-shrink-0" style={revealStyle(isVisible, 3)}>
             <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-4 h-4" /></button>
             <div className="flex gap-2.5">
               {services.map((_: any, i: number) => (
@@ -120,7 +118,7 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
             </div>
             <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
           </div>
-          <div className="relative overflow-visible flex-1 min-h-0">
+          <div className="relative overflow-visible flex-1 min-h-0" style={revealStyle(isVisible, 4)}>
             <AnimatePresence mode="wait">
               <motion.div key={safeCurrent} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35, ease }}>
                 <ServiceCard {...services[safeCurrent]} compact />
