@@ -36,13 +36,13 @@ const VowsSection = () => {
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
       <div className="relative z-10 max-w-[900px] mr-auto ml-0 px-3 text-left">
-        <motion.h3
+          <motion.h3
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease }}
           className="font-display text-2xl md:text-4xl lg:text-5xl font-bold leading-tight mb-16"
-          style={{ color: "hsl(var(--vows-title))" }}>
+          style={{ color: (c as any).color_title || "hsl(var(--vows-title))" }}>
           {titleLines.map((line, i) => (
             <span key={i}>
               {i > 0 && <br />}
