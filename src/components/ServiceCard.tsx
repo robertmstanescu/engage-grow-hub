@@ -1,32 +1,55 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, memo, useCallback } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTagColors } from "@/hooks/useTagColors";
 
 type CardTextAlign = "left" | "center" | "right";
 
-const Deliverables = ({ label, items, textAlign }: { label: string; items: string[]; textAlign?: CardTextAlign }) => {
+/**
+ * GPU-friendly accordion using CSS grid-template-rows (0fr ↔ 1fr).
+ * No height animation, no layout reflow — pure compositor-layer transition.
+ */
+const Deliverables = memo(({ label, items, textAlign }: { label: string; items: string[]; textAlign?: CardTextAlign }) => {
   const [open, setOpen] = useState(false);
+  const toggle = useCallback(() => setOpen(v => !v), []);
   const alignClass = textAlign === "center" ? "text-center" : textAlign === "right" ? "text-right" : "text-left";
   return (
     <div className={`border-t px-5 py-3 ${alignClass}`} style={{ borderColor: "hsl(var(--foreground) / 0.08)", backgroundColor: "hsl(var(--background) / 0.3)" }}>
-      <button onClick={() => setOpen(!open)} className="flex items-center justify-between w-full text-left">
+      <button onClick={toggle} className="flex items-center justify-between w-full text-left">
         <span className="font-body text-[9px] tracking-[0.2em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-500 ${open ? "rotate-180" : ""}`} style={{ color: "hsl(var(--foreground) / 0.25)" }} />
+        <ChevronDown
+          className="w-3.5 h-3.5 shrink-0"
+          style={{
+            color: "hsl(var(--foreground) / 0.25)",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+            willChange: "transform",
+          }}
+        />
       </button>
-      <motion.div initial={false} animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="overflow-hidden">
-        <ul className="space-y-1.5 pt-3">
-          {items.map((item, i) => (
-            <li key={i} className="font-body text-xs leading-snug pl-4 relative" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
-              <span className="absolute left-0 text-[10px]" style={{ color: "hsl(var(--accent) / 0.4)" }}>—</span>
-              {item}
-            </li>
-          ))}
-        </ul>
-      </motion.div>
+      {/* CSS grid accordion — no JS height measurement, GPU-composited */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: open ? "1fr" : "0fr",
+          opacity: open ? 1 : 0,
+          transition: "grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease",
+          willChange: "grid-template-rows, opacity",
+        }}
+      >
+        <div style={{ overflow: "hidden", minHeight: 0 }}>
+          <ul className="space-y-1.5 pt-3">
+            {items.map((item, i) => (
+              <li key={i} className="font-body text-xs leading-snug pl-4 relative" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
+                <span className="absolute left-0 text-[10px]" style={{ color: "hsl(var(--accent) / 0.4)" }}>—</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
-};
+});
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
