@@ -13,7 +13,7 @@ const ProfileEditor = ({ content, onChange }: Props) => (
     </SectionBox>
 
     <SectionBox label="Image & Name Tag">
-      <Field label="Image URL" value={content.image_url || ""} onChange={(v) => onChange("image_url", v)} />
+      <ImagePickerField label="Profile Image" value={content.image_url || ""} onChange={(v) => onChange("image_url", v)} />
       <Field label="Name" value={content.name || ""} onChange={(v) => onChange("name", v)} />
       <Field label="Role" value={content.role || ""} onChange={(v) => onChange("role", v)} />
     </SectionBox>
