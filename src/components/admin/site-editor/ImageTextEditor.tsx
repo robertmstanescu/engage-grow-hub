@@ -1,4 +1,5 @@
 import { SectionBox, Field, RichField, SelectField, ColorField } from "./FieldComponents";
+import ImagePickerField from "../ImagePickerField";
 
 const IMAGE_POSITIONS = [
   { label: "Left", value: "left" },
