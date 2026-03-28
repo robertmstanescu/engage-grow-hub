@@ -60,7 +60,7 @@ interface ServiceCardProps {
   cardTextAlign?: CardTextAlign;
 }
 
-const ServiceCard = ({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, description, deliverables, deliverablesLabel = "What's inside", price, time, note, compact, cardTextAlign = "left" }: ServiceCardProps) => {
+const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, description, deliverables, deliverablesLabel = "What's inside", price, time, note, compact, cardTextAlign = "left" }: ServiceCardProps) => {
   const { getTagColors } = useTagColors();
   const adminColors = getTagColors(tagType);
   const bgHex = tagBgColor || adminColors.bgColor;
@@ -69,11 +69,7 @@ const ServiceCard = ({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, 
   const alignClass = cardTextAlign === "center" ? "text-center" : cardTextAlign === "right" ? "text-right" : "text-left";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8, ease }}
+    <div
       className={`rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""}`}
       style={{
         backgroundColor: "hsl(260 25% 12% / 0.5)",
@@ -81,6 +77,8 @@ const ServiceCard = ({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, 
         WebkitBackdropFilter: "blur(24px)",
         border: "1px solid hsl(280 20% 25% / 0.35)",
         boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), 0 0 60px -20px hsl(280 55% 30% / 0.15)",
+        backfaceVisibility: "hidden",
+        transform: "translateZ(0)",
       }}>
       <div className={`${compact ? "p-4 md:p-5 flex-shrink-0" : "p-5 md:p-6"} ${alignClass}`}>
         <span className={`${cardTextAlign === "center" ? "mx-auto" : cardTextAlign === "right" ? "ml-auto" : ""} inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full mb-3 font-medium`} style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
@@ -100,8 +98,8 @@ const ServiceCard = ({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, 
           <p className="font-body text-[11px] italic leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.5)" }}>{note}</p>
         </div>
       )}
-    </motion.div>
+    </div>
   );
-};
+});
 
 export default ServiceCard;
