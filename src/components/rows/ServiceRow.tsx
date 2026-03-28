@@ -54,16 +54,15 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(0);
 
   if (!services.length) return null;
   const safeCurrent = Math.min(current, services.length - 1);
-  const prev = () => { setDirection(-1); setCurrent((v) => v === 0 ? services.length - 1 : v - 1); };
-  const next = () => { setDirection(1); setCurrent((v) => v === services.length - 1 ? 0 : v + 1); };
+  const prev = () => { setCurrent((v) => v === 0 ? services.length - 1 : v - 1); };
+  const next = () => { setCurrent((v) => v === services.length - 1 ? 0 : v + 1); };
   const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
+    enter: { opacity: 0 },
+    center: { opacity: 1 },
+    exit: { opacity: 0 },
   };
 
   const colorOverrides = buildColorOverrides(c);
@@ -114,7 +113,7 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
             <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-4 h-4" /></button>
             <div className="flex gap-2.5">
               {services.map((_: any, i: number) => (
-                <button key={i} onClick={() => { setDirection(i > safeCurrent ? 1 : -1); setCurrent(i); }}
+                <button key={i} onClick={() => setCurrent(i)}
                   className="w-2 h-2 rounded-full transition-all duration-500"
                   style={{ backgroundColor: i === safeCurrent ? dotActive : dotInactive, transform: i === safeCurrent ? "scale(1.5)" : "scale(1)", boxShadow: i === safeCurrent ? `0 0 12px ${dotActive}` : "none" }} />
               ))}
@@ -122,8 +121,8 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
             <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
           </div>
           <div className="relative overflow-hidden flex-1 min-h-0">
-            <AnimatePresence custom={direction} mode="wait">
-              <motion.div key={safeCurrent} custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.45, ease }}>
+            <AnimatePresence mode="wait">
+              <motion.div key={safeCurrent} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35, ease }}>
                 <ServiceCard {...services[safeCurrent]} compact />
               </motion.div>
             </AnimatePresence>
