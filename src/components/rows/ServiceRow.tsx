@@ -79,9 +79,13 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
   const dotActive = c.color_dot_active || (isLightCarousel ? "hsl(var(--accent))" : "hsl(var(--primary))");
   const dotInactive = c.color_dot_inactive || (isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)");
 
-  const textAlignClass = align === "right" ? "text-right" : align === "left" ? "text-left" : "text-center";
-  const contentAlignClass = align === "right" ? "ml-auto mr-0" : align === "left" ? "mr-auto ml-0" : "mx-auto";
+  // Row alignment: positions the entire widget on the screen
+  const rowTextAlign = align === "right" ? "text-right" : align === "left" ? "text-left" : "text-center";
+  const rowContentAlign = align === "right" ? "ml-auto mr-0" : align === "left" ? "mr-auto ml-0" : "mx-auto";
   const carouselJustify = align === "right" ? "justify-end" : align === "left" ? "justify-start" : "justify-center";
+
+  // Card content alignment: independent toggle for text inside cards
+  const cardTextAlign = (c.card_text_align as "left" | "center" | "right") || "left";
 
   return (
     <div
@@ -95,8 +99,8 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px]"
         style={{ background: `radial-gradient(circle, ${gradEnd}, transparent)` }} />
 
-      {/* Single centred content wrapper */}
-      <div className={`relative z-10 w-full max-w-[900px] ${contentAlignClass} px-6 ${textAlignClass}`}>
+      {/* Row-level alignment wrapper — controls position of the whole widget */}
+      <div className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
         {/* Pillar header */}
         <span className="font-body tracking-[0.35em] uppercase block mb-4"
           style={{ ...revealStyle(isVisible, 0), color: "hsl(var(--pillar-label))", fontSize: "clamp(7px, 0.9vw, 10px)" }}>
