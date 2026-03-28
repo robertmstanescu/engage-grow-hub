@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 import { Plus, Trash2, Upload, X } from "lucide-react";
-import { Field, RichField, SectionBox } from "./FieldComponents";
+import { Field, RichField, SectionBox, ColorField } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import { supabase } from "@/integrations/supabase/client";
