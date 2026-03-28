@@ -38,7 +38,7 @@ const Unsubscribe = () => {
   return (
     <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: "hsl(var(--background))" }}>
       <div className="max-w-md text-center space-y-6">
-        <h1 className="font-display text-2xl font-black" style={{ color: "hsl(var(--secondary))" }}>
+        <h1 className="font-display text-2xl font-black text-white">
           {status === "done" ? "You're unsubscribed" :
            status === "already" ? "Already unsubscribed" :
            status === "invalid" ? "Invalid link" :
