@@ -3,6 +3,7 @@ import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, La
 import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
 import RowLayoutSettings from "./RowLayoutSettings";
 import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea, ColorField } from "./FieldComponents";
+import ImagePickerField from "../ImagePickerField";
 import TitleLineEditor from "./TitleLineEditor";
 import PillarEditor from "./PillarEditor";
 import SubtitleEditor from "./SubtitleEditor";
