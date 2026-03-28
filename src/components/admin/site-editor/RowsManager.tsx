@@ -319,8 +319,8 @@ const HeroRowFields = ({ content, onChange }: { content: Record<string, any>; on
   ];
   return (
     <div className="space-y-3">
-      <Field label="Label (small text above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
-      <ColorField label="Label Color" description="Color of the small label text above the title" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
+      <Field label="Eyebrow (small text above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
+      <ColorField label="Eyebrow Color" description="Color of the small eyebrow text above the title" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
       <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} />
       <Field label="Tagline (small text below title)" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
       <ColorField label="Tagline Color" description="Color of the small tagline text below the title" value={content.color_tagline || ""} fallback="" onChange={(v) => onChange("color_tagline", v)} />
