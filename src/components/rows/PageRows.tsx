@@ -5,6 +5,9 @@ import ServiceRow from "./ServiceRow";
 import BoxedRow from "./BoxedRow";
 import ContactRow from "./ContactRow";
 import HeroRow from "./HeroRow";
+import ImageTextRow from "./ImageTextRow";
+import ProfileRow from "./ProfileRow";
+import GridRow from "./GridRow";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
