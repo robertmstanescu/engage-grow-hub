@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles, Image, User, Grid3X3 } from "lucide-react";
 import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
 import RowLayoutSettings from "./RowLayoutSettings";
 import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea, ColorField } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
 import PillarEditor from "./PillarEditor";
 import SubtitleEditor from "./SubtitleEditor";
+import ImageTextEditor from "./ImageTextEditor";
+import ProfileEditor from "./ProfileEditor";
+import GridEditor from "./GridEditor";
 import {
   DndContext,
   closestCenter,
@@ -27,9 +30,12 @@ import { CSS } from "@dnd-kit/utilities";
 const ROW_TYPES = [
   { type: "hero" as const, label: "Hero", icon: Sparkles, defaultContent: { label: "", title_lines: [], subtitle: "", subtitle_color: "", body: "", body_color: "", title_color: "", label_color: "", bg_type: "none", bg_url: "" } },
   { type: "text" as const, label: "Text", icon: Type, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", body: "" } },
-  { type: "service" as const, label: "Service", icon: Briefcase, defaultContent: { pillar_number: "", title: "", description: "", services: [] } },
+  { type: "service" as const, label: "Service", icon: Briefcase, defaultContent: { eyebrow: "", title: "", description: "", services: [] } },
   { type: "boxed" as const, label: "Boxed (max 6)", icon: LayoutGrid, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", cards: [] } },
   { type: "contact" as const, label: "Contact", icon: Mail, defaultContent: { title_lines: [], body: "", button_text: "Request a discovery call", success_heading: "Message received.", success_body: "We respond within 24 hours.", success_button: "Send another message", show_social: false, fields: DEFAULT_CONTACT_FIELDS } },
+  { type: "image_text" as const, label: "Image & Text", icon: Image, defaultContent: { eyebrow: "", title: "", description: "", image_url: "", image_position: "right", image_shape: "default", floating_caption: "", caption_position: "bottom-left", color_eyebrow: "", color_title: "", color_description: "", color_caption_bg: "", color_caption_text: "" } },
+  { type: "profile" as const, label: "Profile Feature", icon: User, defaultContent: { eyebrow: "", image_url: "", name: "", role: "", credentials: [], body: "", color_eyebrow: "", color_name: "", color_role: "", color_credential_bg: "", color_credential_text: "", color_body: "" } },
+  { type: "grid" as const, label: "Grid", icon: Grid3X3, defaultContent: { eyebrow: "", title: "", description: "", items: [], color_eyebrow: "", color_title: "", color_description: "", color_card_border: "", color_card_border_hover: "", color_card_title: "", color_card_description: "", color_stat_number: "", color_stat_label: "" } },
 ];
 
 interface Props {

@@ -88,7 +88,7 @@ export const DEFAULT_ROWS: PageRow[] = [
     strip_title: "Employee Experience",
     bg_color: "#F4F0EC",
     content: {
-      pillar_number: "Pillar 02",
+      eyebrow: "Pillar 02",
       title: "Employee Experience",
       description: "The modern workplace is haunted by zombie journeys.",
       services: [
