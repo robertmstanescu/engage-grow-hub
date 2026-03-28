@@ -4,17 +4,37 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const ease = [0.16, 1, 0.3, 1] as const;
+type SubscribeWidgetAlignment = "left" | "center" | "right";
 
 interface SubscribeWidgetProps {
   className?: string;
+  align?: SubscribeWidgetAlignment;
 }
 
-const SubscribeWidget = ({ className = "" }: SubscribeWidgetProps) => {
+const SubscribeWidget = ({ className = "", align = "center" }: SubscribeWidgetProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+
+  const containerAlignClass = align === "center"
+    ? "items-center text-center"
+    : align === "right"
+      ? "items-end text-right"
+      : "items-start text-left";
+
+  const contentAlignClass = align === "center"
+    ? "mx-auto"
+    : align === "right"
+      ? "ml-auto"
+      : "mr-auto";
+
+  const textAlignClass = align === "center"
+    ? "text-center"
+    : align === "right"
+      ? "text-right"
+      : "text-left";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +75,7 @@ const SubscribeWidget = ({ className = "" }: SubscribeWidgetProps) => {
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease }}
-        className={`font-body text-sm font-medium ${className}`}
+        className={`w-full font-body text-sm font-medium ${contentAlignClass} ${textAlignClass} ${className}`}
         style={{ color: "hsl(var(--primary))" }}
       >
         ✓ You're on the list. We'll keep you posted.
@@ -64,7 +84,7 @@ const SubscribeWidget = ({ className = "" }: SubscribeWidgetProps) => {
   }
 
   return (
-    <div className={`inline-flex flex-col items-stretch ${className}`}>
+    <div className={`flex w-full flex-col ${containerAlignClass} ${className}`}>
       <AnimatePresence mode="wait">
         {!open ? (
           <motion.button
@@ -74,7 +94,7 @@ const SubscribeWidget = ({ className = "" }: SubscribeWidgetProps) => {
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.3, ease }}
             onClick={() => setOpen(true)}
-            className="font-body text-xs uppercase tracking-[0.14em] font-medium px-6 py-3 rounded-full transition-opacity hover:opacity-80"
+            className="max-w-full w-fit font-body text-xs uppercase tracking-[0.14em] font-medium px-6 py-3 rounded-full transition-opacity hover:opacity-80"
             style={{
               backgroundColor: "hsl(var(--primary))",
               color: "hsl(var(--primary-foreground))",
@@ -90,7 +110,7 @@ const SubscribeWidget = ({ className = "" }: SubscribeWidgetProps) => {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.35, ease }}
             onSubmit={handleSubmit}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full max-w-md"
+            className={`flex w-full max-w-[42rem] ${contentAlignClass} flex-col sm:flex-row items-stretch sm:items-center gap-2`}
           >
             <input
               type="text"
@@ -99,7 +119,7 @@ const SubscribeWidget = ({ className = "" }: SubscribeWidgetProps) => {
               onChange={(e) => setName(e.target.value)}
               required
               maxLength={200}
-              className="flex-1 px-4 py-2.5 rounded-full font-body text-sm border-0 outline-none"
+              className="w-full min-w-0 px-4 py-2.5 rounded-full font-body text-sm border-0 outline-none sm:flex-1"
               style={{
                 backgroundColor: "hsl(var(--card))",
                 color: "hsl(var(--foreground))",
@@ -113,7 +133,7 @@ const SubscribeWidget = ({ className = "" }: SubscribeWidgetProps) => {
               onChange={(e) => setEmail(e.target.value)}
               required
               maxLength={320}
-              className="flex-1 px-4 py-2.5 rounded-full font-body text-sm border-0 outline-none"
+              className="w-full min-w-0 px-4 py-2.5 rounded-full font-body text-sm border-0 outline-none sm:flex-1"
               style={{
                 backgroundColor: "hsl(var(--card))",
                 color: "hsl(var(--foreground))",
@@ -123,7 +143,7 @@ const SubscribeWidget = ({ className = "" }: SubscribeWidgetProps) => {
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 rounded-full font-body text-xs uppercase tracking-[0.14em] font-medium transition-opacity hover:opacity-80 disabled:opacity-50 whitespace-nowrap"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-full font-body text-xs uppercase tracking-[0.14em] font-medium transition-opacity hover:opacity-80 disabled:opacity-50 whitespace-nowrap"
               style={{
                 backgroundColor: "hsl(var(--primary))",
                 color: "hsl(var(--primary-foreground))",

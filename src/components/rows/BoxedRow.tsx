@@ -88,7 +88,7 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
           ))}
         </div>
 
-        {c.show_subscribe && <div className="mt-10" style={revealStyle(isVisible, cards.length + 2)}><SubscribeWidget /></div>}
+        {c.show_subscribe && <div className="mt-10" style={revealStyle(isVisible, cards.length + 2)}><SubscribeWidget align={align} /></div>}
       </div>
     </section>
   );
