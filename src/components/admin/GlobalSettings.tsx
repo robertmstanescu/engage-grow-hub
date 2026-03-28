@@ -5,7 +5,7 @@ import { Save, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import BrandingEditor from "./BrandingEditor";
 import SocialLinksEditor from "./site-editor/SocialLinksEditor";
-import { Field } from "./site-editor/FieldComponents";
+import { Field, ColorField } from "./site-editor/FieldComponents";
 
 interface SectionState {
   content: Record<string, any>;
@@ -214,6 +214,9 @@ const GlobalSettings = () => {
             <option value="playfair">Playfair Display</option>
             <option value="architects">Architects Daughter</option>
           </select>
+        </div>
+        <div className="mt-3">
+          <ColorField label="Default Subtitle Color" description="Default color for subtitle text across all rows (can be overridden per row)" value={getDraft("theme").subtitleColor || ""} fallback="#E5C54F" onChange={(v) => updateField("theme", "subtitleColor", v)} />
         </div>
       </AccordionSection>
     </div>

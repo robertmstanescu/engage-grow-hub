@@ -36,13 +36,13 @@ const VowsSection = () => {
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
       <div className="relative z-10 max-w-[900px] mr-auto ml-0 px-3 text-left">
-        <motion.h3
+          <motion.h3
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease }}
           className="font-display text-2xl md:text-4xl lg:text-5xl font-bold leading-tight mb-16"
-          style={{ color: "hsl(var(--vows-title))" }}>
+          style={{ color: (c as any).color_title || "hsl(var(--vows-title))" }}>
           {titleLines.map((line, i) => (
             <span key={i}>
               {i > 0 && <br />}
@@ -67,8 +67,8 @@ const VowsSection = () => {
                 border: "1px solid hsl(280 20% 25% / 0.35)",
                 boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4)",
               }}>
-              <p className="font-body-heading text-sm font-bold mb-3" style={{ color: "hsl(var(--vows-card-title))" }}>{vow.title}</p>
-              <div className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--vows-card-body))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(vow.body) }} />
+              <p className="font-body-heading text-sm font-bold mb-3" style={{ color: (c as any).color_card_title || "hsl(var(--vows-card-title))" }}>{vow.title}</p>
+              <div className="font-body text-xs leading-relaxed" style={{ color: (c as any).color_card_body || "hsl(var(--vows-card-body))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(vow.body) }} />
             </motion.div>
           ))}
         </div>

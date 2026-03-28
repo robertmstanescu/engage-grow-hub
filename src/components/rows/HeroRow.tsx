@@ -26,6 +26,7 @@ const HeroRow = ({ row }: Props) => {
 
   return (
     <section className="snap-section grain relative h-screen flex flex-col justify-end overflow-hidden" style={{
+      isolation: "isolate",
       background: `radial-gradient(ellipse 100% 80% at 20% 100%, ${gradStart}, transparent), radial-gradient(ellipse 80% 60% at 90% 10%, ${gradEnd}, transparent), radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06), transparent), hsl(260 20% 4%)`,
     }}>
       {hasBg && bgType === "image" && (

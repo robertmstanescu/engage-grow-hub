@@ -57,7 +57,7 @@ const ServiceCard = ({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, 
         <span className="inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full mb-2 font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
         <h4 className={`font-display font-bold leading-tight mb-1 ${compact ? "text-sm md:text-base" : "text-base md:text-lg"}`} style={{ color: "hsl(var(--pillar-card-title))" }}>{title}</h4>
         <p className="font-body-heading text-xs font-medium mb-2" style={{ color: "hsl(var(--pillar-subtitle))" }}>{subtitle}</p>
-        <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--pillar-card-description))", overflow: "visible", height: "auto" }}>{description}</p>
+        <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--pillar-card-description))", overflow: "visible", height: "auto", WebkitLineClamp: "unset", display: "block" }}>{description}</p>
       </div>
       <div className={compact ? "flex-1 min-h-0 overflow-visible" : ""}>
         <Deliverables label={deliverablesLabel} items={deliverables} />

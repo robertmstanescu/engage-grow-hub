@@ -1,6 +1,7 @@
 import { Plus, Trash2 } from "lucide-react";
-import { RichField, SectionBox } from "./FieldComponents";
+import { RichField, SectionBox, ColorField } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
+import SubtitleEditor from "./SubtitleEditor";
 
 interface Props {
   content: Record<string, any>;
@@ -33,6 +34,15 @@ const VowsEditor = ({ content, onChange }: Props) => {
 
   return (
     <div className="space-y-4">
+      <ColorField label="Title Color" description="Color of the section title" value={content.color_title || ""} fallback="" onChange={(v) => onChange("color_title", v)} />
+      <ColorField label="Card Title Color" description="Color of individual card titles" value={content.color_card_title || ""} fallback="" onChange={(v) => onChange("color_card_title", v)} />
+      <ColorField label="Card Body Color" description="Color of card body text" value={content.color_card_body || ""} fallback="" onChange={(v) => onChange("color_card_body", v)} />
+      <SubtitleEditor
+        subtitle={content.subtitle || ""}
+        subtitleColor={content.subtitle_color || ""}
+        onSubtitleChange={(v) => onChange("subtitle", v)}
+        onColorChange={(v) => onChange("subtitle_color", v)}
+      />
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Title Lines</label>
