@@ -248,17 +248,27 @@
     scroll-snap-stop: normal;
   }
 
-  /* On small screens or tall sections, snap to top for readability */
   @media (max-width: 768px) {
     .snap-section {
       scroll-snap-align: start;
     }
   }
 
-  /* Service rows always snap to top (they're min-h-screen and often taller) */
-  .snap-section-top {
-    scroll-snap-align: start;
-    scroll-margin-top: 0;
+  /* Service rows: desktop = 100dvh centered, mobile = content-height */
+  .service-row {
+    min-height: 100dvh;
+    justify-content: center;
+    scroll-snap-align: center;
+    scroll-snap-stop: normal;
+  }
+
+  @media (max-width: 768px) {
+    .service-row {
+      min-height: auto;
+      justify-content: flex-start;
+      scroll-snap-align: start;
+      scroll-margin-top: 0;
+    }
   }
 
   /* Neutralize inner snap when grouped (e.g. last row + footer) */
