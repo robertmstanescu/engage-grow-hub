@@ -80,7 +80,7 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number; align?
   const dotInactive = c.color_dot_inactive || (isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)");
 
   return (
-    <div ref={ref} className="grain relative min-h-screen flex flex-col" style={{ scrollMarginTop: "0px", scrollSnapAlign: "start", ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", isolation: "isolate" } as React.CSSProperties}>
+    <div ref={ref} className="snap-section-top grain relative min-h-screen flex flex-col" style={{ ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", isolation: "isolate" } as React.CSSProperties}>
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px]"
         style={{ background: `radial-gradient(circle, ${gradStart}, transparent)` }} />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px]"
