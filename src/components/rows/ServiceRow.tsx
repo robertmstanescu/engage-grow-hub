@@ -50,7 +50,7 @@ const buildColorOverrides = (content: Record<string, any>): Record<string, strin
   return overrides;
 };
 
-const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number; align?: Alignment }) => {
+const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowIndex?: number; align?: Alignment }) => {
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
@@ -79,15 +79,24 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number; align?
   const dotActive = c.color_dot_active || (isLightCarousel ? "hsl(var(--accent))" : "hsl(var(--primary))");
   const dotInactive = c.color_dot_inactive || (isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)");
 
+  // Alignment: text + content alignment from admin setting
+  const textAlignClass = align === "right" ? "text-right" : align === "left" ? "text-left" : "text-center";
+  const contentAlignClass = align === "right" ? "ml-auto mr-0" : align === "left" ? "mr-auto ml-0" : "mx-auto";
+  const carouselJustify = align === "right" ? "justify-end" : align === "left" ? "justify-start" : "justify-center";
+
   return (
-    <div ref={ref} className="snap-section-top grain relative min-h-screen flex flex-col" style={{ ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", isolation: "isolate" } as React.CSSProperties}>
+    <div
+      ref={ref}
+      className="service-row grain relative flex flex-col"
+      style={{ ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", isolation: "isolate" } as React.CSSProperties}
+    >
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px]"
         style={{ background: `radial-gradient(circle, ${gradStart}, transparent)` }} />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px]"
         style={{ background: `radial-gradient(circle, ${gradEnd}, transparent)` }} />
 
       <div className="relative z-10 flex-shrink-0" style={{ paddingTop: "24px", paddingBottom: "clamp(4px, 1vh, 16px)" }}>
-        <div className="max-w-[900px] mx-auto px-6 text-center">
+        <div className={`max-w-[900px] ${contentAlignClass} px-6 ${textAlignClass}`}>
           <span className="font-body tracking-[0.35em] uppercase block mb-2"
             style={{ ...revealStyle(isVisible, 0), color: "hsl(var(--pillar-label))", fontSize: "clamp(7px, 0.9vw, 10px)" }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span">{c.pillar_number}</EditableText>
@@ -98,7 +107,7 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number; align?
           </h3>
           <div style={revealStyle(isVisible, 2)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
-              className="font-body-heading max-w-[600px] mx-auto leading-relaxed"
+              className={`font-body-heading max-w-[600px] ${contentAlignClass} leading-relaxed`}
               style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.75rem, 1.5vw, 1rem)", overflow: "visible", height: "auto" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
           </div>
@@ -106,8 +115,8 @@ const ServiceRow = ({ row, rowIndex }: { row: PageRow; rowIndex?: number; align?
       </div>
 
       <div className="relative z-10 px-6 flex-1 min-h-0 flex flex-col" style={{ paddingBottom: "24px" }}>
-        <div className="max-w-[900px] mx-auto w-full flex flex-col flex-1 min-h-0">
-          <div className="flex items-center justify-center gap-3 mb-3 flex-shrink-0" style={revealStyle(isVisible, 3)}>
+        <div className={`max-w-[900px] ${contentAlignClass} w-full flex flex-col flex-1 min-h-0`}>
+          <div className={`flex items-center ${carouselJustify} gap-3 mb-3 flex-shrink-0`} style={revealStyle(isVisible, 3)}>
             <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-4 h-4" /></button>
             <div className="flex gap-2.5">
               {services.map((_: any, i: number) => (
