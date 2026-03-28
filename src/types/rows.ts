@@ -24,7 +24,7 @@ export const DEFAULT_ROW_LAYOUT: RowLayout = {
 
 export interface PageRow {
   id: string;
-  type: "hero" | "text" | "service" | "boxed" | "contact";
+  type: "hero" | "text" | "service" | "boxed" | "contact" | "image_text" | "profile" | "grid";
   strip_title: string;
   bg_color: string;
   scope?: string;
@@ -69,7 +69,7 @@ export const DEFAULT_ROWS: PageRow[] = [
     strip_title: "Internal Communications",
     bg_color: "#FFFFFF",
     content: {
-      pillar_number: "Pillar 01",
+      eyebrow: "Pillar 01",
       title: "Internal Communications",
       description: "Most internal comms is noise dressed up as signal.",
       services: [
@@ -88,7 +88,7 @@ export const DEFAULT_ROWS: PageRow[] = [
     strip_title: "Employee Experience",
     bg_color: "#F4F0EC",
     content: {
-      pillar_number: "Pillar 02",
+      eyebrow: "Pillar 02",
       title: "Employee Experience",
       description: "The modern workplace is haunted by zombie journeys.",
       services: [

@@ -32,7 +32,7 @@ const DEFAULT_TAG_TYPES = [
 
 const PILLAR_COLOR_FIELDS = [
   { key: "color_section_bg", label: "Section Background", description: "Background of the entire pillar section", fallback: "#FFFFFF" },
-  { key: "color_label", label: "Pillar Label", description: "The small pillar number text (e.g. 'Pillar 01')", fallback: "#7B3A91" },
+  { key: "color_label", label: "Eyebrow", description: "The small eyebrow text above the title (e.g. 'Pillar 01')", fallback: "#7B3A91" },
   { key: "color_heading", label: "Pillar Title", description: "The main heading of the pillar section", fallback: "#2A0E33" },
   { key: "color_heading_sub", label: "Pillar Description", description: "The description text below the title", fallback: "#2A0E33" },
   { key: "color_primary", label: "Primary Accent", description: "Used for navigation dots, card borders, and arrow buttons", fallback: "#4D1B5E" },
@@ -102,7 +102,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
   return (
     <div className="space-y-4">
       <SectionBox label="Pillar Header">
-        <Field label="Pillar Number" value={pillarContent.pillar_number || ""} onChange={(v) => onPillarChange("pillar_number", v)} />
+        <Field label="Eyebrow" value={pillarContent.eyebrow || pillarContent.pillar_number || ""} onChange={(v) => onPillarChange("eyebrow", v)} />
         <Field label="Title" value={pillarContent.title || ""} onChange={(v) => onPillarChange("title", v)} />
         <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} />
       </SectionBox>

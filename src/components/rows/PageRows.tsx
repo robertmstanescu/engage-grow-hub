@@ -5,6 +5,9 @@ import ServiceRow from "./ServiceRow";
 import BoxedRow from "./BoxedRow";
 import ContactRow from "./ContactRow";
 import HeroRow from "./HeroRow";
+import ImageTextRow from "./ImageTextRow";
+import ProfileRow from "./ProfileRow";
+import GridRow from "./GridRow";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -66,6 +69,12 @@ const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number;
       return wrapper(<BoxedRow row={row} rowIndex={rowIndex} align={align} />);
     case "contact":
       return wrapper(<ContactRow row={row} align={align} />);
+    case "image_text":
+      return wrapper(<ImageTextRow row={row} rowIndex={rowIndex} align={align} />);
+    case "profile":
+      return wrapper(<ProfileRow row={row} rowIndex={rowIndex} align={align} />);
+    case "grid":
+      return wrapper(<GridRow row={row} rowIndex={rowIndex} align={align} />);
     default:
       return null;
   }
