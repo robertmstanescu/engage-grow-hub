@@ -56,9 +56,8 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
   const [current, setCurrent] = useState(0);
 
   if (!services.length) return null;
-  const safeCurrent = Math.min(current, services.length - 1);
-  const prev = () => { setDirection(-1); setCurrent((v) => v === 0 ? services.length - 1 : v - 1); };
-  const next = () => { setDirection(1); setCurrent((v) => v === services.length - 1 ? 0 : v + 1); };
+  const prev = () => { setCurrent((v) => v === 0 ? services.length - 1 : v - 1); };
+  const next = () => { setCurrent((v) => v === services.length - 1 ? 0 : v + 1); };
   const variants = {
     enter: { opacity: 0 },
     center: { opacity: 1 },
