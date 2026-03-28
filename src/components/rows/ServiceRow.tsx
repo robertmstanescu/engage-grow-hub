@@ -120,7 +120,7 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
             </div>
             <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
           </div>
-          <div className="relative overflow-hidden flex-1 min-h-0">
+          <div className="relative overflow-visible flex-1 min-h-0">
             <AnimatePresence mode="wait">
               <motion.div key={safeCurrent} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35, ease }}>
                 <ServiceCard {...services[safeCurrent]} compact />

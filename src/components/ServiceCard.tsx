@@ -45,7 +45,7 @@ const ServiceCard = ({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8, ease }}
-      className={`rounded-xl overflow-hidden ${compact ? "h-full flex flex-col" : ""}`}
+      className={`rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""}`}
       style={{
         backgroundColor: "hsl(260 25% 12% / 0.5)",
         backdropFilter: "blur(24px)",
