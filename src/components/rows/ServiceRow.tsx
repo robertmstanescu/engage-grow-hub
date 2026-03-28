@@ -54,7 +54,6 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(0);
 
   if (!services.length) return null;
   const safeCurrent = Math.min(current, services.length - 1);
