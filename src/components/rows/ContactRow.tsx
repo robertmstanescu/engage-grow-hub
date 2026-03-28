@@ -125,7 +125,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
 
               {textareaField && (
                 <div className="flex flex-col">
-                  <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-left" style={{ color: `${CREAM}99` }}>{textareaField.label}</label>
+                  <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-white">{textareaField.label}</label>
                   <textarea required={textareaField.required} rows={5} value={formData[textareaField.key] || ""}
                     onChange={(e) => setFormData({ ...formData, [textareaField.key]: e.target.value })}
                     className="w-full bg-transparent pb-2 font-body text-xs outline-none transition-all duration-500 resize-none flex-1 text-left"
