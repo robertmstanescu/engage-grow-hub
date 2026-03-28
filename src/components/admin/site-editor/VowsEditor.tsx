@@ -1,6 +1,7 @@
 import { Plus, Trash2 } from "lucide-react";
-import { RichField, SectionBox } from "./FieldComponents";
+import { RichField, SectionBox, ColorField } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
+import SubtitleEditor from "./SubtitleEditor";
 
 interface Props {
   content: Record<string, any>;
