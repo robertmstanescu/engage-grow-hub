@@ -5,7 +5,7 @@ import { Save, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import BrandingEditor from "./BrandingEditor";
 import SocialLinksEditor from "./site-editor/SocialLinksEditor";
-import { Field } from "./site-editor/FieldComponents";
+import { Field, ColorField } from "./site-editor/FieldComponents";
 
 interface SectionState {
   content: Record<string, any>;
