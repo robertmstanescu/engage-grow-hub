@@ -51,7 +51,7 @@ const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number;
   const id = row.scope || slugify(row.strip_title);
   const isService = row.type === "service";
   const wrapper = (children: React.ReactNode) => (
-    <div id={id} style={{ scrollMarginTop: isService ? "0px" : "4rem" }}>{children}</div>
+    <div id={id} style={{ scrollMarginTop: isService ? "0px" : "4rem", isolation: "isolate" }}>{children}</div>
   );
 
   switch (row.type) {

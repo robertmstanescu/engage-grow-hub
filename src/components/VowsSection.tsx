@@ -67,8 +67,8 @@ const VowsSection = () => {
                 border: "1px solid hsl(280 20% 25% / 0.35)",
                 boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4)",
               }}>
-              <p className="font-body-heading text-sm font-bold mb-3" style={{ color: "hsl(var(--vows-card-title))" }}>{vow.title}</p>
-              <div className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--vows-card-body))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(vow.body) }} />
+              <p className="font-body-heading text-sm font-bold mb-3" style={{ color: (c as any).color_card_title || "hsl(var(--vows-card-title))" }}>{vow.title}</p>
+              <div className="font-body text-xs leading-relaxed" style={{ color: (c as any).color_card_body || "hsl(var(--vows-card-body))" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(vow.body) }} />
             </motion.div>
           ))}
         </div>
