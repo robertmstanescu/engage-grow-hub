@@ -1,4 +1,5 @@
 import { SectionBox, Field, RichField, ArrayField, ColorField } from "./FieldComponents";
+import ImagePickerField from "../ImagePickerField";
 
 interface Props {
   content: Record<string, any>;
