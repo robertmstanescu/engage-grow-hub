@@ -68,13 +68,12 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
   const [current, setCurrent] = useState(0);
-
   const { ref, isVisible } = useScrollReveal();
+  const prev = useCallback(() => setCurrent((v) => v === 0 ? services.length - 1 : v - 1), [services.length]);
+  const next = useCallback(() => setCurrent((v) => v === services.length - 1 ? 0 : v + 1), [services.length]);
 
   if (!services.length) return null;
   const safeCurrent = Math.min(current, services.length - 1);
-  const prev = useCallback(() => setCurrent((v) => v === 0 ? services.length - 1 : v - 1), [services.length]);
-  const next = useCallback(() => setCurrent((v) => v === services.length - 1 ? 0 : v + 1), [services.length]);
   const variants = { enter: { opacity: 0 }, center: { opacity: 1 }, exit: { opacity: 0 } };
 
   const colorOverrides = buildColorOverrides(c);
