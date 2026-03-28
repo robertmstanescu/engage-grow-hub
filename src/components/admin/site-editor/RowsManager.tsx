@@ -95,6 +95,12 @@ const RowsManager = ({ rows, onChange }: Props) => {
         return <BoxedRowFields content={row.content} onChange={onContentChange} />;
       case "contact":
         return <ContactRowFields content={row.content} onChange={onContentChange} />;
+      case "image_text":
+        return <ImageTextEditor content={row.content} onChange={onContentChange} />;
+      case "profile":
+        return <ProfileEditor content={row.content} onChange={onContentChange} />;
+      case "grid":
+        return <GridEditor content={row.content} onChange={onContentChange} />;
       default:
         return null;
     }
