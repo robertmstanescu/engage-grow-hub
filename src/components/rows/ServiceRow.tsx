@@ -101,21 +101,21 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
 
       {/* Row-level alignment wrapper — controls position of the whole widget */}
       <div className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
-        {/* Pillar header */}
+      {/* Pillar header — color_label and color_heading are independent */}
         <span className="font-body tracking-[0.35em] uppercase block mb-4"
-          style={{ ...revealStyle(isVisible, 0), color: "hsl(var(--pillar-label))", fontSize: "clamp(7px, 0.9vw, 10px)" }}>
+          style={{ ...revealStyle(isVisible, 0), color: c.color_label || "hsl(var(--pillar-label))", fontSize: "clamp(7px, 0.9vw, 10px)" }}>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span">{c.pillar_number}</EditableText>
         </span>
 
         <h3 className="font-display font-bold leading-tight mb-4"
-          style={{ ...revealStyle(isVisible, 1), color: "hsl(var(--pillar-heading))", fontSize: "clamp(1.2rem, 3.5vw, 2.2rem)" }}>
+          style={{ ...revealStyle(isVisible, 1), color: c.color_heading || "hsl(var(--pillar-heading))", fontSize: "clamp(1.2rem, 3.5vw, 2.2rem)" }}>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">{c.title}</EditableText>
         </h3>
 
         <div className="mb-6" style={revealStyle(isVisible, 2)}>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
             className={`font-body-heading max-w-[600px] ${rowContentAlign} leading-relaxed`}
-            style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.75rem, 1.5vw, 1rem)", overflow: "visible", height: "auto" }}
+            style={{ color: c.color_heading_sub || "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.75rem, 1.5vw, 1rem)", overflow: "visible", height: "auto" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
         </div>
 
