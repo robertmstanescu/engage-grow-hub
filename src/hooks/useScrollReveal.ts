@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 
 /**
  * Lightweight Intersection Observer hook for scroll-triggered reveal.
@@ -32,7 +32,7 @@ export const useScrollReveal = (options?: IntersectionObserverInit) => {
 
 /**
  * CSS styles for a reveal item with stagger delay.
- * Apply to each child element within a revealed container.
+ * Duration: 0.9s, stagger: 150ms for graceful waterfall effect.
  */
 export const revealStyle = (
   isVisible: boolean,
@@ -41,5 +41,5 @@ export const revealStyle = (
 ): React.CSSProperties => ({
   opacity: isVisible ? 1 : 0,
   transform: isVisible ? "translateY(0)" : "translateY(20px)",
-  transition: `opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${baseDelay + staggerIndex * 0.1}s, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${baseDelay + staggerIndex * 0.1}s`,
+  transition: `opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) ${baseDelay + staggerIndex * 0.15}s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) ${baseDelay + staggerIndex * 0.15}s`,
 });

@@ -244,8 +244,21 @@
 
   /* ── Scroll snap sections ── */
   .snap-section {
-    scroll-snap-align: start;
+    scroll-snap-align: center;
     scroll-snap-stop: normal;
+  }
+
+  /* On small screens or tall sections, snap to top for readability */
+  @media (max-width: 768px) {
+    .snap-section {
+      scroll-snap-align: start;
+    }
+  }
+
+  /* Service rows always snap to top (they're min-h-screen and often taller) */
+  .snap-section-top {
+    scroll-snap-align: start;
+    scroll-margin-top: 0;
   }
 
   /* Neutralize inner snap when grouped (e.g. last row + footer) */
