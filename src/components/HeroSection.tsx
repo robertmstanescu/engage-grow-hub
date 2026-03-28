@@ -94,7 +94,7 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3 + i * 0.12, ease }}
               className="block">
-              <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
+              <span className="text-6xl" dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
             </motion.span>
           ))}
         </h1>
