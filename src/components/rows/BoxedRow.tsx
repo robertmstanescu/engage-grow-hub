@@ -1,12 +1,11 @@
-import { motion } from "framer-motion";
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment } from "./PageRows";
+import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 
-const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
 const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: number; align?: Alignment }) => {
@@ -34,6 +33,8 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
   const gradStart = l.gradientStart || "hsl(280 55% 18% / 0.6)";
   const gradEnd = l.gradientEnd || "hsl(286 42% 20% / 0.4)";
 
+  const { ref, isVisible } = useScrollReveal();
+
   return (
     <section className="snap-section grain relative min-h-screen flex flex-col justify-center"
       style={{
@@ -49,30 +50,30 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
-      <div className={`relative z-10 ${maxW} px-6 ${alignClass}`}>
+      <div ref={ref} className={`relative z-10 ${maxW} px-6 ${alignClass}`}>
         {titleLines.length > 0 && (
-          <motion.h3 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }}
-            className="font-display font-bold leading-tight mb-4" style={{ color: "hsl(var(--vows-title))", fontSize: "clamp(1.5rem, 4vw, 3rem)" }}>
+          <h3 className="font-display font-bold leading-tight mb-4"
+            style={{ ...revealStyle(isVisible, 0), color: c.color_title || "hsl(var(--vows-title))", fontSize: "clamp(1.5rem, 4vw, 3rem)" }}>
             {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
-          </motion.h3>
+          </h3>
         )}
 
         {c.subtitle && (
-          <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.05, ease }}>
+          <div style={revealStyle(isVisible, 1)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="p"
               className="leading-tight mb-10"
               style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--vows-title))", paddingTop: "10px", fontSize: "clamp(0.9rem, 2vw, 1.2rem)" }}>
               {c.subtitle}
             </EditableText>
-          </motion.div>
+          </div>
         )}
 
         <div className={`grid ${getGridCols(cards.length)} gap-6 ${titleLines.length > 0 && !c.subtitle ? "mt-14" : "mt-4"}`}>
           {cards.slice(0, 6).map((card, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: i * 0.12, ease }}
+            <div key={i}
               className="rounded-xl p-7 text-left"
               style={{
+                ...revealStyle(isVisible, i + 2),
                 backgroundColor: "hsl(260 25% 12% / 0.5)",
                 backdropFilter: "blur(24px)",
                 WebkitBackdropFilter: "blur(24px)",
@@ -82,13 +83,13 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
                 className="font-body-heading font-bold mb-3 text-lg" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
-                className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--vows-card-body))" }}
+                className="font-body text-xs leading-relaxed" style={{ color: c.color_card_body || "hsl(var(--vows-card-body))", overflow: "visible", height: "auto" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
-            </motion.div>
+            </div>
           ))}
         </div>
 
-        {c.show_subscribe && <div className="mt-10"><SubscribeWidget /></div>}
+        {c.show_subscribe && <div className="mt-10" style={revealStyle(isVisible, cards.length + 2)}><SubscribeWidget /></div>}
       </div>
     </section>
   );

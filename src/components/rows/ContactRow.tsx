@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeHtml } from "@/lib/sanitize";
 import type { PageRow, ContactField } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import type { Alignment } from "./PageRows";
+import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 
-const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
 const defaultFields: ContactField[] = [
@@ -58,44 +57,43 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
   const gradStart = l.gradientStart || "hsl(280 55% 24% / 0.3)";
   const gradEnd = l.gradientEnd || "transparent";
 
+  const { ref, isVisible } = useScrollReveal();
+
   if (submitted) {
     return (
-      <section className="snap-section section-light relative min-h-screen flex flex-col justify-center py-16">
+      <section className="snap-section section-light relative min-h-screen flex flex-col justify-center py-16" style={{ isolation: "isolate" }}>
         <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${gradStart}, ${gradEnd})` }} />
         <div className={`relative z-10 max-w-[520px] px-6 ${alignClass}`}>
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease }}>
+          <div style={revealStyle(true, 0)}>
             <h3 className="font-display font-black leading-tight mb-4" style={{ color: "hsl(var(--primary))", fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)" }}>{successHeading}</h3>
             <p className="font-body-heading text-sm mb-6" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>{successBody}</p>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
               className="btn-glass font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full transition-all duration-500 hover:opacity-85"
               style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>{successButton}</button>
-          </motion.div>
+          </div>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="snap-section section-light relative min-h-screen flex flex-col justify-center" style={{ paddingTop: "clamp(24px, 4vh, 48px)", paddingBottom: "clamp(24px, 4vh, 48px)" }}>
+    <section className="snap-section section-light relative min-h-screen flex flex-col justify-center" style={{ paddingTop: "clamp(24px, 4vh, 48px)", paddingBottom: "clamp(24px, 4vh, 48px)", isolation: "isolate" }}>
       <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${gradStart}, ${gradEnd})` }} />
 
-      <div className={`relative z-10 max-w-[900px] px-6 ${alignClass}`}>
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }} className="mb-6">
+      <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${alignClass}`}>
+        <div className="mb-6" style={revealStyle(isVisible, 0)}>
           {titleLines.length > 0 && (
             <h3 className="font-display font-black leading-tight mb-3" style={{ color: "hsl(var(--primary))", fontSize: "clamp(1.3rem, 3vw, 2rem)" }}>
               {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
             </h3>
           )}
           {c.body && <div className="font-body-heading leading-relaxed" style={{ color: "hsl(var(--light-fg) / 0.7)", fontSize: "clamp(0.8rem, 1.5vw, 1rem)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.15, ease }}
+        <div
           className="rounded-2xl p-5 md:p-7 relative overflow-hidden"
           style={{
+            ...revealStyle(isVisible, 1),
             backgroundColor: "hsl(280 55% 24% / 0.9)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
@@ -153,7 +151,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
               </button>
             </div>
           </form>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
