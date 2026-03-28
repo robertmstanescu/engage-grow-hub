@@ -112,7 +112,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
               <div className="space-y-4">
                 {leftFields.map((field) => (
                   <div key={field.key}>
-                    <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5" style={{ color: `${CREAM}99` }}>{field.label}</label>
+                    <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-left text-white">{field.label}</label>
                     <input type={field.type} required={field.required} value={formData[field.key] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
                       className="w-full bg-transparent pb-2 font-body text-xs outline-none transition-all duration-500 text-left"
