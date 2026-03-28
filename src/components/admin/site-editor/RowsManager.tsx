@@ -368,6 +368,7 @@ const BoxedRowFields = ({ content, onChange }: { content: Record<string, any>; o
         onSubtitleChange={(v) => onChange("subtitle", v)}
         onColorChange={(v) => onChange("subtitle_color", v)}
       />
+      <ColorField label="Card Title Color" description="Color of card titles in this section" value={content.color_card_title || ""} fallback="" onChange={(v) => onChange("color_card_title", v)} />
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Cards (max 6)</label>
