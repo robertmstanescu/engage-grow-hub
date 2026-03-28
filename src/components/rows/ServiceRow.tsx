@@ -157,7 +157,7 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
           </AnimatePresence>
         </div>
 
-        {c.show_subscribe && <div className="mt-10" style={revealStyle(isVisible, 5)}><SubscribeWidget /></div>}
+        {c.show_subscribe && <div className="mt-10" style={revealStyle(isVisible, 5)}><SubscribeWidget align={align} /></div>}
       </div>
     </div>
   );

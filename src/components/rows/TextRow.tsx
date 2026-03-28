@@ -66,7 +66,7 @@ const TextRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: n
           </div>
         )}
 
-        {c.show_subscribe && <div style={revealStyle(isVisible, 3)}><SubscribeWidget className="mt-8" /></div>}
+        {c.show_subscribe && <div style={revealStyle(isVisible, 3)}><SubscribeWidget className="mt-8" align={align} /></div>}
       </div>
     </section>
   );
