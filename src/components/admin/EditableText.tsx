@@ -69,7 +69,7 @@ const EditableText = ({
     if (dangerouslySetInnerHTML) {
       return <El className={className} style={style} dangerouslySetInnerHTML={dangerouslySetInnerHTML} {...rest} />;
     }
-    return <El style={style} className="text-primary-foreground">{children}</El>;
+    return <El style={style} className={className} {...rest}>{children}</El>;
   }
 
   // Select mode: highlight on click
