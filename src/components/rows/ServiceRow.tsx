@@ -115,7 +115,7 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
         <div className="mb-6" style={revealStyle(isVisible, 2)}>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
             className={`font-body-heading max-w-[600px] ${rowContentAlign} leading-relaxed`}
-            style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.75rem, 1.5vw, 1rem)", overflow: "visible", height: "auto" }}
+            style={{ color: c.color_heading_sub || "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.75rem, 1.5vw, 1rem)", overflow: "visible", height: "auto" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
         </div>
 
