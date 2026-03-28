@@ -125,7 +125,7 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
 
         <h3 className="font-display font-bold leading-tight mb-4"
           style={{ ...revealStyle(isVisible, 1), fontSize: "clamp(1.2rem, 3.5vw, 2.2rem)" }}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span" style={{ color: pillarTitleColor }}>
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span" className="text-[#2b0e34]" style={{ color: pillarTitleColor }}>
             {c.title}
           </EditableText>
         </h3>
