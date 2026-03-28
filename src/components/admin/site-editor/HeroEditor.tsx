@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 import { Plus, Trash2, Upload, X } from "lucide-react";
-import { Field, RichField, SectionBox } from "./FieldComponents";
+import { Field, RichField, SectionBox, ColorField } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,7 +52,9 @@ const HeroEditor = ({ content, onChange }: Props) => {
   return (
     <div className="space-y-4">
       <Field label="Label (above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
+      <ColorField label="Label Color" description="Color of the small label text above the title" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
       <Field label="Tagline (below title)" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
+      <ColorField label="Tagline Color" description="Color of the tagline text below the title" value={content.color_tagline || ""} fallback="" onChange={(v) => onChange("color_tagline", v)} />
 
       <div>
         <div className="flex items-center justify-between mb-1">
