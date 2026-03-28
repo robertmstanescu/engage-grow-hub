@@ -59,7 +59,7 @@ const ServiceCard = ({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, 
         <p className="font-body-heading text-xs font-medium mb-2" style={{ color: "hsl(var(--pillar-subtitle))" }}>{subtitle}</p>
         <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--pillar-card-description))", overflow: "visible", height: "auto" }}>{description}</p>
       </div>
-      <div className={compact ? "flex-1 min-h-0 overflow-auto" : ""}>
+      <div className={compact ? "flex-1 min-h-0 overflow-visible" : ""}>
         <Deliverables label={deliverablesLabel} items={deliverables} />
       </div>
       <div className={`${compact ? "px-4 md:px-5" : "px-5 md:px-6"} py-3 flex justify-between items-center flex-wrap gap-2 flex-shrink-0`} style={{ backgroundColor: "hsl(var(--background) / 0.3)" }}>
