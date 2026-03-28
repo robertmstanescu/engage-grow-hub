@@ -118,7 +118,7 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
       <div className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
         <span className="font-body tracking-[0.35em] uppercase block mb-4"
           style={{ ...revealStyle(isVisible, 0), fontSize: "clamp(7px, 0.9vw, 10px)" }}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span" style={{ color: pillarLabelColor }}>
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span" className="text-[#7c3a92]" style={{ color: pillarLabelColor }}>
             {c.pillar_number}
           </EditableText>
         </span>
