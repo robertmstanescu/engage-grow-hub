@@ -14,7 +14,7 @@ interface EditableTextProps {
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
-  dangerouslySetInnerHTML?: { __html: string };
+  dangerouslySetInnerHTML?: {__html: string;};
 }
 
 const EditableText = ({
@@ -23,7 +23,7 @@ const EditableText = ({
   html = false,
   as: Tag = "span",
   children,
-  className = "text-secondary",
+  className = "",
   style,
   dangerouslySetInnerHTML,
   ...rest
@@ -35,13 +35,13 @@ const EditableText = ({
 
   const handleFocus = useCallback(() => {
     if (ref.current) {
-      originalRef.current = html ? ref.current.innerHTML : (ref.current.textContent || "");
+      originalRef.current = html ? ref.current.innerHTML : ref.current.textContent || "";
     }
   }, [html]);
 
   const handleBlur = useCallback(() => {
     if (!ref.current) return;
-    const newValue = html ? ref.current.innerHTML : (ref.current.textContent || "");
+    const newValue = html ? ref.current.innerHTML : ref.current.textContent || "";
     if (newValue !== originalRef.current) {
       saveField(sectionKey, fieldPath, newValue);
     }
@@ -69,7 +69,7 @@ const EditableText = ({
     if (dangerouslySetInnerHTML) {
       return <El className={className} style={style} dangerouslySetInnerHTML={dangerouslySetInnerHTML} {...rest} />;
     }
-    return <El className={className} style={style} {...rest}>{children}</El>;
+    return <El style={style} className="text-primary-foreground">{children}</El>;
   }
 
   // Select mode: highlight on click
@@ -81,7 +81,7 @@ const EditableText = ({
       outline: isSelected ? "2px solid hsl(var(--primary))" : undefined,
       outlineOffset: isSelected ? "3px" : undefined,
       borderRadius: "2px",
-      transition: "outline 0.15s ease",
+      transition: "outline 0.15s ease"
     };
     const El = Tag as any;
     const handleClick = (e: React.MouseEvent) => {
@@ -103,7 +103,7 @@ const EditableText = ({
     cursor: "text",
     borderRadius: "2px",
     minWidth: "20px",
-    minHeight: "1em",
+    minHeight: "1em"
   };
 
   const El = Tag as any;
@@ -116,7 +116,7 @@ const EditableText = ({
     onFocus: handleFocus,
     onBlur: handleBlur,
     onKeyDown: handleKeyDown,
-    ...rest,
+    ...rest
   };
 
   if (dangerouslySetInnerHTML) {
