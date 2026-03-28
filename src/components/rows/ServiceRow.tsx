@@ -79,7 +79,6 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
   const dotActive = c.color_dot_active || (isLightCarousel ? "hsl(var(--accent))" : "hsl(var(--primary))");
   const dotInactive = c.color_dot_inactive || (isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)");
 
-  // Alignment: text + content alignment from admin setting
   const textAlignClass = align === "right" ? "text-right" : align === "left" ? "text-left" : "text-center";
   const contentAlignClass = align === "right" ? "ml-auto mr-0" : align === "left" ? "mr-auto ml-0" : "mx-auto";
   const carouselJustify = align === "right" ? "justify-end" : align === "left" ? "justify-start" : "justify-center";
@@ -87,55 +86,58 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
   return (
     <div
       ref={ref}
-      className="service-row grain relative flex flex-col"
-      style={{ ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", isolation: "isolate" } as React.CSSProperties}
+      className="service-row grain relative flex items-center justify-center"
+      style={{ ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", isolation: "isolate", padding: "24px 0" } as React.CSSProperties}
     >
+      {/* Ambient glows — positioned absolutely, won't affect centering */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px]"
         style={{ background: `radial-gradient(circle, ${gradStart}, transparent)` }} />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px]"
         style={{ background: `radial-gradient(circle, ${gradEnd}, transparent)` }} />
 
-      <div className="relative z-10 flex-shrink-0" style={{ paddingTop: "24px", paddingBottom: "clamp(4px, 1vh, 16px)" }}>
-        <div className={`max-w-[900px] ${contentAlignClass} px-6 ${textAlignClass}`}>
-          <span className="font-body tracking-[0.35em] uppercase block mb-2"
-            style={{ ...revealStyle(isVisible, 0), color: "hsl(var(--pillar-label))", fontSize: "clamp(7px, 0.9vw, 10px)" }}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span">{c.pillar_number}</EditableText>
-          </span>
-          <h3 className="font-display font-bold leading-tight mb-2"
-            style={{ ...revealStyle(isVisible, 1), color: "hsl(var(--pillar-heading))", fontSize: "clamp(1.2rem, 3.5vw, 2.2rem)" }}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">{c.title}</EditableText>
-          </h3>
-          <div style={revealStyle(isVisible, 2)}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
-              className={`font-body-heading max-w-[600px] ${contentAlignClass} leading-relaxed`}
-              style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.75rem, 1.5vw, 1rem)", overflow: "visible", height: "auto" }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
-          </div>
-        </div>
-      </div>
+      {/* Single centred content wrapper */}
+      <div className={`relative z-10 w-full max-w-[900px] ${contentAlignClass} px-6 ${textAlignClass}`}>
+        {/* Pillar header */}
+        <span className="font-body tracking-[0.35em] uppercase block mb-4"
+          style={{ ...revealStyle(isVisible, 0), color: "hsl(var(--pillar-label))", fontSize: "clamp(7px, 0.9vw, 10px)" }}>
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span">{c.pillar_number}</EditableText>
+        </span>
 
-      <div className="relative z-10 px-6 flex-1 min-h-0 flex flex-col" style={{ paddingBottom: "24px" }}>
-        <div className={`max-w-[900px] ${contentAlignClass} w-full flex flex-col flex-1 min-h-0`}>
-          <div className={`flex items-center ${carouselJustify} gap-3 mb-3 flex-shrink-0`} style={revealStyle(isVisible, 3)}>
-            <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-4 h-4" /></button>
-            <div className="flex gap-2.5">
-              {services.map((_: any, i: number) => (
-                <button key={i} onClick={() => setCurrent(i)}
-                  className="w-2 h-2 rounded-full transition-all duration-500"
-                  style={{ backgroundColor: i === safeCurrent ? dotActive : dotInactive, transform: i === safeCurrent ? "scale(1.5)" : "scale(1)", boxShadow: i === safeCurrent ? `0 0 12px ${dotActive}` : "none" }} />
-              ))}
-            </div>
-            <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
-          </div>
-          <div className="relative overflow-visible flex-1 min-h-0" style={revealStyle(isVisible, 4)}>
-            <AnimatePresence mode="wait">
-              <motion.div key={safeCurrent} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35, ease }}>
-                <ServiceCard {...services[safeCurrent]} compact />
-              </motion.div>
-            </AnimatePresence>
-          </div>
-          {c.show_subscribe && <div className="mt-8" style={revealStyle(isVisible, 5)}><SubscribeWidget /></div>}
+        <h3 className="font-display font-bold leading-tight mb-4"
+          style={{ ...revealStyle(isVisible, 1), color: "hsl(var(--pillar-heading))", fontSize: "clamp(1.2rem, 3.5vw, 2.2rem)" }}>
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">{c.title}</EditableText>
+        </h3>
+
+        <div className="mb-6" style={revealStyle(isVisible, 2)}>
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
+            className={`font-body-heading max-w-[600px] ${contentAlignClass} leading-relaxed`}
+            style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.75rem, 1.5vw, 1rem)", overflow: "visible", height: "auto" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
         </div>
+
+        {/* Carousel controls */}
+        <div className={`flex items-center ${carouselJustify} gap-3 mb-5`} style={revealStyle(isVisible, 3)}>
+          <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-4 h-4" /></button>
+          <div className="flex gap-2.5">
+            {services.map((_: any, i: number) => (
+              <button key={i} onClick={() => setCurrent(i)}
+                className="w-2 h-2 rounded-full transition-all duration-500"
+                style={{ backgroundColor: i === safeCurrent ? dotActive : dotInactive, transform: i === safeCurrent ? "scale(1.5)" : "scale(1)", boxShadow: i === safeCurrent ? `0 0 12px ${dotActive}` : "none" }} />
+            ))}
+          </div>
+          <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
+        </div>
+
+        {/* Service card */}
+        <div className="relative overflow-visible" style={revealStyle(isVisible, 4)}>
+          <AnimatePresence mode="wait">
+            <motion.div key={safeCurrent} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35, ease }}>
+              <ServiceCard {...services[safeCurrent]} compact />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {c.show_subscribe && <div className="mt-10" style={revealStyle(isVisible, 5)}><SubscribeWidget /></div>}
       </div>
     </div>
   );
