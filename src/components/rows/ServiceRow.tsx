@@ -97,11 +97,11 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
           </motion.span>
           <motion.h3 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }}
             className="font-display font-bold leading-tight mb-2" style={{ color: "hsl(var(--pillar-heading))", fontSize: "clamp(1.2rem, 3.5vw, 2.2rem)" }}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">{c.title}</EditableText>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span" className="text-primary">{c.title}</EditableText>
           </motion.h3>
           <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.1, ease }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
-              className="font-body-heading max-w-[600px] leading-relaxed"
+              className="font-body-heading max-w-[600px] leading-relaxed text-[#2b0e34]"
               style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)", fontSize: "clamp(0.75rem, 1.5vw, 1rem)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }} />
           </motion.div>
