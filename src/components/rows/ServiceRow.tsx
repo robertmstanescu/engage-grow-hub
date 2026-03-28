@@ -118,21 +118,21 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
       <div className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
         <span className="font-body tracking-[0.35em] uppercase block mb-4"
           style={{ ...revealStyle(isVisible, 0), fontSize: "clamp(7px, 0.9vw, 10px)" }}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span" style={{ color: pillarLabelColor }}>
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.pillar_number`} as="span" className="text-[#7c3a92]" style={{ color: pillarLabelColor }}>
             {c.pillar_number}
           </EditableText>
         </span>
 
         <h3 className="font-display font-bold leading-tight mb-4"
           style={{ ...revealStyle(isVisible, 1), fontSize: "clamp(1.2rem, 3.5vw, 2.2rem)" }}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span" style={{ color: pillarTitleColor }}>
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span" className="text-[#2b0e34]" style={{ color: pillarTitleColor }}>
             {c.title}
           </EditableText>
         </h3>
 
         <div className="mb-6" style={revealStyle(isVisible, 2)}>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
-            className={`font-body-heading max-w-[600px] ${rowContentAlign} leading-relaxed`}
+            className={`font-body-heading max-w-[600px] ${rowContentAlign} leading-relaxed text-black`}
             style={{ color: pillarDescriptionColor, fontSize: "clamp(0.75rem, 1.5vw, 1rem)", overflow: "visible", height: "auto" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
         </div>
