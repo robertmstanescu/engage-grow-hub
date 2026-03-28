@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles } from "lucide-react";
 import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
 import RowLayoutSettings from "./RowLayoutSettings";
-import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea } from "./FieldComponents";
+import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea, ColorField } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
 import PillarEditor from "./PillarEditor";
 import SubtitleEditor from "./SubtitleEditor";
@@ -308,8 +308,10 @@ const HeroRowFields = ({ content, onChange }: { content: Record<string, any>; on
   return (
     <div className="space-y-3">
       <Field label="Label (small text above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
+      <ColorField label="Label Color" description="Color of the small label text above the title" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
       <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} />
       <Field label="Tagline (small text below title)" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
+      <ColorField label="Tagline Color" description="Color of the small tagline text below the title" value={content.color_tagline || ""} fallback="" onChange={(v) => onChange("color_tagline", v)} />
       <SubtitleEditor
         subtitle={content.subtitle || ""}
         subtitleColor={content.subtitle_color || ""}
@@ -366,6 +368,7 @@ const BoxedRowFields = ({ content, onChange }: { content: Record<string, any>; o
         onSubtitleChange={(v) => onChange("subtitle", v)}
         onColorChange={(v) => onChange("subtitle_color", v)}
       />
+      <ColorField label="Card Title Color" description="Color of card titles in this section" value={content.color_card_title || ""} fallback="" onChange={(v) => onChange("color_card_title", v)} />
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Cards (max 6)</label>

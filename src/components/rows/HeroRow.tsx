@@ -51,7 +51,7 @@ const HeroRow = ({ row }: Props) => {
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.2, ease }}
             className="font-body tracking-[0.35em] uppercase mb-[2vh]"
-            style={{ color: c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)" }}>
+            style={{ color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)" }}>
             {c.label}
           </motion.p>
         )}
@@ -78,7 +78,7 @@ const HeroRow = ({ row }: Props) => {
             animate={{ opacity: 0.4 }}
             transition={{ duration: 1, delay: 0.8, ease }}
             className="font-body tracking-[0.3em] uppercase mt-[2vh]"
-            style={{ color: c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)" }}>
+            style={{ color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)" }}>
             {c.tagline}
           </motion.p>
         )}

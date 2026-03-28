@@ -79,7 +79,7 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
                 boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4)",
               }}>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
-                className="font-body-heading font-bold mb-3 text-lg" style={{ color: "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
+                className="font-body-heading font-bold mb-3 text-lg" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
                 className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--vows-card-body))" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />

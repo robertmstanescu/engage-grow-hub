@@ -45,7 +45,7 @@ const ServiceCard = ({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8, ease }}
-      className={`rounded-xl overflow-hidden ${compact ? "h-full flex flex-col" : ""}`}
+      className={`rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""}`}
       style={{
         backgroundColor: "hsl(260 25% 12% / 0.5)",
         backdropFilter: "blur(24px)",
@@ -57,9 +57,9 @@ const ServiceCard = ({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, 
         <span className="inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full mb-2 font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
         <h4 className={`font-display font-bold leading-tight mb-1 ${compact ? "text-sm md:text-base" : "text-base md:text-lg"}`} style={{ color: "hsl(var(--pillar-card-title))" }}>{title}</h4>
         <p className="font-body-heading text-xs font-medium mb-2" style={{ color: "hsl(var(--pillar-subtitle))" }}>{subtitle}</p>
-        <p className={`font-body text-xs leading-relaxed ${compact ? "line-clamp-2" : "line-clamp-3"}`} style={{ color: "hsl(var(--pillar-card-description))" }}>{description}</p>
+        <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--pillar-card-description))", overflow: "visible", height: "auto" }}>{description}</p>
       </div>
-      <div className={compact ? "flex-1 min-h-0 overflow-auto" : ""}>
+      <div className={compact ? "flex-1 min-h-0 overflow-visible" : ""}>
         <Deliverables label={deliverablesLabel} items={deliverables} />
       </div>
       <div className={`${compact ? "px-4 md:px-5" : "px-5 md:px-6"} py-3 flex justify-between items-center flex-wrap gap-2 flex-shrink-0`} style={{ backgroundColor: "hsl(var(--background) / 0.3)" }}>

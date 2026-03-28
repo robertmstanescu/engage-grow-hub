@@ -49,8 +49,9 @@ const resolveAlignment = (row: PageRow, autoAlign: Alignment): Alignment => {
 
 const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number; align: Alignment }) => {
   const id = row.scope || slugify(row.strip_title);
+  const isService = row.type === "service";
   const wrapper = (children: React.ReactNode) => (
-    <div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>
+    <div id={id} style={{ scrollMarginTop: isService ? "0px" : "4rem" }}>{children}</div>
   );
 
   switch (row.type) {
