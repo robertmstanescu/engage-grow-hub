@@ -45,7 +45,6 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
     setSubmitted(true); setSubmitting(false); toast.success("Message sent!");
   };
 
-  const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const alignClass = align === "center" ? "mx-auto text-center"
     : align === "right" ? "ml-auto mr-0 text-right"
     : "mr-auto ml-0 text-left";
@@ -54,6 +53,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
   const textareaField = visibleFields.find((f) => f.type === "textarea");
   const checkboxFields = visibleFields.filter((f) => f.type === "checkbox");
 
+  const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const gradStart = l.gradientStart || "hsl(280 55% 24% / 0.3)";
   const gradEnd = l.gradientEnd || "transparent";
 
@@ -61,7 +61,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
 
   if (submitted) {
     return (
-      <section className="snap-section section-light relative min-h-screen flex flex-col justify-center py-16" style={{ isolation: "isolate" }}>
+      <section className="snap-section section-light relative min-h-screen flex flex-col justify-center" style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
         <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${gradStart}, ${gradEnd})` }} />
         <div className={`relative z-10 max-w-[520px] px-6 ${alignClass}`}>
           <div style={revealStyle(true, 0)}>
@@ -77,7 +77,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
   }
 
   return (
-    <section className="snap-section section-light relative min-h-screen flex flex-col justify-center" style={{ paddingTop: "clamp(24px, 4vh, 48px)", paddingBottom: "clamp(24px, 4vh, 48px)", isolation: "isolate" }}>
+    <section className="snap-section section-light relative min-h-screen flex flex-col justify-center" style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
       <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${gradStart}, ${gradEnd})` }} />
 
       <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${alignClass}`}>
@@ -108,8 +108,8 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
           <form onSubmit={handleSubmit} className="relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-4">
-                {leftFields.map((field) => (
-                  <div key={field.key}>
+                {leftFields.map((field, fi) => (
+                  <div key={field.key} style={revealStyle(isVisible, fi + 2)}>
                     <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-left text-white">{field.label}</label>
                     <input type={field.type} required={field.required} value={formData[field.key] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
@@ -122,7 +122,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
               </div>
 
               {textareaField && (
-                <div className="flex flex-col">
+                <div className="flex flex-col" style={revealStyle(isVisible, leftFields.length + 2)}>
                   <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-white">{textareaField.label}</label>
                   <textarea required={textareaField.required} rows={5} value={formData[textareaField.key] || ""}
                     onChange={(e) => setFormData({ ...formData, [textareaField.key]: e.target.value })}
@@ -134,7 +134,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-5 pt-4" style={{ borderTop: `1px solid ${CREAM}15` }}>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-5 pt-4" style={{ ...revealStyle(isVisible, leftFields.length + 3), borderTop: `1px solid ${CREAM}15` }}>
               <div className="space-y-1.5">
                 {checkboxFields.map((field) => (
                   <label key={field.key} className="flex items-center gap-2 cursor-pointer">

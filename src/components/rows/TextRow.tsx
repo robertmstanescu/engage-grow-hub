@@ -32,8 +32,7 @@ const TextRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: n
     <section className="snap-section relative min-h-screen flex flex-col justify-center" style={{
       backgroundColor: row.bg_color || "hsl(var(--background))",
       isolation: "isolate",
-      paddingTop: `${l.paddingTop}px`, paddingBottom: `${l.paddingBottom}px`,
-      marginTop: l.marginTop ? `${l.marginTop}px` : undefined, marginBottom: l.marginBottom ? `${l.marginBottom}px` : undefined,
+      paddingTop: "24px", paddingBottom: "24px",
       ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
     }}>
       <div className="absolute inset-0 opacity-40 blur-[100px]" style={{
