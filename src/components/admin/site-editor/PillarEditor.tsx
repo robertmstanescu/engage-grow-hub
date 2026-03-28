@@ -107,6 +107,23 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
         <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} />
       </SectionBox>
 
+      <SectionBox label="Carousel Content Alignment">
+        <p className="font-body text-[9px] text-muted-foreground/60 mb-2">Controls text alignment inside the carousel cards only. Does not affect the row position on screen.</p>
+        <div className="flex gap-2">
+          {(["left", "center", "right"] as const).map((opt) => (
+            <button key={opt} type="button" onClick={() => onPillarChange("card_text_align", opt)}
+              className="font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full transition-all"
+              style={{
+                backgroundColor: (pillarContent.card_text_align || "left") === opt ? "hsl(var(--primary))" : "transparent",
+                color: (pillarContent.card_text_align || "left") === opt ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                border: (pillarContent.card_text_align || "left") === opt ? "none" : "1px solid hsl(var(--border))",
+              }}>
+              {opt}
+            </button>
+          ))}
+        </div>
+      </SectionBox>
+
       {/* Color overrides */}
       <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.15)" }}>
         <button
