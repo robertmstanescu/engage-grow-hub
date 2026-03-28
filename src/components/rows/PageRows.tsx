@@ -27,8 +27,9 @@ const computeAutoAlignments = (rows: PageRow[]): Alignment[] => {
     const prevWasPillar = i > 0 && rows[i - 1].type === "service";
 
     if (isPillar) {
+      // Service rows default to "center" in auto mode
       if (!prevWasPillar) prePillar = current;
-      alignments.push("left");
+      alignments.push("center");
     } else {
       if (prevWasPillar && prePillar !== null) {
         current = prePillar === "left" ? "right" : "left";
