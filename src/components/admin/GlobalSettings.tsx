@@ -215,6 +215,9 @@ const GlobalSettings = () => {
             <option value="architects">Architects Daughter</option>
           </select>
         </div>
+        <div className="mt-3">
+          <ColorField label="Default Subtitle Color" description="Default color for subtitle text across all rows (can be overridden per row)" value={getDraft("theme").subtitleColor || ""} fallback="#E5C54F" onChange={(v) => updateField("theme", "subtitleColor", v)} />
+        </div>
       </AccordionSection>
     </div>
   );
