@@ -61,9 +61,9 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
   const prev = () => { setDirection(-1); setCurrent((v) => v === 0 ? services.length - 1 : v - 1); };
   const next = () => { setDirection(1); setCurrent((v) => v === services.length - 1 ? 0 : v + 1); };
   const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
+    enter: { opacity: 0 },
+    center: { opacity: 1 },
+    exit: { opacity: 0 },
   };
 
   const colorOverrides = buildColorOverrides(c);
