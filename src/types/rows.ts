@@ -69,7 +69,7 @@ export const DEFAULT_ROWS: PageRow[] = [
     strip_title: "Internal Communications",
     bg_color: "#FFFFFF",
     content: {
-      pillar_number: "Pillar 01",
+      eyebrow: "Pillar 01",
       title: "Internal Communications",
       description: "Most internal comms is noise dressed up as signal.",
       services: [
