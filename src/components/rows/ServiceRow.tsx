@@ -112,7 +112,7 @@ const ServiceRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?
             <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-4 h-4" /></button>
             <div className="flex gap-2.5">
               {services.map((_: any, i: number) => (
-                <button key={i} onClick={() => { setDirection(i > safeCurrent ? 1 : -1); setCurrent(i); }}
+                <button key={i} onClick={() => setCurrent(i)}
                   className="w-2 h-2 rounded-full transition-all duration-500"
                   style={{ backgroundColor: i === safeCurrent ? dotActive : dotInactive, transform: i === safeCurrent ? "scale(1.5)" : "scale(1)", boxShadow: i === safeCurrent ? `0 0 12px ${dotActive}` : "none" }} />
               ))}
