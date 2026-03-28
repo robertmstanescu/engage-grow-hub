@@ -1,4 +1,5 @@
 import { SectionBox, Field, RichField, SelectField, ColorField } from "./FieldComponents";
+import ImagePickerField from "../ImagePickerField";
 
 const IMAGE_POSITIONS = [
   { label: "Left", value: "left" },
@@ -35,7 +36,7 @@ const ImageTextEditor = ({ content, onChange }: Props) => (
     </SectionBox>
 
     <SectionBox label="Image">
-      <Field label="Image URL" value={content.image_url || ""} onChange={(v) => onChange("image_url", v)} />
+      <ImagePickerField label="Image" value={content.image_url || ""} onChange={(v) => onChange("image_url", v)} />
       <SelectField label="Image Position" value={content.image_position || "right"} options={IMAGE_POSITIONS} onChange={(v) => onChange("image_position", v)} />
       <SelectField label="Image Shape" value={content.image_shape || "default"} options={IMAGE_SHAPES} onChange={(v) => onChange("image_shape", v)} />
     </SectionBox>

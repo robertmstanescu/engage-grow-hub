@@ -3,6 +3,7 @@ import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, La
 import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
 import RowLayoutSettings from "./RowLayoutSettings";
 import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea, ColorField } from "./FieldComponents";
+import ImagePickerField from "../ImagePickerField";
 import TitleLineEditor from "./TitleLineEditor";
 import PillarEditor from "./PillarEditor";
 import SubtitleEditor from "./SubtitleEditor";
@@ -333,8 +334,11 @@ const HeroRowFields = ({ content, onChange }: { content: Record<string, any>; on
       <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
       <SectionBox label="Background">
         <SelectField label="Type" value={content.bg_type || "none"} options={BG_TYPES} onChange={(v) => onChange("bg_type", v)} />
-        {content.bg_type && content.bg_type !== "none" && (
-          <Field label="URL" value={content.bg_url || ""} onChange={(v) => onChange("bg_url", v)} />
+        {content.bg_type === "image" && (
+          <ImagePickerField label="Background Image" value={content.bg_url || ""} onChange={(v) => onChange("bg_url", v)} />
+        )}
+        {content.bg_type === "video" && (
+          <Field label="Video URL" value={content.bg_url || ""} onChange={(v) => onChange("bg_url", v)} />
         )}
       </SectionBox>
     </div>
