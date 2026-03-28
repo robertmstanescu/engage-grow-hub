@@ -267,7 +267,7 @@
     .service-row {
       min-height: auto;
       justify-content: flex-start;
-      scroll-snap-align: start;
+      scroll-snap-align: none;
       scroll-margin-top: 0;
     }
   }
