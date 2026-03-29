@@ -269,7 +269,7 @@
     scroll-snap-stop: normal;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     .service-row {
       min-height: auto;
       justify-content: flex-start;

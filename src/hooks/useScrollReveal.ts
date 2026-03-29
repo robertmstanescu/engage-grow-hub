@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 
-const isMobile = () => typeof window !== "undefined" && window.innerWidth <= 768;
+const isMobile = () => typeof window !== "undefined" && window.innerWidth <= 1024;
 
 /**
  * Lightweight Intersection Observer hook for scroll-triggered reveal.
