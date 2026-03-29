@@ -142,7 +142,7 @@
     scroll-behavior: smooth;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     .snap-container {
       scroll-snap-type: y proximity;
     }
