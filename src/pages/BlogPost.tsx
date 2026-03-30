@@ -97,7 +97,7 @@ const BlogPost = () => {
 
         <header className={`grain relative ${article.cover_image ? "pt-6" : "pt-36"} pb-16 px-8 mesh-hero`}>
           <div className="relative z-10 max-w-[700px] mx-auto">
-            <Link to="/blog" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-8 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.4)" }}>
+            <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-8 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.4)" }}>
               <ArrowLeft size={14} /> All articles
             </Link>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease }}>
