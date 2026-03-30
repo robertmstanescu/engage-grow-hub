@@ -38,6 +38,7 @@ const CmsPage = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  usePageMeta({ title: page?.meta_title || page?.title || undefined, description: page?.meta_description || undefined });
   useEffect(() => {
     if (!slug || SYSTEM_ROUTES.includes(slug)) { setNotFound(true); setLoading(false); return; }
     const load = async () => {
