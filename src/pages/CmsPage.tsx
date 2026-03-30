@@ -38,6 +38,7 @@ const CmsPage = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  usePageMeta({ title: page?.meta_title || page?.title || undefined, description: page?.meta_description || undefined });
   useEffect(() => {
     if (!slug || SYSTEM_ROUTES.includes(slug)) { setNotFound(true); setLoading(false); return; }
     const load = async () => {
@@ -59,8 +60,6 @@ const CmsPage = () => {
   if (notFound) return <NotFound />;
 
   const rows: PageRow[] = page?.page_rows || [];
-
-  usePageMeta({ title: page?.meta_title || page?.title, description: page?.meta_description || undefined });
 
   return (
     <div className="min-h-screen lg:pl-16">
