@@ -55,7 +55,7 @@ const BlogPost = () => {
         <Navbar />
         <div className="pt-36 pb-20 text-center px-8">
           <h1 className="font-display text-2xl font-bold mb-4" style={{ color: "hsl(var(--foreground))" }}>Article not found</h1>
-          <Link to="/blog" className="font-body text-sm underline" style={{ color: "hsl(var(--accent))" }}>← Back to all articles</Link>
+          <Link to="/blog/" className="font-body text-sm underline" style={{ color: "hsl(var(--accent))" }}>← Back to all articles</Link>
         </div>
         <Footer />
       </div>
