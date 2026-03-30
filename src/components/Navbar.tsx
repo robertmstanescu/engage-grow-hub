@@ -75,7 +75,9 @@ const Navbar = () => {
 
   const isActive = (href: string) => {
     if (href.startsWith("#")) return activeSection === href.slice(1);
-    return location.pathname === href;
+    const normalised = location.pathname.replace(/\/$/, "");
+    const normHref = href.replace(/\/$/, "");
+    return normalised === normHref;
   };
 
   return (

@@ -36,7 +36,7 @@ interface FooterContent {
 
 const defaultColumns: FooterColumn[] = [
   { title: "Services", links: [{ label: "Internal Communications", href: "#internal-communications" }, { label: "Employee Experience", href: "#employee-experience" }] },
-  { title: "Company", links: [{ label: "Our Vows", href: "#vows" }, { label: "Blog", href: "/blog" }, { label: "Contact", href: "#contact" }] },
+  { title: "Company", links: [{ label: "Our Vows", href: "#vows" }, { label: "Blog", href: "/blog/" }, { label: "Contact", href: "#contact" }] },
   { title: "Connect", links: [] },
 ];
 
