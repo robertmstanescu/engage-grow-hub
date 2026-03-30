@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
 import SubscribeWidget from "@/components/SubscribeWidget";
+import usePageMeta from "@/hooks/usePageMeta";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
