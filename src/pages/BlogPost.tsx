@@ -131,7 +131,7 @@ const BlogPost = () => {
           </div>
 
           <div className="max-w-[700px] mx-auto mt-8 pt-8" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }}>
-            <Link to="/blog" className="inline-flex items-center gap-1.5 font-body text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "hsl(var(--primary))" }}>
+            <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "hsl(var(--primary))" }}>
               <ArrowLeft size={16} /> Back to all articles
             </Link>
           </div>
