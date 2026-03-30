@@ -26,6 +26,12 @@ const BlogPost = () => {
   const [loading, setLoading] = useState(true);
   const { getCategoryColors } = useTagColors();
 
+  const pageTitle = article?.meta_title || article?.title || undefined;
+  const pageDesc = article ? (article.meta_description || article.content.replace(/<[^>]*>/g, " ").slice(0, 160)) : undefined;
+  const pageImage = article?.og_image || article?.cover_image || undefined;
+
+  usePageMeta({ title: pageTitle, description: pageDesc, ogImage: pageImage });
+
   useEffect(() => {
     const fetchArticle = async () => {
       if (!slug) { setLoading(false); return; }
