@@ -68,30 +68,8 @@ const BlogPost = () => {
     );
   }
 
-  const pageTitle = article.meta_title || article.title;
-  const pageDesc = article.meta_description || article.content.replace(/<[^>]*>/g, " ").slice(0, 160);
-  const pageImage = article.og_image || article.cover_image;
-
   return (
     <div className="min-h-screen lg:pl-16">
-      {typeof document !== "undefined" && (() => {
-        document.title = `${pageTitle} | The Magic Coffin for Silly Vampires`;
-        const setMeta = (name: string, content: string, property?: boolean) => {
-          const attr = property ? "property" : "name";
-          let el = document.querySelector(`meta[${attr}="${name}"]`);
-          if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
-          el.setAttribute("content", content);
-        };
-        setMeta("description", pageDesc);
-        setMeta("og:title", pageTitle, true);
-        setMeta("og:description", pageDesc, true);
-        if (pageImage) setMeta("og:image", pageImage, true);
-        setMeta("og:type", "article", true);
-        setMeta("twitter:title", pageTitle);
-        setMeta("twitter:description", pageDesc);
-        if (pageImage) setMeta("twitter:image", pageImage);
-        return null;
-      })()}
       <Navbar />
       <article>
         {article.cover_image && (

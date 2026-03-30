@@ -61,8 +61,6 @@ const CmsPage = () => {
 
   const rows: PageRow[] = page?.page_rows || [];
 
-  usePageMeta({ title: page?.meta_title || page?.title, description: page?.meta_description || undefined });
-
   return (
     <div className="min-h-screen lg:pl-16">
       <Navbar />
