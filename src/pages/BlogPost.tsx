@@ -55,7 +55,7 @@ const BlogPost = () => {
         <Navbar />
         <div className="pt-36 pb-20 text-center px-8">
           <h1 className="font-display text-2xl font-bold mb-4" style={{ color: "hsl(var(--foreground))" }}>Article not found</h1>
-          <Link to="/blog" className="font-body text-sm underline" style={{ color: "hsl(var(--accent))" }}>← Back to all articles</Link>
+          <Link to="/blog/" className="font-body text-sm underline" style={{ color: "hsl(var(--accent))" }}>← Back to all articles</Link>
         </div>
         <Footer />
       </div>
@@ -97,7 +97,7 @@ const BlogPost = () => {
 
         <header className={`grain relative ${article.cover_image ? "pt-6" : "pt-36"} pb-16 px-8 mesh-hero`}>
           <div className="relative z-10 max-w-[700px] mx-auto">
-            <Link to="/blog" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-8 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.4)" }}>
+            <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-8 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.4)" }}>
               <ArrowLeft size={14} /> All articles
             </Link>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease }}>
@@ -131,7 +131,7 @@ const BlogPost = () => {
           </div>
 
           <div className="max-w-[700px] mx-auto mt-8 pt-8" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }}>
-            <Link to="/blog" className="inline-flex items-center gap-1.5 font-body text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "hsl(var(--primary))" }}>
+            <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "hsl(var(--primary))" }}>
               <ArrowLeft size={16} /> Back to all articles
             </Link>
           </div>

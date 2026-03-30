@@ -33,7 +33,7 @@ const Navbar = () => {
   const allItems = [
     ...subLinks.map((l: any) => ({ label: l.label, href: l.href })),
     ...links.map((l: any) => ({ label: l.label, href: l.href })),
-    ...(showBlogLink ? [{ label: "Blog", href: "/blog" }] : []),
+    ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
   ];
 
   const handleScroll = useCallback(() => {
@@ -75,7 +75,9 @@ const Navbar = () => {
 
   const isActive = (href: string) => {
     if (href.startsWith("#")) return activeSection === href.slice(1);
-    return location.pathname === href;
+    const normalised = location.pathname.replace(/\/$/, "");
+    const normHref = href.replace(/\/$/, "");
+    return normalised === normHref;
   };
 
   return (

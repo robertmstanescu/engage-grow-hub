@@ -7,4 +7,5 @@ Allow: /
 User-agent: *
 Allow: /
 
+Host: https://themagiccoffin.com
 Sitemap: https://themagiccoffin.com/sitemap.xml
