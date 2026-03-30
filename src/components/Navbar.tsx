@@ -33,7 +33,7 @@ const Navbar = () => {
   const allItems = [
     ...subLinks.map((l: any) => ({ label: l.label, href: l.href })),
     ...links.map((l: any) => ({ label: l.label, href: l.href })),
-    ...(showBlogLink ? [{ label: "Blog", href: "/blog" }] : []),
+    ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
   ];
 
   const handleScroll = useCallback(() => {
