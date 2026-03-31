@@ -56,7 +56,7 @@ const HeroRow = ({ row }: Props) => {
 
         {titleLines.length > 0 && (
           <h1 className="font-display font-black leading-[0.92] tracking-tight mb-0 max-w-[95%]"
-            style={{ color: c.title_color || "hsl(var(--hero-title))", fontSize: "clamp(2rem, 6.5vw, 6rem)" }}>
+            style={{ color: c.title_color || "hsl(var(--hero-title))", fontSize: "clamp(1.8rem, 5.5vw, 6rem)" }}>
             {titleLines.map((line, i) => (
               <span key={i} className="block" style={revealStyle(isVisible, i + 1, 0.1)}>
                 <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
