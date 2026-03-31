@@ -190,6 +190,7 @@ const PagesManager = () => {
   }
 
   if (editingPage) {
+    const draftRows = editingPage.draft_page_rows || editingPage.page_rows || [];
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -204,10 +205,22 @@ const PagesManager = () => {
               {editingPage.status}
             </span>
             <button
-              onClick={() => togglePublish(editingPage)}
+              onClick={() => saveDraft(editingPage, draftRows)}
+              className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+              style={{ border: "1px solid hsl(var(--border))", color: "hsl(var(--foreground))" }}>
+              <Save size={13} /> Save Draft
+            </button>
+            <button
+              onClick={() => previewPage(editingPage)}
+              className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+              style={{ border: "1px solid hsl(var(--primary) / 0.4)", color: "hsl(var(--primary))" }}>
+              <Eye size={13} /> Preview
+            </button>
+            <button
+              onClick={() => savePageRows(editingPage, draftRows)}
               className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
               style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-              {editingPage.status === "published" ? "Unpublish" : "Publish"}
+              {editingPage.status === "published" ? "Save & Publish" : "Publish"}
             </button>
           </div>
         </div>
@@ -228,8 +241,11 @@ const PagesManager = () => {
           }}
         />
         <RowsManager
-          rows={editingPage.page_rows || []}
-          onChange={(rows) => savePageRows(editingPage, rows)}
+          rows={draftRows}
+          onChange={(rows) => {
+            setEditingPage({ ...editingPage, draft_page_rows: rows });
+            saveDraft(editingPage, rows);
+          }}
         />
       </div>
     );
