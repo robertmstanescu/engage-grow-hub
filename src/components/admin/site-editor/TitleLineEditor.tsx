@@ -118,7 +118,7 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
         role="textbox"
         aria-multiline="true"
         className="focus:outline-none px-3 py-2 font-display text-sm min-h-[36px]"
-        style={{ color: "hsl(var(--foreground))" }}
+        style={{ color: "#1a1a1a" }}
         onInput={emitChange}
         onBlur={() => {
           saveSelection();
