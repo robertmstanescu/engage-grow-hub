@@ -46,7 +46,7 @@ const HeroRow = ({ row }: Props) => {
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px]"
         style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
 
-      <div ref={ref} className="relative z-10 w-full max-w-[1100px] px-6 pb-[4vh] pt-[15vh] flex flex-col justify-end">
+      <div ref={ref} className="relative z-10 w-full max-w-[1100px] px-4 sm:px-6 pb-[4vh] pt-[15vh] flex flex-col justify-end">
         {c.label && (
           <p className="font-body tracking-[0.35em] uppercase mb-[2vh]"
             style={{ ...revealStyle(isVisible, 0), color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)" }}>
