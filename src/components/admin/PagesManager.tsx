@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Trash2, ExternalLink, Globe, FileText } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye } from "lucide-react";
 import RowsManager from "./site-editor/RowsManager";
 import { SectionBox, Field } from "./site-editor/FieldComponents";
 import SeoFields from "./site-editor/SeoFields";
