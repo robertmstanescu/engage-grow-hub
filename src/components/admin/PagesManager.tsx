@@ -119,9 +119,23 @@ const PagesManager = () => {
       .update({ page_rows: rows as any, draft_page_rows: rows as any } as any)
       .eq("id", page.id);
     if (error) { toast.error("Save failed"); return; }
-    toast.success("Saved");
-    setEditingPage({ ...page, page_rows: rows });
+    toast.success("Saved & Published");
+    setEditingPage({ ...page, page_rows: rows, draft_page_rows: rows });
     load();
+  };
+
+  const saveDraft = async (page: CmsPage, rows: PageRow[]) => {
+    const { error } = await supabase
+      .from("cms_pages")
+      .update({ draft_page_rows: rows as any } as any)
+      .eq("id", page.id);
+    if (error) { toast.error("Save failed"); return; }
+    toast.success("Draft saved");
+    setEditingPage({ ...page, draft_page_rows: rows });
+  };
+
+  const previewPage = (page: CmsPage) => {
+    window.open(`/p/${page.slug}?preview=draft`, "_blank");
   };
 
   const togglePublish = async (page: CmsPage) => {
