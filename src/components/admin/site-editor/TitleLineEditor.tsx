@@ -72,7 +72,7 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
   return (
     <div
       className="rounded-lg border overflow-hidden"
-      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+      style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF" }}
     >
       <div
         className="flex items-center gap-0.5 px-2 py-1 border-b"
