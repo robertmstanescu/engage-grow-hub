@@ -345,7 +345,7 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
         }}
         onKeyUp={saveSelection}
         onMouseUp={saveSelection}
-        style={{ color: "hsl(var(--foreground))" }}
+        style={{ color: bgColor ? "#F4F0EC" : "hsl(var(--foreground))", backgroundColor: bgColor || undefined }}
       />
 
       <input
