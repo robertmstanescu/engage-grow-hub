@@ -70,10 +70,10 @@ export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; 
   );
 };
 
-export const RichField = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => (
+export const RichField = ({ label, value, onChange, bgColor }: { label: string; value: string; onChange: (v: string) => void; bgColor?: string }) => (
   <div>
     <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
-    <RichTextEditor content={value || ""} onChange={onChange} />
+    <RichTextEditor content={value || ""} onChange={onChange} bgColor={bgColor} />
   </div>
 );
 

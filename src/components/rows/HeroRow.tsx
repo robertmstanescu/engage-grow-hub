@@ -26,7 +26,7 @@ const HeroRow = ({ row }: Props) => {
   const { ref, isVisible } = useScrollReveal({ threshold: 0.15 });
 
   return (
-    <section className="snap-section grain relative h-screen flex flex-col justify-end overflow-hidden" style={{
+    <section className="snap-section grain relative h-[100dvh] flex flex-col justify-end overflow-hidden" style={{
       isolation: "isolate",
       background: `radial-gradient(ellipse 100% 80% at 20% 100%, ${gradStart}, transparent), radial-gradient(ellipse 80% 60% at 90% 10%, ${gradEnd}, transparent), radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06), transparent), hsl(260 20% 4%)`,
     }}>
@@ -46,7 +46,7 @@ const HeroRow = ({ row }: Props) => {
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px]"
         style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
 
-      <div ref={ref} className="relative z-10 w-full max-w-[1100px] px-4 sm:px-6 pb-[4vh] pt-[15vh] flex flex-col justify-end">
+      <div ref={ref} className="relative z-10 w-full max-w-[1100px] px-4 sm:px-6 pb-[4vh] pt-[15vh] flex flex-col justify-end overflow-hidden">
         {c.label && (
           <p className="font-body tracking-[0.35em] uppercase mb-[2vh]"
             style={{ ...revealStyle(isVisible, 0), color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)" }}>
@@ -55,10 +55,10 @@ const HeroRow = ({ row }: Props) => {
         )}
 
         {titleLines.length > 0 && (
-          <h1 className="font-display font-black leading-[0.92] tracking-tight mb-0 max-w-[95%]"
-            style={{ color: c.title_color || "hsl(var(--hero-title))", fontSize: "clamp(1.8rem, 5.5vw, 6rem)" }}>
+          <h1 className="font-display font-black leading-[0.92] tracking-tight mb-0 w-full"
+            style={{ color: c.title_color || "hsl(var(--hero-title))", fontSize: "clamp(1.6rem, 5vw, 5.5rem)" }}>
             {titleLines.map((line, i) => (
-              <span key={i} className="block" style={revealStyle(isVisible, i + 1, 0.1)}>
+              <span key={i} className="block overflow-hidden text-ellipsis" style={revealStyle(isVisible, i + 1, 0.1)}>
                 <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
               </span>
             ))}
@@ -74,14 +74,14 @@ const HeroRow = ({ row }: Props) => {
 
         {c.subtitle && (
           <p className="leading-tight mt-[1.5vh] max-w-[550px]"
-            style={{ ...revealStyle(isVisible, titleLines.length + 2, 0.1), fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--hero-body))", fontSize: "clamp(0.9rem, 2vw, 1.25rem)" }}>
+            style={{ ...revealStyle(isVisible, titleLines.length + 2, 0.1), fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--hero-body))", fontSize: "clamp(0.85rem, 1.8vw, 1.15rem)" }}>
             {c.subtitle}
           </p>
         )}
 
         {c.body && (
           <div className="font-body-heading max-w-[480px] leading-relaxed mt-[2vh]"
-            style={{ ...revealStyle(isVisible, titleLines.length + 3, 0.1), color: c.body_color || "hsl(var(--hero-body))", fontSize: "clamp(0.8rem, 1.5vw, 1.1rem)" }}
+            style={{ ...revealStyle(isVisible, titleLines.length + 3, 0.1), color: c.body_color || "hsl(var(--hero-body))", fontSize: "clamp(0.75rem, 1.3vw, 1rem)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
           />
         )}
