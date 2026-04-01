@@ -43,12 +43,14 @@ interface RichTextEditorProps {
   content: string;
   onChange: (html: string) => void;
   placeholder?: string;
+  bgColor?: string;
 }
 
-const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps) => {
+const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef<Range | null>(null);
+  const brandColors = useBrandColors();
 
   const emitChange = useCallback(() => {
     onChange(editorRef.current?.innerHTML || "");
