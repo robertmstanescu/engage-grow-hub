@@ -72,15 +72,15 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
         className="flex items-center gap-0.5 px-2 py-1 border-b"
         style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.2)" }}
       >
-        {QUICK_COLORS.map((color) => (
+        {brandColors.map((color) => (
           <button
-            key={color.value}
+            key={color.id}
             type="button"
-            title={color.label}
+            title={color.name}
             onMouseDown={(event) => event.preventDefault()}
-            onClick={() => applyColor(color.value)}
+            onClick={() => applyColor(color.hex)}
             className="w-4 h-4 rounded-full border hover:scale-110 transition-transform"
-            style={{ backgroundColor: color.value, borderColor: "hsl(var(--border))" }}
+            style={{ backgroundColor: color.hex, borderColor: "hsl(var(--border))" }}
           />
         ))}
         <button
