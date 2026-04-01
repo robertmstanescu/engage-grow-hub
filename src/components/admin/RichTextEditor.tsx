@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { useBrandColors } from "@/hooks/useBrandSettings";
 
 const FONT_OPTIONS = [
   { label: "Inter", value: "Inter, sans-serif" },
