@@ -281,7 +281,15 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        <ToolbarButton onClick={setTextColor} title="Text Color">
+        {/* Brand colour swatches */}
+        {brandColors.slice(0, 8).map((c) => (
+          <button key={c.id} type="button" title={c.name}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => runCommand("foreColor", c.hex)}
+            className="w-4 h-4 rounded-full border hover:scale-110 transition-transform"
+            style={{ backgroundColor: c.hex, borderColor: "hsl(var(--border))" }} />
+        ))}
+        <ToolbarButton onClick={setTextColor} title="Custom Text Color">
           <Palette size={15} />
         </ToolbarButton>
         <ToolbarButton onClick={setHighlightColor} title="Highlight">
