@@ -1,6 +1,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import RichTextEditor from "../RichTextEditor";
+import { useBrandColors } from "@/hooks/useBrandSettings";
 
 /* Shared style: always legible regardless of site theme */
 const INPUT_STYLE: React.CSSProperties = {
