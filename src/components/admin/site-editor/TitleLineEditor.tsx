@@ -1,22 +1,16 @@
 import { Palette, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
+import { useBrandColors } from "@/hooks/useBrandSettings";
 
 interface Props {
   value: string;
   onChange: (html: string) => void;
 }
 
-const QUICK_COLORS = [
-  { label: "Gold", value: "#E5C54F" },
-  { label: "Violet", value: "#4D1B5E" },
-  { label: "Plum", value: "#43143B" },
-  { label: "White", value: "#F4F0EC" },
-  { label: "Cream", value: "#F9F0C1" },
-];
-
 const TitleLineEditor = ({ value, onChange }: Props) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const selectionRef = useRef<Range | null>(null);
+  const brandColors = useBrandColors();
 
   const emitChange = useCallback(() => {
     onChange(editorRef.current?.innerHTML || "");
@@ -78,15 +72,15 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
         className="flex items-center gap-0.5 px-2 py-1 border-b"
         style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.2)" }}
       >
-        {QUICK_COLORS.map((color) => (
+        {brandColors.map((color) => (
           <button
-            key={color.value}
+            key={color.id}
             type="button"
-            title={color.label}
+            title={color.name}
             onMouseDown={(event) => event.preventDefault()}
-            onClick={() => applyColor(color.value)}
+            onClick={() => applyColor(color.hex)}
             className="w-4 h-4 rounded-full border hover:scale-110 transition-transform"
-            style={{ backgroundColor: color.value, borderColor: "hsl(var(--border))" }}
+            style={{ backgroundColor: color.hex, borderColor: "hsl(var(--border))" }}
           />
         ))}
         <button

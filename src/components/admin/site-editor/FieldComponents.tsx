@@ -1,6 +1,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import RichTextEditor from "../RichTextEditor";
+import { useBrandColors } from "@/hooks/useBrandSettings";
 
 /* Shared style: always legible regardless of site theme */
 const INPUT_STYLE: React.CSSProperties = {
@@ -69,10 +70,10 @@ export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; 
   );
 };
 
-export const RichField = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => (
+export const RichField = ({ label, value, onChange, bgColor }: { label: string; value: string; onChange: (v: string) => void; bgColor?: string }) => (
   <div>
     <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
-    <RichTextEditor content={value || ""} onChange={onChange} />
+    <RichTextEditor content={value || ""} onChange={onChange} bgColor={bgColor} />
   </div>
 );
 
@@ -163,15 +164,23 @@ export const SectionBox = ({ children, label }: { children: React.ReactNode; lab
 export const ColorField = ({ label, value, onChange, description, fallback }: { label: string; value: string; onChange: (v: string) => void; description?: string; fallback?: string }) => {
   const displayValue = value || fallback || "#000000";
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
+  const brandColors = useBrandColors();
   return (
     <div>
       <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5 block">{label}</label>
       {description && <p className="font-body text-[9px] text-muted-foreground/70 mb-1">{description}</p>}
+      <div className="flex gap-1 mb-1.5 flex-wrap">
+        {brandColors.map((c) => (
+          <button key={c.id} type="button" title={c.name} onClick={() => { onChange(c.hex); setLocal(c.hex); }}
+            className="w-5 h-5 rounded-full border hover:scale-110 transition-transform"
+            style={{ backgroundColor: c.hex, borderColor: c.hex === value ? "hsl(var(--primary))" : "hsl(var(--border))", outline: c.hex === value ? "2px solid hsl(var(--primary))" : "none", outlineOffset: "1px" }} />
+        ))}
+      </div>
       <div className="flex gap-1.5">
         <input
           type="color"
           value={displayValue}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => { onChange(e.target.value); setLocal(e.target.value); }}
           className="w-10 h-9 rounded border cursor-pointer"
           style={{ borderColor: "hsl(var(--border))" }}
         />

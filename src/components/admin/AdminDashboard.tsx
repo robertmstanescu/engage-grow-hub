@@ -10,8 +10,9 @@ import PagesManager from "./PagesManager";
 import NavigationManager from "./NavigationManager";
 import GlobalSettings from "./GlobalSettings";
 import MediaGallery from "./MediaGallery";
+import BrandSettings from "./BrandSettings";
 
-type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "tags" | "media" | "settings";
+type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "tags" | "media" | "brand" | "settings";
 
 interface Props {
   session: any;
@@ -34,6 +35,7 @@ const AdminDashboard = ({ session }: Props) => {
     { key: "media", label: "Media" },
     { key: "contacts", label: "Contacts" },
     { key: "emails", label: "Emails" },
+    { key: "brand", label: "Brand" },
     { key: "settings", label: "Settings" },
   ];
 
@@ -74,6 +76,7 @@ const AdminDashboard = ({ session }: Props) => {
         {activeTab === "media" && <MediaGallery />}
         {activeTab === "contacts" && <ContactsList />}
         {activeTab === "emails" && <EmailCampaigns />}
+        {activeTab === "brand" && <BrandSettings />}
         {activeTab === "settings" && <GlobalSettings />}
       </div>
     </div>

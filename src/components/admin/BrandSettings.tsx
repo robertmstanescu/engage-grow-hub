@@ -1,0 +1,302 @@
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Save, Send, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { invalidateSiteContent } from "@/hooks/useSiteContent";
+import { applyBrandCSSVars, DEFAULT_BRAND, type BrandSettings as BrandSettingsType, type BrandColor, type TypographyLevel } from "@/hooks/useBrandSettings";
+import { SectionBox } from "./site-editor/FieldComponents";
+
+/* ── WCAG Contrast helpers ── */
+const hexToRgb = (hex: string) => {
+  const h = hex.replace("#", "");
+  const n = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255] as [number, number, number];
+};
+
+const relativeLuminance = ([r, g, b]: [number, number, number]) => {
+  const [rs, gs, bs] = [r, g, b].map((c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+};
+
+const contrastRatio = (hex1: string, hex2: string) => {
+  const l1 = relativeLuminance(hexToRgb(hex1));
+  const l2 = relativeLuminance(hexToRgb(hex2));
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+const INPUT_STYLE: React.CSSProperties = { backgroundColor: "#FFFFFF", color: "#1a1a1a", borderColor: "hsl(var(--border))" };
+
+const FONT_OPTIONS = [
+  { label: "Unbounded", value: "'Unbounded', sans-serif" },
+  { label: "Bricolage Grotesque", value: "'Bricolage Grotesque', sans-serif" },
+  { label: "Inter", value: "'Inter', sans-serif" },
+  { label: "Architects Daughter", value: "'Architects Daughter', cursive" },
+];
+
+const WEIGHT_OPTIONS = ["300", "400", "500", "600", "700", "800", "900"];
+
+const BrandSettings = () => {
+  const [brand, setBrand] = useState<BrandSettingsType>(DEFAULT_BRAND);
+  const [published, setPublished] = useState<BrandSettingsType>(DEFAULT_BRAND);
+  const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [openSection, setOpenSection] = useState<string | null>("palette");
+  const [contrastFg, setContrastFg] = useState("#FFFFFF");
+  const [contrastBg, setContrastBg] = useState("#2A0E33");
+
+  useEffect(() => {
+    supabase
+      .from("site_content")
+      .select("content, draft_content")
+      .eq("section_key", "brand_settings")
+      .maybeSingle()
+      .then(({ data }: any) => {
+        if (data) {
+          const live = { ...DEFAULT_BRAND, ...data.content, typography: { ...DEFAULT_BRAND.typography, ...(data.content?.typography || {}) } };
+          const draft = data.draft_content
+            ? { ...DEFAULT_BRAND, ...data.draft_content, typography: { ...DEFAULT_BRAND.typography, ...(data.draft_content?.typography || {}) } }
+            : live;
+          setBrand(draft);
+          setPublished(live);
+        }
+      });
+  }, []);
+
+  const updateColor = (idx: number, field: keyof BrandColor, value: string) => {
+    setBrand((prev) => {
+      const next = [...prev.colors];
+      next[idx] = { ...next[idx], [field]: value };
+      return { ...prev, colors: next };
+    });
+  };
+
+  const addColor = () => {
+    setBrand((prev) => ({
+      ...prev,
+      colors: [...prev.colors, { id: crypto.randomUUID(), name: "New Color", hex: "#888888" }],
+    }));
+  };
+
+  const removeColor = (idx: number) => {
+    setBrand((prev) => ({ ...prev, colors: prev.colors.filter((_, i) => i !== idx) }));
+  };
+
+  const updateTypography = (level: keyof BrandSettingsType["typography"], field: keyof TypographyLevel, value: string) => {
+    setBrand((prev) => ({
+      ...prev,
+      typography: { ...prev.typography, [level]: { ...prev.typography[level], [field]: value } },
+    }));
+  };
+
+  const saveDraft = async () => {
+    setSaving(true);
+    const { data: existing } = await supabase.from("site_content").select("id").eq("section_key", "brand_settings").maybeSingle();
+    if (existing) {
+      await supabase.from("site_content").update({ draft_content: brand as any }).eq("section_key", "brand_settings");
+    } else {
+      await supabase.from("site_content").insert({ section_key: "brand_settings", content: brand as any, draft_content: brand as any } as any);
+    }
+    toast.success("Brand settings draft saved");
+    setSaving(false);
+  };
+
+  const publish = async () => {
+    setPublishing(true);
+    await supabase.from("site_content").upsert(
+      { section_key: "brand_settings", content: brand as any, draft_content: brand as any } as any,
+      { onConflict: "section_key" }
+    );
+    invalidateSiteContent("brand_settings");
+    applyBrandCSSVars(brand);
+    setPublished(brand);
+    toast.success("Brand settings published!");
+    setPublishing(false);
+  };
+
+  const hasChanges = JSON.stringify(brand) !== JSON.stringify(published);
+  const ratio = contrastRatio(contrastFg, contrastBg);
+  const passAA = ratio >= 4.5;
+  const passAALarge = ratio >= 3;
+  const passAAA = ratio >= 7;
+  const passAAALarge = ratio >= 4.5;
+
+  const AccordionSection = ({ id, label, children }: { id: string; label: string; children: React.ReactNode }) => (
+    <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}>
+      <button onClick={() => setOpenSection(openSection === id ? null : id)} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
+        <span className="font-body text-sm font-medium">{label}</span>
+        {openSection === id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+      </button>
+      {openSection === id && <div className="px-4 pb-4 space-y-4">{children}</div>}
+    </div>
+  );
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Brand Settings</h2>
+        <div className="flex items-center gap-2">
+          <button onClick={saveDraft} disabled={saving} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+            <Save size={13} /> {saving ? "Saving…" : "Save Draft"}
+          </button>
+          <button onClick={publish} disabled={publishing || !hasChanges} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40" style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+            <Send size={13} /> {publishing ? "Publishing…" : "Publish"}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Colour Palette ── */}
+      <AccordionSection id="palette" label="Colour Palette">
+        <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Define your brand colours. These appear as quick-select presets in every colour picker across the admin.
+        </p>
+        <div className="space-y-2">
+          {brand.colors.map((color, i) => (
+            <div key={color.id} className="flex items-center gap-2">
+              <input
+                type="color"
+                value={color.hex}
+                onChange={(e) => updateColor(i, "hex", e.target.value)}
+                className="w-9 h-9 rounded border cursor-pointer shrink-0"
+                style={{ borderColor: "hsl(var(--border))" }}
+              />
+              <input
+                value={color.name}
+                onChange={(e) => updateColor(i, "name", e.target.value)}
+                placeholder="Color name"
+                className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
+                style={INPUT_STYLE}
+              />
+              <input
+                value={color.hex}
+                onChange={(e) => updateColor(i, "hex", e.target.value)}
+                placeholder="#HEX"
+                className="w-24 px-3 py-2 rounded-lg font-body text-sm border font-mono"
+                style={INPUT_STYLE}
+              />
+              <button type="button" onClick={() => removeColor(i)} className="p-1.5 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
+                <Trash2 size={13} />
+              </button>
+            </div>
+          ))}
+        </div>
+        <button type="button" onClick={addColor} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 mt-2" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
+          <Plus size={10} /> Add Colour
+        </button>
+      </AccordionSection>
+
+      {/* ── Typography ── */}
+      <AccordionSection id="typography" label="Typography">
+        <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Set default typography for each heading level and body text. These serve as site-wide defaults.
+        </p>
+        {(["h1", "h2", "h3", "body"] as const).map((level) => {
+          const t = brand.typography[level];
+          return (
+            <SectionBox key={level} label={level.toUpperCase()}>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-body text-[9px] uppercase tracking-wider block mb-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>Font Family</label>
+                  <select value={t.fontFamily} onChange={(e) => updateTypography(level, "fontFamily", e.target.value)} className="w-full px-2 py-1.5 rounded font-body text-xs border" style={INPUT_STYLE}>
+                    {FONT_OPTIONS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="font-body text-[9px] uppercase tracking-wider block mb-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>Font Size</label>
+                  <input value={t.fontSize} onChange={(e) => updateTypography(level, "fontSize", e.target.value)} className="w-full px-2 py-1.5 rounded font-body text-xs border" style={INPUT_STYLE} />
+                </div>
+                <div>
+                  <label className="font-body text-[9px] uppercase tracking-wider block mb-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>Line Height</label>
+                  <input value={t.lineHeight} onChange={(e) => updateTypography(level, "lineHeight", e.target.value)} className="w-full px-2 py-1.5 rounded font-body text-xs border" style={INPUT_STYLE} />
+                </div>
+                <div>
+                  <label className="font-body text-[9px] uppercase tracking-wider block mb-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>Font Weight</label>
+                  <select value={t.fontWeight} onChange={(e) => updateTypography(level, "fontWeight", e.target.value)} className="w-full px-2 py-1.5 rounded font-body text-xs border" style={INPUT_STYLE}>
+                    {WEIGHT_OPTIONS.map((w) => <option key={w} value={w}>{w}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="mt-2 px-3 py-2 rounded border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "#1a1a1a" }}>
+                <span style={{ fontFamily: t.fontFamily, fontSize: level === "body" ? t.fontSize : "clamp(14px, 2vw, 20px)", lineHeight: t.lineHeight, fontWeight: Number(t.fontWeight), color: "#F4F0EC" }}>
+                  The quick brown fox jumps over the lazy dog
+                </span>
+              </div>
+            </SectionBox>
+          );
+        })}
+      </AccordionSection>
+
+      {/* ── Contrast Checker ── */}
+      <AccordionSection id="contrast" label="Accessibility Contrast Checker">
+        <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Test text/background colour pairs against WCAG 2.1 standards. Click a brand colour below to apply it.
+        </p>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="font-body text-[9px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Text Colour</label>
+            <div className="flex gap-1.5">
+              <input type="color" value={contrastFg} onChange={(e) => setContrastFg(e.target.value)} className="w-9 h-9 rounded border cursor-pointer" style={{ borderColor: "hsl(var(--border))" }} />
+              <input value={contrastFg} onChange={(e) => setContrastFg(e.target.value)} className="flex-1 px-2 py-1.5 rounded font-body text-xs border font-mono" style={INPUT_STYLE} />
+            </div>
+            <div className="flex gap-1 mt-1.5 flex-wrap">
+              {brand.colors.map((c) => (
+                <button key={c.id} type="button" title={c.name} onClick={() => setContrastFg(c.hex)} className="w-5 h-5 rounded-full border hover:scale-110 transition-transform" style={{ backgroundColor: c.hex, borderColor: "hsl(var(--border))" }} />
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="font-body text-[9px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Background Colour</label>
+            <div className="flex gap-1.5">
+              <input type="color" value={contrastBg} onChange={(e) => setContrastBg(e.target.value)} className="w-9 h-9 rounded border cursor-pointer" style={{ borderColor: "hsl(var(--border))" }} />
+              <input value={contrastBg} onChange={(e) => setContrastBg(e.target.value)} className="flex-1 px-2 py-1.5 rounded font-body text-xs border font-mono" style={INPUT_STYLE} />
+            </div>
+            <div className="flex gap-1 mt-1.5 flex-wrap">
+              {brand.colors.map((c) => (
+                <button key={c.id} type="button" title={c.name} onClick={() => setContrastBg(c.hex)} className="w-5 h-5 rounded-full border hover:scale-110 transition-transform" style={{ backgroundColor: c.hex, borderColor: "hsl(var(--border))" }} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Preview */}
+        <div className="rounded-lg overflow-hidden mt-3 border" style={{ borderColor: "hsl(var(--border))" }}>
+          <div className="px-6 py-8 text-center" style={{ backgroundColor: contrastBg }}>
+            <p className="font-display font-bold text-2xl mb-1" style={{ color: contrastFg }}>Heading Preview</p>
+            <p className="font-body text-sm" style={{ color: contrastFg }}>Body text preview — The quick brown fox jumps over the lazy dog.</p>
+          </div>
+        </div>
+
+        {/* Results */}
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          <div className="rounded-lg border p-3 text-center" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.15)" }}>
+            <p className="font-body text-[9px] uppercase tracking-wider mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Contrast Ratio</p>
+            <p className="font-display text-xl font-bold" style={{ color: "hsl(var(--foreground))" }}>{ratio.toFixed(2)}:1</p>
+          </div>
+          <div className="rounded-lg border p-3 space-y-1.5" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.15)" }}>
+            {[
+              { label: "AA Normal", pass: passAA },
+              { label: "AA Large", pass: passAALarge },
+              { label: "AAA Normal", pass: passAAA },
+              { label: "AAA Large", pass: passAAALarge },
+            ].map(({ label, pass }) => (
+              <div key={label} className="flex items-center justify-between">
+                <span className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{label}</span>
+                <span className="font-body text-[10px] font-bold px-2 py-0.5 rounded-full" style={{
+                  backgroundColor: pass ? "hsl(142 76% 36%)" : "hsl(0 84% 60%)",
+                  color: "#FFFFFF",
+                }}>{pass ? "PASS" : "FAIL"}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </AccordionSection>
+    </div>
+  );
+};
+
+export default BrandSettings;

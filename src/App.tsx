@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import FaviconManager from "@/components/FaviconManager";
 import { InlineEditProvider } from "@/components/admin/InlineEditContext";
 import AdminToolbar from "@/components/admin/AdminToolbar";
+import { useBrandSettings } from "@/hooks/useBrandSettings";
 import Index from "./pages/Index.tsx";
 import Blog from "./pages/Blog.tsx";
 import BlogPost from "./pages/BlogPost.tsx";
@@ -16,12 +17,16 @@ import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
 
+/** Loads brand settings and applies CSS vars on mount */
+const BrandLoader = () => { useBrandSettings(); return null; };
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <FaviconManager />
+      <BrandLoader />
       <InlineEditProvider>
         <BrowserRouter>
           <Routes>

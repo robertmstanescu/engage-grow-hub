@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { useBrandColors } from "@/hooks/useBrandSettings";
 
 const FONT_OPTIONS = [
   { label: "Inter", value: "Inter, sans-serif" },
@@ -42,12 +43,14 @@ interface RichTextEditorProps {
   content: string;
   onChange: (html: string) => void;
   placeholder?: string;
+  bgColor?: string;
 }
 
-const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps) => {
+const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef<Range | null>(null);
+  const brandColors = useBrandColors();
 
   const emitChange = useCallback(() => {
     onChange(editorRef.current?.innerHTML || "");
@@ -278,7 +281,15 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        <ToolbarButton onClick={setTextColor} title="Text Color">
+        {/* Brand colour swatches */}
+        {brandColors.slice(0, 8).map((c) => (
+          <button key={c.id} type="button" title={c.name}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => runCommand("foreColor", c.hex)}
+            className="w-4 h-4 rounded-full border hover:scale-110 transition-transform"
+            style={{ backgroundColor: c.hex, borderColor: "hsl(var(--border))" }} />
+        ))}
+        <ToolbarButton onClick={setTextColor} title="Custom Text Color">
           <Palette size={15} />
         </ToolbarButton>
         <ToolbarButton onClick={setHighlightColor} title="Highlight">
@@ -334,7 +345,7 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
         }}
         onKeyUp={saveSelection}
         onMouseUp={saveSelection}
-        style={{ color: "hsl(var(--foreground))" }}
+        style={{ color: bgColor ? "#F4F0EC" : "hsl(var(--foreground))", backgroundColor: bgColor || undefined }}
       />
 
       <input
