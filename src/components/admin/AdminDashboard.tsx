@@ -169,6 +169,8 @@ const AdminDashboard = ({ session }: Props) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ w: 800, h: 600 });
+  const [iframeKey, setIframeKey] = useState(0);
+  const [showAddRow, setShowAddRow] = useState(false);
 
   // ── CMS page editing ──
   const [cmsPage, setCmsPage] = useState<CmsPageRef | null>(null);
