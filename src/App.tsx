@@ -8,7 +8,6 @@ import FaviconManager from "@/components/FaviconManager";
 import { InlineEditProvider } from "@/components/admin/InlineEditContext";
 import AdminToolbar from "@/components/admin/AdminToolbar";
 import { useBrandSettings } from "@/hooks/useBrandSettings";
-import { useBrandSettings } from "@/hooks/useBrandSettings";
 import Index from "./pages/Index.tsx";
 import Blog from "./pages/Blog.tsx";
 import BlogPost from "./pages/BlogPost.tsx";
