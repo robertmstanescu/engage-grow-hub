@@ -318,6 +318,7 @@ const AdminDashboard = ({ session }: Props) => {
       toast.success("Draft saved");
     }
     setSaving(false);
+    setIframeKey((k) => k + 1);
   }, [sections, cmsPage, cmsPageRows]);
 
   const publishAll = useCallback(async () => {

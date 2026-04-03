@@ -1,12 +1,13 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import FaviconManager from "@/components/FaviconManager";
 import { InlineEditProvider } from "@/components/admin/InlineEditContext";
 import AdminToolbar from "@/components/admin/AdminToolbar";
+import { useBrandSettings } from "@/hooks/useBrandSettings";
 import { useBrandSettings } from "@/hooks/useBrandSettings";
 import Index from "./pages/Index.tsx";
 import Blog from "./pages/Blog.tsx";
