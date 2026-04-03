@@ -14,6 +14,12 @@ interface SectionState {
 
 const SECTIONS = ["branding", "social_links", "footer", "theme"] as const;
 
+const DEFAULT_FOOTER_COLUMNS = [
+  { title: "Services", links: [{ label: "Internal Communications", href: "#internal-communications" }, { label: "Employee Experience", href: "#employee-experience" }] },
+  { title: "Company", links: [{ label: "Our Vows", href: "#vows" }, { label: "Blog", href: "/blog/" }, { label: "Contact", href: "#contact" }] },
+  { title: "Connect", links: [] },
+];
+
 const ALIGNMENT_OPTIONS = [
   { label: "Auto (alternate L/R)", value: "auto" },
   { label: "Left", value: "left" },
@@ -138,7 +144,7 @@ const GlobalSettings = () => {
         />
 
         <FooterColumnsEditor
-          columns={getDraft("footer").columns || []}
+          columns={getDraft("footer").columns || DEFAULT_FOOTER_COLUMNS}
           onChange={(cols) => updateField("footer", "columns", cols)}
         />
       </AccordionSection>

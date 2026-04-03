@@ -6,8 +6,7 @@ import {
   LayoutDashboard, FileText, Compass, BookOpen,
   Users, Mail, Image, Palette, Settings, LogOut,
   Monitor, Tablet, Smartphone, Save, Send, Eye,
-  ChevronDown, ChevronUp, GripVertical, Plus,
-  Trash2, Copy,
+  GripVertical, Plus, Trash2, ArrowLeft,
 } from "lucide-react";
 import {
   DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors,
@@ -29,9 +28,17 @@ import GlobalSettings from "./GlobalSettings";
 import MediaGallery from "./MediaGallery";
 import BrandSettings from "./BrandSettings";
 import HeroEditor from "./site-editor/HeroEditor";
-import RowsManager from "./site-editor/RowsManager";
 import SeoFields from "./site-editor/SeoFields";
-import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
+import { DEFAULT_ROWS, type PageRow, DEFAULT_ROW_LAYOUT, DEFAULT_CONTACT_FIELDS } from "@/types/rows";
+import { Field, RichField, SectionBox, ColorField, SelectField } from "./site-editor/FieldComponents";
+import TitleLineEditor from "./site-editor/TitleLineEditor";
+import SubtitleEditor from "./site-editor/SubtitleEditor";
+import RowLayoutSettings from "./site-editor/RowLayoutSettings";
+import PillarEditor from "./site-editor/PillarEditor";
+import ImageTextEditor from "./site-editor/ImageTextEditor";
+import ProfileEditor from "./site-editor/ProfileEditor";
+import GridEditor from "./site-editor/GridEditor";
+import ImagePickerField from "./ImagePickerField";
 
 type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "settings";
 type Device = "desktop" | "tablet" | "mobile";
@@ -41,7 +48,8 @@ interface Props { session: any; }
 
 /* ── Helpers ── */
 const SECTION_EMOJI: Record<string, string> = {
-  hero: "🎭", text: "✦", service: "💀", boxed: "✦", contact: "📬", image_text: "🖼", profile: "👤", grid: "📊",
+  hero: "🎭", text: "✦", service: "💀", boxed: "✦", contact: "📬",
+  image_text: "🖼", profile: "👤", grid: "📊",
 };
 const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
 
@@ -78,6 +86,12 @@ interface SectionData {
   section_key: string;
   content: Record<string, any>;
   draft_content: Record<string, any> | null;
+}
+
+interface CmsPageRef {
+  id: string;
+  slug: string;
+  title: string;
 }
 
 /* ═══════════════════════════════════════════════
@@ -143,33 +157,64 @@ const AdminDashboard = ({ session }: Props) => {
   const [propertiesSubTab, setPropertiesSubTab] = useState<PropertiesSubTab>("content");
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState(800);
+  const [containerSize, setContainerSize] = useState({ w: 800, h: 600 });
 
-  // ── Site content state (same as SiteEditor) ──
+  // ── CMS page editing ──
+  const [cmsPage, setCmsPage] = useState<CmsPageRef | null>(null);
+  const [cmsPageRows, setCmsPageRows] = useState<PageRow[]>([]);
+  const [cmsPageStatus, setCmsPageStatus] = useState<string>("draft");
+
+  // ── Site content state (main page) ──
   const [sections, setSections] = useState<SectionData[]>([]);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
+  // Load main page data
   useEffect(() => {
+    if (cmsPage) return;
     const fetchAll = async () => {
       const { data } = await supabase
         .from("site_content")
         .select("section_key, content, draft_content")
         .in("section_key", ["hero", "page_rows", "main_page_seo"]) as any;
-      if (data) {
+      if (data && data.length > 0) {
         const mapped = data.map((s: any) => ({
           section_key: s.section_key,
           content: s.content,
           draft_content: s.draft_content || s.content,
         }));
         setSections(mapped);
+      } else {
+        // No data yet — seed with defaults
+        setSections([
+          { section_key: "page_rows", content: { rows: DEFAULT_ROWS }, draft_content: { rows: DEFAULT_ROWS } },
+          { section_key: "main_page_seo", content: { meta_title: "", meta_description: "" }, draft_content: { meta_title: "", meta_description: "" } },
+        ]);
       }
     };
     fetchAll();
-  }, []);
+  }, [cmsPage]);
 
-  // Ensure page_rows and main_page_seo exist
+  // Load CMS page data
   useEffect(() => {
+    if (!cmsPage) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from("cms_pages")
+        .select("*")
+        .eq("id", cmsPage.id)
+        .maybeSingle() as any;
+      if (data) {
+        setCmsPageRows(data.draft_page_rows || data.page_rows || []);
+        setCmsPageStatus(data.status || "draft");
+      }
+    };
+    load();
+  }, [cmsPage?.id]);
+
+  // Ensure page_rows and main_page_seo exist for main page
+  useEffect(() => {
+    if (cmsPage) return;
     if (sections.length > 0) {
       const toAdd: any[] = [];
       if (!sections.find((s) => s.section_key === "page_rows")) {
@@ -180,7 +225,7 @@ const AdminDashboard = ({ session }: Props) => {
       }
       if (toAdd.length) setSections((prev) => [...prev, ...toAdd]);
     }
-  }, [sections.length]);
+  }, [sections.length, cmsPage]);
 
   const getSection = (key: string) => sections.find((s) => s.section_key === key);
   const getDraft = (key: string) => getSection(key)?.draft_content || getSection(key)?.content || {};
@@ -201,50 +246,85 @@ const AdminDashboard = ({ session }: Props) => {
     );
   };
 
-  const pageRows: PageRow[] = (getDraft("page_rows") as any)?.rows || [];
+  // Unified rows: main page or CMS page
+  const pageRows: PageRow[] = cmsPage
+    ? cmsPageRows
+    : (getDraft("page_rows") as any)?.rows || [];
 
   const selectedRow = pageRows.find((r) => r.id === selectedSectionId) || null;
+
+  // Unified row update
+  const updateRows = useCallback((newRows: PageRow[]) => {
+    if (cmsPage) {
+      setCmsPageRows(newRows);
+    } else {
+      updateFullDraft("page_rows", { rows: newRows });
+    }
+  }, [cmsPage]);
 
   // ── Save / Publish ──
   const saveDraft = useCallback(async () => {
     setSaving(true);
-    const promises = sections.map(async (s) => {
-      const draft = (s.draft_content || s.content) as any;
-      const { data: existing } = await supabase
-        .from("site_content").select("id").eq("section_key", s.section_key).maybeSingle();
-      if (existing) {
-        await supabase.from("site_content").update({ draft_content: draft }).eq("section_key", s.section_key);
-      } else {
-        await supabase.from("site_content").insert({ section_key: s.section_key, content: draft, draft_content: draft } as any);
-      }
-    });
-    await Promise.all(promises);
-    toast.success("Draft saved");
+    if (cmsPage) {
+      const { error } = await supabase
+        .from("cms_pages")
+        .update({ draft_page_rows: cmsPageRows as any } as any)
+        .eq("id", cmsPage.id);
+      if (error) toast.error(error.message);
+      else toast.success("Draft saved");
+    } else {
+      const promises = sections.map(async (s) => {
+        const draft = (s.draft_content || s.content) as any;
+        const { data: existing } = await supabase
+          .from("site_content").select("id").eq("section_key", s.section_key).maybeSingle();
+        if (existing) {
+          await supabase.from("site_content").update({ draft_content: draft }).eq("section_key", s.section_key);
+        } else {
+          await supabase.from("site_content").insert({ section_key: s.section_key, content: draft, draft_content: draft } as any);
+        }
+      });
+      await Promise.all(promises);
+      toast.success("Draft saved");
+    }
     setSaving(false);
-  }, [sections]);
+  }, [sections, cmsPage, cmsPageRows]);
 
   const publishAll = useCallback(async () => {
     setPublishing(true);
-    const updates = sections.map((s) => {
-      const data = (s.draft_content || s.content) as any;
-      return supabase
-        .from("site_content")
-        .upsert({ section_key: s.section_key, content: data, draft_content: data } as any, { onConflict: "section_key" });
-    });
-    const results = await Promise.all(updates);
-    const err = results.find((r) => r.error);
-    if (err?.error) {
-      toast.error((err.error as any).message);
+    if (cmsPage) {
+      const { error } = await supabase
+        .from("cms_pages")
+        .update({ page_rows: cmsPageRows as any, draft_page_rows: cmsPageRows as any, status: "published" } as any)
+        .eq("id", cmsPage.id);
+      if (error) toast.error(error.message);
+      else {
+        setCmsPageStatus("published");
+        toast.success("Page published!");
+      }
     } else {
-      setSections((prev) => prev.map((s) => ({ ...s, content: s.draft_content || s.content })));
-      sections.forEach((s) => invalidateSiteContent(s.section_key));
-      toast.success("All changes published!");
-      iframeRef.current?.contentWindow?.location.reload();
+      const updates = sections.map((s) => {
+        const data = (s.draft_content || s.content) as any;
+        return supabase
+          .from("site_content")
+          .upsert({ section_key: s.section_key, content: data, draft_content: data } as any, { onConflict: "section_key" });
+      });
+      const results = await Promise.all(updates);
+      const err = results.find((r) => r.error);
+      if (err?.error) {
+        toast.error((err.error as any).message);
+      } else {
+        setSections((prev) => prev.map((s) => ({ ...s, content: s.draft_content || s.content })));
+        sections.forEach((s) => invalidateSiteContent(s.section_key));
+        toast.success("All changes published!");
+      }
     }
+    iframeRef.current?.contentWindow?.location.reload();
     setPublishing(false);
-  }, [sections]);
+  }, [sections, cmsPage, cmsPageRows]);
 
-  const hasChanges = sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
+  const hasChanges = cmsPage
+    ? true // CMS pages always allow save
+    : sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -256,7 +336,9 @@ const AdminDashboard = ({ session }: Props) => {
     const el = previewContainerRef.current;
     if (!el) return;
     const obs = new ResizeObserver((entries) => {
-      for (const entry of entries) setContainerWidth(entry.contentRect.width);
+      for (const entry of entries) {
+        setContainerSize({ w: entry.contentRect.width, h: entry.contentRect.height });
+      }
     });
     obs.observe(el);
     return () => obs.disconnect();
@@ -287,8 +369,7 @@ const AdminDashboard = ({ session }: Props) => {
     if (over && active.id !== over.id) {
       const oldIndex = pageRows.findIndex((r) => r.id === active.id);
       const newIndex = pageRows.findIndex((r) => r.id === over.id);
-      const newRows = arrayMove(pageRows, oldIndex, newIndex);
-      updateFullDraft("page_rows", { rows: newRows });
+      updateRows(arrayMove(pageRows, oldIndex, newIndex));
     }
   };
 
@@ -298,7 +379,7 @@ const AdminDashboard = ({ session }: Props) => {
     const newRows = pageRows.map((r) =>
       r.id === selectedSectionId ? { ...r, content: { ...r.content, [field]: value } } : r
     );
-    updateFullDraft("page_rows", { rows: newRows });
+    updateRows(newRows);
   };
 
   const updateRowMeta = (updates: Partial<PageRow>) => {
@@ -306,12 +387,24 @@ const AdminDashboard = ({ session }: Props) => {
     const newRows = pageRows.map((r) =>
       r.id === selectedSectionId ? { ...r, ...updates } : r
     );
-    updateFullDraft("page_rows", { rows: newRows });
+    updateRows(newRows);
+  };
+
+  // ── Edit page handler (from PagesManager) ──
+  const handleEditPage = (page: CmsPageRef | null) => {
+    setCmsPage(page);
+    setActiveTab("site");
+    setSelectedSectionId(null);
   };
 
   const isSiteTab = activeTab === "site";
   const targetWidth = DEVICE_WIDTHS[device];
-  const scale = Math.min(containerWidth / targetWidth, 1);
+  const scale = Math.min(containerSize.w / targetWidth, 1);
+  const scaledHeight = containerSize.h / scale;
+
+  const isMainPage = !cmsPage;
+  const pageLabel = cmsPage ? cmsPage.title : "Main Page";
+  const previewSrc = cmsPage ? `/p/${cmsPage.slug}?preview=draft` : "/?preview=1";
 
   const tabLabel = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.key === activeTab)?.label || "";
 
@@ -329,11 +422,11 @@ const AdminDashboard = ({ session }: Props) => {
           THE MAGIC COFFIN
         </span>
         <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)" }}>
-          {tabLabel}
+          {isSiteTab ? pageLabel : tabLabel}
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <button
-            onClick={() => window.open("/", "_blank")}
+            onClick={() => window.open(cmsPage ? `/p/${cmsPage.slug}` : "/", "_blank")}
             style={{ fontSize: 10, fontFamily: "var(--font-body)", color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.1em" }}
           >
             Preview live →
@@ -355,12 +448,12 @@ const AdminDashboard = ({ session }: Props) => {
               </button>
               <button
                 onClick={publishAll}
-                disabled={publishing || !hasChanges}
+                disabled={publishing}
                 style={{
                   fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase", letterSpacing: "0.1em",
                   padding: "6px 14px", borderRadius: 20, cursor: "pointer", border: "none",
                   backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--background))",
-                  opacity: publishing || !hasChanges ? 0.4 : 1,
+                  opacity: publishing ? 0.4 : 1,
                 }}
               >
                 <Send size={11} style={{ display: "inline", verticalAlign: "-2px", marginRight: 4 }} />
@@ -414,7 +507,7 @@ const AdminDashboard = ({ session }: Props) => {
                   return (
                     <button
                       key={item.key}
-                      onClick={() => { setActiveTab(item.key); setSelectedSectionId(null); }}
+                      onClick={() => { setActiveTab(item.key); setSelectedSectionId(null); if (item.key !== "site") setCmsPage(null); }}
                       style={{
                         display: "flex", alignItems: "center", gap: 10, width: "100%",
                         padding: "8px 16px", border: "none", cursor: "pointer",
@@ -474,28 +567,39 @@ const AdminDashboard = ({ session }: Props) => {
             height: 44, display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
           }}>
-            <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
-              Page Structure
-            </span>
+            {cmsPage ? (
+              <button
+                onClick={() => setCmsPage(null)}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)", fontSize: 10 }}
+              >
+                <ArrowLeft size={12} /> Back to Main Page
+              </button>
+            ) : (
+              <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
+                Page Structure
+              </span>
+            )}
           </div>
           <div style={{ flex: 1, overflowY: "auto", padding: "0.5rem", scrollbarWidth: "thin" as const }}>
-            {/* Hero section block (special - not in page_rows) */}
-            <div
-              onClick={() => { setSelectedSectionId("__hero__"); setPropertiesSubTab("content"); }}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all mb-1"
-              style={{
-                background: selectedSectionId === "__hero__" ? "hsl(var(--secondary) / 0.07)" : "transparent",
-              }}
-            >
-              <span className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: selectedSectionId === "__hero__" ? "hsl(var(--secondary))" : "transparent" }} />
-              <span className="text-sm flex-shrink-0">🎭</span>
-              <div className="min-w-0 flex-1">
-                <div className="font-body text-[11px] font-medium truncate" style={{ color: selectedSectionId === "__hero__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}>
-                  Hero
+            {/* Hero section block (main page only) */}
+            {isMainPage && (
+              <div
+                onClick={() => { setSelectedSectionId("__hero__"); setPropertiesSubTab("content"); }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all mb-1"
+                style={{
+                  background: selectedSectionId === "__hero__" ? "hsl(var(--secondary) / 0.07)" : "transparent",
+                }}
+              >
+                <span className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: selectedSectionId === "__hero__" ? "hsl(var(--secondary))" : "transparent" }} />
+                <span className="text-sm flex-shrink-0">🎭</span>
+                <div className="min-w-0 flex-1">
+                  <div className="font-body text-[11px] font-medium truncate" style={{ color: selectedSectionId === "__hero__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}>
+                    Hero
+                  </div>
+                  <div className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>hero</div>
                 </div>
-                <div className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>hero</div>
               </div>
-            </div>
+            )}
 
             {/* Page rows - draggable */}
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -511,23 +615,31 @@ const AdminDashboard = ({ session }: Props) => {
               </SortableContext>
             </DndContext>
 
-            {/* SEO block */}
-            <div
-              onClick={() => { setSelectedSectionId("__seo__"); setPropertiesSubTab("seo"); }}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all mt-1"
-              style={{
-                background: selectedSectionId === "__seo__" ? "hsl(var(--secondary) / 0.07)" : "transparent",
-              }}
-            >
-              <span className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "transparent" }} />
-              <span className="text-sm flex-shrink-0">🔍</span>
-              <div className="min-w-0 flex-1">
-                <div className="font-body text-[11px] font-medium truncate" style={{ color: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}>
-                  SEO & Metadata
-                </div>
-                <div className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>meta</div>
+            {pageRows.length === 0 && (
+              <div className="text-center py-8" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11, fontFamily: "var(--font-body)" }}>
+                No rows yet. Select a section or add one.
               </div>
-            </div>
+            )}
+
+            {/* SEO block (main page only) */}
+            {isMainPage && (
+              <div
+                onClick={() => { setSelectedSectionId("__seo__"); setPropertiesSubTab("seo"); }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all mt-1"
+                style={{
+                  background: selectedSectionId === "__seo__" ? "hsl(var(--secondary) / 0.07)" : "transparent",
+                }}
+              >
+                <span className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "transparent" }} />
+                <span className="text-sm flex-shrink-0">🔍</span>
+                <div className="min-w-0 flex-1">
+                  <div className="font-body text-[11px] font-medium truncate" style={{ color: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}>
+                    SEO & Metadata
+                  </div>
+                  <div className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>meta</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -542,7 +654,8 @@ const AdminDashboard = ({ session }: Props) => {
                 backgroundColor: "hsl(var(--card))",
               }}>
                 <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)" }}>
-                  Main Page
+                  {pageLabel}
+                  {cmsPage && <span style={{ fontSize: 9, marginLeft: 6, opacity: 0.6 }}>/{cmsPage.slug}</span>}
                 </span>
                 <div style={{ display: "flex", gap: 4 }}>
                   {([
@@ -575,7 +688,7 @@ const AdminDashboard = ({ session }: Props) => {
               >
                 <div style={{
                   width: targetWidth,
-                  height: `${100 / scale}%`,
+                  height: scaledHeight,
                   transform: `scale(${scale})`,
                   transformOrigin: "top center",
                   borderRadius: 8,
@@ -586,7 +699,7 @@ const AdminDashboard = ({ session }: Props) => {
                 }}>
                   <iframe
                     ref={iframeRef}
-                    src="/?preview=1"
+                    src={previewSrc}
                     style={{ width: "100%", height: "100%", border: "none" }}
                     title="Site Preview"
                   />
@@ -597,7 +710,7 @@ const AdminDashboard = ({ session }: Props) => {
             /* Non-site tabs - full width content */
             <main style={{ flex: 1, overflowY: "auto", padding: "1.5rem" }}>
               <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-                {activeTab === "pages" && <PagesManager />}
+                {activeTab === "pages" && <PagesManager onEditPage={handleEditPage} />}
                 {activeTab === "navigation" && <NavigationManager />}
                 {activeTab === "blog" && <BlogEditor />}
                 {activeTab === "contacts" && <ContactsList />}
@@ -731,12 +844,12 @@ const AdminDashboard = ({ session }: Props) => {
                 </button>
                 <button
                   onClick={publishAll}
-                  disabled={publishing || !hasChanges}
+                  disabled={publishing}
                   style={{
                     flex: 1, fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
                     letterSpacing: "0.1em", padding: "8px 0", borderRadius: 20, cursor: "pointer",
                     border: "none", backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--background))",
-                    opacity: publishing || !hasChanges ? 0.4 : 1,
+                    opacity: publishing ? 0.4 : 1,
                   }}
                 >
                   Publish
@@ -750,7 +863,7 @@ const AdminDashboard = ({ session }: Props) => {
   );
 };
 
-/* ── Style Tab (placeholder with glass + gradient controls) ── */
+/* ── Style Tab ── */
 const StyleTab = () => (
   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
     <div>
@@ -772,19 +885,7 @@ const StyleTab = () => (
   </div>
 );
 
-/* ── Row Content Editor ── */
-import { Field, RichField, SectionBox, ColorField, SelectField } from "./site-editor/FieldComponents";
-import TitleLineEditor from "./site-editor/TitleLineEditor";
-import SubtitleEditor from "./site-editor/SubtitleEditor";
-import RowLayoutSettings from "./site-editor/RowLayoutSettings";
-import PillarEditor from "./site-editor/PillarEditor";
-import ImageTextEditor from "./site-editor/ImageTextEditor";
-import ProfileEditor from "./site-editor/ProfileEditor";
-import GridEditor from "./site-editor/GridEditor";
-import ImagePickerField from "./ImagePickerField";
-import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
-import { DEFAULT_CONTACT_FIELDS } from "@/types/rows";
-
+/* ── Title Lines Editor (for properties panel) ── */
 const TitleLinesEditor = ({ titleLines, onChange }: { titleLines: string[]; onChange: (lines: string[]) => void }) => {
   const updateLine = (idx: number, html: string) => {
     const next = [...titleLines];
@@ -815,6 +916,7 @@ const TitleLinesEditor = ({ titleLines, onChange }: { titleLines: string[]; onCh
   );
 };
 
+/* ── Row Content Editor ── */
 const RowContentEditor = ({
   row, onContentChange, onRowMetaChange,
 }: {
@@ -869,7 +971,7 @@ const RowContentEditor = ({
             <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onContentChange("subtitle", v)} onColorChange={(v) => onContentChange("subtitle_color", v)} />
             <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onContentChange("color_card_title", v)} />
             <ColorField label="Card Body Color" value={content.color_card_body || ""} fallback="" onChange={(v) => onContentChange("color_card_body", v)} />
-            <ArrayField content={content} onChange={onContentChange} />
+            <BoxedArrayField content={content} onChange={onContentChange} />
           </div>
         </>
       );
@@ -918,7 +1020,7 @@ const HeroRowFieldsInline = ({ content, onChange }: { content: Record<string, an
 };
 
 /* ── Boxed cards array helper ── */
-const ArrayField = ({ content, onChange }: { content: Record<string, any>; onChange: (field: string, value: any) => void }) => {
+const BoxedArrayField = ({ content, onChange }: { content: Record<string, any>; onChange: (field: string, value: any) => void }) => {
   const cards: { title: string; body: string }[] = content.cards || [];
   const updateCard = (idx: number, field: string, value: string) => {
     const next = [...cards];
