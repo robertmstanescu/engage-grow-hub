@@ -39,6 +39,11 @@ const HighlightListener = () => {
     return () => window.removeEventListener("message", handler);
   }, []);
   return null;
+/** Only show AdminToolbar on front-end pages, not /admin */
+const ConditionalToolbar = () => {
+  const { pathname } = useLocation();
+  if (pathname.startsWith("/admin")) return null;
+  return <AdminToolbar />;
 };
 
 const App = () => (
@@ -62,7 +67,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <AdminToolbar />
+          <ConditionalToolbar />
         </BrowserRouter>
       </InlineEditProvider>
     </TooltipProvider>
