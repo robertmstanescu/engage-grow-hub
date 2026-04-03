@@ -39,6 +39,8 @@ const HighlightListener = () => {
     return () => window.removeEventListener("message", handler);
   }, []);
   return null;
+};
+
 /** Only show AdminToolbar on front-end pages, not /admin */
 const ConditionalToolbar = () => {
   const { pathname } = useLocation();
