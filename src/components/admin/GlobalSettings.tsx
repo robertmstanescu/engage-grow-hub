@@ -138,7 +138,7 @@ const GlobalSettings = () => {
         />
 
         <FooterColumnsEditor
-          columns={getDraft("footer").columns || []}
+          columns={getDraft("footer").columns || DEFAULT_FOOTER_COLUMNS}
           onChange={(cols) => updateField("footer", "columns", cols)}
         />
       </AccordionSection>
