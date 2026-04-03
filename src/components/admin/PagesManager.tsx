@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye, Home } from "lucide-react";
 import RowsManager from "./site-editor/RowsManager";
 import { SectionBox, Field } from "./site-editor/FieldComponents";
 import SeoFields from "./site-editor/SeoFields";
@@ -20,7 +20,17 @@ interface CmsPage {
   meta_description?: string;
 }
 
-const PagesManager = () => {
+interface CmsPageRef {
+  id: string;
+  slug: string;
+  title: string;
+}
+
+interface Props {
+  onEditPage?: (page: CmsPageRef | null) => void;
+}
+
+const PagesManager = ({ onEditPage }: Props) => {
   const [pages, setPages] = useState<CmsPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingPage, setEditingPage] = useState<CmsPage | null>(null);
@@ -307,34 +317,56 @@ const PagesManager = () => {
       {/* System Pages */}
       <div className="space-y-2">
         <label className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>System Pages</label>
-        {[
-          { title: "Blog", slug: "blog", href: "/blog" },
-        ].map((sp) => (
-          <div
-            key={sp.slug}
-            className="flex items-center justify-between p-3 rounded-lg border"
-            style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
-            <div className="flex items-center gap-3">
-              <Globe size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
-              <div>
-                <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>{sp.title}</span>
-                <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/{sp.slug}</span>
-              </div>
-              <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
+
+        {/* Main Page */}
+        <div
+          className="flex items-center justify-between p-3 rounded-lg border"
+          style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+          <div className="flex items-center gap-3">
+            <Home size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
+            <div>
+              <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>Main Page</span>
+              <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/</span>
             </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setEditingBlog(true)}
-                className="p-2 rounded hover:opacity-70"
-                style={{ color: "hsl(var(--primary))" }}>
-                Edit
-              </button>
-              <a href={sp.href} target="_blank" className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
-                <ExternalLink size={14} />
-              </a>
-            </div>
+            <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
           </div>
-        ))}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onEditPage?.(null)}
+              className="p-2 rounded hover:opacity-70"
+              style={{ color: "hsl(var(--primary))" }}>
+              Edit
+            </button>
+            <a href="/" target="_blank" className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <ExternalLink size={14} />
+            </a>
+          </div>
+        </div>
+
+        {/* Blog */}
+        <div
+          className="flex items-center justify-between p-3 rounded-lg border"
+          style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+          <div className="flex items-center gap-3">
+            <Globe size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
+            <div>
+              <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>Blog</span>
+              <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/blog</span>
+            </div>
+            <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setEditingBlog(true)}
+              className="p-2 rounded hover:opacity-70"
+              style={{ color: "hsl(var(--primary))" }}>
+              Edit
+            </button>
+            <a href="/blog" target="_blank" className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <ExternalLink size={14} />
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* CMS Pages */}
@@ -362,7 +394,13 @@ const PagesManager = () => {
               </div>
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setEditingPage(page)}
+                  onClick={() => {
+                    if (onEditPage) {
+                      onEditPage({ id: page.id, slug: page.slug, title: page.title });
+                    } else {
+                      setEditingPage(page);
+                    }
+                  }}
                   className="p-2 rounded hover:opacity-70"
                   style={{ color: "hsl(var(--primary))" }}>
                   Edit
