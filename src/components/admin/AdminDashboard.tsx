@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
@@ -51,6 +51,17 @@ const SECTION_EMOJI: Record<string, string> = {
   hero: "🎭", text: "✦", service: "💀", boxed: "✦", contact: "📬",
   image_text: "🖼", profile: "👤", grid: "📊",
 };
+
+const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[] = [
+  { type: "text", label: "Text", emoji: "✦" },
+  { type: "service", label: "Service Pillar", emoji: "💀" },
+  { type: "boxed", label: "Boxed Cards", emoji: "✦" },
+  { type: "contact", label: "Contact", emoji: "📬" },
+  { type: "hero", label: "Hero", emoji: "🎭" },
+  { type: "image_text", label: "Image & Text", emoji: "🖼" },
+  { type: "profile", label: "Profile", emoji: "👤" },
+  { type: "grid", label: "Grid", emoji: "📊" },
+];
 const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
 
 const DEVICE_WIDTHS: Record<Device, number> = { desktop: 1280, tablet: 768, mobile: 390 };
@@ -158,6 +169,8 @@ const AdminDashboard = ({ session }: Props) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ w: 800, h: 600 });
+  const [iframeKey, setIframeKey] = useState(0);
+  const [showAddRow, setShowAddRow] = useState(false);
 
   // ── CMS page editing ──
   const [cmsPage, setCmsPage] = useState<CmsPageRef | null>(null);
@@ -262,6 +275,24 @@ const AdminDashboard = ({ session }: Props) => {
     }
   }, [cmsPage]);
 
+  const addRow = useCallback((type: PageRow["type"]) => {
+    const newRow: PageRow = {
+      id: crypto.randomUUID(),
+      type,
+      strip_title: ROW_TYPE_OPTIONS.find((o) => o.type === type)?.label || type,
+      bg_color: "#FFFFFF",
+      content: type === "boxed" ? { title_lines: [], cards: [] }
+        : type === "contact" ? { title_lines: [], body: "", button_text: "Submit", fields: [] }
+        : type === "service" ? { eyebrow: "", title: "", description: "", services: [] }
+        : type === "grid" ? { title_lines: [], items: [] }
+        : { title_lines: [], body: "" },
+    };
+    updateRows([...pageRows, newRow]);
+    setSelectedSectionId(newRow.id);
+    setPropertiesSubTab("content");
+    setShowAddRow(false);
+  }, [pageRows, updateRows]);
+
   // ── Save / Publish ──
   const saveDraft = useCallback(async () => {
     setSaving(true);
@@ -287,6 +318,7 @@ const AdminDashboard = ({ session }: Props) => {
       toast.success("Draft saved");
     }
     setSaving(false);
+    setIframeKey((k) => k + 1);
   }, [sections, cmsPage, cmsPageRows]);
 
   const publishAll = useCallback(async () => {
@@ -615,9 +647,40 @@ const AdminDashboard = ({ session }: Props) => {
               </SortableContext>
             </DndContext>
 
+            {/* Add row button */}
+            <div className="relative mt-2 px-3">
+              <button
+                onClick={() => setShowAddRow(!showAddRow)}
+                className="flex items-center gap-1.5 w-full justify-center py-2 rounded-lg border border-dashed transition-all hover:opacity-70"
+                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "var(--font-body)" }}
+              >
+                <Plus size={12} /> Add Row
+              </button>
+              {showAddRow && (
+                <div
+                  className="absolute left-3 right-3 mt-1 rounded-lg border shadow-lg overflow-hidden z-10"
+                  style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}
+                >
+                  {ROW_TYPE_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.type}
+                      onClick={() => addRow(opt.type)}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-left transition-all"
+                      style={{ fontSize: 11, fontFamily: "var(--font-body)", color: "hsl(var(--foreground))", background: "transparent", border: "none", cursor: "pointer" }}
+                      onMouseOver={(e) => (e.currentTarget.style.background = "hsl(var(--secondary) / 0.07)")}
+                      onMouseOut={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <span>{opt.emoji}</span>
+                      <span>{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {pageRows.length === 0 && (
               <div className="text-center py-8" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11, fontFamily: "var(--font-body)" }}>
-                No rows yet. Select a section or add one.
+                No rows yet. Click '+ Add Row' above.
               </div>
             )}
 
@@ -698,6 +761,7 @@ const AdminDashboard = ({ session }: Props) => {
                   flexShrink: 0,
                 }}>
                   <iframe
+                    key={iframeKey}
                     ref={iframeRef}
                     src={previewSrc}
                     style={{ width: "100%", height: "100%", border: "none" }}
