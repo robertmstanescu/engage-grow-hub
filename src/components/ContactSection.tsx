@@ -44,7 +44,7 @@ const ContactSection = () => {
 
   if (submitted) {
     return (
-      <section id="contact" className="snap-section section-light relative py-32 md:py-40">
+      <section id="contact" data-section="contact" className="snap-section section-light relative py-32 md:py-40">
         <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
         <div className="relative z-10 max-w-[520px] mr-auto ml-0 px-3 text-left">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease }}>
@@ -62,7 +62,7 @@ const ContactSection = () => {
   }
 
   return (
-    <section id="contact" className="snap-section section-light relative py-32 md:py-40">
+    <section id="contact" data-section="contact" className="snap-section section-light relative py-32 md:py-40">
       <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
 
       <div className="relative z-10 max-w-[900px] mr-auto ml-0 px-3 text-left">

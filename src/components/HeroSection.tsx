@@ -52,7 +52,7 @@ const HeroSection = () => {
   const hasBg = c.bg_type && c.bg_type !== "none" && c.bg_url;
 
   return (
-    <section className="scope-hero snap-section grain relative h-screen flex flex-col justify-end overflow-hidden mesh-hero">
+    <section data-section="hero" className="scope-hero snap-section grain relative h-screen flex flex-col justify-end overflow-hidden mesh-hero">
       {hasBg && c.bg_type === "image" && (
         <div className="absolute inset-0 z-0">
           <img src={c.bg_url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
