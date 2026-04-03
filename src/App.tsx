@@ -20,6 +20,26 @@ const queryClient = new QueryClient();
 /** Loads brand settings and applies CSS vars on mount */
 const BrandLoader = () => { useBrandSettings(); return null; };
 
+const HighlightListener = () => {
+  React.useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type !== "HIGHLIGHT_SECTION") return;
+      const el = document.querySelector(`[data-section="${e.data.sectionKey}"]`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      (el as HTMLElement).style.outline = "2px solid rgba(229,197,79,0.6)";
+      (el as HTMLElement).style.outlineOffset = "4px";
+      setTimeout(() => {
+        (el as HTMLElement).style.outline = "";
+        (el as HTMLElement).style.outlineOffset = "";
+      }, 2000);
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
