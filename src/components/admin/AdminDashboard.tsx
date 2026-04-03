@@ -275,6 +275,24 @@ const AdminDashboard = ({ session }: Props) => {
     }
   }, [cmsPage]);
 
+  const addRow = useCallback((type: PageRow["type"]) => {
+    const newRow: PageRow = {
+      id: crypto.randomUUID(),
+      type,
+      strip_title: ROW_TYPE_OPTIONS.find((o) => o.type === type)?.label || type,
+      bg_color: "#FFFFFF",
+      content: type === "boxed" ? { title_lines: [], cards: [] }
+        : type === "contact" ? { title_lines: [], body: "", button_text: "Submit", fields: [] }
+        : type === "service" ? { eyebrow: "", title: "", description: "", services: [] }
+        : type === "grid" ? { title_lines: [], items: [] }
+        : { title_lines: [], body: "" },
+    };
+    updateRows([...pageRows, newRow]);
+    setSelectedSectionId(newRow.id);
+    setPropertiesSubTab("content");
+    setShowAddRow(false);
+  }, [pageRows, updateRows]);
+
   // ── Save / Publish ──
   const saveDraft = useCallback(async () => {
     setSaving(true);
