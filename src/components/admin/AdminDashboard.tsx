@@ -51,6 +51,17 @@ const SECTION_EMOJI: Record<string, string> = {
   hero: "🎭", text: "✦", service: "💀", boxed: "✦", contact: "📬",
   image_text: "🖼", profile: "👤", grid: "📊",
 };
+
+const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[] = [
+  { type: "text", label: "Text", emoji: "✦" },
+  { type: "service", label: "Service Pillar", emoji: "💀" },
+  { type: "boxed", label: "Boxed Cards", emoji: "✦" },
+  { type: "contact", label: "Contact", emoji: "📬" },
+  { type: "hero", label: "Hero", emoji: "🎭" },
+  { type: "image_text", label: "Image & Text", emoji: "🖼" },
+  { type: "profile", label: "Profile", emoji: "👤" },
+  { type: "grid", label: "Grid", emoji: "📊" },
+];
 const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
 
 const DEVICE_WIDTHS: Record<Device, number> = { desktop: 1280, tablet: 768, mobile: 390 };
