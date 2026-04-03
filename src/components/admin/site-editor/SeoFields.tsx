@@ -21,7 +21,7 @@ const SeoFields = ({ metaTitle, metaDescription, onTitleChange, onDescriptionCha
         rows={2}
         maxLength={160}
         placeholder="Brief description for search engines (max 160 chars)"
-        className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none"
+        className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none text-black"
         style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
       />
       <span className="font-body text-[9px]" style={{ color: "hsl(var(--muted-foreground))" }}>
