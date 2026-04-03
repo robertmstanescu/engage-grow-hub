@@ -760,6 +760,7 @@ const AdminDashboard = ({ session }: Props) => {
                   flexShrink: 0,
                 }}>
                   <iframe
+                    key={iframeKey}
                     ref={iframeRef}
                     src={previewSrc}
                     style={{ width: "100%", height: "100%", border: "none" }}
