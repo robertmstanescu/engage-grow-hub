@@ -32,7 +32,7 @@ const VowsSection = () => {
   const { ref, isVisible } = useScrollReveal();
 
   return (
-    <section id="vows" className="snap-section grain relative py-32 md:py-40" style={{ backgroundColor: "hsl(var(--vows-bg))", isolation: "isolate", paddingTop: "24px", paddingBottom: "24px" }}>
+    <section id="vows" data-section="vows" className="snap-section grain relative py-32 md:py-40" style={{ backgroundColor: "hsl(var(--vows-bg))", isolation: "isolate", paddingTop: "24px", paddingBottom: "24px" }}>
       <div className="absolute inset-0 opacity-60" style={{
         background: "radial-gradient(ellipse 80% 60% at 10% 90%, hsl(280 55% 18% / 0.6), transparent), radial-gradient(ellipse 60% 50% at 80% 20%, hsl(286 42% 20% / 0.4), transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)"
       }} />

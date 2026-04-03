@@ -48,7 +48,7 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
   };
 
   return (
-    <div id={id} className={`snap-section grain relative ${colorScope || ""}`} style={{ scrollMarginTop: "4rem", backgroundColor: "hsl(var(--pillar-section-bg))" }}>
+    <div id={id} data-section={id || "pillar"} className={`snap-section grain relative ${colorScope || ""}`} style={{ scrollMarginTop: "4rem", backgroundColor: "hsl(var(--pillar-section-bg))" }}>
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px]"
         style={{ background: "radial-gradient(circle, hsl(286 42% 30%), transparent)" }} />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px]"

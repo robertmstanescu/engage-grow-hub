@@ -48,6 +48,7 @@ const App = () => (
       <Sonner />
       <FaviconManager />
       <BrandLoader />
+      <HighlightListener />
       <InlineEditProvider>
         <BrowserRouter>
           <Routes>
