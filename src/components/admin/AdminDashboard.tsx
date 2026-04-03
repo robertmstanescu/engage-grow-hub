@@ -646,9 +646,40 @@ const AdminDashboard = ({ session }: Props) => {
               </SortableContext>
             </DndContext>
 
+            {/* Add row button */}
+            <div className="relative mt-2 px-3">
+              <button
+                onClick={() => setShowAddRow(!showAddRow)}
+                className="flex items-center gap-1.5 w-full justify-center py-2 rounded-lg border border-dashed transition-all hover:opacity-70"
+                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "var(--font-body)" }}
+              >
+                <Plus size={12} /> Add Row
+              </button>
+              {showAddRow && (
+                <div
+                  className="absolute left-3 right-3 mt-1 rounded-lg border shadow-lg overflow-hidden z-10"
+                  style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}
+                >
+                  {ROW_TYPE_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.type}
+                      onClick={() => addRow(opt.type)}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-left transition-all"
+                      style={{ fontSize: 11, fontFamily: "var(--font-body)", color: "hsl(var(--foreground))", background: "transparent", border: "none", cursor: "pointer" }}
+                      onMouseOver={(e) => (e.currentTarget.style.background = "hsl(var(--secondary) / 0.07)")}
+                      onMouseOut={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <span>{opt.emoji}</span>
+                      <span>{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {pageRows.length === 0 && (
               <div className="text-center py-8" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11, fontFamily: "var(--font-body)" }}>
-                No rows yet. Select a section or add one.
+                No rows yet. Click '+ Add Row' above.
               </div>
             )}
 
