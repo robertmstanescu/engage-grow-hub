@@ -31,8 +31,9 @@ function generateToken(): string {
 }
 
 // Auth note: this function uses verify_jwt = false in config.toml.
-// It is intended to be called server-side (from other edge functions via
-// supabase.functions.invoke) rather than directly from browsers.
+// It is intended to be called server-side only (from other edge functions
+// via supabase.functions.invoke with the service_role key).
+// Direct browser calls are rejected.
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
@@ -42,6 +43,19 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+  // Restrict to service_role callers only (server-to-server)
+  const authHeader = req.headers.get('Authorization') ?? ''
+  const token = authHeader.replace('Bearer ', '')
+  if (!supabaseServiceKey || token !== supabaseServiceKey) {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden' }),
+      {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    )
+  }
 
   if (!supabaseUrl || !supabaseServiceKey) {
     console.error('Missing required environment variables')
