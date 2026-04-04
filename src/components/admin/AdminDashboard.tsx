@@ -1027,11 +1027,12 @@ const TitleLinesEditor = ({ titleLines, onChange }: { titleLines: string[]; onCh
 
 /* ── Row Content Editor ── */
 const RowContentEditor = ({
-  row, onContentChange, onRowMetaChange,
+  row, onContentChange, onRowMetaChange, onDelete,
 }: {
   row: PageRow;
   onContentChange: (field: string, value: any) => void;
   onRowMetaChange: (updates: Partial<PageRow>) => void;
+  onDelete?: () => void;
 }) => {
   const content = row.content;
 
