@@ -788,7 +788,7 @@ const AdminDashboard = ({ session }: Props) => {
         {/* ── PROPERTIES PANEL ── */}
         <div
           style={{
-            width: isSiteTab ? 320 : 0,
+            width: isSiteTab ? 340 : 0,
             transition: "width 0.3s cubic-bezier(0.16,1,0.3,1)",
             backgroundColor: "hsl(var(--card))",
             borderLeft: isSiteTab ? "1px solid hsl(var(--border))" : "none",
