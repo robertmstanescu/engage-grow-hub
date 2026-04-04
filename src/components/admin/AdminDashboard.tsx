@@ -587,7 +587,7 @@ const AdminDashboard = ({ session }: Props) => {
         {/* ── PAGE STRUCTURE PANEL ── */}
         <div
           style={{
-            width: isSiteTab ? 280 : 0,
+            width: isSiteTab ? 240 : 0,
             transition: "width 0.3s cubic-bezier(0.16,1,0.3,1)",
             backgroundColor: "hsl(var(--card))",
             borderRight: isSiteTab ? "1px solid hsl(var(--border))" : "none",
@@ -684,25 +684,23 @@ const AdminDashboard = ({ session }: Props) => {
               </div>
             )}
 
-            {/* SEO block (main page only) */}
-            {isMainPage && (
-              <div
-                onClick={() => { setSelectedSectionId("__seo__"); setPropertiesSubTab("seo"); }}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all mt-1"
-                style={{
-                  background: selectedSectionId === "__seo__" ? "hsl(var(--secondary) / 0.07)" : "transparent",
-                }}
-              >
-                <span className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "transparent" }} />
-                <span className="text-sm flex-shrink-0">🔍</span>
-                <div className="min-w-0 flex-1">
-                  <div className="font-body text-[11px] font-medium truncate" style={{ color: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}>
-                    SEO & Metadata
-                  </div>
-                  <div className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>meta</div>
+            {/* SEO block */}
+            <div
+              onClick={() => { setSelectedSectionId("__seo__"); setPropertiesSubTab("seo"); }}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all mt-1"
+              style={{
+                background: selectedSectionId === "__seo__" ? "hsl(var(--secondary) / 0.07)" : "transparent",
+              }}
+            >
+              <span className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "transparent" }} />
+              <span className="text-sm flex-shrink-0">🔍</span>
+              <div className="min-w-0 flex-1">
+                <div className="font-body text-[11px] font-medium truncate" style={{ color: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}>
+                  SEO & Metadata
                 </div>
+                <div className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>meta</div>
               </div>
-            )}
+            </div>
           </div>
         </div>
 
