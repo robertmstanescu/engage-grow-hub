@@ -494,6 +494,20 @@ const AdminDashboard = ({ session }: Props) => {
           </button>
           {isSiteTab && (
             <>
+              {cmsPage && (
+                <button
+                  onClick={toggleCmsPagePublish}
+                  style={{
+                    fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase", letterSpacing: "0.1em",
+                    padding: "6px 14px", borderRadius: 20, cursor: "pointer",
+                    border: `1px solid ${cmsPageStatus === "published" ? "hsl(var(--destructive) / 0.4)" : "hsl(var(--border))"}`,
+                    background: "transparent",
+                    color: cmsPageStatus === "published" ? "hsl(var(--destructive))" : "hsl(var(--foreground))",
+                  }}
+                >
+                  {cmsPageStatus === "published" ? "Unpublish" : "Set Published"}
+                </button>
+              )}
               <button
                 onClick={saveDraft}
                 disabled={saving}
