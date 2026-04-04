@@ -1047,11 +1047,25 @@ const RowContentEditor = ({
         </div>
       </div>
       <RowLayoutSettings layout={row.layout || DEFAULT_ROW_LAYOUT} onChange={(layout) => onRowMetaChange({ layout })} />
+      {onDelete && (
+        <button type="button" onClick={onDelete} className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity" style={{ color: "hsl(var(--destructive))", border: "1px solid hsl(var(--destructive) / 0.3)" }}>
+          <Trash2 size={11} /> Delete Row
+        </button>
+      )}
     </div>
   );
 
   const titleLines = (content.title_lines || []).map((l: any) =>
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
+  );
+
+  const noteAndButton = (
+    <SectionBox label="Note & Button">
+      <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
+      <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
+      <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
+      <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onContentChange("cta_url", v)} />
+    </SectionBox>
   );
 
   switch (row.type) {
@@ -1064,6 +1078,7 @@ const RowContentEditor = ({
             <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
             <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onContentChange("subtitle", v)} onColorChange={(v) => onContentChange("subtitle_color", v)} />
             <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} />
+            {noteAndButton}
           </div>
         </>
       );
@@ -1082,6 +1097,7 @@ const RowContentEditor = ({
             <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onContentChange("color_card_title", v)} />
             <ColorField label="Card Body Color" value={content.color_card_body || ""} fallback="" onChange={(v) => onContentChange("color_card_body", v)} />
             <BoxedArrayField content={content} onChange={onContentChange} />
+            {noteAndButton}
           </div>
         </>
       );
@@ -1092,6 +1108,7 @@ const RowContentEditor = ({
             <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
             <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} />
             <Field label="Button Text" value={content.button_text || ""} onChange={(v) => onContentChange("button_text", v)} />
+            <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
           </div>
         </>
       );
