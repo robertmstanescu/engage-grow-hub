@@ -881,12 +881,21 @@ const AdminDashboard = ({ session }: Props) => {
               {/* Scrollable body */}
               <div style={{ flex: 1, overflowY: "auto", padding: "1rem", scrollbarWidth: "thin" as const }}>
                 {selectedSectionId === "__seo__" ? (
-                  <SeoFields
-                    metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                    metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                    onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                    onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                  />
+                  cmsPage ? (
+                    <SeoFields
+                      metaTitle={cmsPageMeta.meta_title}
+                      metaDescription={cmsPageMeta.meta_description}
+                      onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
+                      onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
+                    />
+                  ) : (
+                    <SeoFields
+                      metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                      metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                      onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                      onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                    />
+                  )
                 ) : selectedSectionId === "__hero__" ? (
                   propertiesSubTab === "content" ? (
                     <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
@@ -902,16 +911,25 @@ const AdminDashboard = ({ session }: Props) => {
                   )
                 ) : selectedRow ? (
                   propertiesSubTab === "content" ? (
-                    <RowContentEditor row={selectedRow} onContentChange={updateRowContent} onRowMetaChange={updateRowMeta} />
+                    <RowContentEditor row={selectedRow} onContentChange={updateRowContent} onRowMetaChange={updateRowMeta} onDelete={() => deleteRow(selectedRow.id)} />
                   ) : propertiesSubTab === "style" ? (
                     <StyleTab />
                   ) : (
-                    <SeoFields
-                      metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                      metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                      onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                      onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                    />
+                    cmsPage ? (
+                      <SeoFields
+                        metaTitle={cmsPageMeta.meta_title}
+                        metaDescription={cmsPageMeta.meta_description}
+                        onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
+                        onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
+                      />
+                    ) : (
+                      <SeoFields
+                        metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                        metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                        onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                        onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                      />
+                    )
                   )
                 ) : null}
               </div>
