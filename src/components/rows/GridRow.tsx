@@ -7,103 +7,64 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 
-interface GridItem {
-  type: "card" | "stat" | "list";
-  icon?: string;
-  title?: string;
-  description?: string;
-  number?: string;
-  suffix?: string;
-  label?: string;
-  list_items?: string[];
-}
-
-const GridCard = memo(({ item, index, isVisible, colors }: {
-  item: GridItem; index: number; isVisible: boolean;
-  colors: Record<string, string>;
-}) => {
-  const [hovered, setHovered] = useState(false);
-  const onEnter = useCallback(() => setHovered(true), []);
-  const onLeave = useCallback(() => setHovered(false), []);
-
-  const borderColor = hovered
-    ? (colors.borderHover || "hsl(var(--accent))")
-    : (colors.border || "hsl(280 20% 25% / 0.35)");
-
-  return (
-    <div
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
-      className="rounded-xl p-6 text-left transition-colors duration-300"
-      style={{
-        ...revealStyle(isVisible, index + 3),
-        backgroundColor: "hsl(260 25% 12% / 0.5)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        border: `1.5px solid ${borderColor}`,
-        boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4)",
-        backfaceVisibility: "hidden",
-        transform: "translateZ(0)",
-        height: "auto",
-        overflow: "visible",
-      }}
+/* ── Stat Unit ── */
+const StatUnit = memo(({ value, label, colors, isVisible, idx }: {
+  value: string; label: string; colors: Record<string, string>;
+  isVisible: boolean; idx: number;
+}) => (
+  <div
+    className="flex-1 flex flex-col items-center justify-center py-6 px-4"
+    style={revealStyle(isVisible, idx + 3)}
+  >
+    <p
+      className="font-display font-black leading-none"
+      style={{ color: colors.statNumber, fontSize: "clamp(2rem, 5vw, 3.5rem)" }}
     >
-      {item.type === "card" && (
-        <>
-          {item.icon && (
-            <span className="text-2xl block mb-3">{item.icon}</span>
-          )}
-          {item.title && (
-            <p className="font-display font-bold text-sm mb-2" style={{ color: colors.cardTitle }}>{item.title}</p>
-          )}
-          {item.description && (
-            <div
-              className="font-body text-xs leading-relaxed"
-              style={{ color: colors.cardDesc, height: "auto", overflow: "visible" }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }}
-            />
-          )}
-        </>
-      )}
+      {value}
+    </p>
+    {label && (
+      <p
+        className="font-body text-[10px] tracking-[0.2em] uppercase mt-3 text-center leading-relaxed whitespace-pre-line"
+        style={{ color: colors.statLabel }}
+      >
+        {label}
+      </p>
+    )}
+  </div>
+));
 
-      {item.type === "stat" && (
-        <div className="text-center py-2">
-          <p className="font-display font-black leading-none" style={{ color: colors.statNumber, fontSize: "clamp(2rem, 5vw, 3.5rem)" }}>
-            {item.number}<span className="text-[0.5em] font-medium">{item.suffix}</span>
-          </p>
-          {item.label && (
-            <p className="font-body text-xs tracking-wider uppercase mt-2" style={{ color: colors.statLabel }}>{item.label}</p>
-          )}
-          <div className="w-12 h-px mx-auto mt-3" style={{ backgroundColor: colors.border || "hsl(280 20% 25% / 0.5)" }} />
-        </div>
-      )}
+/* ── Achievement Card ── */
+const AchievementCard = memo(({ text, colors, isVisible, idx }: {
+  text: string; colors: Record<string, string>;
+  isVisible: boolean; idx: number;
+}) => (
+  <div
+    className="rounded-xl px-5 py-4 flex items-start gap-3"
+    style={{
+      ...revealStyle(isVisible, idx + 6),
+      backgroundColor: "hsl(260 25% 12% / 0.5)",
+      backdropFilter: "blur(24px)",
+      WebkitBackdropFilter: "blur(24px)",
+      border: `1px solid ${colors.border}`,
+    }}
+  >
+    <span
+      className="inline-block mt-[7px] flex-shrink-0"
+      style={{ width: 16, height: 2, backgroundColor: colors.statNumber, borderRadius: 1 }}
+    />
+    <p className="font-body text-sm leading-relaxed" style={{ color: colors.cardDesc }}>
+      {text}
+    </p>
+  </div>
+));
 
-      {item.type === "list" && (
-        <>
-          {item.title && (
-            <p className="font-display font-bold text-sm mb-3" style={{ color: colors.cardTitle }}>{item.title}</p>
-          )}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-            {(item.list_items || []).map((li, i) => (
-              <p key={i} className="font-body text-xs leading-snug pl-4 relative" style={{ color: colors.cardDesc }}>
-                <span className="absolute left-0" style={{ color: colors.border || "hsl(var(--accent) / 0.4)" }}>—</span>
-                {li}
-              </p>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-});
-
+/* ── Main Row ── */
 const GridRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIndex?: number; align?: Alignment }) => {
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
   const { ref, isVisible } = useScrollReveal();
-  const items: GridItem[] = c.items || [];
 
   const eyebrowColor = c.color_eyebrow || "hsl(var(--primary))";
   const titleColor = c.color_title || "hsl(var(--foreground))";
@@ -121,16 +82,22 @@ const GridRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIn
   const gradStart = l.gradientStart || "hsl(280 55% 20% / 0.5)";
   const gradEnd = l.gradientEnd || "hsl(286 42% 25% / 0.3)";
 
-  const alignClass = align === "right" ? "text-right" : align === "left" ? "text-left" : "text-center";
+  const alignClass = align === "right" ? "text-left" : align === "left" ? "text-left" : "text-left";
   const contentAlign = align === "right" ? "ml-auto mr-0" : align === "left" ? "mr-auto ml-0" : "mx-auto";
 
-  const getGridCols = (count: number) => {
-    if (count <= 1) return "grid-cols-1";
-    if (count === 2) return "grid-cols-1 md:grid-cols-2";
-    if (count === 3) return "grid-cols-1 md:grid-cols-3";
-    if (count === 4) return "grid-cols-1 md:grid-cols-2 lg:grid-cols-4";
-    return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
-  };
+  /* Parse items into stats + achievements */
+  const stats: { value: string; label: string }[] = (c.stats || []).slice(0, 3);
+  const achievements: string[] = c.achievements || [];
+
+  /* Legacy: also read from old items array if stats/achievements empty */
+  const legacyItems = c.items || [];
+  const effectiveStats = stats.length > 0 ? stats : legacyItems
+    .filter((i: any) => i.type === "stat")
+    .map((i: any) => ({ value: `${i.number || "0"}${i.suffix || ""}`, label: i.label || "" }))
+    .slice(0, 3);
+  const effectiveAchievements = achievements.length > 0 ? achievements : legacyItems
+    .filter((i: any) => i.type === "list")
+    .flatMap((i: any) => i.list_items || []);
 
   return (
     <section
@@ -147,6 +114,7 @@ const GridRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIn
         ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
       }}
     >
+      {/* Radial gradient overlay */}
       <div
         className="absolute inset-0 opacity-40 pointer-events-none"
         style={{
@@ -156,49 +124,85 @@ const GridRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIn
         }}
       />
 
-      <div className={`relative z-10 ${maxW} w-full px-6 ${contentAlign} ${alignClass}`}>
-        {c.eyebrow && (
-          <span
-            className="font-body tracking-[0.35em] uppercase block mb-3"
-            style={{ ...revealStyle(isVisible, 0), fontSize: "clamp(7px, 0.9vw, 10px)", color: eyebrowColor }}
-          >
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
-              {c.eyebrow}
-            </EditableText>
-          </span>
-        )}
+      <div className={`relative z-10 ${maxW} w-full px-6 ${contentAlign}`}>
+        {/* ── HEADER SECTION ── */}
+        <div className="mb-12">
+          {c.eyebrow && (
+            <span
+              className="font-body tracking-[0.35em] uppercase block mb-3"
+              style={{ ...revealStyle(isVisible, 0), fontSize: "clamp(7px, 0.9vw, 10px)", color: eyebrowColor }}
+            >
+              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
+                {c.eyebrow}
+              </EditableText>
+            </span>
+          )}
 
-        {c.title && (
-          <h3
-            className="font-display font-bold leading-tight mb-3"
-            style={{ ...revealStyle(isVisible, 1), fontSize: "clamp(1.4rem, 3.5vw, 2.6rem)", color: titleColor }}
-          >
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
-              {c.title}
-            </EditableText>
-          </h3>
-        )}
+          {c.title && (
+            <h3
+              className="font-display font-bold leading-tight mb-3"
+              style={{ ...revealStyle(isVisible, 1), fontSize: "clamp(1.4rem, 3.5vw, 2.6rem)", color: titleColor }}
+            >
+              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
+                {c.title}
+              </EditableText>
+            </h3>
+          )}
 
-        {c.description && (
-          <EditableText
-            sectionKey="page_rows"
-            fieldPath={`${prefix}.description`}
-            html
-            as="div"
-            className={`font-body leading-relaxed max-w-[600px] ${contentAlign} mb-10`}
-            style={{ ...revealStyle(isVisible, 2), fontSize: "clamp(0.8rem, 1.3vw, 1rem)", color: descColor, height: "auto", overflow: "visible" }}
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }}
-          />
-        )}
-
-        <div className={`grid ${getGridCols(items.length)} gap-5`}>
-          {items.map((item, i) => (
-            <GridCard key={i} item={item} index={i} isVisible={isVisible} colors={colors} />
-          ))}
+          {c.description && (
+            <EditableText
+              sectionKey="page_rows"
+              fieldPath={`${prefix}.description`}
+              html
+              as="div"
+              className="font-body leading-relaxed max-w-[600px]"
+              style={{ ...revealStyle(isVisible, 2), fontSize: "clamp(0.8rem, 1.3vw, 1rem)", color: descColor }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }}
+            />
+          )}
         </div>
 
+        {/* ── STATS BLOCK ── */}
+        {effectiveStats.length > 0 && (
+          <div
+            className="rounded-xl flex flex-col sm:flex-row mb-10 overflow-hidden"
+            style={{
+              backgroundColor: "hsl(260 25% 12% / 0.5)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              border: `1px solid ${colors.border}`,
+            }}
+          >
+            {effectiveStats.map((s: { value: string; label: string }, i: number) => (
+              <StatUnit
+                key={i}
+                value={s.value}
+                label={s.label}
+                colors={colors}
+                isVisible={isVisible}
+                idx={i}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* ── ACHIEVEMENT GRID ── */}
+        {effectiveAchievements.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {effectiveAchievements.map((text: string, i: number) => (
+              <AchievementCard
+                key={i}
+                text={text}
+                colors={colors}
+                isVisible={isVisible}
+                idx={i}
+              />
+            ))}
+          </div>
+        )}
+
         {c.show_subscribe && (
-          <div className="mt-10" style={revealStyle(isVisible, items.length + 3)}>
+          <div className="mt-10" style={revealStyle(isVisible, 10)}>
             <SubscribeWidget align={align} />
           </div>
         )}
