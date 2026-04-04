@@ -176,6 +176,7 @@ const AdminDashboard = ({ session }: Props) => {
   const [cmsPage, setCmsPage] = useState<CmsPageRef | null>(null);
   const [cmsPageRows, setCmsPageRows] = useState<PageRow[]>([]);
   const [cmsPageStatus, setCmsPageStatus] = useState<string>("draft");
+  const [cmsPageMeta, setCmsPageMeta] = useState<{ meta_title: string; meta_description: string }>({ meta_title: "", meta_description: "" });
 
   // ── Site content state (main page) ──
   const [sections, setSections] = useState<SectionData[]>([]);
