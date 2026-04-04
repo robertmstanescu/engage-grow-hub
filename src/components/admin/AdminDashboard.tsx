@@ -176,6 +176,7 @@ const AdminDashboard = ({ session }: Props) => {
   const [cmsPage, setCmsPage] = useState<CmsPageRef | null>(null);
   const [cmsPageRows, setCmsPageRows] = useState<PageRow[]>([]);
   const [cmsPageStatus, setCmsPageStatus] = useState<string>("draft");
+  const [cmsPageMeta, setCmsPageMeta] = useState<{ meta_title: string; meta_description: string }>({ meta_title: "", meta_description: "" });
 
   // ── Site content state (main page) ──
   const [sections, setSections] = useState<SectionData[]>([]);
@@ -220,6 +221,7 @@ const AdminDashboard = ({ session }: Props) => {
       if (data) {
         setCmsPageRows(data.draft_page_rows || data.page_rows || []);
         setCmsPageStatus(data.status || "draft");
+        setCmsPageMeta({ meta_title: data.meta_title || "", meta_description: data.meta_description || "" });
       }
     };
     load();
@@ -292,6 +294,33 @@ const AdminDashboard = ({ session }: Props) => {
     setPropertiesSubTab("content");
     setShowAddRow(false);
   }, [pageRows, updateRows]);
+
+  const deleteRow = useCallback((rowId: string) => {
+    updateRows(pageRows.filter((r) => r.id !== rowId));
+    if (selectedSectionId === rowId) setSelectedSectionId(null);
+  }, [pageRows, updateRows, selectedSectionId]);
+
+  const toggleCmsPagePublish = useCallback(async () => {
+    if (!cmsPage) return;
+    const newStatus = cmsPageStatus === "published" ? "draft" : "published";
+    const updates: any = { status: newStatus };
+    if (newStatus === "published") {
+      updates.page_rows = cmsPageRows;
+      updates.draft_page_rows = cmsPageRows;
+    }
+    await supabase.from("cms_pages").update(updates).eq("id", cmsPage.id);
+    setCmsPageStatus(newStatus);
+    toast.success(newStatus === "published" ? "Published!" : "Unpublished");
+    setIframeKey((k) => k + 1);
+  }, [cmsPage, cmsPageStatus, cmsPageRows]);
+
+  const updateCmsPageMeta = useCallback(async (field: string, value: string) => {
+    const next = { ...cmsPageMeta, [field]: value };
+    setCmsPageMeta(next);
+    if (cmsPage) {
+      await supabase.from("cms_pages").update({ [field]: value } as any).eq("id", cmsPage.id);
+    }
+  }, [cmsPage, cmsPageMeta]);
 
   // ── Save / Publish ──
   const saveDraft = useCallback(async () => {
@@ -465,6 +494,20 @@ const AdminDashboard = ({ session }: Props) => {
           </button>
           {isSiteTab && (
             <>
+              {cmsPage && (
+                <button
+                  onClick={toggleCmsPagePublish}
+                  style={{
+                    fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase", letterSpacing: "0.1em",
+                    padding: "6px 14px", borderRadius: 20, cursor: "pointer",
+                    border: `1px solid ${cmsPageStatus === "published" ? "hsl(var(--destructive) / 0.4)" : "hsl(var(--border))"}`,
+                    background: "transparent",
+                    color: cmsPageStatus === "published" ? "hsl(var(--destructive))" : "hsl(var(--foreground))",
+                  }}
+                >
+                  {cmsPageStatus === "published" ? "Unpublish" : "Set Published"}
+                </button>
+              )}
               <button
                 onClick={saveDraft}
                 disabled={saving}
@@ -587,7 +630,7 @@ const AdminDashboard = ({ session }: Props) => {
         {/* ── PAGE STRUCTURE PANEL ── */}
         <div
           style={{
-            width: isSiteTab ? 280 : 0,
+            width: isSiteTab ? 240 : 0,
             transition: "width 0.3s cubic-bezier(0.16,1,0.3,1)",
             backgroundColor: "hsl(var(--card))",
             borderRight: isSiteTab ? "1px solid hsl(var(--border))" : "none",
@@ -684,25 +727,23 @@ const AdminDashboard = ({ session }: Props) => {
               </div>
             )}
 
-            {/* SEO block (main page only) */}
-            {isMainPage && (
-              <div
-                onClick={() => { setSelectedSectionId("__seo__"); setPropertiesSubTab("seo"); }}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all mt-1"
-                style={{
-                  background: selectedSectionId === "__seo__" ? "hsl(var(--secondary) / 0.07)" : "transparent",
-                }}
-              >
-                <span className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "transparent" }} />
-                <span className="text-sm flex-shrink-0">🔍</span>
-                <div className="min-w-0 flex-1">
-                  <div className="font-body text-[11px] font-medium truncate" style={{ color: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}>
-                    SEO & Metadata
-                  </div>
-                  <div className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>meta</div>
+            {/* SEO block */}
+            <div
+              onClick={() => { setSelectedSectionId("__seo__"); setPropertiesSubTab("seo"); }}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all mt-1"
+              style={{
+                background: selectedSectionId === "__seo__" ? "hsl(var(--secondary) / 0.07)" : "transparent",
+              }}
+            >
+              <span className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "transparent" }} />
+              <span className="text-sm flex-shrink-0">🔍</span>
+              <div className="min-w-0 flex-1">
+                <div className="font-body text-[11px] font-medium truncate" style={{ color: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}>
+                  SEO & Metadata
                 </div>
+                <div className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>meta</div>
               </div>
-            )}
+            </div>
           </div>
         </div>
 
@@ -790,7 +831,7 @@ const AdminDashboard = ({ session }: Props) => {
         {/* ── PROPERTIES PANEL ── */}
         <div
           style={{
-            width: isSiteTab ? 320 : 0,
+            width: isSiteTab ? 340 : 0,
             transition: "width 0.3s cubic-bezier(0.16,1,0.3,1)",
             backgroundColor: "hsl(var(--card))",
             borderLeft: isSiteTab ? "1px solid hsl(var(--border))" : "none",
@@ -854,12 +895,21 @@ const AdminDashboard = ({ session }: Props) => {
               {/* Scrollable body */}
               <div style={{ flex: 1, overflowY: "auto", padding: "1rem", scrollbarWidth: "thin" as const }}>
                 {selectedSectionId === "__seo__" ? (
-                  <SeoFields
-                    metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                    metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                    onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                    onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                  />
+                  cmsPage ? (
+                    <SeoFields
+                      metaTitle={cmsPageMeta.meta_title}
+                      metaDescription={cmsPageMeta.meta_description}
+                      onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
+                      onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
+                    />
+                  ) : (
+                    <SeoFields
+                      metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                      metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                      onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                      onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                    />
+                  )
                 ) : selectedSectionId === "__hero__" ? (
                   propertiesSubTab === "content" ? (
                     <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
@@ -875,16 +925,25 @@ const AdminDashboard = ({ session }: Props) => {
                   )
                 ) : selectedRow ? (
                   propertiesSubTab === "content" ? (
-                    <RowContentEditor row={selectedRow} onContentChange={updateRowContent} onRowMetaChange={updateRowMeta} />
+                    <RowContentEditor row={selectedRow} onContentChange={updateRowContent} onRowMetaChange={updateRowMeta} onDelete={() => deleteRow(selectedRow.id)} />
                   ) : propertiesSubTab === "style" ? (
                     <StyleTab />
                   ) : (
-                    <SeoFields
-                      metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                      metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                      onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                      onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                    />
+                    cmsPage ? (
+                      <SeoFields
+                        metaTitle={cmsPageMeta.meta_title}
+                        metaDescription={cmsPageMeta.meta_description}
+                        onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
+                        onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
+                      />
+                    ) : (
+                      <SeoFields
+                        metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                        metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                        onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                        onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                      />
+                    )
                   )
                 ) : null}
               </div>
@@ -982,11 +1041,12 @@ const TitleLinesEditor = ({ titleLines, onChange }: { titleLines: string[]; onCh
 
 /* ── Row Content Editor ── */
 const RowContentEditor = ({
-  row, onContentChange, onRowMetaChange,
+  row, onContentChange, onRowMetaChange, onDelete,
 }: {
   row: PageRow;
   onContentChange: (field: string, value: any) => void;
   onRowMetaChange: (updates: Partial<PageRow>) => void;
+  onDelete?: () => void;
 }) => {
   const content = row.content;
 
@@ -1001,11 +1061,25 @@ const RowContentEditor = ({
         </div>
       </div>
       <RowLayoutSettings layout={row.layout || DEFAULT_ROW_LAYOUT} onChange={(layout) => onRowMetaChange({ layout })} />
+      {onDelete && (
+        <button type="button" onClick={onDelete} className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity" style={{ color: "hsl(var(--destructive))", border: "1px solid hsl(var(--destructive) / 0.3)" }}>
+          <Trash2 size={11} /> Delete Row
+        </button>
+      )}
     </div>
   );
 
   const titleLines = (content.title_lines || []).map((l: any) =>
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
+  );
+
+  const noteAndButton = (
+    <SectionBox label="Note & Button">
+      <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
+      <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
+      <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
+      <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onContentChange("cta_url", v)} />
+    </SectionBox>
   );
 
   switch (row.type) {
@@ -1018,6 +1092,7 @@ const RowContentEditor = ({
             <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
             <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onContentChange("subtitle", v)} onColorChange={(v) => onContentChange("subtitle_color", v)} />
             <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} />
+            {noteAndButton}
           </div>
         </>
       );
@@ -1036,6 +1111,7 @@ const RowContentEditor = ({
             <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onContentChange("color_card_title", v)} />
             <ColorField label="Card Body Color" value={content.color_card_body || ""} fallback="" onChange={(v) => onContentChange("color_card_body", v)} />
             <BoxedArrayField content={content} onChange={onContentChange} />
+            {noteAndButton}
           </div>
         </>
       );
@@ -1046,6 +1122,7 @@ const RowContentEditor = ({
             <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
             <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} />
             <Field label="Button Text" value={content.button_text || ""} onChange={(v) => onContentChange("button_text", v)} />
+            <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
           </div>
         </>
       );

@@ -32,6 +32,7 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
 
   const gradStart = l.gradientStart || "hsl(280 55% 18% / 0.6)";
   const gradEnd = l.gradientEnd || "hsl(286 42% 20% / 0.4)";
+  const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
 
   const { ref, isVisible } = useScrollReveal();
 
@@ -50,6 +51,12 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
       <div ref={ref} className={`relative z-10 ${maxW} px-6 ${alignClass}`}>
+        {c.eyebrow && (
+          <span className="font-body tracking-[0.35em] uppercase block mb-3" style={{ ...revealStyle(isVisible, -0.5), fontSize: "clamp(7px, 0.9vw, 10px)", color: c.color_eyebrow || "hsl(var(--vows-title) / 0.6)" }}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
+          </span>
+        )}
+
         {titleLines.length > 0 && (
           <h3 className="font-display font-bold leading-tight mb-4"
             style={{ ...revealStyle(isVisible, 0), color: c.color_title || "hsl(var(--vows-title))", fontSize: "clamp(1.5rem, 4vw, 3rem)" }}>
@@ -82,11 +89,27 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
                 className="font-body-heading font-bold mb-3 text-lg" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
-                className="font-body text-xs leading-relaxed" style={{ color: c.color_card_body || "hsl(var(--vows-card-body))", overflow: "visible", height: "auto" }}
+                className="font-body text-xs leading-relaxed [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: c.color_card_body || "hsl(var(--vows-card-body))", overflow: "visible", height: "auto" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
             </div>
           ))}
         </div>
+
+        {c.note && (
+          <div className="mt-6 pt-3" style={{ ...revealStyle(isVisible, cards.length + 2), borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
+            <p className="font-body text-xs italic leading-relaxed" style={{ color: noteColor }}>{c.note}</p>
+          </div>
+        )}
+
+        {c.cta_url && c.cta_label && (
+          <div className="mt-6" style={revealStyle(isVisible, cards.length + 3)}>
+            <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
+              className="btn-glass font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full transition-all duration-500 hover:opacity-85 inline-block"
+              style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
+              {c.cta_label}
+            </a>
+          </div>
+        )}
 
         {c.show_subscribe && <div className="mt-10" style={revealStyle(isVisible, cards.length + 2)}><SubscribeWidget align={align} /></div>}
       </div>
