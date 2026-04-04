@@ -81,13 +81,17 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
       <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${gradStart}, ${gradEnd})` }} />
 
       <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${alignClass}`}>
-        <div className="mb-6" style={revealStyle(isVisible, 0)}>
+        <div className="mb-6 text-left" style={revealStyle(isVisible, 0)}>
           {titleLines.length > 0 && (
             <h3 className="font-display font-black leading-tight mb-3" style={{ color: "hsl(var(--primary))", fontSize: "clamp(1.3rem, 3vw, 2rem)" }}>
-              {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
+              {titleLines.map((line, i) => (
+                <span key={i} style={{ display: "block" }}>
+                  <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
+                </span>
+              ))}
             </h3>
           )}
-          {c.body && <div className="font-body-heading leading-relaxed" style={{ color: "hsl(var(--light-fg) / 0.7)", fontSize: "clamp(0.8rem, 1.5vw, 1rem)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
+          {c.body && <div className="font-body-heading leading-relaxed [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: "hsl(var(--light-fg) / 0.7)", fontSize: "clamp(0.8rem, 1.5vw, 1rem)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
         </div>
 
         <div
@@ -123,7 +127,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
 
               {textareaField && (
                 <div className="flex flex-col" style={revealStyle(isVisible, leftFields.length + 2)}>
-                  <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-white">{textareaField.label}</label>
+                  <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-white text-left">{textareaField.label}</label>
                   <textarea required={textareaField.required} rows={5} value={formData[textareaField.key] || ""}
                     onChange={(e) => setFormData({ ...formData, [textareaField.key]: e.target.value })}
                     className="w-full bg-transparent pb-2 font-body text-xs outline-none transition-all duration-500 resize-none flex-1 text-left"
@@ -152,6 +156,12 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
             </div>
           </form>
         </div>
+
+        {c.note && (
+          <div className="mt-4 pt-3 text-left" style={{ borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
+            <p className="font-body text-xs italic leading-relaxed" style={{ color: "hsl(var(--light-fg) / 0.5)" }}>{c.note}</p>
+          </div>
+        )}
       </div>
     </section>
   );

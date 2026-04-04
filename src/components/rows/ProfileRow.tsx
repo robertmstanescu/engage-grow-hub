@@ -7,6 +7,8 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 
+const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
+
 const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIndex?: number; align?: Alignment }) => {
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
@@ -15,16 +17,22 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
   const { ref, isVisible } = useScrollReveal();
 
   const eyebrowColor = c.color_eyebrow || "hsl(var(--primary))";
+  const titleColor = c.color_title || "hsl(var(--foreground))";
   const nameColor = c.color_name || "#FFFFFF";
   const roleColor = c.color_role || "hsl(var(--accent))";
   const credBg = c.color_credential_bg || "hsl(280 55% 24% / 0.6)";
   const credText = c.color_credential_text || "#FFFFFF";
   const bodyColor = c.color_body || "hsl(var(--foreground) / 0.7)";
+  const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
 
   const gradStart = l.gradientStart || "hsl(280 55% 20% / 0.5)";
   const gradEnd = l.gradientEnd || "hsl(286 42% 25% / 0.3)";
 
   const credentials: string[] = c.credentials || [];
+
+  const titleLines: string[] = (c.title_lines || []).map((li: any) =>
+    typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
+  );
 
   return (
     <section
@@ -53,13 +61,31 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
       <div className={`relative z-10 ${maxW} w-full px-6 mx-auto`}>
         {c.eyebrow && (
           <span
-            className="font-body tracking-[0.35em] uppercase block mb-6 text-center"
+            className="font-body tracking-[0.35em] uppercase block mb-6"
             style={{ ...revealStyle(isVisible, 0), fontSize: "clamp(7px, 0.9vw, 10px)", color: eyebrowColor }}
           >
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
               {c.eyebrow}
             </EditableText>
           </span>
+        )}
+
+        {/* Title lines - hero style with per-line colour */}
+        {titleLines.length > 0 && (
+          <h3
+            className="font-display font-bold leading-tight mb-6"
+            style={{ ...revealStyle(isVisible, 0.5), fontSize: "clamp(1.4rem, 3.5vw, 2.6rem)", color: titleColor }}
+          >
+            {titleLines.map((line, i) => (
+              <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>
+            ))}
+          </h3>
+        )}
+
+        {c.subtitle && (
+          <p className="leading-tight mb-8" style={{ ...revealStyle(isVisible, 0.7), fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "inherit", fontSize: "clamp(0.9rem, 2vw, 1.2rem)" }}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
+          </p>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] gap-8 md:gap-12 items-start">
@@ -126,7 +152,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
             )}
           </div>
 
-          {/* Body content */}
+          {/* Body content - aligned with eyebrow/title */}
           <div className="flex flex-col justify-center" style={revealStyle(isVisible, 4)}>
             {c.body && (
               <EditableText
@@ -134,7 +160,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
                 fieldPath={`${prefix}.body`}
                 html
                 as="div"
-                className="font-body leading-relaxed prose-sm"
+                className="font-body leading-relaxed prose-sm [&_p]:mb-[5px] [&_p]:mt-[5px]"
                 style={{
                   fontSize: "clamp(0.85rem, 1.3vw, 1rem)",
                   color: bodyColor,
@@ -143,6 +169,20 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
                 }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
               />
+            )}
+            {c.note && (
+              <div className="mt-4 pt-3" style={{ borderTop: `1px solid ${eyebrowColor}30` }}>
+                <p className="font-body text-xs italic leading-relaxed" style={{ color: noteColor }}>{c.note}</p>
+              </div>
+            )}
+            {c.cta_url && c.cta_label && (
+              <div className="mt-5">
+                <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
+                  className="btn-glass font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full transition-all duration-500 hover:opacity-85 inline-block"
+                  style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
+                  {c.cta_label}
+                </a>
+              </div>
             )}
           </div>
         </div>

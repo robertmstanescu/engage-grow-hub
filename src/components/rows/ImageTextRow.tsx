@@ -9,11 +9,14 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 
 const CLIP_PATHS: Record<string, string> = {
   puddle:
-    "polygon(50% 0%, 80% 5%, 95% 15%, 100% 35%, 98% 60%, 100% 80%, 90% 95%, 70% 100%, 50% 97%, 30% 100%, 10% 95%, 0% 80%, 2% 60%, 0% 35%, 5% 15%, 20% 5%)",
+    "path('M 50 2 C 65 0, 78 5, 88 12 C 96 20, 100 32, 99 48 C 100 62, 97 76, 90 86 C 82 95, 70 100, 55 99 C 40 100, 26 96, 16 88 C 6 78, 1 65, 2 50 C 1 36, 5 22, 14 13 C 24 4, 36 1, 50 2 Z')",
   clover:
-    "polygon(50% 0%, 65% 8%, 75% 0%, 88% 8%, 100% 25%, 92% 38%, 100% 50%, 92% 62%, 100% 75%, 88% 92%, 75% 100%, 65% 92%, 50% 100%, 35% 92%, 25% 100%, 12% 92%, 0% 75%, 8% 62%, 0% 50%, 8% 38%, 0% 25%, 12% 8%, 25% 0%, 35% 8%)",
-  blob:
-    "polygon(30% 2%, 55% 0%, 78% 5%, 95% 18%, 100% 40%, 97% 65%, 88% 85%, 70% 98%, 45% 100%, 22% 95%, 5% 82%, 0% 58%, 3% 32%, 12% 12%)",
+    "path('M 50 5 C 55 5, 62 0, 68 2 C 78 5, 78 16, 75 22 C 82 15, 92 12, 96 20 C 100 28, 95 38, 88 42 C 95 46, 100 56, 98 64 C 95 74, 85 76, 78 72 C 82 80, 80 92, 72 96 C 64 100, 55 95, 50 88 C 45 95, 36 100, 28 96 C 20 92, 18 80, 22 72 C 15 76, 5 74, 2 64 C 0 56, 5 46, 12 42 C 5 38, 0 28, 4 20 C 8 12, 18 15, 25 22 C 22 16, 22 5, 32 2 C 38 0, 45 5, 50 5 Z')",
+  blob: "circle(50% at 50% 50%)",
+  diamond:
+    "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+  heart:
+    "path('M 50 90 C 25 65, 0 50, 0 30 C 0 12, 12 0, 28 0 C 38 0, 46 6, 50 14 C 54 6, 62 0, 72 0 C 88 0, 100 12, 100 30 C 100 50, 75 65, 50 90 Z')",
 };
 
 const CAPTION_STYLE: Record<string, React.CSSProperties> = {
@@ -24,6 +27,8 @@ const CAPTION_STYLE: Record<string, React.CSSProperties> = {
   "bottom-center": { bottom: 12, left: "50%", transform: "translateX(-50%)" },
   "bottom-right": { bottom: 12, right: 12 },
 };
+
+const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
 const ImageTextRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIndex?: number; align?: Alignment }) => {
   const c = row.content;
@@ -41,9 +46,14 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; 
   const descColor = c.color_description || "hsl(var(--foreground) / 0.7)";
   const captionBg = c.color_caption_bg || "hsl(260 25% 12% / 0.75)";
   const captionText = c.color_caption_text || "#FFFFFF";
+  const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
 
   const gradStart = l.gradientStart || "hsl(280 55% 20% / 0.5)";
   const gradEnd = l.gradientEnd || "hsl(286 42% 25% / 0.3)";
+
+  const titleLines: string[] = (c.title_lines || []).map((li: any) =>
+    typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
+  );
 
   const imageBlock = (
     <div className="relative w-full" style={revealStyle(isVisible, imgPos === "left" ? 0 : 3)}>
@@ -91,7 +101,13 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; 
           </EditableText>
         </span>
       )}
-      {c.title && (
+      {titleLines.length > 0 ? (
+        <h3 className="font-display font-bold leading-tight mb-4" style={{ fontSize: "clamp(1.4rem, 3.5vw, 2.6rem)", color: titleColor }}>
+          {titleLines.map((line, i) => (
+            <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>
+          ))}
+        </h3>
+      ) : c.title ? (
         <h3
           className="font-display font-bold leading-tight mb-4"
           style={{ fontSize: "clamp(1.4rem, 3.5vw, 2.6rem)", color: titleColor }}
@@ -100,6 +116,11 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; 
             {c.title}
           </EditableText>
         </h3>
+      ) : null}
+      {c.subtitle && (
+        <p className="leading-tight mb-4" style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "inherit", fontSize: "clamp(0.9rem, 2vw, 1.2rem)" }}>
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
+        </p>
       )}
       {c.description && (
         <EditableText
@@ -107,10 +128,24 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; 
           fieldPath={`${prefix}.description`}
           html
           as="div"
-          className="font-body leading-relaxed"
+          className="font-body leading-relaxed [&_p]:mb-[5px] [&_p]:mt-[5px]"
           style={{ fontSize: "clamp(0.8rem, 1.3vw, 1rem)", color: descColor, height: "auto", overflow: "visible" }}
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
         />
+      )}
+      {c.note && (
+        <div className="mt-4 pt-3" style={{ borderTop: `1px solid ${eyebrowColor}30` }}>
+          <p className="font-body text-xs italic leading-relaxed" style={{ color: noteColor }}>{c.note}</p>
+        </div>
+      )}
+      {c.cta_url && c.cta_label && (
+        <div className="mt-5">
+          <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
+            className="btn-glass font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full transition-all duration-500 hover:opacity-85 inline-block"
+            style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
+            {c.cta_label}
+          </a>
+        </div>
       )}
     </div>
   );

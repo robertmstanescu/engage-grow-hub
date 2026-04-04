@@ -26,6 +26,8 @@ const TextRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: n
   const gradStart = l.gradientStart || (isLight ? "hsl(280 55% 24% / 0.2)" : "hsl(280 55% 18% / 0.5)");
   const gradEnd = l.gradientEnd || (isLight ? "hsl(286 42% 30% / 0.15)" : "hsl(286 42% 20% / 0.3)");
 
+  const noteColor = c.color_note || (isLight ? "hsl(var(--light-fg) / 0.5)" : "hsl(var(--foreground) / 0.5)");
+
   const { ref, isVisible } = useScrollReveal();
 
   return (
@@ -40,6 +42,12 @@ const TextRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: n
       }} />
 
       <div ref={ref} className={`relative z-10 ${maxW} px-6 ${alignClass}`}>
+        {c.eyebrow && (
+          <span className="font-body tracking-[0.35em] uppercase block mb-3" style={{ ...revealStyle(isVisible, -0.5), fontSize: "clamp(7px, 0.9vw, 10px)", color: c.color_eyebrow || (isLight ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.5)") }}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
+          </span>
+        )}
+
         {titleLines.length > 0 && (
           <h3 className="font-display font-bold leading-tight mb-3"
             style={{ ...revealStyle(isVisible, 0), color: isLight ? "hsl(var(--primary))" : "hsl(var(--foreground))", fontSize: "clamp(1.25rem, 3vw, 2rem)" }}>
@@ -60,9 +68,25 @@ const TextRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: n
         {c.body && (
           <div style={revealStyle(isVisible, 2)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.body`} html as="div"
-              className={`font-body-heading font-medium max-w-[700px] leading-relaxed mt-5 ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
+              className={`font-body-heading font-medium max-w-[700px] leading-relaxed mt-5 [&_p]:mb-[5px] [&_p]:mt-[5px] ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
               style={{ color: isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)", fontSize: "clamp(0.85rem, 1.8vw, 1.15rem)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
+          </div>
+        )}
+
+        {c.note && (
+          <div className="mt-4 pt-3" style={{ ...revealStyle(isVisible, 2.5), borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
+            <p className="font-body text-xs italic leading-relaxed" style={{ color: noteColor }}>{c.note}</p>
+          </div>
+        )}
+
+        {c.cta_url && c.cta_label && (
+          <div className="mt-5" style={revealStyle(isVisible, 3)}>
+            <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
+              className="btn-glass font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full transition-all duration-500 hover:opacity-85 inline-block"
+              style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
+              {c.cta_label}
+            </a>
           </div>
         )}
 
