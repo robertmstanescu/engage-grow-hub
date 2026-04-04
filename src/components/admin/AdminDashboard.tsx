@@ -295,6 +295,33 @@ const AdminDashboard = ({ session }: Props) => {
     setShowAddRow(false);
   }, [pageRows, updateRows]);
 
+  const deleteRow = useCallback((rowId: string) => {
+    updateRows(pageRows.filter((r) => r.id !== rowId));
+    if (selectedSectionId === rowId) setSelectedSectionId(null);
+  }, [pageRows, updateRows, selectedSectionId]);
+
+  const toggleCmsPagePublish = useCallback(async () => {
+    if (!cmsPage) return;
+    const newStatus = cmsPageStatus === "published" ? "draft" : "published";
+    const updates: any = { status: newStatus };
+    if (newStatus === "published") {
+      updates.page_rows = cmsPageRows;
+      updates.draft_page_rows = cmsPageRows;
+    }
+    await supabase.from("cms_pages").update(updates).eq("id", cmsPage.id);
+    setCmsPageStatus(newStatus);
+    toast.success(newStatus === "published" ? "Published!" : "Unpublished");
+    setIframeKey((k) => k + 1);
+  }, [cmsPage, cmsPageStatus, cmsPageRows]);
+
+  const updateCmsPageMeta = useCallback(async (field: string, value: string) => {
+    const next = { ...cmsPageMeta, [field]: value };
+    setCmsPageMeta(next);
+    if (cmsPage) {
+      await supabase.from("cms_pages").update({ [field]: value } as any).eq("id", cmsPage.id);
+    }
+  }, [cmsPage, cmsPageMeta]);
+
   // ── Save / Publish ──
   const saveDraft = useCallback(async () => {
     setSaving(true);
