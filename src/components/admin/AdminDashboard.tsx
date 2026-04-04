@@ -221,6 +221,7 @@ const AdminDashboard = ({ session }: Props) => {
       if (data) {
         setCmsPageRows(data.draft_page_rows || data.page_rows || []);
         setCmsPageStatus(data.status || "draft");
+        setCmsPageMeta({ meta_title: data.meta_title || "", meta_description: data.meta_description || "" });
       }
     };
     load();
