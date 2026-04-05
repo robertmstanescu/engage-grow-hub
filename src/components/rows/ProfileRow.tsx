@@ -77,7 +77,14 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
             style={{ ...revealStyle(isVisible, 0.5), fontSize: "clamp(1.4rem, 3.5vw, 2.6rem)", color: titleColor }}
           >
             {titleLines.map((line, i) => (
-              <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>
+              <span key={i} className="block mb-2 last:mb-0">
+                <span
+                  className="inline-block rounded-lg px-3 py-1.5 border"
+                  style={{ backgroundColor: "hsl(var(--secondary) / 0.35)", borderColor: "hsl(var(--border) / 0.5)" }}
+                >
+                  <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
+                </span>
+              </span>
             ))}
           </h3>
         )}

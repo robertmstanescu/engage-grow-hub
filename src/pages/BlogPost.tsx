@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
 import SubscribeWidget from "@/components/SubscribeWidget";
 import usePageMeta from "@/hooks/usePageMeta";
+import { readLivePreviewState, subscribeLivePreview } from "@/lib/livePreview";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -23,9 +24,12 @@ const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString("en
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
   const [article, setArticle] = useState<BlogArticle | null>(null);
   const [loading, setLoading] = useState(true);
   const { getCategoryColors } = useTagColors();
+  const isPreview = searchParams.get("preview") === "draft";
+  const previewKey = searchParams.get("previewKey") || slug || "";
 
   const pageTitle = article?.meta_title || article?.title || undefined;
   const pageDesc = article ? (article.meta_description || article.content.replace(/<[^>]*>/g, " ").slice(0, 160)) : undefined;
@@ -36,15 +40,33 @@ const BlogPost = () => {
   useEffect(() => {
     const fetchArticle = async () => {
       if (!slug) { setLoading(false); return; }
-      const { data } = await supabase
+
+      const syncPreview = (state = readLivePreviewState()) => {
+        if (!isPreview) return;
+        const draft = state.blogPosts[previewKey] || state.blogPosts[slug];
+        if (draft) setArticle(draft as BlogArticle);
+      };
+
+      syncPreview();
+
+      let query = supabase
         .from("blog_posts")
         .select("slug, title, published_at, content, category, cover_image, author_name, author_image, meta_title, meta_description, og_image, tags")
-        .eq("slug", slug).eq("status", "published").maybeSingle();
-      setArticle(data as BlogArticle | null);
+        .eq("slug", slug);
+
+      if (!isPreview) query = query.eq("status", "published");
+
+      const { data } = await query.maybeSingle();
+      setArticle((current) => current || (data as BlogArticle | null));
       setLoading(false);
+
+      return isPreview ? subscribeLivePreview(syncPreview) : undefined;
     };
-    fetchArticle();
-  }, [slug]);
+
+    let cleanup: void | (() => void);
+    fetchArticle().then((fn) => { cleanup = fn; });
+    return () => cleanup?.();
+  }, [slug, isPreview, previewKey]);
 
   if (loading) {
     return (

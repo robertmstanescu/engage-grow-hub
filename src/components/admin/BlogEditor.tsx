@@ -4,6 +4,7 @@ import { sanitizeHtml } from "@/lib/sanitize";
 import { toast } from "sonner";
 import { Trash2, Edit, Plus, Eye, ArrowLeft, Upload } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
+import { patchLivePreviewState } from "@/lib/livePreview";
 
 const generateSlug = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -167,6 +168,37 @@ const BlogEditor = () => {
     fetchPosts();
   };
 
+  const buildLivePreviewPost = useCallback(() => {
+    const previewSlug = generateSlug(form.title || editing?.slug || "draft-post");
+    return {
+      key: editing?.id || previewSlug,
+      slug: previewSlug,
+      title: form.title || "Untitled Post",
+      published_at: new Date().toISOString(),
+      content: form.content || "<p>No content yet.</p>",
+      category: form.category,
+      cover_image: form.cover_image || null,
+      author_name: form.author_name || null,
+      author_image: form.author_image || null,
+      meta_title: form.meta_title || null,
+      meta_description: form.meta_description || null,
+      og_image: form.og_image || null,
+      tags: form.tags.length > 0 ? form.tags : null,
+    };
+  }, [form, editing]);
+
+  useEffect(() => {
+    if (!isNew && !editing) return;
+    const preview = buildLivePreviewPost();
+    patchLivePreviewState({ blogPosts: { [preview.key]: preview, [preview.slug]: preview } });
+  }, [buildLivePreviewPost, editing, isNew]);
+
+  const openLivePreview = useCallback(() => {
+    const preview = buildLivePreviewPost();
+    patchLivePreviewState({ blogPosts: { [preview.key]: preview, [preview.slug]: preview } });
+    window.open(`/blog/${preview.slug}?preview=draft&previewKey=${encodeURIComponent(preview.key)}`, "_blank");
+  }, [buildLivePreviewPost]);
+
   /* ── Preview Mode ── */
   if (previewing && (isNew || editing)) {
     const formatDate = (dateStr: string) => {
@@ -251,7 +283,7 @@ const BlogEditor = () => {
           </h2>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setPreviewing(true)}
+              onClick={openLivePreview}
               className="flex items-center gap-1 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"
               style={{ borderColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))", backgroundColor: "hsl(var(--accent) / 0.1)" }}>
               <Eye size={13} /> Preview

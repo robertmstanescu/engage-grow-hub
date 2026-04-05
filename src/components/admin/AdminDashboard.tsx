@@ -39,6 +39,7 @@ import ImageTextEditor from "./site-editor/ImageTextEditor";
 import ProfileEditor from "./site-editor/ProfileEditor";
 import GridEditor from "./site-editor/GridEditor";
 import ImagePickerField from "./ImagePickerField";
+import { patchLivePreviewState, pushLivePreviewToWindow, readLivePreviewState } from "@/lib/livePreview";
 
 type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "settings";
 type Device = "desktop" | "tablet" | "mobile";
@@ -460,12 +461,43 @@ const AdminDashboard = ({ session }: Props) => {
 
   const isSiteTab = activeTab === "site";
   const targetWidth = DEVICE_WIDTHS[device];
-  const scale = Math.min(containerSize.w / targetWidth, 1);
-  const scaledHeight = containerSize.h / scale;
+  const scale = Math.max(0.1, Math.min(containerSize.w / targetWidth, 1));
+  const scaledHeight = Math.max(containerSize.h / scale, containerSize.h);
 
   const isMainPage = !cmsPage;
   const pageLabel = cmsPage ? cmsPage.title : "Main Page";
   const previewSrc = cmsPage ? `/p/${cmsPage.slug}?preview=draft` : "/?preview=1";
+
+  useEffect(() => {
+    if (!isSiteTab) return;
+
+    const state = patchLivePreviewState(
+      cmsPage
+        ? {
+            cmsPages: {
+              [cmsPage.slug]: {
+                rows: cmsPageRows,
+                meta_title: cmsPageMeta.meta_title,
+                meta_description: cmsPageMeta.meta_description,
+                status: cmsPageStatus,
+              },
+            },
+          }
+        : {
+            sections: {
+              hero: getDraft("hero"),
+              page_rows: { rows: pageRows },
+              main_page_seo: getDraft("main_page_seo"),
+            },
+          }
+    );
+
+    pushLivePreviewToWindow(iframeRef.current?.contentWindow, state);
+  }, [isSiteTab, cmsPage, cmsPageRows, cmsPageMeta, cmsPageStatus, pageRows, sections]);
+
+  const handleIframeLoad = useCallback(() => {
+    pushLivePreviewToWindow(iframeRef.current?.contentWindow, readLivePreviewState());
+  }, []);
 
   const tabLabel = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.key === activeTab)?.label || "";
 
@@ -748,7 +780,7 @@ const AdminDashboard = ({ session }: Props) => {
         </div>
 
         {/* ── LIVE PREVIEW / MAIN CONTENT ── */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ flex: "1 1 0", minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           {isSiteTab ? (
             <>
               {/* Preview Toolbar */}
@@ -805,6 +837,7 @@ const AdminDashboard = ({ session }: Props) => {
                     key={iframeKey}
                     ref={iframeRef}
                     src={previewSrc}
+                    onLoad={handleIframeLoad}
                     style={{ width: "100%", height: "100%", border: "none" }}
                     title="Site Preview"
                   />
@@ -831,7 +864,9 @@ const AdminDashboard = ({ session }: Props) => {
         {/* ── PROPERTIES PANEL ── */}
         <div
           style={{
-            width: isSiteTab ? 340 : 0,
+            width: isSiteTab ? "50%" : 0,
+            maxWidth: isSiteTab ? "50%" : 0,
+            minWidth: isSiteTab ? 360 : 0,
             transition: "width 0.3s cubic-bezier(0.16,1,0.3,1)",
             backgroundColor: "hsl(var(--card))",
             borderLeft: isSiteTab ? "1px solid hsl(var(--border))" : "none",
