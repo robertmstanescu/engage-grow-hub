@@ -2,6 +2,15 @@ import { Palette, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import { useBrandColors } from "@/hooks/useBrandSettings";
 
+const FONT_OPTIONS = [
+  { label: "Display", value: "var(--font-title)" },
+  { label: "Body", value: "var(--font-body)" },
+  { label: "Header", value: "var(--font-header)" },
+  { label: "Handwritten", value: "'Architects Daughter', cursive" },
+];
+
+const SIZE_OPTIONS = ["14px", "18px", "24px", "32px", "44px", "56px"];
+
 interface Props {
   value: string;
   onChange: (html: string) => void;
@@ -45,6 +54,21 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
     },
     [emitChange, restoreSelection, saveSelection]
   );
+
+  const applyFontSize = useCallback((fontSize: string) => {
+    editorRef.current?.focus();
+    restoreSelection();
+    document.execCommand("styleWithCSS", false, "true");
+    document.execCommand("fontSize", false, "7");
+    editorRef.current?.querySelectorAll('font[size="7"]').forEach((node) => {
+      const span = document.createElement("span");
+      span.style.fontSize = fontSize;
+      span.innerHTML = node.innerHTML;
+      node.replaceWith(span);
+    });
+    saveSelection();
+    emitChange();
+  }, [emitChange, restoreSelection, saveSelection]);
 
   const setColor = useCallback(() => {
     const color = window.prompt("Enter color (hex):", "#E5C54F");
@@ -93,6 +117,40 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
         >
           <Palette size={12} />
         </button>
+        <select
+          defaultValue=""
+          onMouseDown={(event) => event.preventDefault()}
+          onChange={(event) => {
+            if (!event.target.value) return;
+            editorRef.current?.focus();
+            restoreSelection();
+            document.execCommand("styleWithCSS", false, "true");
+            document.execCommand("fontName", false, event.target.value);
+            saveSelection();
+            emitChange();
+            event.target.value = "";
+          }}
+          className="font-body text-[10px] px-1 py-0.5 rounded border bg-transparent cursor-pointer"
+          style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "92px" }}
+          title="Font family"
+        >
+          <option value="">Font</option>
+          {FONT_OPTIONS.map((font) => <option key={font.value} value={font.value}>{font.label}</option>)}
+        </select>
+        <select
+          defaultValue=""
+          onMouseDown={(event) => event.preventDefault()}
+          onChange={(event) => {
+            if (event.target.value) applyFontSize(event.target.value);
+            event.target.value = "";
+          }}
+          className="font-body text-[10px] px-1 py-0.5 rounded border bg-transparent cursor-pointer"
+          style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "72px" }}
+          title="Font size"
+        >
+          <option value="">Size</option>
+          {SIZE_OPTIONS.map((size) => <option key={size} value={size}>{size.replace("px", "")}</option>)}
+        </select>
         <button
           type="button"
           title="Reset color"

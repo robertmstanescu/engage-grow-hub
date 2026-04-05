@@ -14,6 +14,7 @@ import GridRow from "@/components/rows/GridRow";
 import type { PageRow } from "@/types/rows";
 import NotFound from "./NotFound";
 import usePageMeta from "@/hooks/usePageMeta";
+import { readLivePreviewState, subscribeLivePreview } from "@/lib/livePreview";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -43,10 +44,24 @@ const CmsPage = () => {
   const [searchParams] = useSearchParams();
   const isPreview = searchParams.get("preview") === "draft";
   const [page, setPage] = useState<any>(null);
+  const [livePreviewPage, setLivePreviewPage] = useState<{ rows: PageRow[]; meta_title?: string; meta_description?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  usePageMeta({ title: page?.meta_title || page?.title || undefined, description: page?.meta_description || undefined });
+  usePageMeta({ title: livePreviewPage?.meta_title || page?.meta_title || page?.title || undefined, description: livePreviewPage?.meta_description || page?.meta_description || undefined });
+
+  useEffect(() => {
+    if (!slug || !isPreview) { setLivePreviewPage(null); return; }
+
+    const syncPreview = (state = readLivePreviewState()) => {
+      const draft = state.cmsPages[slug];
+      setLivePreviewPage(draft ? { rows: draft.rows || [], meta_title: draft.meta_title, meta_description: draft.meta_description } : null);
+    };
+
+    syncPreview();
+    return subscribeLivePreview(syncPreview);
+  }, [slug, isPreview]);
+
   useEffect(() => {
     if (!slug || SYSTEM_ROUTES.includes(slug)) { setNotFound(true); setLoading(false); return; }
     const load = async () => {
@@ -67,10 +82,10 @@ const CmsPage = () => {
 
   if (notFound) return <NotFound />;
 
-  const rows: PageRow[] = isPreview && page?.draft_page_rows ? page.draft_page_rows : (page?.page_rows || []);
+  const rows: PageRow[] = livePreviewPage?.rows || (isPreview && page?.draft_page_rows ? page.draft_page_rows : (page?.page_rows || []));
 
   return (
-    <div className="min-h-screen lg:pl-16">
+    <div className="snap-container lg:pl-16">
       <Navbar />
       {isPreview && (
         <div className="sticky top-0 z-50 px-4 py-2 text-center font-body text-xs uppercase tracking-wider"
@@ -80,14 +95,21 @@ const CmsPage = () => {
       )}
       <div>
         {rows.length === 0 ? (
-          <div className="py-32 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
-            This page has no content yet. Add rows in the admin panel.
-          </div>
+          <>
+            <div className="py-32 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+              This page has no content yet. Add rows in the admin panel.
+            </div>
+            <Footer />
+          </>
         ) : (
-          rows.map((row, index) => <RowRenderer key={row.id} row={row} rowIndex={index} />)
+          rows.map((row, index) => index === rows.length - 1 ? (
+            <div key={row.id} className="snap-section">
+              <RowRenderer row={row} rowIndex={index} />
+              <Footer />
+            </div>
+          ) : <RowRenderer key={row.id} row={row} rowIndex={index} />)
         )}
       </div>
-      <Footer />
     </div>
   );
 };
