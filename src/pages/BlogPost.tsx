@@ -63,8 +63,8 @@ const BlogPost = () => {
       return isPreview ? subscribeLivePreview(syncPreview) : undefined;
     };
 
-    let cleanup: void | (() => void);
-    fetchArticle().then((fn) => { cleanup = fn; });
+    let cleanup: (() => void) | undefined;
+    fetchArticle().then((fn) => { if (fn) cleanup = fn; });
     return () => cleanup?.();
   }, [slug, isPreview, previewKey]);
 
