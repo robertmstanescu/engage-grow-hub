@@ -780,7 +780,7 @@ const AdminDashboard = ({ session }: Props) => {
         </div>
 
         {/* ── LIVE PREVIEW / MAIN CONTENT ── */}
-        <div style={{ flex: "1 1 0", minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ flex: "1 1 50%", minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           {isSiteTab ? (
             <>
               {/* Preview Toolbar */}
@@ -864,13 +864,12 @@ const AdminDashboard = ({ session }: Props) => {
         {/* ── PROPERTIES PANEL ── */}
         <div
           style={{
-            width: isSiteTab ? "50%" : 0,
-            maxWidth: isSiteTab ? "50%" : 0,
-            minWidth: isSiteTab ? 360 : 0,
-            transition: "width 0.3s cubic-bezier(0.16,1,0.3,1)",
+            flex: isSiteTab ? "1 1 50%" : "0 0 0",
+            minWidth: isSiteTab ? 320 : 0,
+            transition: "flex 0.3s cubic-bezier(0.16,1,0.3,1)",
             backgroundColor: "hsl(var(--card))",
             borderLeft: isSiteTab ? "1px solid hsl(var(--border))" : "none",
-            flexShrink: 0, overflow: "hidden",
+            overflow: "hidden",
             display: "flex", flexDirection: "column",
           }}
         >
