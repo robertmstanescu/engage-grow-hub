@@ -1153,9 +1153,16 @@ const RowContentEditor = ({
       return (
         <>{commonMeta}
           <div className="space-y-3">
+            <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
             <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
+            <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onContentChange("subtitle", v)} onColorChange={(v) => onContentChange("subtitle_color", v)} />
             <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} />
             <Field label="Button Text" value={content.button_text || ""} onChange={(v) => onContentChange("button_text", v)} />
+            <SectionBox label="Colors">
+              <div className="grid grid-cols-2 gap-3">
+                <ColorField label="Eyebrow" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onContentChange("color_eyebrow", v)} />
+              </div>
+            </SectionBox>
             <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
           </div>
         </>
