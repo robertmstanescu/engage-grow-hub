@@ -42,7 +42,7 @@ import ImagePickerField from "./ImagePickerField";
 import { patchLivePreviewState, pushLivePreviewToWindow, readLivePreviewState } from "@/lib/livePreview";
 
 type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "settings";
-type Device = "desktop" | "tablet" | "mobile";
+
 type PropertiesSubTab = "content" | "style" | "seo";
 
 interface Props { session: any; }
@@ -164,13 +164,8 @@ const SortableSectionBlock = ({
 const AdminDashboard = ({ session }: Props) => {
   const [activeTab, setActiveTab] = useState<Tab>("site");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
-  const [device, setDevice] = useState<Device>("desktop");
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [propertiesSubTab, setPropertiesSubTab] = useState<PropertiesSubTab>("content");
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const previewContainerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ w: 800, h: 600 });
-  const [iframeKey, setIframeKey] = useState(0);
   const [showAddRow, setShowAddRow] = useState(false);
 
   // ── CMS page editing ──
