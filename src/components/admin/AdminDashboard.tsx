@@ -342,7 +342,6 @@ const AdminDashboard = ({ session }: Props) => {
       toast.success("Draft saved");
     }
     setSaving(false);
-    setIframeKey((k) => k + 1);
   }, [sections, cmsPage, cmsPageRows]);
 
   const publishAll = useCallback(async () => {
@@ -374,7 +373,6 @@ const AdminDashboard = ({ session }: Props) => {
         toast.success("All changes published!");
       }
     }
-    iframeRef.current?.contentWindow?.location.reload();
     setPublishing(false);
   }, [sections, cmsPage, cmsPageRows]);
 
@@ -387,31 +385,10 @@ const AdminDashboard = ({ session }: Props) => {
     toast.success("Logged out");
   };
 
-  // ── Resize observer for iframe scaling ──
-  useEffect(() => {
-    const el = previewContainerRef.current;
-    if (!el) return;
-    const obs = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setContainerSize({ w: entry.contentRect.width, h: entry.contentRect.height });
-      }
-    });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
   // ── Section selection ──
   const selectSection = (rowId: string) => {
     setSelectedSectionId(rowId);
     setPropertiesSubTab("content");
-    const row = pageRows.find((r) => r.id === rowId);
-    if (row && iframeRef.current?.contentWindow) {
-      const sectionKey = row.scope || row.strip_title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      iframeRef.current.contentWindow.postMessage(
-        { type: "HIGHLIGHT_SECTION", sectionKey },
-        window.location.origin
-      );
-    }
   };
 
   // ── DnD sensors ──
