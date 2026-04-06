@@ -431,44 +431,8 @@ const AdminDashboard = ({ session }: Props) => {
   };
 
   const isSiteTab = activeTab === "site";
-  const targetWidth = DEVICE_WIDTHS[device];
-  const scale = Math.max(0.1, Math.min(containerSize.w / targetWidth, 1));
-  const scaledHeight = Math.max(containerSize.h / scale, containerSize.h);
-
   const isMainPage = !cmsPage;
   const pageLabel = cmsPage ? cmsPage.title : "Main Page";
-  const previewSrc = cmsPage ? `/p/${cmsPage.slug}?preview=draft` : "/?preview=1";
-
-  useEffect(() => {
-    if (!isSiteTab) return;
-
-    const state = patchLivePreviewState(
-      cmsPage
-        ? {
-            cmsPages: {
-              [cmsPage.slug]: {
-                rows: cmsPageRows,
-                meta_title: cmsPageMeta.meta_title,
-                meta_description: cmsPageMeta.meta_description,
-                status: cmsPageStatus,
-              },
-            },
-          }
-        : {
-            sections: {
-              hero: getDraft("hero"),
-              page_rows: { rows: pageRows },
-              main_page_seo: getDraft("main_page_seo"),
-            },
-          }
-    );
-
-    pushLivePreviewToWindow(iframeRef.current?.contentWindow, state);
-  }, [isSiteTab, cmsPage, cmsPageRows, cmsPageMeta, cmsPageStatus, pageRows, sections]);
-
-  const handleIframeLoad = useCallback(() => {
-    pushLivePreviewToWindow(iframeRef.current?.contentWindow, readLivePreviewState());
-  }, []);
 
   const tabLabel = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.key === activeTab)?.label || "";
 
