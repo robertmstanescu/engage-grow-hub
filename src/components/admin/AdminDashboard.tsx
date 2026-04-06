@@ -782,158 +782,162 @@ const AdminDashboard = ({ session }: Props) => {
         {/* ── MAIN CONTENT AREA ── */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           {isSiteTab ? (
-            /* Properties / Editor panel - full width */
-            <div
-              style={{
-                flex: 1,
-                backgroundColor: "hsl(var(--card))",
-                overflow: "hidden",
-                display: "flex", flexDirection: "column",
-            borderLeft: isSiteTab ? "1px solid hsl(var(--border))" : "none",
-            overflow: "hidden",
-            display: "flex", flexDirection: "column",
-          }}
-        >
-          {!selectedSectionId ? (
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)" }}>
-                Select a section to edit
-              </span>
-            </div>
-          ) : (
-            <>
-              {/* Properties Header */}
-              <div style={{
-                height: 44, display: "flex", alignItems: "center", gap: 8,
-                padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
-              }}>
-                <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
-                  {selectedSectionId === "__hero__"
-                    ? "Hero"
-                    : selectedSectionId === "__seo__"
-                    ? "SEO & Metadata"
-                    : selectedRow?.strip_title || "Section"}
-                </span>
-                {selectedSectionId !== "__seo__" && (
-                  <span style={{
-                    fontSize: 8, textTransform: "uppercase" as const, letterSpacing: "0.1em",
-                    background: "hsl(var(--secondary) / 0.1)", color: "hsl(var(--secondary))",
-                    padding: "2px 7px", borderRadius: 4,
-                  }}>
-                    {selectedSectionId === "__hero__" ? "hero" : selectedRow?.type}
+            <div style={{ flex: 1, backgroundColor: "hsl(var(--card))", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+              {!selectedSectionId ? (
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)" }}>
+                    Select a section to edit
                   </span>
-                )}
-              </div>
+                </div>
+              ) : (
+                <>
+                  {/* Properties Header */}
+                  <div style={{
+                    height: 44, display: "flex", alignItems: "center", gap: 8,
+                    padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
+                  }}>
+                    <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
+                      {selectedSectionId === "__hero__"
+                        ? "Hero"
+                        : selectedSectionId === "__seo__"
+                        ? "SEO & Metadata"
+                        : selectedRow?.strip_title || "Section"}
+                    </span>
+                    {selectedSectionId !== "__seo__" && (
+                      <span style={{
+                        fontSize: 8, textTransform: "uppercase" as const, letterSpacing: "0.1em",
+                        background: "hsl(var(--secondary) / 0.1)", color: "hsl(var(--secondary))",
+                        padding: "2px 7px", borderRadius: 4,
+                      }}>
+                        {selectedSectionId === "__hero__" ? "hero" : selectedRow?.type}
+                      </span>
+                    )}
+                  </div>
 
-              {/* Sub-tabs */}
-              {selectedSectionId !== "__seo__" && (
-                <div style={{ display: "flex", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0 }}>
-                  {(["content", "style", "seo"] as PropertiesSubTab[]).map((tab) => (
+                  {/* Sub-tabs */}
+                  {selectedSectionId !== "__seo__" && (
+                    <div style={{ display: "flex", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0 }}>
+                      {(["content", "style", "seo"] as PropertiesSubTab[]).map((tab) => (
+                        <button
+                          key={tab}
+                          onClick={() => setPropertiesSubTab(tab)}
+                          style={{
+                            flex: 1, padding: "0.5rem", fontSize: 9, letterSpacing: "0.1em",
+                            textTransform: "uppercase" as const, border: "none", cursor: "pointer",
+                            background: "transparent",
+                            color: propertiesSubTab === tab ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
+                            borderBottom: propertiesSubTab === tab ? "2px solid hsl(var(--secondary))" : "2px solid transparent",
+                            fontFamily: "var(--font-body)",
+                          }}
+                        >
+                          {tab}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Scrollable body */}
+                  <div style={{ flex: 1, overflowY: "auto", padding: "1rem", scrollbarWidth: "thin" as const }}>
+                    {selectedSectionId === "__seo__" ? (
+                      cmsPage ? (
+                        <SeoFields
+                          metaTitle={cmsPageMeta.meta_title}
+                          metaDescription={cmsPageMeta.meta_description}
+                          onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
+                          onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
+                        />
+                      ) : (
+                        <SeoFields
+                          metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                          metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                          onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                          onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                        />
+                      )
+                    ) : selectedSectionId === "__hero__" ? (
+                      propertiesSubTab === "content" ? (
+                        <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
+                      ) : propertiesSubTab === "style" ? (
+                        <StyleTab />
+                      ) : (
+                        <SeoFields
+                          metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                          metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                          onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                          onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                        />
+                      )
+                    ) : selectedRow ? (
+                      propertiesSubTab === "content" ? (
+                        <RowContentEditor row={selectedRow} onContentChange={updateRowContent} onRowMetaChange={updateRowMeta} onDelete={() => deleteRow(selectedRow.id)} />
+                      ) : propertiesSubTab === "style" ? (
+                        <StyleTab />
+                      ) : (
+                        cmsPage ? (
+                          <SeoFields
+                            metaTitle={cmsPageMeta.meta_title}
+                            metaDescription={cmsPageMeta.meta_description}
+                            onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
+                            onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
+                          />
+                        ) : (
+                          <SeoFields
+                            metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                            metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                            onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                            onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                          />
+                        )
+                      )
+                    ) : null}
+                  </div>
+
+                  {/* Footer */}
+                  <div style={{
+                    height: 52, display: "flex", alignItems: "center", gap: 8,
+                    padding: "0 1rem", borderTop: "1px solid hsl(var(--border))", flexShrink: 0,
+                  }}>
                     <button
-                      key={tab}
-                      onClick={() => setPropertiesSubTab(tab)}
+                      onClick={saveDraft}
+                      disabled={saving}
                       style={{
-                        flex: 1, padding: "0.5rem", fontSize: 9, letterSpacing: "0.1em",
-                        textTransform: "uppercase" as const, border: "none", cursor: "pointer",
-                        background: "transparent",
-                        color: propertiesSubTab === tab ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
-                        borderBottom: propertiesSubTab === tab ? "2px solid hsl(var(--secondary))" : "2px solid transparent",
-                        fontFamily: "var(--font-body)",
+                        flex: 1, fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
+                        letterSpacing: "0.1em", padding: "8px 0", borderRadius: 20, cursor: "pointer",
+                        border: "1px solid hsl(var(--border))", background: "transparent",
+                        color: "hsl(var(--foreground))", opacity: saving ? 0.5 : 1,
                       }}
                     >
-                      {tab}
+                      Save draft
                     </button>
-                  ))}
-                </div>
+                    <button
+                      onClick={publishAll}
+                      disabled={publishing}
+                      style={{
+                        flex: 1, fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
+                        letterSpacing: "0.1em", padding: "8px 0", borderRadius: 20, cursor: "pointer",
+                        border: "none", backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--background))",
+                        opacity: publishing ? 0.4 : 1,
+                      }}
+                    >
+                      Publish
+                    </button>
+                  </div>
+                </>
               )}
-
-              {/* Scrollable body */}
-              <div style={{ flex: 1, overflowY: "auto", padding: "1rem", scrollbarWidth: "thin" as const }}>
-                {selectedSectionId === "__seo__" ? (
-                  cmsPage ? (
-                    <SeoFields
-                      metaTitle={cmsPageMeta.meta_title}
-                      metaDescription={cmsPageMeta.meta_description}
-                      onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
-                      onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
-                    />
-                  ) : (
-                    <SeoFields
-                      metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                      metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                      onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                      onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                    />
-                  )
-                ) : selectedSectionId === "__hero__" ? (
-                  propertiesSubTab === "content" ? (
-                    <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
-                  ) : propertiesSubTab === "style" ? (
-                    <StyleTab />
-                  ) : (
-                    <SeoFields
-                      metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                      metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                      onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                      onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                    />
-                  )
-                ) : selectedRow ? (
-                  propertiesSubTab === "content" ? (
-                    <RowContentEditor row={selectedRow} onContentChange={updateRowContent} onRowMetaChange={updateRowMeta} onDelete={() => deleteRow(selectedRow.id)} />
-                  ) : propertiesSubTab === "style" ? (
-                    <StyleTab />
-                  ) : (
-                    cmsPage ? (
-                      <SeoFields
-                        metaTitle={cmsPageMeta.meta_title}
-                        metaDescription={cmsPageMeta.meta_description}
-                        onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
-                        onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
-                      />
-                    ) : (
-                      <SeoFields
-                        metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                        metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                        onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                        onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                      />
-                    )
-                  )
-                ) : null}
+            </div>
+          ) : (
+            <main style={{ flex: 1, overflowY: "auto", padding: "1.5rem" }}>
+              <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+                {activeTab === "pages" && <PagesManager onEditPage={handleEditPage} />}
+                {activeTab === "navigation" && <NavigationManager />}
+                {activeTab === "blog" && <BlogEditor />}
+                {activeTab === "contacts" && <ContactsList />}
+                {activeTab === "emails" && <EmailCampaigns />}
+                {activeTab === "media" && <MediaGallery />}
+                {activeTab === "brand" && <BrandSettings />}
+                {activeTab === "settings" && <GlobalSettings />}
               </div>
-
-              {/* Footer */}
-              <div style={{
-                height: 52, display: "flex", alignItems: "center", gap: 8,
-                padding: "0 1rem", borderTop: "1px solid hsl(var(--border))", flexShrink: 0,
-              }}>
-                <button
-                  onClick={saveDraft}
-                  disabled={saving}
-                  style={{
-                    flex: 1, fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
-                    letterSpacing: "0.1em", padding: "8px 0", borderRadius: 20, cursor: "pointer",
-                    border: "1px solid hsl(var(--border))", background: "transparent",
-                    color: "hsl(var(--foreground))", opacity: saving ? 0.5 : 1,
-                  }}
-                >
-                  Save draft
-                </button>
-                <button
-                  onClick={publishAll}
-                  disabled={publishing}
-                  style={{
-                    flex: 1, fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
-                    letterSpacing: "0.1em", padding: "8px 0", borderRadius: 20, cursor: "pointer",
-                    border: "none", backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--background))",
-                    opacity: publishing ? 0.4 : 1,
-                  }}
-                >
-                  Publish
-                </button>
-              </div>
-            </>
+            </main>
           )}
         </div>
       </div>
