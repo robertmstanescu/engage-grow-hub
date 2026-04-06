@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import {
   LayoutDashboard, FileText, Compass, BookOpen,
   Users, Mail, Image, Palette, Settings, LogOut,
-  Monitor, Tablet, Smartphone, Save, Send, Eye,
+  Save, Send,
   GripVertical, Plus, Trash2, ArrowLeft,
 } from "lucide-react";
 import {
@@ -39,10 +39,10 @@ import ImageTextEditor from "./site-editor/ImageTextEditor";
 import ProfileEditor from "./site-editor/ProfileEditor";
 import GridEditor from "./site-editor/GridEditor";
 import ImagePickerField from "./ImagePickerField";
-import { patchLivePreviewState, pushLivePreviewToWindow, readLivePreviewState } from "@/lib/livePreview";
+
 
 type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "settings";
-type Device = "desktop" | "tablet" | "mobile";
+
 type PropertiesSubTab = "content" | "style" | "seo";
 
 interface Props { session: any; }
@@ -65,7 +65,7 @@ const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[
 ];
 const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
 
-const DEVICE_WIDTHS: Record<Device, number> = { desktop: 1280, tablet: 768, mobile: 390 };
+
 
 const NAV_GROUPS = [
   {
@@ -164,13 +164,8 @@ const SortableSectionBlock = ({
 const AdminDashboard = ({ session }: Props) => {
   const [activeTab, setActiveTab] = useState<Tab>("site");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
-  const [device, setDevice] = useState<Device>("desktop");
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [propertiesSubTab, setPropertiesSubTab] = useState<PropertiesSubTab>("content");
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const previewContainerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ w: 800, h: 600 });
-  const [iframeKey, setIframeKey] = useState(0);
   const [showAddRow, setShowAddRow] = useState(false);
 
   // ── CMS page editing ──
@@ -312,7 +307,6 @@ const AdminDashboard = ({ session }: Props) => {
     await supabase.from("cms_pages").update(updates).eq("id", cmsPage.id);
     setCmsPageStatus(newStatus);
     toast.success(newStatus === "published" ? "Published!" : "Unpublished");
-    setIframeKey((k) => k + 1);
   }, [cmsPage, cmsPageStatus, cmsPageRows]);
 
   const updateCmsPageMeta = useCallback(async (field: string, value: string) => {
@@ -348,7 +342,6 @@ const AdminDashboard = ({ session }: Props) => {
       toast.success("Draft saved");
     }
     setSaving(false);
-    setIframeKey((k) => k + 1);
   }, [sections, cmsPage, cmsPageRows]);
 
   const publishAll = useCallback(async () => {
@@ -380,7 +373,6 @@ const AdminDashboard = ({ session }: Props) => {
         toast.success("All changes published!");
       }
     }
-    iframeRef.current?.contentWindow?.location.reload();
     setPublishing(false);
   }, [sections, cmsPage, cmsPageRows]);
 
@@ -393,31 +385,10 @@ const AdminDashboard = ({ session }: Props) => {
     toast.success("Logged out");
   };
 
-  // ── Resize observer for iframe scaling ──
-  useEffect(() => {
-    const el = previewContainerRef.current;
-    if (!el) return;
-    const obs = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setContainerSize({ w: entry.contentRect.width, h: entry.contentRect.height });
-      }
-    });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
   // ── Section selection ──
   const selectSection = (rowId: string) => {
     setSelectedSectionId(rowId);
     setPropertiesSubTab("content");
-    const row = pageRows.find((r) => r.id === rowId);
-    if (row && iframeRef.current?.contentWindow) {
-      const sectionKey = row.scope || row.strip_title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      iframeRef.current.contentWindow.postMessage(
-        { type: "HIGHLIGHT_SECTION", sectionKey },
-        window.location.origin
-      );
-    }
   };
 
   // ── DnD sensors ──
@@ -460,44 +431,8 @@ const AdminDashboard = ({ session }: Props) => {
   };
 
   const isSiteTab = activeTab === "site";
-  const targetWidth = DEVICE_WIDTHS[device];
-  const scale = Math.max(0.1, Math.min(containerSize.w / targetWidth, 1));
-  const scaledHeight = Math.max(containerSize.h / scale, containerSize.h);
-
   const isMainPage = !cmsPage;
   const pageLabel = cmsPage ? cmsPage.title : "Main Page";
-  const previewSrc = cmsPage ? `/p/${cmsPage.slug}?preview=draft` : "/?preview=1";
-
-  useEffect(() => {
-    if (!isSiteTab) return;
-
-    const state = patchLivePreviewState(
-      cmsPage
-        ? {
-            cmsPages: {
-              [cmsPage.slug]: {
-                rows: cmsPageRows,
-                meta_title: cmsPageMeta.meta_title,
-                meta_description: cmsPageMeta.meta_description,
-                status: cmsPageStatus,
-              },
-            },
-          }
-        : {
-            sections: {
-              hero: getDraft("hero"),
-              page_rows: { rows: pageRows },
-              main_page_seo: getDraft("main_page_seo"),
-            },
-          }
-    );
-
-    pushLivePreviewToWindow(iframeRef.current?.contentWindow, state);
-  }, [isSiteTab, cmsPage, cmsPageRows, cmsPageMeta, cmsPageStatus, pageRows, sections]);
-
-  const handleIframeLoad = useCallback(() => {
-    pushLivePreviewToWindow(iframeRef.current?.contentWindow, readLivePreviewState());
-  }, []);
 
   const tabLabel = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.key === activeTab)?.label || "";
 
@@ -779,73 +714,153 @@ const AdminDashboard = ({ session }: Props) => {
           </div>
         </div>
 
-        {/* ── LIVE PREVIEW / MAIN CONTENT ── */}
-        <div style={{ flex: "1 1 50%", minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* ── MAIN CONTENT AREA ── */}
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           {isSiteTab ? (
-            <>
-              {/* Preview Toolbar */}
-              <div style={{
-                height: 44, display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
-                backgroundColor: "hsl(var(--card))",
-              }}>
-                <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)" }}>
-                  {pageLabel}
-                  {cmsPage && <span style={{ fontSize: 9, marginLeft: 6, opacity: 0.6 }}>/{cmsPage.slug}</span>}
-                </span>
-                <div style={{ display: "flex", gap: 4 }}>
-                  {([
-                    { d: "desktop" as Device, Icon: Monitor },
-                    { d: "tablet" as Device, Icon: Tablet },
-                    { d: "mobile" as Device, Icon: Smartphone },
-                  ]).map(({ d, Icon }) => (
+            <div style={{ flex: 1, backgroundColor: "hsl(var(--card))", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+              {!selectedSectionId ? (
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)" }}>
+                    Select a section to edit
+                  </span>
+                </div>
+              ) : (
+                <>
+                  {/* Properties Header */}
+                  <div style={{
+                    height: 44, display: "flex", alignItems: "center", gap: 8,
+                    padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
+                  }}>
+                    <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
+                      {selectedSectionId === "__hero__"
+                        ? "Hero"
+                        : selectedSectionId === "__seo__"
+                        ? "SEO & Metadata"
+                        : selectedRow?.strip_title || "Section"}
+                    </span>
+                    {selectedSectionId !== "__seo__" && (
+                      <span style={{
+                        fontSize: 8, textTransform: "uppercase" as const, letterSpacing: "0.1em",
+                        background: "hsl(var(--secondary) / 0.1)", color: "hsl(var(--secondary))",
+                        padding: "2px 7px", borderRadius: 4,
+                      }}>
+                        {selectedSectionId === "__hero__" ? "hero" : selectedRow?.type}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Sub-tabs */}
+                  {selectedSectionId !== "__seo__" && (
+                    <div style={{ display: "flex", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0 }}>
+                      {(["content", "style", "seo"] as PropertiesSubTab[]).map((tab) => (
+                        <button
+                          key={tab}
+                          onClick={() => setPropertiesSubTab(tab)}
+                          style={{
+                            flex: 1, padding: "0.5rem", fontSize: 9, letterSpacing: "0.1em",
+                            textTransform: "uppercase" as const, border: "none", cursor: "pointer",
+                            background: "transparent",
+                            color: propertiesSubTab === tab ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
+                            borderBottom: propertiesSubTab === tab ? "2px solid hsl(var(--secondary))" : "2px solid transparent",
+                            fontFamily: "var(--font-body)",
+                          }}
+                        >
+                          {tab}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Scrollable body */}
+                  <div style={{ flex: 1, overflowY: "auto", padding: "1rem", scrollbarWidth: "thin" as const }}>
+                    {selectedSectionId === "__seo__" ? (
+                      cmsPage ? (
+                        <SeoFields
+                          metaTitle={cmsPageMeta.meta_title}
+                          metaDescription={cmsPageMeta.meta_description}
+                          onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
+                          onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
+                        />
+                      ) : (
+                        <SeoFields
+                          metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                          metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                          onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                          onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                        />
+                      )
+                    ) : selectedSectionId === "__hero__" ? (
+                      propertiesSubTab === "content" ? (
+                        <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
+                      ) : propertiesSubTab === "style" ? (
+                        <StyleTab />
+                      ) : (
+                        <SeoFields
+                          metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                          metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                          onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                          onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                        />
+                      )
+                    ) : selectedRow ? (
+                      propertiesSubTab === "content" ? (
+                        <RowContentEditor row={selectedRow} onContentChange={updateRowContent} onRowMetaChange={updateRowMeta} onDelete={() => deleteRow(selectedRow.id)} />
+                      ) : propertiesSubTab === "style" ? (
+                        <StyleTab />
+                      ) : (
+                        cmsPage ? (
+                          <SeoFields
+                            metaTitle={cmsPageMeta.meta_title}
+                            metaDescription={cmsPageMeta.meta_description}
+                            onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
+                            onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
+                          />
+                        ) : (
+                          <SeoFields
+                            metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                            metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                            onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                            onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                          />
+                        )
+                      )
+                    ) : null}
+                  </div>
+
+                  {/* Footer */}
+                  <div style={{
+                    height: 52, display: "flex", alignItems: "center", gap: 8,
+                    padding: "0 1rem", borderTop: "1px solid hsl(var(--border))", flexShrink: 0,
+                  }}>
                     <button
-                      key={d}
-                      onClick={() => setDevice(d)}
+                      onClick={saveDraft}
+                      disabled={saving}
                       style={{
-                        padding: "4px 8px", borderRadius: 6, border: "none", cursor: "pointer",
-                        background: device === d ? "hsl(var(--card))" : "transparent",
-                        color: device === d ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
-                        boxShadow: device === d ? "0 1px 3px hsl(var(--border))" : "none",
+                        flex: 1, fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
+                        letterSpacing: "0.1em", padding: "8px 0", borderRadius: 20, cursor: "pointer",
+                        border: "1px solid hsl(var(--border))", background: "transparent",
+                        color: "hsl(var(--foreground))", opacity: saving ? 0.5 : 1,
                       }}
                     >
-                      <Icon size={14} />
+                      Save draft
                     </button>
-                  ))}
-                </div>
-              </div>
-              {/* Scaled iframe */}
-              <div
-                ref={previewContainerRef}
-                style={{
-                  flex: 1, overflow: "hidden", display: "flex", alignItems: "flex-start", justifyContent: "center",
-                  backgroundColor: "hsl(var(--background) / 0.5)", padding: 16,
-                }}
-              >
-                <div style={{
-                  width: targetWidth,
-                  height: scaledHeight,
-                  transform: `scale(${scale})`,
-                  transformOrigin: "top center",
-                  borderRadius: 8,
-                  overflow: "hidden",
-                  boxShadow: "0 4px 24px hsl(var(--border) / 0.3)",
-                  border: "1px solid hsl(var(--border))",
-                  flexShrink: 0,
-                }}>
-                  <iframe
-                    key={iframeKey}
-                    ref={iframeRef}
-                    src={previewSrc}
-                    onLoad={handleIframeLoad}
-                    style={{ width: "100%", height: "100%", border: "none" }}
-                    title="Site Preview"
-                  />
-                </div>
-              </div>
-            </>
+                    <button
+                      onClick={publishAll}
+                      disabled={publishing}
+                      style={{
+                        flex: 1, fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
+                        letterSpacing: "0.1em", padding: "8px 0", borderRadius: 20, cursor: "pointer",
+                        border: "none", backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--background))",
+                        opacity: publishing ? 0.4 : 1,
+                      }}
+                    >
+                      Publish
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           ) : (
-            /* Non-site tabs - full width content */
             <main style={{ flex: 1, overflowY: "auto", padding: "1.5rem" }}>
               <div style={{ maxWidth: 1000, margin: "0 auto" }}>
                 {activeTab === "pages" && <PagesManager onEditPage={handleEditPage} />}
@@ -858,161 +873,6 @@ const AdminDashboard = ({ session }: Props) => {
                 {activeTab === "settings" && <GlobalSettings />}
               </div>
             </main>
-          )}
-        </div>
-
-        {/* ── PROPERTIES PANEL ── */}
-        <div
-          style={{
-            flex: isSiteTab ? "1 1 50%" : "0 0 0",
-            minWidth: isSiteTab ? 320 : 0,
-            transition: "flex 0.3s cubic-bezier(0.16,1,0.3,1)",
-            backgroundColor: "hsl(var(--card))",
-            borderLeft: isSiteTab ? "1px solid hsl(var(--border))" : "none",
-            overflow: "hidden",
-            display: "flex", flexDirection: "column",
-          }}
-        >
-          {!selectedSectionId ? (
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)" }}>
-                Select a section to edit
-              </span>
-            </div>
-          ) : (
-            <>
-              {/* Properties Header */}
-              <div style={{
-                height: 44, display: "flex", alignItems: "center", gap: 8,
-                padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
-              }}>
-                <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
-                  {selectedSectionId === "__hero__"
-                    ? "Hero"
-                    : selectedSectionId === "__seo__"
-                    ? "SEO & Metadata"
-                    : selectedRow?.strip_title || "Section"}
-                </span>
-                {selectedSectionId !== "__seo__" && (
-                  <span style={{
-                    fontSize: 8, textTransform: "uppercase" as const, letterSpacing: "0.1em",
-                    background: "hsl(var(--secondary) / 0.1)", color: "hsl(var(--secondary))",
-                    padding: "2px 7px", borderRadius: 4,
-                  }}>
-                    {selectedSectionId === "__hero__" ? "hero" : selectedRow?.type}
-                  </span>
-                )}
-              </div>
-
-              {/* Sub-tabs */}
-              {selectedSectionId !== "__seo__" && (
-                <div style={{ display: "flex", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0 }}>
-                  {(["content", "style", "seo"] as PropertiesSubTab[]).map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setPropertiesSubTab(tab)}
-                      style={{
-                        flex: 1, padding: "0.5rem", fontSize: 9, letterSpacing: "0.1em",
-                        textTransform: "uppercase" as const, border: "none", cursor: "pointer",
-                        background: "transparent",
-                        color: propertiesSubTab === tab ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
-                        borderBottom: propertiesSubTab === tab ? "2px solid hsl(var(--secondary))" : "2px solid transparent",
-                        fontFamily: "var(--font-body)",
-                      }}
-                    >
-                      {tab}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Scrollable body */}
-              <div style={{ flex: 1, overflowY: "auto", padding: "1rem", scrollbarWidth: "thin" as const }}>
-                {selectedSectionId === "__seo__" ? (
-                  cmsPage ? (
-                    <SeoFields
-                      metaTitle={cmsPageMeta.meta_title}
-                      metaDescription={cmsPageMeta.meta_description}
-                      onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
-                      onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
-                    />
-                  ) : (
-                    <SeoFields
-                      metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                      metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                      onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                      onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                    />
-                  )
-                ) : selectedSectionId === "__hero__" ? (
-                  propertiesSubTab === "content" ? (
-                    <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
-                  ) : propertiesSubTab === "style" ? (
-                    <StyleTab />
-                  ) : (
-                    <SeoFields
-                      metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                      metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                      onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                      onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                    />
-                  )
-                ) : selectedRow ? (
-                  propertiesSubTab === "content" ? (
-                    <RowContentEditor row={selectedRow} onContentChange={updateRowContent} onRowMetaChange={updateRowMeta} onDelete={() => deleteRow(selectedRow.id)} />
-                  ) : propertiesSubTab === "style" ? (
-                    <StyleTab />
-                  ) : (
-                    cmsPage ? (
-                      <SeoFields
-                        metaTitle={cmsPageMeta.meta_title}
-                        metaDescription={cmsPageMeta.meta_description}
-                        onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
-                        onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
-                      />
-                    ) : (
-                      <SeoFields
-                        metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                        metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                        onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                        onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                      />
-                    )
-                  )
-                ) : null}
-              </div>
-
-              {/* Footer */}
-              <div style={{
-                height: 52, display: "flex", alignItems: "center", gap: 8,
-                padding: "0 1rem", borderTop: "1px solid hsl(var(--border))", flexShrink: 0,
-              }}>
-                <button
-                  onClick={saveDraft}
-                  disabled={saving}
-                  style={{
-                    flex: 1, fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
-                    letterSpacing: "0.1em", padding: "8px 0", borderRadius: 20, cursor: "pointer",
-                    border: "1px solid hsl(var(--border))", background: "transparent",
-                    color: "hsl(var(--foreground))", opacity: saving ? 0.5 : 1,
-                  }}
-                >
-                  Save draft
-                </button>
-                <button
-                  onClick={publishAll}
-                  disabled={publishing}
-                  style={{
-                    flex: 1, fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
-                    letterSpacing: "0.1em", padding: "8px 0", borderRadius: 20, cursor: "pointer",
-                    border: "none", backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--background))",
-                    opacity: publishing ? 0.4 : 1,
-                  }}
-                >
-                  Publish
-                </button>
-              </div>
-            </>
           )}
         </div>
       </div>
