@@ -13,6 +13,9 @@ import ServiceRow from "@/components/rows/ServiceRow";
 import BoxedRow from "@/components/rows/BoxedRow";
 import ContactRow from "@/components/rows/ContactRow";
 import HeroRow from "@/components/rows/HeroRow";
+import ImageTextRow from "@/components/rows/ImageTextRow";
+import ProfileRow from "@/components/rows/ProfileRow";
+import GridRow from "@/components/rows/GridRow";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -40,6 +43,9 @@ const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
       case "service": return wrapper(<ServiceRow row={row} rowIndex={rowIndex} />);
       case "boxed": return wrapper(<BoxedRow row={row} rowIndex={rowIndex} />);
       case "contact": return wrapper(<ContactRow row={row} />);
+      case "image_text": return wrapper(<ImageTextRow row={row} rowIndex={rowIndex} />);
+      case "profile": return wrapper(<ProfileRow row={row} rowIndex={rowIndex} />);
+      case "grid": return wrapper(<GridRow row={row} rowIndex={rowIndex} />);
       default: return null;
     }
   } catch { return null; }

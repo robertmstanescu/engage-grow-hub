@@ -82,14 +82,24 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
 
       <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${alignClass}`}>
         <div className="mb-6 text-left" style={revealStyle(isVisible, 0)}>
+          {c.eyebrow && (
+            <span className="font-body tracking-[0.35em] uppercase block mb-3" style={{ fontSize: "clamp(7px, 0.9vw, 10px)", color: c.color_eyebrow || "hsl(var(--primary) / 0.6)" }}>
+              {c.eyebrow}
+            </span>
+          )}
           {titleLines.length > 0 && (
-            <h3 className="font-display font-black leading-tight mb-3" style={{ color: "hsl(var(--primary))", fontSize: "clamp(1.3rem, 3vw, 2rem)" }}>
+            <h3 className="font-display font-black leading-tight mb-3" style={{ fontSize: "clamp(1.3rem, 3vw, 2rem)" }}>
               {titleLines.map((line, i) => (
-                <span key={i} style={{ display: "block" }}>
+                <span key={i} style={{ display: "block", color: "hsl(var(--primary))" }}>
                   <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
                 </span>
               ))}
             </h3>
+          )}
+          {c.subtitle && (
+            <p className="leading-tight mb-4" style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--primary) / 0.7)", fontSize: "clamp(0.9rem, 2vw, 1.2rem)" }}>
+              {c.subtitle}
+            </p>
           )}
           {c.body && <div className="font-body-heading leading-relaxed [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: "hsl(var(--light-fg) / 0.7)", fontSize: "clamp(0.8rem, 1.5vw, 1rem)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
         </div>
