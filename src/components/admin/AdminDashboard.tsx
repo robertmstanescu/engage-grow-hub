@@ -5,7 +5,7 @@ import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import {
   LayoutDashboard, FileText, Compass, BookOpen,
   Users, Mail, Image, Palette, Settings, LogOut,
-  Monitor, Tablet, Smartphone, Save, Send, Eye,
+  Save, Send,
   GripVertical, Plus, Trash2, ArrowLeft,
 } from "lucide-react";
 import {
