@@ -65,7 +65,7 @@ const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[
 ];
 const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
 
-const DEVICE_WIDTHS: Record<Device, number> = { desktop: 1280, tablet: 768, mobile: 390 };
+
 
 const NAV_GROUPS = [
   {
@@ -307,7 +307,6 @@ const AdminDashboard = ({ session }: Props) => {
     await supabase.from("cms_pages").update(updates).eq("id", cmsPage.id);
     setCmsPageStatus(newStatus);
     toast.success(newStatus === "published" ? "Published!" : "Unpublished");
-    setIframeKey((k) => k + 1);
   }, [cmsPage, cmsPageStatus, cmsPageRows]);
 
   const updateCmsPageMeta = useCallback(async (field: string, value: string) => {
