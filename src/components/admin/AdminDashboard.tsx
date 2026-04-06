@@ -779,95 +779,16 @@ const AdminDashboard = ({ session }: Props) => {
           </div>
         </div>
 
-        {/* ── LIVE PREVIEW / MAIN CONTENT ── */}
-        <div style={{ flex: "1 1 50%", minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* ── MAIN CONTENT AREA ── */}
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           {isSiteTab ? (
-            <>
-              {/* Preview Toolbar */}
-              <div style={{
-                height: 44, display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
+            /* Properties / Editor panel - full width */
+            <div
+              style={{
+                flex: 1,
                 backgroundColor: "hsl(var(--card))",
-              }}>
-                <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)" }}>
-                  {pageLabel}
-                  {cmsPage && <span style={{ fontSize: 9, marginLeft: 6, opacity: 0.6 }}>/{cmsPage.slug}</span>}
-                </span>
-                <div style={{ display: "flex", gap: 4 }}>
-                  {([
-                    { d: "desktop" as Device, Icon: Monitor },
-                    { d: "tablet" as Device, Icon: Tablet },
-                    { d: "mobile" as Device, Icon: Smartphone },
-                  ]).map(({ d, Icon }) => (
-                    <button
-                      key={d}
-                      onClick={() => setDevice(d)}
-                      style={{
-                        padding: "4px 8px", borderRadius: 6, border: "none", cursor: "pointer",
-                        background: device === d ? "hsl(var(--card))" : "transparent",
-                        color: device === d ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
-                        boxShadow: device === d ? "0 1px 3px hsl(var(--border))" : "none",
-                      }}
-                    >
-                      <Icon size={14} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Scaled iframe */}
-              <div
-                ref={previewContainerRef}
-                style={{
-                  flex: 1, overflow: "hidden", display: "flex", alignItems: "flex-start", justifyContent: "center",
-                  backgroundColor: "hsl(var(--background) / 0.5)", padding: 16,
-                }}
-              >
-                <div style={{
-                  width: targetWidth,
-                  height: scaledHeight,
-                  transform: `scale(${scale})`,
-                  transformOrigin: "top center",
-                  borderRadius: 8,
-                  overflow: "hidden",
-                  boxShadow: "0 4px 24px hsl(var(--border) / 0.3)",
-                  border: "1px solid hsl(var(--border))",
-                  flexShrink: 0,
-                }}>
-                  <iframe
-                    key={iframeKey}
-                    ref={iframeRef}
-                    src={previewSrc}
-                    onLoad={handleIframeLoad}
-                    style={{ width: "100%", height: "100%", border: "none" }}
-                    title="Site Preview"
-                  />
-                </div>
-              </div>
-            </>
-          ) : (
-            /* Non-site tabs - full width content */
-            <main style={{ flex: 1, overflowY: "auto", padding: "1.5rem" }}>
-              <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-                {activeTab === "pages" && <PagesManager onEditPage={handleEditPage} />}
-                {activeTab === "navigation" && <NavigationManager />}
-                {activeTab === "blog" && <BlogEditor />}
-                {activeTab === "contacts" && <ContactsList />}
-                {activeTab === "emails" && <EmailCampaigns />}
-                {activeTab === "media" && <MediaGallery />}
-                {activeTab === "brand" && <BrandSettings />}
-                {activeTab === "settings" && <GlobalSettings />}
-              </div>
-            </main>
-          )}
-        </div>
-
-        {/* ── PROPERTIES PANEL ── */}
-        <div
-          style={{
-            flex: isSiteTab ? "1 1 50%" : "0 0 0",
-            minWidth: isSiteTab ? 320 : 0,
-            transition: "flex 0.3s cubic-bezier(0.16,1,0.3,1)",
-            backgroundColor: "hsl(var(--card))",
+                overflow: "hidden",
+                display: "flex", flexDirection: "column",
             borderLeft: isSiteTab ? "1px solid hsl(var(--border))" : "none",
             overflow: "hidden",
             display: "flex", flexDirection: "column",
