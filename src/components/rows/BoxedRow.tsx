@@ -5,6 +5,7 @@ import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
+import { useAutoFitText } from "@/hooks/useAutoFitText";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -26,18 +27,22 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
 
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
-  const alignClass = align === "center" ? "mx-auto text-center"
-    : align === "right" ? "ml-auto mr-0 text-right"
-    : "mr-auto ml-0 text-left";
+  const contentAlign = align === "center" ? "text-center"
+    : align === "right" ? "text-right"
+    : "text-left";
+  const containerPos = align === "center" ? "mx-auto"
+    : align === "right" ? "ml-auto mr-6"
+    : "mr-auto ml-6";
 
   const gradStart = l.gradientStart || "hsl(280 55% 18% / 0.6)";
   const gradEnd = l.gradientEnd || "hsl(286 42% 20% / 0.4)";
   const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
 
   const { ref, isVisible } = useScrollReveal();
+  const autoFitRef = useAutoFitText();
 
   return (
-    <section className="snap-section grain relative min-h-screen flex flex-col justify-center"
+    <section ref={(el) => { autoFitRef.current = el; }} className="snap-section grain relative min-h-screen flex flex-col justify-center"
       style={{
         backgroundColor: row.bg_color || "hsl(var(--background))",
         isolation: "isolate",
@@ -50,7 +55,7 @@ const BoxedRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: 
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
-      <div ref={ref} className={`relative z-10 ${maxW} px-6 ${alignClass}`}>
+      <div ref={ref} className={`relative z-10 ${maxW} px-6 ${containerPos} ${contentAlign}`}>
         {c.eyebrow && (
           <span className="font-body tracking-[0.35em] uppercase block mb-3" style={{ ...revealStyle(isVisible, -0.5), fontSize: "clamp(7px, 0.9vw, 10px)", color: c.color_eyebrow || "hsl(var(--vows-title) / 0.6)" }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>

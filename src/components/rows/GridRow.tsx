@@ -6,10 +6,10 @@ import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
+import { useAutoFitText } from "@/hooks/useAutoFitText";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
-/* ── Stat Unit ── */
 const StatUnit = memo(({ value, label, colors, isVisible, idx }: {
   value: string; label: string; colors: Record<string, string>;
   isVisible: boolean; idx: number;
@@ -35,7 +35,6 @@ const StatUnit = memo(({ value, label, colors, isVisible, idx }: {
   </div>
 ));
 
-/* ── Achievement Card ── */
 const AchievementCard = memo(({ text, colors, cardBg, isVisible, idx }: {
   text: string; colors: Record<string, string>; cardBg: string;
   isVisible: boolean; idx: number;
@@ -60,13 +59,13 @@ const AchievementCard = memo(({ text, colors, cardBg, isVisible, idx }: {
   </div>
 ));
 
-/* ── Main Row ── */
 const GridRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIndex?: number; align?: Alignment }) => {
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
   const { ref, isVisible } = useScrollReveal();
+  const autoFitRef = useAutoFitText();
 
   const eyebrowColor = c.color_eyebrow || "hsl(var(--primary))";
   const titleColor = c.color_title || "hsl(var(--foreground))";
@@ -88,15 +87,20 @@ const GridRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIn
   const gradStart = l.gradientStart || "hsl(280 55% 20% / 0.5)";
   const gradEnd = l.gradientEnd || "hsl(286 42% 25% / 0.3)";
 
+  const containerPos = align === "center" ? "mx-auto"
+    : align === "right" ? "ml-auto mr-6"
+    : "mr-auto ml-6";
+  const contentAlign = align === "center" ? "text-center"
+    : align === "right" ? "text-right"
+    : "text-left";
+
   const titleLines: string[] = (c.title_lines || []).map((li: any) =>
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
   );
 
-  /* Parse items into stats + achievements */
   const stats: { value: string; label: string }[] = (c.stats || []).slice(0, 3);
   const achievements: string[] = c.achievements || [];
 
-  /* Legacy fallback */
   const legacyItems = c.items || [];
   const effectiveStats = stats.length > 0 ? stats : legacyItems
     .filter((i: any) => i.type === "stat")
@@ -108,7 +112,7 @@ const GridRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIn
 
   return (
     <section
-      ref={ref}
+      ref={(el) => { ref.current = el; autoFitRef.current = el; }}
       data-row-id={row.id}
       data-row-type={row.type}
       data-row-title={row.strip_title}
@@ -130,8 +134,7 @@ const GridRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIn
         }}
       />
 
-      <div className={`relative z-10 ${maxW} w-full px-6 mx-auto`}>
-        {/* ── HEADER SECTION ── */}
+      <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos} ${contentAlign}`}>
         <div className="mb-12">
           {c.eyebrow && (
             <span
@@ -173,14 +176,13 @@ const GridRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIn
               fieldPath={`${prefix}.description`}
               html
               as="div"
-              className="font-body leading-relaxed max-w-[600px] [&_p]:mb-[5px] [&_p]:mt-[5px]"
+              className={`font-body leading-relaxed max-w-[600px] [&_p]:mb-[5px] [&_p]:mt-[5px] ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
               style={{ ...revealStyle(isVisible, 2), fontSize: "clamp(0.8rem, 1.3vw, 1rem)", color: descColor }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }}
             />
           )}
         </div>
 
-        {/* ── STATS BLOCK ── */}
         {effectiveStats.length > 0 && (
           <div
             className="rounded-xl flex flex-col sm:flex-row mb-10 overflow-hidden"
@@ -197,7 +199,6 @@ const GridRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIn
           </div>
         )}
 
-        {/* ── ACHIEVEMENT GRID ── */}
         {effectiveAchievements.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {effectiveAchievements.map((text: string, i: number) => (

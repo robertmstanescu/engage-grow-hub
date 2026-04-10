@@ -5,6 +5,7 @@ import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
+import { useAutoFitText } from "@/hooks/useAutoFitText";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -19,9 +20,12 @@ const TextRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: n
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[800px]";
   const isLight = row.bg_color && (row.bg_color.includes("94%") || row.bg_color.includes("100%") || row.bg_color.includes("white") || row.bg_color.includes("#F") || row.bg_color.includes("#f"));
 
-  const alignClass = align === "center" ? "mx-auto text-center"
-    : align === "right" ? "ml-auto mr-0 text-right"
-    : "mr-auto ml-0 text-left";
+  const contentAlign = align === "center" ? "text-center"
+    : align === "right" ? "text-right"
+    : "text-left";
+  const containerPos = align === "center" ? "mx-auto"
+    : align === "right" ? "ml-auto mr-6"
+    : "mr-auto ml-6";
 
   const gradStart = l.gradientStart || (isLight ? "hsl(280 55% 24% / 0.2)" : "hsl(280 55% 18% / 0.5)");
   const gradEnd = l.gradientEnd || (isLight ? "hsl(286 42% 30% / 0.15)" : "hsl(286 42% 20% / 0.3)");
@@ -29,9 +33,10 @@ const TextRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: n
   const noteColor = c.color_note || (isLight ? "hsl(var(--light-fg) / 0.5)" : "hsl(var(--foreground) / 0.5)");
 
   const { ref, isVisible } = useScrollReveal();
+  const autoFitRef = useAutoFitText();
 
   return (
-    <section className="snap-section relative min-h-screen flex flex-col justify-center" style={{
+    <section ref={(el) => { autoFitRef.current = el; }} className="snap-section relative min-h-screen flex flex-col justify-center" style={{
       backgroundColor: row.bg_color || "hsl(var(--background))",
       isolation: "isolate",
       paddingTop: "24px", paddingBottom: "24px",
@@ -41,7 +46,7 @@ const TextRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: n
         background: `radial-gradient(ellipse 80% 60% at 30% 70%, ${gradStart}, transparent), radial-gradient(ellipse 60% 40% at 70% 30%, ${gradEnd}, transparent)`
       }} />
 
-      <div ref={ref} className={`relative z-10 ${maxW} px-6 ${alignClass}`}>
+      <div ref={ref} className={`relative z-10 ${maxW} px-6 ${containerPos} ${contentAlign}`}>
         {c.eyebrow && (
           <span className="font-body tracking-[0.35em] uppercase block mb-3" style={{ ...revealStyle(isVisible, -0.5), fontSize: "clamp(7px, 0.9vw, 10px)", color: c.color_eyebrow || (isLight ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.5)") }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
