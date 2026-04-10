@@ -42,7 +42,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
 
   return (
     <section
-      ref={(el) => { ref.current = el; autoFitRef.current = el; }}
+      ref={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
       data-row-id={row.id}
       data-row-type={row.type}
       data-row-title={row.strip_title}
