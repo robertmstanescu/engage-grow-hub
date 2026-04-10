@@ -6,6 +6,7 @@ import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
+import { useAutoFitText } from "@/hooks/useAutoFitText";
 
 const CLIP_PATHS: Record<string, string> = {
   puddle:
@@ -36,6 +37,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; 
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
   const { ref, isVisible } = useScrollReveal();
+  const autoFitRef = useAutoFitText();
 
   const imgPos = c.image_position || "right";
   const shape = c.image_shape || "default";
@@ -50,6 +52,10 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; 
 
   const gradStart = l.gradientStart || "hsl(280 55% 20% / 0.5)";
   const gradEnd = l.gradientEnd || "hsl(286 42% 25% / 0.3)";
+
+  const containerPos = align === "center" ? "mx-auto"
+    : align === "right" ? "ml-auto mr-6"
+    : "mr-auto ml-6";
 
   const titleLines: string[] = (c.title_lines || []).map((li: any) =>
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
@@ -152,7 +158,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; 
 
   return (
     <section
-      ref={ref}
+      ref={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
       data-row-id={row.id}
       data-row-type={row.type}
       data-row-title={row.strip_title}
@@ -173,7 +179,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; 
           willChange: "transform",
         }}
       />
-      <div className={`relative z-10 ${maxW} w-full px-6 mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center`}>
+      <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos} grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center`}>
         {imgPos === "left" ? (
           <>
             {imageBlock}

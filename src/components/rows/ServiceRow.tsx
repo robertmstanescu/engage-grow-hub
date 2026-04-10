@@ -92,7 +92,9 @@ const ServiceRow = ({ row, rowIndex, align = "center" }: { row: PageRow; rowInde
   const dotInactive = c.color_dot_inactive || (isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)");
 
   const rowTextAlign = align === "right" ? "text-right" : align === "left" ? "text-left" : "text-center";
-  const rowContentAlign = align === "right" ? "ml-auto mr-0" : align === "left" ? "mr-auto ml-0" : "mx-auto";
+  const rowContentAlign = align === "center" ? "mx-auto"
+    : align === "right" ? "ml-auto mr-6"
+    : "mr-auto ml-6";
   const carouselJustify = align === "right" ? "justify-end" : align === "left" ? "justify-start" : "justify-center";
   const cardTextAlign = (c.card_text_align as "left" | "center" | "right") || "left";
 

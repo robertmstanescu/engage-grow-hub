@@ -45,9 +45,12 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
     setSubmitted(true); setSubmitting(false); toast.success("Message sent!");
   };
 
-  const alignClass = align === "center" ? "mx-auto text-center"
-    : align === "right" ? "ml-auto mr-0 text-right"
-    : "mr-auto ml-0 text-left";
+  const containerPos = align === "center" ? "mx-auto"
+    : align === "right" ? "ml-auto mr-6"
+    : "mr-auto ml-6";
+  const contentAlign = align === "center" ? "text-center"
+    : align === "right" ? "text-right"
+    : "text-left";
 
   const leftFields = visibleFields.filter((f) => f.type !== "textarea" && f.type !== "checkbox");
   const textareaField = visibleFields.find((f) => f.type === "textarea");
@@ -63,7 +66,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
     return (
       <section className="snap-section section-light relative min-h-screen flex flex-col justify-center" style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
         <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${gradStart}, ${gradEnd})` }} />
-        <div className={`relative z-10 max-w-[520px] px-6 ${alignClass}`}>
+        <div className={`relative z-10 max-w-[520px] px-6 ${containerPos} ${contentAlign}`}>
           <div style={revealStyle(true, 0)}>
             <h3 className="font-display font-black leading-tight mb-4" style={{ color: "hsl(var(--primary))", fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)" }}>{successHeading}</h3>
             <p className="font-body-heading text-sm mb-6" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>{successBody}</p>
@@ -80,7 +83,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
     <section className="snap-section section-light relative min-h-screen flex flex-col justify-center" style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
       <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${gradStart}, ${gradEnd})` }} />
 
-      <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${alignClass}`}>
+      <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${containerPos} ${contentAlign}`}>
         <div className="mb-6 text-left" style={revealStyle(isVisible, 0)}>
           {c.eyebrow && (
             <span className="font-body tracking-[0.35em] uppercase block mb-3" style={{ fontSize: "clamp(7px, 0.9vw, 10px)", color: c.color_eyebrow || "hsl(var(--primary) / 0.6)" }}>

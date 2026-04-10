@@ -6,6 +6,7 @@ import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
+import { useAutoFitText } from "@/hooks/useAutoFitText";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -15,6 +16,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
   const { ref, isVisible } = useScrollReveal();
+  const autoFitRef = useAutoFitText();
 
   const eyebrowColor = c.color_eyebrow || "hsl(var(--primary))";
   const titleColor = c.color_title || "hsl(var(--foreground))";
@@ -30,13 +32,17 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
 
   const credentials: string[] = c.credentials || [];
 
+  const containerPos = align === "center" ? "mx-auto"
+    : align === "right" ? "ml-auto mr-6"
+    : "mr-auto ml-6";
+
   const titleLines: string[] = (c.title_lines || []).map((li: any) =>
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
   );
 
   return (
     <section
-      ref={ref}
+      ref={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
       data-row-id={row.id}
       data-row-type={row.type}
       data-row-title={row.strip_title}
@@ -58,7 +64,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
         }}
       />
 
-      <div className={`relative z-10 ${maxW} w-full px-6 mx-auto`}>
+      <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos}`}>
         {c.eyebrow && (
           <span
             className="font-body tracking-[0.35em] uppercase block mb-6"
@@ -70,7 +76,6 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
           </span>
         )}
 
-        {/* Title lines - hero style with per-line colour */}
         {titleLines.length > 0 && (
           <h3
             className="font-display font-bold leading-tight mb-6"
@@ -96,7 +101,6 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] gap-8 md:gap-12 items-start">
-          {/* Image with glass border */}
           <div className="flex flex-col items-center" style={revealStyle(isVisible, 1)}>
             <div
               className="relative rounded-xl overflow-hidden"
@@ -123,7 +127,6 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
               </div>
             </div>
 
-            {/* Name tag */}
             {(c.name || c.role) && (
               <div className="mt-4 text-center" style={revealStyle(isVisible, 2)}>
                 {c.name && (
@@ -143,7 +146,6 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
               </div>
             )}
 
-            {/* Credentials */}
             {credentials.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3 justify-center" style={revealStyle(isVisible, 3)}>
                 {credentials.map((cred, i) => (
@@ -159,7 +161,6 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
             )}
           </div>
 
-          {/* Body content - aligned with eyebrow/title */}
           <div className="flex flex-col justify-center" style={revealStyle(isVisible, 4)}>
             {c.body && (
               <EditableText
