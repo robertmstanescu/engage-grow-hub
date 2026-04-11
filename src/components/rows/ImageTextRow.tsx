@@ -162,7 +162,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
       data-row-id={row.id}
       data-row-type={row.type}
       data-row-title={row.strip_title}
-      className="snap-section grain relative min-h-screen flex items-center justify-center"
+      className={`snap-section grain relative min-h-screen flex ${vAlign === "top" ? "items-start" : vAlign === "bottom" ? "items-end" : "items-center"} justify-center`}
       style={{
         backgroundColor: row.bg_color || "hsl(var(--background))",
         isolation: "isolate",
