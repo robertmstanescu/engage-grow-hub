@@ -12,6 +12,7 @@ import GridRow from "./GridRow";
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 export type Alignment = "left" | "right" | "center";
+export type VAlign = "top" | "middle" | "bottom";
 
 /**
  * Calculate alternating alignment per row (auto mode).
@@ -54,6 +55,7 @@ const resolveAlignment = (row: PageRow, autoAlign: Alignment): Alignment => {
 const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number; align: Alignment }) => {
   const id = row.scope || slugify(row.strip_title);
   const isService = row.type === "service";
+  const vAlign: VAlign = row.layout?.verticalAlign || "middle";
   const wrapper = (children: React.ReactNode) => (
     <div id={id} style={{ scrollMarginTop: isService ? "0px" : "4rem", isolation: "isolate" }}>{children}</div>
   );
@@ -62,19 +64,19 @@ const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number;
     case "hero":
       return wrapper(<HeroRow row={row} />);
     case "text":
-      return wrapper(<TextRow row={row} rowIndex={rowIndex} align={align} />);
+      return wrapper(<TextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
     case "service":
-      return wrapper(<ServiceRow row={row} rowIndex={rowIndex} align={align} />);
+      return wrapper(<ServiceRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
     case "boxed":
-      return wrapper(<BoxedRow row={row} rowIndex={rowIndex} align={align} />);
+      return wrapper(<BoxedRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
     case "contact":
-      return wrapper(<ContactRow row={row} align={align} />);
+      return wrapper(<ContactRow row={row} align={align} vAlign={vAlign} />);
     case "image_text":
-      return wrapper(<ImageTextRow row={row} rowIndex={rowIndex} align={align} />);
+      return wrapper(<ImageTextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
     case "profile":
-      return wrapper(<ProfileRow row={row} rowIndex={rowIndex} align={align} />);
+      return wrapper(<ProfileRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
     case "grid":
-      return wrapper(<GridRow row={row} rowIndex={rowIndex} align={align} />);
+      return wrapper(<GridRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
     default:
       return null;
   }
