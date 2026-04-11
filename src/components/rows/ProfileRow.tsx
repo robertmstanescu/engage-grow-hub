@@ -4,13 +4,13 @@ import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
-import type { Alignment } from "./PageRows";
+import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
-const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; rowIndex?: number; align?: Alignment }) => {
+const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
@@ -46,7 +46,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center" }: { row: PageRow; ro
       data-row-id={row.id}
       data-row-type={row.type}
       data-row-title={row.strip_title}
-      className="snap-section grain relative min-h-screen flex items-center justify-center"
+      className={`snap-section grain relative min-h-screen flex ${vAlign === "top" ? "items-start" : vAlign === "bottom" ? "items-end" : "items-center"} justify-center`}
       style={{
         backgroundColor: row.bg_color || "hsl(260 20% 6%)",
         isolation: "isolate",
