@@ -12,26 +12,37 @@ import ImageTextRow from "@/components/rows/ImageTextRow";
 import ProfileRow from "@/components/rows/ProfileRow";
 import GridRow from "@/components/rows/GridRow";
 import type { PageRow } from "@/types/rows";
+import type { Alignment, VAlign } from "@/components/rows/PageRows";
 import NotFound from "./NotFound";
 import usePageMeta from "@/hooks/usePageMeta";
 import { readLivePreviewState, subscribeLivePreview } from "@/lib/livePreview";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
+const resolveAlignment = (row: PageRow): Alignment => {
+  const explicit = row.layout?.alignment;
+  if (explicit && explicit !== "auto") return explicit;
+  return "left";
+};
+
+const resolveVAlign = (row: PageRow): VAlign => row.layout?.verticalAlign || "middle";
+
 const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
   try {
     if (!row || !row.type) return null;
     const id = row.scope || slugify(row.strip_title || "section");
+    const align = resolveAlignment(row);
+    const vAlign = resolveVAlign(row);
     const wrapper = (children: React.ReactNode) => (<div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>);
     switch (row.type) {
       case "hero": return wrapper(<HeroRow row={row} />);
-      case "text": return wrapper(<TextRow row={row} rowIndex={rowIndex} />);
-      case "service": return wrapper(<ServiceRow row={row} rowIndex={rowIndex} />);
-      case "boxed": return wrapper(<BoxedRow row={row} rowIndex={rowIndex} />);
-      case "contact": return wrapper(<ContactRow row={row} />);
-      case "image_text": return wrapper(<ImageTextRow row={row} rowIndex={rowIndex} />);
-      case "profile": return wrapper(<ProfileRow row={row} rowIndex={rowIndex} />);
-      case "grid": return wrapper(<GridRow row={row} rowIndex={rowIndex} />);
+      case "text": return wrapper(<TextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
+      case "service": return wrapper(<ServiceRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
+      case "boxed": return wrapper(<BoxedRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
+      case "contact": return wrapper(<ContactRow row={row} align={align} vAlign={vAlign} />);
+      case "image_text": return wrapper(<ImageTextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
+      case "profile": return wrapper(<ProfileRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
+      case "grid": return wrapper(<GridRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
       default: return null;
     }
   } catch { return <div className="py-8 text-center font-body text-sm text-destructive">Row render error</div>; }
