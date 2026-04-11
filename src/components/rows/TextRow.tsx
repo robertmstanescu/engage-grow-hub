@@ -3,13 +3,13 @@ import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
-import type { Alignment } from "./PageRows";
+import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
-const TextRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: number; align?: Alignment }) => {
+const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const titleLines: string[] = (c.title_lines || []).map((l: any) =>
@@ -36,7 +36,7 @@ const TextRow = ({ row, rowIndex, align = "left" }: { row: PageRow; rowIndex?: n
   const autoFitRef = useAutoFitText();
 
   return (
-    <section ref={(el) => { autoFitRef.current = el; }} className="snap-section relative min-h-screen flex flex-col justify-center" style={{
+    <section ref={(el) => { autoFitRef.current = el; }} className={`snap-section relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`} style={{
       backgroundColor: row.bg_color || "hsl(var(--background))",
       isolation: "isolate",
       paddingTop: "24px", paddingBottom: "24px",

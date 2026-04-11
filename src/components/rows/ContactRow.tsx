@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sanitizeHtml } from "@/lib/sanitize";
 import type { PageRow, ContactField } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
-import type { Alignment } from "./PageRows";
+import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
@@ -19,7 +19,7 @@ const defaultFields: ContactField[] = [
 
 const CREAM = "#F4F0EC";
 
-const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }) => {
+const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
   const titleLines: string[] = (c.title_lines || []).map((l: any) =>
     typeof l === "string" ? l.startsWith("<") ? l : `<p>${l}</p>` : `<p>${l}</p>`
@@ -64,7 +64,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
 
   if (submitted) {
     return (
-      <section className="snap-section section-light relative min-h-screen flex flex-col justify-center" style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
+       <section className={`snap-section section-light relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`} style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
         <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${gradStart}, ${gradEnd})` }} />
         <div className={`relative z-10 max-w-[520px] px-6 ${containerPos} ${contentAlign}`}>
           <div style={revealStyle(true, 0)}>
@@ -80,7 +80,7 @@ const ContactRow = ({ row, align = "left" }: { row: PageRow; align?: Alignment }
   }
 
   return (
-    <section className="snap-section section-light relative min-h-screen flex flex-col justify-center" style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
+    <section className={`snap-section section-light relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`} style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
       <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 50%, ${gradStart}, ${gradEnd})` }} />
 
       <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${containerPos} ${contentAlign}`}>
