@@ -256,10 +256,12 @@ const SortableRowItem = ({ row, TypeIcon, isOpen, onToggle, onRemove, onUpdateRo
               </div>
             </div>
           </div>
-          <RowLayoutSettings
-            layout={row.layout || DEFAULT_ROW_LAYOUT}
-            onChange={(layout) => onUpdateRow({ layout })}
-          />
+          {row.type !== "hero" && (
+            <RowAlignmentSettings
+              layout={row.layout || DEFAULT_ROW_LAYOUT}
+              onChange={(layout) => onUpdateRow({ layout })}
+            />
+          )}
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
