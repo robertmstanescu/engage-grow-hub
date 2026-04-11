@@ -7,6 +7,7 @@ export interface RowLayout {
   marginBottom: number;
   bgImage?: string;
   alignment?: "auto" | "left" | "center" | "right";
+  verticalAlign?: "top" | "middle" | "bottom";
   gradientStart?: string;
   gradientEnd?: string;
   carouselTheme?: "auto" | "light" | "dark";
