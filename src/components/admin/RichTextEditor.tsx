@@ -16,6 +16,7 @@ import {
   Highlighter,
   Undo,
   Redo,
+  RemoveFormatting,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -228,7 +229,6 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
 
         <select
           defaultValue=""
-          onMouseDown={(event) => event.preventDefault()}
           onChange={(event) => {
             if (event.target.value) runCommand("fontName", event.target.value);
             event.target.value = "";
@@ -247,7 +247,6 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
 
         <select
           defaultValue=""
-          onMouseDown={(event) => event.preventDefault()}
           onChange={(event) => {
             if (event.target.value) applyFontSize(event.target.value);
             event.target.value = "";
@@ -327,6 +326,12 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
         </ToolbarButton>
         <ToolbarButton onClick={() => fileInputRef.current?.click()} title="Upload Image">
           <ImageIcon size={15} />
+        </ToolbarButton>
+
+        <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
+
+        <ToolbarButton onClick={() => runCommand("removeFormat")} title="Remove Formatting">
+          <RemoveFormatting size={15} />
         </ToolbarButton>
       </div>
 
