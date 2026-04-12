@@ -330,3 +330,17 @@
     --footer-text-sub: 30 20% 50%;
   }
 }
+
+/* Rich-text paragraph spacing – 5px before & after every <p> */
+[dangerouslySetInnerHTML] p,
+.prose p,
+.rich-text p {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+/* Global fallback: any p inside a snap-section that came from CMS */
+.snap-section p {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
