@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Unbounded:wght@700;900&family=Bricolage+Grotesque:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Unbounded:wght@700;900&family=Bricolage+Grotesque:wght@400;500;700&family=Inter:wght@400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,19 +6,19 @@
 
 @layer base {
   :root {
-    --background: 260 20% 6%;          /* Near-black purple */
-    --foreground: 30 20% 94%;          /* Isabelline */
-    --card: 260 25% 10%;               /* Dark purple card */
+    --background: 260 20% 6%; /* Near-black purple */
+    --foreground: 30 20% 94%; /* Isabelline */
+    --card: 260 25% 10%; /* Dark purple card */
     --card-foreground: 30 20% 94%;
     --popover: 260 25% 10%;
     --popover-foreground: 30 20% 94%;
-    --primary: 280 55% 24%;            /* #4D1B5E */
-    --primary-foreground: 50 82% 87%;  /* #F9F0C1 */
-    --secondary: 280 57% 13%;         /* #2A0E33 */
+    --primary: 280 55% 24%; /* #4D1B5E */
+    --primary-foreground: 50 82% 87%; /* #F9F0C1 */
+    --secondary: 280 57% 13%; /* #2A0E33 */
     --secondary-foreground: 50 82% 87%;
     --muted: 260 15% 14%;
     --muted-foreground: 30 10% 55%;
-    --accent: 46 75% 60%;             /* #E5C54F */
+    --accent: 46 75% 60%; /* #E5C54F */
     --accent-foreground: 280 57% 13%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -28,7 +28,7 @@
     --radius: 0.75rem;
 
     /* Light section tokens */
-    --light-bg: 30 20% 94%;           /* Isabelline */
+    --light-bg: 30 20% 94%; /* Isabelline */
     --light-fg: 260 20% 10%;
 
     /* Extended brand palette */
@@ -49,9 +49,9 @@
     --sidebar-border: 280 20% 18%;
     --sidebar-ring: 46 75% 60%;
 
-    --font-title: 'Unbounded', sans-serif;
-    --font-header: 'Bricolage Grotesque', sans-serif;
-    --font-body: 'Inter', sans-serif;
+    --font-title: "Unbounded", sans-serif;
+    --font-header: "Bricolage Grotesque", sans-serif;
+    --font-body: "Inter", sans-serif;
 
     /* ── Pillar/service tokens ── */
     --pillar-label: 46 75% 60%;
@@ -120,14 +120,22 @@
     line-height: 1.7;
   }
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-family: var(--font-title);
     text-wrap: balance;
   }
 
-  .font-display { font-family: var(--font-title); }
-  .font-body-heading { font-family: var(--font-header); }
-  .font-body { font-family: var(--font-body); }
+  .font-display {
+    font-family: var(--font-title);
+  }
+  .font-body-heading {
+    font-family: var(--font-header);
+  }
+  .font-body {
+    font-family: var(--font-body);
+  }
 
   html {
     scroll-behavior: smooth;
@@ -148,7 +156,9 @@
     }
   }
 
-  [id] { scroll-margin-top: 5rem; }
+  [id] {
+    scroll-margin-top: 5rem;
+  }
 }
 
 @layer components {
@@ -171,16 +181,14 @@
     background:
       radial-gradient(ellipse 80% 60% at 10% 90%, hsl(280 55% 18% / 0.6), transparent),
       radial-gradient(ellipse 60% 50% at 80% 20%, hsl(286 42% 20% / 0.4), transparent),
-      radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent),
-      hsl(var(--background));
+      radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent), hsl(var(--background));
   }
 
   .mesh-hero {
     background:
       radial-gradient(ellipse 100% 80% at 20% 100%, hsl(280 55% 20% / 0.8), transparent),
       radial-gradient(ellipse 80% 60% at 90% 10%, hsl(286 42% 25% / 0.5), transparent),
-      radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06), transparent),
-      hsl(260 20% 4%);
+      radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06), transparent), hsl(260 20% 4%);
   }
 
   /* ── Glass panel ── */
@@ -204,12 +212,16 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid hsl(var(--accent) / 0.4);
-    box-shadow: 0 4px 20px -4px hsl(var(--accent) / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.15);
+    box-shadow:
+      0 4px 20px -4px hsl(var(--accent) / 0.3),
+      inset 0 1px 0 hsl(0 0% 100% / 0.15);
     color: hsl(var(--accent-foreground));
   }
 
   .btn-glass:hover {
-    box-shadow: 0 6px 30px -4px hsl(var(--accent) / 0.45), inset 0 1px 0 hsl(0 0% 100% / 0.2);
+    box-shadow:
+      0 6px 30px -4px hsl(var(--accent) / 0.45),
+      inset 0 1px 0 hsl(0 0% 100% / 0.2);
   }
 
   /* ── Admin light theme ── */
@@ -234,8 +246,9 @@
 
   /* ── Glow effects ── */
   .glow-accent {
-    box-shadow: 0 0 40px -10px hsl(46 75% 60% / 0.15),
-                0 0 80px -20px hsl(280 55% 24% / 0.2);
+    box-shadow:
+      0 0 40px -10px hsl(46 75% 60% / 0.15),
+      0 0 80px -20px hsl(280 55% 24% / 0.2);
   }
 
   .glow-subtle {
@@ -331,16 +344,16 @@
   }
 }
 
-/* Rich-text paragraph spacing – 5px before & after every <p> */
+/* Rich-text paragraph spacing – 10px before & after every <p> */
 [dangerouslySetInnerHTML] p,
 .prose p,
 .rich-text p {
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 /* Global fallback: any p inside a snap-section that came from CMS */
 .snap-section p {
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
