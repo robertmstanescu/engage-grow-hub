@@ -1,36 +1,57 @@
 import { useEffect, useRef, useCallback } from "react";
 
 /**
- * Scales the font-size of a container's children so the total content
- * fits within the viewport height on desktop (>1024px).
- * Returns a ref to attach to the section element.
+ * Scales ONLY elements marked with [data-rte-fit] inside the section
+ * so the total section content fits within the viewport height on desktop (>1024px).
+ * Headers, titles, eyebrows etc. remain at their original size.
  */
-export const useAutoFitText = (minScale = 0.55) => {
+export const useAutoFitText = (minScale = 0.5) => {
   const sectionRef = useRef<HTMLElement | null>(null);
 
   const fit = useCallback(() => {
     const el = sectionRef.current;
-    if (!el || window.innerWidth <= 1024) {
+    if (!el) return;
+
+    const rteElements = el.querySelectorAll<HTMLElement>("[data-rte-fit]");
+
+    if (window.innerWidth <= 1024) {
       // Reset on mobile/tablet
-      if (el) el.style.fontSize = "";
+      rteElements.forEach((r) => { r.style.fontSize = ""; });
       return;
     }
 
     // Reset to measure natural size
-    el.style.fontSize = "";
+    rteElements.forEach((r) => { r.style.fontSize = ""; });
 
     const vh = window.innerHeight;
     const scrollH = el.scrollHeight;
 
     if (scrollH <= vh) return; // fits fine
 
-    // Calculate scale factor
-    const scale = Math.max(minScale, vh / scrollH);
-    el.style.fontSize = `${scale}em`;
+    // Calculate how much we overflow
+    const overflow = scrollH - vh;
+
+    // Measure total RTE height
+    let rteHeight = 0;
+    rteElements.forEach((r) => { rteHeight += r.scrollHeight; });
+
+    if (rteHeight <= 0) return; // no RTE content to shrink
+
+    // We need to reduce rteHeight by `overflow` amount
+    // targetRteHeight = rteHeight - overflow
+    const targetRteHeight = Math.max(rteHeight * minScale, rteHeight - overflow);
+    const scale = targetRteHeight / rteHeight;
+    const clampedScale = Math.max(minScale, Math.min(1, scale));
+
+    if (clampedScale < 1) {
+      rteElements.forEach((r) => {
+        const currentSize = parseFloat(getComputedStyle(r).fontSize);
+        r.style.fontSize = `${currentSize * clampedScale}px`;
+      });
+    }
   }, [minScale]);
 
   useEffect(() => {
-    // Run after paint
     const raf = requestAnimationFrame(() => fit());
     window.addEventListener("resize", fit);
     return () => {
