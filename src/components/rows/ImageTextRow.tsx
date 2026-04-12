@@ -134,6 +134,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
           fieldPath={`${prefix}.description`}
           html
           as="div"
+          data-rte-fit=""
           className="font-body leading-relaxed [&_p]:mb-[5px] [&_p]:mt-[5px]"
           style={{ fontSize: "clamp(0.8rem, 1.3vw, 1rem)", color: descColor, height: "auto", overflow: "visible" }}
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}

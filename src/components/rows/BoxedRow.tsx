@@ -94,6 +94,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
                 className="font-body-heading font-bold mb-3 text-lg" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
+                data-rte-fit=""
                 className="font-body text-xs leading-relaxed [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: c.color_card_body || "hsl(var(--vows-card-body))", overflow: "visible", height: "auto" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
             </div>
