@@ -73,6 +73,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
         {c.body && (
           <div style={revealStyle(isVisible, 2)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.body`} html as="div"
+              data-rte-fit=""
               className={`font-body-heading font-medium max-w-[700px] leading-relaxed mt-5 [&_p]:mb-[5px] [&_p]:mt-[5px] ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
               style={{ color: isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)", fontSize: "clamp(0.85rem, 1.8vw, 1.15rem)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />

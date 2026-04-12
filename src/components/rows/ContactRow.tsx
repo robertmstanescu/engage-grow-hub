@@ -104,7 +104,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
               {c.subtitle}
             </p>
           )}
-          {c.body && <div className="font-body-heading leading-relaxed [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: "hsl(var(--light-fg) / 0.7)", fontSize: "clamp(0.8rem, 1.5vw, 1rem)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
+          {c.body && <div data-rte-fit="" className="font-body-heading leading-relaxed [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: "hsl(var(--light-fg) / 0.7)", fontSize: "clamp(0.8rem, 1.5vw, 1rem)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
         </div>
 
         <div

@@ -176,6 +176,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
               fieldPath={`${prefix}.description`}
               html
               as="div"
+              data-rte-fit=""
               className={`font-body leading-relaxed max-w-[600px] [&_p]:mb-[5px] [&_p]:mt-[5px] ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
               style={{ ...revealStyle(isVisible, 2), fontSize: "clamp(0.8rem, 1.3vw, 1rem)", color: descColor }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }}

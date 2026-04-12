@@ -163,11 +163,12 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
 
           <div className="flex flex-col justify-center" style={revealStyle(isVisible, 4)}>
             {c.body && (
-              <EditableText
+            <EditableText
                 sectionKey="page_rows"
                 fieldPath={`${prefix}.body`}
                 html
                 as="div"
+                data-rte-fit=""
                 className="font-body leading-relaxed prose-sm [&_p]:mb-[5px] [&_p]:mt-[5px]"
                 style={{
                   fontSize: "clamp(0.85rem, 1.3vw, 1rem)",
