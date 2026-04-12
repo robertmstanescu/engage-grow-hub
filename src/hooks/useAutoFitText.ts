@@ -5,7 +5,7 @@ import { useEffect, useRef, useCallback } from "react";
  * so the total section content fits within the viewport height on desktop (>1024px).
  * Headers, titles, eyebrows etc. remain at their original size.
  */
-export const useAutoFitText = (minScale = 0.5) => {
+export const useAutoFitText = (minScale = 0.7) => {
   const sectionRef = useRef<HTMLElement | null>(null);
 
   const fit = useCallback(() => {

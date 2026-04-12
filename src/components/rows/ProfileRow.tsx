@@ -16,7 +16,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
   const { ref, isVisible } = useScrollReveal();
-  const autoFitRef = useAutoFitText();
+  const autoFitRef = useAutoFitText(0.75);
 
   const eyebrowColor = c.color_eyebrow || "hsl(var(--primary))";
   const titleColor = c.color_title || "hsl(var(--foreground))";
@@ -65,42 +65,8 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
       />
 
       <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos}`}>
-        {c.eyebrow && (
-          <span
-            className="font-body tracking-[0.35em] uppercase block mb-6"
-            style={{ ...revealStyle(isVisible, 0), fontSize: "clamp(7px, 0.9vw, 10px)", color: eyebrowColor }}
-          >
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
-              {c.eyebrow}
-            </EditableText>
-          </span>
-        )}
-
-        {titleLines.length > 0 && (
-          <h3
-            className="font-display font-bold leading-tight mb-6"
-            style={{ ...revealStyle(isVisible, 0.5), fontSize: "clamp(1.4rem, 3.5vw, 2.6rem)", color: titleColor }}
-          >
-            {titleLines.map((line, i) => (
-              <span key={i} className="block mb-2 last:mb-0">
-                <span
-                  className="inline-block rounded-lg px-3 py-1.5 border"
-                  style={{ backgroundColor: "hsl(var(--secondary) / 0.35)", borderColor: "hsl(var(--border) / 0.5)" }}
-                >
-                  <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
-                </span>
-              </span>
-            ))}
-          </h3>
-        )}
-
-        {c.subtitle && (
-          <p className="leading-tight mb-8" style={{ ...revealStyle(isVisible, 0.7), fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "inherit", fontSize: "clamp(0.9rem, 2vw, 1.2rem)" }}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
-          </p>
-        )}
-
         <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] gap-8 md:gap-12 items-start">
+          {/* Left column: Image + Name + Credentials */}
           <div className="flex flex-col items-center" style={revealStyle(isVisible, 1)}>
             <div
               className="relative rounded-xl overflow-hidden"
@@ -161,9 +127,40 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
             )}
           </div>
 
-          <div className="flex flex-col justify-center" style={revealStyle(isVisible, 4)}>
+          {/* Right column: Header + RTE body */}
+          <div className="flex flex-col justify-start" style={revealStyle(isVisible, 0)}>
+            {c.eyebrow && (
+              <span
+                className="font-body tracking-[0.35em] uppercase block mb-4"
+                style={{ fontSize: "clamp(7px, 0.9vw, 10px)", color: eyebrowColor }}
+              >
+                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
+                  {c.eyebrow}
+                </EditableText>
+              </span>
+            )}
+
+            {titleLines.length > 0 && (
+              <h3
+                className="font-display font-bold leading-tight mb-4"
+                style={{ fontSize: "clamp(1.4rem, 3.5vw, 2.6rem)", color: titleColor }}
+              >
+                {titleLines.map((line, i) => (
+                  <span key={i} className="block mb-1 last:mb-0">
+                    <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
+                  </span>
+                ))}
+              </h3>
+            )}
+
+            {c.subtitle && (
+              <p className="leading-tight mb-6" style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "inherit", fontSize: "clamp(0.9rem, 2vw, 1.2rem)" }}>
+                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
+              </p>
+            )}
+
             {c.body && (
-            <EditableText
+              <EditableText
                 sectionKey="page_rows"
                 fieldPath={`${prefix}.body`}
                 html
@@ -179,11 +176,13 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
               />
             )}
+
             {c.note && (
               <div className="mt-4 pt-3" style={{ borderTop: `1px solid ${eyebrowColor}30` }}>
                 <p className="font-body text-xs italic leading-relaxed" style={{ color: noteColor }}>{c.note}</p>
               </div>
             )}
+
             {c.cta_url && c.cta_label && (
               <div className="mt-5">
                 <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
