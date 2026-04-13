@@ -61,6 +61,14 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
   );
 
+  // Use column_widths to control the image/text split ratio
+  const colWidths = l.column_widths || [50, 50];
+  const imgWidth = colWidths[0] || 50;
+  const textWidth = colWidths[1] || 50;
+  const gridCols = imgPos === "left"
+    ? `${imgWidth}fr ${textWidth}fr`
+    : `${textWidth}fr ${imgWidth}fr`;
+
   const imageBlock = (
     <div className="relative w-full" style={revealStyle(isVisible, imgPos === "left" ? 0 : 3)}>
       <div
@@ -180,18 +188,33 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
           willChange: "transform",
         }}
       />
-      <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos} grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center`}>
-        {imgPos === "left" ? (
-          <>
-            {imageBlock}
-            {textBlock}
-          </>
-        ) : (
-          <>
-            {textBlock}
-            {imageBlock}
-          </>
-        )}
+      <div
+        className={`relative z-10 ${maxW} w-full px-6 ${containerPos}`}
+        style={{
+          display: "grid",
+          gridTemplateColumns: `1fr`,
+          gap: "2rem",
+        }}
+      >
+        <div
+          className="grid grid-cols-1 items-center"
+          style={{
+            gridTemplateColumns: window.innerWidth > 768 ? gridCols : "1fr",
+            gap: "2rem",
+          }}
+        >
+          {imgPos === "left" ? (
+            <>
+              {imageBlock}
+              {textBlock}
+            </>
+          ) : (
+            <>
+              {textBlock}
+              {imageBlock}
+            </>
+          )}
+        </div>
       </div>
       {c.show_subscribe && (
         <div className="relative z-10 mt-10 px-6" style={revealStyle(isVisible, 5)}>

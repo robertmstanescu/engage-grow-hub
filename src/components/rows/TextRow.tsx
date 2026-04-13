@@ -1,5 +1,5 @@
 import type { PageRow } from "@/types/rows";
-import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT, getRowColumns, multiColGridStyle } from "@/types/rows";
 import { sanitizeHtml } from "@/lib/sanitize";
 import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
@@ -10,12 +10,7 @@ import { useAutoFitText } from "@/hooks/useAutoFitText";
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
 const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
-  const c = row.content;
-  const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
-  const titleLines: string[] = (c.title_lines || []).map((l: any) =>
-    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
-  );
-
+  const { contents, widths, isMultiCol } = getRowColumns(row);
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[800px]";
   const isLight = row.bg_color && (row.bg_color.includes("94%") || row.bg_color.includes("100%") || row.bg_color.includes("white") || row.bg_color.includes("#F") || row.bg_color.includes("#f"));
@@ -30,23 +25,20 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
   const gradStart = l.gradientStart || (isLight ? "hsl(280 55% 24% / 0.2)" : "hsl(280 55% 18% / 0.5)");
   const gradEnd = l.gradientEnd || (isLight ? "hsl(286 42% 30% / 0.15)" : "hsl(286 42% 20% / 0.3)");
 
-  const noteColor = c.color_note || (isLight ? "hsl(var(--light-fg) / 0.5)" : "hsl(var(--foreground) / 0.5)");
-
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText();
 
-  return (
-    <section ref={(el) => { autoFitRef.current = el; }} className={`snap-section relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`} style={{
-      backgroundColor: row.bg_color || "hsl(var(--background))",
-      isolation: "isolate",
-      paddingTop: "24px", paddingBottom: "24px",
-      ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
-    }}>
-      <div className="absolute inset-0 opacity-40 blur-[100px]" style={{
-        background: `radial-gradient(ellipse 80% 60% at 30% 70%, ${gradStart}, transparent), radial-gradient(ellipse 60% 40% at 70% 30%, ${gradEnd}, transparent)`
-      }} />
+  const renderColumnContent = (c: Record<string, any>, colIndex: number) => {
+    const prefix = rowIndex !== undefined
+      ? (colIndex === 0 ? `rows.${rowIndex}.content` : `rows.${rowIndex}.columns_data.${colIndex - 1}`)
+      : "";
+    const titleLines: string[] = (c.title_lines || []).map((li: any) =>
+      typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
+    );
+    const noteColor = c.color_note || (isLight ? "hsl(var(--light-fg) / 0.5)" : "hsl(var(--foreground) / 0.5)");
 
-      <div ref={ref} className={`relative z-10 ${maxW} px-6 ${containerPos} ${contentAlign}`}>
+    return (
+      <div key={colIndex} className={isMultiCol ? "" : `${maxW} ${containerPos} ${contentAlign}`}>
         {c.eyebrow && (
           <span className="font-body tracking-[0.35em] uppercase block mb-3" style={{ ...revealStyle(isVisible, -0.5), fontSize: "clamp(7px, 0.9vw, 10px)", color: c.color_eyebrow || (isLight ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.5)") }}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
@@ -74,7 +66,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
           <div style={revealStyle(isVisible, 2)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.body`} html as="div"
               data-rte-fit=""
-              className={`font-body-heading font-medium max-w-[700px] leading-relaxed mt-5 [&_p]:mb-[5px] [&_p]:mt-[5px] ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
+              className={`font-body-heading font-medium ${isMultiCol ? "" : "max-w-[700px]"} leading-relaxed mt-5 [&_p]:mb-[5px] [&_p]:mt-[5px] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
               style={{ color: isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)", fontSize: "clamp(0.85rem, 1.8vw, 1.15rem)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
           </div>
@@ -97,6 +89,29 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
         )}
 
         {c.show_subscribe && <div style={revealStyle(isVisible, 3)}><SubscribeWidget className="mt-8" align={align} /></div>}
+      </div>
+    );
+  };
+
+  return (
+    <section ref={(el) => { autoFitRef.current = el; }} className={`snap-section relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`} style={{
+      backgroundColor: row.bg_color || "hsl(var(--background))",
+      isolation: "isolate",
+      paddingTop: "24px", paddingBottom: "24px",
+      ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
+    }}>
+      <div className="absolute inset-0 opacity-40 blur-[100px]" style={{
+        background: `radial-gradient(ellipse 80% 60% at 30% 70%, ${gradStart}, transparent), radial-gradient(ellipse 60% 40% at 70% 30%, ${gradEnd}, transparent)`
+      }} />
+
+      <div ref={ref} className={`relative z-10 px-6 ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1200px]"} ${containerPos}` : ""} ${contentAlign}`}>
+        {isMultiCol ? (
+          <div style={multiColGridStyle(widths)} className="items-start">
+            {contents.map((c, i) => renderColumnContent(c, i))}
+          </div>
+        ) : (
+          renderColumnContent(contents[0], 0)
+        )}
       </div>
     </section>
   );
