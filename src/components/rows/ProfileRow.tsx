@@ -40,6 +40,10 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
   );
 
+  // Use column_widths to control the image/text split ratio
+  const colWidths = l.column_widths || [340, 760]; // default pixel-ish ratio
+  const gridCols = `${colWidths[0]}fr ${colWidths[1]}fr`;
+
   return (
     <section
       ref={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
@@ -65,7 +69,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
       />
 
       <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos}`}>
-        <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] gap-8 md:gap-12 items-start">
+        <div className="grid grid-cols-1 gap-8 md:gap-12 items-start" style={{ gridTemplateColumns: window.innerWidth > 768 ? gridCols : undefined }}>
           {/* Left column: Image + Name + Credentials */}
           <div className="flex flex-col items-center" style={revealStyle(isVisible, 1)}>
             <div

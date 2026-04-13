@@ -1,5 +1,6 @@
 export interface RowLayout {
   columns: 1 | 2 | 3 | 4;
+  column_widths?: number[]; // proportional widths, e.g. [60, 40]
   fullWidth: boolean;
   paddingTop: number;
   paddingBottom: number;
@@ -31,6 +32,7 @@ export interface PageRow {
   scope?: string;
   layout?: RowLayout;
   content: Record<string, any>;
+  columns_data?: Record<string, any>[]; // extra columns beyond the first
 }
 
 export interface ContactField {
@@ -50,6 +52,19 @@ export const DEFAULT_CONTACT_FIELDS: ContactField[] = [
 ];
 
 export const generateRowId = () => crypto.randomUUID();
+
+/** Get all column contents and their grid widths */
+export const getRowColumns = (row: PageRow) => {
+  const contents = [row.content, ...(row.columns_data || [])];
+  const widths = row.layout?.column_widths || contents.map(() => Math.round(100 / contents.length));
+  return { contents, widths, isMultiCol: contents.length > 1 };
+};
+
+export const multiColGridStyle = (widths: number[]): React.CSSProperties => ({
+  display: "grid",
+  gridTemplateColumns: widths.map((w) => `${w}fr`).join(" "),
+  gap: "2rem",
+});
 
 export const DEFAULT_ROWS: PageRow[] = [
   {

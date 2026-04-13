@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles, Image, User, Grid3X3 } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles, Image, User, Grid3X3, Columns } from "lucide-react";
 import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
 import RowAlignmentSettings from "./RowAlignmentSettings";
+import ColumnWidthControl from "./ColumnWidthControl";
 import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea, ColorField } from "./FieldComponents";
 import ImagePickerField from "../ImagePickerField";
 import TitleLineEditor from "./TitleLineEditor";
@@ -75,33 +76,91 @@ const RowsManager = ({ rows, onChange }: Props) => {
     if (openRow === id) setOpenRow(null);
   };
 
-  const renderRowEditor = (row: PageRow) => {
-    const onContentChange = (field: string, value: any) => updateRowContent(row.id, field, value);
+  /* ── Column management ── */
+  const addColumn = (rowId: string) => {
+    const row = rows.find((r) => r.id === rowId);
+    if (!row) return;
+    const template = ROW_TYPES.find((t) => t.type === row.type)!;
+    const newColContent = { ...template.defaultContent };
+    const existingExtra = row.columns_data || [];
+    const newColumnsData = [...existingExtra, newColContent];
+    const colCount = 1 + newColumnsData.length;
+    const equalWidth = Math.round(100 / colCount);
+    const widths = Array(colCount).fill(equalWidth);
+    widths[widths.length - 1] = 100 - equalWidth * (colCount - 1);
+    onChange(rows.map((r) =>
+      r.id === rowId
+        ? { ...r, columns_data: newColumnsData, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+        : r
+    ));
+  };
 
+  const removeColumn = (rowId: string, colIndex: number) => {
+    const row = rows.find((r) => r.id === rowId);
+    if (!row) return;
+    if (colIndex === 0 && row.columns_data && row.columns_data.length > 0) {
+      const [promoted, ...rest] = row.columns_data;
+      const colCount = 1 + rest.length;
+      const widths = colCount > 1 ? Array(colCount).fill(Math.round(100 / colCount)) : undefined;
+      onChange(rows.map((r) =>
+        r.id === rowId
+          ? { ...r, content: promoted, columns_data: rest.length > 0 ? rest : undefined, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+          : r
+      ));
+    } else if (colIndex > 0 && row.columns_data) {
+      const newExtra = row.columns_data.filter((_, i) => i !== colIndex - 1);
+      const colCount = 1 + newExtra.length;
+      const widths = colCount > 1 ? Array(colCount).fill(Math.round(100 / colCount)) : undefined;
+      onChange(rows.map((r) =>
+        r.id === rowId
+          ? { ...r, columns_data: newExtra.length > 0 ? newExtra : undefined, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+          : r
+      ));
+    }
+  };
+
+  const updateColumnContent = (rowId: string, colDataIndex: number, field: string, value: any) => {
+    onChange(rows.map((r) => {
+      if (r.id !== rowId || !r.columns_data) return r;
+      const next = [...r.columns_data];
+      next[colDataIndex] = { ...next[colDataIndex], [field]: value };
+      return { ...r, columns_data: next };
+    }));
+  };
+
+  const updateColumnWidths = (rowId: string, widths: number[]) => {
+    onChange(rows.map((r) =>
+      r.id === rowId
+        ? { ...r, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+        : r
+    ));
+  };
+
+  const renderRowEditorForContent = (row: PageRow, content: Record<string, any>, onContentChange: (field: string, value: any) => void) => {
     switch (row.type) {
       case "hero":
-        return <HeroRowFields content={row.content} onChange={onContentChange} />;
+        return <HeroRowFields content={content} onChange={onContentChange} />;
       case "text":
-        return <TextRowFields content={row.content} onChange={onContentChange} />;
+        return <TextRowFields content={content} onChange={onContentChange} />;
       case "service":
         return (
           <PillarEditor
-            pillarContent={row.content}
-            servicesContent={{ services: row.content.services || [] }}
+            pillarContent={content}
+            servicesContent={{ services: content.services || [] }}
             onPillarChange={onContentChange}
             onServicesChange={(svcs) => onContentChange("services", svcs)}
           />
         );
       case "boxed":
-        return <BoxedRowFields content={row.content} onChange={onContentChange} />;
+        return <BoxedRowFields content={content} onChange={onContentChange} />;
       case "contact":
-        return <ContactRowFields content={row.content} onChange={onContentChange} />;
+        return <ContactRowFields content={content} onChange={onContentChange} />;
       case "image_text":
-        return <ImageTextEditor content={row.content} onChange={onContentChange} />;
+        return <ImageTextEditor content={content} onChange={onContentChange} />;
       case "profile":
-        return <ProfileEditor content={row.content} onChange={onContentChange} />;
+        return <ProfileEditor content={content} onChange={onContentChange} />;
       case "grid":
-        return <GridEditor content={row.content} onChange={onContentChange} />;
+        return <GridEditor content={content} onChange={onContentChange} />;
       default:
         return null;
     }
@@ -167,7 +226,11 @@ const RowsManager = ({ rows, onChange }: Props) => {
                 onRemove={() => removeRow(row.id)}
                 onUpdateRow={(updates) => updateRow(row.id, updates)}
                 onUpdateContent={(field, value) => updateRowContent(row.id, field, value)}
-                renderEditor={() => renderRowEditor(row)}
+                onAddColumn={() => addColumn(row.id)}
+                onRemoveColumn={(colIndex) => removeColumn(row.id, colIndex)}
+                onUpdateColumnContent={(colDataIdx, field, value) => updateColumnContent(row.id, colDataIdx, field, value)}
+                onUpdateColumnWidths={(widths) => updateColumnWidths(row.id, widths)}
+                renderEditorForContent={(content, onContentChange) => renderRowEditorForContent(row, content, onContentChange)}
               />
             );
           })}
@@ -187,11 +250,31 @@ interface SortableRowItemProps {
   onRemove: () => void;
   onUpdateRow: (updates: Partial<PageRow>) => void;
   onUpdateContent: (field: string, value: any) => void;
-  renderEditor: () => React.ReactNode;
+  onAddColumn: () => void;
+  onRemoveColumn: (colIndex: number) => void;
+  onUpdateColumnContent: (colDataIndex: number, field: string, value: any) => void;
+  onUpdateColumnWidths: (widths: number[]) => void;
+  renderEditorForContent: (content: Record<string, any>, onContentChange: (field: string, value: any) => void) => React.ReactNode;
 }
 
-const SortableRowItem = ({ row, TypeIcon, isOpen, onToggle, onRemove, onUpdateRow, onUpdateContent, renderEditor }: SortableRowItemProps) => {
+const SortableRowItem = ({
+  row, TypeIcon, isOpen, onToggle, onRemove, onUpdateRow, onUpdateContent,
+  onAddColumn, onRemoveColumn, onUpdateColumnContent, onUpdateColumnWidths,
+  renderEditorForContent,
+}: SortableRowItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
+  const [activeCol, setActiveCol] = useState(0);
+
+  const colCount = 1 + (row.columns_data?.length || 0);
+  const columnWidths = row.layout?.column_widths || Array(colCount).fill(Math.round(100 / colCount));
+
+  // Get content and onChange for the active column
+  const getColContent = (col: number) => col === 0 ? row.content : (row.columns_data?.[col - 1] || {});
+  const getColOnChange = (col: number): ((field: string, value: any) => void) =>
+    col === 0 ? onUpdateContent : (field, value) => onUpdateColumnContent(col - 1, field, value);
+
+  // Clamp activeCol if columns were removed
+  const safeActiveCol = Math.min(activeCol, colCount - 1);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -222,9 +305,19 @@ const SortableRowItem = ({ row, TypeIcon, isOpen, onToggle, onRemove, onUpdateRo
             <span className="font-body text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ backgroundColor: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))" }}>
               {row.type}
             </span>
+            {colCount > 1 && (
+              <span className="font-body text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ backgroundColor: "hsl(var(--primary) / 0.15)", color: "hsl(var(--primary))" }}>
+                {colCount} cols
+              </span>
+            )}
           </button>
         </div>
         <div className="flex items-center gap-0.5">
+          {colCount < 4 && (
+            <button type="button" onClick={onAddColumn} className="p-1 rounded hover:opacity-70" style={{ color: "hsl(var(--primary))" }} title="Add Column">
+              <Columns size={13} />
+            </button>
+          )}
           <button type="button" onClick={onRemove} className="p-1 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
             <Trash2 size={13} />
           </button>
@@ -262,17 +355,59 @@ const SortableRowItem = ({ row, TypeIcon, isOpen, onToggle, onRemove, onUpdateRo
               onChange={(layout) => onUpdateRow({ layout })}
             />
           )}
+
+          {/* Column width control */}
+          {colCount > 1 && (
+            <ColumnWidthControl
+              columnCount={colCount}
+              widths={columnWidths}
+              onChange={onUpdateColumnWidths}
+            />
+          )}
+
+          {/* Column tabs */}
+          {colCount > 1 && (
+            <div className="flex items-center gap-1">
+              {Array.from({ length: colCount }).map((_, i) => (
+                <div key={i} className="flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setActiveCol(i)}
+                    className="px-3 py-1.5 rounded-t text-[10px] font-body font-medium transition-all"
+                    style={{
+                      backgroundColor: safeActiveCol === i ? "hsl(var(--primary))" : "hsl(var(--muted) / 0.3)",
+                      color: safeActiveCol === i ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
+                    }}
+                  >
+                    Column {i + 1}
+                  </button>
+                  {colCount > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => { onRemoveColumn(i); if (safeActiveCol >= colCount - 1) setActiveCol(Math.max(0, colCount - 2)); }}
+                      className="p-0.5 rounded hover:opacity-70 -ml-1"
+                      style={{ color: "hsl(var(--destructive) / 0.7)" }}
+                      title={`Remove Column ${i + 1}`}
+                    >
+                      <Trash2 size={10} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={row.content.show_subscribe || false}
-              onChange={(e) => onUpdateContent("show_subscribe", e.target.checked)}
+              checked={getColContent(safeActiveCol).show_subscribe || false}
+              onChange={(e) => getColOnChange(safeActiveCol)("show_subscribe", e.target.checked)}
               className="rounded"
               style={{ accentColor: "hsl(var(--primary))" }}
             />
             <span className="font-body text-xs" style={{ color: "hsl(var(--foreground))" }}>Show Subscribe widget</span>
           </label>
-          {renderEditor()}
+          {renderEditorForContent(getColContent(safeActiveCol), getColOnChange(safeActiveCol))}
         </div>
       )}
     </div>
