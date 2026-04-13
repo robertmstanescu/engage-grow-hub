@@ -41,7 +41,7 @@ import GridEditor from "./site-editor/GridEditor";
 import ImagePickerField from "./ImagePickerField";
 
 
-type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "settings";
+type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings";
 
 type PropertiesSubTab = "content" | "style" | "seo";
 

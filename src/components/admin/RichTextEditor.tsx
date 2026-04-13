@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Bold,
   Italic,
@@ -17,6 +17,8 @@ import {
   Undo,
   Redo,
   RemoveFormatting,
+  Code,
+  LetterText,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -52,6 +54,8 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef<Range | null>(null);
   const brandColors = useBrandColors();
+  const [htmlMode, setHtmlMode] = useState(false);
+  const htmlTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const emitChange = useCallback(() => {
     onChange(editorRef.current?.innerHTML || "");
@@ -60,7 +64,6 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   const saveSelection = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0 || !editorRef.current) return;
-
     const range = selection.getRangeAt(0);
     if (editorRef.current.contains(range.commonAncestorContainer)) {
       selectionRef.current = range.cloneRange();
@@ -70,7 +73,6 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   const restoreSelection = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || !selectionRef.current) return;
-
     selection.removeAllRanges();
     selection.addRange(selectionRef.current);
   }, []);
@@ -97,7 +99,6 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
       restoreSelection();
       document.execCommand("styleWithCSS", false, "true");
       document.execCommand("fontSize", false, "7");
-
       editorRef.current
         ?.querySelectorAll('font[size="7"]')
         .forEach((node) => {
@@ -106,7 +107,6 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           span.innerHTML = node.innerHTML;
           node.replaceWith(span);
         });
-
       saveSelection();
       emitChange();
     },
@@ -115,29 +115,13 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
 
   const handleImageUpload = useCallback(
     async (file: File) => {
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please upload an image file");
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image must be under 5MB");
-        return;
-      }
-
+      if (!file.type.startsWith("image/")) { toast.error("Please upload an image file"); return; }
+      if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
       const ext = file.name.split(".").pop();
       const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from("editor-images").upload(path, file);
-
-      if (error) {
-        toast.error("Failed to upload image");
-        return;
-      }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("editor-images").getPublicUrl(path);
-
+      if (error) { toast.error("Failed to upload image"); return; }
+      const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
       runCommand("insertImage", publicUrl);
       toast.success("Image uploaded");
     },
@@ -149,17 +133,11 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     const selectedText = selection?.toString() || "";
     const url = window.prompt("Enter URL:", "https://");
     if (url === null) return;
-
-    if (!url) {
-      runCommand("unlink");
-      return;
-    }
-
+    if (!url) { runCommand("unlink"); return; }
     if (!selectedText) {
       runCommand("insertHTML", `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
       return;
     }
-
     runCommand("createLink", url);
   }, [runCommand]);
 
@@ -171,7 +149,6 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   const setHighlightColor = useCallback(() => {
     const color = window.prompt("Enter highlight color (hex):", "#E5C54F");
     if (!color) return;
-
     focusEditor();
     restoreSelection();
     document.execCommand("styleWithCSS", false, "true");
@@ -180,22 +157,102 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     emitChange();
   }, [emitChange, focusEditor, restoreSelection, saveSelection]);
 
+  /* ── Toggle blockquote (press again to remove) ── */
+  const toggleBlockquote = useCallback(() => {
+    focusEditor();
+    restoreSelection();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    let node: Node | null = sel.anchorNode;
+    while (node && node !== editorRef.current) {
+      if (node.nodeName === "BLOCKQUOTE") {
+        // Unwrap: replace blockquote with its children
+        const parent = node.parentNode;
+        if (parent) {
+          while (node.firstChild) parent.insertBefore(node.firstChild, node);
+          parent.removeChild(node);
+        }
+        emitChange();
+        return;
+      }
+      node = node.parentNode;
+    }
+    // Not in a blockquote — apply one
+    document.execCommand("formatBlock", false, "blockquote");
+    emitChange();
+  }, [emitChange, focusEditor, restoreSelection]);
+
+  /* ── Drop cap / Initial letter ── */
+  const applyDropCap = useCallback(() => {
+    focusEditor();
+    restoreSelection();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    // Find the paragraph element
+    let block: Node | null = sel.anchorNode;
+    while (block && block !== editorRef.current && !["P", "DIV"].includes((block as HTMLElement).nodeName)) {
+      block = block.parentNode;
+    }
+    if (!block || block === editorRef.current) return;
+
+    const el = block as HTMLElement;
+    // Check if first child already has drop-cap class — toggle off
+    const firstChild = el.firstChild;
+    if (firstChild && firstChild.nodeType === 1 && (firstChild as HTMLElement).classList?.contains("drop-cap")) {
+      // Unwrap
+      const span = firstChild as HTMLElement;
+      const text = document.createTextNode(span.textContent || "");
+      el.replaceChild(text, span);
+      emitChange();
+      return;
+    }
+
+    // Get the text content and wrap the first letter
+    const textContent = el.textContent || "";
+    if (!textContent.trim()) return;
+
+    // Find first text node
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    const firstTextNode = walker.nextNode();
+    if (!firstTextNode || !firstTextNode.textContent) return;
+
+    const text = firstTextNode.textContent;
+    const firstLetter = text.charAt(0);
+    const rest = text.slice(1);
+
+    const span = document.createElement("span");
+    span.className = "drop-cap";
+    span.textContent = firstLetter;
+
+    firstTextNode.textContent = rest;
+    firstTextNode.parentNode?.insertBefore(span, firstTextNode);
+    emitChange();
+  }, [emitChange, focusEditor, restoreSelection]);
+
+  /* ── HTML mode toggle ── */
+  const toggleHtmlMode = useCallback(() => {
+    if (htmlMode) {
+      // Switching from HTML → visual: push textarea value into editor
+      const newHtml = htmlTextareaRef.current?.value || "";
+      onChange(newHtml);
+    }
+    setHtmlMode((prev) => !prev);
+  }, [htmlMode, onChange]);
+
   useEffect(() => {
+    if (htmlMode) return; // Don't sync when in HTML mode
     if (!editorRef.current) return;
     const sanitized = sanitizeHtml(content || "");
     if (editorRef.current.innerHTML !== sanitized) {
       editorRef.current.innerHTML = sanitized;
     }
-  }, [content]);
+  }, [content, htmlMode]);
 
   const ToolbarButton = ({
-    onClick,
-    children,
-    title,
+    onClick, children, title, active,
   }: {
-    onClick: () => void;
-    children: React.ReactNode;
-    title: string;
+    onClick: () => void; children: React.ReactNode; title: string; active?: boolean;
   }) => (
     <button
       type="button"
@@ -203,7 +260,10 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
       onMouseDown={(event) => event.preventDefault()}
       onClick={onClick}
       className="p-1.5 rounded transition-colors"
-      style={{ color: "hsl(var(--muted-foreground))" }}
+      style={{
+        color: active ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
+        backgroundColor: active ? "hsl(var(--secondary) / 0.15)" : undefined,
+      }}
     >
       {children}
     </button>
@@ -218,12 +278,8 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
         className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b"
         style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.3)" }}
       >
-        <ToolbarButton onClick={() => runCommand("undo")} title="Undo">
-          <Undo size={15} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => runCommand("redo")} title="Redo">
-          <Redo size={15} />
-        </ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("undo")} title="Undo"><Undo size={15} /></ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("redo")} title="Redo"><Redo size={15} /></ToolbarButton>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
@@ -239,9 +295,7 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
         >
           <option value="">Font</option>
           {FONT_OPTIONS.map((font) => (
-            <option key={font.value} value={font.value}>
-              {font.label}
-            </option>
+            <option key={font.value} value={font.value}>{font.label}</option>
           ))}
         </select>
 
@@ -257,30 +311,19 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
         >
           <option value="">Size</option>
           {SIZE_OPTIONS.map((size) => (
-            <option key={size.value} value={size.value}>
-              {size.label}
-            </option>
+            <option key={size.value} value={size.value}>{size.label}</option>
           ))}
         </select>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        <ToolbarButton onClick={() => runCommand("bold")} title="Bold">
-          <Bold size={15} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => runCommand("italic")} title="Italic">
-          <Italic size={15} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => runCommand("underline")} title="Underline">
-          <UnderlineIcon size={15} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => runCommand("strikeThrough")} title="Strikethrough">
-          <Strikethrough size={15} />
-        </ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("bold")} title="Bold"><Bold size={15} /></ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("italic")} title="Italic"><Italic size={15} /></ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("underline")} title="Underline"><UnderlineIcon size={15} /></ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("strikeThrough")} title="Strikethrough"><Strikethrough size={15} /></ToolbarButton>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        {/* Brand colour swatches */}
         {brandColors.slice(0, 8).map((c) => (
           <button key={c.id} type="button" title={c.name}
             onMouseDown={(e) => e.preventDefault()}
@@ -288,70 +331,61 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
             className="w-4 h-4 rounded-full border hover:scale-110 transition-transform"
             style={{ backgroundColor: c.hex, borderColor: "hsl(var(--border))" }} />
         ))}
-        <ToolbarButton onClick={setTextColor} title="Custom Text Color">
-          <Palette size={15} />
-        </ToolbarButton>
-        <ToolbarButton onClick={setHighlightColor} title="Highlight">
-          <Highlighter size={15} />
-        </ToolbarButton>
+        <ToolbarButton onClick={setTextColor} title="Custom Text Color"><Palette size={15} /></ToolbarButton>
+        <ToolbarButton onClick={setHighlightColor} title="Highlight"><Highlighter size={15} /></ToolbarButton>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        <ToolbarButton onClick={() => runCommand("justifyLeft")} title="Align Left">
-          <AlignLeft size={15} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => runCommand("justifyCenter")} title="Align Center">
-          <AlignCenter size={15} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => runCommand("justifyRight")} title="Align Right">
-          <AlignRight size={15} />
-        </ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("justifyLeft")} title="Align Left"><AlignLeft size={15} /></ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("justifyCenter")} title="Align Center"><AlignCenter size={15} /></ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("justifyRight")} title="Align Right"><AlignRight size={15} /></ToolbarButton>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        <ToolbarButton onClick={() => runCommand("insertUnorderedList")} title="Bullet List">
-          <List size={15} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => runCommand("insertOrderedList")} title="Numbered List">
-          <ListOrdered size={15} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => runCommand("formatBlock", "blockquote")} title="Blockquote">
-          <Quote size={15} />
-        </ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("insertUnorderedList")} title="Bullet List"><List size={15} /></ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("insertOrderedList")} title="Numbered List"><ListOrdered size={15} /></ToolbarButton>
+        <ToolbarButton onClick={toggleBlockquote} title="Blockquote (toggle)"><Quote size={15} /></ToolbarButton>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        <ToolbarButton onClick={addLink} title="Add Link">
-          <LinkIcon size={15} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => fileInputRef.current?.click()} title="Upload Image">
-          <ImageIcon size={15} />
-        </ToolbarButton>
+        <ToolbarButton onClick={applyDropCap} title="Drop Cap / Initial Letter"><LetterText size={15} /></ToolbarButton>
+        <ToolbarButton onClick={addLink} title="Add Link"><LinkIcon size={15} /></ToolbarButton>
+        <ToolbarButton onClick={() => fileInputRef.current?.click()} title="Upload Image"><ImageIcon size={15} /></ToolbarButton>
 
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
-        <ToolbarButton onClick={() => runCommand("removeFormat")} title="Remove Formatting">
-          <RemoveFormatting size={15} />
-        </ToolbarButton>
+        <ToolbarButton onClick={() => runCommand("removeFormat")} title="Remove Formatting"><RemoveFormatting size={15} /></ToolbarButton>
+        <ToolbarButton onClick={toggleHtmlMode} title="HTML Source" active={htmlMode}><Code size={15} /></ToolbarButton>
       </div>
 
-      <div
-        ref={editorRef}
-        contentEditable
-        suppressContentEditableWarning
-        role="textbox"
-        aria-multiline="true"
-        data-placeholder={placeholder || "Start writing..."}
-        className="prose prose-sm max-w-none min-h-[300px] px-4 py-3 focus:outline-none"
-        onInput={emitChange}
-        onBlur={() => {
-          saveSelection();
-          emitChange();
-        }}
-        onKeyUp={saveSelection}
-        onMouseUp={saveSelection}
-        style={{ color: bgColor ? "#F4F0EC" : "hsl(var(--foreground))", backgroundColor: bgColor || undefined }}
-      />
+      {htmlMode ? (
+        <textarea
+          ref={htmlTextareaRef}
+          defaultValue={content || ""}
+          className="w-full min-h-[300px] px-4 py-3 font-mono text-xs focus:outline-none resize-y"
+          style={{
+            color: "hsl(var(--foreground))",
+            backgroundColor: "hsl(var(--background))",
+            border: "none",
+          }}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      ) : (
+        <div
+          ref={editorRef}
+          contentEditable
+          suppressContentEditableWarning
+          role="textbox"
+          aria-multiline="true"
+          data-placeholder={placeholder || "Start writing..."}
+          className="prose prose-sm max-w-none min-h-[300px] px-4 py-3 focus:outline-none"
+          onInput={emitChange}
+          onBlur={() => { saveSelection(); emitChange(); }}
+          onKeyUp={saveSelection}
+          onMouseUp={saveSelection}
+          style={{ color: bgColor ? "#F4F0EC" : "hsl(var(--foreground))", backgroundColor: bgColor || undefined }}
+        />
+      )}
 
       <input
         ref={fileInputRef}
