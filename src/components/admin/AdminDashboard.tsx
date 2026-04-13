@@ -5,7 +5,7 @@ import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import {
   LayoutDashboard, FileText, Compass, BookOpen,
   Users, Mail, Image, Palette, Settings, LogOut,
-  Save, Send,
+  Save, Send, Tag,
   GripVertical, Plus, Trash2, ArrowLeft,
 } from "lucide-react";
 import {
@@ -41,7 +41,7 @@ import GridEditor from "./site-editor/GridEditor";
 import ImagePickerField from "./ImagePickerField";
 
 
-type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "settings";
+type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings";
 
 type PropertiesSubTab = "content" | "style" | "seo";
 
@@ -89,6 +89,7 @@ const NAV_GROUPS = [
     label: "CONFIGURE",
     items: [
       { key: "brand" as Tab, icon: Palette, label: "Brand" },
+      { key: "tags" as Tab, icon: Tag, label: "Tags" },
       { key: "settings" as Tab, icon: Settings, label: "Settings" },
     ],
   },
@@ -870,6 +871,7 @@ const AdminDashboard = ({ session }: Props) => {
                 {activeTab === "emails" && <EmailCampaigns />}
                 {activeTab === "media" && <MediaGallery />}
                 {activeTab === "brand" && <BrandSettings />}
+                {activeTab === "tags" && <TagsManager />}
                 {activeTab === "settings" && <GlobalSettings />}
               </div>
             </main>
