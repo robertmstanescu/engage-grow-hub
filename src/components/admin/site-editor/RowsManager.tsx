@@ -266,7 +266,10 @@ const SortableRowItem = ({
   const [activeCol, setActiveCol] = useState(0);
 
   const colCount = 1 + (row.columns_data?.length || 0);
-  const columnWidths = row.layout?.column_widths || Array(colCount).fill(Math.round(100 / colCount));
+  const hasInherentSplit = row.type === "image_text" || row.type === "profile";
+  const showWidthControl = colCount > 1 || hasInherentSplit;
+  const widthColCount = hasInherentSplit && colCount === 1 ? 2 : colCount;
+  const columnWidths = row.layout?.column_widths || Array(widthColCount).fill(Math.round(100 / widthColCount));
 
   // Get content and onChange for the active column
   const getColContent = (col: number) => col === 0 ? row.content : (row.columns_data?.[col - 1] || {});
@@ -357,9 +360,9 @@ const SortableRowItem = ({
           )}
 
           {/* Column width control */}
-          {colCount > 1 && (
+          {showWidthControl && (
             <ColumnWidthControl
-              columnCount={colCount}
+              columnCount={widthColCount}
               widths={columnWidths}
               onChange={onUpdateColumnWidths}
             />
