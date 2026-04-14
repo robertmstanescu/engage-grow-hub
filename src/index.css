@@ -362,20 +362,22 @@
 .drop-cap {
   float: left;
   font-size: 3.2em;
-  line-height: 0.85;
+  line-height: 0.8;
   font-weight: 700;
-  margin-right: 0.06em;
-  margin-top: 0.02em;
-  padding: 0;
+  margin-right: -0.02em;
+  margin-top: 0.05em;
+  padding-right: 0.08em;
+  letter-spacing: -0.04em;
 }
 
 /* Drop cap inside the RTE editor preview */
 [contenteditable] .drop-cap {
   float: left;
   font-size: 3.2em;
-  line-height: 0.85;
+  line-height: 0.8;
   font-weight: 700;
-  margin-right: 0.06em;
-  margin-top: 0.02em;
-  padding: 0;
+  margin-right: -0.02em;
+  margin-top: 0.05em;
+  padding-right: 0.08em;
+  letter-spacing: -0.04em;
 }

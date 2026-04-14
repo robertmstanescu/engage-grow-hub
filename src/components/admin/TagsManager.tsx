@@ -226,12 +226,12 @@ const TagsManager = () => {
                 <div className="flex items-center gap-1.5">
                   <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">BG</label>
                   <input type="color" value={cat.bgColor || "#4D1B5E"} onChange={(e) => updateBlogCategory(i, "bgColor", e.target.value)} className="w-7 h-7 rounded cursor-pointer border-0 p-0" />
-                  <input type="text" value={cat.bgColor || "#4D1B5E"} onChange={(e) => { const v = e.target.value; if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) updateBlogCategory(i, "bgColor", v); }} placeholder="#HEX" className="w-20 px-2 py-1 rounded font-mono text-xs border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+                  <input type="text" value={cat.bgColor || "#4D1B5E"} onChange={(e) => { const v = e.target.value; if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) updateBlogCategory(i, "bgColor", v); }} placeholder="#HEX" className="w-20 px-2 py-1 rounded font-mono text-xs border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }} />
                 </div>
                 <div className="flex items-center gap-1.5">
                   <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Text</label>
                   <input type="color" value={cat.textColor || "#F9F0C1"} onChange={(e) => updateBlogCategory(i, "textColor", e.target.value)} className="w-7 h-7 rounded cursor-pointer border-0 p-0" />
-                  <input type="text" value={cat.textColor || "#F9F0C1"} onChange={(e) => { const v = e.target.value; if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) updateBlogCategory(i, "textColor", v); }} placeholder="#HEX" className="w-20 px-2 py-1 rounded font-mono text-xs border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+                  <input type="text" value={cat.textColor || "#F9F0C1"} onChange={(e) => { const v = e.target.value; if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) updateBlogCategory(i, "textColor", v); }} placeholder="#HEX" className="w-20 px-2 py-1 rounded font-mono text-xs border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }} />
                 </div>
                 <span className="ml-auto font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: cat.bgColor || "#4D1B5E", color: cat.textColor || "#F9F0C1" }}>
                   {cat.label}
