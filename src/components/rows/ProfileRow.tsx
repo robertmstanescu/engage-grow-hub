@@ -41,7 +41,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
   );
 
   // Use column_widths to control the image/text split ratio
-  const colWidths = l.column_widths || [340, 760]; // default pixel-ish ratio
+  const colWidths = l.column_widths || [35, 65];
   const gridCols = `${colWidths[0]}fr ${colWidths[1]}fr`;
 
   return (
