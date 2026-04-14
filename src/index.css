@@ -344,18 +344,18 @@
   }
 }
 
-/* Rich-text paragraph spacing – 10px before & after every <p> */
+/* Rich-text paragraph spacing – 15px before & after every <p> */
 [dangerouslySetInnerHTML] p,
 .prose p,
 .rich-text p {
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin-top: 15px;
+  margin-bottom: 15px;
 }
 
 /* Global fallback: any p inside a snap-section that came from CMS */
 .snap-section p {
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin-top: 15px;
+  margin-bottom: 15px;
 }
 
 /* Drop cap / Initial letter styling */
