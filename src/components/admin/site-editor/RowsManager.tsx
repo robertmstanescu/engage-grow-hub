@@ -316,11 +316,6 @@ const SortableRowItem = ({
           </button>
         </div>
         <div className="flex items-center gap-0.5">
-          {colCount < 4 && (
-            <button type="button" onClick={onAddColumn} className="p-1 rounded hover:opacity-70" style={{ color: "hsl(var(--primary))" }} title="Add Column">
-              <Columns size={13} />
-            </button>
-          )}
           <button type="button" onClick={onRemove} className="p-1 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
             <Trash2 size={13} />
           </button>
@@ -352,21 +347,33 @@ const SortableRowItem = ({
               </div>
             </div>
           </div>
-          {row.type !== "hero" && (
-            <RowAlignmentSettings
-              layout={row.layout || DEFAULT_ROW_LAYOUT}
-              onChange={(layout) => onUpdateRow({ layout })}
-            />
-          )}
+          <div className="flex flex-wrap items-start gap-2">
+            {row.type !== "hero" && (
+              <RowAlignmentSettings
+                layout={row.layout || DEFAULT_ROW_LAYOUT}
+                onChange={(layout) => onUpdateRow({ layout })}
+              />
+            )}
 
-          {/* Column width control */}
-          {showWidthControl && (
+            {colCount < 4 && (
+              <button
+                type="button"
+                onClick={onAddColumn}
+                className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full hover:opacity-70 transition-opacity"
+                style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}
+                title="Add Column"
+              >
+                <Columns size={11} /> Add Column
+              </button>
+            )}
+
             <ColumnWidthControl
               columnCount={widthColCount}
               widths={columnWidths}
               onChange={onUpdateColumnWidths}
+              disabled={!showWidthControl}
             />
-          )}
+          </div>
 
           {/* Column tabs */}
           {colCount > 1 && (
