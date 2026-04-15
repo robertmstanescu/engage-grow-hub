@@ -169,6 +169,7 @@ const AdminDashboard = ({ session }: Props) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [propertiesSubTab, setPropertiesSubTab] = useState<PropertiesSubTab>("content");
   const [showAddRow, setShowAddRow] = useState(false);
+  const [activeCol, setActiveCol] = useState(0);
 
   // ── CMS page editing ──
   const [cmsPage, setCmsPage] = useState<CmsPageRef | null>(null);
