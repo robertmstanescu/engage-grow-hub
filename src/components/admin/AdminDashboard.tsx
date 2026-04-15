@@ -1038,7 +1038,7 @@ const AdminDashboard = ({ session }: Props) => {
   );
 };
 
-/* ── Style Tab ── */
+/* ── Style Tab (generic, for hero) ── */
 const StyleTab = () => (
   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
     <div>
@@ -1059,6 +1059,54 @@ const StyleTab = () => (
     </div>
   </div>
 );
+
+/* ── Row Style Tab (with alignment + column widths) ── */
+const RowStyleTab = ({
+  row, onRowMetaChange, onUpdateColumnWidths,
+}: {
+  row: PageRow;
+  onRowMetaChange: (updates: Partial<PageRow>) => void;
+  onUpdateColumnWidths: (widths: number[]) => void;
+}) => {
+  const colCount = 1 + (row.columns_data?.length || 0);
+  const hasInherentSplit = row.type === "image_text" || row.type === "profile";
+  const showWidthControl = colCount > 1 || hasInherentSplit;
+  const widthColCount = hasInherentSplit && colCount === 1 ? 2 : colCount;
+  const columnWidths = row.layout?.column_widths || Array(widthColCount).fill(Math.round(100 / widthColCount));
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {row.type !== "hero" && (
+        <RowAlignmentSettings
+          layout={row.layout || DEFAULT_ROW_LAYOUT}
+          onChange={(layout) => onRowMetaChange({ layout })}
+        />
+      )}
+      <ColumnWidthControl
+        columnCount={widthColCount}
+        widths={columnWidths}
+        onChange={onUpdateColumnWidths}
+        disabled={!showWidthControl}
+      />
+      <div>
+        <label style={{ fontFamily: "var(--font-body)", fontSize: 10, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "hsl(var(--muted-foreground))", display: "block", marginBottom: 6 }}>
+          Glass card intensity
+        </label>
+        <input type="range" min={0} max={100} defaultValue={50} style={{ width: "100%", accentColor: "hsl(var(--secondary))" }} />
+      </div>
+      <div>
+        <label style={{ fontFamily: "var(--font-body)", fontSize: 10, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "hsl(var(--muted-foreground))", display: "block", marginBottom: 6 }}>
+          Gradient text
+        </label>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <input type="checkbox" defaultChecked={false} style={{ accentColor: "hsl(var(--secondary))" }} />
+          <span style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "hsl(var(--foreground))" }}>Enable gradient text</span>
+        </div>
+        <div style={{ height: 4, borderRadius: 2, marginTop: 8, background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))" }} />
+      </div>
+    </div>
+  );
+};
 
 /* ── Title Lines Editor (for properties panel) ── */
 const TitleLinesEditor = ({ titleLines, onChange }: { titleLines: string[]; onChange: (lines: string[]) => void }) => {
