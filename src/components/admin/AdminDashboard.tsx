@@ -864,7 +864,7 @@ const AdminDashboard = ({ session }: Props) => {
                     return (
                       <div style={{ borderBottom: "1px solid hsl(var(--border))", flexShrink: 0 }}>
                         <div style={{ display: "flex" }}>
-                          {(["content", "style", "seo"] as PropertiesSubTab[]).map((tab) => (
+                          {(["content", "style"] as PropertiesSubTab[]).map((tab) => (
                             <button
                               key={tab}
                               onClick={() => setPropertiesSubTab(tab)}
@@ -937,14 +937,7 @@ const AdminDashboard = ({ session }: Props) => {
                         <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
                       ) : propertiesSubTab === "style" ? (
                         <StyleTab />
-                      ) : (
-                        <SeoFields
-                          metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                          metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                          onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                          onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                        />
-                      )
+                      ) : null
                     ) : selectedRow ? (
                       propertiesSubTab === "content" ? (
                         (() => {
@@ -965,23 +958,7 @@ const AdminDashboard = ({ session }: Props) => {
                           onRowMetaChange={updateRowMeta}
                           onUpdateColumnWidths={(w) => updateColumnWidths(selectedRow.id, w)}
                         />
-                      ) : (
-                        cmsPage ? (
-                          <SeoFields
-                            metaTitle={cmsPageMeta.meta_title}
-                            metaDescription={cmsPageMeta.meta_description}
-                            onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
-                            onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
-                          />
-                        ) : (
-                          <SeoFields
-                            metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                            metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                            onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                            onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                          />
-                        )
-                      )
+                      ) : null
                     ) : null}
                   </div>
 
