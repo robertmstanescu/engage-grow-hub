@@ -6,7 +6,7 @@ import {
   LayoutDashboard, FileText, Compass, BookOpen,
   Users, Mail, Image, Palette, Settings, LogOut,
   Save, Send, Tag,
-  GripVertical, Plus, Trash2, ArrowLeft,
+  GripVertical, Plus, Trash2, ArrowLeft, Columns, X,
 } from "lucide-react";
 import {
   DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors,
@@ -34,6 +34,7 @@ import { Field, RichField, SectionBox, ColorField, SelectField } from "./site-ed
 import TitleLineEditor from "./site-editor/TitleLineEditor";
 import SubtitleEditor from "./site-editor/SubtitleEditor";
 import RowAlignmentSettings from "./site-editor/RowAlignmentSettings";
+import ColumnWidthControl from "./site-editor/ColumnWidthControl";
 import PillarEditor from "./site-editor/PillarEditor";
 import ImageTextEditor from "./site-editor/ImageTextEditor";
 import ProfileEditor from "./site-editor/ProfileEditor";
@@ -168,6 +169,7 @@ const AdminDashboard = ({ session }: Props) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [propertiesSubTab, setPropertiesSubTab] = useState<PropertiesSubTab>("content");
   const [showAddRow, setShowAddRow] = useState(false);
+  const [activeCol, setActiveCol] = useState(0);
 
   // ── CMS page editing ──
   const [cmsPage, setCmsPage] = useState<CmsPageRef | null>(null);
@@ -297,6 +299,59 @@ const AdminDashboard = ({ session }: Props) => {
     if (selectedSectionId === rowId) setSelectedSectionId(null);
   }, [pageRows, updateRows, selectedSectionId]);
 
+  const addColumnToRow = useCallback((rowId: string) => {
+    const row = pageRows.find((r) => r.id === rowId);
+    if (!row) return;
+    const defaultContent = ROW_TYPE_OPTIONS.find((o) => o.type === row.type)
+      ? { title_lines: [], body: "" }
+      : { title_lines: [], body: "" };
+    const existingExtra = row.columns_data || [];
+    const newColumnsData = [...existingExtra, defaultContent];
+    const colCount = 1 + newColumnsData.length;
+    const equalWidth = Math.round(100 / colCount);
+    const widths = Array(colCount).fill(equalWidth);
+    widths[widths.length - 1] = 100 - equalWidth * (colCount - 1);
+    updateRows(pageRows.map((r) =>
+      r.id === rowId
+        ? { ...r, columns_data: newColumnsData, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+        : r
+    ));
+  }, [pageRows, updateRows]);
+
+  const removeColumnFromRow = useCallback((rowId: string, colIndex: number) => {
+    const row = pageRows.find((r) => r.id === rowId);
+    if (!row) return;
+    if (colIndex === 0 && row.columns_data && row.columns_data.length > 0) {
+      const [promoted, ...rest] = row.columns_data;
+      const colCount = 1 + rest.length;
+      const widths = colCount > 1 ? Array(colCount).fill(Math.round(100 / colCount)) : undefined;
+      updateRows(pageRows.map((r) =>
+        r.id === rowId
+          ? { ...r, content: promoted, columns_data: rest.length > 0 ? rest : undefined, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+          : r
+      ));
+    } else if (colIndex > 0 && row.columns_data) {
+      const newExtra = row.columns_data.filter((_, i) => i !== colIndex - 1);
+      const colCount = 1 + newExtra.length;
+      const widths = colCount > 1 ? Array(colCount).fill(Math.round(100 / colCount)) : undefined;
+      updateRows(pageRows.map((r) =>
+        r.id === rowId
+          ? { ...r, columns_data: newExtra.length > 0 ? newExtra : undefined, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+          : r
+      ));
+    }
+    setActiveCol(0);
+  }, [pageRows, updateRows]);
+
+  const updateColumnWidths = useCallback((rowId: string, widths: number[]) => {
+    updateRows(pageRows.map((r) =>
+      r.id === rowId
+        ? { ...r, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+        : r
+    ));
+  }, [pageRows, updateRows]);
+
+
   const toggleCmsPagePublish = useCallback(async () => {
     if (!cmsPage) return;
     const newStatus = cmsPageStatus === "published" ? "draft" : "published";
@@ -390,6 +445,7 @@ const AdminDashboard = ({ session }: Props) => {
   const selectSection = (rowId: string) => {
     setSelectedSectionId(rowId);
     setPropertiesSubTab("content");
+    setActiveCol(0);
   };
 
   // ── DnD sensors ──
@@ -415,6 +471,21 @@ const AdminDashboard = ({ session }: Props) => {
     );
     updateRows(newRows);
   };
+
+  const updateColContent = useCallback((field: string, value: any) => {
+    if (!selectedSectionId || !selectedRow) return;
+    if (activeCol === 0) {
+      updateRowContent(field, value);
+    } else {
+      const colDataIdx = activeCol - 1;
+      updateRows(pageRows.map((r) => {
+        if (r.id !== selectedSectionId || !r.columns_data) return r;
+        const next = [...r.columns_data];
+        next[colDataIdx] = { ...next[colDataIdx], [field]: value };
+        return { ...r, columns_data: next };
+      }));
+    }
+  }, [selectedSectionId, selectedRow, activeCol, pageRows, updateRows, updateRowContent]);
 
   const updateRowMeta = (updates: Partial<PageRow>) => {
     if (!selectedSectionId) return;
@@ -728,49 +799,120 @@ const AdminDashboard = ({ session }: Props) => {
               ) : (
                 <>
                   {/* Properties Header */}
-                  <div style={{
-                    height: 44, display: "flex", alignItems: "center", gap: 8,
-                    padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
-                  }}>
-                    <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
-                      {selectedSectionId === "__hero__"
-                        ? "Hero"
-                        : selectedSectionId === "__seo__"
-                        ? "SEO & Metadata"
-                        : selectedRow?.strip_title || "Section"}
-                    </span>
-                    {selectedSectionId !== "__seo__" && (
-                      <span style={{
-                        fontSize: 8, textTransform: "uppercase" as const, letterSpacing: "0.1em",
-                        background: "hsl(var(--secondary) / 0.1)", color: "hsl(var(--secondary))",
-                        padding: "2px 7px", borderRadius: 4,
+                  {(() => {
+                    const isRow = selectedSectionId !== "__hero__" && selectedSectionId !== "__seo__" && !!selectedRow;
+                    const rowColCount = isRow ? 1 + (selectedRow!.columns_data?.length || 0) : 0;
+                    return (
+                      <div style={{
+                        height: 44, display: "flex", alignItems: "center", gap: 8,
+                        padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
                       }}>
-                        {selectedSectionId === "__hero__" ? "hero" : selectedRow?.type}
-                      </span>
-                    )}
-                  </div>
+                        <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
+                          {selectedSectionId === "__hero__"
+                            ? "Hero"
+                            : selectedSectionId === "__seo__"
+                            ? "SEO & Metadata"
+                            : selectedRow?.strip_title || "Section"}
+                        </span>
+                        {selectedSectionId !== "__seo__" && (
+                          <span style={{
+                            fontSize: 8, textTransform: "uppercase" as const, letterSpacing: "0.1em",
+                            background: "hsl(var(--secondary) / 0.1)", color: "hsl(var(--secondary))",
+                            padding: "2px 7px", borderRadius: 4,
+                          }}>
+                            {selectedSectionId === "__hero__" ? "hero" : selectedRow?.type}
+                          </span>
+                        )}
+                        <div style={{ flex: 1 }} />
+                        {isRow && rowColCount < 4 && (
+                          <button
+                            onClick={() => addColumnToRow(selectedRow!.id)}
+                            style={{
+                              display: "flex", alignItems: "center", gap: 4,
+                              fontSize: 9, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
+                              letterSpacing: "0.08em", padding: "4px 10px", borderRadius: 14, cursor: "pointer",
+                              border: "1px solid hsl(var(--primary) / 0.3)", background: "transparent",
+                              color: "hsl(var(--primary))",
+                            }}
+                          >
+                            <Plus size={10} /> Column
+                          </button>
+                        )}
+                        {isRow && (
+                          <button
+                            onClick={() => deleteRow(selectedRow!.id)}
+                            style={{
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              width: 28, height: 28, borderRadius: 6, cursor: "pointer",
+                              border: "1px solid hsl(var(--destructive) / 0.3)", background: "transparent",
+                              color: "hsl(var(--destructive))",
+                            }}
+                            title="Delete Row"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
 
-                  {/* Sub-tabs */}
-                  {selectedSectionId !== "__seo__" && (
-                    <div style={{ display: "flex", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0 }}>
-                      {(["content", "style", "seo"] as PropertiesSubTab[]).map((tab) => (
-                        <button
-                          key={tab}
-                          onClick={() => setPropertiesSubTab(tab)}
-                          style={{
-                            flex: 1, padding: "0.5rem", fontSize: 9, letterSpacing: "0.1em",
-                            textTransform: "uppercase" as const, border: "none", cursor: "pointer",
-                            background: "transparent",
-                            color: propertiesSubTab === tab ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
-                            borderBottom: propertiesSubTab === tab ? "2px solid hsl(var(--secondary))" : "2px solid transparent",
-                            fontFamily: "var(--font-body)",
-                          }}
-                        >
-                          {tab}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {/* Sub-tabs + Column tabs */}
+                  {selectedSectionId !== "__seo__" && (() => {
+                    const isRow = selectedSectionId !== "__hero__" && !!selectedRow;
+                    const rowColCount = isRow ? 1 + (selectedRow!.columns_data?.length || 0) : 0;
+                    const safeActiveCol = Math.min(activeCol, Math.max(rowColCount - 1, 0));
+                    return (
+                      <div style={{ borderBottom: "1px solid hsl(var(--border))", flexShrink: 0 }}>
+                        <div style={{ display: "flex" }}>
+                          {(["content", "style", "seo"] as PropertiesSubTab[]).map((tab) => (
+                            <button
+                              key={tab}
+                              onClick={() => setPropertiesSubTab(tab)}
+                              style={{
+                                flex: 1, padding: "0.5rem", fontSize: 9, letterSpacing: "0.1em",
+                                textTransform: "uppercase" as const, border: "none", cursor: "pointer",
+                                background: "transparent",
+                                color: propertiesSubTab === tab ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
+                                borderBottom: propertiesSubTab === tab ? "2px solid hsl(var(--secondary))" : "2px solid transparent",
+                                fontFamily: "var(--font-body)",
+                              }}
+                            >
+                              {tab}
+                            </button>
+                          ))}
+                        </div>
+                        {isRow && rowColCount > 1 && propertiesSubTab === "content" && (
+                          <div style={{ display: "flex", gap: 2, padding: "6px 12px", borderTop: "1px solid hsl(var(--border) / 0.3)" }}>
+                            {Array.from({ length: rowColCount }).map((_, i) => (
+                              <button
+                                key={i}
+                                onClick={() => setActiveCol(i)}
+                                style={{
+                                  display: "flex", alignItems: "center", gap: 4,
+                                  fontSize: 9, fontFamily: "var(--font-body)", letterSpacing: "0.05em",
+                                  padding: "3px 10px", borderRadius: 12, cursor: "pointer",
+                                  border: `1px solid ${safeActiveCol === i ? "hsl(var(--secondary))" : "hsl(var(--border))"}`,
+                                  background: safeActiveCol === i ? "hsl(var(--secondary) / 0.1)" : "transparent",
+                                  color: safeActiveCol === i ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
+                                }}
+                              >
+                                Col {i + 1}
+                                {rowColCount > 1 && (
+                                  <span
+                                    onClick={(e) => { e.stopPropagation(); removeColumnFromRow(selectedRow!.id, i); }}
+                                    style={{ cursor: "pointer", marginLeft: 2, opacity: 0.6 }}
+                                    title={`Remove Column ${i + 1}`}
+                                  >
+                                    <X size={9} />
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Scrollable body */}
                   <div style={{ flex: 1, overflowY: "auto", padding: "1rem", scrollbarWidth: "thin" as const }}>
@@ -805,9 +947,24 @@ const AdminDashboard = ({ session }: Props) => {
                       )
                     ) : selectedRow ? (
                       propertiesSubTab === "content" ? (
-                        <RowContentEditor row={selectedRow} onContentChange={updateRowContent} onRowMetaChange={updateRowMeta} onDelete={() => deleteRow(selectedRow.id)} />
+                        (() => {
+                          const rowColCount = 1 + (selectedRow.columns_data?.length || 0);
+                          const safeCol = Math.min(activeCol, rowColCount - 1);
+                          const colContent = safeCol === 0 ? selectedRow.content : (selectedRow.columns_data?.[safeCol - 1] || {});
+                          return (
+                            <RowContentEditor
+                              row={{ ...selectedRow, content: colContent }}
+                              onContentChange={updateColContent}
+                              onRowMetaChange={updateRowMeta}
+                            />
+                          );
+                        })()
                       ) : propertiesSubTab === "style" ? (
-                        <StyleTab />
+                        <RowStyleTab
+                          row={selectedRow}
+                          onRowMetaChange={updateRowMeta}
+                          onUpdateColumnWidths={(w) => updateColumnWidths(selectedRow.id, w)}
+                        />
                       ) : (
                         cmsPage ? (
                           <SeoFields
@@ -882,7 +1039,7 @@ const AdminDashboard = ({ session }: Props) => {
   );
 };
 
-/* ── Style Tab ── */
+/* ── Style Tab (generic, for hero) ── */
 const StyleTab = () => (
   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
     <div>
@@ -903,6 +1060,54 @@ const StyleTab = () => (
     </div>
   </div>
 );
+
+/* ── Row Style Tab (with alignment + column widths) ── */
+const RowStyleTab = ({
+  row, onRowMetaChange, onUpdateColumnWidths,
+}: {
+  row: PageRow;
+  onRowMetaChange: (updates: Partial<PageRow>) => void;
+  onUpdateColumnWidths: (widths: number[]) => void;
+}) => {
+  const colCount = 1 + (row.columns_data?.length || 0);
+  const hasInherentSplit = row.type === "image_text" || row.type === "profile";
+  const showWidthControl = colCount > 1 || hasInherentSplit;
+  const widthColCount = hasInherentSplit && colCount === 1 ? 2 : colCount;
+  const columnWidths = row.layout?.column_widths || Array(widthColCount).fill(Math.round(100 / widthColCount));
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {row.type !== "hero" && (
+        <RowAlignmentSettings
+          layout={row.layout || DEFAULT_ROW_LAYOUT}
+          onChange={(layout) => onRowMetaChange({ layout })}
+        />
+      )}
+      <ColumnWidthControl
+        columnCount={widthColCount}
+        widths={columnWidths}
+        onChange={onUpdateColumnWidths}
+        disabled={!showWidthControl}
+      />
+      <div>
+        <label style={{ fontFamily: "var(--font-body)", fontSize: 10, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "hsl(var(--muted-foreground))", display: "block", marginBottom: 6 }}>
+          Glass card intensity
+        </label>
+        <input type="range" min={0} max={100} defaultValue={50} style={{ width: "100%", accentColor: "hsl(var(--secondary))" }} />
+      </div>
+      <div>
+        <label style={{ fontFamily: "var(--font-body)", fontSize: 10, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "hsl(var(--muted-foreground))", display: "block", marginBottom: 6 }}>
+          Gradient text
+        </label>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <input type="checkbox" defaultChecked={false} style={{ accentColor: "hsl(var(--secondary))" }} />
+          <span style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "hsl(var(--foreground))" }}>Enable gradient text</span>
+        </div>
+        <div style={{ height: 4, borderRadius: 2, marginTop: 8, background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))" }} />
+      </div>
+    </div>
+  );
+};
 
 /* ── Title Lines Editor (for properties panel) ── */
 const TitleLinesEditor = ({ titleLines, onChange }: { titleLines: string[]; onChange: (lines: string[]) => void }) => {
@@ -956,14 +1161,6 @@ const RowContentEditor = ({
           <input value={row.bg_color || ""} onChange={(e) => onRowMetaChange({ bg_color: e.target.value })} placeholder="#FFFFFF" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }} />
         </div>
       </div>
-      {row.type !== "hero" && (
-        <RowAlignmentSettings layout={row.layout || DEFAULT_ROW_LAYOUT} onChange={(layout) => onRowMetaChange({ layout })} />
-      )}
-      {onDelete && (
-        <button type="button" onClick={onDelete} className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity" style={{ color: "hsl(var(--destructive))", border: "1px solid hsl(var(--destructive) / 0.3)" }}>
-          <Trash2 size={11} /> Delete Row
-        </button>
-      )}
     </div>
   );
 
