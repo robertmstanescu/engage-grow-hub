@@ -937,14 +937,7 @@ const AdminDashboard = ({ session }: Props) => {
                         <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
                       ) : propertiesSubTab === "style" ? (
                         <StyleTab />
-                      ) : (
-                        <SeoFields
-                          metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                          metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                          onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                          onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                        />
-                      )
+                      ) : null
                     ) : selectedRow ? (
                       propertiesSubTab === "content" ? (
                         (() => {
