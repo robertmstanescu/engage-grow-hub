@@ -471,6 +471,21 @@ const AdminDashboard = ({ session }: Props) => {
     updateRows(newRows);
   };
 
+  const updateColContent = useCallback((field: string, value: any) => {
+    if (!selectedSectionId || !selectedRow) return;
+    if (activeCol === 0) {
+      updateRowContent(field, value);
+    } else {
+      const colDataIdx = activeCol - 1;
+      updateRows(pageRows.map((r) => {
+        if (r.id !== selectedSectionId || !r.columns_data) return r;
+        const next = [...r.columns_data];
+        next[colDataIdx] = { ...next[colDataIdx], [field]: value };
+        return { ...r, columns_data: next };
+      }));
+    }
+  }, [selectedSectionId, selectedRow, activeCol, pageRows, updateRows, updateRowContent]);
+
   const updateRowMeta = (updates: Partial<PageRow>) => {
     if (!selectedSectionId) return;
     const newRows = pageRows.map((r) =>
