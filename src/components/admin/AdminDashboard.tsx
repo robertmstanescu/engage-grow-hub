@@ -864,7 +864,7 @@ const AdminDashboard = ({ session }: Props) => {
                     return (
                       <div style={{ borderBottom: "1px solid hsl(var(--border))", flexShrink: 0 }}>
                         <div style={{ display: "flex" }}>
-                          {(["content", "style", "seo"] as PropertiesSubTab[]).map((tab) => (
+                          {(["content", "style"] as PropertiesSubTab[]).map((tab) => (
                             <button
                               key={tab}
                               onClick={() => setPropertiesSubTab(tab)}
