@@ -1160,14 +1160,6 @@ const RowContentEditor = ({
           <input value={row.bg_color || ""} onChange={(e) => onRowMetaChange({ bg_color: e.target.value })} placeholder="#FFFFFF" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }} />
         </div>
       </div>
-      {row.type !== "hero" && (
-        <RowAlignmentSettings layout={row.layout || DEFAULT_ROW_LAYOUT} onChange={(layout) => onRowMetaChange({ layout })} />
-      )}
-      {onDelete && (
-        <button type="button" onClick={onDelete} className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity" style={{ color: "hsl(var(--destructive))", border: "1px solid hsl(var(--destructive) / 0.3)" }}>
-          <Trash2 size={11} /> Delete Row
-        </button>
-      )}
     </div>
   );
 
