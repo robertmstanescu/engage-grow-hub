@@ -6,7 +6,7 @@ import {
   LayoutDashboard, FileText, Compass, BookOpen,
   Users, Mail, Image, Palette, Settings, LogOut,
   Save, Send, Tag,
-  GripVertical, Plus, Trash2, ArrowLeft,
+  GripVertical, Plus, Trash2, ArrowLeft, Columns, X,
 } from "lucide-react";
 import {
   DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors,
