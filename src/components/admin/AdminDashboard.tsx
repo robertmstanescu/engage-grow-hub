@@ -34,6 +34,7 @@ import { Field, RichField, SectionBox, ColorField, SelectField } from "./site-ed
 import TitleLineEditor from "./site-editor/TitleLineEditor";
 import SubtitleEditor from "./site-editor/SubtitleEditor";
 import RowAlignmentSettings from "./site-editor/RowAlignmentSettings";
+import ColumnWidthControl from "./site-editor/ColumnWidthControl";
 import PillarEditor from "./site-editor/PillarEditor";
 import ImageTextEditor from "./site-editor/ImageTextEditor";
 import ProfileEditor from "./site-editor/ProfileEditor";
