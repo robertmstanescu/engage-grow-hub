@@ -445,6 +445,7 @@ const AdminDashboard = ({ session }: Props) => {
   const selectSection = (rowId: string) => {
     setSelectedSectionId(rowId);
     setPropertiesSubTab("content");
+    setActiveCol(0);
   };
 
   // ── DnD sensors ──
