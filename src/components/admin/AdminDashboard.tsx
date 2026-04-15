@@ -965,23 +965,7 @@ const AdminDashboard = ({ session }: Props) => {
                           onRowMetaChange={updateRowMeta}
                           onUpdateColumnWidths={(w) => updateColumnWidths(selectedRow.id, w)}
                         />
-                      ) : (
-                        cmsPage ? (
-                          <SeoFields
-                            metaTitle={cmsPageMeta.meta_title}
-                            metaDescription={cmsPageMeta.meta_description}
-                            onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
-                            onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
-                          />
-                        ) : (
-                          <SeoFields
-                            metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                            metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                            onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                            onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                          />
-                        )
-                      )
+                      ) : null
                     ) : null}
                   </div>
 
