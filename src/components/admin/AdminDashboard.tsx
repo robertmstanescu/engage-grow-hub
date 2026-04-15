@@ -299,6 +299,73 @@ const AdminDashboard = ({ session }: Props) => {
     if (selectedSectionId === rowId) setSelectedSectionId(null);
   }, [pageRows, updateRows, selectedSectionId]);
 
+  const addColumnToRow = useCallback((rowId: string) => {
+    const row = pageRows.find((r) => r.id === rowId);
+    if (!row) return;
+    const defaultContent = ROW_TYPE_OPTIONS.find((o) => o.type === row.type)
+      ? { title_lines: [], body: "" }
+      : { title_lines: [], body: "" };
+    const existingExtra = row.columns_data || [];
+    const newColumnsData = [...existingExtra, defaultContent];
+    const colCount = 1 + newColumnsData.length;
+    const equalWidth = Math.round(100 / colCount);
+    const widths = Array(colCount).fill(equalWidth);
+    widths[widths.length - 1] = 100 - equalWidth * (colCount - 1);
+    updateRows(pageRows.map((r) =>
+      r.id === rowId
+        ? { ...r, columns_data: newColumnsData, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+        : r
+    ));
+  }, [pageRows, updateRows]);
+
+  const removeColumnFromRow = useCallback((rowId: string, colIndex: number) => {
+    const row = pageRows.find((r) => r.id === rowId);
+    if (!row) return;
+    if (colIndex === 0 && row.columns_data && row.columns_data.length > 0) {
+      const [promoted, ...rest] = row.columns_data;
+      const colCount = 1 + rest.length;
+      const widths = colCount > 1 ? Array(colCount).fill(Math.round(100 / colCount)) : undefined;
+      updateRows(pageRows.map((r) =>
+        r.id === rowId
+          ? { ...r, content: promoted, columns_data: rest.length > 0 ? rest : undefined, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+          : r
+      ));
+    } else if (colIndex > 0 && row.columns_data) {
+      const newExtra = row.columns_data.filter((_, i) => i !== colIndex - 1);
+      const colCount = 1 + newExtra.length;
+      const widths = colCount > 1 ? Array(colCount).fill(Math.round(100 / colCount)) : undefined;
+      updateRows(pageRows.map((r) =>
+        r.id === rowId
+          ? { ...r, columns_data: newExtra.length > 0 ? newExtra : undefined, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+          : r
+      ));
+    }
+    setActiveCol(0);
+  }, [pageRows, updateRows]);
+
+  const updateColumnWidths = useCallback((rowId: string, widths: number[]) => {
+    updateRows(pageRows.map((r) =>
+      r.id === rowId
+        ? { ...r, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
+        : r
+    ));
+  }, [pageRows, updateRows]);
+
+  const updateColContent = useCallback((field: string, value: any) => {
+    if (!selectedSectionId || !selectedRow) return;
+    if (activeCol === 0) {
+      updateRowContent(field, value);
+    } else {
+      const colDataIdx = activeCol - 1;
+      updateRows(pageRows.map((r) => {
+        if (r.id !== selectedSectionId || !r.columns_data) return r;
+        const next = [...r.columns_data];
+        next[colDataIdx] = { ...next[colDataIdx], [field]: value };
+        return { ...r, columns_data: next };
+      }));
+    }
+  }, [selectedSectionId, selectedRow, activeCol, pageRows, updateRows, updateRowContent]);
+
   const toggleCmsPagePublish = useCallback(async () => {
     if (!cmsPage) return;
     const newStatus = cmsPageStatus === "published" ? "draft" : "published";
