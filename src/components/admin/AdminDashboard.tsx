@@ -798,49 +798,120 @@ const AdminDashboard = ({ session }: Props) => {
               ) : (
                 <>
                   {/* Properties Header */}
-                  <div style={{
-                    height: 44, display: "flex", alignItems: "center", gap: 8,
-                    padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
-                  }}>
-                    <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
-                      {selectedSectionId === "__hero__"
-                        ? "Hero"
-                        : selectedSectionId === "__seo__"
-                        ? "SEO & Metadata"
-                        : selectedRow?.strip_title || "Section"}
-                    </span>
-                    {selectedSectionId !== "__seo__" && (
-                      <span style={{
-                        fontSize: 8, textTransform: "uppercase" as const, letterSpacing: "0.1em",
-                        background: "hsl(var(--secondary) / 0.1)", color: "hsl(var(--secondary))",
-                        padding: "2px 7px", borderRadius: 4,
+                  {(() => {
+                    const isRow = selectedSectionId !== "__hero__" && selectedSectionId !== "__seo__" && !!selectedRow;
+                    const rowColCount = isRow ? 1 + (selectedRow!.columns_data?.length || 0) : 0;
+                    return (
+                      <div style={{
+                        height: 44, display: "flex", alignItems: "center", gap: 8,
+                        padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
                       }}>
-                        {selectedSectionId === "__hero__" ? "hero" : selectedRow?.type}
-                      </span>
-                    )}
-                  </div>
+                        <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
+                          {selectedSectionId === "__hero__"
+                            ? "Hero"
+                            : selectedSectionId === "__seo__"
+                            ? "SEO & Metadata"
+                            : selectedRow?.strip_title || "Section"}
+                        </span>
+                        {selectedSectionId !== "__seo__" && (
+                          <span style={{
+                            fontSize: 8, textTransform: "uppercase" as const, letterSpacing: "0.1em",
+                            background: "hsl(var(--secondary) / 0.1)", color: "hsl(var(--secondary))",
+                            padding: "2px 7px", borderRadius: 4,
+                          }}>
+                            {selectedSectionId === "__hero__" ? "hero" : selectedRow?.type}
+                          </span>
+                        )}
+                        <div style={{ flex: 1 }} />
+                        {isRow && rowColCount < 4 && (
+                          <button
+                            onClick={() => addColumnToRow(selectedRow!.id)}
+                            style={{
+                              display: "flex", alignItems: "center", gap: 4,
+                              fontSize: 9, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
+                              letterSpacing: "0.08em", padding: "4px 10px", borderRadius: 14, cursor: "pointer",
+                              border: "1px solid hsl(var(--primary) / 0.3)", background: "transparent",
+                              color: "hsl(var(--primary))",
+                            }}
+                          >
+                            <Plus size={10} /> Column
+                          </button>
+                        )}
+                        {isRow && (
+                          <button
+                            onClick={() => deleteRow(selectedRow!.id)}
+                            style={{
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              width: 28, height: 28, borderRadius: 6, cursor: "pointer",
+                              border: "1px solid hsl(var(--destructive) / 0.3)", background: "transparent",
+                              color: "hsl(var(--destructive))",
+                            }}
+                            title="Delete Row"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
 
-                  {/* Sub-tabs */}
-                  {selectedSectionId !== "__seo__" && (
-                    <div style={{ display: "flex", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0 }}>
-                      {(["content", "style", "seo"] as PropertiesSubTab[]).map((tab) => (
-                        <button
-                          key={tab}
-                          onClick={() => setPropertiesSubTab(tab)}
-                          style={{
-                            flex: 1, padding: "0.5rem", fontSize: 9, letterSpacing: "0.1em",
-                            textTransform: "uppercase" as const, border: "none", cursor: "pointer",
-                            background: "transparent",
-                            color: propertiesSubTab === tab ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
-                            borderBottom: propertiesSubTab === tab ? "2px solid hsl(var(--secondary))" : "2px solid transparent",
-                            fontFamily: "var(--font-body)",
-                          }}
-                        >
-                          {tab}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {/* Sub-tabs + Column tabs */}
+                  {selectedSectionId !== "__seo__" && (() => {
+                    const isRow = selectedSectionId !== "__hero__" && !!selectedRow;
+                    const rowColCount = isRow ? 1 + (selectedRow!.columns_data?.length || 0) : 0;
+                    const safeActiveCol = Math.min(activeCol, Math.max(rowColCount - 1, 0));
+                    return (
+                      <div style={{ borderBottom: "1px solid hsl(var(--border))", flexShrink: 0 }}>
+                        <div style={{ display: "flex" }}>
+                          {(["content", "style", "seo"] as PropertiesSubTab[]).map((tab) => (
+                            <button
+                              key={tab}
+                              onClick={() => setPropertiesSubTab(tab)}
+                              style={{
+                                flex: 1, padding: "0.5rem", fontSize: 9, letterSpacing: "0.1em",
+                                textTransform: "uppercase" as const, border: "none", cursor: "pointer",
+                                background: "transparent",
+                                color: propertiesSubTab === tab ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
+                                borderBottom: propertiesSubTab === tab ? "2px solid hsl(var(--secondary))" : "2px solid transparent",
+                                fontFamily: "var(--font-body)",
+                              }}
+                            >
+                              {tab}
+                            </button>
+                          ))}
+                        </div>
+                        {isRow && rowColCount > 1 && propertiesSubTab === "content" && (
+                          <div style={{ display: "flex", gap: 2, padding: "6px 12px", borderTop: "1px solid hsl(var(--border) / 0.3)" }}>
+                            {Array.from({ length: rowColCount }).map((_, i) => (
+                              <button
+                                key={i}
+                                onClick={() => setActiveCol(i)}
+                                style={{
+                                  display: "flex", alignItems: "center", gap: 4,
+                                  fontSize: 9, fontFamily: "var(--font-body)", letterSpacing: "0.05em",
+                                  padding: "3px 10px", borderRadius: 12, cursor: "pointer",
+                                  border: `1px solid ${safeActiveCol === i ? "hsl(var(--secondary))" : "hsl(var(--border))"}`,
+                                  background: safeActiveCol === i ? "hsl(var(--secondary) / 0.1)" : "transparent",
+                                  color: safeActiveCol === i ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
+                                }}
+                              >
+                                Col {i + 1}
+                                {rowColCount > 1 && (
+                                  <span
+                                    onClick={(e) => { e.stopPropagation(); removeColumnFromRow(selectedRow!.id, i); }}
+                                    style={{ cursor: "pointer", marginLeft: 2, opacity: 0.6 }}
+                                    title={`Remove Column ${i + 1}`}
+                                  >
+                                    <X size={9} />
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Scrollable body */}
                   <div style={{ flex: 1, overflowY: "auto", padding: "1rem", scrollbarWidth: "thin" as const }}>
@@ -875,9 +946,24 @@ const AdminDashboard = ({ session }: Props) => {
                       )
                     ) : selectedRow ? (
                       propertiesSubTab === "content" ? (
-                        <RowContentEditor row={selectedRow} onContentChange={updateRowContent} onRowMetaChange={updateRowMeta} onDelete={() => deleteRow(selectedRow.id)} />
+                        (() => {
+                          const rowColCount = 1 + (selectedRow.columns_data?.length || 0);
+                          const safeCol = Math.min(activeCol, rowColCount - 1);
+                          const colContent = safeCol === 0 ? selectedRow.content : (selectedRow.columns_data?.[safeCol - 1] || {});
+                          return (
+                            <RowContentEditor
+                              row={{ ...selectedRow, content: colContent }}
+                              onContentChange={updateColContent}
+                              onRowMetaChange={updateRowMeta}
+                            />
+                          );
+                        })()
                       ) : propertiesSubTab === "style" ? (
-                        <StyleTab />
+                        <RowStyleTab
+                          row={selectedRow}
+                          onRowMetaChange={updateRowMeta}
+                          onUpdateColumnWidths={(w) => updateColumnWidths(selectedRow.id, w)}
+                        />
                       ) : (
                         cmsPage ? (
                           <SeoFields
