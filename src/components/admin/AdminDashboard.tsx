@@ -40,6 +40,7 @@ import ImageTextEditor from "./site-editor/ImageTextEditor";
 import ProfileEditor from "./site-editor/ProfileEditor";
 import GridEditor from "./site-editor/GridEditor";
 import ImagePickerField from "./ImagePickerField";
+import GradientEditor from "./site-editor/GradientEditor";
 
 
 type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings";
@@ -1052,6 +1053,8 @@ const RowStyleTab = ({
   const widthColCount = hasInherentSplit && colCount === 1 ? 2 : colCount;
   const columnWidths = row.layout?.column_widths || Array(widthColCount).fill(Math.round(100 / widthColCount));
 
+  const currentGradient = row.layout?.gradient;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {row.type !== "hero" && (
@@ -1066,21 +1069,15 @@ const RowStyleTab = ({
         onChange={onUpdateColumnWidths}
         disabled={!showWidthControl}
       />
+      <GradientEditor
+        gradient={currentGradient}
+        onChange={(gradient) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), gradient } })}
+      />
       <div>
         <label style={{ fontFamily: "var(--font-body)", fontSize: 10, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "hsl(var(--muted-foreground))", display: "block", marginBottom: 6 }}>
           Glass card intensity
         </label>
         <input type="range" min={0} max={100} defaultValue={50} style={{ width: "100%", accentColor: "hsl(var(--secondary))" }} />
-      </div>
-      <div>
-        <label style={{ fontFamily: "var(--font-body)", fontSize: 10, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "hsl(var(--muted-foreground))", display: "block", marginBottom: 6 }}>
-          Gradient text
-        </label>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <input type="checkbox" defaultChecked={false} style={{ accentColor: "hsl(var(--secondary))" }} />
-          <span style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "hsl(var(--foreground))" }}>Enable gradient text</span>
-        </div>
-        <div style={{ height: 4, borderRadius: 2, marginTop: 8, background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))" }} />
       </div>
     </div>
   );
