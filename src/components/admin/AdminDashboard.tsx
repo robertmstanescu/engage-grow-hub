@@ -41,6 +41,7 @@ import ProfileEditor from "./site-editor/ProfileEditor";
 import GridEditor from "./site-editor/GridEditor";
 import ImagePickerField from "./ImagePickerField";
 import GradientEditor from "./site-editor/GradientEditor";
+import OverlayEditor from "./site-editor/OverlayEditor";
 
 
 type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings";
@@ -1054,6 +1055,9 @@ const RowStyleTab = ({
   const columnWidths = row.layout?.column_widths || Array(widthColCount).fill(Math.round(100 / widthColCount));
 
   const currentGradient = row.layout?.gradient;
+  const legacyStart = row.layout?.gradientStart;
+  const legacyEnd = row.layout?.gradientEnd;
+  const currentOverlays = row.layout?.overlays || [];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -1071,7 +1075,13 @@ const RowStyleTab = ({
       />
       <GradientEditor
         gradient={currentGradient}
+        legacyStart={legacyStart}
+        legacyEnd={legacyEnd}
         onChange={(gradient) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), gradient } })}
+      />
+      <OverlayEditor
+        overlays={currentOverlays}
+        onChange={(overlays) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), overlays } })}
       />
       <div>
         <label style={{ fontFamily: "var(--font-body)", fontSize: 10, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "hsl(var(--muted-foreground))", display: "block", marginBottom: 6 }}>
