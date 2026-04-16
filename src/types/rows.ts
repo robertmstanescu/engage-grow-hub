@@ -1,3 +1,31 @@
+export type GradientType = "linear" | "radial" | "conic" | "mesh";
+
+export interface GradientStop {
+  color: string;
+  position: number; // 0-100
+}
+
+export interface GradientConfig {
+  type: GradientType;
+  angle: number; // 0-360 for linear/conic
+  radialShape?: "circle" | "ellipse";
+  radialPosition?: string; // e.g. "center", "top left"
+  stops: GradientStop[];
+  enabled: boolean;
+}
+
+export const DEFAULT_GRADIENT: GradientConfig = {
+  type: "linear",
+  angle: 135,
+  radialShape: "ellipse",
+  radialPosition: "center",
+  stops: [
+    { color: "#4D1B5E", position: 0 },
+    { color: "#5A2370", position: 100 },
+  ],
+  enabled: false,
+};
+
 export interface RowLayout {
   columns: 1 | 2 | 3 | 4;
   column_widths?: number[]; // proportional widths, e.g. [60, 40]
@@ -11,6 +39,7 @@ export interface RowLayout {
   verticalAlign?: "top" | "middle" | "bottom";
   gradientStart?: string;
   gradientEnd?: string;
+  gradient?: GradientConfig;
   carouselTheme?: "auto" | "light" | "dark";
 }
 
