@@ -81,9 +81,21 @@ const pillBtn = (active: boolean): React.CSSProperties => ({
   color: active ? "hsl(var(--secondary))" : "hsl(var(--foreground))",
 });
 
-const GradientEditor = ({ gradient, onChange }: Props) => {
+const GradientEditor = ({ gradient, legacyStart, legacyEnd, onChange }: Props) => {
   const [open, setOpen] = useState(false);
-  const g = { ...DEFAULT_GRADIENT, ...gradient };
+
+  // Auto-populate from legacy gradientStart/gradientEnd if no new config exists
+  const resolvedGradient: GradientConfig = gradient
+    ? { ...DEFAULT_GRADIENT, ...gradient }
+    : {
+        ...DEFAULT_GRADIENT,
+        enabled: !!(legacyStart || legacyEnd),
+        stops: [
+          { color: legacyStart || DEFAULT_GRADIENT.stops[0].color, position: 0 },
+          { color: legacyEnd || DEFAULT_GRADIENT.stops[1].color, position: 100 },
+        ],
+      };
+  const g = resolvedGradient;
 
   const update = (patch: Partial<GradientConfig>) => onChange({ ...g, ...patch });
 
