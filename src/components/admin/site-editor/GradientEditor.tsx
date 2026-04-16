@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Paintbrush, Plus, Trash2 } from "lucide-react";
-import type { GradientConfig, GradientStop, GradientType } from "@/types/rows";
+import type { GradientConfig, GradientStop, GradientType, RowLayout } from "@/types/rows";
 import { DEFAULT_GRADIENT } from "@/types/rows";
 
 interface Props {
   gradient: GradientConfig | undefined;
+  /** Pass the row's legacy gradientStart/gradientEnd so we can auto-populate */
+  legacyStart?: string;
+  legacyEnd?: string;
   onChange: (g: GradientConfig) => void;
 }
 

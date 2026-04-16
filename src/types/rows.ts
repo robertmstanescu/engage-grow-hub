@@ -26,6 +26,20 @@ export const DEFAULT_GRADIENT: GradientConfig = {
   enabled: false,
 };
 
+export type OverlayFit = "fit" | "fill" | "original";
+export type OverlayAnchor = "top-left" | "top-center" | "top-right" | "middle-left" | "middle-center" | "middle-right" | "bottom-left" | "bottom-center" | "bottom-right";
+export type BlendMode = "normal" | "multiply" | "screen" | "overlay" | "soft-light" | "hard-light" | "color-dodge" | "color-burn" | "difference" | "exclusion" | "luminosity";
+
+export interface OverlayElement {
+  id: string;
+  url: string;
+  fit: OverlayFit;
+  anchor: OverlayAnchor;
+  opacity: number;   // 0-100
+  rotation: number;  // 0-360
+  blendMode: BlendMode;
+}
+
 export interface RowLayout {
   columns: 1 | 2 | 3 | 4;
   column_widths?: number[]; // proportional widths, e.g. [60, 40]
@@ -40,6 +54,7 @@ export interface RowLayout {
   gradientStart?: string;
   gradientEnd?: string;
   gradient?: GradientConfig;
+  overlays?: OverlayElement[];
   carouselTheme?: "auto" | "light" | "dark";
 }
 
