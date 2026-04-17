@@ -9,6 +9,7 @@ import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
+import { buildGradientCSS } from "@/components/admin/site-editor/GradientEditor";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
