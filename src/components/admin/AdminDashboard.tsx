@@ -1072,15 +1072,51 @@ const RowStyleTab = ({
   const legacyEnd = row.layout?.gradientEnd || rowDefaults.end;
   const currentOverlays = row.layout?.overlays || [];
 
+  const bgColorOpacity = row.layout?.bgColorOpacity ?? 100;
+  const bgImageOpacity = row.layout?.bgImageOpacity ?? 100;
+  const bgImage = row.layout?.bgImage || "";
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Background Color */}
+      {/* Background Color + opacity */}
       <div>
         <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>Background Color</label>
         <div className="flex gap-1.5">
           <input type="color" value={row.bg_color || "#FFFFFF"} onChange={(e) => onRowMetaChange({ bg_color: e.target.value })} className="w-10 h-9 rounded border cursor-pointer" style={{ borderColor: "hsl(var(--border))" }} />
           <input value={row.bg_color || ""} onChange={(e) => onRowMetaChange({ bg_color: e.target.value })} placeholder="#FFFFFF" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }} />
         </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
+          <span className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))", minWidth: 50 }}>Opacity</span>
+          <input
+            type="range" min={0} max={100} value={bgColorOpacity}
+            onChange={(e) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgColorOpacity: Number(e.target.value) } })}
+            style={{ flex: 1, accentColor: "hsl(var(--secondary))" }}
+          />
+          <span className="font-body text-[10px]" style={{ color: "hsl(var(--foreground))", minWidth: 32, textAlign: "right" }}>{bgColorOpacity}%</span>
+        </div>
+      </div>
+
+      {/* Background Image + opacity */}
+      <div>
+        <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>Background Image URL</label>
+        <input
+          value={bgImage}
+          onChange={(e) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgImage: e.target.value } })}
+          placeholder="https://..."
+          className="w-full px-3 py-2 rounded-lg font-body text-sm border"
+          style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }}
+        />
+        {bgImage && (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
+            <span className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))", minWidth: 50 }}>Opacity</span>
+            <input
+              type="range" min={0} max={100} value={bgImageOpacity}
+              onChange={(e) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgImageOpacity: Number(e.target.value) } })}
+              style={{ flex: 1, accentColor: "hsl(var(--secondary))" }}
+            />
+            <span className="font-body text-[10px]" style={{ color: "hsl(var(--foreground))", minWidth: 32, textAlign: "right" }}>{bgImageOpacity}%</span>
+          </div>
+        )}
       </div>
 
       {row.type !== "hero" && (
