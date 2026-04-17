@@ -3,6 +3,7 @@ export type GradientType = "linear" | "radial" | "conic" | "mesh";
 export interface GradientStop {
   color: string;
   position: number; // 0-100
+  alpha?: number;   // 0-100, defaults to 100
 }
 
 export interface GradientConfig {
@@ -49,6 +50,8 @@ export interface RowLayout {
   marginTop: number;
   marginBottom: number;
   bgImage?: string;
+  bgImageOpacity?: number; // 0-100, defaults to 100
+  bgColorOpacity?: number; // 0-100, defaults to 100 (applies to row.bg_color)
   alignment?: "auto" | "left" | "center" | "right";
   verticalAlign?: "top" | "middle" | "bottom";
   gradientStart?: string;
