@@ -7,6 +7,7 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
+import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS } from "./rowBackground";
 
 const CLIP_PATHS: Record<string, string> = {
   puddle:
@@ -50,8 +51,11 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
   const captionText = c.color_caption_text || "#FFFFFF";
   const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
 
-  const gradStart = l.gradientStart || "hsl(280 55% 20% / 0.5)";
-  const gradEnd = l.gradientEnd || "hsl(286 42% 25% / 0.3)";
+  const bgCss = getRowBackgroundCSS(
+    row,
+    (gs, ge) => `radial-gradient(ellipse 80% 60% at 20% 80%, ${gs}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge}, transparent)`,
+    ROW_GRADIENT_DEFAULTS.image_text,
+  );
 
   const containerPos = align === "center" ? "mx-auto"
     : align === "right" ? "ml-auto mr-6"
@@ -183,7 +187,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
       <div
         className="absolute inset-0 opacity-40 pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse 80% 60% at 20% 80%, ${gradStart}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${gradEnd}, transparent)`,
+          background: bgCss,
           transform: "translateZ(0)",
           willChange: "transform",
         }}
