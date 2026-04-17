@@ -2,6 +2,7 @@ import { sanitizeHtml } from "@/lib/sanitize";
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
+import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS } from "./rowBackground";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -20,15 +21,18 @@ const HeroRow = ({ row }: Props) => {
   const bgUrl = c.bg_url || "";
   const hasBg = bgType !== "none" && bgUrl;
 
-  const gradStart = l.gradientStart || "hsl(280 55% 20% / 0.8)";
-  const gradEnd = l.gradientEnd || "hsl(286 42% 25% / 0.5)";
-
   const { ref, isVisible } = useScrollReveal({ threshold: 0.15 });
+
+  const bgCss = getRowBackgroundCSS(
+    row,
+    (gs, ge) => `radial-gradient(ellipse 100% 80% at 20% 100%, ${gs}, transparent), radial-gradient(ellipse 80% 60% at 90% 10%, ${ge}, transparent), radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06), transparent), hsl(260 20% 4%)`,
+    ROW_GRADIENT_DEFAULTS.hero,
+  );
 
   return (
     <section className="snap-section grain relative h-[100dvh] flex flex-col justify-end overflow-visible" style={{
       isolation: "isolate",
-      background: `radial-gradient(ellipse 100% 80% at 20% 100%, ${gradStart}, transparent), radial-gradient(ellipse 80% 60% at 90% 10%, ${gradEnd}, transparent), radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06), transparent), hsl(260 20% 4%)`,
+      background: bgCss,
     }}>
       {hasBg && bgType === "image" && (
         <div className="absolute inset-0 z-0">

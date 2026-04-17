@@ -6,6 +6,7 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
+import { getRowBackgroundCSS } from "./rowBackground";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -22,8 +23,14 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
     : align === "right" ? "ml-auto mr-6"
     : "mr-auto ml-6";
 
-  const gradStart = l.gradientStart || (isLight ? "hsl(280 55% 24% / 0.2)" : "hsl(280 55% 18% / 0.5)");
-  const gradEnd = l.gradientEnd || (isLight ? "hsl(286 42% 30% / 0.15)" : "hsl(286 42% 20% / 0.3)");
+  const bgCss = getRowBackgroundCSS(
+    row,
+    (gs, ge) => `radial-gradient(ellipse 80% 60% at 30% 70%, ${gs}, transparent), radial-gradient(ellipse 60% 40% at 70% 30%, ${ge}, transparent)`,
+    {
+      start: isLight ? "hsl(280 55% 24% / 0.2)" : "hsl(280 55% 18% / 0.5)",
+      end: isLight ? "hsl(286 42% 30% / 0.15)" : "hsl(286 42% 20% / 0.3)",
+    },
+  );
 
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText();
@@ -100,9 +107,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
       paddingTop: "24px", paddingBottom: "24px",
       ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
     }}>
-      <div className="absolute inset-0 opacity-40 blur-[100px]" style={{
-        background: `radial-gradient(ellipse 80% 60% at 30% 70%, ${gradStart}, transparent), radial-gradient(ellipse 60% 40% at 70% 30%, ${gradEnd}, transparent)`
-      }} />
+      <div className="absolute inset-0 opacity-40 blur-[100px]" style={{ background: bgCss }} />
 
       <div ref={ref} className={`relative z-10 px-6 ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1200px]"} ${containerPos}` : ""} ${contentAlign}`}>
         {isMultiCol ? (

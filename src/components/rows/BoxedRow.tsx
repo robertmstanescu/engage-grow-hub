@@ -6,6 +6,7 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
+import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS } from "./rowBackground";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -20,8 +21,11 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
     : align === "right" ? "ml-auto mr-6"
     : "mr-auto ml-6";
 
-  const gradStart = l.gradientStart || "hsl(280 55% 18% / 0.6)";
-  const gradEnd = l.gradientEnd || "hsl(286 42% 20% / 0.4)";
+  const bgCss = getRowBackgroundCSS(
+    row,
+    (gs, ge) => `radial-gradient(ellipse 80% 60% at 10% 90%, ${gs}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge}, transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)`,
+    ROW_GRADIENT_DEFAULTS.boxed,
+  );
 
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText();
@@ -120,9 +124,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         paddingTop: "24px", paddingBottom: "24px",
         ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
       }}>
-      <div className="absolute inset-0 opacity-60" style={{
-        background: `radial-gradient(ellipse 80% 60% at 10% 90%, ${gradStart}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${gradEnd}, transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)`
-      }} />
+      <div className="absolute inset-0 opacity-60" style={{ background: bgCss }} />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
