@@ -1055,12 +1055,34 @@ const RowStyleTab = ({
   const columnWidths = row.layout?.column_widths || Array(widthColCount).fill(Math.round(100 / widthColCount));
 
   const currentGradient = row.layout?.gradient;
-  const legacyStart = row.layout?.gradientStart;
-  const legacyEnd = row.layout?.gradientEnd;
+  // Pre-populate the gradient editor with the row-type's actual decorative defaults
+  // so what the editor shows == what's currently rendering on the page.
+  const ROW_DEFAULTS: Record<string, { start: string; end: string }> = {
+    hero: { start: "hsl(280 55% 20% / 0.8)", end: "hsl(286 42% 25% / 0.5)" },
+    text: { start: "hsl(280 55% 18% / 0.5)", end: "hsl(286 42% 20% / 0.3)" },
+    service: { start: "hsl(286 42% 30%)", end: "hsl(280 55% 25%)" },
+    boxed: { start: "hsl(280 55% 18% / 0.6)", end: "hsl(286 42% 20% / 0.4)" },
+    contact: { start: "hsl(280 55% 24% / 0.3)", end: "transparent" },
+    image_text: { start: "hsl(280 55% 20% / 0.5)", end: "hsl(286 42% 25% / 0.3)" },
+    profile: { start: "hsl(280 55% 20% / 0.5)", end: "hsl(286 42% 25% / 0.3)" },
+    grid: { start: "hsl(280 55% 20% / 0.5)", end: "hsl(286 42% 25% / 0.3)" },
+  };
+  const rowDefaults = ROW_DEFAULTS[row.type] || { start: "#4D1B5E", end: "#5A2370" };
+  const legacyStart = row.layout?.gradientStart || rowDefaults.start;
+  const legacyEnd = row.layout?.gradientEnd || rowDefaults.end;
   const currentOverlays = row.layout?.overlays || [];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* Background Color */}
+      <div>
+        <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>Background Color</label>
+        <div className="flex gap-1.5">
+          <input type="color" value={row.bg_color || "#FFFFFF"} onChange={(e) => onRowMetaChange({ bg_color: e.target.value })} className="w-10 h-9 rounded border cursor-pointer" style={{ borderColor: "hsl(var(--border))" }} />
+          <input value={row.bg_color || ""} onChange={(e) => onRowMetaChange({ bg_color: e.target.value })} placeholder="#FFFFFF" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }} />
+        </div>
+      </div>
+
       {row.type !== "hero" && (
         <RowAlignmentSettings
           layout={row.layout || DEFAULT_ROW_LAYOUT}
@@ -1083,12 +1105,6 @@ const RowStyleTab = ({
         overlays={currentOverlays}
         onChange={(overlays) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), overlays } })}
       />
-      <div>
-        <label style={{ fontFamily: "var(--font-body)", fontSize: 10, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "hsl(var(--muted-foreground))", display: "block", marginBottom: 6 }}>
-          Glass card intensity
-        </label>
-        <input type="range" min={0} max={100} defaultValue={50} style={{ width: "100%", accentColor: "hsl(var(--secondary))" }} />
-      </div>
     </div>
   );
 };
@@ -1138,13 +1154,6 @@ const RowContentEditor = ({
   const commonMeta = (
     <div className="space-y-2 mb-4">
       <Field label="Strip Title" value={row.strip_title} onChange={(v) => onRowMetaChange({ strip_title: v })} />
-      <div>
-        <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>Background Color</label>
-        <div className="flex gap-1.5">
-          <input type="color" value={row.bg_color || "#FFFFFF"} onChange={(e) => onRowMetaChange({ bg_color: e.target.value })} className="w-10 h-9 rounded border cursor-pointer" style={{ borderColor: "hsl(var(--border))" }} />
-          <input value={row.bg_color || ""} onChange={(e) => onRowMetaChange({ bg_color: e.target.value })} placeholder="#FFFFFF" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }} />
-        </div>
-      </div>
     </div>
   );
 
