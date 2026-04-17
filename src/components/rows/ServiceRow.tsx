@@ -10,6 +10,7 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { buildGradientCSS } from "@/components/admin/site-editor/GradientEditor";
+import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -111,7 +112,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
       data-row-type={row.type}
       data-row-title={row.strip_title}
       className={`service-row grain relative flex ${vAlign === "top" ? "items-start" : vAlign === "bottom" ? "items-end" : "items-center"} justify-center`}
-      style={{ ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", isolation: "isolate", padding: "24px 0" } as React.CSSProperties}
+      style={{ ...colorOverrides, backgroundColor: getRowBgColor(row, "hsl(var(--pillar-section-bg))"), isolation: "isolate", padding: "24px 0", ...getRowBgImageStyle(row) } as React.CSSProperties}
     >
       {customGradient ? (
         <div className="absolute inset-0 pointer-events-none" style={{ background: buildGradientCSS(l.gradient!) }} />

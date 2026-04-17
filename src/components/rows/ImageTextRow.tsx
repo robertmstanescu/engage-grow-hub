@@ -7,7 +7,7 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
-import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS } from "./rowBackground";
+import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS, getRowBgColor, getRowBgImageStyle } from "./rowBackground";
 
 const CLIP_PATHS: Record<string, string> = {
   puddle:
@@ -177,11 +177,11 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
       data-row-title={row.strip_title}
       className={`snap-section grain relative min-h-screen flex ${vAlign === "top" ? "items-start" : vAlign === "bottom" ? "items-end" : "items-center"} justify-center`}
       style={{
-        backgroundColor: row.bg_color || "hsl(var(--background))",
+        backgroundColor: getRowBgColor(row, "hsl(var(--background))"),
         isolation: "isolate",
         padding: "24px 0",
         scrollMarginTop: "0px",
-        ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
+        ...getRowBgImageStyle(row),
       }}
     >
       <div

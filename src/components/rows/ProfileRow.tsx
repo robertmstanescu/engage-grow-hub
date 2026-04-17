@@ -7,7 +7,7 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
-import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS } from "./rowBackground";
+import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS, getRowBgColor, getRowBgImageStyle } from "./rowBackground";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -56,11 +56,11 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
       data-row-title={row.strip_title}
       className={`snap-section grain relative min-h-screen flex ${vAlign === "top" ? "items-start" : vAlign === "bottom" ? "items-end" : "items-center"} justify-center`}
       style={{
-        backgroundColor: row.bg_color || "hsl(260 20% 6%)",
+        backgroundColor: getRowBgColor(row, "hsl(260 20% 6%)"),
         isolation: "isolate",
         padding: "24px 0",
         scrollMarginTop: "0px",
-        ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
+        ...getRowBgImageStyle(row),
       }}
     >
       <div

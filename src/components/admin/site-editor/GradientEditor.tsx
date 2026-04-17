@@ -34,11 +34,30 @@ const RADIAL_POSITIONS = [
   "bottom", "bottom left", "left", "top left",
 ];
 
+/** Convert a hex color (#RRGGBB or #RGB) + 0-100 alpha → rgba() string. Pass-through for non-hex. */
+const applyAlpha = (color: string, alpha = 100): string => {
+  if (alpha >= 100) return color;
+  const a = Math.max(0, Math.min(100, alpha)) / 100;
+  let hex = color.trim();
+  if (hex.startsWith("#")) {
+    hex = hex.slice(1);
+    if (hex.length === 3) hex = hex.split("").map((c) => c + c).join("");
+    if (hex.length === 6) {
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${a})`;
+    }
+  }
+  // Fallback: leave color, browsers won't apply alpha — acceptable for non-hex
+  return color;
+};
+
 /** Build a CSS gradient string for preview */
 export const buildGradientCSS = (g: GradientConfig): string => {
   if (!g.enabled || g.stops.length < 2) return "";
   const sortedStops = [...g.stops].sort((a, b) => a.position - b.position);
-  const stopStr = sortedStops.map((s) => `${s.color} ${s.position}%`).join(", ");
+  const stopStr = sortedStops.map((s) => `${applyAlpha(s.color, s.alpha)} ${s.position}%`).join(", ");
 
   switch (g.type) {
     case "linear":
@@ -59,7 +78,7 @@ export const buildGradientCSS = (g: GradientConfig): string => {
         .map((s, i) => {
           const positions = ["20% 20%", "80% 20%", "50% 80%", "20% 80%", "80% 80%", "50% 20%"];
           const pos = positions[i % positions.length];
-          return `radial-gradient(ellipse at ${pos}, ${s.color} 0%, transparent 70%)`;
+          return `radial-gradient(ellipse at ${pos}, ${applyAlpha(s.color, s.alpha)} 0%, transparent 70%)`;
         })
         .join(", ");
     }
@@ -242,44 +261,67 @@ const GradientEditor = ({ gradient, legacyStart, legacyEnd, onChange }: Props) =
               </button>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {g.stops.map((stop, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <input
-                    type="color" value={stop.color}
-                    onChange={(e) => updateStop(i, { color: e.target.value })}
-                    style={{ width: 28, height: 28, borderRadius: 4, border: "none", cursor: "pointer", flexShrink: 0 }}
-                  />
-                  <input
-                    value={stop.color}
-                    onChange={(e) => updateStop(i, { color: e.target.value })}
-                    style={{
-                      flex: 1, padding: "4px 8px", borderRadius: 6, fontSize: 10, fontFamily: "var(--font-body)",
-                      border: "1px solid hsl(var(--border))", background: "hsl(var(--background))", color: "hsl(var(--foreground))",
-                    }}
-                  />
-                  <input
-                    type="range" min={0} max={100} value={stop.position}
-                    onChange={(e) => updateStop(i, { position: Number(e.target.value) })}
-                    style={{ width: 60, accentColor: "hsl(var(--secondary))" }}
-                  />
-                  <span style={{ fontFamily: "var(--font-body)", fontSize: 9, color: "hsl(var(--muted-foreground))", minWidth: 24 }}>
-                    {stop.position}%
-                  </span>
-                  <button
-                    type="button" onClick={() => removeStop(i)}
-                    disabled={g.stops.length <= 2}
-                    style={{
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      width: 22, height: 22, borderRadius: 4, cursor: g.stops.length > 2 ? "pointer" : "not-allowed",
-                      border: "none", background: "transparent",
-                      color: g.stops.length > 2 ? "hsl(var(--destructive))" : "hsl(var(--muted-foreground) / 0.3)",
-                    }}
-                  >
-                    <Trash2 size={10} />
-                  </button>
-                </div>
-              ))}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {g.stops.map((stop, i) => {
+                const a = stop.alpha ?? 100;
+                return (
+                  <div key={i} style={{
+                    display: "flex", flexDirection: "column", gap: 4,
+                    padding: 6, borderRadius: 6,
+                    background: "hsl(var(--background))", border: "1px solid hsl(var(--border) / 0.3)",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <input
+                        type="color" value={stop.color}
+                        onChange={(e) => updateStop(i, { color: e.target.value })}
+                        style={{ width: 28, height: 28, borderRadius: 4, border: "none", cursor: "pointer", flexShrink: 0 }}
+                      />
+                      <input
+                        value={stop.color}
+                        onChange={(e) => updateStop(i, { color: e.target.value })}
+                        style={{
+                          flex: 1, padding: "4px 8px", borderRadius: 6, fontSize: 10, fontFamily: "var(--font-body)",
+                          border: "1px solid hsl(var(--border))", background: "hsl(var(--background))", color: "hsl(var(--foreground))",
+                        }}
+                      />
+                      <input
+                        type="range" min={0} max={100} value={stop.position}
+                        onChange={(e) => updateStop(i, { position: Number(e.target.value) })}
+                        style={{ width: 60, accentColor: "hsl(var(--secondary))" }}
+                      />
+                      <span style={{ fontFamily: "var(--font-body)", fontSize: 9, color: "hsl(var(--muted-foreground))", minWidth: 24 }}>
+                        {stop.position}%
+                      </span>
+                      <button
+                        type="button" onClick={() => removeStop(i)}
+                        disabled={g.stops.length <= 2}
+                        style={{
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          width: 22, height: 22, borderRadius: 4, cursor: g.stops.length > 2 ? "pointer" : "not-allowed",
+                          border: "none", background: "transparent",
+                          color: g.stops.length > 2 ? "hsl(var(--destructive))" : "hsl(var(--muted-foreground) / 0.3)",
+                        }}
+                      >
+                        <Trash2 size={10} />
+                      </button>
+                    </div>
+                    {/* Per-stop alpha */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, paddingLeft: 34 }}>
+                      <span style={{ fontFamily: "var(--font-body)", fontSize: 9, color: "hsl(var(--muted-foreground))", textTransform: "uppercase", letterSpacing: "0.08em", minWidth: 38 }}>
+                        Alpha
+                      </span>
+                      <input
+                        type="range" min={0} max={100} value={a}
+                        onChange={(e) => updateStop(i, { alpha: Number(e.target.value) })}
+                        style={{ flex: 1, accentColor: "hsl(var(--secondary))" }}
+                      />
+                      <span style={{ fontFamily: "var(--font-body)", fontSize: 9, color: "hsl(var(--foreground))", minWidth: 28, textAlign: "right" }}>
+                        {a}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
