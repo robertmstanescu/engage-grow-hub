@@ -112,10 +112,16 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
       className={`service-row grain relative flex ${vAlign === "top" ? "items-start" : vAlign === "bottom" ? "items-end" : "items-center"} justify-center`}
       style={{ ...colorOverrides, backgroundColor: row.bg_color || "hsl(var(--pillar-section-bg))", isolation: "isolate", padding: "24px 0" } as React.CSSProperties}
     >
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px] pointer-events-none"
-        style={{ background: `radial-gradient(circle, ${gradStart}, transparent)`, transform: "translateZ(0)", willChange: "transform" }} />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px] pointer-events-none"
-        style={{ background: `radial-gradient(circle, ${gradEnd}, transparent)`, transform: "translateZ(0)", willChange: "transform" }} />
+      {customGradient ? (
+        <div className="absolute inset-0 pointer-events-none" style={{ background: buildGradientCSS(l.gradient!) }} />
+      ) : (
+        <>
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px] pointer-events-none"
+            style={{ background: `radial-gradient(circle, ${gradStart}, transparent)`, transform: "translateZ(0)", willChange: "transform" }} />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px] pointer-events-none"
+            style={{ background: `radial-gradient(circle, ${gradEnd}, transparent)`, transform: "translateZ(0)", willChange: "transform" }} />
+        </>
+      )}
 
       <div className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
         <span className="font-body tracking-[0.35em] uppercase block mb-4"
