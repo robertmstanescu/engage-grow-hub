@@ -57,8 +57,11 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   const checkboxFields = visibleFields.filter((f) => f.type === "checkbox");
 
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
-  const gradStart = l.gradientStart || "hsl(280 55% 24% / 0.3)";
-  const gradEnd = l.gradientEnd || "transparent";
+  const bgCss = getRowBackgroundCSS(
+    row,
+    (gs, ge) => `radial-gradient(ellipse 80% 60% at 50% 50%, ${gs}, ${ge})`,
+    ROW_GRADIENT_DEFAULTS.contact,
+  );
 
   const { ref, isVisible } = useScrollReveal();
 
