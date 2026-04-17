@@ -34,11 +34,30 @@ const RADIAL_POSITIONS = [
   "bottom", "bottom left", "left", "top left",
 ];
 
+/** Convert a hex color (#RRGGBB or #RGB) + 0-100 alpha → rgba() string. Pass-through for non-hex. */
+const applyAlpha = (color: string, alpha = 100): string => {
+  if (alpha >= 100) return color;
+  const a = Math.max(0, Math.min(100, alpha)) / 100;
+  let hex = color.trim();
+  if (hex.startsWith("#")) {
+    hex = hex.slice(1);
+    if (hex.length === 3) hex = hex.split("").map((c) => c + c).join("");
+    if (hex.length === 6) {
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${a})`;
+    }
+  }
+  // Fallback: leave color, browsers won't apply alpha — acceptable for non-hex
+  return color;
+};
+
 /** Build a CSS gradient string for preview */
 export const buildGradientCSS = (g: GradientConfig): string => {
   if (!g.enabled || g.stops.length < 2) return "";
   const sortedStops = [...g.stops].sort((a, b) => a.position - b.position);
-  const stopStr = sortedStops.map((s) => `${s.color} ${s.position}%`).join(", ");
+  const stopStr = sortedStops.map((s) => `${applyAlpha(s.color, s.alpha)} ${s.position}%`).join(", ");
 
   switch (g.type) {
     case "linear":
@@ -59,7 +78,7 @@ export const buildGradientCSS = (g: GradientConfig): string => {
         .map((s, i) => {
           const positions = ["20% 20%", "80% 20%", "50% 80%", "20% 80%", "80% 80%", "50% 20%"];
           const pos = positions[i % positions.length];
-          return `radial-gradient(ellipse at ${pos}, ${s.color} 0%, transparent 70%)`;
+          return `radial-gradient(ellipse at ${pos}, ${applyAlpha(s.color, s.alpha)} 0%, transparent 70%)`;
         })
         .join(", ");
     }
