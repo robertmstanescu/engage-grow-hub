@@ -6,7 +6,7 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
-import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS } from "./rowBackground";
+import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS, getRowBgColor, getRowBgImageStyle } from "./rowBackground";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -119,10 +119,10 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
   return (
     <section ref={(el) => { autoFitRef.current = el; }} className={`snap-section grain relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`}
       style={{
-        backgroundColor: row.bg_color || "hsl(var(--background))",
+        backgroundColor: getRowBgColor(row, "hsl(var(--background))"),
         isolation: "isolate",
         paddingTop: "24px", paddingBottom: "24px",
-        ...(l.bgImage ? { backgroundImage: `url(${l.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
+        ...getRowBgImageStyle(row),
       }}>
       <div className="absolute inset-0 opacity-60" style={{ background: bgCss }} />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
