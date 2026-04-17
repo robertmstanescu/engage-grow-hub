@@ -79,6 +79,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
   const colorOverrides = buildColorOverrides(c);
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
 
+  const customGradient = l.gradient?.enabled && l.gradient.stops?.length >= 2;
   const gradStart = l.gradientStart || "hsl(286 42% 30%)";
   const gradEnd = l.gradientEnd || "hsl(280 55% 25%)";
 
