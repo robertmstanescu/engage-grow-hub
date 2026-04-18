@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Type, ImageIcon, Newspaper, Star, Minus, MousePointerClick,
@@ -7,6 +6,9 @@ import {
 } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { EmailBlock, createBlock, blocksToHtml } from "./email-blocks";
+import { fetchPublishedBlogPosts } from "@/services/blogPosts";
+import { uploadEditorImage } from "@/services/mediaStorage";
+import { runDbAction } from "@/services/db-helpers";
 
 interface BlogPost {
   slug: string;

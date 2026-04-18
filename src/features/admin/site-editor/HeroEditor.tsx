@@ -6,6 +6,7 @@ import SubtitleEditor from "./SubtitleEditor";
 import ImageAltInput from "../ImageAltInput";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { runDbAction } from "@/services/db-helpers";
 
 interface Props {
   content: Record<string, any>;
@@ -35,6 +36,9 @@ const HeroEditor = ({ content, onChange }: Props) => {
   const bgUrl = content.bg_url || "";
 
   const handleImageUpload = useCallback(async (file: File) => {
+    // Hero accepts both video and image — we keep the raw upload here
+    // (instead of mediaStorage.uploadEditorImage) because we need to
+    // branch on the resulting MIME type to set bg_type correctly.
     if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
       toast.error("Please upload an image or video file"); return;
     }
@@ -42,12 +46,22 @@ const HeroEditor = ({ content, onChange }: Props) => {
 
     const ext = file.name.split(".").pop();
     const path = `hero/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("editor-images").upload(path, file);
-    if (error) { toast.error("Upload failed"); return; }
-    const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
-    onChange("bg_type", file.type.startsWith("video/") ? "video" : "image");
-    onChange("bg_url", publicUrl);
-    toast.success("Uploaded");
+
+    const result = await runDbAction({
+      action: async () => {
+        const upload = await supabase.storage.from("editor-images").upload(path, file);
+        if (upload.error) return upload;
+        const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
+        return { data: { publicUrl }, error: null };
+      },
+      successMessage: "Uploaded",
+      errorMessage: "Upload failed",
+    });
+
+    if (result?.data?.publicUrl) {
+      onChange("bg_type", file.type.startsWith("video/") ? "video" : "image");
+      onChange("bg_url", result.data.publicUrl);
+    }
   }, [onChange]);
 
   return (
