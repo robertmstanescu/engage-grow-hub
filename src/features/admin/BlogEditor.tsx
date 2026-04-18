@@ -505,18 +505,22 @@ const BlogEditor = () => {
           {form.meta_description && <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Description: {form.meta_description.length}/160 chars</p>}
         </div>
         <div className="flex gap-3">
-          <button
+          <SpinnerButton
+            isLoading={isSavingChanges}
+            loadingLabel="Saving…"
             onClick={() => handleSave("draft")}
             className="font-body text-xs uppercase tracking-wider px-5 py-2.5 rounded-full border hover:opacity-80 transition-opacity"
             style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}>
             Save as Draft
-          </button>
-          <button
+          </SpinnerButton>
+          <SpinnerButton
+            isLoading={isSavingChanges}
+            loadingLabel="Publishing…"
             onClick={() => handleSave("published")}
             className="font-body text-xs uppercase tracking-wider px-5 py-2.5 rounded-full hover:opacity-80 transition-opacity"
             style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
             Publish
-          </button>
+          </SpinnerButton>
         </div>
       </div>
     );
