@@ -6,9 +6,11 @@ import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import {
   LayoutDashboard, FileText, Compass, BookOpen,
   Users, Mail, Image, Palette, Settings, LogOut,
-  Save, Send, Tag,
+  Save, Send, Tag, UserCog,
   GripVertical, Plus, Trash2, ArrowLeft, Columns, X,
 } from "lucide-react";
+import { Link } from "react-router-dom";
+import ManageTeam from "./ManageTeam";
 import {
   DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors,
   type DragEndEvent,
@@ -47,7 +49,7 @@ import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
 
 
-type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings";
+type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team";
 
 type PropertiesSubTab = "content" | "style" | "seo";
 
@@ -96,6 +98,7 @@ const NAV_GROUPS = [
     items: [
       { key: "brand" as Tab, icon: Palette, label: "Brand" },
       { key: "tags" as Tab, icon: Tag, label: "Tags" },
+      { key: "team" as Tab, icon: UserCog, label: "Manage Team" },
       { key: "settings" as Tab, icon: Settings, label: "Settings" },
     ],
   },
@@ -636,16 +639,20 @@ const AdminDashboard = ({ session }: Props) => {
               </button>
             </>
           )}
-          <div
+          {/* Profile shortcut → /admin/profile (display name, avatar, email change). */}
+          <Link
+            to="/admin/profile"
+            title="Profile settings"
             style={{
               width: 28, height: 28, borderRadius: "50%",
               background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontFamily: "var(--font-display)", fontSize: 9, fontWeight: 700, color: "hsl(var(--background))",
+              textDecoration: "none",
             }}
           >
             R
-          </div>
+          </Link>
         </div>
       </header>
 
@@ -1104,6 +1111,7 @@ const AdminDashboard = ({ session }: Props) => {
                 {activeTab === "media" && <MediaGallery />}
                 {activeTab === "brand" && <BrandSettings />}
                 {activeTab === "tags" && <TagsManager />}
+                {activeTab === "team" && <ManageTeam />}
                 {activeTab === "settings" && <GlobalSettings />}
               </div>
             </main>
