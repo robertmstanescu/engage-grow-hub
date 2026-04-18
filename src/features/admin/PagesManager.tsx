@@ -401,7 +401,12 @@ const PagesManager = ({ onEditPage }: Props) => {
       ) : (
         <div className="space-y-2">
           <label className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>Custom Pages</label>
-          {pages.map((page) => (
+          {pages.length > 1 && (
+            <ListFilters state={pageFilters.state} searchPlaceholder="Search pages…" />
+          )}
+          {filteredPages.length === 0 ? (
+            <p className="font-body text-sm text-muted-foreground py-6 text-center">No pages match your filters.</p>
+          ) : filteredPages.map((page) => (
             <div
               key={page.id}
               className="flex items-center justify-between p-3 rounded-lg border hover:opacity-90 transition-opacity"
