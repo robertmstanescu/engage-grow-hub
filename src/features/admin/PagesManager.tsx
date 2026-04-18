@@ -14,6 +14,8 @@ import {
   updateCmsPageMeta, RESERVED_SLUGS,
 } from "@/services/cmsPages";
 import { fetchSection, publishSection } from "@/services/siteContent";
+import { useListFilters } from "@/hooks/useListFilters";
+import ListFilters from "@/components/ui/list-filters";
 
 interface CmsPage {
   id: string;
@@ -50,6 +52,19 @@ const PagesManager = ({ onEditPage }: Props) => {
   const [newTitle, setNewTitle] = useState("");
   const [newSlug, setNewSlug] = useState("");
   const [isCreatingPage, setIsCreatingPage] = useState(false);
+
+  // Search/filter/sort over the CMS pages list. Searches title + slug + status.
+  // Type filter dropdown surfaces published/draft. URL params: ?pq, ?ptype, ?psort.
+  const pageFilters = useListFilters<CmsPage>({
+    items: pages,
+    paramPrefix: "p",
+    defaultSort: "manual",
+    searchableText: (p) => `${p.title} ${p.slug} ${p.status}`.toLowerCase(),
+    categoryOf: (p) => p.status,
+    alphaKey: (p) => p.title.toLowerCase(),
+    updatedKey: (p) => p.created_at,
+  });
+  const filteredPages = pageFilters.filteredItems;
 
   const load = async () => {
     const { data } = await fetchAllCmsPages();
@@ -386,7 +401,12 @@ const PagesManager = ({ onEditPage }: Props) => {
       ) : (
         <div className="space-y-2">
           <label className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>Custom Pages</label>
-          {pages.map((page) => (
+          {pages.length > 1 && (
+            <ListFilters state={pageFilters.state} searchPlaceholder="Search pages…" />
+          )}
+          {filteredPages.length === 0 ? (
+            <p className="font-body text-sm text-muted-foreground py-6 text-center">No pages match your filters.</p>
+          ) : filteredPages.map((page) => (
             <div
               key={page.id}
               className="flex items-center justify-between p-3 rounded-lg border hover:opacity-90 transition-opacity"

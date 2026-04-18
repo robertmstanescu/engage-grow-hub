@@ -4,6 +4,8 @@ import { fetchAllContacts, deleteContact, type ContactRecord } from "@/services/
 import { runDbAction, runOptimisticAction, handleDatabaseError } from "@/services/db-helpers";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { toast } from "sonner";
+import { useListFilters } from "@/hooks/useListFilters";
+import ListFilters from "@/components/ui/list-filters";
 
 const ContactsList = () => {
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
@@ -13,6 +15,19 @@ const ContactsList = () => {
    * user later deletes a row (which would also flip `saving` → false).
    */
   const [isLoadingContacts, setIsLoadingContacts] = useState(true);
+
+  // Search across name + email + company. Marketing opt-in becomes the
+  // category axis so admins can quickly isolate subscribers.
+  const contactFilters = useListFilters<ContactRecord>({
+    items: contacts,
+    paramPrefix: "c",
+    defaultSort: "manual",
+    searchableText: (c) => `${c.name} ${c.email} ${c.company || ""} ${c.message || ""}`.toLowerCase(),
+    categoryOf: (c) => (c.subscribed_to_marketing ? "marketing" : "all-others"),
+    alphaKey: (c) => c.name.toLowerCase(),
+    updatedKey: (c) => c.created_at,
+  });
+  const filteredContacts = contactFilters.filteredItems;
 
   useEffect(() => {
     /**
@@ -67,7 +82,16 @@ const ContactsList = () => {
         <p className="font-body text-sm text-muted-foreground py-8 text-center">No contacts yet.</p>
       ) : (
         <div className="space-y-3">
-          {contacts.map((contact) => (
+          {contacts.length > 1 && (
+            <ListFilters
+              state={contactFilters.state}
+              searchPlaceholder="Search contacts…"
+              formatCategoryLabel={(c) => (c === "marketing" ? "Marketing opt-ins" : "Other")}
+            />
+          )}
+          {filteredContacts.length === 0 ? (
+            <p className="font-body text-sm text-muted-foreground py-6 text-center">No contacts match your filters.</p>
+          ) : filteredContacts.map((contact) => (
             <div
               key={contact.id}
               className="p-4 rounded-lg border"

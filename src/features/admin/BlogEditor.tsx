@@ -11,6 +11,8 @@ import { runDbAction, runOptimisticAction, handleDatabaseError } from "@/service
 import { fetchAllBlogPosts, insertBlogPost, updateBlogPost, deleteBlogPost } from "@/services/blogPosts";
 import { fetchSection } from "@/services/siteContent";
 import { uploadEditorImage } from "@/services/mediaStorage";
+import { useListFilters } from "@/hooks/useListFilters";
+import ListFilters from "@/components/ui/list-filters";
 
 const generateSlug = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -205,6 +207,21 @@ const BlogEditor = () => {
     patchLivePreviewState({ blogPosts: { [preview.key]: preview, [preview.slug]: preview } });
     window.open(`/blog/${preview.slug}?preview=draft&previewKey=${encodeURIComponent(preview.key)}`, "_blank");
   }, [buildLivePreviewPost]);
+
+  // ── Search / filter / sort over the post list ──
+  // Searches title + category + status. Type filter dropdown surfaces the
+  // post categories present in the data. URL params: ?bq, ?btype, ?bsort.
+  const blogFilters = useListFilters<BlogPost>({
+    items: posts,
+    paramPrefix: "b",
+    defaultSort: "manual",
+    searchableText: (p) =>
+      `${p.title} ${p.category || ""} ${p.status || ""} ${p.excerpt || ""}`.toLowerCase(),
+    categoryOf: (p) => p.category,
+    alphaKey: (p) => p.title.toLowerCase(),
+    updatedKey: (p) => p.published_at || p.created_at,
+  });
+  const filteredPosts = blogFilters.filteredItems;
 
   /* ── Preview Mode ── */
   if (previewing && (isNew || editing)) {
@@ -544,7 +561,12 @@ const BlogEditor = () => {
         <p className="font-body text-sm text-muted-foreground py-8 text-center">No posts yet. Create your first one!</p>
       ) : (
         <div className="space-y-3">
-          {posts.map((post) => (
+          {posts.length > 1 && (
+            <ListFilters state={blogFilters.state} searchPlaceholder="Search posts…" />
+          )}
+          {filteredPosts.length === 0 ? (
+            <p className="font-body text-sm text-muted-foreground py-6 text-center">No posts match your filters.</p>
+          ) : filteredPosts.map((post) => (
             <div
               key={post.id}
               className="flex items-center justify-between p-4 rounded-lg border"

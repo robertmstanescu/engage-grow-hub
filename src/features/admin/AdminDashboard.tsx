@@ -43,6 +43,8 @@ import GridEditor from "./site-editor/GridEditor";
 import ImagePickerField from "./ImagePickerField";
 import GradientEditor from "./site-editor/GradientEditor";
 import OverlayEditor from "./site-editor/OverlayEditor";
+import { useListFilters } from "@/hooks/useListFilters";
+import ListFilters from "@/components/ui/list-filters";
 
 
 type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings";
@@ -500,6 +502,28 @@ const AdminDashboard = ({ session }: Props) => {
     }
   };
 
+  // ── Filters: search + type + sort over the row rail ──
+  // See `useListFilters` for the client-side / debounce / URL-persist rationale.
+  // Param prefix `r` keeps row params (?rq, ?rtype, ?rsort) from colliding with
+  // any future filter on a different admin tab living in the same SPA.
+  const rowFilters = useListFilters<PageRow>({
+    items: pageRows,
+    paramPrefix: "r",
+    defaultSort: "manual",
+    searchableText: (r) =>
+      `${r.strip_title || ""} ${r.type || ""}`.toLowerCase(),
+    categoryOf: (r) => r.type,
+    alphaKey: (r) => (r.strip_title || r.type).toLowerCase(),
+  });
+  const filteredPageRows = rowFilters.filteredItems;
+  const friendlyRowType = (raw: string) =>
+    ROW_TYPE_OPTIONS.find((o) => o.type === raw)?.label || raw;
+
+  // Drag-to-reorder ONLY makes sense against the unfiltered list — reordering
+  // a search-filtered subset would silently scramble the underlying page.
+  // We disable the drag handles whenever the user is filtering.
+  const isRowListFiltered = rowFilters.state.isFiltering;
+
   // ── Row content update for properties panel ──
   const updateRowContent = (field: string, value: any) => {
     if (!selectedSectionId) return;
@@ -732,6 +756,24 @@ const AdminDashboard = ({ session }: Props) => {
             )}
           </div>
           <div style={{ flex: 1, overflowY: "auto", padding: "0.5rem", scrollbarWidth: "thin" as const }}>
+            {/* Search / filter / sort bar — only renders when the row rail
+                contains anything worth filtering. Below 2 rows it's just
+                visual noise. */}
+            {pageRows.length > 1 && (
+              <div className="mb-2">
+                <ListFilters
+                  state={rowFilters.state}
+                  searchPlaceholder="Search rows…"
+                  formatCategoryLabel={friendlyRowType}
+                />
+                {isRowListFiltered && (
+                  <p className="font-body text-[9px] uppercase tracking-wider mt-1 px-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    {filteredPageRows.length} of {pageRows.length} · drag disabled while filtering
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Hero section block (main page only) */}
             {isMainPage && (
               <div
@@ -752,10 +794,11 @@ const AdminDashboard = ({ session }: Props) => {
               </div>
             )}
 
-            {/* Page rows - draggable */}
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={pageRows.map((r) => r.id)} strategy={verticalListSortingStrategy}>
-                {pageRows.map((row) => (
+            {/* Page rows. DnD is suppressed while filtering — see comment
+                near the rowFilters declaration for why. */}
+            {isRowListFiltered ? (
+              <div>
+                {filteredPageRows.map((row) => (
                   <SortableSectionBlock
                     key={row.id}
                     row={row}
@@ -763,8 +806,26 @@ const AdminDashboard = ({ session }: Props) => {
                     onClick={() => selectSection(row.id)}
                   />
                 ))}
-              </SortableContext>
-            </DndContext>
+                {filteredPageRows.length === 0 && (
+                  <div className="text-center py-6 px-2" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "var(--font-body)" }}>
+                    No rows match your filters.
+                  </div>
+                )}
+              </div>
+            ) : (
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={pageRows.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+                  {pageRows.map((row) => (
+                    <SortableSectionBlock
+                      key={row.id}
+                      row={row}
+                      isSelected={selectedSectionId === row.id}
+                      onClick={() => selectSection(row.id)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+            )}
 
             {/* Add row button */}
             <div className="relative mt-2 px-3">
