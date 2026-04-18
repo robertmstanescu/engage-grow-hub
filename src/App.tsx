@@ -16,9 +16,11 @@ import Blog from "./pages/Blog.tsx";
 import BlogPost from "./pages/BlogPost.tsx";
 import Admin from "./pages/Admin.tsx";
 import AdminProfile from "./pages/AdminProfile.tsx";
+import AdminAiInsights from "./pages/AdminAiInsights.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
 import CmsPage from "./pages/CmsPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import { useAiCrawlerBeacon } from "@/hooks/useAiCrawlerBeacon";
 
 /**
  * Bridge between the imperative `invalidateSiteContent()` helper (used
@@ -71,6 +73,16 @@ const ConditionalToolbar = () => {
 };
 
 /**
+ * Mounts the AI crawler beacon on every public route. Lives in its own
+ * component so the hook only runs inside <BrowserRouter> (it depends on
+ * useLocation).
+ */
+const AiCrawlerBeaconMount = () => {
+  useAiCrawlerBeacon();
+  return null;
+};
+
+/**
  * Per-route boundary: if a single page errors out, we still keep the
  * router and the rest of the app interactive (back button, other tabs).
  */
@@ -99,12 +111,14 @@ const App = () => (
               <Route path="/blog/:slug" element={<PageBoundary><BlogPost /></PageBoundary>} />
               <Route path="/admin" element={<PageBoundary><Admin /></PageBoundary>} />
               <Route path="/admin/profile" element={<PageBoundary><AdminProfile /></PageBoundary>} />
+              <Route path="/admin/ai-insights" element={<PageBoundary><AdminAiInsights /></PageBoundary>} />
               <Route path="/unsubscribe" element={<PageBoundary><Unsubscribe /></PageBoundary>} />
               <Route path="/p/:slug" element={<PageBoundary><CmsPage /></PageBoundary>} />
               <Route path="/:slug" element={<PageBoundary><CmsPage /></PageBoundary>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <AiCrawlerBeaconMount />
             <ConditionalToolbar />
           </BrowserRouter>
         </InlineEditProvider>
