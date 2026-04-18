@@ -92,8 +92,10 @@ export const fetchAssetById = (id: string) =>
 
 export const updateAssetMetadata = (
   id: string,
-  patch: Partial<Pick<MediaAsset, "title" | "description" | "alt_text" | "seo_metadata" | "folder_id">>,
-) => supabase.from("media_assets").update(patch).eq("id", id);
+  patch: Partial<Pick<MediaAsset, "title" | "description" | "alt_text" | "folder_id">> & {
+    seo_metadata?: Record<string, unknown>;
+  },
+) => supabase.from("media_assets").update(patch as any).eq("id", id);
 
 export const moveAssetToFolder = (id: string, folderId: string | null) =>
   supabase.from("media_assets").update({ folder_id: folderId }).eq("id", id);
