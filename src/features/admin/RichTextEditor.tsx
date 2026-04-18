@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { sanitizeHtml } from "@/services/sanitize";
+import { normalizeRichTextContainerFontSizes, normalizeRichTextHtml } from "@/services/richTextFontSize";
 import { uploadEditorImage } from "@/services/mediaStorage";
 import { runDbAction } from "@/services/db-helpers";
 import { useBrandColors } from "@/hooks/useBrandSettings";
@@ -107,7 +108,10 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   const htmlTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const emitChange = useCallback(() => {
-    onChange(editorRef.current?.innerHTML || "");
+    if (editorRef.current) {
+      normalizeRichTextContainerFontSizes(editorRef.current);
+    }
+    onChange(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
   }, [onChange]);
 
   const saveSelection = useCallback(() => {
@@ -136,6 +140,9 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
       restoreSelection();
       document.execCommand("styleWithCSS", false, "true");
       document.execCommand(command, false, value);
+      if (editorRef.current) {
+        normalizeRichTextContainerFontSizes(editorRef.current);
+      }
       saveSelection();
       emitChange();
     },
@@ -148,14 +155,9 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
       restoreSelection();
       document.execCommand("styleWithCSS", false, "true");
       document.execCommand("fontSize", false, "7");
-      editorRef.current
-        ?.querySelectorAll('font[size="7"]')
-        .forEach((node) => {
-          const span = document.createElement("span");
-          span.style.fontSize = fontSize;
-          span.innerHTML = node.innerHTML;
-          node.replaceWith(span);
-        });
+      if (editorRef.current) {
+        normalizeRichTextContainerFontSizes(editorRef.current, fontSize);
+      }
       saveSelection();
       emitChange();
     },
