@@ -96,15 +96,20 @@ export const useSiteContent = <T = any>(sectionKey: string, fallback: T): T => {
   const { data } = useQuery({
     queryKey: siteContentQueryKey(sectionKey),
     queryFn: () => fetchSectionContent(sectionKey),
-    // 5-minute freshness — the public site rarely changes between
-    // visits, and admin saves call invalidateSiteContent() explicitly.
-    staleTime: 5 * 60 * 1000,
-    // Keep in cache for 30 minutes even if no component is subscribed,
-    // so back-button navigation feels instant.
-    gcTime: 30 * 60 * 1000,
-    // We deliberately don't refetch on window focus — that's noisy for
-    // a public marketing site. Edits go through invalidation instead.
-    refetchOnWindowFocus: false,
+    // Short freshness window — admin edits in another tab/device should
+    // appear on the public site within ~30s of the next mount or focus.
+    // Background revalidation keeps the UI snappy: cached data renders
+    // instantly while a fresh fetch updates it silently.
+    staleTime: 30 * 1000,
+    // Keep in cache for 10 minutes so back-button navigation is instant
+    // but we don't hold onto truly stale snapshots indefinitely.
+    gcTime: 10 * 60 * 1000,
+    // Refetch when the user returns to the tab — catches admin edits made
+    // elsewhere (e.g. publishing from /admin in another window).
+    refetchOnWindowFocus: true,
+    // Always revalidate on mount so navigating between routes shows fresh
+    // content even if the cache is technically still warm.
+    refetchOnMount: "always",
     // Retry once on transient failures; staleness > flakiness.
     retry: 1,
   });

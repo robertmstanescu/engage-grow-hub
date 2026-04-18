@@ -636,9 +636,13 @@ const AdminDashboard = ({ session }: Props) => {
             <Menu size={18} />
           </button>
         )}
-        <span style={{ fontFamily: "var(--font-display)", fontSize: 11, fontWeight: 700, color: "hsl(var(--secondary))", letterSpacing: "0.15em", whiteSpace: "nowrap" }}>
-          THE MAGIC COFFIN
-        </span>
+        {/* Brand wordmark — hidden on mobile to save horizontal space
+            for the page title and action buttons. */}
+        {!isAdminMobile && (
+          <span style={{ fontFamily: "var(--font-display)", fontSize: 11, fontWeight: 700, color: "hsl(var(--secondary))", letterSpacing: "0.15em", whiteSpace: "nowrap" }}>
+            THE MAGIC COFFIN
+          </span>
+        )}
         <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)", flex: 1, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {isSiteTab ? pageLabel : tabLabel}
         </span>
