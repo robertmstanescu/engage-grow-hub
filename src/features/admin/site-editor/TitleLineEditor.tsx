@@ -28,7 +28,40 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
     }
     onChange(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
   }, [onChange]);
-...
+
+  const saveSelection = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || !editorRef.current) return;
+
+    const range = selection.getRangeAt(0);
+    if (editorRef.current.contains(range.commonAncestorContainer)) {
+      selectionRef.current = range.cloneRange();
+    }
+  }, []);
+
+  const restoreSelection = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || !selectionRef.current) return;
+
+    selection.removeAllRanges();
+    selection.addRange(selectionRef.current);
+  }, []);
+
+  const applyColor = useCallback(
+    (color: string) => {
+      editorRef.current?.focus();
+      restoreSelection();
+      document.execCommand("styleWithCSS", false, "true");
+      document.execCommand("foreColor", false, color);
+      if (editorRef.current) {
+        normalizeRichTextContainerFontSizes(editorRef.current);
+      }
+      saveSelection();
+      emitChange();
+    },
+    [emitChange, restoreSelection, saveSelection]
+  );
+
   const applyFontSize = useCallback((fontSize: string) => {
     editorRef.current?.focus();
     restoreSelection();

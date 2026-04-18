@@ -113,7 +113,42 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     }
     onChange(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
   }, [onChange]);
-...
+
+  const saveSelection = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || !editorRef.current) return;
+    const range = selection.getRangeAt(0);
+    if (editorRef.current.contains(range.commonAncestorContainer)) {
+      selectionRef.current = range.cloneRange();
+    }
+  }, []);
+
+  const restoreSelection = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || !selectionRef.current) return;
+    selection.removeAllRanges();
+    selection.addRange(selectionRef.current);
+  }, []);
+
+  const focusEditor = useCallback(() => {
+    editorRef.current?.focus();
+  }, []);
+
+  const runCommand = useCallback(
+    (command: string, value?: string) => {
+      focusEditor();
+      restoreSelection();
+      document.execCommand("styleWithCSS", false, "true");
+      document.execCommand(command, false, value);
+      if (editorRef.current) {
+        normalizeRichTextContainerFontSizes(editorRef.current);
+      }
+      saveSelection();
+      emitChange();
+    },
+    [emitChange, focusEditor, restoreSelection, saveSelection]
+  );
+
   const applyFontSize = useCallback(
     (fontSize: string) => {
       focusEditor();
