@@ -239,7 +239,8 @@ const TagsManager = () => {
                 </span>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
         <button
           type="button"
