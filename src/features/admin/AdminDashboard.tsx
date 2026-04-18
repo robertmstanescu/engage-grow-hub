@@ -502,6 +502,28 @@ const AdminDashboard = ({ session }: Props) => {
     }
   };
 
+  // ── Filters: search + type + sort over the row rail ──
+  // See `useListFilters` for the client-side / debounce / URL-persist rationale.
+  // Param prefix `r` keeps row params (?rq, ?rtype, ?rsort) from colliding with
+  // any future filter on a different admin tab living in the same SPA.
+  const rowFilters = useListFilters<PageRow>({
+    items: pageRows,
+    paramPrefix: "r",
+    defaultSort: "manual",
+    searchableText: (r) =>
+      `${r.strip_title || ""} ${r.type || ""}`.toLowerCase(),
+    categoryOf: (r) => r.type,
+    alphaKey: (r) => (r.strip_title || r.type).toLowerCase(),
+  });
+  const filteredPageRows = rowFilters.filteredItems;
+  const friendlyRowType = (raw: string) =>
+    ROW_TYPE_OPTIONS.find((o) => o.type === raw)?.label || raw;
+
+  // Drag-to-reorder ONLY makes sense against the unfiltered list — reordering
+  // a search-filtered subset would silently scramble the underlying page.
+  // We disable the drag handles whenever the user is filtering.
+  const isRowListFiltered = rowFilters.state.isFiltering;
+
   // ── Row content update for properties panel ──
   const updateRowContent = (field: string, value: any) => {
     if (!selectedSectionId) return;
