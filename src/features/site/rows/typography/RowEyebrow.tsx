@@ -48,7 +48,7 @@ const RowEyebrow = ({ children, color, style, className }: Props) => (
   <span
     className={`font-body tracking-[0.35em] uppercase block mb-rhythm-tight ${className ?? ""}`}
     style={{
-      fontSize: "clamp(9px, 0.9vw, 11px)",
+      fontSize: "clamp(9px, 0.4vh + 0.5vw, 11px)",
       color: color ?? "hsl(var(--muted-foreground))",
       ...style,
     }}

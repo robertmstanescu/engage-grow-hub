@@ -141,19 +141,33 @@
     scroll-behavior: smooth;
   }
 
-  /* Scroll snap container - applied to the main page wrapper */
+  /*
+   * ──────────────────────────────────────────────────────────────────
+   * SCROLL SNAP CONTAINER (the "soft snap" effect)
+   * ──────────────────────────────────────────────────────────────────
+   * Why `proximity` and not `mandatory`?
+   *   - `mandatory` FORCES the viewport to lock onto the nearest snap
+   *     point. It feels rigid: small scroll wheel ticks jump a whole
+   *     screen, and trackpad inertia gets cancelled. Users complain it
+   *     "fights them".
+   *   - `proximity` only snaps when the user lands NEAR a snap point
+   *     anyway. Mid-scroll motion is preserved. The page "settles" at
+   *     the next row instead of yanking to it. This is the "soft" feel
+   *     the brand wants — Apple, Linear, and Stripe all use proximity.
+   *
+   * Mobile keeps `proximity` too — mandatory on touch devices conflicts
+   * with native momentum scrolling and feels broken.
+   *
+   * `height: 100vh` + `overflow-y: auto` makes THIS element the scroll
+   * container instead of the body, so snap points only resolve against
+   * sibling rows (not random nested scrollers).
+   */
   .snap-container {
-    scroll-snap-type: y mandatory;
+    scroll-snap-type: y proximity;
     overflow-y: auto;
     overflow-x: hidden;
     height: 100vh;
     scroll-behavior: smooth;
-  }
-
-  @media (max-width: 1024px) {
-    .snap-container {
-      scroll-snap-type: y proximity;
-    }
   }
 
   [id] {
@@ -308,23 +322,35 @@
     color: hsl(var(--light-fg));
   }
 
-  /* ── Scroll snap sections ── */
+  /*
+   * ── Scroll snap sections ──
+   * `scroll-snap-align: start` aligns the top of the row with the top
+   * of the snap container. Combined with `proximity` on the parent,
+   * the page softly settles at each row's top edge as you scroll.
+   *
+   * `max-height: 100dvh` on desktop guarantees that a row's COLLAPSED
+   * state never exceeds one viewport — preventing the "scroll forever
+   * inside one row" problem. `dvh` (dynamic viewport height) accounts
+   * for mobile browser chrome that appears/disappears on scroll.
+   */
+  /*
+   * Note: we deliberately do NOT set `max-height: 100dvh; overflow:hidden`
+   * on .snap-section — that would clip expanded accordions, dropdowns,
+   * and tooltips. Instead we rely on FLUID TYPOGRAPHY (clamp with vh+vw
+   * units) so that the COLLAPSED content naturally fits in one viewport
+   * without needing a hard clip. See typography/RowBody.tsx for the
+   * formula.
+   */
   .snap-section {
-    scroll-snap-align: center;
+    scroll-snap-align: start;
     scroll-snap-stop: normal;
-  }
-
-  @media (max-width: 1024px) {
-    .snap-section {
-      scroll-snap-align: start;
-    }
   }
 
   /* Service rows: desktop = 100dvh centered, mobile = content-height */
   .service-row {
     min-height: 100dvh;
     justify-content: center;
-    scroll-snap-align: center;
+    scroll-snap-align: start;
     scroll-snap-stop: normal;
   }
 

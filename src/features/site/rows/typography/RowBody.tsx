@@ -17,36 +17,40 @@ interface Props {
  *
  * ## Why this matters most
  * Body text gets read most. A bad line-height makes every row feel cheap.
- * Inconsistent body sizes make one row look "important" and another
- * "unimportant" without any actual hierarchy reason.
  *
- * ## Design choices (the "why")
+ * ## Fluidity (the `clamp()` story for juniors)
  *
- * - **`leading-[1.6]`**: the W3C accessibility guideline (WCAG 2.1
- *   Success Criterion 1.4.12) recommends a line height of AT LEAST 1.5
- *   for body text. We use 1.6 because:
- *     - it improves long-form readability (eye doesn't lose its place)
- *     - it leaves enough vertical breathing room for the descenders of
- *       Bricolage Grotesque without looking spaced-out
- *     - it matches editorial publication standards (NYT, Stripe docs)
+ * `clamp(MIN, PREFERRED, MAX)` returns the PREFERRED value, but never
+ * lets it drop below MIN or rise above MAX. We use it for typography so
+ * the same component is readable on a 13" laptop AND a 27" iMac without
+ * a single media query.
  *
- * - **`font-body-heading` (Bricolage Grotesque)**: chosen over plain Inter
- *   for body because Bricolage has more personality (subtle wedges and
- *   curves) without sacrificing legibility. Sets us apart from generic
- *   "AI-generated landing page" Inter-everywhere look.
+ * Our preferred value mixes `vh` AND `vw`:
+ *   `1.1vh + 0.6vw`
  *
- * - **Fluid `clamp(0.9rem, 1.5vw, 1.05rem)`**: caps at ~17px on desktop —
- *   slightly above default 16px, the sweet spot for adult readability.
- *   Floors at 14.4px on mobile (still WCAG-compliant for body).
+ * Why both?
+ *   - `vw` (viewport width) alone shrinks text on narrow desktops but
+ *     ignores SHORT viewports (e.g. a laptop with the dock + browser
+ *     chrome eating 200px of height). Result: text overflows vertically.
+ *   - `vh` (viewport height) alone shrinks text on short screens but
+ *     ignores narrow ones.
+ *   - Mixing them means BOTH dimensions contribute. On a small laptop
+ *     screen (1366×768) the row stays inside one viewport; on a 4K
+ *     monitor the text grows but never past the MAX cap.
  *
- * - **`[&_p]:mb-[5px] [&_p]:mt-[5px]`**: per project convention, every
- *   paragraph inside the body gets 5px above + 5px below for visual
- *   rhythm without huge gaps. Documented in mem://architecture/page-builder.
+ * MIN `0.85rem` (≈13.6px) is the floor for WCAG-comfortable body text.
+ * MAX `1.05rem` (≈17px) is the editorial sweet spot.
+ *
+ * ## Other choices
+ * - **`leading-[1.6]`**: WCAG 1.4.12 recommends ≥1.5 for body text.
+ * - **`font-body-heading` (Bricolage Grotesque)**: more personality
+ *   than the default Inter without sacrificing legibility.
+ * - **`[&_p]:mb-[5px] [&_p]:mt-[5px]`**: per-project paragraph rhythm.
  */
 const RowBody = ({ children, html, color, style, className, ...rest }: Props) => {
   const baseClass = `font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px] ${className ?? ""}`;
   const baseStyle: CSSProperties = {
-    fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)",
+    fontSize: "clamp(0.85rem, 1.1vh + 0.6vw, 1.05rem)",
     color: color ?? "hsl(var(--foreground) / 0.75)",
     ...style,
   };

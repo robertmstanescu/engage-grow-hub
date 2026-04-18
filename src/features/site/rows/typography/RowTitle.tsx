@@ -37,10 +37,10 @@ interface Props {
  *   loose leading on a bold display face makes it look weak and floaty.
  *   At 0.95 the lines almost-but-don't-quite touch.
  *
- * - **Fluid `clamp(1.5rem, 3.5vw, 2.6rem)`**: scales from ~24px on mobile
- *   to ~42px on desktop. Avoids a media-query staircase. Picked to be
- *   distinctly smaller than the hero (max 88px) but bigger than body text
- *   (max ~18px), keeping the visual hierarchy 3:1.
+ * - **Fluid `clamp(1.4rem, 2.2vh + 1.6vw, 2.6rem)`**: scales by BOTH the
+ *   viewport height and width, so on a short laptop screen the title
+ *   shrinks vertically too — keeping the whole row inside one viewport
+ *   without overflow. See RowBody.tsx for the full clamp/vh+vw rationale.
  *
  * - **`tracking-tight`**: large display type at default tracking looks
  *   too airy. Tightening pulls letters together for a cohesive shape.
@@ -54,7 +54,7 @@ const RowTitle = ({ children, as = "h2", color, style, className }: Props) => {
     <Tag
       className={`font-display font-black leading-[0.95] tracking-tight mb-rhythm-base ${className ?? ""}`}
       style={{
-        fontSize: "clamp(1.5rem, 3.5vw, 2.6rem)",
+        fontSize: "clamp(1.4rem, 2.2vh + 1.6vw, 2.6rem)",
         color: color ?? "hsl(var(--foreground))",
         ...style,
       }}
