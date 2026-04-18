@@ -70,6 +70,30 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      /**
+       * VERTICAL RHYTHM SPACING SCALE
+       * ─────────────────────────────────────────────────────────────────
+       * Used across all CMS rows for consistent gaps between elements.
+       * Pick from this scale instead of `mb-2`, `mb-3`, `mb-4`, etc., so
+       * one tweak here propagates everywhere.
+       *
+       *  rhythm-tight (12px)  → eyebrow → title gap
+       *  rhythm-base  (24px)  → title → body, subtitle → body
+       *  rhythm-loose (48px)  → between major content blocks inside a row
+       *  row          (64px)  → top/bottom padding of a row, mobile
+       *  row-md       (112px) → top/bottom padding of a row, desktop ≥ md
+       *
+       * Why 12 / 24 / 48 / 64 / 112: each step is roughly 2× the last.
+       * That doubling rhythm is what makes vertical spacing feel
+       * "designed" rather than arbitrary — the eye perceives the ratio.
+       */
+      spacing: {
+        "rhythm-tight": "12px",
+        "rhythm-base": "24px",
+        "rhythm-loose": "48px",
+        row: "64px",
+        "row-md": "112px",
+      },
       fontFamily: {
         display: ["Unbounded", "sans-serif"],
         "body-heading": ["Bricolage Grotesque", "sans-serif"],
