@@ -3,6 +3,7 @@ import { Plus, Trash2, Upload, X } from "lucide-react";
 import { Field, RichField, SectionBox, ColorField } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
+import ImageAltInput from "../ImageAltInput";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -105,11 +106,22 @@ const HeroEditor = ({ content, onChange }: Props) => {
               </div>
               {bgUrl && (
                 <div className="relative rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
-                  {bgType === "image" ? <img src={bgUrl} alt="" className="w-full h-32 object-cover" /> : <video src={bgUrl} className="w-full h-32 object-cover" muted />}
+                  {bgType === "image" ? <img src={bgUrl} alt={content.bg_image_alt || ""} className="w-full h-32 object-cover" /> : <video src={bgUrl} className="w-full h-32 object-cover" muted />}
                   <button type="button" onClick={() => { onChange("bg_url", ""); onChange("bg_type", "none"); }} className="absolute top-2 right-2 p-1 rounded-full" style={{ backgroundColor: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
                     <X size={12} />
                   </button>
                 </div>
+              )}
+              {/* Alt-text only applies to images — videos don't need it (decorative loops).
+                  We still render the input only when an image bg is selected, so admins
+                  aren't presented with a useless field for video backgrounds. */}
+              {bgType === "image" && bgUrl && (
+                <ImageAltInput
+                  value={content.bg_image_alt || ""}
+                  onChange={(v) => onChange("bg_image_alt", v)}
+                  label="Background Image Alt Text (SEO)"
+                  placeholder="Describe the hero background image"
+                />
               )}
             </>
           )}
