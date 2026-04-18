@@ -108,7 +108,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
       style={colorOverrides as React.CSSProperties}
       className="service-row"
     >
-      <div className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
+      <div ref={ref} className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
         <RowEyebrow color={pillarLabelColor} style={revealStyle(isVisible, 0)}>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
             {c.eyebrow || c.pillar_number}
