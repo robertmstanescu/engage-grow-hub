@@ -1,34 +1,11 @@
 /**
- * /admin/profile — edit the signed-in admin's name, avatar, and email.
+ * /admin/profile — edit the signed-in admin's display name and avatar.
  *
- * ## Code-Verified Email Change (OTP flow)
- *
- * We use Supabase's built-in 8-character OTP for email change instead of
- * relying on the user clicking a magic link in their inbox.
- *
- * ### Why OTP > magic link for sensitive changes
- *
- *   1. **No redirect loops.** Magic links bounce through the Supabase
- *      Auth domain → your site → back to a session — if any redirect URL
- *      is misconfigured, the link silently fails. OTP just verifies in-app.
- *   2. **Resilient to email rendering.** Some clients rewrite or break
- *      long links (Outlook safe-links, corporate proxies). An 8-character
- *      code is plain text and impossible to mangle.
- *   3. **Tighter audit trail.** The user PROVES possession of the inbox
- *      by typing the code into THIS session — no risk that an old link
- *      sitting in a forwarded email chain triggers the change later.
- *   4. **Clearer UX for misspellings.** If you typo the new address, no
- *      code arrives — you find out in seconds, not after refreshing your
- *      inbox. With links, a typo can lock you out silently.
- *
- * ### Supabase mechanics
- *
- *   - `auth.updateUser({ email: newEmail })` triggers Supabase to email
- *     an 8-character token to BOTH the old and new addresses (Secure Email
- *     Change is on by default).
- *   - The user enters either code into our OTP input.
- *   - We call `auth.verifyOtp({ email: newEmail, token, type: "email_change" })`
- *     which finalizes the change and refreshes the session.
+ * The login email is intentionally read-only here. Email-change flows
+ * via OTP/magic link were removed because the auth provider's secure
+ * email-change behavior didn't reliably persist the new address in our
+ * setup, which created a confusing UX. Admins who need a different
+ * login email should be re-invited under the new address.
  *
  * ### auth.users vs public.profiles
  *
@@ -36,21 +13,17 @@
  *     hash, OAuth identities, and the canonical `id` (UUID).
  *   - `public.profiles` is OUR table. It holds display_name, avatar_url,
  *     and any other app-specific user data, joined to auth via `user_id`.
- *   - When email changes in `auth.users`, our `profiles` row stays
- *     untouched — the link is the user_id, not the email.
  */
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Mail, User as UserIcon, KeyRound } from "lucide-react";
-import { toast } from "sonner";
+import { ArrowLeft, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyProfile, updateMyProfile, type Profile } from "@/services/profiles";
 import { runDbAction } from "@/services/db-helpers";
 import { SpinnerButton } from "@/components/ui/spinner-button";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { Skeleton } from "@/components/ui/skeleton";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import ImagePickerField from "@/features/admin/ImagePickerField";
 
 const AdminProfile = () => {
