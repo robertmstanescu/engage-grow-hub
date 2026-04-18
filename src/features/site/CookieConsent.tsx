@@ -95,7 +95,7 @@ const CookieConsent = () => {
             </h2>
             <p className="font-body text-[12px] leading-relaxed mt-1.5" style={{ color: "hsl(50 82% 87% / 0.75)" }}>
               {view === "compact"
-                ? "We use a small cookie so we can connect a download form back to the article that brought you in. Nothing personal is stored without your say-so."
+                ? "We use a simple cookie to remember how you found us. This helps us understand which of our links are most helpful. We never store personal information without your explicit consent. 😊"
                 : "Accept lets us remember you across visits so your form submissions enrich our content insights. Reject keeps every page view fully anonymous — you'll still get the same site."}
             </p>
 
