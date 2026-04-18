@@ -561,7 +561,12 @@ const BlogEditor = () => {
         <p className="font-body text-sm text-muted-foreground py-8 text-center">No posts yet. Create your first one!</p>
       ) : (
         <div className="space-y-3">
-          {posts.map((post) => (
+          {posts.length > 1 && (
+            <ListFilters state={blogFilters.state} searchPlaceholder="Search posts…" />
+          )}
+          {filteredPosts.length === 0 ? (
+            <p className="font-body text-sm text-muted-foreground py-6 text-center">No posts match your filters.</p>
+          ) : filteredPosts.map((post) => (
             <div
               key={post.id}
               className="flex items-center justify-between p-4 rounded-lg border"
