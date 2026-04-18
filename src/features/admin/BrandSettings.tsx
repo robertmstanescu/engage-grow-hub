@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useState, useEffect } from "react";
 import { Save, Send, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import { applyBrandCSSVars, DEFAULT_BRAND, type BrandSettings as BrandSettingsType, type BrandColor, type TypographyLevel } from "@/hooks/useBrandSettings";
 import { SectionBox } from "./site-editor/FieldComponents";
+import { fetchSection, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
+import { runDbAction } from "@/services/db-helpers";
+import { SpinnerButton } from "@/components/ui/spinner-button";
 
 /* ── WCAG Contrast helpers ── */
 const hexToRgb = (hex: string) => {
@@ -43,28 +44,23 @@ const WEIGHT_OPTIONS = ["300", "400", "500", "600", "700", "800", "900"];
 const BrandSettings = () => {
   const [brand, setBrand] = useState<BrandSettingsType>(DEFAULT_BRAND);
   const [published, setPublished] = useState<BrandSettingsType>(DEFAULT_BRAND);
-  const [saving, setSaving] = useState(false);
-  const [publishing, setPublishing] = useState(false);
+  const [isSavingChanges, setIsSavingChanges] = useState(false);
+  const [isPublishingChanges, setIsPublishingChanges] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>("palette");
   const [contrastFg, setContrastFg] = useState("#FFFFFF");
   const [contrastBg, setContrastBg] = useState("#2A0E33");
 
   useEffect(() => {
-    supabase
-      .from("site_content")
-      .select("content, draft_content")
-      .eq("section_key", "brand_settings")
-      .maybeSingle()
-      .then(({ data }: any) => {
-        if (data) {
-          const live = { ...DEFAULT_BRAND, ...data.content, typography: { ...DEFAULT_BRAND.typography, ...(data.content?.typography || {}) } };
-          const draft = data.draft_content
-            ? { ...DEFAULT_BRAND, ...data.draft_content, typography: { ...DEFAULT_BRAND.typography, ...(data.draft_content?.typography || {}) } }
-            : live;
-          setBrand(draft);
-          setPublished(live);
-        }
-      });
+    fetchSection<any>("brand_settings").then(({ data }) => {
+      if (data) {
+        const live = { ...DEFAULT_BRAND, ...data.content, typography: { ...DEFAULT_BRAND.typography, ...(data.content?.typography || {}) } };
+        const draft = data.draft_content
+          ? { ...DEFAULT_BRAND, ...data.draft_content, typography: { ...DEFAULT_BRAND.typography, ...(data.draft_content?.typography || {}) } }
+          : live;
+        setBrand(draft);
+        setPublished(live);
+      }
+    });
   }, []);
 
   const updateColor = (idx: number, field: keyof BrandColor, value: string) => {
@@ -93,30 +89,24 @@ const BrandSettings = () => {
     }));
   };
 
-  const saveDraft = async () => {
-    setSaving(true);
-    const { data: existing } = await supabase.from("site_content").select("id").eq("section_key", "brand_settings").maybeSingle();
-    if (existing) {
-      await supabase.from("site_content").update({ draft_content: brand as any }).eq("section_key", "brand_settings");
-    } else {
-      await supabase.from("site_content").insert({ section_key: "brand_settings", content: brand as any, draft_content: brand as any } as any);
-    }
-    toast.success("Brand settings draft saved");
-    setSaving(false);
-  };
+  const handleSaveDraft = () =>
+    runDbAction({
+      action: () => saveDraftSection("brand_settings", brand),
+      setLoading: setIsSavingChanges,
+      successMessage: "Brand settings draft saved",
+    });
 
-  const publish = async () => {
-    setPublishing(true);
-    await supabase.from("site_content").upsert(
-      { section_key: "brand_settings", content: brand as any, draft_content: brand as any } as any,
-      { onConflict: "section_key" }
-    );
-    invalidateSiteContent("brand_settings");
-    applyBrandCSSVars(brand);
-    setPublished(brand);
-    toast.success("Brand settings published!");
-    setPublishing(false);
-  };
+  const handlePublish = () =>
+    runDbAction({
+      action: () => publishSection("brand_settings", brand),
+      setLoading: setIsPublishingChanges,
+      successMessage: "Brand settings published!",
+      onSuccess: () => {
+        invalidateSiteContent("brand_settings");
+        applyBrandCSSVars(brand);
+        setPublished(brand);
+      },
+    });
 
   const hasChanges = JSON.stringify(brand) !== JSON.stringify(published);
   const ratio = contrastRatio(contrastFg, contrastBg);
@@ -140,12 +130,25 @@ const BrandSettings = () => {
       <div className="flex items-center justify-between">
         <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Brand Settings</h2>
         <div className="flex items-center gap-2">
-          <button onClick={saveDraft} disabled={saving} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-            <Save size={13} /> {saving ? "Saving…" : "Save Draft"}
-          </button>
-          <button onClick={publish} disabled={publishing || !hasChanges} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40" style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-            <Send size={13} /> {publishing ? "Publishing…" : "Publish"}
-          </button>
+          <SpinnerButton
+            isLoading={isSavingChanges}
+            loadingLabel="Saving…"
+            icon={<Save size={13} />}
+            onClick={handleSaveDraft}
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+            Save Draft
+          </SpinnerButton>
+          <SpinnerButton
+            isLoading={isPublishingChanges}
+            loadingLabel="Publishing…"
+            icon={<Send size={13} />}
+            disabled={!hasChanges}
+            onClick={handlePublish}
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+            Publish
+          </SpinnerButton>
         </div>
       </div>
 
