@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { Plus, Trash2, Tag } from "lucide-react";
 import { Field, SectionBox } from "./site-editor/FieldComponents";
+import { runDbAction } from "@/services/db-helpers";
+import { SpinnerButton } from "@/components/ui/spinner-button";
 
 interface ServiceTagType {
   label: string;
@@ -36,7 +37,7 @@ const DEFAULT_TAGS: TagsData = {
 
 const TagsManager = () => {
   const [tags, setTags] = useState<TagsData>(DEFAULT_TAGS);
-  const [saving, setSaving] = useState(false);
+  const [isSavingChanges, setIsSavingChanges] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -61,15 +62,19 @@ const TagsManager = () => {
     load();
   }, []);
 
-  const save = async () => {
-    setSaving(true);
-    const { error } = await supabase
-      .from("site_content")
-      .upsert({ section_key: "tags_config", content: tags as any, updated_at: new Date().toISOString() }, { onConflict: "section_key" });
-    if (error) toast.error("Failed to save");
-    else toast.success("Tags saved");
-    setSaving(false);
-  };
+  const handleSave = () =>
+    runDbAction({
+      action: () =>
+        supabase
+          .from("site_content")
+          .upsert(
+            { section_key: "tags_config", content: tags as any, updated_at: new Date().toISOString() },
+            { onConflict: "section_key" }
+          ),
+      setLoading: setIsSavingChanges,
+      successMessage: "Tags saved",
+      errorMessage: "Failed to save",
+    });
 
   const addServiceTag = () => {
     setTags({
@@ -106,13 +111,14 @@ const TagsManager = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-base font-bold" style={{ color: "hsl(var(--foreground))" }}>Tags & Categories</h2>
-        <button
-          onClick={save}
-          disabled={saving}
-          className="font-display text-[10px] uppercase tracking-wider font-bold px-5 py-2 rounded-full hover:opacity-85 transition-opacity disabled:opacity-50"
+        <SpinnerButton
+          isLoading={isSavingChanges}
+          loadingLabel="Saving…"
+          onClick={handleSave}
+          className="font-display text-[10px] uppercase tracking-wider font-bold px-5 py-2 rounded-full hover:opacity-85 transition-opacity"
           style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-          {saving ? "Saving…" : "Save Tags"}
-        </button>
+          Save Tags
+        </SpinnerButton>
       </div>
 
       {/* Service Tag Types */}

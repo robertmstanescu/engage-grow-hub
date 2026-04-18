@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { Save, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import BrandingEditor from "./BrandingEditor";
 import SocialLinksEditor from "./site-editor/SocialLinksEditor";
 import { Field, ColorField } from "./site-editor/FieldComponents";
+import { fetchSections, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
+import { runDbAction } from "@/services/db-helpers";
+import { SpinnerButton } from "@/components/ui/spinner-button";
 
 interface SectionState {
   content: Record<string, any>;
@@ -29,17 +30,13 @@ const ALIGNMENT_OPTIONS = [
 
 const GlobalSettings = () => {
   const [data, setData] = useState<Record<string, SectionState>>({});
-  const [saving, setSaving] = useState(false);
-  const [publishing, setPublishing] = useState(false);
+  const [isSavingChanges, setIsSavingChanges] = useState(false);
+  const [isPublishingChanges, setIsPublishingChanges] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>("branding");
 
   useEffect(() => {
     const load = async () => {
-      const { data: rows } = await supabase
-        .from("site_content")
-        .select("section_key, content, draft_content")
-        .in("section_key", [...SECTIONS]) as any;
-
+      const { data: rows } = await fetchSections([...SECTIONS]);
       const mapped: Record<string, SectionState> = {};
       for (const key of SECTIONS) {
         const row = rows?.find((r: any) => r.section_key === key);
@@ -65,41 +62,44 @@ const GlobalSettings = () => {
     }));
   };
 
-  const saveAll = async () => {
-    setSaving(true);
-    for (const key of SECTIONS) {
-      const draft = data[key]?.draft || {};
-      const { data: existing } = await supabase.from("site_content").select("id").eq("section_key", key).maybeSingle();
-      if (existing) {
-        await supabase.from("site_content").update({ draft_content: draft as any }).eq("section_key", key);
-      } else {
-        await supabase.from("site_content").insert({ section_key: key, content: draft, draft_content: draft } as any);
-      }
-    }
-    toast.success("Settings draft saved");
-    setSaving(false);
-  };
-
-  const publishAll = async () => {
-    setPublishing(true);
-    for (const key of SECTIONS) {
-      const draft = data[key]?.draft || {};
-      await supabase.from("site_content").upsert(
-        { section_key: key, content: draft, draft_content: draft } as any,
-        { onConflict: "section_key" }
-      );
-      invalidateSiteContent(key);
-    }
-    setData((prev) => {
-      const next = { ...prev };
-      for (const key of SECTIONS) {
-        next[key] = { ...next[key], content: next[key].draft };
-      }
-      return next;
+  const handleSaveAll = () =>
+    runDbAction({
+      action: async () => {
+        // Sequential because we may need to insert before update
+        for (const key of SECTIONS) {
+          const draft = data[key]?.draft || {};
+          const res = await saveDraftSection(key, draft);
+          if ((res as any)?.error) throw (res as any).error;
+        }
+        return { error: null };
+      },
+      setLoading: setIsSavingChanges,
+      successMessage: "Settings draft saved",
     });
-    toast.success("Settings published!");
-    setPublishing(false);
-  };
+
+  const handlePublishAll = () =>
+    runDbAction({
+      action: async () => {
+        for (const key of SECTIONS) {
+          const draft = data[key]?.draft || {};
+          const res = await publishSection(key, draft);
+          if ((res as any)?.error) throw (res as any).error;
+        }
+        return { error: null };
+      },
+      setLoading: setIsPublishingChanges,
+      successMessage: "Settings published!",
+      onSuccess: () => {
+        for (const key of SECTIONS) invalidateSiteContent(key);
+        setData((prev) => {
+          const next = { ...prev };
+          for (const key of SECTIONS) {
+            next[key] = { ...next[key], content: next[key].draft };
+          }
+          return next;
+        });
+      },
+    });
 
   const hasChanges = SECTIONS.some((k) => JSON.stringify(data[k]?.draft) !== JSON.stringify(data[k]?.content));
 
@@ -118,12 +118,25 @@ const GlobalSettings = () => {
       <div className="flex items-center justify-between">
         <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Global Settings</h2>
         <div className="flex items-center gap-2">
-          <button onClick={saveAll} disabled={saving} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-            <Save size={13} /> {saving ? "Saving…" : "Save Draft"}
-          </button>
-          <button onClick={publishAll} disabled={publishing || !hasChanges} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40" style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-            <Send size={13} /> {publishing ? "Publishing…" : "Publish"}
-          </button>
+          <SpinnerButton
+            isLoading={isSavingChanges}
+            loadingLabel="Saving…"
+            icon={<Save size={13} />}
+            onClick={handleSaveAll}
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+            Save Draft
+          </SpinnerButton>
+          <SpinnerButton
+            isLoading={isPublishingChanges}
+            loadingLabel="Publishing…"
+            icon={<Send size={13} />}
+            disabled={!hasChanges}
+            onClick={handlePublishAll}
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+            Publish
+          </SpinnerButton>
         </div>
       </div>
 

@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, Trash2, Sun, Moon, Image } from "lucide-react";
 import { SectionBox } from "./site-editor/FieldComponents";
+import { uploadBrandingAsset } from "@/services/mediaStorage";
+import { handleDatabaseError } from "@/services/db-helpers";
 
 interface Props {
   content: Record<string, any>;
@@ -16,28 +17,29 @@ const BrandingEditor = ({ content, onChange }: Props) => {
   const faviconLightRef = useRef<HTMLInputElement>(null);
   const faviconDarkRef = useRef<HTMLInputElement>(null);
 
+  /**
+   * Upload a branding asset to storage and persist its public URL on the
+   * given field. We don't use runDbAction here because the storage SDK
+   * doesn't return the same `{ data, error }` envelope as Postgrest, and
+   * we need the public URL on success — but we still wrap in try/catch
+   * so a thrown error never leaves the spinner spinning.
+   */
   const uploadImage = async (file: File, field: string) => {
     setUploading(field);
-    const ext = file.name.split(".").pop();
-    const path = `branding/${field}-${Date.now()}.${ext}`;
-
-    const { error } = await supabase.storage
-      .from("editor-images")
-      .upload(path, file, { upsert: true });
-
-    if (error) {
-      toast.error("Upload failed");
+    try {
+      const { publicUrl, error } = await uploadBrandingAsset(field, file);
+      if (error || !publicUrl) {
+        toast.error(handleDatabaseError(error, "Upload failed"));
+        return;
+      }
+      onChange(field, publicUrl);
+      toast.success("Uploaded!");
+    } catch (err) {
+      toast.error(handleDatabaseError(err, "Upload failed"));
+    } finally {
+      // ALWAYS reset — see db-helpers.ts header for the rationale.
       setUploading(null);
-      return;
     }
-
-    const { data: urlData } = supabase.storage
-      .from("editor-images")
-      .getPublicUrl(path);
-
-    onChange(field, urlData.publicUrl);
-    setUploading(null);
-    toast.success("Uploaded!");
   };
 
   const handleFileChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
