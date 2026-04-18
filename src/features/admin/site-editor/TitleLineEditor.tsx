@@ -1,6 +1,7 @@
 import { Palette, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import { useBrandColors } from "@/hooks/useBrandSettings";
+import { normalizeRichTextContainerFontSizes, normalizeRichTextHtml } from "@/services/richTextFontSize";
 
 const FONT_OPTIONS = [
   { label: "Display", value: "var(--font-title)" },
@@ -22,50 +23,20 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
   const brandColors = useBrandColors();
 
   const emitChange = useCallback(() => {
-    onChange(editorRef.current?.innerHTML || "");
-  }, [onChange]);
-
-  const saveSelection = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || !editorRef.current) return;
-
-    const range = selection.getRangeAt(0);
-    if (editorRef.current.contains(range.commonAncestorContainer)) {
-      selectionRef.current = range.cloneRange();
+    if (editorRef.current) {
+      normalizeRichTextContainerFontSizes(editorRef.current);
     }
-  }, []);
-
-  const restoreSelection = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || !selectionRef.current) return;
-
-    selection.removeAllRanges();
-    selection.addRange(selectionRef.current);
-  }, []);
-
-  const applyColor = useCallback(
-    (color: string) => {
-      editorRef.current?.focus();
-      restoreSelection();
-      document.execCommand("styleWithCSS", false, "true");
-      document.execCommand("foreColor", false, color);
-      saveSelection();
-      emitChange();
-    },
-    [emitChange, restoreSelection, saveSelection]
-  );
-
+    onChange(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
+  }, [onChange]);
+...
   const applyFontSize = useCallback((fontSize: string) => {
     editorRef.current?.focus();
     restoreSelection();
     document.execCommand("styleWithCSS", false, "true");
     document.execCommand("fontSize", false, "7");
-    editorRef.current?.querySelectorAll('font[size="7"]').forEach((node) => {
-      const span = document.createElement("span");
-      span.style.fontSize = fontSize;
-      span.innerHTML = node.innerHTML;
-      node.replaceWith(span);
-    });
+    if (editorRef.current) {
+      normalizeRichTextContainerFontSizes(editorRef.current, fontSize);
+    }
     saveSelection();
     emitChange();
   }, [emitChange, restoreSelection, saveSelection]);

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { sanitizeHtml } from "@/services/sanitize";
+import { normalizeRichTextContainerFontSizes, normalizeRichTextHtml } from "@/services/richTextFontSize";
 import { uploadEditorImage } from "@/services/mediaStorage";
 import { runDbAction } from "@/services/db-helpers";
 import { useBrandColors } from "@/hooks/useBrandSettings";
@@ -107,55 +108,21 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   const htmlTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const emitChange = useCallback(() => {
-    onChange(editorRef.current?.innerHTML || "");
-  }, [onChange]);
-
-  const saveSelection = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || !editorRef.current) return;
-    const range = selection.getRangeAt(0);
-    if (editorRef.current.contains(range.commonAncestorContainer)) {
-      selectionRef.current = range.cloneRange();
+    if (editorRef.current) {
+      normalizeRichTextContainerFontSizes(editorRef.current);
     }
-  }, []);
-
-  const restoreSelection = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || !selectionRef.current) return;
-    selection.removeAllRanges();
-    selection.addRange(selectionRef.current);
-  }, []);
-
-  const focusEditor = useCallback(() => {
-    editorRef.current?.focus();
-  }, []);
-
-  const runCommand = useCallback(
-    (command: string, value?: string) => {
-      focusEditor();
-      restoreSelection();
-      document.execCommand("styleWithCSS", false, "true");
-      document.execCommand(command, false, value);
-      saveSelection();
-      emitChange();
-    },
-    [emitChange, focusEditor, restoreSelection, saveSelection]
-  );
-
+    onChange(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
+  }, [onChange]);
+...
   const applyFontSize = useCallback(
     (fontSize: string) => {
       focusEditor();
       restoreSelection();
       document.execCommand("styleWithCSS", false, "true");
       document.execCommand("fontSize", false, "7");
-      editorRef.current
-        ?.querySelectorAll('font[size="7"]')
-        .forEach((node) => {
-          const span = document.createElement("span");
-          span.style.fontSize = fontSize;
-          span.innerHTML = node.innerHTML;
-          node.replaceWith(span);
-        });
+      if (editorRef.current) {
+        normalizeRichTextContainerFontSizes(editorRef.current, fontSize);
+      }
       saveSelection();
       emitChange();
     },
