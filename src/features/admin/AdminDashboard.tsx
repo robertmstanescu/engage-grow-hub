@@ -58,7 +58,7 @@ interface Props { session: any; }
 /* ── Helpers ── */
 const SECTION_EMOJI: Record<string, string> = {
   hero: "🎭", text: "✦", service: "💀", boxed: "✦", contact: "📬",
-  image_text: "🖼", profile: "👤", grid: "📊",
+  image_text: "🖼", profile: "👤", grid: "📊", lead_magnet: "🎁",
 };
 
 const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[] = [
@@ -70,6 +70,7 @@ const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[
   { type: "image_text", label: "Image & Text", emoji: "🖼" },
   { type: "profile", label: "Profile", emoji: "👤" },
   { type: "grid", label: "Grid", emoji: "📊" },
+  { type: "lead_magnet", label: "Lead Magnet", emoji: "🎁" },
 ];
 const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
 
