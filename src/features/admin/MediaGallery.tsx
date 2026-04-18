@@ -274,7 +274,7 @@ const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
             <span className="text-right">Actions</span>
           </div>
 
-          {files.map((file, idx) => (
+          {filteredFiles.map((file, idx) => (
             <div
               key={file.name}
               className="grid items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-[hsl(var(--muted)/0.1)]"
