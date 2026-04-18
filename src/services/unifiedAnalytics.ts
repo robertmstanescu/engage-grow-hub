@@ -53,13 +53,15 @@ export interface AnalyticsRangeFilter {
  * Build a query with all of the dashboard's global filters applied.
  * Centralised so every panel computes its number against the SAME slice
  * of data — otherwise the cards and the table can disagree visually.
+ *
+ * The builder is typed `any` because the Supabase generated types model
+ * each chained `.eq` / `.gte` step as a deep generic that hits the TS
+ * recursion limit. We trade a tiny amount of type safety for callers
+ * that compile in <1s; the surface here is small (5 chainable ops) and
+ * fully tested by the dashboard panels above.
  */
-function applyAnalyticsFilters(
-  query: ReturnType<typeof supabase.from<"unified_analytics_logs">>["select"] extends never
-    ? never
-    : ReturnType<ReturnType<typeof supabase.from>["select"]>,
-  filters: AnalyticsRangeFilter,
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyAnalyticsFilters(query: any, filters: AnalyticsRangeFilter): any {
   let q = query.gte("created_at", filters.since).lte("created_at", filters.until);
   if (filters.trafficType === "human") q = q.eq("is_bot", false);
   if (filters.trafficType === "bot") q = q.eq("is_bot", true);
