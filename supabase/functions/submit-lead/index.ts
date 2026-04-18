@@ -54,6 +54,10 @@ Deno.serve(async (req) => {
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const resourceAssetId = typeof body.resource_asset_id === "string" ? body.resource_asset_id.trim() : "";
   const marketingConsent = body.marketing_consent === true;
+  // Optional: when the visitor has consented to analytics, the client
+  // sends their visitor_id so we can stitch their prior anonymous page
+  // views to the email they just submitted (the "Path to Lead" feature).
+  const visitorId = typeof body.visitor_id === "string" ? body.visitor_id.trim().slice(0, 64) : "";
 
   if (!fullName || fullName.length > MAX_TEXT) return json(400, { error: "Full name is required (max 200 chars)" });
   if (!companyUniversity || companyUniversity.length > MAX_TEXT) {
@@ -130,7 +134,22 @@ Deno.serve(async (req) => {
     }
   }
 
-  // ── 6. Return the download URL ───────────────────────────────────────
+  // ── 6. Stitch prior anonymous analytics rows to this email (best-effort) ─
+  // We call a SECURITY DEFINER RPC so the update bypasses RLS without
+  // exposing a raw UPDATE policy on `unified_analytics_logs`. Failure here
+  // does not block the download — analytics enrichment is non-critical.
+  if (visitorId) {
+    try {
+      await supabase.rpc("stitch_visitor_to_email", {
+        _visitor_id: visitorId,
+        _email: email,
+      });
+    } catch (stitchError) {
+      console.error("Visitor stitch failed (non-fatal):", stitchError);
+    }
+  }
+
+  // ── 7. Return the download URL ───────────────────────────────────────
   const { data: publicUrlData } = supabase.storage.from(asset.bucket).getPublicUrl(asset.storage_path);
 
   return json(200, {

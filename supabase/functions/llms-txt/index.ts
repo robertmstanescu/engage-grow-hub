@@ -99,10 +99,12 @@ async function recordAiBotActivity(
 ): Promise<void> {
   try {
     const ipHash = ipAddress ? await hashIpAddress(ipAddress) : null;
-    await supabaseAdmin.from("ai_crawler_logs").insert({
-      bot_name: botName,
+    await supabaseAdmin.from("unified_analytics_logs").insert({
+      is_bot: true,
+      entity_name: botName,
+      path: pagePath,
+      category: "manifest",
       user_agent: userAgent.slice(0, 500),
-      page_path: pagePath,
       source: "server",
       ip_hash: ipHash,
     });

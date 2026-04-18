@@ -56,36 +56,6 @@ export type Database = {
         }
         Relationships: []
       }
-      ai_crawler_logs: {
-        Row: {
-          bot_name: string
-          created_at: string
-          id: string
-          ip_hash: string | null
-          page_path: string
-          source: string
-          user_agent: string
-        }
-        Insert: {
-          bot_name: string
-          created_at?: string
-          id?: string
-          ip_hash?: string | null
-          page_path: string
-          source?: string
-          user_agent: string
-        }
-        Update: {
-          bot_name?: string
-          created_at?: string
-          id?: string
-          ip_hash?: string | null
-          page_path?: string
-          source?: string
-          user_agent?: string
-        }
-        Relationships: []
-      }
       blog_posts: {
         Row: {
           ai_summary: string | null
@@ -567,6 +537,69 @@ export type Database = {
         }
         Relationships: []
       }
+      unified_analytics_logs: {
+        Row: {
+          browser: string | null
+          category: string
+          country: string | null
+          created_at: string
+          device: string | null
+          duration_seconds: number | null
+          entity_name: string
+          id: string
+          ip_hash: string | null
+          is_bot: boolean
+          path: string
+          referrer: string | null
+          scroll_depth: number | null
+          search_engine: string | null
+          source: string
+          stitched_email: string | null
+          user_agent: string
+          visitor_id: string | null
+        }
+        Insert: {
+          browser?: string | null
+          category?: string
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          duration_seconds?: number | null
+          entity_name?: string
+          id?: string
+          ip_hash?: string | null
+          is_bot?: boolean
+          path: string
+          referrer?: string | null
+          scroll_depth?: number | null
+          search_engine?: string | null
+          source?: string
+          stitched_email?: string | null
+          user_agent?: string
+          visitor_id?: string | null
+        }
+        Update: {
+          browser?: string | null
+          category?: string
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          duration_seconds?: number | null
+          entity_name?: string
+          id?: string
+          ip_hash?: string | null
+          is_bot?: boolean
+          path?: string
+          referrer?: string | null
+          scroll_depth?: number | null
+          search_engine?: string | null
+          source?: string
+          stitched_email?: string | null
+          user_agent?: string
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       site_content_public: {
@@ -620,6 +653,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      stitch_visitor_to_email: {
+        Args: { _email: string; _visitor_id: string }
+        Returns: number
       }
     }
     Enums: {

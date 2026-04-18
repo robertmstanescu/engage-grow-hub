@@ -41,6 +41,12 @@ export async function submitLeadAndGetDownload(payload: {
   resourceAssetId: string;
   marketingConsent: boolean;
 }): Promise<{ downloadUrl: string | null; error: string | null }> {
+  // Pull the visitor_id out of the consent cookie (only present when the
+  // user clicked Accept on the privacy gate). The edge function uses it
+  // to stitch this lead's prior anonymous analytics rows to their email.
+  const { getVisitorId, getConsentStatus } = await import("@/services/analytics");
+  const visitorId = getConsentStatus() === "accepted" ? getVisitorId() : null;
+
   const { data, error } = await supabase.functions.invoke("submit-lead", {
     body: {
       full_name: payload.fullName,
@@ -49,6 +55,7 @@ export async function submitLeadAndGetDownload(payload: {
       email: payload.email,
       resource_asset_id: payload.resourceAssetId,
       marketing_consent: payload.marketingConsent,
+      visitor_id: visitorId,
     },
   });
 
