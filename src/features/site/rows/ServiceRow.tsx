@@ -9,9 +9,7 @@ import EditableText from "@/features/admin/EditableText";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";
-import RowBackground from "./RowBackground";
-import { RowEyebrow, RowTitle } from "./typography";
+import { RowEyebrow, RowTitle, RowSection } from "./typography";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
