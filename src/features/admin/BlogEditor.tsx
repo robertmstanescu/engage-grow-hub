@@ -1,11 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { sanitizeHtml } from "@/services/sanitize";
 import { toast } from "sonner";
 import { Trash2, Edit, Plus, Eye, ArrowLeft, Upload } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { patchLivePreviewState } from "@/services/livePreview";
 import ImageAltInput from "./ImageAltInput";
+import { ListSkeleton } from "@/components/ui/list-skeleton";
+import { SpinnerButton } from "@/components/ui/spinner-button";
+import { runDbAction, runOptimisticAction, handleDatabaseError } from "@/services/db-helpers";
+import { fetchAllBlogPosts, insertBlogPost, updateBlogPost, deleteBlogPost } from "@/services/blogPosts";
+import { fetchSection } from "@/services/siteContent";
+import { uploadEditorImage } from "@/services/mediaStorage";
 
 const generateSlug = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -41,9 +46,11 @@ interface BlogPost {
 
 const BlogEditor = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [previewing, setPreviewing] = useState(false);
+  const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "" });
   const authorInputRef = useRef<HTMLInputElement>(null);
@@ -51,13 +58,9 @@ const BlogEditor = () => {
 
   useEffect(() => {
     const loadCategories = async () => {
-      const { data } = await supabase
-        .from("site_content")
-        .select("content")
-        .eq("section_key", "tags_config")
-        .maybeSingle() as any;
-      if (data?.content?.blog_categories) {
-        const cats = data.content.blog_categories;
+      const { data } = await fetchSection("tags_config");
+      const cats = (data?.content as any)?.blog_categories;
+      if (cats) {
         // Support both old string[] and new object[] formats
         setBlogCategories(cats.map((c: any) => typeof c === "string" ? c : c.label));
       }
@@ -66,11 +69,10 @@ const BlogEditor = () => {
   }, []);
 
   const fetchPosts = async () => {
-    const { data } = await supabase
-      .from("blog_posts")
-      .select("*")
-      .order("created_at", { ascending: false });
+    setPostsLoading(true);
+    const { data } = await fetchAllBlogPosts();
     if (data) setPosts(data as BlogPost[]);
+    setPostsLoading(false);
   };
 
   useEffect(() => { fetchPosts(); }, []);
@@ -108,12 +110,8 @@ const BlogEditor = () => {
     if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
     if (file.size > 5 * 1024 * 1024) { toast.error("Max 5MB"); return; }
 
-    const ext = file.name.split(".").pop();
-    const path = `covers/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabase.storage.from("editor-images").upload(path, file);
-    if (error) { toast.error("Upload failed"); return; }
-
-    const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
+    const { publicUrl, error } = await uploadEditorImage("covers", file);
+    if (error || !publicUrl) { toast.error(handleDatabaseError(error, "Upload failed")); return; }
     setForm((f) => ({ ...f, cover_image: publicUrl, og_image: f.og_image || publicUrl }));
     toast.success("Cover image uploaded");
   }, []);
@@ -122,12 +120,8 @@ const BlogEditor = () => {
     if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
     if (file.size > 2 * 1024 * 1024) { toast.error("Max 2MB"); return; }
 
-    const ext = file.name.split(".").pop();
-    const path = `authors/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabase.storage.from("editor-images").upload(path, file);
-    if (error) { toast.error("Upload failed"); return; }
-
-    const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
+    const { publicUrl, error } = await uploadEditorImage("authors", file);
+    if (error || !publicUrl) { toast.error(handleDatabaseError(error, "Upload failed")); return; }
     setForm((f) => ({ ...f, author_image: publicUrl }));
     toast.success("Author image uploaded");
   }, []);
@@ -156,26 +150,29 @@ const BlogEditor = () => {
       published_at: status === "published" ? new Date().toISOString() : null,
     };
 
-    if (isNew) {
-      const { error } = await supabase.from("blog_posts").insert(payload);
-      if (error) { toast.error(error.message); return; }
-      toast.success("Post created");
-    } else if (editing) {
-      const { error } = await supabase.from("blog_posts").update(payload).eq("id", editing.id);
-      if (error) { toast.error(error.message); return; }
-      toast.success("Post updated");
-    }
+    const result = await runDbAction({
+      action: () => isNew ? insertBlogPost(payload) : updateBlogPost(editing!.id, payload),
+      setLoading: setIsSavingChanges,
+      successMessage: isNew ? "Post created" : "Post updated",
+    });
 
-    setEditing(null);
-    setIsNew(false);
-    fetchPosts();
+    if (result !== null) {
+      setEditing(null);
+      setIsNew(false);
+      fetchPosts();
+    }
   };
 
-  const handleDelete = async (id: string) => {
+  /** Optimistic delete — see db-helpers.ts for rationale. */
+  const handleDelete = (id: string) => {
     if (!confirm("Delete this post?")) return;
-    await supabase.from("blog_posts").delete().eq("id", id);
-    toast.success("Post deleted");
-    fetchPosts();
+    return runOptimisticAction({
+      snapshot: () => posts,
+      applyOptimistic: () => setPosts((p) => p.filter((x) => x.id !== id)),
+      rollback: (prev) => setPosts(prev),
+      action: () => deleteBlogPost(id),
+      successMessage: "Post deleted",
+    });
   };
 
   const buildLivePreviewPost = useCallback(() => {
