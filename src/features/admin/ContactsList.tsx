@@ -82,7 +82,16 @@ const ContactsList = () => {
         <p className="font-body text-sm text-muted-foreground py-8 text-center">No contacts yet.</p>
       ) : (
         <div className="space-y-3">
-          {contacts.map((contact) => (
+          {contacts.length > 1 && (
+            <ListFilters
+              state={contactFilters.state}
+              searchPlaceholder="Search contacts…"
+              formatCategoryLabel={(c) => (c === "marketing" ? "Marketing opt-ins" : "Other")}
+            />
+          )}
+          {filteredContacts.length === 0 ? (
+            <p className="font-body text-sm text-muted-foreground py-6 text-center">No contacts match your filters.</p>
+          ) : filteredContacts.map((contact) => (
             <div
               key={contact.id}
               className="p-4 rounded-lg border"
