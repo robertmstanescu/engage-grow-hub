@@ -86,8 +86,15 @@ export const handleDatabaseError = (err: unknown, fallback = "Something went wro
    ───────────────────────────────────────────────────────────────────────── */
 
 interface RunDbActionOptions<T> {
-  /** Function that actually talks to the database. */
-  action: () => Promise<T>;
+  /**
+   * Function that actually talks to the database.
+   *
+   * Accepts both a `Promise<T>` and a `PromiseLike<T>` (a "thenable") so
+   * we can pass the Supabase query builder directly without manually
+   * `await`-ing it first. The Postgrest builder is a thenable, not a real
+   * Promise, but `await` happily resolves either.
+   */
+  action: () => PromiseLike<T>;
   /** Setter for the `isSavingChanges` (or similar) flag. Optional. */
   setLoading?: (loading: boolean) => void;
   /** Toast message on success. Pass `null` to suppress. */
@@ -162,8 +169,8 @@ interface OptimisticOptions<T, S> {
   applyOptimistic: () => void;
   /** Rollback when the server rejects. Receives the snapshot. */
   rollback: (snapshot: S) => void;
-  /** The actual server call. */
-  action: () => Promise<T>;
+  /** The actual server call. Accepts a thenable (Supabase query builder). */
+  action: () => PromiseLike<T>;
   /** Toast on success. Pass `null` to suppress. */
   successMessage?: string | null;
   /** Override auto-derived error message. */

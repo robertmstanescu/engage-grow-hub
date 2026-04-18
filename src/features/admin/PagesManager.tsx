@@ -53,7 +53,7 @@ const PagesManager = ({ onEditPage }: Props) => {
 
   const load = async () => {
     const { data } = await fetchAllCmsPages();
-    setPages((data as CmsPage[]) || []);
+    setPages(((data as unknown) as CmsPage[]) || []);
     setLoading(false);
   };
 
@@ -252,11 +252,11 @@ const PagesManager = ({ onEditPage }: Props) => {
           metaDescription={editingPage.meta_description || ""}
           onTitleChange={(v) => {
             setEditingPage({ ...editingPage, meta_title: v });
-            supabase.from("cms_pages").update({ meta_title: v } as any).eq("id", editingPage.id);
+            updateCmsPageMeta(editingPage.id, "meta_title", v);
           }}
           onDescriptionChange={(v) => {
             setEditingPage({ ...editingPage, meta_description: v });
-            supabase.from("cms_pages").update({ meta_description: v } as any).eq("id", editingPage.id);
+            updateCmsPageMeta(editingPage.id, "meta_description", v);
           }}
         />
         <RowsManager
