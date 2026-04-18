@@ -1,29 +1,48 @@
 /**
  * /admin/profile — edit the signed-in admin's name, avatar, and email.
  *
- * ## Supabase "Secure Email Change" flow (junior-dev note)
+ * ## Code-Verified Email Change (OTP flow)
  *
- * Supabase's `auth.updateUser({ email })` triggers a TWO-STEP
- * verification by default (the "Secure email change" setting in the
- * Supabase Auth dashboard, on by default):
+ * We use Supabase's built-in 6-digit OTP for email change instead of
+ * relying on the user clicking a magic link in their inbox.
  *
- *   1. A confirmation link is sent to the OLD email address.
- *   2. A confirmation link is also sent to the NEW email address.
- *   3. The change only takes effect after BOTH links are clicked.
+ * ### Why OTP > magic link for sensitive changes
  *
- * Why two-step? It prevents an attacker who briefly hijacks a session
- * (e.g. through a stolen device) from silently locking the real owner
- * out by switching the email to one they control. The owner still
- * receives a notification on the original address and can refuse.
+ *   1. **No redirect loops.** Magic links bounce through the Supabase
+ *      Auth domain → your site → back to a session — if any redirect URL
+ *      is misconfigured, the link silently fails. OTP just verifies in-app.
+ *   2. **Resilient to email rendering.** Some clients rewrite or break
+ *      long links (Outlook safe-links, corporate proxies). A 6-digit
+ *      code is plain text and impossible to mangle.
+ *   3. **Tighter audit trail.** The user PROVES possession of the inbox
+ *      by typing the code into THIS session — no risk that an old link
+ *      sitting in a forwarded email chain triggers the change later.
+ *   4. **Clearer UX for misspellings.** If you typo the new address, no
+ *      code arrives — you find out in seconds, not after refreshing your
+ *      inbox. With links, a typo can lock you out silently.
  *
- * `emailRedirectTo` controls where each confirmation link lands AFTER
- * the user clicks it. We send them back to `/admin` so they're dropped
- * straight into the dashboard once both confirmations complete.
+ * ### Supabase mechanics
+ *
+ *   - `auth.updateUser({ email: newEmail })` triggers Supabase to email
+ *     a 6-digit token to BOTH the old and new addresses (Secure Email
+ *     Change is on by default).
+ *   - The user enters either code into our OTP input.
+ *   - We call `auth.verifyOtp({ email: newEmail, token, type: "email_change" })`
+ *     which finalizes the change and refreshes the session.
+ *
+ * ### auth.users vs public.profiles
+ *
+ *   - `auth.users` is Supabase-managed. It holds the email, password
+ *     hash, OAuth identities, and the canonical `id` (UUID).
+ *   - `public.profiles` is OUR table. It holds display_name, avatar_url,
+ *     and any other app-specific user data, joined to auth via `user_id`.
+ *   - When email changes in `auth.users`, our `profiles` row stays
+ *     untouched — the link is the user_id, not the email.
  */
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Mail, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Mail, User as UserIcon, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyProfile, updateMyProfile, type Profile } from "@/services/profiles";
@@ -31,6 +50,7 @@ import { runDbAction } from "@/services/db-helpers";
 import { SpinnerButton } from "@/components/ui/spinner-button";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { Skeleton } from "@/components/ui/skeleton";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import ImagePickerField from "@/features/admin/ImagePickerField";
 
 const AdminProfile = () => {
@@ -41,9 +61,13 @@ const AdminProfile = () => {
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
-  const [savingEmail, setSavingEmail] = useState(false);
+  const [requestingCode, setRequestingCode] = useState(false);
+  const [verifyingCode, setVerifyingCode] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,26 +93,63 @@ const AdminProfile = () => {
     });
   };
 
-  const handleChangeEmail = async () => {
+  /**
+   * Step 1 — request the verification code.
+   * Supabase emails a 6-digit OTP to BOTH the old and the new address.
+   */
+  const handleRequestCode = async () => {
     if (!newEmail || newEmail === email) {
       toast.error("Enter a new email address");
       return;
     }
-    // `emailRedirectTo` is required so the confirmation link sent to
-    // the NEW address has a valid destination. Without it, Supabase
-    // falls back to the project Site URL — which on some setups means
-    // the new-email confirmation silently fails to fire. See JSDoc at
-    // the top of this file for the full Secure Email Change flow.
-    await runDbAction({
-      action: () => supabase.auth.updateUser(
-        { email: newEmail },
-        { emailRedirectTo: `${window.location.origin}/admin` },
-      ),
-      setLoading: setSavingEmail,
-      successMessage: `Check BOTH ${email} and ${newEmail} — each one needs to confirm before the change takes effect.`,
-      errorMessage: "Could not change email",
+    setRequestingCode(true);
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+    setRequestingCode(false);
+    if (error) {
+      toast.error(error.message || "Could not send verification code");
+      return;
+    }
+    setPendingEmail(newEmail);
+    setOtpSent(true);
+    toast.success("Verification code sent", {
+      description: `Check ${email} and ${newEmail} — enter either 6-digit code below.`,
     });
+  };
+
+  /**
+   * Step 2 — verify the code and finalize the change.
+   * On success, Supabase refreshes the session with the new email.
+   */
+  const handleVerifyCode = async () => {
+    if (otp.length !== 6) {
+      toast.error("Enter the 6-digit code");
+      return;
+    }
+    setVerifyingCode(true);
+    const { error } = await supabase.auth.verifyOtp({
+      email: pendingEmail,
+      token: otp,
+      type: "email_change",
+    });
+    setVerifyingCode(false);
+    if (error) {
+      toast.error(error.message || "Invalid or expired code");
+      return;
+    }
+    toast.success("Email successfully updated", {
+      description: `Your admin account now uses ${pendingEmail}.`,
+    });
+    setEmail(pendingEmail);
     setNewEmail("");
+    setPendingEmail("");
+    setOtp("");
+    setOtpSent(false);
+  };
+
+  const handleCancelChange = () => {
+    setOtpSent(false);
+    setOtp("");
+    setPendingEmail("");
   };
 
   if (loading || adminLoading) {
@@ -179,27 +240,86 @@ const AdminProfile = () => {
           <p className="font-body text-xs" style={{ color: "hsl(260 20% 40%)" }}>
             Current: <strong>{email}</strong>
           </p>
-          <p className="font-body text-[11px]" style={{ color: "hsl(260 20% 40%)" }}>
-            For your security, both your old and new email will receive a confirmation link.
-            Both must be confirmed before the change takes effect.
-          </p>
-          <input
-            type="email"
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-            placeholder="new@email.com"
-            className="w-full px-3 py-2 rounded-lg font-body text-sm border"
-            style={{ borderColor: "hsl(260 15% 88%)", backgroundColor: "white", color: "hsl(260 30% 20%)" }}
-          />
-          <SpinnerButton
-            onClick={handleChangeEmail}
-            isLoading={savingEmail}
-            loadingLabel="Sending…"
-            className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
-            style={{ backgroundColor: "hsl(260 30% 20%)", color: "white" }}
-          >
-            Request email change
-          </SpinnerButton>
+
+          {!otpSent ? (
+            <>
+              <p className="font-body text-[11px]" style={{ color: "hsl(260 20% 40%)" }}>
+                We'll send a 6-digit verification code to your current email.
+                Enter the code here to confirm the change instantly — no link clicking required.
+              </p>
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="new@email.com"
+                className="w-full px-3 py-2 rounded-lg font-body text-sm border"
+                style={{ borderColor: "hsl(260 15% 88%)", backgroundColor: "white", color: "hsl(260 30% 20%)" }}
+              />
+              <SpinnerButton
+                onClick={handleRequestCode}
+                isLoading={requestingCode}
+                loadingLabel="Sending code…"
+                className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
+                style={{ backgroundColor: "hsl(260 30% 20%)", color: "white" }}
+              >
+                Send verification code
+              </SpinnerButton>
+            </>
+          ) : (
+            <>
+              <div className="rounded-lg p-3" style={{ backgroundColor: "hsl(260 30% 96%)", border: "1px solid hsl(260 15% 88%)" }}>
+                <p className="font-body text-[11px]" style={{ color: "hsl(260 30% 20%)" }}>
+                  <KeyRound size={11} className="inline mr-1" />
+                  Enter the 6-digit code sent to <strong>{email}</strong>
+                  {" "}and <strong>{pendingEmail}</strong>.
+                </p>
+              </div>
+
+              <div className="flex justify-center py-2">
+                <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+
+              <div className="flex gap-2">
+                <SpinnerButton
+                  onClick={handleVerifyCode}
+                  isLoading={verifyingCode}
+                  loadingLabel="Verifying…"
+                  disabled={otp.length !== 6}
+                  className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
+                  style={{ backgroundColor: "hsl(260 30% 20%)", color: "white" }}
+                >
+                  Verify & update email
+                </SpinnerButton>
+                <button
+                  type="button"
+                  onClick={handleCancelChange}
+                  className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-70 transition-opacity border"
+                  style={{ borderColor: "hsl(260 15% 88%)", color: "hsl(260 20% 40%)" }}
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleRequestCode}
+                disabled={requestingCode}
+                className="font-body text-[10px] underline hover:opacity-70 transition-opacity"
+                style={{ color: "hsl(260 20% 40%)" }}
+              >
+                Didn't get a code? Resend
+              </button>
+            </>
+          )}
         </section>
       </div>
     </div>
