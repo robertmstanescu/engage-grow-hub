@@ -7,7 +7,7 @@ import {
   LayoutDashboard, FileText, Compass, BookOpen,
   Users, Mail, Image, Palette, Settings, LogOut,
   Save, Send, Tag, UserCog,
-  GripVertical, Plus, Trash2, ArrowLeft, Columns, X,
+  GripVertical, Plus, Trash2, ArrowLeft, Columns, X, Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ManageTeam from "./ManageTeam";
@@ -101,6 +101,7 @@ const NAV_GROUPS = [
       { key: "brand" as Tab, icon: Palette, label: "Brand" },
       { key: "tags" as Tab, icon: Tag, label: "Tags" },
       { key: "team" as Tab, icon: UserCog, label: "Manage Team" },
+      { key: "ai-insights" as Tab, icon: Sparkles, label: "AI Insights" },
       { key: "settings" as Tab, icon: Settings, label: "Settings" },
     ],
   },
