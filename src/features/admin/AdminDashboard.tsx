@@ -614,14 +614,32 @@ const AdminDashboard = ({ session }: Props) => {
       <header
         style={{
           height: 52, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "0 1rem 0 calc(58px + 1rem)",
+          // On mobile we reserve room for the hamburger trigger instead of
+          // the always-visible 58px sidebar that used to live at the left.
+          padding: isAdminMobile ? "0 0.75rem" : "0 1rem 0 calc(58px + 1rem)",
           backgroundColor: "hsl(var(--card))", borderBottom: "1px solid hsl(var(--border))",
+          gap: 8,
         }}
       >
-        <span style={{ fontFamily: "var(--font-display)", fontSize: 11, fontWeight: 700, color: "hsl(var(--secondary))", letterSpacing: "0.15em" }}>
+        {isAdminMobile && (
+          /* Hamburger trigger — only rendered on mobile (< 768px). */
+          <button
+            onClick={toggleMobileDrawer}
+            aria-label="Open admin menu"
+            style={{
+              width: 36, height: 36, borderRadius: 8, border: "1px solid hsl(var(--border))",
+              background: "hsl(var(--card))", color: "hsl(var(--foreground))",
+              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            <Menu size={18} />
+          </button>
+        )}
+        <span style={{ fontFamily: "var(--font-display)", fontSize: 11, fontWeight: 700, color: "hsl(var(--secondary))", letterSpacing: "0.15em", whiteSpace: "nowrap" }}>
           THE MAGIC COFFIN
         </span>
-        <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)" }}>
+        <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)", flex: 1, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {isSiteTab ? pageLabel : tabLabel}
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
