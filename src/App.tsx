@@ -69,32 +69,47 @@ const ConditionalToolbar = () => {
   return <AdminToolbar />;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <FaviconManager />
-      <BrandLoader />
-      <HighlightListener />
-      <InlineEditProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/unsubscribe" element={<Unsubscribe />} />
-            <Route path="/p/:slug" element={<CmsPage />} />
-            <Route path="/:slug" element={<CmsPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <ConditionalToolbar />
-        </BrowserRouter>
-      </InlineEditProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+/**
+ * Per-route boundary: if a single page errors out, we still keep the
+ * router and the rest of the app interactive (back button, other tabs).
+ */
+const PageBoundary = ({ children }: { children: React.ReactNode }) => (
+  <ErrorBoundary label="page">{children}</ErrorBoundary>
 );
+
+const App = () => (
+  // Outermost boundary — last line of defence against a totally
+  // unrecoverable render error. Every layer below it (router, query
+  // client, providers) is wrapped so any thrown error gets a fallback.
+  <ErrorBoundary label="app">
+    <QueryClientProvider client={queryClient}>
+      <SiteContentInvalidator />
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <FaviconManager />
+        <BrandLoader />
+        <HighlightListener />
+        <InlineEditProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<PageBoundary><Index /></PageBoundary>} />
+              <Route path="/blog" element={<PageBoundary><Blog /></PageBoundary>} />
+              <Route path="/blog/:slug" element={<PageBoundary><BlogPost /></PageBoundary>} />
+              <Route path="/admin" element={<PageBoundary><Admin /></PageBoundary>} />
+              <Route path="/unsubscribe" element={<PageBoundary><Unsubscribe /></PageBoundary>} />
+              <Route path="/p/:slug" element={<PageBoundary><CmsPage /></PageBoundary>} />
+              <Route path="/:slug" element={<PageBoundary><CmsPage /></PageBoundary>} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <ConditionalToolbar />
+          </BrowserRouter>
+        </InlineEditProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
+);
+
 
 export default App;
