@@ -7,12 +7,18 @@ import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
-import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";
-import RowBackground from "./RowBackground";
 import { resolveImageAlt } from "@/services/imageAlt";
+import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
+/**
+ * ProfileRow — image + bio layout (founder, author, expert).
+ *
+ * Refactored to use the shared typography wrappers + RowSection so the
+ * eyebrow / title / subtitle / body all match every other row on the site.
+ * Per-row color overrides (color_eyebrow, color_title, etc.) still work.
+ */
 const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
@@ -21,14 +27,12 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText(0.75);
 
-  const eyebrowColor = c.color_eyebrow || "hsl(var(--primary))";
-  const titleColor = c.color_title || "hsl(var(--foreground))";
   const nameColor = c.color_name || "#FFFFFF";
   const roleColor = c.color_role || "hsl(var(--accent))";
   const credBg = c.color_credential_bg || "hsl(280 55% 24% / 0.6)";
   const credText = c.color_credential_text || "#FFFFFF";
-  const bodyColor = c.color_body || "hsl(var(--foreground) / 0.7)";
   const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
+  const eyebrowColor = c.color_eyebrow || "hsl(var(--primary))";
 
   const credentials: string[] = c.credentials || [];
 
@@ -45,24 +49,14 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
   const gridCols = `${colWidths[0]}fr ${colWidths[1]}fr`;
 
   return (
-    <section
-      ref={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
-      data-row-id={row.id}
-      data-row-type={row.type}
-      data-row-title={row.strip_title}
-      className={`snap-section grain relative min-h-screen flex ${vAlign === "top" ? "items-start" : vAlign === "bottom" ? "items-end" : "items-center"} justify-center`}
-      style={{
-        backgroundColor: getRowBgColor(row, "hsl(260 20% 6%)"),
-        isolation: "isolate",
-        padding: "24px 0",
-        scrollMarginTop: "0px",
-        ...getRowBgImageStyle(row),
-      }}
+    <RowSection
+      row={row}
+      vAlign={vAlign}
+      defaultBg="hsl(260 20% 6%)"
+      innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
     >
-      <RowBackground row={row} />
-
       <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos}`}>
-        <div className="grid grid-cols-1 gap-8 md:gap-12 items-start" style={{ gridTemplateColumns: window.innerWidth > 768 ? gridCols : undefined }}>
+        <div className="grid grid-cols-1 gap-rhythm-loose items-start" style={{ gridTemplateColumns: window.innerWidth > 768 ? gridCols : undefined }}>
           {/* Left column: Image + Name + Credentials */}
           <div className="flex flex-col items-center" style={revealStyle(isVisible, 1)}>
             <div
@@ -96,9 +90,9 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
             </div>
 
             {(c.name || c.role) && (
-              <div className="mt-4 text-center" style={revealStyle(isVisible, 2)}>
+              <div className="mt-rhythm-base text-center" style={revealStyle(isVisible, 2)}>
                 {c.name && (
-                  <p className="font-display font-bold text-lg" style={{ color: nameColor }}>
+                  <p className="font-display font-bold text-lg leading-[1.6]" style={{ color: nameColor }}>
                     <EditableText sectionKey="page_rows" fieldPath={`${prefix}.name`} as="span">
                       {c.name}
                     </EditableText>
@@ -115,7 +109,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
             )}
 
             {credentials.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-3 justify-center" style={revealStyle(isVisible, 3)}>
+              <div className="flex flex-wrap gap-2 mt-rhythm-tight justify-center" style={revealStyle(isVisible, 3)}>
                 {credentials.map((cred, i) => (
                   <span
                     key={i}
@@ -132,33 +126,27 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
           {/* Right column: Header + RTE body */}
           <div className="flex flex-col justify-start" style={revealStyle(isVisible, 0)}>
             {c.eyebrow && (
-              <span
-                className="font-body tracking-[0.35em] uppercase block mb-4"
-                style={{ fontSize: "clamp(7px, 0.9vw, 10px)", color: eyebrowColor }}
-              >
+              <RowEyebrow color={eyebrowColor}>
                 <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
                   {c.eyebrow}
                 </EditableText>
-              </span>
+              </RowEyebrow>
             )}
 
             {titleLines.length > 0 && (
-              <h3
-                className="font-display font-bold leading-tight mb-4"
-                style={{ fontSize: "clamp(1.4rem, 3.5vw, 2.6rem)", color: titleColor }}
-              >
+              <RowTitle color={c.color_title}>
                 {titleLines.map((line, i) => (
                   <span key={i} className="block mb-1 last:mb-0">
                     <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
                   </span>
                 ))}
-              </h3>
+              </RowTitle>
             )}
 
             {c.subtitle && (
-              <p className="leading-tight mb-6" style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "inherit", fontSize: "clamp(0.9rem, 2vw, 1.2rem)" }}>
+              <RowSubtitle color={c.subtitle_color}>
                 <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
-              </p>
+              </RowSubtitle>
             )}
 
             {c.body && (
@@ -168,10 +156,10 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                 html
                 as="div"
                 data-rte-fit=""
-                className="font-body leading-relaxed prose-sm [&_p]:mb-[5px] [&_p]:mt-[5px]"
+                className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
                 style={{
-                  fontSize: "clamp(0.85rem, 1.3vw, 1rem)",
-                  color: bodyColor,
+                  fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)",
+                  color: c.color_body || "hsl(var(--foreground) / 0.75)",
                   height: "auto",
                   overflow: "visible",
                 }}
@@ -180,15 +168,15 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
             )}
 
             {c.note && (
-              <div className="mt-4 pt-3" style={{ borderTop: `1px solid ${eyebrowColor}30` }}>
-                <p className="font-body text-xs italic leading-relaxed" style={{ color: noteColor }}>{c.note}</p>
+              <div className="mt-rhythm-base pt-3" style={{ borderTop: `1px solid ${eyebrowColor}30` }}>
+                <p className="font-body text-xs italic leading-[1.6]" style={{ color: noteColor }}>{c.note}</p>
               </div>
             )}
 
             {c.cta_url && c.cta_label && (
-              <div className="mt-5">
+              <div className="mt-rhythm-base">
                 <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
-                  className="btn-glass font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full transition-all duration-500 hover:opacity-85 inline-block"
+                  className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
                   style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
                   {c.cta_label}
                 </a>
@@ -198,12 +186,12 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
         </div>
 
         {c.show_subscribe && (
-          <div className="mt-10" style={revealStyle(isVisible, 5)}>
+          <div className="mt-rhythm-loose" style={revealStyle(isVisible, 5)}>
             <SubscribeWidget align={align} />
           </div>
         )}
       </div>
-    </section>
+    </RowSection>
   );
 });
 
