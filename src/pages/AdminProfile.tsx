@@ -121,14 +121,15 @@ const AdminProfile = () => {
    * On success, Supabase refreshes the session with the new email.
    */
   const handleVerifyCode = async () => {
-    if (otp.length !== 8) {
+    const cleanOtp = otp.replace(/\s+/g, "");
+    if (cleanOtp.length !== 8) {
       toast.error("Enter the 8-character code");
       return;
     }
     setVerifyingCode(true);
     const { error } = await supabase.auth.verifyOtp({
       email: pendingEmail,
-      token: otp,
+      token: cleanOtp,
       type: "email_change",
     });
     setVerifyingCode(false);
