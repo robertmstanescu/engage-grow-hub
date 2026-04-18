@@ -1290,6 +1290,10 @@ const RowContentEditor = ({
   onDelete?: () => void;
 }) => {
   const content = row.content;
+  // The row's own background colour drives the RichTextEditor's surface
+  // colour so light-on-light or dark-on-dark text remains legible while
+  // editing — see RichField docstring in FieldComponents for details.
+  const bg = row.bg_color;
 
   const commonMeta = (
     <div className="space-y-2 mb-4">
@@ -1312,14 +1316,14 @@ const RowContentEditor = ({
 
   switch (row.type) {
     case "hero":
-      return <>{commonMeta}<HeroRowFieldsInline content={content} onChange={onContentChange} /></>;
+      return <>{commonMeta}<HeroRowFieldsInline content={content} onChange={onContentChange} bgColor={bg} /></>;
     case "text":
       return (
         <>{commonMeta}
           <div className="space-y-3">
             <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
             <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onContentChange("subtitle", v)} onColorChange={(v) => onContentChange("subtitle_color", v)} />
-            <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} />
+            <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
             {noteAndButton}
           </div>
         </>
@@ -1327,7 +1331,7 @@ const RowContentEditor = ({
     case "service":
       return (
         <>{commonMeta}
-          <PillarEditor pillarContent={content} servicesContent={{ services: content.services || [] }} onPillarChange={onContentChange} onServicesChange={(svcs) => onContentChange("services", svcs)} />
+          <PillarEditor pillarContent={content} servicesContent={{ services: content.services || [] }} onPillarChange={onContentChange} onServicesChange={(svcs) => onContentChange("services", svcs)} bgColor={bg} />
         </>
       );
     case "boxed":
@@ -1338,7 +1342,7 @@ const RowContentEditor = ({
             <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onContentChange("subtitle", v)} onColorChange={(v) => onContentChange("subtitle_color", v)} />
             <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onContentChange("color_card_title", v)} />
             <ColorField label="Card Body Color" value={content.color_card_body || ""} fallback="" onChange={(v) => onContentChange("color_card_body", v)} />
-            <BoxedArrayField content={content} onChange={onContentChange} />
+            <BoxedArrayField content={content} onChange={onContentChange} bgColor={bg} />
             {noteAndButton}
           </div>
         </>
@@ -1350,7 +1354,7 @@ const RowContentEditor = ({
             <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
             <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
             <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onContentChange("subtitle", v)} onColorChange={(v) => onContentChange("subtitle_color", v)} />
-            <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} />
+            <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
             <Field label="Button Text" value={content.button_text || ""} onChange={(v) => onContentChange("button_text", v)} />
             <SectionBox label="Colors">
               <div className="grid grid-cols-2 gap-3">
@@ -1362,17 +1366,17 @@ const RowContentEditor = ({
         </>
       );
     case "image_text":
-      return <>{commonMeta}<ImageTextEditor content={content} onChange={onContentChange} /></>;
+      return <>{commonMeta}<ImageTextEditor content={content} onChange={onContentChange} bgColor={bg} /></>;
     case "profile":
-      return <>{commonMeta}<ProfileEditor content={content} onChange={onContentChange} /></>;
+      return <>{commonMeta}<ProfileEditor content={content} onChange={onContentChange} bgColor={bg} /></>;
     case "grid":
-      return <>{commonMeta}<GridEditor content={content} onChange={onContentChange} /></>;
+      return <>{commonMeta}<GridEditor content={content} onChange={onContentChange} bgColor={bg} /></>;
     default:
       return commonMeta;
   }
 };
 
-const HeroRowFieldsInline = ({ content, onChange }: { content: Record<string, any>; onChange: (field: string, value: any) => void }) => {
+const HeroRowFieldsInline = ({ content, onChange, bgColor }: { content: Record<string, any>; onChange: (field: string, value: any) => void; bgColor?: string }) => {
   const titleLines = (content.title_lines || []).map((l: any) =>
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
   );
@@ -1385,7 +1389,7 @@ const HeroRowFieldsInline = ({ content, onChange }: { content: Record<string, an
       <Field label="Tagline" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
       <ColorField label="Tagline Color" value={content.color_tagline || ""} fallback="" onChange={(v) => onChange("color_tagline", v)} />
       <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onChange("subtitle", v)} onColorChange={(v) => onChange("subtitle_color", v)} />
-      <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
+      <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
       <SectionBox label="Background">
         <SelectField label="Type" value={content.bg_type || "none"} options={BG_TYPES} onChange={(v) => onChange("bg_type", v)} />
         {content.bg_type === "image" && <ImagePickerField label="Background Image" value={content.bg_url || ""} onChange={(v) => onChange("bg_url", v)} />}
@@ -1396,7 +1400,7 @@ const HeroRowFieldsInline = ({ content, onChange }: { content: Record<string, an
 };
 
 /* ── Boxed cards array helper ── */
-const BoxedArrayField = ({ content, onChange }: { content: Record<string, any>; onChange: (field: string, value: any) => void }) => {
+const BoxedArrayField = ({ content, onChange, bgColor }: { content: Record<string, any>; onChange: (field: string, value: any) => void; bgColor?: string }) => {
   const cards: { title: string; body: string }[] = content.cards || [];
   const updateCard = (idx: number, field: string, value: string) => {
     const next = [...cards];
@@ -1421,7 +1425,7 @@ const BoxedArrayField = ({ content, onChange }: { content: Record<string, any>; 
                   <Trash2 size={13} />
                 </button>
               </div>
-              <RichField label="Body" value={card.body} onChange={(v) => updateCard(i, "body", v)} />
+              <RichField label="Body" value={card.body} onChange={(v) => updateCard(i, "body", v)} bgColor={bgColor} />
             </div>
           </SectionBox>
         ))}
