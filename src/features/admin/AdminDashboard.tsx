@@ -1042,6 +1042,20 @@ const AdminDashboard = ({ session }: Props) => {
                         height: 44, display: "flex", alignItems: "center", gap: 8,
                         padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
                       }}>
+                        {/* Mobile back arrow — returns to the section list. */}
+                        {isAdminMobile && (
+                          <button
+                            onClick={() => setSelectedSectionId(null)}
+                            aria-label="Back to section list"
+                            style={{
+                              width: 32, height: 32, marginLeft: -6, borderRadius: 8, border: "none",
+                              background: "transparent", color: "hsl(var(--muted-foreground))",
+                              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                            }}
+                          >
+                            <ArrowLeft size={16} />
+                          </button>
+                        )}
                         <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
                           {selectedSectionId === "__hero__"
                             ? "Hero"
