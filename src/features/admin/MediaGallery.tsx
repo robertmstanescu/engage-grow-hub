@@ -236,6 +236,15 @@ const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
         </div>
       </div>
 
+      {/* Search / extension filter / sort toolbar — shared with the rest of the admin. */}
+      {!isLoadingList && files.length > 0 && (
+        <ListFilters
+          state={filterState}
+          searchPlaceholder="Search files by name or folder…"
+          formatCategoryLabel={(ext) => `.${ext}`}
+        />
+      )}
+
       {/* File list */}
       {isLoadingList ? (
         <ListSkeleton rows={6} rowHeight="h-14" />
@@ -243,6 +252,10 @@ const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
         <div className="py-12 text-center">
           <Image size={32} className="mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
           <p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>No images yet. Upload your first one!</p>
+        </div>
+      ) : filteredFiles.length === 0 ? (
+        <div className="py-12 text-center">
+          <p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>No files match your filters.</p>
         </div>
       ) : (
         <div className="space-y-1">
