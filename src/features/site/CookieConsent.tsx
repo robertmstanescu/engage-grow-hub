@@ -68,7 +68,10 @@ const CookieConsent = () => {
     <div
       role="dialog"
       aria-label="Cookie preferences"
-      className="fixed bottom-4 right-4 z-[60] w-[calc(100vw-2rem)] max-w-[340px]"
+      // Spacing increased by ~10px (16px → 26px) to give the prompt
+      // breathing room from the screen edge on both desktop & mobile.
+      style={{ position: "fixed", bottom: "26px", right: "26px", zIndex: 60 }}
+      className="w-[calc(100vw-3.25rem)] max-w-[340px]"
     >
       <div
         className="rounded-xl p-4 backdrop-blur-md"

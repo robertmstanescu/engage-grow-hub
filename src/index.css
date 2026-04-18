@@ -456,3 +456,20 @@
   padding-right: 0;
   letter-spacing: 0em;
 }
+
+/* ─────────────────────────────────────────────────────────────
+ * Touch-safe inputs inside the admin panel.
+ * Mobile Safari/Chrome auto-zoom into any text input whose
+ * computed font-size is < 16px. We force a 16px minimum across
+ * all admin inputs so editors aren't disorientated by the
+ * viewport zooming on every tap. Desktop styling (>= 768px) is
+ * preserved so the dense properties panel keeps its compact look.
+ * ───────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .admin-light input,
+  .admin-light textarea,
+  .admin-light select,
+  .admin-light [contenteditable="true"] {
+    font-size: 16px !important;
+  }
+}
