@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import AdminLogin from "@/components/admin/AdminLogin";
-import AdminDashboard from "@/components/admin/AdminDashboard";
+import AdminLogin from "@/features/admin/AdminLogin";
+import AdminDashboard from "@/features/admin/AdminDashboard";
 
 const Admin = () => {
   const [session, setSession] = useState<any>(null);

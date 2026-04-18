@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { sanitizeHtml } from "@/lib/sanitize";
+import { sanitizeHtml } from "@/services/sanitize";
 import type { PageRow, ContactField } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import type { Alignment, VAlign } from "./PageRows";

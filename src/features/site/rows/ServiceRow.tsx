@@ -1,12 +1,12 @@
 import { useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import ServiceCard from "@/components/ServiceCard";
+import ServiceCard from "@/features/site/ServiceCard";
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
-import { sanitizeHtml } from "@/lib/sanitize";
-import EditableText from "@/components/admin/EditableText";
-import SubscribeWidget from "@/components/SubscribeWidget";
+import { sanitizeHtml } from "@/services/sanitize";
+import EditableText from "@/features/admin/EditableText";
+import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";

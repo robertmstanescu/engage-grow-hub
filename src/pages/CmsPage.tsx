@@ -1,21 +1,21 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import TextRow from "@/components/rows/TextRow";
-import ServiceRow from "@/components/rows/ServiceRow";
-import BoxedRow from "@/components/rows/BoxedRow";
-import ContactRow from "@/components/rows/ContactRow";
-import HeroRow from "@/components/rows/HeroRow";
-import ImageTextRow from "@/components/rows/ImageTextRow";
-import ProfileRow from "@/components/rows/ProfileRow";
-import GridRow from "@/components/rows/GridRow";
+import Navbar from "@/features/site/Navbar";
+import Footer from "@/features/site/Footer";
+import TextRow from "@/features/site/rows/TextRow";
+import ServiceRow from "@/features/site/rows/ServiceRow";
+import BoxedRow from "@/features/site/rows/BoxedRow";
+import ContactRow from "@/features/site/rows/ContactRow";
+import HeroRow from "@/features/site/rows/HeroRow";
+import ImageTextRow from "@/features/site/rows/ImageTextRow";
+import ProfileRow from "@/features/site/rows/ProfileRow";
+import GridRow from "@/features/site/rows/GridRow";
 import type { PageRow } from "@/types/rows";
-import type { Alignment, VAlign } from "@/components/rows/PageRows";
+import type { Alignment, VAlign } from "@/features/site/rows/PageRows";
 import NotFound from "./NotFound";
 import usePageMeta from "@/hooks/usePageMeta";
-import { readLivePreviewState, subscribeLivePreview } from "@/lib/livePreview";
+import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 

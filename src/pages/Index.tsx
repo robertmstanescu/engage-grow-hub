@@ -1,7 +1,7 @@
-import Navbar from "@/components/Navbar";
-import HeroSection from "@/components/HeroSection";
-import PageRows from "@/components/rows/PageRows";
-import Footer from "@/components/Footer";
+import Navbar from "@/features/site/Navbar";
+import HeroSection from "@/features/site/HeroSection";
+import PageRows from "@/features/site/rows/PageRows";
+import Footer from "@/features/site/Footer";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
 

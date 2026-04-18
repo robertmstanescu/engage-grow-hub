@@ -1,8 +1,8 @@
-import { sanitizeHtml } from "@/lib/sanitize";
+import { sanitizeHtml } from "@/services/sanitize";
 import type { PageRow } from "@/types/rows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import RowBackground from "./RowBackground";
-import { resolveImageAlt } from "@/lib/imageAlt";
+import { resolveImageAlt } from "@/services/imageAlt";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 

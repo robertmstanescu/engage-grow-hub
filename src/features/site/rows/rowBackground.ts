@@ -1,6 +1,6 @@
 import type { PageRow, RowLayout } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
-import { buildGradientCSS } from "@/components/admin/site-editor/GradientEditor";
+import { buildGradientCSS } from "@/features/admin/site-editor/GradientEditor";
 
 /** Convert hex (#RRGGBB or #RGB) → rgba() with given 0-100 opacity. Pass-through for non-hex. */
 export const applyColorOpacity = (color: string | undefined, opacity = 100): string | undefined => {

@@ -1,5 +1,5 @@
 import { useSiteContent } from "@/hooks/useSiteContent";
-import { sanitizeHtml } from "@/lib/sanitize";
+import { sanitizeHtml } from "@/services/sanitize";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");

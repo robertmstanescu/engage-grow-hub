@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { readLivePreviewState, subscribeLivePreview } from "@/lib/livePreview";
+import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
 
 const cache: Record<string, any> = {};
 
