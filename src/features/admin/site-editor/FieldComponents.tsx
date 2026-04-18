@@ -70,6 +70,14 @@ export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; 
   );
 };
 
+/**
+ * RichField — labelled wrapper around the RichTextEditor.
+ *
+ * `bgColor` is the live row's background. We forward it so the editor
+ * surface mirrors the row's "Style State" — that's what makes white /
+ * grey text legible on the white admin panel. Callers should pass
+ * `row.bg_color` (or the resolved gradient stop) in.
+ */
 export const RichField = ({ label, value, onChange, bgColor }: { label: string; value: string; onChange: (v: string) => void; bgColor?: string }) => (
   <div>
     <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
