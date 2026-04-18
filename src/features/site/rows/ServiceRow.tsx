@@ -103,7 +103,6 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
   return (
     <RowSection
       row={row}
-      innerRef={ref}
       vAlign={vAlign}
       defaultBg="hsl(var(--pillar-section-bg))"
       style={colorOverrides as React.CSSProperties}
