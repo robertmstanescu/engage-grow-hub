@@ -1,11 +1,24 @@
 /**
  * /admin/profile — edit the signed-in admin's name, avatar, and email.
  *
- * Email change uses Supabase's `updateUser({ email })` which sends a
- * confirmation link to BOTH the old and new addresses. The change only
- * takes effect after both confirmations. This is intentional — it
- * prevents an attacker who briefly hijacks a session from silently
- * locking the real owner out by changing the email.
+ * ## Supabase "Secure Email Change" flow (junior-dev note)
+ *
+ * Supabase's `auth.updateUser({ email })` triggers a TWO-STEP
+ * verification by default (the "Secure email change" setting in the
+ * Supabase Auth dashboard, on by default):
+ *
+ *   1. A confirmation link is sent to the OLD email address.
+ *   2. A confirmation link is also sent to the NEW email address.
+ *   3. The change only takes effect after BOTH links are clicked.
+ *
+ * Why two-step? It prevents an attacker who briefly hijacks a session
+ * (e.g. through a stolen device) from silently locking the real owner
+ * out by switching the email to one they control. The owner still
+ * receives a notification on the original address and can refuse.
+ *
+ * `emailRedirectTo` controls where each confirmation link lands AFTER
+ * the user clicks it. We send them back to `/admin` so they're dropped
+ * straight into the dashboard once both confirmations complete.
  */
 
 import { useEffect, useState } from "react";
@@ -61,10 +74,18 @@ const AdminProfile = () => {
       toast.error("Enter a new email address");
       return;
     }
+    // `emailRedirectTo` is required so the confirmation link sent to
+    // the NEW address has a valid destination. Without it, Supabase
+    // falls back to the project Site URL — which on some setups means
+    // the new-email confirmation silently fails to fire. See JSDoc at
+    // the top of this file for the full Secure Email Change flow.
     await runDbAction({
-      action: () => supabase.auth.updateUser({ email: newEmail }),
+      action: () => supabase.auth.updateUser(
+        { email: newEmail },
+        { emailRedirectTo: `${window.location.origin}/admin` },
+      ),
       setLoading: setSavingEmail,
-      successMessage: "Confirmation links sent to both your old and new email. Click both to complete the change.",
+      successMessage: `Check BOTH ${email} and ${newEmail} — each one needs to confirm before the change takes effect.`,
       errorMessage: "Could not change email",
     });
     setNewEmail("");
