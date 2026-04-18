@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useSiteContent } from "@/hooks/useSiteContent";
-import { sanitizeHtml } from "@/lib/sanitize";
+import { sanitizeHtml } from "@/services/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 

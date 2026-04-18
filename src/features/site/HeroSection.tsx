@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useSiteContent } from "@/hooks/useSiteContent";
-import { sanitizeHtml } from "@/lib/sanitize";
-import EditableText from "@/components/admin/EditableText";
+import { sanitizeHtml } from "@/services/sanitize";
+import EditableText from "@/features/admin/EditableText";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 

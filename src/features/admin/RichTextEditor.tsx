@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { sanitizeHtml } from "@/lib/sanitize";
+import { sanitizeHtml } from "@/services/sanitize";
 import { useBrandColors } from "@/hooks/useBrandSettings";
 
 const FONT_OPTIONS = [

@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { sanitizeHtml } from "@/lib/sanitize";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { sanitizeHtml } from "@/services/sanitize";
+import Navbar from "@/features/site/Navbar";
+import Footer from "@/features/site/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
-import SubscribeWidget from "@/components/SubscribeWidget";
+import SubscribeWidget from "@/features/site/SubscribeWidget";
 import usePageMeta from "@/hooks/usePageMeta";
-import { readLivePreviewState, subscribeLivePreview } from "@/lib/livePreview";
+import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 

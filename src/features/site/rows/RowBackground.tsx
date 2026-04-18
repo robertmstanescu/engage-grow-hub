@@ -1,6 +1,6 @@
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
-import { buildGradientCSS } from "@/components/admin/site-editor/GradientEditor";
+import { buildGradientCSS } from "@/features/admin/site-editor/GradientEditor";
 
 /**
  * Default legacy radial-gradient colours per row type.
