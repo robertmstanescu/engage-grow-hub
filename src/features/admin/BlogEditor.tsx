@@ -208,6 +208,21 @@ const BlogEditor = () => {
     window.open(`/blog/${preview.slug}?preview=draft&previewKey=${encodeURIComponent(preview.key)}`, "_blank");
   }, [buildLivePreviewPost]);
 
+  // ── Search / filter / sort over the post list ──
+  // Searches title + category + status. Type filter dropdown surfaces the
+  // post categories present in the data. URL params: ?bq, ?btype, ?bsort.
+  const blogFilters = useListFilters<BlogPost>({
+    items: posts,
+    paramPrefix: "b",
+    defaultSort: "manual",
+    searchableText: (p) =>
+      `${p.title} ${p.category || ""} ${p.status || ""} ${p.excerpt || ""}`.toLowerCase(),
+    categoryOf: (p) => p.category,
+    alphaKey: (p) => p.title.toLowerCase(),
+    updatedKey: (p) => p.published_at || p.created_at,
+  });
+  const filteredPosts = blogFilters.filteredItems;
+
   /* ── Preview Mode ── */
   if (previewing && (isNew || editing)) {
     const formatDate = (dateStr: string) => {
