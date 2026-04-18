@@ -47,6 +47,7 @@ interface BlogPost {
   tags: string[] | null;
   lead_magnet_asset_id: string | null;
   lead_magnet_cover_id: string | null;
+  ai_summary: string | null;
 }
 
 const BlogEditor = () => {
@@ -57,7 +58,7 @@ const BlogEditor = () => {
   const [previewing, setPreviewing] = useState(false);
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
-  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null });
+  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
   const authorInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -85,7 +86,7 @@ const BlogEditor = () => {
   const handleNew = () => {
     setIsNew(true);
     setEditing(null);
-    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "", lead_magnet_asset_id: null, lead_magnet_cover_id: null });
+    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "", lead_magnet_asset_id: null, lead_magnet_cover_id: null, ai_summary: "" });
   };
 
   const handleEdit = (post: BlogPost) => {
@@ -110,6 +111,7 @@ const BlogEditor = () => {
       newTag: "",
       lead_magnet_asset_id: post.lead_magnet_asset_id ?? null,
       lead_magnet_cover_id: post.lead_magnet_cover_id ?? null,
+      ai_summary: post.ai_summary || "",
     });
   };
 
@@ -157,6 +159,7 @@ const BlogEditor = () => {
       published_at: status === "published" ? new Date().toISOString() : null,
       lead_magnet_asset_id: form.lead_magnet_asset_id,
       lead_magnet_cover_id: form.lead_magnet_cover_id,
+      ai_summary: form.ai_summary?.trim() || null,
     };
 
     const result = await runDbAction({
@@ -164,6 +167,11 @@ const BlogEditor = () => {
       setLoading: setIsSavingChanges,
       successMessage: isNew ? "Post created" : "Post updated",
     });
+
+    // AEO sync confirmation — let the admin know the manifest will pick it up.
+    if (result !== null && form.ai_summary?.trim()) {
+      toast.success("AEO Metadata Synchronized: Content is now ready for AI Crawlers.");
+    }
 
     if (result !== null) {
       setEditing(null);
@@ -506,6 +514,26 @@ const BlogEditor = () => {
           }
         />
 
+        {/* AI Search Summary — feeds /llms.txt and /llms-full.txt */}
+        <div className="rounded-lg border p-4 space-y-2" style={{ borderColor: "hsl(var(--accent) / 0.4)", backgroundColor: "hsl(var(--accent) / 0.05)" }}>
+          <label className="font-body text-[10px] uppercase tracking-wider font-medium block" style={{ color: "hsl(var(--foreground))" }}>
+            AI Search Summary
+          </label>
+          <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+            A 1-3 sentence summary written for AI assistants (ChatGPT, Claude, Perplexity). Aim for 60-320 characters. Leave blank to fall back to the excerpt.
+          </p>
+          <textarea
+            placeholder="e.g. A practical guide to designing internal comms channels for distributed teams, with concrete examples from the consulting practice."
+            value={form.ai_summary}
+            onChange={(e) => setForm({ ...form, ai_summary: e.target.value })}
+            rows={3}
+            className="w-full px-4 py-2.5 rounded-lg font-body text-sm border resize-none"
+            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+          />
+          <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+            {form.ai_summary.length}/320 chars
+          </p>
+        </div>
         {/* SEO & Metadata */}
         <div className="rounded-lg border p-4 space-y-3" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.2)" }}>
           <label className="font-body text-[10px] uppercase tracking-wider font-medium block" style={{ color: "hsl(var(--foreground))" }}>SEO & Metadata</label>

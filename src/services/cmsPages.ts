@@ -23,6 +23,7 @@ export interface CmsPage {
   created_at: string;
   meta_title?: string;
   meta_description?: string;
+  ai_summary?: string;
 }
 
 export const fetchAllCmsPages = () =>
@@ -62,7 +63,7 @@ export const publishCmsPage = (id: string, rows: PageRow[]) =>
 export const togglePublishCmsPage = (id: string, newStatus: "published" | "draft") =>
   supabase.from("cms_pages").update({ status: newStatus } as any).eq("id", id);
 
-export const updateCmsPageMeta = (id: string, field: "meta_title" | "meta_description", value: string) =>
+export const updateCmsPageMeta = (id: string, field: "meta_title" | "meta_description" | "ai_summary", value: string) =>
   supabase.from("cms_pages").update({ [field]: value } as any).eq("id", id);
 
 export const saveCmsPageRows = (id: string, rows: PageRow[]) =>
