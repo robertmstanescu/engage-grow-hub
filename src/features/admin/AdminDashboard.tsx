@@ -756,6 +756,24 @@ const AdminDashboard = ({ session }: Props) => {
             )}
           </div>
           <div style={{ flex: 1, overflowY: "auto", padding: "0.5rem", scrollbarWidth: "thin" as const }}>
+            {/* Search / filter / sort bar — only renders when the row rail
+                contains anything worth filtering. Below 2 rows it's just
+                visual noise. */}
+            {pageRows.length > 1 && (
+              <div className="mb-2">
+                <ListFilters
+                  state={rowFilters.state}
+                  searchPlaceholder="Search rows…"
+                  formatCategoryLabel={friendlyRowType}
+                />
+                {isRowListFiltered && (
+                  <p className="font-body text-[9px] uppercase tracking-wider mt-1 px-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    {filteredPageRows.length} of {pageRows.length} · drag disabled while filtering
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Hero section block (main page only) */}
             {isMainPage && (
               <div
@@ -776,10 +794,11 @@ const AdminDashboard = ({ session }: Props) => {
               </div>
             )}
 
-            {/* Page rows - draggable */}
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={pageRows.map((r) => r.id)} strategy={verticalListSortingStrategy}>
-                {pageRows.map((row) => (
+            {/* Page rows. DnD is suppressed while filtering — see comment
+                near the rowFilters declaration for why. */}
+            {isRowListFiltered ? (
+              <div>
+                {filteredPageRows.map((row) => (
                   <SortableSectionBlock
                     key={row.id}
                     row={row}
@@ -787,8 +806,26 @@ const AdminDashboard = ({ session }: Props) => {
                     onClick={() => selectSection(row.id)}
                   />
                 ))}
-              </SortableContext>
-            </DndContext>
+                {filteredPageRows.length === 0 && (
+                  <div className="text-center py-6 px-2" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "var(--font-body)" }}>
+                    No rows match your filters.
+                  </div>
+                )}
+              </div>
+            ) : (
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={pageRows.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+                  {pageRows.map((row) => (
+                    <SortableSectionBlock
+                      key={row.id}
+                      row={row}
+                      isSelected={selectedSectionId === row.id}
+                      onClick={() => selectSection(row.id)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+            )}
 
             {/* Add row button */}
             <div className="relative mt-2 px-3">
