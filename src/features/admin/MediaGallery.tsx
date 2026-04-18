@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { Upload, Trash2, Copy, Check, Image, X, Eye, Pencil } from "lucide-react";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { SpinnerButton } from "@/components/ui/spinner-button";
+import ListFilters from "@/components/ui/list-filters";
+import { useListFilters } from "@/hooks/useListFilters";
 import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
 import {
   listEditorImages,
@@ -46,6 +48,25 @@ const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [renamingIdx, setRenamingIdx] = useState<number | null>(null);
   const [renameValue, setRenameValue] = useState("");
+
+  /**
+   * Wire the shared filter hook. For media we treat file EXTENSION as the
+   * "type axis" (jpg / png / svg / webp) — the most common way users
+   * narrow a media library. Search matches the file name + path so
+   * "hero/" surfaces every file under that folder.
+   * URL prefix `m` (or `mm` in modal mode if needed) keeps params unique.
+   */
+  const { state: filterState, filteredItems: filteredFiles } = useListFilters<MediaFile>({
+    items: files,
+    paramPrefix: isModal ? "mm" : "m",
+    searchableText: (f) => f.name.toLowerCase(),
+    categoryOf: (f) => {
+      const ext = f.name.split(".").pop()?.toLowerCase();
+      return ext || null;
+    },
+    alphaKey: (f) => (f.name.split("/").pop() || f.name).toLowerCase(),
+    updatedKey: (f) => f.created_at,
+  });
 
   /**
    * Walk the editor-images bucket and build a flat list of every file the
