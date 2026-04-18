@@ -101,17 +101,14 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
   const pillarDescriptionColor = c.color_heading_sub || "hsl(var(--pillar-heading-sub) / 0.7)";
 
   return (
-    <div
-      ref={ref}
-      data-row-id={row.id}
-      data-row-type={row.type}
-      data-row-title={row.strip_title}
-      className={`service-row grain relative flex ${vAlign === "top" ? "items-start" : vAlign === "bottom" ? "items-end" : "items-center"} justify-center`}
-      style={{ ...colorOverrides, backgroundColor: getRowBgColor(row, "hsl(var(--pillar-section-bg))"), isolation: "isolate", padding: "24px 0", ...getRowBgImageStyle(row) } as React.CSSProperties}
+    <RowSection
+      row={row}
+      innerRef={ref}
+      vAlign={vAlign}
+      defaultBg="hsl(var(--pillar-section-bg))"
+      style={colorOverrides as React.CSSProperties}
+      className="service-row"
     >
-      {/* Background overlay — central RowBackground handles legacy glow vs custom gradient */}
-      <RowBackground row={row} />
-
       <div className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
         <RowEyebrow color={pillarLabelColor} style={revealStyle(isVisible, 0)}>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
@@ -133,8 +130,13 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
           alignment, producing the "staircase" look. Instead inherit the
           parent's text-align and use margin to align the max-width box to
           the same edge.
+
+          SPACING NOTE:
+          `mb-rhythm-base` (24px) — the standard gap between the row's title
+          block and the body/description. Pulled from tailwind.config.ts so
+          this row stays in sync with every other row's vertical rhythm.
         */}
-        <div className="mb-6" style={revealStyle(isVisible, 2)}>
+        <div className="mb-rhythm-base" style={revealStyle(isVisible, 2)}>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
             data-rte-fit=""
             className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
@@ -150,16 +152,17 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
         </div>
 
-        <div className={`flex items-center ${carouselJustify} gap-3 mb-5`} style={revealStyle(isVisible, 3)}>
-          <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-4 h-4" /></button>
+        {/* Carousel controls — `mb-rhythm-base` keeps the gap to the card below in sync with the rest of the site. */}
+        <div className={`flex items-center ${carouselJustify} gap-3 mb-rhythm-base`} style={revealStyle(isVisible, 3)}>
+          <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-4 h-4" /></button>
           <div className="flex gap-2.5">
             {services.map((_: any, i: number) => (
               <button key={i} onClick={() => setCurrent(i)}
-                className="w-2 h-2 rounded-full transition-all duration-500"
+                className="w-2 h-2 rounded-full interactive"
                 style={{ backgroundColor: i === safeCurrent ? dotActive : dotInactive, transform: i === safeCurrent ? "scale(1.5)" : "scale(1)", boxShadow: i === safeCurrent ? `0 0 12px ${dotActive}` : "none" }} />
             ))}
           </div>
-          <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
+          <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
         </div>
 
         <div className="relative overflow-visible" style={revealStyle(isVisible, 4)}>
@@ -170,9 +173,10 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
           </AnimatePresence>
         </div>
 
-        {c.show_subscribe && <div className="mt-10" style={revealStyle(isVisible, 5)}><SubscribeWidget align={align} /></div>}
+        {/* Subscribe widget — `mt-rhythm-loose` (48px) marks a major content break between the carousel and the secondary CTA. */}
+        {c.show_subscribe && <div className="mt-rhythm-loose" style={revealStyle(isVisible, 5)}><SubscribeWidget align={align} /></div>}
       </div>
-    </div>
+    </RowSection>
   );
 };
 
