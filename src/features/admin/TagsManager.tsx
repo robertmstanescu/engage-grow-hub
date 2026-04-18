@@ -41,6 +41,32 @@ const TagsManager = () => {
   const [tags, setTags] = useState<TagsData>(DEFAULT_TAGS);
   const [isSavingChanges, setIsSavingChanges] = useState(false);
 
+  /**
+   * Wire the shared filter hook for BOTH lists. We attach `_idx` to each
+   * item BEFORE filtering so the filtered view still knows which slot in
+   * the underlying `tags.service_tag_types` / `tags.blog_categories`
+   * array to mutate when the editor calls `updateServiceTag(idx, …)`.
+   *
+   * No category dropdown for these (`showCategoryFilter={false}` below)
+   * — they're flat lists with no meaningful type axis. Search + sort only.
+   * URL prefixes `st` and `bc` keep params unique across admin tabs.
+   */
+  const serviceTagsIndexed = tags.service_tag_types.map((t, _idx) => ({ ...t, _idx }));
+  const { state: serviceFilter, filteredItems: filteredServiceTags } = useListFilters({
+    items: serviceTagsIndexed,
+    paramPrefix: "st",
+    searchableText: (t) => `${t.label} ${t.value}`.toLowerCase(),
+    alphaKey: (t) => t.label.toLowerCase(),
+  });
+
+  const blogCatsIndexed = tags.blog_categories.map((c, _idx) => ({ ...c, _idx }));
+  const { state: blogFilter, filteredItems: filteredBlogCats } = useListFilters({
+    items: blogCatsIndexed,
+    paramPrefix: "bc",
+    searchableText: (c) => c.label.toLowerCase(),
+    alphaKey: (c) => c.label.toLowerCase(),
+  });
+
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
