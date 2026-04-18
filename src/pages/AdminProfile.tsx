@@ -3,7 +3,7 @@
  *
  * ## Code-Verified Email Change (OTP flow)
  *
- * We use Supabase's built-in 6-digit OTP for email change instead of
+ * We use Supabase's built-in 8-character OTP for email change instead of
  * relying on the user clicking a magic link in their inbox.
  *
  * ### Why OTP > magic link for sensitive changes
@@ -12,7 +12,7 @@
  *      Auth domain → your site → back to a session — if any redirect URL
  *      is misconfigured, the link silently fails. OTP just verifies in-app.
  *   2. **Resilient to email rendering.** Some clients rewrite or break
- *      long links (Outlook safe-links, corporate proxies). A 6-digit
+ *      long links (Outlook safe-links, corporate proxies). An 8-character
  *      code is plain text and impossible to mangle.
  *   3. **Tighter audit trail.** The user PROVES possession of the inbox
  *      by typing the code into THIS session — no risk that an old link
@@ -24,7 +24,7 @@
  * ### Supabase mechanics
  *
  *   - `auth.updateUser({ email: newEmail })` triggers Supabase to email
- *     a 6-digit token to BOTH the old and new addresses (Secure Email
+ *     an 8-character token to BOTH the old and new addresses (Secure Email
  *     Change is on by default).
  *   - The user enters either code into our OTP input.
  *   - We call `auth.verifyOtp({ email: newEmail, token, type: "email_change" })`
@@ -95,7 +95,7 @@ const AdminProfile = () => {
 
   /**
    * Step 1 — request the verification code.
-   * Supabase emails a 6-digit OTP to BOTH the old and the new address.
+   * Supabase emails an 8-character OTP to BOTH the old and the new address.
    */
   const handleRequestCode = async () => {
     if (!newEmail || newEmail === email) {
@@ -112,7 +112,7 @@ const AdminProfile = () => {
     setPendingEmail(newEmail);
     setOtpSent(true);
     toast.success("Verification code sent", {
-      description: `Check ${email} and ${newEmail} — enter either 6-digit code below.`,
+      description: `Check ${email} and ${newEmail} — enter either 8-character code below.`,
     });
   };
 
@@ -121,8 +121,8 @@ const AdminProfile = () => {
    * On success, Supabase refreshes the session with the new email.
    */
   const handleVerifyCode = async () => {
-    if (otp.length !== 6) {
-      toast.error("Enter the 6-digit code");
+    if (otp.length !== 8) {
+      toast.error("Enter the 8-character code");
       return;
     }
     setVerifyingCode(true);
@@ -244,7 +244,7 @@ const AdminProfile = () => {
           {!otpSent ? (
             <>
               <p className="font-body text-[11px]" style={{ color: "hsl(260 20% 40%)" }}>
-                We'll send a 6-digit verification code to your current email.
+                We'll send an 8-character verification code to your current email.
                 Enter the code here to confirm the change instantly — no link clicking required.
               </p>
               <input
@@ -270,13 +270,13 @@ const AdminProfile = () => {
               <div className="rounded-lg p-3" style={{ backgroundColor: "hsl(260 30% 96%)", border: "1px solid hsl(260 15% 88%)" }}>
                 <p className="font-body text-[11px]" style={{ color: "hsl(260 30% 20%)" }}>
                   <KeyRound size={11} className="inline mr-1" />
-                  Enter the 6-digit code sent to <strong>{email}</strong>
+                  Enter the 8-character code sent to <strong>{email}</strong>
                   {" "}and <strong>{pendingEmail}</strong>.
                 </p>
               </div>
 
               <div className="flex justify-center py-2">
-                <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                <InputOTP maxLength={8} value={otp} onChange={setOtp}>
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
                     <InputOTPSlot index={1} />
@@ -284,6 +284,8 @@ const AdminProfile = () => {
                     <InputOTPSlot index={3} />
                     <InputOTPSlot index={4} />
                     <InputOTPSlot index={5} />
+                    <InputOTPSlot index={6} />
+                    <InputOTPSlot index={7} />
                   </InputOTPGroup>
                 </InputOTP>
               </div>
@@ -293,7 +295,7 @@ const AdminProfile = () => {
                   onClick={handleVerifyCode}
                   isLoading={verifyingCode}
                   loadingLabel="Verifying…"
-                  disabled={otp.length !== 6}
+                  disabled={otp.length !== 8}
                   className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
                   style={{ backgroundColor: "hsl(260 30% 20%)", color: "white" }}
                 >
