@@ -143,27 +143,28 @@
 
   /*
    * ──────────────────────────────────────────────────────────────────
-   * SCROLL SNAP CONTAINER (the "soft snap" effect)
+   * SCROLL SNAP CONTAINER (the "hard snap" / slide-deck effect)
    * ──────────────────────────────────────────────────────────────────
-   * Why `proximity` and not `mandatory`?
-   *   - `mandatory` FORCES the viewport to lock onto the nearest snap
-   *     point. It feels rigid: small scroll wheel ticks jump a whole
-   *     screen, and trackpad inertia gets cancelled. Users complain it
-   *     "fights them".
-   *   - `proximity` only snaps when the user lands NEAR a snap point
-   *     anyway. Mid-scroll motion is preserved. The page "settles" at
-   *     the next row instead of yanking to it. This is the "soft" feel
-   *     the brand wants — Apple, Linear, and Stripe all use proximity.
+   * `mandatory` forces the viewport to lock onto the next snap point
+   * after every scroll gesture — producing a crisp, intentional
+   * slide-deck feel where each row is a discrete "page". This is what
+   * the brand wants: less ambiguity, more presence per row.
    *
-   * Mobile keeps `proximity` too — mandatory on touch devices conflicts
-   * with native momentum scrolling and feels broken.
+   * Trade-off vs. `proximity`: small wheel ticks now jump a full
+   * screen rather than partially scrolling. We accept that — it's the
+   * point. Rows are designed to be consumed one at a time.
    *
-   * `height: 100vh` + `overflow-y: auto` makes THIS element the scroll
-   * container instead of the body, so snap points only resolve against
-   * sibling rows (not random nested scrollers).
+   * Combined with `scroll-snap-align: start` on each row + ADAPTIVE
+   * PADDING (clamp-based, can shrink to 8px), every row's content
+   * fits inside one viewport so the hard snap never lands you mid-
+   * content. See tailwind.config.ts → `spacing.row-fluid`.
+   *
+   * `height: 100vh` + `overflow-y: auto` makes THIS element the
+   * scroll container instead of the body, so snap points only
+   * resolve against sibling rows.
    */
   .snap-container {
-    scroll-snap-type: y proximity;
+    scroll-snap-type: y mandatory;
     overflow-y: auto;
     overflow-x: hidden;
     height: 100vh;
@@ -343,7 +344,7 @@
    */
   .snap-section {
     scroll-snap-align: start;
-    scroll-snap-stop: normal;
+    scroll-snap-stop: always;
   }
 
   /* Service rows: desktop = 100dvh centered, mobile = content-height */
@@ -351,7 +352,7 @@
     min-height: 100dvh;
     justify-content: center;
     scroll-snap-align: start;
-    scroll-snap-stop: normal;
+    scroll-snap-stop: always;
   }
 
   @media (max-width: 1024px) {

@@ -38,19 +38,20 @@ interface Props {
  *     screen (1366×768) the row stays inside one viewport; on a 4K
  *     monitor the text grows but never past the MAX cap.
  *
- * MIN `0.85rem` (≈13.6px) is the floor for WCAG-comfortable body text.
+ * MIN `0.78rem` (≈12.5px) is an aggressive floor — below WCAG-comfort
+ * but acceptable for short body blocks on tiny laptop screens where
+ * the alternative is overflowing the viewport. Most rows never hit
+ * the floor; it's a safety net.
  * MAX `1.05rem` (≈17px) is the editorial sweet spot.
  *
- * ## Other choices
- * - **`leading-[1.6]`**: WCAG 1.4.12 recommends ≥1.5 for body text.
- * - **`font-body-heading` (Bricolage Grotesque)**: more personality
- *   than the default Inter without sacrificing legibility.
- * - **`[&_p]:mb-[5px] [&_p]:mt-[5px]`**: per-project paragraph rhythm.
+ * The preferred mix `0.85vh + 0.55vw` is intentionally weighted
+ * toward `vh` — short viewports are the dominant overflow risk on
+ * laptops, so we prioritise vertical scaling over horizontal.
  */
 const RowBody = ({ children, html, color, style, className, ...rest }: Props) => {
-  const baseClass = `font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px] ${className ?? ""}`;
+  const baseClass = `font-body-heading leading-[1.55] [&_p]:mb-[4px] [&_p]:mt-[4px] ${className ?? ""}`;
   const baseStyle: CSSProperties = {
-    fontSize: "clamp(0.85rem, 1.1vh + 0.6vw, 1.05rem)",
+    fontSize: "clamp(0.78rem, 0.85vh + 0.55vw, 1.05rem)",
     color: color ?? "hsl(var(--foreground) / 0.75)",
     ...style,
   };

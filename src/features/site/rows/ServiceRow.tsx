@@ -141,7 +141,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
             className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
             style={{
               color: pillarDescriptionColor,
-              fontSize: "clamp(0.85rem, 1.1vh + 0.6vw, 1.05rem)",
+              fontSize: "clamp(0.78rem, 0.85vh + 0.55vw, 1.05rem)",
               overflow: "visible",
               height: "auto",
               maxWidth: 600,
