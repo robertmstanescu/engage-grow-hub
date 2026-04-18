@@ -6,7 +6,8 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
-import { getRowBackgroundCSS, getRowBgColor, getRowBgImageStyle } from "./rowBackground";
+import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";
+import RowBackground from "./RowBackground";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -23,14 +24,9 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
     : align === "right" ? "ml-auto mr-6"
     : "mr-auto ml-6";
 
-  const bgCss = getRowBackgroundCSS(
-    row,
-    (gs, ge) => `radial-gradient(ellipse 80% 60% at 30% 70%, ${gs}, transparent), radial-gradient(ellipse 60% 40% at 70% 30%, ${ge}, transparent)`,
-    {
-      start: isLight ? "hsl(280 55% 24% / 0.2)" : "hsl(280 55% 18% / 0.5)",
-      end: isLight ? "hsl(286 42% 30% / 0.15)" : "hsl(286 42% 20% / 0.3)",
-    },
-  );
+  const lightDefaults = isLight
+    ? { start: "hsl(280 55% 24% / 0.2)", end: "hsl(286 42% 30% / 0.15)" }
+    : undefined;
 
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText();
@@ -107,7 +103,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
       paddingTop: "24px", paddingBottom: "24px",
       ...getRowBgImageStyle(row),
     }}>
-      <div className="absolute inset-0 opacity-40 blur-[100px]" style={{ background: bgCss }} />
+      <RowBackground row={row} legacyDefaults={lightDefaults} />
 
       <div ref={ref} className={`relative z-10 px-6 ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1200px]"} ${containerPos}` : ""} ${contentAlign}`}>
         {isMultiCol ? (

@@ -7,7 +7,9 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
-import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS, getRowBgColor, getRowBgImageStyle } from "./rowBackground";
+import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";
+import RowBackground from "./RowBackground";
+import { resolveImageAlt } from "@/lib/imageAlt";
 
 const CLIP_PATHS: Record<string, string> = {
   puddle:
@@ -51,12 +53,6 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
   const captionText = c.color_caption_text || "#FFFFFF";
   const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
 
-  const bgCss = getRowBackgroundCSS(
-    row,
-    (gs, ge) => `radial-gradient(ellipse 80% 60% at 20% 80%, ${gs}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge}, transparent)`,
-    ROW_GRADIENT_DEFAULTS.image_text,
-  );
-
   const containerPos = align === "center" ? "mx-auto"
     : align === "right" ? "ml-auto mr-6"
     : "mr-auto ml-6";
@@ -86,7 +82,12 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
         }}
       >
         {c.image_url ? (
-          <img src={c.image_url} alt={c.title || ""} className="w-full h-full object-cover" loading="lazy" />
+          <img
+            src={c.image_url}
+            alt={resolveImageAlt(c.image_alt, c.title || row.strip_title, "section image")}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         ) : (
           <div className="w-full h-full" style={{ backgroundColor: "hsl(var(--muted))" }} />
         )}
@@ -184,14 +185,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
         ...getRowBgImageStyle(row),
       }}
     >
-      <div
-        className="absolute inset-0 opacity-40 pointer-events-none"
-        style={{
-          background: bgCss,
-          transform: "translateZ(0)",
-          willChange: "transform",
-        }}
-      />
+      <RowBackground row={row} />
       <div
         className={`relative z-10 ${maxW} w-full px-6 ${containerPos}`}
         style={{
