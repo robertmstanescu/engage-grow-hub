@@ -14,6 +14,35 @@
  * All functions here are PURE data-access — they don't toast, don't set
  * loading state. Combine them with {@link runDbAction} from db-helpers.ts
  * when you need the full async-UX treatment.
+ *
+ * ════════════════════════════════════════════════════════════════════
+ * PERFORMANCE: MINIMISING EXPENSIVE DATABASE CALLS
+ * ════════════════════════════════════════════════════════════════════
+ *
+ * Every Supabase call here is a network round-trip — the slowest thing
+ * the public site can do. We minimise those round-trips through THREE
+ * complementary techniques:
+ *
+ *   1) READ-SIDE CACHING (react-query in `useSiteContent`).
+ *      Public reads route through a cache keyed by section_key with a
+ *      5-minute staleTime. The first visitor pays the network cost;
+ *      every subsequent render in that window reads from memory.
+ *
+ *   2) BATCHING (`fetchSections`).
+ *      When a component needs multiple sections at once (e.g. the
+ *      admin dashboard previewing the entire site), we use one
+ *      `.in("section_key", keys)` query instead of N separate calls.
+ *      This collapses N round-trips into 1.
+ *
+ *   3) EXPLICIT INVALIDATION (`invalidateSiteContent`).
+ *      Admin writes broadcast a custom event that the QueryClient
+ *      catches and uses to invalidate the matching cache entry.
+ *      No polling, no time-based revalidation — the cache only changes
+ *      when content actually changes.
+ *
+ * Net effect: the homepage typically makes ZERO network calls on a
+ * warm cache, and admin edits propagate to the public site within one
+ * render of clicking "Publish".
  */
 
 import { supabase } from "@/integrations/supabase/client";
