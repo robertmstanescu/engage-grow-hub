@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { Plus, Trash2, GripVertical, Save, Send, ChevronDown, ChevronUp, Link2 } from "lucide-react";
+import { fetchSection, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
+import { runDbAction } from "@/services/db-helpers";
+import { SpinnerButton } from "@/components/ui/spinner-button";
 import {
   DndContext,
   closestCenter,
@@ -111,8 +113,8 @@ const SortableLinkRow = ({
 const NavigationManager = () => {
   const [content, setContent] = useState<NavContent>({});
   const [original, setOriginal] = useState<NavContent>({});
-  const [saving, setSaving] = useState(false);
-  const [publishing, setPublishing] = useState(false);
+  const [isSavingChanges, setIsSavingChanges] = useState(false);
+  const [isPublishingChanges, setIsPublishingChanges] = useState(false);
   const [cmsPages, setCmsPages] = useState<{ slug: string; title: string }[]>([]);
   const [openSection, setOpenSection] = useState<string | null>("links");
 
@@ -174,26 +176,23 @@ const NavigationManager = () => {
     updateField(list, arrayMove(items, oldIndex, newIndex));
   };
 
-  const saveDraft = async () => {
-    setSaving(true);
-    const { data: existing } = await supabase.from("site_content").select("id").eq("section_key", "navbar").maybeSingle();
-    if (existing) {
-      await supabase.from("site_content").update({ draft_content: content as any }).eq("section_key", "navbar");
-    } else {
-      await supabase.from("site_content").insert({ section_key: "navbar", content: content as any, draft_content: content as any } as any);
-    }
-    toast.success("Navigation draft saved");
-    setSaving(false);
-  };
+  const handleSaveDraft = () =>
+    runDbAction({
+      action: () => saveDraftSection("navbar", content),
+      setLoading: setIsSavingChanges,
+      successMessage: "Navigation draft saved",
+    });
 
-  const publish = async () => {
-    setPublishing(true);
-    await supabase.from("site_content").upsert({ section_key: "navbar", content: content as any, draft_content: content as any } as any, { onConflict: "section_key" });
-    setOriginal(content);
-    invalidateSiteContent("navbar");
-    toast.success("Navigation published!");
-    setPublishing(false);
-  };
+  const handlePublish = () =>
+    runDbAction({
+      action: () => publishSection("navbar", content),
+      setLoading: setIsPublishingChanges,
+      successMessage: "Navigation published!",
+      onSuccess: () => {
+        setOriginal(content);
+        invalidateSiteContent("navbar");
+      },
+    });
 
   const hasChanges = JSON.stringify(content) !== JSON.stringify(original);
 
@@ -212,12 +211,25 @@ const NavigationManager = () => {
       <div className="flex items-center justify-between">
         <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Navigation Manager</h2>
         <div className="flex items-center gap-2">
-          <button onClick={saveDraft} disabled={saving} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-            <Save size={13} /> {saving ? "Saving…" : "Save Draft"}
-          </button>
-          <button onClick={publish} disabled={publishing || !hasChanges} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40" style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-            <Send size={13} /> {publishing ? "Publishing…" : "Publish"}
-          </button>
+          <SpinnerButton
+            isLoading={isSavingChanges}
+            loadingLabel="Saving…"
+            icon={<Save size={13} />}
+            onClick={handleSaveDraft}
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+            Save Draft
+          </SpinnerButton>
+          <SpinnerButton
+            isLoading={isPublishingChanges}
+            loadingLabel="Publishing…"
+            icon={<Send size={13} />}
+            disabled={!hasChanges}
+            onClick={handlePublish}
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+            Publish
+          </SpinnerButton>
         </div>
       </div>
 

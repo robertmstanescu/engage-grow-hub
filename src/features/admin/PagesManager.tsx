@@ -1,11 +1,19 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye, Home } from "lucide-react";
+import { toast } from "sonner";
 import RowsManager from "./site-editor/RowsManager";
 import { SectionBox, Field } from "./site-editor/FieldComponents";
 import SeoFields from "./site-editor/SeoFields";
 import type { PageRow } from "@/types/rows";
+import { ListSkeleton } from "@/components/ui/list-skeleton";
+import { SpinnerButton } from "@/components/ui/spinner-button";
+import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
+import {
+  fetchAllCmsPages, createCmsPage, deleteCmsPage,
+  saveCmsPageDraft, saveCmsPageRows, togglePublishCmsPage,
+  updateCmsPageMeta, RESERVED_SLUGS,
+} from "@/services/cmsPages";
+import { fetchSection, publishSection } from "@/services/siteContent";
 
 interface CmsPage {
   id: string;
@@ -41,24 +49,18 @@ const PagesManager = ({ onEditPage }: Props) => {
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newSlug, setNewSlug] = useState("");
+  const [isCreatingPage, setIsCreatingPage] = useState(false);
 
   const load = async () => {
-    const { data } = await supabase
-      .from("cms_pages")
-      .select("*")
-      .order("created_at", { ascending: false }) as any;
-    setPages(data || []);
+    const { data } = await fetchAllCmsPages();
+    setPages(((data as unknown) as CmsPage[]) || []);
     setLoading(false);
   };
 
   useEffect(() => { load(); loadBlogPage(); }, []);
 
   const loadBlogPage = async () => {
-    const { data } = await supabase
-      .from("site_content")
-      .select("content")
-      .eq("section_key", "blog_page")
-      .maybeSingle();
+    const { data } = await fetchSection("blog_page");
     if (data?.content) {
       const c = data.content as any;
       setBlogContent({
@@ -72,19 +74,17 @@ const PagesManager = ({ onEditPage }: Props) => {
     }
   };
 
-  const saveBlogPage = async (updates: Partial<typeof blogContent>) => {
+  const saveBlogPage = (updates: Partial<typeof blogContent>) => {
     const next = { ...blogContent, ...updates };
     setBlogContent(next);
-    const { error } = await supabase
-      .from("site_content")
-      .upsert({ section_key: "blog_page", content: next as any, draft_content: next as any } as any, { onConflict: "section_key" });
-    if (error) { toast.error("Save failed"); return; }
-    toast.success("Saved");
+    return runDbAction({
+      action: () => publishSection("blog_page", next),
+      successMessage: "Saved",
+      errorMessage: "Save failed",
+    });
   };
 
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-
-  const RESERVED_SLUGS = ["admin", "blog", "unsubscribe", "api", "auth", "login", "signup", "p"];
 
   const createPage = async () => {
     if (!newTitle.trim()) { toast.error("Title required"); return; }
@@ -95,53 +95,58 @@ const PagesManager = ({ onEditPage }: Props) => {
       return;
     }
 
-    const { error } = await supabase.from("cms_pages").insert({
-      title: newTitle.trim(),
-      slug,
-      template_type: "blank",
-      page_rows: [],
-      status: "draft",
-    } as any);
+    const result = await runDbAction({
+      action: () => createCmsPage(newTitle.trim(), slug),
+      setLoading: setIsCreatingPage,
+      successMessage: "Page created",
+    });
 
-    if (error) {
-      toast.error(error.message.includes("duplicate") ? "That slug is already taken" : error.message);
-      return;
+    if (result !== null) {
+      setNewTitle("");
+      setNewSlug("");
+      setShowCreate(false);
+      load();
     }
-
-    toast.success("Page created");
-    setNewTitle("");
-    setNewSlug("");
-    setShowCreate(false);
-    load();
   };
 
-  const deletePage = async (id: string) => {
+  /**
+   * Optimistic delete: remove from the list immediately and roll back if
+   * the server says no. This makes deletes feel instant on a slow network.
+   * See db-helpers.ts header for the pattern.
+   */
+  const deletePage = (id: string) => {
     if (!confirm("Delete this page permanently?")) return;
-    await supabase.from("cms_pages").delete().eq("id", id);
-    toast.success("Deleted");
     if (editingPage?.id === id) setEditingPage(null);
-    load();
+    return runOptimisticAction({
+      snapshot: () => pages,
+      applyOptimistic: () => setPages((p) => p.filter((x) => x.id !== id)),
+      rollback: (prev) => setPages(prev),
+      action: () => deleteCmsPage(id),
+      successMessage: "Deleted",
+    });
   };
 
   const savePageRows = async (page: CmsPage, rows: PageRow[]) => {
-    const { error } = await supabase
-      .from("cms_pages")
-      .update({ page_rows: rows as any, draft_page_rows: rows as any } as any)
-      .eq("id", page.id);
-    if (error) { toast.error("Save failed"); return; }
-    toast.success("Saved & Published");
-    setEditingPage({ ...page, page_rows: rows, draft_page_rows: rows });
-    load();
+    const result = await runDbAction({
+      action: () => saveCmsPageRows(page.id, rows),
+      successMessage: "Saved & Published",
+      errorMessage: "Save failed",
+    });
+    if (result !== null) {
+      setEditingPage({ ...page, page_rows: rows, draft_page_rows: rows });
+      load();
+    }
   };
 
   const saveDraft = async (page: CmsPage, rows: PageRow[]) => {
-    const { error } = await supabase
-      .from("cms_pages")
-      .update({ draft_page_rows: rows as any } as any)
-      .eq("id", page.id);
-    if (error) { toast.error("Save failed"); return; }
-    toast.success("Draft saved");
-    setEditingPage({ ...page, draft_page_rows: rows });
+    const result = await runDbAction({
+      action: () => saveCmsPageDraft(page.id, rows),
+      successMessage: "Draft saved",
+      errorMessage: "Save failed",
+    });
+    if (result !== null) {
+      setEditingPage({ ...page, draft_page_rows: rows });
+    }
   };
 
   const previewPage = (page: CmsPage) => {
@@ -150,13 +155,17 @@ const PagesManager = ({ onEditPage }: Props) => {
 
   const togglePublish = async (page: CmsPage) => {
     const newStatus = page.status === "published" ? "draft" : "published";
-    await supabase.from("cms_pages").update({ status: newStatus } as any).eq("id", page.id);
-    toast.success(newStatus === "published" ? "Published!" : "Unpublished");
-    if (editingPage?.id === page.id) setEditingPage({ ...page, status: newStatus });
-    load();
+    const result = await runDbAction({
+      action: () => togglePublishCmsPage(page.id, newStatus),
+      successMessage: newStatus === "published" ? "Published!" : "Unpublished",
+    });
+    if (result !== null) {
+      if (editingPage?.id === page.id) setEditingPage({ ...page, status: newStatus });
+      load();
+    }
   };
 
-  if (loading) return <div className="py-8 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Loading…</div>;
+  if (loading) return <ListSkeleton rows={3} rowHeight="h-14" />;
 
   if (editingBlog) {
     return (
@@ -243,11 +252,11 @@ const PagesManager = ({ onEditPage }: Props) => {
           metaDescription={editingPage.meta_description || ""}
           onTitleChange={(v) => {
             setEditingPage({ ...editingPage, meta_title: v });
-            supabase.from("cms_pages").update({ meta_title: v } as any).eq("id", editingPage.id);
+            updateCmsPageMeta(editingPage.id, "meta_title", v);
           }}
           onDescriptionChange={(v) => {
             setEditingPage({ ...editingPage, meta_description: v });
-            supabase.from("cms_pages").update({ meta_description: v } as any).eq("id", editingPage.id);
+            updateCmsPageMeta(editingPage.id, "meta_description", v);
           }}
         />
         <RowsManager
