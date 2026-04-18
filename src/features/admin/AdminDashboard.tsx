@@ -639,7 +639,7 @@ const AdminDashboard = ({ session }: Props) => {
               </button>
             </>
           )}
-          {/* Profile shortcut → /admin/profile (display name, avatar, email change). */}
+          {/* Profile shortcut → /admin/profile (display name, avatar). */}
           <Link
             to="/admin/profile"
             title="Profile settings"

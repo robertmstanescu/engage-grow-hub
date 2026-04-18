@@ -7,7 +7,6 @@ import { SignupEmail } from '../_shared/email-templates/signup.tsx'
 import { InviteEmail } from '../_shared/email-templates/invite.tsx'
 import { MagicLinkEmail } from '../_shared/email-templates/magic-link.tsx'
 import { RecoveryEmail } from '../_shared/email-templates/recovery.tsx'
-import { EmailChangeEmail } from '../_shared/email-templates/email-change.tsx'
 import { ReauthenticationEmail } from '../_shared/email-templates/reauthentication.tsx'
 
 const corsHeaders = {
@@ -21,7 +20,6 @@ const EMAIL_SUBJECTS: Record<string, string> = {
   invite: "You've been invited",
   magiclink: 'Your login link',
   recovery: 'Reset your password',
-  email_change: 'Confirm your new email',
   reauthentication: 'Your verification code',
 }
 
@@ -31,7 +29,6 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   invite: InviteEmail,
   magiclink: MagicLinkEmail,
   recovery: RecoveryEmail,
-  email_change: EmailChangeEmail,
   reauthentication: ReauthenticationEmail,
 }
 
@@ -67,12 +64,6 @@ const SAMPLE_DATA: Record<string, object> = {
     siteName: SITE_NAME,
     siteUrl: SAMPLE_PROJECT_URL,
     confirmationUrl: SAMPLE_PROJECT_URL,
-  },
-  email_change: {
-    siteName: SITE_NAME,
-    email: SAMPLE_EMAIL,
-    newEmail: SAMPLE_EMAIL,
-    token: 'A1B2C3D4',
   },
   reauthentication: {
     token: 'A1B2C3D4',
