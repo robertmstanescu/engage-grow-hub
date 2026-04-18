@@ -101,9 +101,9 @@ const NAV_GROUPS = [
       { key: "brand" as Tab, icon: Palette, label: "Brand" },
       { key: "tags" as Tab, icon: Tag, label: "Tags" },
       { key: "team" as Tab, icon: UserCog, label: "Manage Team" },
-      { key: "ai-insights" as Tab, icon: Sparkles, label: "AI Insights" },
+      { key: "ai-insights" as const, icon: Sparkles, label: "AI Insights" },
       { key: "settings" as Tab, icon: Settings, label: "Settings" },
-    ],
+    ] as Array<{ key: Tab | "ai-insights"; icon: typeof LayoutDashboard; label: string }>,
   },
 ];
 
@@ -690,10 +690,21 @@ const AdminDashboard = ({ session }: Props) => {
                 </div>
                 {group.items.map((item) => {
                   const active = activeTab === item.key;
+                  // ai-insights navigates to a separate route, not a tab.
+                  const isExternalRoute = item.key === "ai-insights";
+                  const handleClick = () => {
+                    if (isExternalRoute) {
+                      window.location.href = "/admin/ai-insights";
+                      return;
+                    }
+                    setActiveTab(item.key as Tab);
+                    setSelectedSectionId(null);
+                    if (item.key !== "site") setCmsPage(null);
+                  };
                   return (
                     <button
                       key={item.key}
-                      onClick={() => { setActiveTab(item.key); setSelectedSectionId(null); if (item.key !== "site") setCmsPage(null); }}
+                      onClick={handleClick}
                       style={{
                         display: "flex", alignItems: "center", gap: 10, width: "100%",
                         padding: "8px 16px", border: "none", cursor: "pointer",
