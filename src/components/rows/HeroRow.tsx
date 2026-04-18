@@ -1,8 +1,8 @@
 import { sanitizeHtml } from "@/lib/sanitize";
 import type { PageRow } from "@/types/rows";
-import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS } from "./rowBackground";
+import RowBackground from "./RowBackground";
+import { resolveImageAlt } from "@/lib/imageAlt";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -12,7 +12,6 @@ interface Props {
 
 const HeroRow = ({ row }: Props) => {
   const c = row.content;
-  const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const titleLines: string[] = (c.title_lines || []).map((line: any) =>
     typeof line === "string" ? (line.startsWith("<") ? line : `<p>${line}</p>`) : `<p>${line}</p>`
   );
@@ -23,20 +22,21 @@ const HeroRow = ({ row }: Props) => {
 
   const { ref, isVisible } = useScrollReveal({ threshold: 0.15 });
 
-  const bgCss = getRowBackgroundCSS(
-    row,
-    (gs, ge) => `radial-gradient(ellipse 100% 80% at 20% 100%, ${gs}, transparent), radial-gradient(ellipse 80% 60% at 90% 10%, ${ge}, transparent), radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06), transparent), hsl(260 20% 4%)`,
-    ROW_GRADIENT_DEFAULTS.hero,
-  );
-
   return (
-    <section className="snap-section grain relative h-[100dvh] flex flex-col justify-end overflow-visible" style={{
-      isolation: "isolate",
-      background: bgCss,
-    }}>
+    <section
+      className="snap-section grain relative h-[100dvh] flex flex-col justify-end overflow-visible"
+      style={{ isolation: "isolate", backgroundColor: "hsl(260 20% 4%)" }}
+    >
+      <RowBackground row={row} />
+
       {hasBg && bgType === "image" && (
         <div className="absolute inset-0 z-0">
-          <img src={bgUrl} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+          <img
+            src={bgUrl}
+            alt={resolveImageAlt(c.bg_image_alt, row.strip_title, "hero background")}
+            className="w-full h-full object-cover"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+          />
           <div className="absolute inset-0 bg-black/60" />
         </div>
       )}
@@ -47,7 +47,7 @@ const HeroRow = ({ row }: Props) => {
         </div>
       )}
 
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px]"
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] pointer-events-none"
         style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
 
       <div ref={ref} className="relative z-10 w-full max-w-[1100px] px-4 sm:px-6 pb-[4vh] pt-[15vh] flex flex-col justify-end overflow-visible">

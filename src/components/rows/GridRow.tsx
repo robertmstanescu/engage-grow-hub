@@ -7,7 +7,8 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
-import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS, getRowBgColor, getRowBgImageStyle } from "./rowBackground";
+import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";
+import RowBackground from "./RowBackground";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -85,12 +86,6 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
     statSuffix: c.color_stat_suffix || c.color_stat_number || "hsl(var(--accent))",
   };
 
-  const bgCss = getRowBackgroundCSS(
-    row,
-    (gs, ge) => `radial-gradient(ellipse 80% 60% at 20% 80%, ${gs}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge}, transparent)`,
-    ROW_GRADIENT_DEFAULTS.grid,
-  );
-
   const containerPos = align === "center" ? "mx-auto"
     : align === "right" ? "ml-auto mr-6"
     : "mr-auto ml-6";
@@ -129,14 +124,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
         ...getRowBgImageStyle(row),
       }}
     >
-      <div
-        className="absolute inset-0 opacity-40 pointer-events-none"
-        style={{
-          background: bgCss,
-          transform: "translateZ(0)",
-          willChange: "transform",
-        }}
-      />
+      <RowBackground row={row} />
 
       <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos} ${contentAlign}`}>
         <div className="mb-12">

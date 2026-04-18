@@ -6,7 +6,8 @@ import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
-import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS, getRowBgColor, getRowBgImageStyle } from "./rowBackground";
+import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";
+import RowBackground from "./RowBackground";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -20,12 +21,6 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
   const containerPos = align === "center" ? "mx-auto"
     : align === "right" ? "ml-auto mr-6"
     : "mr-auto ml-6";
-
-  const bgCss = getRowBackgroundCSS(
-    row,
-    (gs, ge) => `radial-gradient(ellipse 80% 60% at 10% 90%, ${gs}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge}, transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)`,
-    ROW_GRADIENT_DEFAULTS.boxed,
-  );
 
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText();
@@ -124,8 +119,8 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         paddingTop: "24px", paddingBottom: "24px",
         ...getRowBgImageStyle(row),
       }}>
-      <div className="absolute inset-0 opacity-60" style={{ background: bgCss }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
+      <RowBackground row={row} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px] pointer-events-none"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
       <div ref={ref} className={`relative z-10 px-6 ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1200px]"} ${containerPos}` : `${maxW} ${containerPos} ${contentAlign}`}`}>

@@ -15,8 +15,10 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 interface BlogArticle {
   slug: string; title: string; published_at: string | null; content: string; category: string;
-  cover_image: string | null; author_name: string | null; author_image: string | null;
-  meta_title: string | null; meta_description: string | null; og_image: string | null; tags: string[] | null;
+  cover_image: string | null; cover_image_alt: string | null;
+  author_name: string | null; author_image: string | null; author_image_alt: string | null;
+  meta_title: string | null; meta_description: string | null;
+  og_image: string | null; og_image_alt: string | null; tags: string[] | null;
 }
 
 const calculateReadTime = (content: string) => `${Math.max(1, Math.ceil(content.trim().split(/\s+/).length / 200))} min read`;
@@ -51,7 +53,7 @@ const BlogPost = () => {
 
       let query = supabase
         .from("blog_posts")
-        .select("slug, title, published_at, content, category, cover_image, author_name, author_image, meta_title, meta_description, og_image, tags")
+        .select("slug, title, published_at, content, category, cover_image, cover_image_alt, author_name, author_image, author_image_alt, meta_title, meta_description, og_image, og_image_alt, tags")
         .eq("slug", slug);
 
       if (!isPreview) query = query.eq("status", "published");
@@ -97,7 +99,7 @@ const BlogPost = () => {
       <article>
         {article.cover_image && (
           <div className="relative h-64 md:h-80 lg:h-96 overflow-hidden">
-            <img src={article.cover_image} alt="" className="w-full h-full object-cover" />
+            <img src={article.cover_image} alt={article.cover_image_alt || `${article.title} — cover image`} className="w-full h-full object-cover" />
             <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 30%, hsl(var(--background)))" }} />
           </div>
         )}
@@ -117,7 +119,7 @@ const BlogPost = () => {
               <h1 className="font-display text-2xl md:text-4xl lg:text-5xl font-black leading-tight" style={{ color: "hsl(var(--foreground))" }}>{article.title}</h1>
               {article.author_name && (
                 <div className="flex items-center gap-3 mt-6">
-                  {article.author_image && <img src={article.author_image} alt={article.author_name} className="w-10 h-10 rounded-full object-cover" />}
+                  {article.author_image && <img src={article.author_image} alt={article.author_image_alt || article.author_name} className="w-10 h-10 rounded-full object-cover" />}
                   <div>
                     <p className="font-body text-[10px] uppercase tracking-[0.14em]" style={{ color: "hsl(var(--foreground) / 0.3)" }}>Written by</p>
                     <p className="text-sm font-bold font-body-heading" style={{ color: "hsl(var(--foreground))" }}>{article.author_name}</p>

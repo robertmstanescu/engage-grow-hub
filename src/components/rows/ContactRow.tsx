@@ -6,7 +6,7 @@ import type { PageRow, ContactField } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { getRowBackgroundCSS, ROW_GRADIENT_DEFAULTS } from "./rowBackground";
+import RowBackground from "./RowBackground";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -57,19 +57,12 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   const textareaField = visibleFields.find((f) => f.type === "textarea");
   const checkboxFields = visibleFields.filter((f) => f.type === "checkbox");
 
-  const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
-  const bgCss = getRowBackgroundCSS(
-    row,
-    (gs, ge) => `radial-gradient(ellipse 80% 60% at 50% 50%, ${gs}, ${ge})`,
-    ROW_GRADIENT_DEFAULTS.contact,
-  );
-
   const { ref, isVisible } = useScrollReveal();
 
   if (submitted) {
     return (
        <section className={`snap-section section-light relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`} style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
-        <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: bgCss }} />
+        <RowBackground row={row} />
         <div className={`relative z-10 max-w-[520px] px-6 ${containerPos} ${contentAlign}`}>
           <div style={revealStyle(true, 0)}>
             <h3 className="font-display font-black leading-tight mb-4" style={{ color: "hsl(var(--primary))", fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)" }}>{successHeading}</h3>
@@ -85,7 +78,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
 
   return (
     <section className={`snap-section section-light relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`} style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
-      <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: bgCss }} />
+      <RowBackground row={row} />
 
       <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${containerPos} ${contentAlign}`}>
         <div className="mb-6 text-left" style={revealStyle(isVisible, 0)}>
