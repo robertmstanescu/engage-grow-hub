@@ -42,6 +42,7 @@ import PillarEditor from "./site-editor/PillarEditor";
 import ImageTextEditor from "./site-editor/ImageTextEditor";
 import ProfileEditor from "./site-editor/ProfileEditor";
 import GridEditor from "./site-editor/GridEditor";
+import LeadMagnetEditor from "./site-editor/LeadMagnetEditor";
 import ImagePickerField from "./ImagePickerField";
 import GradientEditor from "./site-editor/GradientEditor";
 import OverlayEditor from "./site-editor/OverlayEditor";
@@ -295,6 +296,7 @@ const AdminDashboard = ({ session }: Props) => {
         : type === "contact" ? { title_lines: [], body: "", button_text: "Submit", fields: [] }
         : type === "service" ? { eyebrow: "", title: "", description: "", services: [] }
         : type === "grid" ? { title_lines: [], items: [] }
+        : type === "lead_magnet" ? { resource_asset_id: null, cover_asset_id: null, title: "", description: "" }
         : { title_lines: [], body: "" },
     };
     updateRows([...pageRows, newRow]);
@@ -1372,6 +1374,8 @@ const RowContentEditor = ({
       return <>{commonMeta}<ProfileEditor content={content} onChange={onContentChange} bgColor={bg} /></>;
     case "grid":
       return <>{commonMeta}<GridEditor content={content} onChange={onContentChange} bgColor={bg} /></>;
+    case "lead_magnet":
+      return <>{commonMeta}<LeadMagnetEditor content={content} onChange={(next) => Object.entries(next).forEach(([k, v]) => onContentChange(k, v))} /></>;
     default:
       return commonMeta;
   }
