@@ -156,7 +156,7 @@ const SortableSectionBlock = ({
       ref={setNodeRef}
       style={style}
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all"
+      className="flex items-center gap-2 px-3 rounded-lg cursor-pointer transition-all md:py-2 py-3"
       {...attributes}
       {...listeners}
       role="button"
@@ -168,22 +168,22 @@ const SortableSectionBlock = ({
         className="w-1 self-stretch rounded-full flex-shrink-0"
         style={{ backgroundColor: isSelected ? "hsl(var(--secondary))" : "transparent" }}
       />
-      <span className="text-sm flex-shrink-0">{sectionEmoji(row.type)}</span>
+      <span className="text-base md:text-sm flex-shrink-0">{sectionEmoji(row.type)}</span>
       <div className="min-w-0 flex-1">
         <div
-          className="font-body text-[11px] font-medium truncate"
+          className="font-body text-[13px] md:text-[11px] font-medium truncate"
           style={{ color: isSelected ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}
         >
           {row.strip_title || row.type}
         </div>
         <div
-          className="font-body text-[9px] uppercase tracking-wider"
+          className="font-body text-[10px] md:text-[9px] uppercase tracking-wider"
           style={{ color: "hsl(var(--muted-foreground))" }}
         >
           {row.type}
         </div>
       </div>
-      <GripVertical size={12} style={{ color: "hsl(var(--muted-foreground))", flexShrink: 0 }} />
+      <GripVertical size={14} style={{ color: "hsl(var(--muted-foreground))", flexShrink: 0 }} />
     </div>
   );
 };
