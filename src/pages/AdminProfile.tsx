@@ -123,7 +123,6 @@ const AdminProfile = () => {
                 label="Avatar URL"
                 value={avatarUrl}
                 onChange={setAvatarUrl}
-                folder="avatars"
               />
             </div>
           </div>

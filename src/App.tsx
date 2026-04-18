@@ -15,6 +15,7 @@ import Index from "./pages/Index.tsx";
 import Blog from "./pages/Blog.tsx";
 import BlogPost from "./pages/BlogPost.tsx";
 import Admin from "./pages/Admin.tsx";
+import AdminProfile from "./pages/AdminProfile.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
 import CmsPage from "./pages/CmsPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -97,6 +98,7 @@ const App = () => (
               <Route path="/blog" element={<PageBoundary><Blog /></PageBoundary>} />
               <Route path="/blog/:slug" element={<PageBoundary><BlogPost /></PageBoundary>} />
               <Route path="/admin" element={<PageBoundary><Admin /></PageBoundary>} />
+              <Route path="/admin/profile" element={<PageBoundary><AdminProfile /></PageBoundary>} />
               <Route path="/unsubscribe" element={<PageBoundary><Unsubscribe /></PageBoundary>} />
               <Route path="/p/:slug" element={<PageBoundary><CmsPage /></PageBoundary>} />
               <Route path="/:slug" element={<PageBoundary><CmsPage /></PageBoundary>} />

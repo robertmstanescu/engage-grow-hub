@@ -47,10 +47,37 @@ interface RichTextEditorProps {
   content: string;
   onChange: (html: string) => void;
   placeholder?: string;
+  /**
+   * Background color (hex / hsl()) the live row will use. Passed in
+   * so the EDITOR's writing surface matches the row — light text on a
+   * white admin panel is invisible. We pass the row's "Style State"
+   * (bg_color or first gradient stop) into the wrapper here, then mirror
+   * it on the contentEditable div. If nothing is set we default to a
+   * neutral dark surface so light text always remains readable.
+   */
   bgColor?: string;
 }
 
+/** Pick a readable foreground color for the given background. */
+const pickFg = (bg?: string): string => {
+  if (!bg) return "#F4F0EC"; // dark default → light text
+  // Hex luminance (#RRGGBB or #RGB)
+  const m = bg.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (m) {
+    const hex = m[1].length === 3 ? m[1].split("").map((c) => c + c).join("") : m[1];
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return lum > 0.6 ? "#1a1a1a" : "#F4F0EC";
+  }
+  return "#F4F0EC";
+};
+
 const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEditorProps) => {
+  // Resolve the editor surface: explicit row bg, or a neutral dark.
+  const surfaceBg = bgColor || "hsl(260 20% 18%)";
+  const surfaceFg = pickFg(bgColor);
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef<Range | null>(null);
@@ -387,7 +414,9 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           onBlur={() => { saveSelection(); emitChange(); }}
           onKeyUp={saveSelection}
           onMouseUp={saveSelection}
-          style={{ color: bgColor ? "#F4F0EC" : "hsl(var(--foreground))", backgroundColor: bgColor || undefined }}
+          // Editor surface mirrors the live row's bg so light text
+          // (grey/white) stays readable while editing. See pickFg above.
+          style={{ color: surfaceFg, backgroundColor: surfaceBg }}
         />
       )}
 

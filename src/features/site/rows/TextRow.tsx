@@ -16,12 +16,23 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[800px]";
   const isLight = row.bg_color && (row.bg_color.includes("94%") || row.bg_color.includes("100%") || row.bg_color.includes("white") || row.bg_color.includes("#F") || row.bg_color.includes("#f"));
 
+  // ════════════════════════════════════════════════════════════════════
+  // JUNIOR-DEV NOTE: aligning a CONSTRAINED-WIDTH container
+  // ════════════════════════════════════════════════════════════════════
+  // For a block-level <div> with a `max-width`, margins control where
+  // the box sits inside its parent:
+  //   • mx-auto  → equal margins on both sides → CENTERED
+  //   • ml-auto  → all extra space goes to the LEFT  → RIGHT-aligned
+  //   • mr-auto  → all extra space goes to the RIGHT → LEFT-aligned
+  // For `ml-auto` / `mr-auto` to actually shift the box, the PARENT
+  // must be wider than the box (we ensure this with `w-full` on the
+  // wrapper plus `max-w-[800px]` on the column itself).
   const contentAlign = align === "center" ? "text-center"
     : align === "right" ? "text-right"
     : "text-left";
   const containerPos = align === "center" ? "mx-auto"
-    : align === "right" ? "ml-auto mr-6"
-    : "mr-auto ml-6";
+    : align === "right" ? "ml-auto"
+    : "mr-auto";
 
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText();
@@ -93,7 +104,12 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
       grain={false}
       innerRef={(el) => { autoFitRef.current = el; }}
     >
-      <div ref={ref} className={`relative z-10 px-6 ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1200px]"} ${containerPos}` : ""} ${contentAlign}`}>
+      {/*
+        Wrapper is full-width so the constrained inner column can use
+        ml-auto / mr-auto to shift left or right. Without `w-full`,
+        the wrapper would shrink-to-fit and ml-auto would be a no-op.
+      */}
+      <div ref={ref} className={`relative z-10 px-6 w-full ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1200px]"} ${containerPos}` : ""} ${contentAlign}`}>
         {isMultiCol ? (
           <div style={multiColGridStyle(widths)} className="items-start">
             {contents.map((c, i) => renderColumnContent(c, i))}
