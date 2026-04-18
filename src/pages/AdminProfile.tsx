@@ -33,14 +33,8 @@ const AdminProfile = () => {
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [newEmail, setNewEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [pendingEmail, setPendingEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
-  const [requestingCode, setRequestingCode] = useState(false);
-  const [verifyingCode, setVerifyingCode] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,104 +58,6 @@ const AdminProfile = () => {
       setLoading: setSavingProfile,
       successMessage: "Profile updated",
     });
-  };
-
-  /**
-   * Step 1 — request the verification code.
-   * Supabase emails an 8-character OTP to BOTH the old and the new address.
-   */
-  const handleRequestCode = async () => {
-    if (!newEmail || newEmail === email) {
-      toast.error("Enter a new email address");
-      return;
-    }
-    setRequestingCode(true);
-    const { error } = await supabase.auth.updateUser({ email: newEmail });
-    setRequestingCode(false);
-    if (error) {
-      toast.error(error.message || "Could not send verification code");
-      return;
-    }
-    setPendingEmail(newEmail);
-    setOtpSent(true);
-    toast.success("Verification code sent", {
-      description: `Check ${email} and ${newEmail} — enter either 8-character code below.`,
-    });
-  };
-
-  /**
-   * Step 2 — verify the code and finalize the change.
-   * On success, Supabase refreshes the session with the new email.
-   */
-  const handleVerifyCode = async () => {
-    const cleanOtp = otp.replace(/\s+/g, "");
-    if (cleanOtp.length !== 8) {
-      toast.error("Enter the 8-character code");
-      return;
-    }
-    setVerifyingCode(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Your session expired. Please sign in again.");
-        return;
-      }
-
-      const verificationEmails = Array.from(new Set([pendingEmail, email].filter(Boolean)));
-      let verificationError = "Invalid or expired code";
-      let verified = false;
-
-      for (const verificationEmail of verificationEmails) {
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/verify`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            authorization: `Bearer ${session.access_token}`,
-            "x-client-info": "admin-profile-email-change",
-          },
-          body: JSON.stringify({
-            email: verificationEmail,
-            token: cleanOtp,
-            type: "email_change",
-            gotrue_meta_security: {},
-          }),
-        });
-
-        const result = await response.json().catch(() => null);
-        if (response.ok) {
-          verified = true;
-          break;
-        }
-
-        verificationError = result?.message || verificationError;
-      }
-
-      if (!verified) {
-        toast.error(verificationError);
-        return;
-      }
-
-      await supabase.auth.refreshSession();
-      const { data: { user: refreshedUser } } = await supabase.auth.getUser();
-
-      toast.success("Email successfully updated", {
-        description: `Your admin account now uses ${pendingEmail}.`,
-      });
-      setEmail(refreshedUser?.email || pendingEmail);
-      setNewEmail("");
-      setPendingEmail("");
-      setOtp("");
-      setOtpSent(false);
-    } finally {
-      setVerifyingCode(false);
-    }
-  };
-
-  const handleCancelChange = () => {
-    setOtpSent(false);
-    setOtp("");
-    setPendingEmail("");
   };
 
   if (loading || adminLoading) {
@@ -242,98 +138,6 @@ const AdminProfile = () => {
           >
             Save profile
           </SpinnerButton>
-        </section>
-
-        {/* Email change */}
-        <section className="rounded-xl border p-5 space-y-4" style={{ backgroundColor: "white", borderColor: "hsl(260 15% 88%)" }}>
-          <h2 className="font-display text-xs uppercase tracking-wider font-bold" style={{ color: "hsl(260 30% 20%)" }}>
-            <Mail size={11} className="inline mr-1" /> Change Email
-          </h2>
-          <p className="font-body text-xs" style={{ color: "hsl(260 20% 40%)" }}>
-            Current: <strong>{email}</strong>
-          </p>
-
-          {!otpSent ? (
-            <>
-              <p className="font-body text-[11px]" style={{ color: "hsl(260 20% 40%)" }}>
-                We'll send an 8-character verification code to your current email.
-                Enter the code here to confirm the change instantly — no link clicking required.
-              </p>
-              <input
-                type="email"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                placeholder="new@email.com"
-                className="w-full px-3 py-2 rounded-lg font-body text-sm border"
-                style={{ borderColor: "hsl(260 15% 88%)", backgroundColor: "white", color: "hsl(260 30% 20%)" }}
-              />
-              <SpinnerButton
-                onClick={handleRequestCode}
-                isLoading={requestingCode}
-                loadingLabel="Sending code…"
-                className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
-                style={{ backgroundColor: "hsl(260 30% 20%)", color: "white" }}
-              >
-                Send verification code
-              </SpinnerButton>
-            </>
-          ) : (
-            <>
-              <div className="rounded-lg p-3" style={{ backgroundColor: "hsl(260 30% 96%)", border: "1px solid hsl(260 15% 88%)" }}>
-                <p className="font-body text-[11px]" style={{ color: "hsl(260 30% 20%)" }}>
-                  <KeyRound size={11} className="inline mr-1" />
-                  Enter the 8-character code sent to <strong>{email}</strong>
-                  {" "}and <strong>{pendingEmail}</strong>.
-                </p>
-              </div>
-
-              <div className="flex justify-center py-2">
-                <InputOTP maxLength={8} value={otp} onChange={setOtp}>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                    <InputOTPSlot index={6} />
-                    <InputOTPSlot index={7} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-
-              <div className="flex gap-2">
-                <SpinnerButton
-                  onClick={handleVerifyCode}
-                  isLoading={verifyingCode}
-                  loadingLabel="Verifying…"
-                  disabled={otp.length !== 8}
-                  className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
-                  style={{ backgroundColor: "hsl(260 30% 20%)", color: "white" }}
-                >
-                  Verify & update email
-                </SpinnerButton>
-                <button
-                  type="button"
-                  onClick={handleCancelChange}
-                  className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-70 transition-opacity border"
-                  style={{ borderColor: "hsl(260 15% 88%)", color: "hsl(260 20% 40%)" }}
-                >
-                  Cancel
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleRequestCode}
-                disabled={requestingCode}
-                className="font-body text-[10px] underline hover:opacity-70 transition-opacity"
-                style={{ color: "hsl(260 20% 40%)" }}
-              >
-                Didn't get a code? Resend
-              </button>
-            </>
-          )}
         </section>
       </div>
     </div>
