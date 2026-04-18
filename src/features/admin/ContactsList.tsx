@@ -4,6 +4,8 @@ import { fetchAllContacts, deleteContact, type ContactRecord } from "@/services/
 import { runDbAction, runOptimisticAction, handleDatabaseError } from "@/services/db-helpers";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { toast } from "sonner";
+import { useListFilters } from "@/hooks/useListFilters";
+import ListFilters from "@/components/ui/list-filters";
 
 const ContactsList = () => {
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
