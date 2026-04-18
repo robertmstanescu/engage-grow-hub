@@ -11,6 +11,7 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";
 import RowBackground from "./RowBackground";
+import { RowEyebrow, RowTitle } from "./typography";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 

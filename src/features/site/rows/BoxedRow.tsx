@@ -6,8 +6,7 @@ import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
-import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";
-import RowBackground from "./RowBackground";
+import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -46,29 +45,24 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
     return (
       <div key={colIndex}>
         {c.eyebrow && (
-          <span className="font-body tracking-[0.35em] uppercase block mb-3" style={{ ...revealStyle(isVisible, -0.5), fontSize: "clamp(7px, 0.9vw, 10px)", color: c.color_eyebrow || "hsl(var(--vows-title) / 0.6)" }}>
+          <RowEyebrow color={c.color_eyebrow || "hsl(var(--vows-title) / 0.6)"} style={revealStyle(isVisible, -0.5)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
-          </span>
+          </RowEyebrow>
         )}
 
         {titleLines.length > 0 && (
-          <h3 className="font-display font-bold leading-tight mb-4"
-            style={{ ...revealStyle(isVisible, 0), color: c.color_title || "hsl(var(--vows-title))", fontSize: "clamp(1.5rem, 4vw, 3rem)" }}>
+          <RowTitle color={c.color_title || "hsl(var(--vows-title))"} style={revealStyle(isVisible, 0)}>
             {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
-          </h3>
+          </RowTitle>
         )}
 
         {c.subtitle && (
-          <div style={revealStyle(isVisible, 1)}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="p"
-              className="leading-tight mb-10"
-              style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--vows-title))", paddingTop: "10px", fontSize: "clamp(0.9rem, 2vw, 1.2rem)" }}>
-              {c.subtitle}
-            </EditableText>
-          </div>
+          <RowSubtitle color={c.subtitle_color || "hsl(var(--vows-title))"} style={revealStyle(isVisible, 1)}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
+          </RowSubtitle>
         )}
 
-        <div className={`grid ${getGridCols(cards.length)} gap-6 ${titleLines.length > 0 && !c.subtitle ? "mt-14" : "mt-4"}`}>
+        <div className={`grid ${getGridCols(cards.length)} gap-6 ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
           {cards.slice(0, 6).map((card, i) => (
             <div key={i}
               className="rounded-xl p-7 text-left"
@@ -81,45 +75,42 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
                 boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4)",
               }}>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
-                className="font-body-heading font-bold mb-3 text-lg" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
+                className="font-body-heading font-bold mb-3 text-lg leading-[1.6]" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
                 data-rte-fit=""
-                className="font-body text-xs leading-relaxed [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: c.color_card_body || "hsl(var(--vows-card-body))", overflow: "visible", height: "auto" }}
+                className="font-body text-xs leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: c.color_card_body || "hsl(var(--vows-card-body))", overflow: "visible", height: "auto" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
             </div>
           ))}
         </div>
 
         {c.note && (
-          <div className="mt-6 pt-3" style={{ ...revealStyle(isVisible, cards.length + 2), borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
-            <p className="font-body text-xs italic leading-relaxed" style={{ color: noteColor }}>{c.note}</p>
+          <div className="mt-rhythm-base pt-3" style={{ ...revealStyle(isVisible, cards.length + 2), borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
+            <p className="font-body text-xs italic leading-[1.6]" style={{ color: noteColor }}>{c.note}</p>
           </div>
         )}
 
         {c.cta_url && c.cta_label && (
-          <div className="mt-6" style={revealStyle(isVisible, cards.length + 3)}>
+          <div className="mt-rhythm-base" style={revealStyle(isVisible, cards.length + 3)}>
             <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
-              className="btn-glass font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full transition-all duration-500 hover:opacity-85 inline-block"
+              className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
               style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
               {c.cta_label}
             </a>
           </div>
         )}
 
-        {c.show_subscribe && <div className="mt-10" style={revealStyle(isVisible, cards.length + 2)}><SubscribeWidget align={align} /></div>}
+        {c.show_subscribe && <div className="mt-rhythm-loose" style={revealStyle(isVisible, cards.length + 2)}><SubscribeWidget align={align} /></div>}
       </div>
     );
   };
 
   return (
-    <section ref={(el) => { autoFitRef.current = el; }} className={`snap-section grain relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`}
-      style={{
-        backgroundColor: getRowBgColor(row, "hsl(var(--background))"),
-        isolation: "isolate",
-        paddingTop: "24px", paddingBottom: "24px",
-        ...getRowBgImageStyle(row),
-      }}>
-      <RowBackground row={row} />
+    <RowSection
+      row={row}
+      vAlign={vAlign}
+      innerRef={(el) => { autoFitRef.current = el; }}
+    >
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px] pointer-events-none"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
@@ -132,7 +123,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
           renderColumnContent(contents[0], 0)
         )}
       </div>
-    </section>
+    </RowSection>
   );
 };
 

@@ -3,10 +3,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeHtml } from "@/services/sanitize";
 import type { PageRow, ContactField } from "@/types/rows";
-import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import RowBackground from "./RowBackground";
+import { RowEyebrow, RowTitle, RowSubtitle, RowBody } from "./typography";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -59,16 +59,20 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
 
   const { ref, isVisible } = useScrollReveal();
 
+  // ContactRow uses a custom <section> wrapper (not RowSection) because it
+  // needs the .section-light class which inverts the foreground variable.
+  const vAlignJustify = vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center";
+
   if (submitted) {
     return (
-       <section className={`snap-section section-light relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`} style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
+      <section className={`snap-section section-light relative min-h-screen flex flex-col ${vAlignJustify} py-row md:py-row-md`} style={{ isolation: "isolate" }}>
         <RowBackground row={row} />
         <div className={`relative z-10 max-w-[520px] px-6 ${containerPos} ${contentAlign}`}>
           <div style={revealStyle(true, 0)}>
-            <h3 className="font-display font-black leading-tight mb-4" style={{ color: "hsl(var(--primary))", fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)" }}>{successHeading}</h3>
-            <p className="font-body-heading text-sm mb-6" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>{successBody}</p>
+            <RowTitle color="hsl(var(--primary))">{successHeading}</RowTitle>
+            <RowBody color="hsl(var(--light-fg) / 0.7)" className="mb-rhythm-base">{successBody}</RowBody>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
-              className="btn-glass font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full transition-all duration-500 hover:opacity-85"
+              className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full"
               style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>{successButton}</button>
           </div>
         </div>
@@ -77,31 +81,27 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   }
 
   return (
-    <section className={`snap-section section-light relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`} style={{ paddingTop: "24px", paddingBottom: "24px", isolation: "isolate" }}>
+    <section className={`snap-section section-light relative min-h-screen flex flex-col ${vAlignJustify} py-row md:py-row-md`} style={{ isolation: "isolate" }}>
       <RowBackground row={row} />
 
       <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${containerPos} ${contentAlign}`}>
-        <div className="mb-6 text-left" style={revealStyle(isVisible, 0)}>
+        <div className="mb-rhythm-loose text-left" style={revealStyle(isVisible, 0)}>
           {c.eyebrow && (
-            <span className="font-body tracking-[0.35em] uppercase block mb-3" style={{ fontSize: "clamp(7px, 0.9vw, 10px)", color: c.color_eyebrow || "hsl(var(--primary) / 0.6)" }}>
-              {c.eyebrow}
-            </span>
+            <RowEyebrow color={c.color_eyebrow || "hsl(var(--primary) / 0.6)"}>{c.eyebrow}</RowEyebrow>
           )}
           {titleLines.length > 0 && (
-            <h3 className="font-display font-black leading-tight mb-3" style={{ fontSize: "clamp(1.3rem, 3vw, 2rem)" }}>
+            <RowTitle>
               {titleLines.map((line, i) => (
                 <span key={i} style={{ display: "block", color: "hsl(var(--primary))" }}>
                   <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
                 </span>
               ))}
-            </h3>
+            </RowTitle>
           )}
           {c.subtitle && (
-            <p className="leading-tight mb-4" style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--primary) / 0.7)", fontSize: "clamp(0.9rem, 2vw, 1.2rem)" }}>
-              {c.subtitle}
-            </p>
+            <RowSubtitle color={c.subtitle_color || "hsl(var(--primary) / 0.7)"}>{c.subtitle}</RowSubtitle>
           )}
-          {c.body && <div data-rte-fit="" className="font-body-heading leading-relaxed [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: "hsl(var(--light-fg) / 0.7)", fontSize: "clamp(0.8rem, 1.5vw, 1rem)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
+          {c.body && <RowBody html={sanitizeHtml(c.body)} color="hsl(var(--light-fg) / 0.7)" data-rte-fit="" />}
         </div>
 
         <div
@@ -127,7 +127,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                     <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-left text-white">{field.label}</label>
                     <input type={field.type} required={field.required} value={formData[field.key] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                      className="w-full bg-transparent pb-2 font-body text-xs outline-none transition-all duration-500 text-left"
+                      className="w-full bg-transparent pb-2 font-body text-xs outline-none interactive text-left"
                       style={{ borderBottom: `1px solid ${CREAM}30`, color: CREAM }}
                       onFocus={(e) => e.currentTarget.style.borderBottomColor = "hsl(var(--accent))"}
                       onBlur={(e) => e.currentTarget.style.borderBottomColor = `${CREAM}30`} />
@@ -140,7 +140,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                   <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-white text-left">{textareaField.label}</label>
                   <textarea required={textareaField.required} rows={5} value={formData[textareaField.key] || ""}
                     onChange={(e) => setFormData({ ...formData, [textareaField.key]: e.target.value })}
-                    className="w-full bg-transparent pb-2 font-body text-xs outline-none transition-all duration-500 resize-none flex-1 text-left"
+                    className="w-full bg-transparent pb-2 font-body text-xs outline-none interactive resize-none flex-1 text-left"
                     style={{ borderBottom: `1px solid ${CREAM}30`, color: CREAM }}
                     onFocus={(e) => e.currentTarget.style.borderBottomColor = "hsl(var(--accent))"}
                     onBlur={(e) => e.currentTarget.style.borderBottomColor = `${CREAM}30`} />
@@ -148,7 +148,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-5 pt-4" style={{ ...revealStyle(isVisible, leftFields.length + 3), borderTop: `1px solid ${CREAM}15` }}>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-rhythm-base pt-4" style={{ ...revealStyle(isVisible, leftFields.length + 3), borderTop: `1px solid ${CREAM}15` }}>
               <div className="space-y-1.5">
                 {checkboxFields.map((field) => (
                   <label key={field.key} className="flex items-center gap-2 cursor-pointer">
@@ -160,7 +160,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                 ))}
               </div>
               <button type="submit" disabled={submitting}
-                className="btn-glass font-display text-[10px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full transition-all duration-500 hover:scale-105 disabled:opacity-50">
+                className="btn-glass interactive-strong font-display text-[10px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full disabled:opacity-50">
                 {submitting ? "Sending…" : buttonText}
               </button>
             </div>
@@ -168,8 +168,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         {c.note && (
-          <div className="mt-4 pt-3 text-left" style={{ borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
-            <p className="font-body text-xs italic leading-relaxed" style={{ color: "hsl(var(--light-fg) / 0.5)" }}>{c.note}</p>
+          <div className="mt-rhythm-base pt-3 text-left" style={{ borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
+            <p className="font-body text-xs italic leading-[1.6]" style={{ color: "hsl(var(--light-fg) / 0.5)" }}>{c.note}</p>
           </div>
         )}
       </div>
