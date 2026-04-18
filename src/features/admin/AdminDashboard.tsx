@@ -711,20 +711,67 @@ const AdminDashboard = ({ session }: Props) => {
       </header>
 
       {/* ═══ MAIN ROW ═══ */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        {/* ── SIDEBAR ── */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
+        {/* ── MobileAdminDrawer overlay ── only on mobile when open. */}
+        {isAdminMobile && mobileDrawerOpen && (
+          <div
+            onClick={() => setMobileDrawerOpen(false)}
+            aria-hidden
+            style={{
+              position: "absolute", inset: 0, background: "hsl(var(--foreground) / 0.4)",
+              zIndex: 40, backdropFilter: "blur(2px)",
+            }}
+          />
+        )}
+
+        {/* ──────────────────────────────────────────────────────
+         * SIDEBAR / MobileAdminDrawer
+         * Desktop (>= 768px): permanent rail that expands on hover.
+         * Mobile  (<  768px): off-canvas drawer that slides in from
+         *                     the left when the hamburger is tapped.
+         * The drawer must be wider than the icon rail to display
+         * labels and offer touch-sized hit areas.
+         * ────────────────────────────────────────────────────── */}
         <nav
-          onMouseEnter={() => setSidebarExpanded(true)}
-          onMouseLeave={() => setSidebarExpanded(false)}
+          onMouseEnter={() => !isAdminMobile && setSidebarExpanded(true)}
+          onMouseLeave={() => !isAdminMobile && setSidebarExpanded(false)}
           style={{
-            width: sidebarExpanded ? 220 : 58,
-            transition: "width 0.3s cubic-bezier(0.16,1,0.3,1)",
+            // On mobile we lift the rail to a fixed-position drawer.
+            position: isAdminMobile ? "absolute" : "relative",
+            top: 0, bottom: 0, left: 0,
+            zIndex: isAdminMobile ? 50 : "auto",
+            width: isAdminMobile ? 260 : (sidebarExpanded ? 220 : 58),
+            transform: isAdminMobile && !mobileDrawerOpen ? "translateX(-100%)" : "translateX(0)",
+            transition: "width 0.3s cubic-bezier(0.16,1,0.3,1), transform 0.3s cubic-bezier(0.16,1,0.3,1)",
             backgroundColor: "hsl(var(--card))",
             borderRight: "1px solid hsl(var(--border))",
             flexShrink: 0, overflow: "hidden",
             display: "flex", flexDirection: "column",
+            boxShadow: isAdminMobile && mobileDrawerOpen ? "8px 0 24px -8px hsl(0 0% 0% / 0.2)" : "none",
           }}
         >
+          {/* On mobile show a labelled close button at the top of the drawer */}
+          {isAdminMobile && (
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "10px 14px", borderBottom: "1px solid hsl(var(--border))",
+            }}>
+              <span style={{ fontFamily: "var(--font-display)", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "hsl(var(--secondary))" }}>
+                MENU
+              </span>
+              <button
+                onClick={() => setMobileDrawerOpen(false)}
+                aria-label="Close admin menu"
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: "none",
+                  background: "transparent", color: "hsl(var(--muted-foreground))",
+                  display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
           <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingTop: 8 }}>
             {NAV_GROUPS.map((group) => (
               <div key={group.label}>
@@ -732,7 +779,8 @@ const AdminDashboard = ({ session }: Props) => {
                   style={{
                     fontSize: 8, letterSpacing: "0.3em", textTransform: "uppercase" as const,
                     color: "hsl(var(--muted-foreground) / 0.5)", padding: "0.75rem 1.1rem 0.35rem",
-                    opacity: sidebarExpanded ? 1 : 0, transition: "opacity 0.2s",
+                    // On mobile the drawer is always "expanded" so labels are visible.
+                    opacity: isAdminMobile || sidebarExpanded ? 1 : 0, transition: "opacity 0.2s",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -750,6 +798,9 @@ const AdminDashboard = ({ session }: Props) => {
                     setActiveTab(item.key as Tab);
                     setSelectedSectionId(null);
                     if (item.key !== "site") setCmsPage(null);
+                    // Auto-close the mobile drawer after picking a tab so
+                    // editors land directly on the chosen panel.
+                    if (isAdminMobile) setMobileDrawerOpen(false);
                   };
                   return (
                     <button
@@ -757,7 +808,10 @@ const AdminDashboard = ({ session }: Props) => {
                       onClick={handleClick}
                       style={{
                         display: "flex", alignItems: "center", gap: 10, width: "100%",
-                        padding: "8px 16px", border: "none", cursor: "pointer",
+                        // Larger vertical padding on mobile to give thumbs an
+                        // accessible 44px+ tap target.
+                        padding: isAdminMobile ? "14px 16px" : "8px 16px",
+                        border: "none", cursor: "pointer",
                         textAlign: "left" as const, background: active ? "hsl(var(--secondary) / 0.07)" : "transparent",
                         borderLeft: active ? "2px solid hsl(var(--secondary))" : "2px solid transparent",
                         color: active ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
@@ -769,8 +823,8 @@ const AdminDashboard = ({ session }: Props) => {
                       <item.icon size={16} style={{ flexShrink: 0 }} />
                       <span
                         style={{
-                          fontFamily: "var(--font-body)", fontSize: 11, whiteSpace: "nowrap",
-                          opacity: sidebarExpanded ? 1 : 0, transition: "opacity 0.2s",
+                          fontFamily: "var(--font-body)", fontSize: isAdminMobile ? 13 : 11, whiteSpace: "nowrap",
+                          opacity: isAdminMobile || sidebarExpanded ? 1 : 0, transition: "opacity 0.2s",
                         }}
                       >
                         {item.label}
@@ -787,25 +841,27 @@ const AdminDashboard = ({ session }: Props) => {
               onClick={handleLogout}
               style={{
                 display: "flex", alignItems: "center", gap: 10, width: "100%",
-                padding: "8px 16px", border: "none", cursor: "pointer", textAlign: "left" as const,
+                padding: isAdminMobile ? "14px 16px" : "8px 16px", border: "none", cursor: "pointer", textAlign: "left" as const,
                 background: "transparent", color: "hsl(var(--muted-foreground))",
               }}
             >
               <LogOut size={16} style={{ flexShrink: 0 }} />
-              <span style={{ fontFamily: "var(--font-body)", fontSize: 11, whiteSpace: "nowrap", opacity: sidebarExpanded ? 1 : 0, transition: "opacity 0.2s" }}>
+              <span style={{ fontFamily: "var(--font-body)", fontSize: isAdminMobile ? 13 : 11, whiteSpace: "nowrap", opacity: isAdminMobile || sidebarExpanded ? 1 : 0, transition: "opacity 0.2s" }}>
                 Sign out
               </span>
             </button>
           </div>
         </nav>
 
-        {/* ── PAGE STRUCTURE PANEL ── */}
+        {/* ── PAGE STRUCTURE PANEL ── full-width on mobile, 240px on desktop. */}
         <div
           style={{
-            width: isSiteTab ? 240 : 0,
+            // On mobile, the panel takes the full viewport so editors get
+            // generous room to scan the section list with their thumb.
+            width: isAdminMobile ? (isSiteTab ? "100%" : 0) : (isSiteTab ? 240 : 0),
             transition: "width 0.3s cubic-bezier(0.16,1,0.3,1)",
             backgroundColor: "hsl(var(--card))",
-            borderRight: isSiteTab ? "1px solid hsl(var(--border))" : "none",
+            borderRight: isSiteTab && !isAdminMobile ? "1px solid hsl(var(--border))" : "none",
             flexShrink: 0, overflow: "hidden",
             display: "flex", flexDirection: "column",
           }}
