@@ -33,14 +33,35 @@ const FONT_OPTIONS = [
   { label: "Bricolage Grotesque", value: "'Bricolage Grotesque', sans-serif" },
 ];
 
+/**
+ * SIZE_OPTIONS — pixel-precise font sizes.
+ *
+ * We surface the EXACT px value (not "S/M/L") so designers can match
+ * the rendered output 1:1.
+ *
+ * CSS Mapping (junior-dev note):
+ *   1. User selects "36px" from the dropdown.
+ *   2. `applyFontSize("36px")` runs `document.execCommand("fontSize", "7")`,
+ *      which wraps the selection in `<font size="7">`.
+ *   3. We immediately replace each `<font size="7">` with
+ *      `<span style="font-size: 36px">…</span>`.
+ *   4. DOMPurify (see `services/sanitize.ts`) is configured to keep the
+ *      `style` attribute, so the inline size survives the save round-trip.
+ *   5. On the live site, `<RowBody>` / `<RowTitle>` render the HTML inside
+ *      a wrapper that does NOT force a font-size — so the inline 36px wins.
+ */
 const SIZE_OPTIONS = [
-  { label: "XS", value: "11px" },
-  { label: "S", value: "13px" },
-  { label: "M", value: "15px" },
-  { label: "L", value: "18px" },
-  { label: "XL", value: "22px" },
-  { label: "2XL", value: "28px" },
-  { label: "3XL", value: "36px" },
+  { label: "12px", value: "12px" },
+  { label: "14px", value: "14px" },
+  { label: "16px", value: "16px" },
+  { label: "18px", value: "18px" },
+  { label: "20px", value: "20px" },
+  { label: "24px", value: "24px" },
+  { label: "30px", value: "30px" },
+  { label: "36px", value: "36px" },
+  { label: "48px", value: "48px" },
+  { label: "60px", value: "60px" },
+  { label: "72px", value: "72px" },
 ];
 
 interface RichTextEditorProps {
@@ -337,7 +358,7 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
             event.target.value = "";
           }}
           className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
-          style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "65px" }}
+          style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "85px" }}
           title="Font Size"
         >
           <option value="">Size</option>
