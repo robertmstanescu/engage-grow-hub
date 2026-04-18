@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Trash2, Edit, Plus, Eye, ArrowLeft, Upload } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { patchLivePreviewState } from "@/lib/livePreview";
+import ImageAltInput from "./ImageAltInput";
 
 const generateSlug = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -27,11 +28,14 @@ interface BlogPost {
   published_at: string | null;
   created_at: string;
   cover_image: string | null;
+  cover_image_alt: string | null;
   author_name: string | null;
   author_image: string | null;
+  author_image_alt: string | null;
   meta_title: string | null;
   meta_description: string | null;
   og_image: string | null;
+  og_image_alt: string | null;
   tags: string[] | null;
 }
 
@@ -41,7 +45,7 @@ const BlogEditor = () => {
   const [isNew, setIsNew] = useState(false);
   const [previewing, setPreviewing] = useState(false);
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
-  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", author_name: "", author_image: "", meta_title: "", meta_description: "", og_image: "", tags: [] as string[], newTag: "" });
+  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "" });
   const authorInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -74,7 +78,7 @@ const BlogEditor = () => {
   const handleNew = () => {
     setIsNew(true);
     setEditing(null);
-    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", author_name: "", author_image: "", meta_title: "", meta_description: "", og_image: "", tags: [], newTag: "" });
+    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "" });
   };
 
   const handleEdit = (post: BlogPost) => {
@@ -87,11 +91,14 @@ const BlogEditor = () => {
       category: post.category,
       status: post.status,
       cover_image: post.cover_image || "",
+      cover_image_alt: post.cover_image_alt || "",
       author_name: post.author_name || "",
       author_image: post.author_image || "",
+      author_image_alt: post.author_image_alt || "",
       meta_title: post.meta_title || "",
       meta_description: post.meta_description || "",
       og_image: post.og_image || post.cover_image || "",
+      og_image_alt: post.og_image_alt || "",
       tags: post.tags || [],
       newTag: "",
     });
@@ -137,11 +144,14 @@ const BlogEditor = () => {
       category: form.category,
       status,
       cover_image: form.cover_image || null,
+      cover_image_alt: form.cover_image_alt?.trim() || null,
       author_name: form.author_name || null,
       author_image: form.author_image || null,
+      author_image_alt: form.author_image_alt?.trim() || null,
       meta_title: form.meta_title || null,
       meta_description: form.meta_description || null,
       og_image: form.og_image || null,
+      og_image_alt: form.og_image_alt?.trim() || null,
       tags: form.tags.length > 0 ? form.tags : null,
       published_at: status === "published" ? new Date().toISOString() : null,
     };
@@ -324,6 +334,13 @@ const BlogEditor = () => {
               <span className="font-body text-xs">Upload cover image</span>
             </button>
           )}
+          {form.cover_image && (
+            <ImageAltInput
+              value={form.cover_image_alt}
+              onChange={(v) => setForm({ ...form, cover_image_alt: v })}
+              label="Cover Image Alt Text (SEO)"
+            />
+          )}
           <input
             ref={coverInputRef}
             type="file"
@@ -416,6 +433,13 @@ const BlogEditor = () => {
               e.target.value = "";
             }}
           />
+          {form.author_image && (
+            <ImageAltInput
+              value={form.author_image_alt}
+              onChange={(v) => setForm({ ...form, author_image_alt: v })}
+              label="Author Image Alt Text (SEO)"
+            />
+          )}
         </div>
 
         {/* Tags */}
@@ -473,6 +497,13 @@ const BlogEditor = () => {
             className="w-full px-4 py-2.5 rounded-lg font-body text-sm border"
             style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
           />
+          {form.og_image && (
+            <ImageAltInput
+              value={form.og_image_alt}
+              onChange={(v) => setForm({ ...form, og_image_alt: v })}
+              label="OG Image Alt Text (SEO)"
+            />
+          )}
           {form.meta_title && <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Title: {form.meta_title.length}/60 chars</p>}
           {form.meta_description && <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Description: {form.meta_description.length}/160 chars</p>}
         </div>
