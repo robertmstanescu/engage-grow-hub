@@ -5,9 +5,11 @@ import TitleLineEditor from "./TitleLineEditor";
 interface Props {
   content: Record<string, any>;
   onChange: (field: string, value: any) => void;
+  /** Live row background, forwarded to RichField so light text stays legible. */
+  bgColor?: string;
 }
 
-const ContactEditor = ({ content, onChange }: Props) => {
+const ContactEditor = ({ content, onChange, bgColor }: Props) => {
   const titleLines: string[] = (content.title_lines || []).map((l: any) =>
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
   );
@@ -54,7 +56,7 @@ const ContactEditor = ({ content, onChange }: Props) => {
         </div>
       </div>
 
-      <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
+      <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
     </div>
   );
 };

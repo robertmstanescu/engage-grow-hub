@@ -23,6 +23,8 @@ interface Props {
   servicesContent: Record<string, any>;
   onPillarChange: (field: string, value: any) => void;
   onServicesChange: (services: Service[]) => void;
+  /** Live row background, forwarded to RichField for legible contrast. */
+  bgColor?: string;
 }
 
 const DEFAULT_TAG_TYPES = [
@@ -55,7 +57,7 @@ const PILLAR_COLOR_FIELDS = [
   { key: "color_divider_to", label: "Divider Gradient End", description: "Ending color of the gradient divider line", fallback: "#7B3A91" },
 ];
 
-const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServicesChange }: Props) => {
+const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServicesChange, bgColor }: Props) => {
   const [openCard, setOpenCard] = useState<number | null>(null);
   const [showColors, setShowColors] = useState(false);
   const [tagTypes, setTagTypes] = useState(DEFAULT_TAG_TYPES);
@@ -104,7 +106,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
       <SectionBox label="Pillar Header">
         <Field label="Eyebrow" value={pillarContent.eyebrow || pillarContent.pillar_number || ""} onChange={(v) => onPillarChange("eyebrow", v)} />
         <Field label="Title" value={pillarContent.title || ""} onChange={(v) => onPillarChange("title", v)} />
-        <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} />
+        <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} bgColor={bgColor} />
       </SectionBox>
 
       <SectionBox label="Carousel Content Alignment">

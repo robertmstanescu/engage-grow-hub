@@ -11,9 +11,11 @@ import { runDbAction } from "@/services/db-helpers";
 interface Props {
   content: Record<string, any>;
   onChange: (field: string, value: any) => void;
+  /** Live row background, forwarded to RichField for legible contrast. */
+  bgColor?: string;
 }
 
-const HeroEditor = ({ content, onChange }: Props) => {
+const HeroEditor = ({ content, onChange, bgColor }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const rawLines = content.title_lines || [];
@@ -99,7 +101,7 @@ const HeroEditor = ({ content, onChange }: Props) => {
         onColorChange={(v) => onChange("subtitle_color", v)}
       />
 
-      <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
+      <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
 
       <SectionBox label="Background Media">
         <div className="space-y-3">

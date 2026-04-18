@@ -6,9 +6,11 @@ import SubtitleEditor from "./SubtitleEditor";
 interface Props {
   content: Record<string, any>;
   onChange: (field: string, value: any) => void;
+  /** Live row background, forwarded to RichField for legible contrast. */
+  bgColor?: string;
 }
 
-const GridEditor = ({ content, onChange }: Props) => {
+const GridEditor = ({ content, onChange, bgColor }: Props) => {
   const titleLines: string[] = (content.title_lines || []).map((l: any) =>
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
   );
@@ -59,7 +61,7 @@ const GridEditor = ({ content, onChange }: Props) => {
           ))}
         </div>
         <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onChange("subtitle", v)} onColorChange={(v) => onChange("subtitle_color", v)} />
-        <RichField label="Description" value={content.description || ""} onChange={(v) => onChange("description", v)} />
+        <RichField label="Description" value={content.description || ""} onChange={(v) => onChange("description", v)} bgColor={bgColor} />
       </SectionBox>
 
       {/* Stats (fixed 3) */}
