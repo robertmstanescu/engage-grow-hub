@@ -27,6 +27,14 @@ const resolveAlignment = (row: PageRow): Alignment => {
 
 const resolveVAlign = (row: PageRow): VAlign => row.layout?.verticalAlign || "middle";
 
+/**
+ * RowRenderer wraps each row in its own try/catch. The outer ErrorBoundary
+ * inside <PageRows/> handles the homepage; on CMS pages we render rows
+ * directly so we keep the same try/catch fallback here.
+ *
+ * If you change this list, also update PageRows.tsx so both renderers
+ * stay in sync.
+ */
 const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
   try {
     if (!row || !row.type) return null;
