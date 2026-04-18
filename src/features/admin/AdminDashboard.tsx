@@ -858,7 +858,12 @@ const AdminDashboard = ({ session }: Props) => {
           style={{
             // On mobile, the panel takes the full viewport so editors get
             // generous room to scan the section list with their thumb.
-            width: isAdminMobile ? (isSiteTab ? "100%" : 0) : (isSiteTab ? 240 : 0),
+            // Mobile: panel takes full viewport when no section is selected
+            // and collapses to 0 once an editor opens (the properties area
+            // takes over). Desktop keeps the classic 240px rail.
+            width: isAdminMobile
+              ? (isSiteTab && !selectedSectionId ? "100%" : 0)
+              : (isSiteTab ? 240 : 0),
             transition: "width 0.3s cubic-bezier(0.16,1,0.3,1)",
             backgroundColor: "hsl(var(--card))",
             borderRight: isSiteTab && !isAdminMobile ? "1px solid hsl(var(--border))" : "none",
