@@ -40,10 +40,10 @@ export const fetchPublishedBlogPosts = () =>
     .order("published_at", { ascending: false });
 
 export const insertBlogPost = (payload: Record<string, any>) =>
-  supabase.from("blog_posts").insert(payload);
+  supabase.from("blog_posts").insert(payload as any);
 
 export const updateBlogPost = (id: string, payload: Record<string, any>) =>
-  supabase.from("blog_posts").update(payload).eq("id", id);
+  supabase.from("blog_posts").update(payload as any).eq("id", id);
 
 export const deleteBlogPost = (id: string) =>
   supabase.from("blog_posts").delete().eq("id", id);
