@@ -13,6 +13,7 @@ import { fetchSection } from "@/services/siteContent";
 import { uploadEditorImage } from "@/services/mediaStorage";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
+import LeadMagnetSection from "./LeadMagnetSection";
 
 const generateSlug = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -44,6 +45,8 @@ interface BlogPost {
   og_image: string | null;
   og_image_alt: string | null;
   tags: string[] | null;
+  lead_magnet_asset_id: string | null;
+  lead_magnet_cover_id: string | null;
 }
 
 const BlogEditor = () => {
@@ -54,7 +57,7 @@ const BlogEditor = () => {
   const [previewing, setPreviewing] = useState(false);
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
-  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "" });
+  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null });
   const authorInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -82,7 +85,7 @@ const BlogEditor = () => {
   const handleNew = () => {
     setIsNew(true);
     setEditing(null);
-    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "" });
+    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "", lead_magnet_asset_id: null, lead_magnet_cover_id: null });
   };
 
   const handleEdit = (post: BlogPost) => {
@@ -105,6 +108,8 @@ const BlogEditor = () => {
       og_image_alt: post.og_image_alt || "",
       tags: post.tags || [],
       newTag: "",
+      lead_magnet_asset_id: post.lead_magnet_asset_id ?? null,
+      lead_magnet_cover_id: post.lead_magnet_cover_id ?? null,
     });
   };
 
@@ -150,6 +155,8 @@ const BlogEditor = () => {
       og_image_alt: form.og_image_alt?.trim() || null,
       tags: form.tags.length > 0 ? form.tags : null,
       published_at: status === "published" ? new Date().toISOString() : null,
+      lead_magnet_asset_id: form.lead_magnet_asset_id,
+      lead_magnet_cover_id: form.lead_magnet_cover_id,
     };
 
     const result = await runDbAction({
