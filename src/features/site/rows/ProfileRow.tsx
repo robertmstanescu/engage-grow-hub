@@ -77,11 +77,14 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
             >
               <div className="w-full h-full rounded-lg overflow-hidden">
                 {c.image_url ? (
+                  // Profile photos sit below the fold on most pages —
+                  // lazy-load + async decode keeps initial paint snappy.
                   <img
                     src={c.image_url}
                     alt={resolveImageAlt(c.image_alt, c.name || row.strip_title, "profile photo")}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div className="w-full h-full" style={{ backgroundColor: "hsl(var(--muted))" }} />

@@ -31,10 +31,17 @@ const HeroRow = ({ row }: Props) => {
 
       {hasBg && bgType === "image" && (
         <div className="absolute inset-0 z-0">
+          {/*
+            HeroRow background — same LCP-critical pattern as the main
+            <HeroSection/>. Eagerly fetched with high priority so users
+            see it on first paint.
+          */}
           <img
             src={bgUrl}
             alt={resolveImageAlt(c.bg_image_alt, row.strip_title, "hero background")}
             className="w-full h-full object-cover"
+            fetchPriority="high"
+            decoding="async"
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
           <div className="absolute inset-0 bg-black/60" />

@@ -86,7 +86,15 @@ const Navbar = () => {
       <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
         style={{ backgroundColor: "hsl(var(--background) / 0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid hsl(var(--border) / 0.3)" }}>
         <a href="/" className="mb-4">
-          <img alt="Logo" className="w-8 h-8 object-contain brightness-200" src={emblemUrl} />
+          {/* Navbar logo: small, above-the-fold — eager + sized to prevent CLS. */}
+          <img
+            alt="Logo"
+            className="w-8 h-8 object-contain brightness-200"
+            src={emblemUrl}
+            width={32}
+            height={32}
+            decoding="async"
+          />
         </a>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-5">
@@ -119,7 +127,14 @@ const Navbar = () => {
       <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-5"
         style={{ backgroundColor: "hsl(var(--background) / 0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(var(--border) / 0.2)" }}>
         <a href="/" className="flex items-center flex-shrink-0">
-          <img alt="Logo" className="h-7 brightness-200 object-contain" src={logoUrl} />
+          {/* Mobile logo: above-the-fold, small intrinsic size to avoid CLS. */}
+          <img
+            alt="Logo"
+            className="h-7 brightness-200 object-contain"
+            src={logoUrl}
+            height={28}
+            decoding="async"
+          />
         </a>
         <button onClick={() => setMobileOpen(!mobileOpen)} style={{ color: "hsl(var(--foreground) / 0.7)" }}>
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}

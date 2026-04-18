@@ -83,11 +83,15 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
         }}
       >
         {c.image_url ? (
+          // Below-the-fold images: lazy-load + async decode for fast
+          // first paint. The browser only fetches them when the user
+          // scrolls close, saving bandwidth on bounce visits.
           <img
             src={c.image_url}
             alt={resolveImageAlt(c.image_alt, c.title || row.strip_title, "section image")}
             className="w-full h-full object-cover"
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="w-full h-full" style={{ backgroundColor: "hsl(var(--muted))" }} />

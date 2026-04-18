@@ -65,7 +65,16 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">
           {/* Logo column — emblem */}
           <div className="col-span-2 md:col-span-1">
-            <img alt="Logo" className="w-8 h-8 object-contain brightness-200 mb-4" src={emblemUrl} />
+            {/* Footer logo: below the fold by definition — lazy-load it. */}
+            <img
+              alt="Logo"
+              className="w-8 h-8 object-contain brightness-200 mb-4"
+              src={emblemUrl}
+              width={32}
+              height={32}
+              loading="lazy"
+              decoding="async"
+            />
             <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.35)" }}>
               {footer.tagline || "Based in Sweden 🇸🇪 · Operating globally"}
             </p>

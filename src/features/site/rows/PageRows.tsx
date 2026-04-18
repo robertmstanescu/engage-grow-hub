@@ -1,5 +1,6 @@
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
+import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import TextRow from "./TextRow";
 import ServiceRow from "./ServiceRow";
 import BoxedRow from "./BoxedRow";
@@ -91,8 +92,18 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
   return (
     <>
       {rows.map((row, index) => {
+        // Per-row ErrorBoundary — see error-boundary.tsx for the full
+        // 3-layer rationale. If a single row throws (bad JSON, missing
+        // field, plugin crash), only THIS row collapses to a tiny
+        // fallback. The rest of the page keeps reading naturally.
         const rendered = (
-          <RowRenderer key={row.id} row={row} rowIndex={index} align={resolveAlignment(row, autoAlignments[index])} />
+          <ErrorBoundary
+            key={row.id}
+            label={`row:${row.type}`}
+            fallback={(error, reset) => <RowFallback error={error} reset={reset} />}
+          >
+            <RowRenderer row={row} rowIndex={index} align={resolveAlignment(row, autoAlignments[index])} />
+          </ErrorBoundary>
         );
         // Group the last row with the footer in one snap section
         if (index === lastIndex && footerSlot) {

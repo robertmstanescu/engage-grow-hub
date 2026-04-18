@@ -55,7 +55,23 @@ const HeroSection = () => {
     <section data-section="hero" className="scope-hero snap-section grain relative h-screen flex flex-col justify-end overflow-hidden mesh-hero">
       {hasBg && c.bg_type === "image" && (
         <div className="absolute inset-0 z-0">
-          <img src={c.bg_url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+          {/*
+            Hero background image — this is almost always the LCP
+            (Largest Contentful Paint) element on the homepage.
+            • fetchpriority="high" tells the browser to download it
+              before non-critical resources, improving Core Web Vitals.
+            • decoding="async" keeps decoding off the main thread.
+            • No loading="lazy" — the hero is above the fold and we
+              WANT it to load eagerly. Lazy here would hurt LCP.
+          */}
+          <img
+            src={c.bg_url}
+            alt=""
+            className="w-full h-full object-cover"
+            fetchPriority="high"
+            decoding="async"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+          />
           <div className="absolute inset-0 bg-black/60" />
         </div>
       )}
