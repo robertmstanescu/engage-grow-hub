@@ -50,7 +50,7 @@ const HeroEditor = ({ content, onChange }: Props) => {
     const result = await runDbAction({
       action: async () => {
         const upload = await supabase.storage.from("editor-images").upload(path, file);
-        if (upload.error) return upload;
+        if (upload.error) return { data: null, error: upload.error };
         const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
         return { data: { publicUrl }, error: null };
       },
