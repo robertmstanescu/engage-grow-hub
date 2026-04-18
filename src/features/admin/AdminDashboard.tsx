@@ -7,9 +7,10 @@ import {
   LayoutDashboard, FileText, Compass, BookOpen,
   Users, Mail, Image, Palette, Settings, LogOut,
   Save, Send, Tag, UserCog,
-  GripVertical, Plus, Trash2, ArrowLeft, Columns, X, Sparkles,
+  GripVertical, Plus, Trash2, ArrowLeft, Columns, X, Sparkles, Menu,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 import ManageTeam from "./ManageTeam";
 import {
   DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors,
