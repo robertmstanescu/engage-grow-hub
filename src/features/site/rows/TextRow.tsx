@@ -6,8 +6,7 @@ import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
-import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";
-import RowBackground from "./RowBackground";
+import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -24,10 +23,6 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
     : align === "right" ? "ml-auto mr-6"
     : "mr-auto ml-6";
 
-  const lightDefaults = isLight
-    ? { start: "hsl(280 55% 24% / 0.2)", end: "hsl(286 42% 30% / 0.15)" }
-    : undefined;
-
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText();
 
@@ -43,68 +38,61 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
     return (
       <div key={colIndex} className={isMultiCol ? "" : `${maxW} ${containerPos} ${contentAlign}`}>
         {c.eyebrow && (
-          <span className="font-body tracking-[0.35em] uppercase block mb-3" style={{ ...revealStyle(isVisible, -0.5), fontSize: "clamp(7px, 0.9vw, 10px)", color: c.color_eyebrow || (isLight ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.5)") }}>
+          <RowEyebrow color={c.color_eyebrow || (isLight ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.5)")} style={revealStyle(isVisible, -0.5)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
-          </span>
+          </RowEyebrow>
         )}
 
         {titleLines.length > 0 && (
-          <h3 className="font-display font-bold leading-tight mb-3"
-            style={{ ...revealStyle(isVisible, 0), color: isLight ? "hsl(var(--primary))" : "hsl(var(--foreground))", fontSize: "clamp(1.25rem, 3vw, 2rem)" }}>
+          <RowTitle color={isLight ? "hsl(var(--primary))" : "hsl(var(--foreground))"} style={revealStyle(isVisible, 0)}>
             {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
-          </h3>
+          </RowTitle>
         )}
 
         {c.subtitle && (
-          <div style={revealStyle(isVisible, 1)}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="p"
-              className="leading-tight"
-              style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "inherit", paddingTop: "10px", fontSize: "clamp(0.9rem, 2vw, 1.2rem)" }}>
-              {c.subtitle}
-            </EditableText>
-          </div>
+          <RowSubtitle color={c.subtitle_color || "inherit"} style={revealStyle(isVisible, 1)}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
+          </RowSubtitle>
         )}
 
         {c.body && (
           <div style={revealStyle(isVisible, 2)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.body`} html as="div"
               data-rte-fit=""
-              className={`font-body-heading font-medium ${isMultiCol ? "" : "max-w-[700px]"} leading-relaxed mt-5 [&_p]:mb-[5px] [&_p]:mt-[5px] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
-              style={{ color: isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)", fontSize: "clamp(0.85rem, 1.8vw, 1.15rem)" }}
+              className={`font-body-heading font-medium leading-[1.6] ${isMultiCol ? "" : "max-w-[700px]"} mt-rhythm-tight [&_p]:mb-[5px] [&_p]:mt-[5px] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
+              style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)"), fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
           </div>
         )}
 
         {c.note && (
-          <div className="mt-4 pt-3" style={{ ...revealStyle(isVisible, 2.5), borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
-            <p className="font-body text-xs italic leading-relaxed" style={{ color: noteColor }}>{c.note}</p>
+          <div className="mt-rhythm-base pt-3" style={{ ...revealStyle(isVisible, 2.5), borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
+            <p className="font-body text-xs italic leading-[1.6]" style={{ color: noteColor }}>{c.note}</p>
           </div>
         )}
 
         {c.cta_url && c.cta_label && (
-          <div className="mt-5" style={revealStyle(isVisible, 3)}>
+          <div className="mt-rhythm-base" style={revealStyle(isVisible, 3)}>
             <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
-              className="btn-glass font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full transition-all duration-500 hover:opacity-85 inline-block"
+              className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
               style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
               {c.cta_label}
             </a>
           </div>
         )}
 
-        {c.show_subscribe && <div style={revealStyle(isVisible, 3)}><SubscribeWidget className="mt-8" align={align} /></div>}
+        {c.show_subscribe && <div style={revealStyle(isVisible, 3)}><SubscribeWidget className="mt-rhythm-loose" align={align} /></div>}
       </div>
     );
   };
 
   return (
-    <section ref={(el) => { autoFitRef.current = el; }} className={`snap-section relative min-h-screen flex flex-col ${vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center"}`} style={{
-      backgroundColor: getRowBgColor(row, "hsl(var(--background))"),
-      isolation: "isolate",
-      paddingTop: "24px", paddingBottom: "24px",
-      ...getRowBgImageStyle(row),
-    }}>
-      <RowBackground row={row} legacyDefaults={lightDefaults} />
-
+    <RowSection
+      row={row}
+      vAlign={vAlign}
+      grain={false}
+      innerRef={(el) => { autoFitRef.current = el; }}
+    >
       <div ref={ref} className={`relative z-10 px-6 ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1200px]"} ${containerPos}` : ""} ${contentAlign}`}>
         {isMultiCol ? (
           <div style={multiColGridStyle(widths)} className="items-start">
@@ -114,7 +102,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
           renderColumnContent(contents[0], 0)
         )}
       </div>
-    </section>
+    </RowSection>
   );
 };
 
