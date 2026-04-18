@@ -9,8 +9,8 @@ import EditableText from "@/components/admin/EditableText";
 import SubscribeWidget from "@/components/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { buildGradientCSS } from "@/components/admin/site-editor/GradientEditor";
 import { getRowBgColor, getRowBgImageStyle } from "./rowBackground";
+import RowBackground from "./RowBackground";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -81,10 +81,6 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
   const colorOverrides = buildColorOverrides(c);
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
 
-  const customGradient = l.gradient?.enabled && l.gradient.stops?.length >= 2;
-  const gradStart = l.gradientStart || "hsl(286 42% 30%)";
-  const gradEnd = l.gradientEnd || "hsl(280 55% 25%)";
-
   const carouselTheme = l.carouselTheme || "auto";
   const isDarkBg = !row.bg_color || row.bg_color.includes("#2") || row.bg_color.includes("#1") || row.bg_color.includes("#0") || row.bg_color.includes("#3") || row.bg_color.includes("#4") || row.bg_color.includes("#5");
   const isLightCarousel = carouselTheme === "light" || (carouselTheme === "auto" && isDarkBg);
@@ -114,16 +110,8 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
       className={`service-row grain relative flex ${vAlign === "top" ? "items-start" : vAlign === "bottom" ? "items-end" : "items-center"} justify-center`}
       style={{ ...colorOverrides, backgroundColor: getRowBgColor(row, "hsl(var(--pillar-section-bg))"), isolation: "isolate", padding: "24px 0", ...getRowBgImageStyle(row) } as React.CSSProperties}
     >
-      {customGradient ? (
-        <div className="absolute inset-0 pointer-events-none" style={{ background: buildGradientCSS(l.gradient!) }} />
-      ) : (
-        <>
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-[100px] pointer-events-none"
-            style={{ background: `radial-gradient(circle, ${gradStart}, transparent)`, transform: "translateZ(0)", willChange: "transform" }} />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8 blur-[120px] pointer-events-none"
-            style={{ background: `radial-gradient(circle, ${gradEnd}, transparent)`, transform: "translateZ(0)", willChange: "transform" }} />
-        </>
-      )}
+      {/* Background overlay — central RowBackground handles legacy glow vs custom gradient */}
+      <RowBackground row={row} />
 
       <div className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
         <span className="font-body tracking-[0.35em] uppercase block mb-4"
