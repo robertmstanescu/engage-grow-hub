@@ -87,12 +87,33 @@ export default {
        * That doubling rhythm is what makes vertical spacing feel
        * "designed" rather than arbitrary — the eye perceives the ratio.
        */
+      /**
+       * ADAPTIVE PADDING — "Content-First" Viewport Fitting
+       * ─────────────────────────────────────────────────────────────
+       * `row-fluid` uses clamp() so vertical row padding SHRINKS on
+       * shorter viewports. On a tall 4K monitor it grows to ~96px of
+       * generous breathing room; on a 13" laptop (~700px tall) it
+       * collapses toward the 8px floor so the row's content (eyebrow
+       * + title + body + CTA) stays "above the fold" inside one
+       * viewport — no scroll required.
+       *
+       * Why sacrifice padding instead of clipping content?
+       *   - Hard-clipping content breaks accordions, dropdowns,
+       *     focus rings, and accessibility.
+       *   - Padding is the cheapest visual element to lose. Users
+       *     don't notice 8px vs 80px of whitespace nearly as much as
+       *     they notice having to scroll inside a slide.
+       *
+       * The static `row` / `row-md` values are kept for any legacy
+       * caller, but new code should reach for `row-fluid`.
+       */
       spacing: {
         "rhythm-tight": "12px",
         "rhythm-base": "24px",
         "rhythm-loose": "48px",
         row: "64px",
         "row-md": "112px",
+        "row-fluid": "clamp(8px, 4vh, 96px)",
       },
       fontFamily: {
         display: ["Unbounded", "sans-serif"],

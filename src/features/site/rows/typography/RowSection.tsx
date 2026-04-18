@@ -87,7 +87,7 @@ const RowSection = ({
       data-row-id={dataRowId ?? row.id}
       data-row-type={dataRowType ?? row.type}
       data-row-title={dataRowTitle ?? row.strip_title}
-      className={`snap-section ${grain ? "grain" : ""} relative ${fullHeight ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row md:py-row-md ${className}`}
+      className={`snap-section ${grain ? "grain" : ""} relative ${fullHeight ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
       style={{
         backgroundColor: getRowBgColor(row, defaultBg),
         isolation: "isolate",

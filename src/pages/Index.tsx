@@ -8,24 +8,25 @@ import usePageMeta from "@/hooks/usePageMeta";
 /**
  * Index — the public homepage.
  *
- * ## Scroll-snap configuration (the "soft snap")
+ * ## Scroll-snap configuration (the "hard snap" / slide-deck feel)
  *
- * The `.snap-container` wrapper sets `scroll-snap-type: y proximity`
+ * The `.snap-container` wrapper sets `scroll-snap-type: y mandatory`
  * (defined in src/index.css). Each row inside `<PageRows/>` carries
  * `scroll-snap-align: start` via the `.snap-section` class.
  *
- * Why `proximity` instead of `mandatory`?
- *   - `mandatory` forces the viewport to lock onto the nearest snap
- *     point on EVERY scroll event. It overrides momentum, cancels small
- *     wheel ticks, and feels rigid — users say it "fights" them.
- *   - `proximity` only snaps when the user lands NEAR a snap point on
- *     their own. Mid-scroll motion is preserved; the page magnetically
- *     "settles" at the next row instead of yanking to it. This is the
- *     premium / Apple-style soft feel the brand was designed around.
+ * Why `mandatory` (slide-deck) instead of `proximity` (soft)?
+ *   - The brand wants each row treated as a discrete "slide" — you
+ *     either see THIS row or the NEXT row, never half-and-half.
+ *   - `mandatory` enforces that lock. Every scroll gesture lands on a
+ *     snap point. No mid-content stranding.
+ *   - `proximity` only snaps when you happen to land near a row, which
+ *     is more ambiguous and less intentional.
  *
- * Combined with fluid typography (`vh + vw` in clamp — see
- * typography/RowBody.tsx) every row's collapsed content fits inside one
- * viewport without hard-clipping, so the snap stays clean.
+ * The trade-off (small wheel ticks jump a full screen) is mitigated by
+ * ADAPTIVE PADDING (`py-row-fluid`, see tailwind.config.ts) and
+ * AGGRESSIVE FLUID TYPOGRAPHY (clamp with vh+vw, vh-weighted — see
+ * typography/RowBody.tsx) so every row's content fits inside one
+ * viewport without scrolling, even on a 13" laptop.
  */
 const Index = () => {
   const seo = useSiteContent<{ meta_title: string; meta_description: string }>("main_page_seo", { meta_title: "", meta_description: "" });
