@@ -56,8 +56,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_crawler_logs: {
+        Row: {
+          bot_name: string
+          created_at: string
+          id: string
+          ip_hash: string | null
+          page_path: string
+          source: string
+          user_agent: string
+        }
+        Insert: {
+          bot_name: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          page_path: string
+          source?: string
+          user_agent: string
+        }
+        Update: {
+          bot_name?: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          page_path?: string
+          source?: string
+          user_agent?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
+          ai_summary: string | null
           author_image: string | null
           author_image_alt: string | null
           author_name: string | null
@@ -82,6 +113,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_summary?: string | null
           author_image?: string | null
           author_image_alt?: string | null
           author_name?: string | null
@@ -106,6 +138,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_summary?: string | null
           author_image?: string | null
           author_image_alt?: string | null
           author_name?: string | null
@@ -148,6 +181,7 @@ export type Database = {
       }
       cms_pages: {
         Row: {
+          ai_summary: string | null
           created_at: string
           draft_page_rows: Json | null
           id: string
@@ -161,6 +195,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_summary?: string | null
           created_at?: string
           draft_page_rows?: Json | null
           id?: string
@@ -174,6 +209,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_summary?: string | null
           created_at?: string
           draft_page_rows?: Json | null
           id?: string

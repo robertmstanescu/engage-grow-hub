@@ -28,6 +28,7 @@ interface CmsPage {
   created_at: string;
   meta_title?: string;
   meta_description?: string;
+  ai_summary?: string;
 }
 
 interface CmsPageRef {
@@ -274,6 +275,43 @@ const PagesManager = ({ onEditPage }: Props) => {
             updateCmsPageMeta(editingPage.id, "meta_description", v);
           }}
         />
+
+        {/* AI Search Summary — fed to /llms.txt for AI assistants. */}
+        <div
+          className="rounded-lg border p-4 space-y-2"
+          style={{ borderColor: "hsl(46 75% 40% / 0.4)", backgroundColor: "hsl(46 75% 60% / 0.06)" }}
+        >
+          <label
+            className="font-body text-[10px] uppercase tracking-wider font-medium block"
+            style={{ color: "hsl(var(--foreground))" }}
+          >
+            AI Search Summary
+          </label>
+          <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+            A 1-3 sentence summary written for AI assistants (ChatGPT, Claude, Perplexity). Aim for 60-320 characters.
+          </p>
+          <textarea
+            placeholder="Describe this page in plain language for AI crawlers."
+            value={editingPage.ai_summary || ""}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditingPage({ ...editingPage, ai_summary: value });
+            }}
+            onBlur={async (e) => {
+              const value = e.target.value.trim();
+              await updateCmsPageMeta(editingPage.id, "ai_summary", value);
+              if (value) {
+                toast.success("AEO Metadata Synchronized: Content is now ready for AI Crawlers.");
+              }
+            }}
+            rows={3}
+            className="w-full px-4 py-2.5 rounded-lg font-body text-sm border resize-none"
+            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+          />
+          <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+            {(editingPage.ai_summary || "").length}/320 chars
+          </p>
+        </div>
         <RowsManager
           rows={draftRows}
           onChange={(rows) => {

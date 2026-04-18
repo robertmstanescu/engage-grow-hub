@@ -27,6 +27,7 @@ export interface BlogPostRecord {
   og_image: string | null;
   og_image_alt: string | null;
   tags: string[] | null;
+  ai_summary: string | null;
 }
 
 export const fetchAllBlogPosts = () =>
