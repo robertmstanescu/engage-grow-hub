@@ -3,14 +3,30 @@ import { Upload, Image, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import MediaGallery from "./MediaGallery";
+import ImageAltInput from "./ImageAltInput";
 
 interface Props {
   label: string;
   value: string;
   onChange: (url: string) => void;
+  /**
+   * If provided, render the SEO Alt Text input directly under the picker.
+   * Pass the current alt value and a setter — same pattern as `value`/`onChange`.
+   * Omit both to opt out (e.g. for icons or purely decorative pickers).
+   */
+  altValue?: string;
+  onAltChange?: (alt: string) => void;
 }
 
-const ImagePickerField = ({ label, value, onChange }: Props) => {
+/**
+ * <ImagePickerField/> — admin-side image picker with optional SEO alt-text input.
+ *
+ * Lets the admin upload from disk, choose from the media gallery, or paste a URL.
+ * When `altValue` + `onAltChange` are passed, also renders the standardised
+ * <ImageAltInput/> below the picker so the alt text lives next to the image
+ * URL it describes.
+ */
+const ImagePickerField = ({ label, value, onChange, altValue, onAltChange }: Props) => {
   const [showGallery, setShowGallery] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -31,7 +47,7 @@ const ImagePickerField = ({ label, value, onChange }: Props) => {
       <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>{label}</label>
       {value ? (
         <div className="relative rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
-          <img src={value} alt="" className="w-full h-28 object-cover" />
+          <img src={value} alt={altValue || label} className="w-full h-28 object-cover" />
           <div className="absolute bottom-2 right-2 flex gap-1.5">
             <button onClick={() => setShowGallery(true)} className="font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-sm" style={{ backgroundColor: "hsl(var(--card) / 0.9)", color: "hsl(var(--foreground))" }}>
               <Image size={11} className="inline mr-1" />Gallery
@@ -58,6 +74,9 @@ const ImagePickerField = ({ label, value, onChange }: Props) => {
       )}
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = ""; }} />
       <input value={value} onChange={(e) => onChange(e.target.value)} placeholder="Or paste image URL…" className="w-full mt-1.5 px-3 py-1.5 rounded-lg font-body text-xs border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+      {value && onAltChange && (
+        <ImageAltInput value={altValue ?? ""} onChange={onAltChange} />
+      )}
       {showGallery && <MediaGallery isModal onSelect={onChange} onClose={() => setShowGallery(false)} />}
     </div>
   );
