@@ -154,8 +154,22 @@ const TagsManager = () => {
         <p className="font-body text-xs text-muted-foreground mb-3">
           These appear as tag badges on service cards. The "value" is the internal ID used for styling.
         </p>
+        {tags.service_tag_types.length > 0 && (
+          <div className="mb-3">
+            <ListFilters
+              state={serviceFilter}
+              searchPlaceholder="Search service tags…"
+              showCategoryFilter={false}
+              hideSortModes={["updated"]}
+            />
+          </div>
+        )}
         <div className="space-y-2">
-          {tags.service_tag_types.map((tag, i) => (
+          {filteredServiceTags.map((tag) => {
+            // Use the ORIGINAL array index so updates/removals stay in sync
+            // with `tags.service_tag_types`, even when filtering hides siblings.
+            const i = tag._idx;
+            return (
             <div key={i} className="space-y-2 p-3 rounded-lg border mb-2" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
               <div className="flex items-center gap-2">
                 <Tag size={12} className="text-muted-foreground flex-shrink-0" />
