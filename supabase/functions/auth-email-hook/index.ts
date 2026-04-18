@@ -72,7 +72,7 @@ const SAMPLE_DATA: Record<string, object> = {
     siteName: SITE_NAME,
     email: SAMPLE_EMAIL,
     newEmail: SAMPLE_EMAIL,
-    confirmationUrl: SAMPLE_PROJECT_URL,
+    token: '123456',
   },
   reauthentication: {
     token: '123456',
