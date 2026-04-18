@@ -45,7 +45,7 @@ const ContactsList = () => {
       snapshot: () => contacts,
       applyOptimistic: () => setContacts((prev) => prev.filter((c) => c.id !== id)),
       rollback: (prev) => setContacts(prev),
-      action: () => deleteContact(id),
+      action: async () => await deleteContact(id),
       successMessage: "Contact deleted",
     });
   };
