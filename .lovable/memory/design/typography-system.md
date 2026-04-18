@@ -7,13 +7,13 @@ type: design
 # Typography & Spacing System
 
 ## Tiered scale (Hero special, rest unified)
-- **HeroRow** keeps its oversized fluid title `clamp(1.6rem, 5vw, 5.5rem)` — page-opener.
-- **All other rows** (Boxed, Service, Profile, Grid, ImageText, Text, Contact) use the shared wrappers in `src/features/site/rows/typography/`:
+- **HeroRow** keeps its oversized fluid title `clamp(1.6rem, 5vw, 5.5rem)` — page-opener (intentionally opts OUT of `<RowSection>`).
+- **All other rows** (Boxed, Service, Profile, Grid, ImageText, Text, Contact) use `<RowSection>` + the typography wrappers in `src/features/site/rows/typography/`:
   - `<RowEyebrow>` — `tracking-[0.35em]` uppercase, `clamp(9px, 0.9vw, 11px)`, `mb-rhythm-tight`
   - `<RowTitle as="h2">` — `font-display` (Unbounded) black, `leading-[0.95]`, `clamp(1.5rem, 3.5vw, 2.6rem)`, `mb-rhythm-base`
   - `<RowSubtitle>` — `Architects Daughter` script, `clamp(0.9rem, 2vw, 1.2rem)`, `mb-rhythm-base`
   - `<RowBody html={...}>` — `font-body-heading` (Bricolage), `leading-[1.6]` (WCAG 1.4.12), `clamp(0.9rem, 1.5vw, 1.05rem)`
-  - `<RowSection>` — replaces hand-rolled `<section>` boilerplate; handles bg color/image, RowBackground, vAlign, `py-row md:py-row-md`, isolation, snap.
+  - `<RowSection>` — replaces hand-rolled `<section>` boilerplate; handles bg color/image, RowBackground, vAlign, `py-row md:py-row-md`, isolation, snap. **Single source of truth for row vertical padding.**
 
 ## Vertical rhythm scale (tailwind.config.ts → spacing)
 - `rhythm-tight` 12px — eyebrow → title gap
