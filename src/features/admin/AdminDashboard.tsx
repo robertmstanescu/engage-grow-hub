@@ -42,6 +42,7 @@ import PillarEditor from "./site-editor/PillarEditor";
 import ImageTextEditor from "./site-editor/ImageTextEditor";
 import ProfileEditor from "./site-editor/ProfileEditor";
 import GridEditor from "./site-editor/GridEditor";
+import LeadMagnetEditor from "./site-editor/LeadMagnetEditor";
 import ImagePickerField from "./ImagePickerField";
 import GradientEditor from "./site-editor/GradientEditor";
 import OverlayEditor from "./site-editor/OverlayEditor";
@@ -58,7 +59,7 @@ interface Props { session: any; }
 /* ── Helpers ── */
 const SECTION_EMOJI: Record<string, string> = {
   hero: "🎭", text: "✦", service: "💀", boxed: "✦", contact: "📬",
-  image_text: "🖼", profile: "👤", grid: "📊",
+  image_text: "🖼", profile: "👤", grid: "📊", lead_magnet: "🎁",
 };
 
 const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[] = [
@@ -70,6 +71,7 @@ const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[
   { type: "image_text", label: "Image & Text", emoji: "🖼" },
   { type: "profile", label: "Profile", emoji: "👤" },
   { type: "grid", label: "Grid", emoji: "📊" },
+  { type: "lead_magnet", label: "Lead Magnet", emoji: "🎁" },
 ];
 const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
 
@@ -294,6 +296,7 @@ const AdminDashboard = ({ session }: Props) => {
         : type === "contact" ? { title_lines: [], body: "", button_text: "Submit", fields: [] }
         : type === "service" ? { eyebrow: "", title: "", description: "", services: [] }
         : type === "grid" ? { title_lines: [], items: [] }
+        : type === "lead_magnet" ? { resource_asset_id: null, cover_asset_id: null, title: "", description: "" }
         : { title_lines: [], body: "" },
     };
     updateRows([...pageRows, newRow]);
@@ -1371,6 +1374,8 @@ const RowContentEditor = ({
       return <>{commonMeta}<ProfileEditor content={content} onChange={onContentChange} bgColor={bg} /></>;
     case "grid":
       return <>{commonMeta}<GridEditor content={content} onChange={onContentChange} bgColor={bg} /></>;
+    case "lead_magnet":
+      return <>{commonMeta}<LeadMagnetEditor content={content} onChange={(next) => Object.entries(next).forEach(([k, v]) => onContentChange(k, v))} /></>;
     default:
       return commonMeta;
   }

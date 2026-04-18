@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Anyone can fetch media-library files" ON storage.objects;

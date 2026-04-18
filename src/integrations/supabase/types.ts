@@ -68,6 +68,8 @@ export type Database = {
           created_at: string
           excerpt: string | null
           id: string
+          lead_magnet_asset_id: string | null
+          lead_magnet_cover_id: string | null
           meta_description: string | null
           meta_title: string | null
           og_image: string | null
@@ -90,6 +92,8 @@ export type Database = {
           created_at?: string
           excerpt?: string | null
           id?: string
+          lead_magnet_asset_id?: string | null
+          lead_magnet_cover_id?: string | null
           meta_description?: string | null
           meta_title?: string | null
           og_image?: string | null
@@ -112,6 +116,8 @@ export type Database = {
           created_at?: string
           excerpt?: string | null
           id?: string
+          lead_magnet_asset_id?: string | null
+          lead_magnet_cover_id?: string | null
           meta_description?: string | null
           meta_title?: string | null
           og_image?: string | null
@@ -123,7 +129,22 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_lead_magnet_asset_id_fkey"
+            columns: ["lead_magnet_asset_id"]
+            isOneToOne: false
+            referencedRelation: "media_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_posts_lead_magnet_cover_id_fkey"
+            columns: ["lead_magnet_cover_id"]
+            isOneToOne: false
+            referencedRelation: "media_assets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cms_pages: {
         Row: {
@@ -316,6 +337,124 @@ export type Database = {
           used_at?: string | null
         }
         Relationships: []
+      }
+      leads: {
+        Row: {
+          company_university: string
+          created_at: string
+          download_history: string[]
+          email: string
+          full_name: string
+          id: string
+          marketing_consent: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_university: string
+          created_at?: string
+          download_history?: string[]
+          email: string
+          full_name: string
+          id?: string
+          marketing_consent?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_university?: string
+          created_at?: string
+          download_history?: string[]
+          email?: string
+          full_name?: string
+          id?: string
+          marketing_consent?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      media_assets: {
+        Row: {
+          alt_text: string
+          bucket: string
+          created_at: string
+          description: string
+          folder_id: string | null
+          id: string
+          mime_type: string | null
+          seo_metadata: Json
+          size_bytes: number | null
+          storage_path: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          alt_text?: string
+          bucket?: string
+          created_at?: string
+          description?: string
+          folder_id?: string | null
+          id?: string
+          mime_type?: string | null
+          seo_metadata?: Json
+          size_bytes?: number | null
+          storage_path: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string
+          bucket?: string
+          created_at?: string
+          description?: string
+          folder_id?: string | null
+          id?: string
+          mime_type?: string | null
+          seo_metadata?: Json
+          size_bytes?: number | null
+          storage_path?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_assets_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "media_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_folders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          parent_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          parent_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          parent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "media_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

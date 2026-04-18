@@ -9,6 +9,7 @@ import HeroRow from "./HeroRow";
 import ImageTextRow from "./ImageTextRow";
 import ProfileRow from "./ProfileRow";
 import GridRow from "./GridRow";
+import LeadMagnetRow from "./LeadMagnetRow";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -78,6 +79,8 @@ const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number;
       return wrapper(<ProfileRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
     case "grid":
       return wrapper(<GridRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
+    case "lead_magnet":
+      return wrapper(<LeadMagnetRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
     default:
       return null;
   }
