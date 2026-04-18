@@ -256,8 +256,22 @@ const TagsManager = () => {
         <p className="font-body text-xs text-muted-foreground mb-3">
           Categories available when creating or editing blog posts.
         </p>
+        {tags.blog_categories.length > 0 && (
+          <div className="mb-3">
+            <ListFilters
+              state={blogFilter}
+              searchPlaceholder="Search blog categories…"
+              showCategoryFilter={false}
+              hideSortModes={["updated"]}
+            />
+          </div>
+        )}
         <div className="space-y-2">
-          {tags.blog_categories.map((cat, i) => (
+          {filteredBlogCats.map((cat) => {
+            // Preserve the original index so updateBlogCategory mutates the
+            // correct slot in `tags.blog_categories` even while filtered.
+            const i = cat._idx;
+            return (
             <div key={i} className="space-y-2 p-3 rounded-lg border mb-2" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
               <div className="flex items-center gap-2">
                 <Tag size={12} className="text-muted-foreground flex-shrink-0" />
