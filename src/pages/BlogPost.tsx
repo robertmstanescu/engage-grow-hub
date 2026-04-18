@@ -8,6 +8,7 @@ import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
+import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
 
@@ -19,6 +20,7 @@ interface BlogArticle {
   author_name: string | null; author_image: string | null; author_image_alt: string | null;
   meta_title: string | null; meta_description: string | null;
   og_image: string | null; og_image_alt: string | null; tags: string[] | null;
+  lead_magnet_asset_id: string | null; lead_magnet_cover_id: string | null;
 }
 
 const calculateReadTime = (content: string) => `${Math.max(1, Math.ceil(content.trim().split(/\s+/).length / 200))} min read`;
@@ -53,7 +55,7 @@ const BlogPost = () => {
 
       let query = supabase
         .from("blog_posts")
-        .select("slug, title, published_at, content, category, cover_image, cover_image_alt, author_name, author_image, author_image_alt, meta_title, meta_description, og_image, og_image_alt, tags")
+        .select("slug, title, published_at, content, category, cover_image, cover_image_alt, author_name, author_image, author_image_alt, meta_title, meta_description, og_image, og_image_alt, tags, lead_magnet_asset_id, lead_magnet_cover_id")
         .eq("slug", slug);
 
       if (!isPreview) query = query.eq("status", "published");
@@ -134,6 +136,15 @@ const BlogPost = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.15, ease }}
             className="max-w-[700px] mx-auto prose prose-sm md:prose-base prose-headings:font-display prose-headings:text-[hsl(260_20%_10%)] prose-p:text-[hsl(260_20%_10%_/_0.75)] prose-p:leading-[1.8] prose-a:text-[hsl(280_55%_24%)] prose-img:rounded-lg"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }} />
+
+          {article.lead_magnet_asset_id && (
+            <div className="max-w-[900px] mx-auto mt-12">
+              <ResourceWidget
+                resourceAssetId={article.lead_magnet_asset_id}
+                coverAssetId={article.lead_magnet_cover_id}
+              />
+            </div>
+          )}
 
           <div className="max-w-[700px] mx-auto mt-12 pt-8 flex flex-col items-center" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }}>
             <SubscribeWidget />

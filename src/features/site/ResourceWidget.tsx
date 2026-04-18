@@ -28,7 +28,7 @@ import { submitLeadAndGetDownload } from "@/services/leads";
 
 const CREAM = "#F4F0EC";
 const ease = [0.16, 1, 0.3, 1] as const;
-const EMAIL_REGEX = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface Props {
   /** Required: id of the gated resource asset. */
