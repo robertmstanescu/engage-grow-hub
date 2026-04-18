@@ -15,3 +15,9 @@ project_id = "mbxqjjmjywsxibttjrgr"
     verify_jwt = false
   [functions.submit-contact]
     verify_jwt = false
+  [functions.submit-lead]
+    verify_jwt = false
+  [functions.llms-txt]
+    verify_jwt = false
+  [functions.track-ai-crawler]
+    verify_jwt = false
