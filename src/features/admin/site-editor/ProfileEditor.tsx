@@ -7,9 +7,11 @@ import { Plus, Trash2 } from "lucide-react";
 interface Props {
   content: Record<string, any>;
   onChange: (field: string, value: any) => void;
+  /** Live row background, forwarded to RichField for legible contrast. */
+  bgColor?: string;
 }
 
-const ProfileEditor = ({ content, onChange }: Props) => {
+const ProfileEditor = ({ content, onChange, bgColor }: Props) => {
   const titleLines: string[] = (content.title_lines || []).map((l: any) =>
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
   );
@@ -59,7 +61,7 @@ const ProfileEditor = ({ content, onChange }: Props) => {
       </SectionBox>
 
       <SectionBox label="Content">
-        <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
+        <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
       </SectionBox>
 
       <SectionBox label="Note & Button">
