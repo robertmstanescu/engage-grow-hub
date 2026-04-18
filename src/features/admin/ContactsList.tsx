@@ -16,6 +16,19 @@ const ContactsList = () => {
    */
   const [isLoadingContacts, setIsLoadingContacts] = useState(true);
 
+  // Search across name + email + company. Marketing opt-in becomes the
+  // category axis so admins can quickly isolate subscribers.
+  const contactFilters = useListFilters<ContactRecord>({
+    items: contacts,
+    paramPrefix: "c",
+    defaultSort: "manual",
+    searchableText: (c) => `${c.name} ${c.email} ${c.company || ""} ${c.message || ""}`.toLowerCase(),
+    categoryOf: (c) => (c.subscribed_to_marketing ? "marketing" : "all-others"),
+    alphaKey: (c) => c.name.toLowerCase(),
+    updatedKey: (c) => c.created_at,
+  });
+  const filteredContacts = contactFilters.filteredItems;
+
   useEffect(() => {
     /**
      * Plain try/catch here (not runDbAction) because we want to silently

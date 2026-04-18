@@ -53,6 +53,19 @@ const PagesManager = ({ onEditPage }: Props) => {
   const [newSlug, setNewSlug] = useState("");
   const [isCreatingPage, setIsCreatingPage] = useState(false);
 
+  // Search/filter/sort over the CMS pages list. Searches title + slug + status.
+  // Type filter dropdown surfaces published/draft. URL params: ?pq, ?ptype, ?psort.
+  const pageFilters = useListFilters<CmsPage>({
+    items: pages,
+    paramPrefix: "p",
+    defaultSort: "manual",
+    searchableText: (p) => `${p.title} ${p.slug} ${p.status}`.toLowerCase(),
+    categoryOf: (p) => p.status,
+    alphaKey: (p) => p.title.toLowerCase(),
+    updatedKey: (p) => p.created_at,
+  });
+  const filteredPages = pageFilters.filteredItems;
+
   const load = async () => {
     const { data } = await fetchAllCmsPages();
     setPages(((data as unknown) as CmsPage[]) || []);
