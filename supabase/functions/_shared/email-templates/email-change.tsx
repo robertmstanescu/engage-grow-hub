@@ -20,7 +20,7 @@ import {
  *   • Magic links can be mangled by Outlook safe-links / corporate proxies.
  *   • Links bounce through the Supabase Auth domain; misconfigured redirects
  *     fail silently and lock users out.
- *   • A 6-digit code proves the user controls THIS inbox in THIS session,
+ *   • An 8-character code proves the user controls THIS inbox in THIS session,
  *     no link clicking required.
  *
  * Supabase's email-change flow sends this email to BOTH the old and the
@@ -62,7 +62,7 @@ export const EmailChangeEmail = ({
           .
         </Text>
         <Text style={text}>
-          Enter this 6-digit code in the admin panel to confirm the change:
+          Enter this 8-character code in the admin panel to confirm the change:
         </Text>
         <Text style={codeStyle}>{token}</Text>
         <Text style={smallText}>
