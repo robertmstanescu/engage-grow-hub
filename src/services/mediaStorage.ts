@@ -64,6 +64,23 @@ export const downloadEditorImage = (path: string) =>
 export const uploadEditorImageRaw = (path: string, blob: Blob) =>
   supabase.storage.from(EDITOR_BUCKET).upload(path, blob);
 
+/**
+ * Rename a file in the editor-images bucket.
+ *
+ * Supabase Storage has no native `rename` — we copy the file to its new
+ * path and remove the old one. Wrapped here so callers don't have to know
+ * about the two-step dance (and so we can swap to a single API later if
+ * Supabase ever adds one).
+ */
+export async function renameEditorImage(oldPath: string, newPath: string) {
+  const { data: blob, error: dlErr } = await supabase.storage.from(EDITOR_BUCKET).download(oldPath);
+  if (dlErr || !blob) return { error: dlErr ?? new Error("Failed to read file") };
+  const { error: upErr } = await supabase.storage.from(EDITOR_BUCKET).upload(newPath, blob);
+  if (upErr) return { error: upErr };
+  await supabase.storage.from(EDITOR_BUCKET).remove([oldPath]);
+  return { error: null };
+}
+
 /* ─────────────────────────────────────────────────────────────────────────
    row-overlays bucket
    ───────────────────────────────────────────────────────────────────────── */
