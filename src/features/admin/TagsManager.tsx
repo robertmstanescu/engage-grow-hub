@@ -64,8 +64,8 @@ const TagsManager = () => {
 
   const handleSave = () =>
     runDbAction({
-      action: () =>
-        supabase
+      action: async () =>
+        await supabase
           .from("site_content")
           .upsert(
             { section_key: "tags_config", content: tags as any, updated_at: new Date().toISOString() },
