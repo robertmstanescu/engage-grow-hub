@@ -10,7 +10,23 @@ import {
   GripVertical, Plus, Trash2, ArrowLeft, Columns, X, Sparkles, Menu,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
+/**
+ * useIsAdminMobile
+ * Local hook (not the global useIsMobile which uses a 1024px tablet
+ * breakpoint). The admin panel only needs to switch into drawer mode
+ * on actual phones (< 768px), so we listen on our own media query.
+ */
+const useIsAdminMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => setIsMobile(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  return isMobile;
+};
 import ManageTeam from "./ManageTeam";
 import {
   DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors,
@@ -178,6 +194,21 @@ const SortableSectionBlock = ({
 const AdminDashboard = ({ session }: Props) => {
   const [activeTab, setActiveTab] = useState<Tab>("site");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const isAdminMobile = useIsAdminMobile();
+  // MobileAdminDrawer open/close state. We toggle this with the
+  // hamburger in the header on screens < 768px.
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  /**
+   * toggleMobileDrawer — wrapped in try/catch per spec because state
+   * mutations during fast taps occasionally throw in React strict mode.
+   */
+  const toggleMobileDrawer = useCallback(() => {
+    try {
+      setMobileDrawerOpen((open) => !open);
+    } catch (err) {
+      console.error("[AdminDashboard] failed to toggle drawer", err);
+    }
+  }, []);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [propertiesSubTab, setPropertiesSubTab] = useState<PropertiesSubTab>("content");
   const [showAddRow, setShowAddRow] = useState(false);
