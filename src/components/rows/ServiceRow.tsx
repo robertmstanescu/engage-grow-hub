@@ -128,11 +128,28 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
           </EditableText>
         </h3>
 
+        {/*
+          VERTICAL AXIS LAW:
+          Description must share the SAME edge as eyebrow + title above it.
+          Do NOT use `mx-auto / ml-auto / mr-auto` here — those would create
+          a second horizontal axis independent of the parent container's
+          alignment, producing the "staircase" look. Instead inherit the
+          parent's text-align and use margin to align the max-width box to
+          the same edge.
+        */}
         <div className="mb-6" style={revealStyle(isVisible, 2)}>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
             data-rte-fit=""
-            className={`font-body-heading max-w-[600px] ${rowContentAlign} leading-relaxed text-black`}
-            style={{ color: pillarDescriptionColor, fontSize: "clamp(0.75rem, 1.5vw, 1rem)", overflow: "visible", height: "auto" }}
+            className="font-body-heading leading-relaxed text-black"
+            style={{
+              color: pillarDescriptionColor,
+              fontSize: "clamp(0.75rem, 1.5vw, 1rem)",
+              overflow: "visible",
+              height: "auto",
+              maxWidth: 600,
+              marginLeft: align === "right" ? "auto" : align === "center" ? "auto" : 0,
+              marginRight: align === "left" ? "auto" : align === "center" ? "auto" : 0,
+            }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
         </div>
 
