@@ -333,16 +333,17 @@
    * inside one row" problem. `dvh` (dynamic viewport height) accounts
    * for mobile browser chrome that appears/disappears on scroll.
    */
+  /*
+   * Note: we deliberately do NOT set `max-height: 100dvh; overflow:hidden`
+   * on .snap-section — that would clip expanded accordions, dropdowns,
+   * and tooltips. Instead we rely on FLUID TYPOGRAPHY (clamp with vh+vw
+   * units) so that the COLLAPSED content naturally fits in one viewport
+   * without needing a hard clip. See typography/RowBody.tsx for the
+   * formula.
+   */
   .snap-section {
     scroll-snap-align: start;
     scroll-snap-stop: normal;
-  }
-
-  @media (min-width: 1025px) {
-    .snap-section {
-      max-height: 100dvh;
-      overflow: hidden;
-    }
   }
 
   /* Service rows: desktop = 100dvh centered, mobile = content-height */
