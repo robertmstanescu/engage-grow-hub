@@ -90,9 +90,14 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
   const dotInactive = c.color_dot_inactive || (isLightCarousel ? "hsl(0 0% 100% / 0.2)" : "hsl(0 0% 0% / 0.15)");
 
   const rowTextAlign = align === "right" ? "text-right" : align === "left" ? "text-left" : "text-center";
+  // Use only `auto` margins for horizontal placement. The parent
+  // `<RowSection>` already supplies symmetric `px-6` gutters, so adding
+  // an extra `ml-6`/`mr-6` here would push the content 24px further from
+  // one edge than the other — visible on mobile as an uneven side gap
+  // between alternating service pillars (left-aligned vs right-aligned).
   const rowContentAlign = align === "center" ? "mx-auto"
-    : align === "right" ? "ml-auto mr-6"
-    : "mr-auto ml-6";
+    : align === "right" ? "ml-auto"
+    : "mr-auto";
   const carouselJustify = align === "right" ? "justify-end" : align === "left" ? "justify-start" : "justify-center";
   const cardTextAlign = (c.card_text_align as "left" | "center" | "right") || "left";
 
