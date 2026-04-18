@@ -493,6 +493,19 @@ const BlogEditor = () => {
           </div>
         </div>
 
+        {/* Lead magnet (gated download) */}
+        <LeadMagnetSection
+          resourceAssetId={form.lead_magnet_asset_id}
+          coverAssetId={form.lead_magnet_cover_id}
+          onChange={({ resource_asset_id, cover_asset_id }) =>
+            setForm((f) => ({
+              ...f,
+              lead_magnet_asset_id: resource_asset_id,
+              lead_magnet_cover_id: cover_asset_id,
+            }))
+          }
+        />
+
         {/* SEO & Metadata */}
         <div className="rounded-lg border p-4 space-y-3" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.2)" }}>
           <label className="font-body text-[10px] uppercase tracking-wider font-medium block" style={{ color: "hsl(var(--foreground))" }}>SEO & Metadata</label>
