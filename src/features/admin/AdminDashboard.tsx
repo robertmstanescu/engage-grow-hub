@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { runDbAction } from "@/services/db-helpers";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import {
   LayoutDashboard, FileText, Compass, BookOpen,
@@ -362,76 +363,105 @@ const AdminDashboard = ({ session }: Props) => {
       updates.page_rows = cmsPageRows;
       updates.draft_page_rows = cmsPageRows;
     }
-    await supabase.from("cms_pages").update(updates).eq("id", cmsPage.id);
-    setCmsPageStatus(newStatus);
-    toast.success(newStatus === "published" ? "Published!" : "Unpublished");
+    // runDbAction normalizes the toast / error path. We update local state
+    // only on success so the UI never lies about the page's published flag.
+    const result = await runDbAction({
+      action: () => supabase.from("cms_pages").update(updates).eq("id", cmsPage.id),
+      successMessage: newStatus === "published" ? "Published!" : "Unpublished",
+    });
+    if (result !== null) setCmsPageStatus(newStatus);
   }, [cmsPage, cmsPageStatus, cmsPageRows]);
 
   const updateCmsPageMeta = useCallback(async (field: string, value: string) => {
     const next = { ...cmsPageMeta, [field]: value };
     setCmsPageMeta(next);
     if (cmsPage) {
-      await supabase.from("cms_pages").update({ [field]: value } as any).eq("id", cmsPage.id);
+      // Silent save — meta fields persist on every keystroke pause, so a
+      // toast for each one would spam the user. Errors are still surfaced.
+      await runDbAction({
+        action: () => supabase.from("cms_pages").update({ [field]: value } as any).eq("id", cmsPage.id),
+        successMessage: null,
+      });
     }
   }, [cmsPage, cmsPageMeta]);
 
   // ── Save / Publish ──
   const saveDraft = useCallback(async () => {
-    setSaving(true);
     if (cmsPage) {
-      const { error } = await supabase
-        .from("cms_pages")
-        .update({ draft_page_rows: cmsPageRows as any } as any)
-        .eq("id", cmsPage.id);
-      if (error) toast.error(error.message);
-      else toast.success("Draft saved");
-    } else {
-      const promises = sections.map(async (s) => {
-        const draft = (s.draft_content || s.content) as any;
-        const { data: existing } = await supabase
-          .from("site_content").select("id").eq("section_key", s.section_key).maybeSingle();
-        if (existing) {
-          await supabase.from("site_content").update({ draft_content: draft }).eq("section_key", s.section_key);
-        } else {
-          await supabase.from("site_content").insert({ section_key: s.section_key, content: draft, draft_content: draft } as any);
-        }
+      await runDbAction({
+        action: () => supabase
+          .from("cms_pages")
+          .update({ draft_page_rows: cmsPageRows as any } as any)
+          .eq("id", cmsPage.id),
+        setLoading: setSaving,
+        successMessage: "Draft saved",
       });
-      await Promise.all(promises);
-      toast.success("Draft saved");
+      return;
     }
-    setSaving(false);
+
+    // Multi-section save — we have to upsert each row of site_content
+    // independently because they may or may not already exist. We still
+    // wrap the whole batch in runDbAction so a failure ANYWHERE aborts
+    // with one toast (not N toasts) and saving=false runs in `finally`.
+    await runDbAction({
+      action: async () => {
+        const promises = sections.map(async (s) => {
+          const draft = (s.draft_content || s.content) as any;
+          const { data: existing } = await supabase
+            .from("site_content").select("id").eq("section_key", s.section_key).maybeSingle();
+          if (existing) {
+            return supabase.from("site_content").update({ draft_content: draft }).eq("section_key", s.section_key);
+          }
+          return supabase.from("site_content").insert({ section_key: s.section_key, content: draft, draft_content: draft } as any);
+        });
+        const results = await Promise.all(promises);
+        // Surface the first error so runDbAction can toast it.
+        const failed = results.find((r) => r.error);
+        return failed ?? { data: null, error: null };
+      },
+      setLoading: setSaving,
+      successMessage: "Draft saved",
+    });
   }, [sections, cmsPage, cmsPageRows]);
 
   const publishAll = useCallback(async () => {
-    setPublishing(true);
     if (cmsPage) {
-      const { error } = await supabase
-        .from("cms_pages")
-        .update({ page_rows: cmsPageRows as any, draft_page_rows: cmsPageRows as any, status: "published" } as any)
-        .eq("id", cmsPage.id);
-      if (error) toast.error(error.message);
-      else {
-        setCmsPageStatus("published");
-        toast.success("Page published!");
-      }
-    } else {
-      const updates = sections.map((s) => {
-        const data = (s.draft_content || s.content) as any;
-        return supabase
-          .from("site_content")
-          .upsert({ section_key: s.section_key, content: data, draft_content: data } as any, { onConflict: "section_key" });
+      const result = await runDbAction({
+        action: () => supabase
+          .from("cms_pages")
+          .update({ page_rows: cmsPageRows as any, draft_page_rows: cmsPageRows as any, status: "published" } as any)
+          .eq("id", cmsPage.id),
+        setLoading: setPublishing,
+        successMessage: "Page published!",
       });
-      const results = await Promise.all(updates);
-      const err = results.find((r) => r.error);
-      if (err?.error) {
-        toast.error((err.error as any).message);
-      } else {
-        setSections((prev) => prev.map((s) => ({ ...s, content: s.draft_content || s.content })));
-        sections.forEach((s) => invalidateSiteContent(s.section_key));
-        toast.success("All changes published!");
-      }
+      if (result !== null) setCmsPageStatus("published");
+      return;
     }
-    setPublishing(false);
+
+    // Same multi-section pattern as saveDraft, but writing to BOTH `content`
+    // (live) and `draft_content` so the published version reflects what the
+    // admin sees in the editor.
+    const result = await runDbAction({
+      action: async () => {
+        const updates = sections.map((s) => {
+          const data = (s.draft_content || s.content) as any;
+          return supabase
+            .from("site_content")
+            .upsert({ section_key: s.section_key, content: data, draft_content: data } as any, { onConflict: "section_key" });
+        });
+        const results = await Promise.all(updates);
+        const failed = results.find((r) => r.error);
+        return failed ?? { data: null, error: null };
+      },
+      setLoading: setPublishing,
+      successMessage: "All changes published!",
+    });
+
+    if (result !== null) {
+      // Promote drafts to live in local state so `hasChanges` flips back to false.
+      setSections((prev) => prev.map((s) => ({ ...s, content: s.draft_content || s.content })));
+      sections.forEach((s) => invalidateSiteContent(s.section_key));
+    }
   }, [sections, cmsPage, cmsPageRows]);
 
   const hasChanges = cmsPage
@@ -439,8 +469,13 @@ const AdminDashboard = ({ session }: Props) => {
     : sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success("Logged out");
+    // Sign-out is best-effort: runDbAction shows an error toast if the
+    // request fails, but the auth listener will still tear down the
+    // session locally so the user does end up signed out.
+    await runDbAction({
+      action: () => supabase.auth.signOut(),
+      successMessage: "Logged out",
+    });
   };
 
   // ── Section selection ──

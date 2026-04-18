@@ -1,38 +1,57 @@
+/**
+ * EmailCampaigns — manage draft campaigns and trigger sends.
+ *
+ * UX patterns at play here (see {@link runDbAction} & {@link runOptimisticAction}):
+ *   • Initial fetch shows a {@link ListSkeleton} instead of a blank panel.
+ *   • Saves & sends route through {@link runDbAction} so loading + toast are uniform.
+ *   • Deletion uses {@link runOptimisticAction} — the row vanishes immediately
+ *     and re-appears only if the server rejects (rare, since admins have RLS).
+ *   • All write buttons are {@link SpinnerButton}s so a slow network can never
+ *     be double-clicked into a duplicate insert/send.
+ */
+
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Send, Edit, Trash2, Eye } from "lucide-react";
 import EmailBlockEditor from "./EmailBlockEditor";
 import { EmailBlock, createBlock, blocksToHtml } from "./email-blocks";
-
-interface Campaign {
-  id: string;
-  subject: string;
-  html_content: string;
-  status: string;
-  sent_at: string | null;
-  recipient_count: number;
-  created_at: string;
-}
+import { ListSkeleton } from "@/components/ui/list-skeleton";
+import { SpinnerButton } from "@/components/ui/spinner-button";
+import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
+import {
+  fetchAllCampaigns,
+  insertCampaign,
+  updateCampaign,
+  deleteCampaign,
+  sendCampaign,
+  type CampaignRecord,
+} from "@/services/emailCampaigns";
 
 const EmailCampaigns = () => {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [editing, setEditing] = useState<Campaign | null>(null);
+  const [campaigns, setCampaigns] = useState<CampaignRecord[]>([]);
+  const [isLoadingList, setIsLoadingList] = useState(true);
+  const [editing, setEditing] = useState<CampaignRecord | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [subject, setSubject] = useState("");
   const [blocks, setBlocks] = useState<EmailBlock[]>([]);
-  const [sending, setSending] = useState(false);
+  const [isSavingChanges, setIsSavingChanges] = useState(false);
+  const [sendingId, setSendingId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
-  const fetchCampaigns = async () => {
-    const { data } = await supabase
-      .from("email_campaigns")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (data) setCampaigns(data);
+  const reloadCampaigns = async () => {
+    const result = await fetchAllCampaigns();
+    if (result.error) {
+      toast.error("Failed to load campaigns");
+      setIsLoadingList(false);
+      return;
+    }
+    setCampaigns((result.data as CampaignRecord[]) || []);
+    setIsLoadingList(false);
   };
 
-  useEffect(() => { fetchCampaigns(); }, []);
+  useEffect(() => {
+    reloadCampaigns();
+  }, []);
 
   const handleNew = () => {
     setIsNew(true);
@@ -45,12 +64,14 @@ const EmailCampaigns = () => {
     ]);
   };
 
-  const handleEdit = (campaign: Campaign) => {
-    if (campaign.status === "sent") { toast.error("Cannot edit a sent campaign"); return; }
+  const handleEdit = (campaign: CampaignRecord) => {
+    if (campaign.status === "sent") {
+      toast.error("Cannot edit a sent campaign");
+      return;
+    }
     setIsNew(false);
     setEditing(campaign);
     setSubject(campaign.subject);
-    // Try to parse stored blocks, otherwise start fresh
     try {
       const parsed = JSON.parse(campaign.html_content);
       if (Array.isArray(parsed)) {
@@ -58,59 +79,63 @@ const EmailCampaigns = () => {
         return;
       }
     } catch {}
-    // Fallback: create a text block with existing HTML
     const textBlock = createBlock("text");
     textBlock.content = campaign.html_content;
     setBlocks([textBlock]);
   };
 
   const handleSave = async () => {
-    if (!subject.trim()) { toast.error("Subject is required"); return; }
+    if (!subject.trim()) {
+      toast.error("Subject is required");
+      return;
+    }
 
-    // Store blocks as JSON so we can re-edit them, but also generate HTML
     const payload = {
       subject,
       html_content: JSON.stringify(blocks),
-      status: "draft" as const,
+      status: "draft",
     };
 
-    if (isNew) {
-      const { error } = await supabase.from("email_campaigns").insert(payload);
-      if (error) { toast.error(error.message); return; }
-      toast.success("Campaign saved as draft");
-    } else if (editing) {
-      const { error } = await supabase.from("email_campaigns").update(payload).eq("id", editing.id);
-      if (error) { toast.error(error.message); return; }
-      toast.success("Campaign updated");
-    }
+    const result = await runDbAction({
+      action: () => (isNew ? insertCampaign(payload) : updateCampaign(editing!.id, payload)),
+      setLoading: setIsSavingChanges,
+      successMessage: isNew ? "Campaign saved as draft" : "Campaign updated",
+    });
 
-    setEditing(null);
-    setIsNew(false);
-    fetchCampaigns();
+    if (result !== null) {
+      setEditing(null);
+      setIsNew(false);
+      reloadCampaigns();
+    }
   };
 
   const handleSend = async (campaignId: string) => {
     if (!confirm("Send this campaign to all marketing subscribers? This cannot be undone.")) return;
 
-    setSending(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("send-campaign", {
-        body: { campaignId },
-      });
-      if (error) throw error;
-      toast.success(`Campaign sent to ${data?.recipientCount || 0} subscribers`);
-      fetchCampaigns();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to send campaign");
-    }
-    setSending(false);
+    const result = await runDbAction({
+      // Edge function call — same shape as a Supabase query (returns { data, error }).
+      action: () => sendCampaign(campaignId),
+      setLoading: (loading) => setSendingId(loading ? campaignId : null),
+      successMessage: null, // We craft a custom message below
+      onSuccess: (res: any) => {
+        toast.success(`Campaign sent to ${res?.data?.recipientCount || 0} subscribers`);
+      },
+    });
+
+    if (result !== null) reloadCampaigns();
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this campaign?")) return;
-    await supabase.from("email_campaigns").delete().eq("id", id);
-    toast.success("Campaign deleted");
-    fetchCampaigns();
+
+    // Optimistic delete — the row disappears instantly, restored only on failure.
+    await runOptimisticAction({
+      snapshot: () => campaigns,
+      applyOptimistic: () => setCampaigns((c) => c.filter((x) => x.id !== id)),
+      rollback: (prev) => setCampaigns(prev),
+      action: () => deleteCampaign(id),
+      successMessage: "Campaign deleted",
+    });
   };
 
   if (isNew || editing) {
@@ -162,12 +187,14 @@ const EmailCampaigns = () => {
         )}
 
         <div className="flex gap-3">
-          <button
+          <SpinnerButton
+            isLoading={isSavingChanges}
+            loadingLabel="Saving…"
             onClick={handleSave}
             className="font-body text-xs uppercase tracking-wider px-5 py-2.5 rounded-full border hover:opacity-80 transition-opacity"
             style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}>
             Save Draft
-          </button>
+          </SpinnerButton>
         </div>
       </div>
     );
@@ -185,7 +212,9 @@ const EmailCampaigns = () => {
         </button>
       </div>
 
-      {campaigns.length === 0 ? (
+      {isLoadingList ? (
+        <ListSkeleton rows={4} rowHeight="h-16" />
+      ) : campaigns.length === 0 ? (
         <p className="font-body text-sm text-muted-foreground py-8 text-center">No campaigns yet.</p>
       ) : (
         <div className="space-y-3">
@@ -215,14 +244,14 @@ const EmailCampaigns = () => {
               <div className="flex items-center gap-2 ml-4">
                 {campaign.status === "draft" && (
                   <>
-                    <button
+                    <SpinnerButton
+                      isLoading={sendingId === campaign.id}
                       onClick={() => handleSend(campaign.id)}
-                      disabled={sending}
                       className="p-2 hover:opacity-70 transition-opacity"
                       style={{ color: "hsl(var(--primary))" }}
                       title="Send campaign">
                       <Send size={15} />
-                    </button>
+                    </SpinnerButton>
                     <button onClick={() => handleEdit(campaign)} className="p-2 hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
                       <Edit size={15} />
                     </button>

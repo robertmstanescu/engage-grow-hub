@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { Image, Plus, Trash2, RotateCw } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { uploadRowOverlay } from "@/services/mediaStorage";
+import { runDbAction } from "@/services/db-helpers";
 import type { OverlayElement, OverlayFit, OverlayAnchor, BlendMode } from "@/types/rows";
 
 interface Props {
@@ -105,14 +106,19 @@ const OverlayEditor = ({ overlays, onChange }: Props) => {
       toast.error("Maximum 5 overlay elements per row");
       return;
     }
-    const ext = file.name.split(".").pop() || "png";
-    const path = `${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("row-overlays").upload(path, file);
-    if (error) { toast.error("Upload failed"); return; }
-    const { data: { publicUrl } } = supabase.storage.from("row-overlays").getPublicUrl(path);
+
+    // Routed through the storage service + runDbAction so the failure path
+    // always produces a toast — no more silent uploads.
+    const result = await runDbAction({
+      action: () => uploadRowOverlay(file),
+      successMessage: "Overlay uploaded",
+      errorMessage: "Upload failed",
+    });
+    if (!result?.publicUrl) return;
+
     const newEl: OverlayElement = {
       id: crypto.randomUUID(),
-      url: publicUrl,
+      url: result.publicUrl,
       fit: "original",
       anchor: "middle-center",
       opacity: 40,
@@ -121,7 +127,6 @@ const OverlayEditor = ({ overlays, onChange }: Props) => {
     };
     onChange([...overlays, newEl]);
     setExpandedIdx(overlays.length);
-    toast.success("Overlay uploaded");
   };
 
   return (

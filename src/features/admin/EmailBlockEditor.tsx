@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Type, ImageIcon, Newspaper, Star, Minus, MousePointerClick,
@@ -7,6 +6,9 @@ import {
 } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { EmailBlock, createBlock, blocksToHtml } from "./email-blocks";
+import { fetchPublishedBlogPosts } from "@/services/blogPosts";
+import { uploadEditorImage } from "@/services/mediaStorage";
+import { runDbAction } from "@/services/db-helpers";
 
 interface BlogPost {
   slug: string;
@@ -31,11 +33,7 @@ const EmailBlockEditor = ({ blocks, onChange }: EmailBlockEditorProps) => {
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const { data } = await supabase
-        .from("blog_posts")
-        .select("slug, title, excerpt, category, published_at")
-        .eq("status", "published")
-        .order("published_at", { ascending: false });
+      const { data } = await fetchPublishedBlogPosts();
       if (data) setBlogPosts(data);
     };
     fetchPosts();
@@ -87,19 +85,20 @@ const EmailBlockEditor = ({ blocks, onChange }: EmailBlockEditorProps) => {
     if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
     if (file.size > 5 * 1024 * 1024) { toast.error("Max 5MB"); return; }
 
-    const ext = file.name.split(".").pop();
-    const path = `emails/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabase.storage.from("editor-images").upload(path, file);
-    if (error) { toast.error("Upload failed"); return; }
-
-    const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
+    // Routed through the storage service. runDbAction shows an error toast
+    // automatically if the upload fails.
+    const result = await runDbAction({
+      action: () => uploadEditorImage("emails", file),
+      successMessage: "Image uploaded",
+      errorMessage: "Upload failed",
+    });
+    if (!result?.publicUrl) return;
 
     if (field === "content") {
-      updateBlock(blockId, { content: publicUrl });
+      updateBlock(blockId, { content: result.publicUrl });
     } else {
-      updateSettings(blockId, { backgroundImage: publicUrl });
+      updateSettings(blockId, { backgroundImage: result.publicUrl });
     }
-    toast.success("Image uploaded");
   }, [blocks, onChange]);
 
   const blockTypes = [

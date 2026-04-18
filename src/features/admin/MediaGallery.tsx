@@ -1,7 +1,30 @@
+/**
+ * MediaGallery — list / upload / rename / delete images in the editor bucket.
+ *
+ * Async UX notes:
+ *   • Initial fetch shows a {@link ListSkeleton} (rows of placeholders) instead of
+ *     the older "Loading…" text — same total time, much smaller perceived wait.
+ *   • Uploads use {@link runDbAction} so the upload button can never be
+ *     double-clicked into duplicate uploads.
+ *   • Delete is OPTIMISTIC: the row is removed from the UI before the server
+ *     confirms. If Storage rejects the delete (rare), the row is restored.
+ *   • Storage operations are routed through `@/services/mediaStorage` so this
+ *     component never touches `supabase.storage` directly.
+ */
+
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, Trash2, Copy, Check, Image, X, Eye, Pencil } from "lucide-react";
+import { ListSkeleton } from "@/components/ui/list-skeleton";
+import { SpinnerButton } from "@/components/ui/spinner-button";
+import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
+import {
+  listEditorImages,
+  getEditorPublicUrl,
+  removeEditorImages,
+  renameEditorImage,
+  uploadEditorImage,
+} from "@/services/mediaStorage";
 
 interface MediaFile {
   name: string;
@@ -17,71 +40,105 @@ interface Props {
 
 const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
   const [files, setFiles] = useState<MediaFile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+  const [isLoadingList, setIsLoadingList] = useState(true);
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [renamingIdx, setRenamingIdx] = useState<number | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
+  /**
+   * Walk the editor-images bucket and build a flat list of every file the
+   * user has uploaded. We list the root + every direct subfolder (one level
+   * deep) so files saved by RichTextEditor / hero uploader / branding all
+   * surface in the same gallery.
+   */
   const fetchFiles = useCallback(async () => {
-    const { data, error } = await supabase.storage.from("editor-images").list("", {
-      limit: 200,
-      sortBy: { column: "created_at", order: "desc" },
-    });
+    setIsLoadingList(true);
+    const { data, error } = await listEditorImages();
 
-    if (error) { toast.error("Failed to load media"); return; }
+    if (error) {
+      toast.error("Failed to load media");
+      setIsLoadingList(false);
+      return;
+    }
 
     const allFiles: MediaFile[] = [];
     const folders = data?.filter((f) => !f.metadata) || [];
     const rootFiles = data?.filter((f) => f.metadata) || [];
 
     for (const f of rootFiles) {
-      const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(f.name);
-      allFiles.push({ name: f.name, url: publicUrl, created_at: f.created_at || "" });
+      allFiles.push({
+        name: f.name,
+        url: getEditorPublicUrl(f.name),
+        created_at: f.created_at || "",
+      });
     }
 
     for (const folder of folders) {
-      const { data: subFiles } = await supabase.storage.from("editor-images").list(folder.name, { limit: 100, sortBy: { column: "created_at", order: "desc" } });
+      const { data: subFiles } = await listEditorImages(folder.name, 100);
       if (subFiles) {
         for (const sf of subFiles) {
           if (!sf.metadata) continue;
           const path = `${folder.name}/${sf.name}`;
-          const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
-          allFiles.push({ name: path, url: publicUrl, created_at: sf.created_at || "" });
+          allFiles.push({
+            name: path,
+            url: getEditorPublicUrl(path),
+            created_at: sf.created_at || "",
+          });
         }
       }
     }
 
     allFiles.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
     setFiles(allFiles);
-    setLoading(false);
+    setIsLoadingList(false);
   }, []);
 
-  useEffect(() => { fetchFiles(); }, [fetchFiles]);
+  useEffect(() => {
+    fetchFiles();
+  }, [fetchFiles]);
 
   const handleUpload = async (fileList: FileList | null) => {
     if (!fileList) return;
-    setUploading(true);
-    for (const file of Array.from(fileList)) {
-      if (!file.type.startsWith("image/")) { toast.error(`${file.name} is not an image`); continue; }
-      if (file.size > 10 * 1024 * 1024) { toast.error(`${file.name} exceeds 10MB`); continue; }
-      const ext = file.name.split(".").pop();
-      const path = `gallery/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage.from("editor-images").upload(path, file);
-      if (error) toast.error(`Failed: ${file.name}`);
+
+    // We don't use runDbAction directly here because we want per-file error
+    // reporting (one bad file shouldn't fail the whole batch). The batch
+    // runner below still ensures `setIsUploadingFiles(false)` runs in finally.
+    setIsUploadingFiles(true);
+    try {
+      let successes = 0;
+      for (const file of Array.from(fileList)) {
+        if (!file.type.startsWith("image/")) {
+          toast.error(`${file.name} is not an image`);
+          continue;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`${file.name} exceeds 10MB`);
+          continue;
+        }
+        const { error } = await uploadEditorImage("gallery", file);
+        if (error) toast.error(`Failed: ${file.name}`);
+        else successes++;
+      }
+      if (successes > 0) toast.success(`Uploaded ${successes} ${successes === 1 ? "image" : "images"}`);
+    } finally {
+      setIsUploadingFiles(false);
+      fetchFiles();
     }
-    toast.success("Upload complete");
-    setUploading(false);
-    fetchFiles();
   };
 
   const handleDelete = async (name: string) => {
     if (!confirm("Delete this image?")) return;
-    const { error } = await supabase.storage.from("editor-images").remove([name]);
-    if (error) { toast.error("Failed to delete"); return; }
-    toast.success("Deleted");
-    setFiles((f) => f.filter((x) => x.name !== name));
+
+    // Optimistic removal — see runOptimisticAction docs for the pattern.
+    await runOptimisticAction({
+      snapshot: () => files,
+      applyOptimistic: () => setFiles((f) => f.filter((x) => x.name !== name)),
+      rollback: (prev) => setFiles(prev),
+      action: () => removeEditorImages([name]),
+      successMessage: "Deleted",
+    });
   };
 
   const handleCopy = (url: string) => {
@@ -102,17 +159,14 @@ const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
     const ext = oldName.split(".").pop();
     const newPath = `${dir}${newName}.${ext}`;
 
-    // Supabase storage doesn't have rename — copy then delete
-    const { data: blob } = await supabase.storage.from("editor-images").download(oldName);
-    if (!blob) { toast.error("Failed to read file"); setRenamingIdx(null); return; }
+    const result = await runDbAction({
+      action: () => renameEditorImage(oldName, newPath),
+      successMessage: "Renamed",
+      errorMessage: "Rename failed",
+    });
 
-    const { error: uploadErr } = await supabase.storage.from("editor-images").upload(newPath, blob);
-    if (uploadErr) { toast.error("Rename failed"); setRenamingIdx(null); return; }
-
-    await supabase.storage.from("editor-images").remove([oldName]);
-    toast.success("Renamed");
     setRenamingIdx(null);
-    fetchFiles();
+    if (result !== null) fetchFiles();
   };
 
   const getFileName = (path: string) => {
@@ -136,10 +190,22 @@ const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
         <div className="flex items-center gap-2">
           <label
             className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full cursor-pointer hover:opacity-80 transition-opacity"
-            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+            style={{
+              backgroundColor: "hsl(var(--primary))",
+              color: "hsl(var(--primary-foreground))",
+              opacity: isUploadingFiles ? 0.6 : 1,
+              pointerEvents: isUploadingFiles ? "none" : "auto",
+            }}
           >
-            <Upload size={13} /> {uploading ? "Uploading…" : "Upload"}
-            <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} disabled={uploading} />
+            <Upload size={13} /> {isUploadingFiles ? "Uploading…" : "Upload"}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => handleUpload(e.target.files)}
+              disabled={isUploadingFiles}
+            />
           </label>
           {isModal && onClose && (
             <button onClick={onClose} className="p-2 rounded-full hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -150,8 +216,8 @@ const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
       </div>
 
       {/* File list */}
-      {loading ? (
-        <p className="font-body text-sm text-center py-12" style={{ color: "hsl(var(--muted-foreground))" }}>Loading…</p>
+      {isLoadingList ? (
+        <ListSkeleton rows={6} rowHeight="h-14" />
       ) : files.length === 0 ? (
         <div className="py-12 text-center">
           <Image size={32} className="mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />

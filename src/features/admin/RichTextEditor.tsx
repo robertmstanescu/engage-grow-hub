@@ -20,9 +20,10 @@ import {
   Code,
   LetterText,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { sanitizeHtml } from "@/services/sanitize";
+import { uploadEditorImage } from "@/services/mediaStorage";
+import { runDbAction } from "@/services/db-helpers";
 import { useBrandColors } from "@/hooks/useBrandSettings";
 
 const FONT_OPTIONS = [
@@ -115,15 +116,18 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
 
   const handleImageUpload = useCallback(
     async (file: File) => {
+      // Client-side guards before we burn an API call.
       if (!file.type.startsWith("image/")) { toast.error("Please upload an image file"); return; }
       if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
-      const ext = file.name.split(".").pop();
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage.from("editor-images").upload(path, file);
-      if (error) { toast.error("Failed to upload image"); return; }
-      const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
-      runCommand("insertImage", publicUrl);
-      toast.success("Image uploaded");
+
+      // runDbAction guarantees the user always sees either a success or
+      // an error toast, even when the network blows up mid-upload.
+      const result = await runDbAction({
+        action: () => uploadEditorImage("rte", file),
+        successMessage: "Image uploaded",
+        errorMessage: "Failed to upload image",
+      });
+      if (result?.publicUrl) runCommand("insertImage", result.publicUrl);
     },
     [runCommand]
   );
