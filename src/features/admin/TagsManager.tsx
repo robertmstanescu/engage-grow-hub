@@ -4,6 +4,8 @@ import { Plus, Trash2, Tag } from "lucide-react";
 import { Field, SectionBox } from "./site-editor/FieldComponents";
 import { runDbAction } from "@/services/db-helpers";
 import { SpinnerButton } from "@/components/ui/spinner-button";
+import ListFilters from "@/components/ui/list-filters";
+import { useListFilters } from "@/hooks/useListFilters";
 
 interface ServiceTagType {
   label: string;
@@ -38,6 +40,32 @@ const DEFAULT_TAGS: TagsData = {
 const TagsManager = () => {
   const [tags, setTags] = useState<TagsData>(DEFAULT_TAGS);
   const [isSavingChanges, setIsSavingChanges] = useState(false);
+
+  /**
+   * Wire the shared filter hook for BOTH lists. We attach `_idx` to each
+   * item BEFORE filtering so the filtered view still knows which slot in
+   * the underlying `tags.service_tag_types` / `tags.blog_categories`
+   * array to mutate when the editor calls `updateServiceTag(idx, …)`.
+   *
+   * No category dropdown for these (`showCategoryFilter={false}` below)
+   * — they're flat lists with no meaningful type axis. Search + sort only.
+   * URL prefixes `st` and `bc` keep params unique across admin tabs.
+   */
+  const serviceTagsIndexed = tags.service_tag_types.map((t, _idx) => ({ ...t, _idx }));
+  const { state: serviceFilter, filteredItems: filteredServiceTags } = useListFilters({
+    items: serviceTagsIndexed,
+    paramPrefix: "st",
+    searchableText: (t) => `${t.label} ${t.value}`.toLowerCase(),
+    alphaKey: (t) => t.label.toLowerCase(),
+  });
+
+  const blogCatsIndexed = tags.blog_categories.map((c, _idx) => ({ ...c, _idx }));
+  const { state: blogFilter, filteredItems: filteredBlogCats } = useListFilters({
+    items: blogCatsIndexed,
+    paramPrefix: "bc",
+    searchableText: (c) => c.label.toLowerCase(),
+    alphaKey: (c) => c.label.toLowerCase(),
+  });
 
   useEffect(() => {
     const load = async () => {
@@ -126,8 +154,22 @@ const TagsManager = () => {
         <p className="font-body text-xs text-muted-foreground mb-3">
           These appear as tag badges on service cards. The "value" is the internal ID used for styling.
         </p>
+        {tags.service_tag_types.length > 0 && (
+          <div className="mb-3">
+            <ListFilters
+              state={serviceFilter}
+              searchPlaceholder="Search service tags…"
+              showCategoryFilter={false}
+              hideSortModes={["updated"]}
+            />
+          </div>
+        )}
         <div className="space-y-2">
-          {tags.service_tag_types.map((tag, i) => (
+          {filteredServiceTags.map((tag) => {
+            // Use the ORIGINAL array index so updates/removals stay in sync
+            // with `tags.service_tag_types`, even when filtering hides siblings.
+            const i = tag._idx;
+            return (
             <div key={i} className="space-y-2 p-3 rounded-lg border mb-2" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
               <div className="flex items-center gap-2">
                 <Tag size={12} className="text-muted-foreground flex-shrink-0" />
@@ -197,7 +239,8 @@ const TagsManager = () => {
                 </span>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
         <button
           type="button"
@@ -213,8 +256,22 @@ const TagsManager = () => {
         <p className="font-body text-xs text-muted-foreground mb-3">
           Categories available when creating or editing blog posts.
         </p>
+        {tags.blog_categories.length > 0 && (
+          <div className="mb-3">
+            <ListFilters
+              state={blogFilter}
+              searchPlaceholder="Search blog categories…"
+              showCategoryFilter={false}
+              hideSortModes={["updated"]}
+            />
+          </div>
+        )}
         <div className="space-y-2">
-          {tags.blog_categories.map((cat, i) => (
+          {filteredBlogCats.map((cat) => {
+            // Preserve the original index so updateBlogCategory mutates the
+            // correct slot in `tags.blog_categories` even while filtered.
+            const i = cat._idx;
+            return (
             <div key={i} className="space-y-2 p-3 rounded-lg border mb-2" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
               <div className="flex items-center gap-2">
                 <Tag size={12} className="text-muted-foreground flex-shrink-0" />
@@ -244,7 +301,8 @@ const TagsManager = () => {
                 </span>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
         <button
           type="button"

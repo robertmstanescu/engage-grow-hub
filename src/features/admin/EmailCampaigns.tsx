@@ -17,6 +17,8 @@ import EmailBlockEditor from "./EmailBlockEditor";
 import { EmailBlock, createBlock, blocksToHtml } from "./email-blocks";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { SpinnerButton } from "@/components/ui/spinner-button";
+import ListFilters from "@/components/ui/list-filters";
+import { useListFilters } from "@/hooks/useListFilters";
 import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
 import {
   fetchAllCampaigns,
@@ -37,6 +39,21 @@ const EmailCampaigns = () => {
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+
+  /**
+   * Wire the shared search/filter/sort hook. Campaigns have a meaningful
+   * "type axis" — their status (draft / sent) — so we expose it as the
+   * category dropdown. Sort by alpha = subject line, updated = created_at.
+   * URL prefix `c` keeps these params from colliding with other admin tabs.
+   */
+  const { state: filterState, filteredItems: filteredCampaigns } = useListFilters<CampaignRecord>({
+    items: campaigns,
+    paramPrefix: "c",
+    searchableText: (c) => `${c.subject} ${c.status}`.toLowerCase(),
+    categoryOf: (c) => c.status,
+    alphaKey: (c) => c.subject.toLowerCase(),
+    updatedKey: (c) => c.created_at,
+  });
 
   const reloadCampaigns = async () => {
     const result = await fetchAllCampaigns();
@@ -212,13 +229,24 @@ const EmailCampaigns = () => {
         </button>
       </div>
 
+      {/* Search / status filter / sort toolbar — same component the rest of the admin uses. */}
+      {!isLoadingList && campaigns.length > 0 && (
+        <ListFilters
+          state={filterState}
+          searchPlaceholder="Search campaigns by subject or status…"
+          formatCategoryLabel={(s) => s.charAt(0).toUpperCase() + s.slice(1)}
+        />
+      )}
+
       {isLoadingList ? (
         <ListSkeleton rows={4} rowHeight="h-16" />
       ) : campaigns.length === 0 ? (
         <p className="font-body text-sm text-muted-foreground py-8 text-center">No campaigns yet.</p>
+      ) : filteredCampaigns.length === 0 ? (
+        <p className="font-body text-sm text-muted-foreground py-8 text-center">No campaigns match your filters.</p>
       ) : (
         <div className="space-y-3">
-          {campaigns.map((campaign) => (
+          {filteredCampaigns.map((campaign) => (
             <div
               key={campaign.id}
               className="flex items-center justify-between p-4 rounded-lg border"

@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { Upload, Trash2, Copy, Check, Image, X, Eye, Pencil } from "lucide-react";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { SpinnerButton } from "@/components/ui/spinner-button";
+import ListFilters from "@/components/ui/list-filters";
+import { useListFilters } from "@/hooks/useListFilters";
 import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
 import {
   listEditorImages,
@@ -46,6 +48,25 @@ const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [renamingIdx, setRenamingIdx] = useState<number | null>(null);
   const [renameValue, setRenameValue] = useState("");
+
+  /**
+   * Wire the shared filter hook. For media we treat file EXTENSION as the
+   * "type axis" (jpg / png / svg / webp) — the most common way users
+   * narrow a media library. Search matches the file name + path so
+   * "hero/" surfaces every file under that folder.
+   * URL prefix `m` (or `mm` in modal mode if needed) keeps params unique.
+   */
+  const { state: filterState, filteredItems: filteredFiles } = useListFilters<MediaFile>({
+    items: files,
+    paramPrefix: isModal ? "mm" : "m",
+    searchableText: (f) => f.name.toLowerCase(),
+    categoryOf: (f) => {
+      const ext = f.name.split(".").pop()?.toLowerCase();
+      return ext || null;
+    },
+    alphaKey: (f) => (f.name.split("/").pop() || f.name).toLowerCase(),
+    updatedKey: (f) => f.created_at,
+  });
 
   /**
    * Walk the editor-images bucket and build a flat list of every file the
@@ -215,6 +236,15 @@ const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
         </div>
       </div>
 
+      {/* Search / extension filter / sort toolbar — shared with the rest of the admin. */}
+      {!isLoadingList && files.length > 0 && (
+        <ListFilters
+          state={filterState}
+          searchPlaceholder="Search files by name or folder…"
+          formatCategoryLabel={(ext) => `.${ext}`}
+        />
+      )}
+
       {/* File list */}
       {isLoadingList ? (
         <ListSkeleton rows={6} rowHeight="h-14" />
@@ -222,6 +252,10 @@ const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
         <div className="py-12 text-center">
           <Image size={32} className="mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
           <p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>No images yet. Upload your first one!</p>
+        </div>
+      ) : filteredFiles.length === 0 ? (
+        <div className="py-12 text-center">
+          <p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>No files match your filters.</p>
         </div>
       ) : (
         <div className="space-y-1">
@@ -240,7 +274,7 @@ const MediaGallery = ({ onSelect, isModal, onClose }: Props) => {
             <span className="text-right">Actions</span>
           </div>
 
-          {files.map((file, idx) => (
+          {filteredFiles.map((file, idx) => (
             <div
               key={file.name}
               className="grid items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-[hsl(var(--muted)/0.1)]"
