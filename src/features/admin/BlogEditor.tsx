@@ -538,7 +538,9 @@ const BlogEditor = () => {
         </button>
       </div>
 
-      {posts.length === 0 ? (
+      {postsLoading ? (
+        <ListSkeleton rows={3} rowHeight="h-20" />
+      ) : posts.length === 0 ? (
         <p className="font-body text-sm text-muted-foreground py-8 text-center">No posts yet. Create your first one!</p>
       ) : (
         <div className="space-y-3">
