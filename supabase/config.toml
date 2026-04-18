@@ -19,5 +19,5 @@ project_id = "mbxqjjmjywsxibttjrgr"
     verify_jwt = false
   [functions.llms-txt]
     verify_jwt = false
-  [functions.track-ai-crawler]
+  [functions.track-visitor]
     verify_jwt = false
