@@ -115,19 +115,17 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
       <RowBackground row={row} />
 
       <div className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
-        <span className="font-body tracking-[0.35em] uppercase block mb-4"
-          style={{ ...revealStyle(isVisible, 0), fontSize: "clamp(7px, 0.9vw, 10px)" }}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span" className="text-[#7c3a92]" style={{ color: pillarLabelColor }}>
+        <RowEyebrow color={pillarLabelColor} style={revealStyle(isVisible, 0)}>
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
             {c.eyebrow || c.pillar_number}
           </EditableText>
-        </span>
+        </RowEyebrow>
 
-        <h3 className="font-display font-bold leading-tight mb-4"
-          style={{ ...revealStyle(isVisible, 1), fontSize: "clamp(1.2rem, 3.5vw, 2.2rem)" }}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span" className="text-[#2b0e34]" style={{ color: pillarTitleColor }}>
+        <RowTitle color={pillarTitleColor} style={revealStyle(isVisible, 1)}>
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
             {c.title}
           </EditableText>
-        </h3>
+        </RowTitle>
 
         {/*
           VERTICAL AXIS LAW:
@@ -141,10 +139,10 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
         <div className="mb-6" style={revealStyle(isVisible, 2)}>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
             data-rte-fit=""
-            className="font-body-heading leading-relaxed text-black"
+            className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
             style={{
               color: pillarDescriptionColor,
-              fontSize: "clamp(0.75rem, 1.5vw, 1rem)",
+              fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)",
               overflow: "visible",
               height: "auto",
               maxWidth: 600,
