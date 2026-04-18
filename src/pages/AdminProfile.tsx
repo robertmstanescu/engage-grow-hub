@@ -127,24 +127,62 @@ const AdminProfile = () => {
       return;
     }
     setVerifyingCode(true);
-    const { error } = await supabase.auth.verifyOtp({
-      email: pendingEmail,
-      token: cleanOtp,
-      type: "email_change",
-    });
-    setVerifyingCode(false);
-    if (error) {
-      toast.error(error.message || "Invalid or expired code");
-      return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Your session expired. Please sign in again.");
+        return;
+      }
+
+      const verificationEmails = Array.from(new Set([pendingEmail, email].filter(Boolean)));
+      let verificationError = "Invalid or expired code";
+      let verified = false;
+
+      for (const verificationEmail of verificationEmails) {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/verify`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            authorization: `Bearer ${session.access_token}`,
+            "x-client-info": "admin-profile-email-change",
+          },
+          body: JSON.stringify({
+            email: verificationEmail,
+            token: cleanOtp,
+            type: "email_change",
+            gotrue_meta_security: {},
+          }),
+        });
+
+        const result = await response.json().catch(() => null);
+        if (response.ok) {
+          verified = true;
+          break;
+        }
+
+        verificationError = result?.message || verificationError;
+      }
+
+      if (!verified) {
+        toast.error(verificationError);
+        return;
+      }
+
+      await supabase.auth.refreshSession();
+      const { data: { user: refreshedUser } } = await supabase.auth.getUser();
+
+      toast.success("Email successfully updated", {
+        description: `Your admin account now uses ${pendingEmail}.`,
+      });
+      setEmail(refreshedUser?.email || pendingEmail);
+      setNewEmail("");
+      setPendingEmail("");
+      setOtp("");
+      setOtpSent(false);
+    } finally {
+      setVerifyingCode(false);
     }
-    toast.success("Email successfully updated", {
-      description: `Your admin account now uses ${pendingEmail}.`,
-    });
-    setEmail(pendingEmail);
-    setNewEmail("");
-    setPendingEmail("");
-    setOtp("");
-    setOtpSent(false);
   };
 
   const handleCancelChange = () => {
