@@ -1017,8 +1017,12 @@ const AdminDashboard = ({ session }: Props) => {
           </div>
         </div>
 
-        {/* ── MAIN CONTENT AREA ── */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* ── MAIN CONTENT AREA ── on mobile, hidden when no section
+         * is selected so the page-structure list owns the screen. */}
+        <div style={{
+          flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden",
+          ...(isAdminMobile && isSiteTab && !selectedSectionId ? { display: "none" } : {}),
+        }}>
           {isSiteTab ? (
             <div style={{ flex: 1, backgroundColor: "hsl(var(--card))", overflow: "hidden", display: "flex", flexDirection: "column" }}>
               {!selectedSectionId ? (
