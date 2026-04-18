@@ -60,7 +60,18 @@ const ImageTextEditor = ({ content, onChange }: Props) => {
       </SectionBox>
 
       <SectionBox label="Image">
-        <ImagePickerField label="Image" value={content.image_url || ""} onChange={(v) => onChange("image_url", v)} />
+        {/*
+          ImagePickerField now accepts altValue/onAltChange — passing them in renders
+          the standardised <ImageAltInput/> directly under the picker so the alt text
+          stays paired with the image URL it describes (SEO + screen readers).
+        */}
+        <ImagePickerField
+          label="Image"
+          value={content.image_url || ""}
+          onChange={(v) => onChange("image_url", v)}
+          altValue={content.image_alt || ""}
+          onAltChange={(v) => onChange("image_alt", v)}
+        />
         <SelectField label="Image Position" value={content.image_position || "right"} options={IMAGE_POSITIONS} onChange={(v) => onChange("image_position", v)} />
         <SelectField label="Image Shape" value={content.image_shape || "default"} options={IMAGE_SHAPES} onChange={(v) => onChange("image_shape", v)} />
       </SectionBox>

@@ -36,7 +36,15 @@ const ProfileEditor = ({ content, onChange }: Props) => {
       </SectionBox>
 
       <SectionBox label="Image & Name Tag">
-        <ImagePickerField label="Profile Image" value={content.image_url || ""} onChange={(v) => onChange("image_url", v)} />
+        {/* Profile photos benefit hugely from real alt text ("Photo of Jane Smith, HR Director")
+            — much better than the file-name fallback a screen reader would otherwise read. */}
+        <ImagePickerField
+          label="Profile Image"
+          value={content.image_url || ""}
+          onChange={(v) => onChange("image_url", v)}
+          altValue={content.image_alt || ""}
+          onAltChange={(v) => onChange("image_alt", v)}
+        />
         <Field label="Name" value={content.name || ""} onChange={(v) => onChange("name", v)} />
         <Field label="Role" value={content.role || ""} onChange={(v) => onChange("role", v)} />
       </SectionBox>
