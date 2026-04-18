@@ -1,39 +1,56 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Trash2 } from "lucide-react";
+import { fetchAllContacts, deleteContact, type ContactRecord } from "@/services/contacts";
+import { runDbAction, runOptimisticAction, handleDatabaseError } from "@/services/db-helpers";
+import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { toast } from "sonner";
 
-interface Contact {
-  id: string;
-  name: string;
-  email: string;
-  company: string | null;
-  message: string | null;
-  subscribed_to_marketing: boolean;
-  created_at: string;
-}
-
 const ContactsList = () => {
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contacts, setContacts] = useState<ContactRecord[]>([]);
+  /**
+   * Initial load uses a dedicated `isLoadingContacts` flag rather than the
+   * shared `isSavingChanges` so the skeleton doesn't get hidden when the
+   * user later deletes a row (which would also flip `saving` → false).
+   */
+  const [isLoadingContacts, setIsLoadingContacts] = useState(true);
 
-  const fetchContacts = async () => {
-    const { data } = await supabase
-      .from("contacts")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (data) setContacts(data);
-  };
+  useEffect(() => {
+    /**
+     * Plain try/catch here (not runDbAction) because we want to silently
+     * fail to an empty state on initial load — the toast would be noisy
+     * for a first-paint failure that the user can recover by refreshing.
+     */
+    (async () => {
+      try {
+        const { data, error } = await fetchAllContacts();
+        if (error) toast.error(handleDatabaseError(error, "Failed to load contacts"));
+        if (data) setContacts(data);
+      } finally {
+        // ALWAYS reset, even if the network throws synchronously.
+        setIsLoadingContacts(false);
+      }
+    })();
+  }, []);
 
-  useEffect(() => { fetchContacts(); }, []);
-
-  const handleDelete = async (id: string) => {
+  /**
+   * OPTIMISTIC DELETE
+   * -----------------
+   * The user clicks delete → the row vanishes immediately → we tell the
+   * server. If the server says no, we put the row back AND toast the error.
+   * This makes the admin feel snappy on slow connections.
+   */
+  const handleDatabaseDelete = async (id: string) => {
     if (!confirm("Delete this contact?")) return;
-    await supabase.from("contacts").delete().eq("id", id);
-    toast.success("Contact deleted");
-    fetchContacts();
+    await runOptimisticAction({
+      snapshot: () => contacts,
+      applyOptimistic: () => setContacts((prev) => prev.filter((c) => c.id !== id)),
+      rollback: (prev) => setContacts(prev),
+      action: async () => await deleteContact(id),
+      successMessage: "Contact deleted",
+    });
   };
 
-  const marketingSubscribers = contacts.filter(c => c.subscribed_to_marketing);
+  const marketingSubscribers = contacts.filter((c) => c.subscribed_to_marketing);
 
   return (
     <div className="space-y-6">
@@ -44,7 +61,9 @@ const ContactsList = () => {
         </span>
       </div>
 
-      {contacts.length === 0 ? (
+      {isLoadingContacts ? (
+        <ListSkeleton rows={4} />
+      ) : contacts.length === 0 ? (
         <p className="font-body text-sm text-muted-foreground py-8 text-center">No contacts yet.</p>
       ) : (
         <div className="space-y-3">
@@ -72,7 +91,7 @@ const ContactsList = () => {
                     {new Date(contact.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
                 </div>
-                <button onClick={() => handleDelete(contact.id)} className="p-2 hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
+                <button onClick={() => handleDatabaseDelete(contact.id)} className="p-2 hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
                   <Trash2 size={15} />
                 </button>
               </div>
