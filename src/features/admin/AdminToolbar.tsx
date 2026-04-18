@@ -1,6 +1,26 @@
+import { useEffect, useState } from "react";
 import { Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
+
+/**
+ * useIsMobileViewport
+ * Listens for screens < 768px so the cogwheel can hide itself on
+ * phones. Per spec: the floating admin entry point should only appear
+ * on desktop where it doesn't compete with the cookie consent toast,
+ * the navbar, and any sticky CTAs.
+ */
+const useIsMobileViewport = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => setIsMobile(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  return isMobile;
+};
 
 /**
  * TopRightSettingsCog
@@ -18,8 +38,11 @@ import { useAdminStatus } from "@/hooks/useAdminStatus";
 const AdminToolbar = () => {
   const { isAdmin, loading } = useAdminStatus();
   const navigate = useNavigate();
+  const isMobile = useIsMobileViewport();
 
-  if (loading || !isAdmin) return null;
+  // Hide on mobile — admins reach /admin via direct URL on phones; the
+  // floating cog clutters small viewports.
+  if (loading || !isAdmin || isMobile) return null;
 
   return (
     <button

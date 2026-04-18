@@ -18,9 +18,13 @@ import { QueryClient } from "@tanstack/react-query";
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,
-      gcTime: 30 * 60 * 1000,
-      refetchOnWindowFocus: false,
+      // Keep data fresh for 30s, then revalidate in the background so
+      // edits made in /admin show up on the public site after a quick
+      // navigation or tab focus.
+      staleTime: 30 * 1000,
+      gcTime: 10 * 60 * 1000,
+      refetchOnWindowFocus: true,
+      refetchOnMount: "always",
       retry: 1,
     },
   },
