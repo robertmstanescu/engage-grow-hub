@@ -687,9 +687,17 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
               </div>
 
               {isImageMime(selectedAsset.mime_type) ? (
+                // Detail-panel preview uses a 640px-wide transformed
+                // variant — large enough to look crisp at our 320px
+                // panel even on retina (2x DPR), small enough to keep
+                // the panel snappy when the user clicks through assets.
+                // The "Public URL" field below still copies the FULL
+                // resolution URL so external embeds work as expected.
                 <img
-                  src={getAssetPublicUrl(selectedAsset.storage_path, selectedAsset.bucket)}
+                  src={getAssetThumbnailUrl(selectedAsset.storage_path, selectedAsset.bucket, 640, 640)}
                   alt={selectedAsset.alt_text || selectedAsset.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full rounded-md border border-border/40"
                 />
               ) : (
