@@ -49,6 +49,7 @@ import {
   fetchAllFolders,
   findAssetUsages,
   getAssetPublicUrl,
+  getAssetThumbnailUrl,
   insertFolder,
   isImageMime,
   moveAssetToFolder,
@@ -60,6 +61,79 @@ import {
   type MediaAsset,
   type MediaFolder,
 } from "@/services/mediaLibrary";
+
+/**
+ * ─────────────────────────────────────────────────────────────────
+ * LazyThumb — image-heavy gallery cell with three layers of perf
+ * ─────────────────────────────────────────────────────────────────
+ * (junior-engineer guide)
+ *
+ * 1. `loading="lazy"`
+ *    Tells the browser NOT to fetch the image until it's near the
+ *    viewport. With ~hundreds of thumbnails this is the single
+ *    biggest win — without it the browser eagerly opens hundreds of
+ *    parallel HTTP requests and decodes every bitmap up front,
+ *    spiking RAM and saturating the network.
+ *
+ * 2. `decoding="async"`
+ *    Lets the browser decode the JPEG/PNG off the main thread, so
+ *    scrolling and clicking stay smooth while images materialise.
+ *    Without this, decoding a single 4MB photo can block the UI for
+ *    tens of milliseconds, which compounds on long lists.
+ *
+ * 3. `content-visibility: auto`
+ *    Applied to the OUTER cell (not <img>) via the `[content-visibility:auto]`
+ *    Tailwind arbitrary class. The browser skips layout/paint for
+ *    cells that are off-screen. Combined with `[contain-intrinsic-size]`
+ *    we still reserve the slot's height so the scrollbar doesn't
+ *    jitter as cells materialise.
+ *
+ * 4. Skeleton fade-in
+ *    Local `loaded` flag flips on the <img>'s `onLoad` event so we
+ *    can crossfade from a muted background placeholder to the actual
+ *    thumbnail. This kills the "violent layout shift" the user
+ *    reported when many images stream in at once.
+ *
+ * ──────────────────────────────────────────────────────────────────
+ * MEMORY-LEAK NOTE: React unmounts the <img> when the cell scrolls
+ * out of the virtualized region (or when filters change). The
+ * browser then frees the decoded bitmap automatically — there is
+ * NOTHING manual to clean up here. Resist the temptation to add
+ * `useEffect` cleanups that null `src`; that just trips lazy loading
+ * and forces a re-fetch when the cell scrolls back into view.
+ */
+const LazyThumb = ({
+  src,
+  alt,
+  className,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+}) => {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className={["relative w-full h-full overflow-hidden bg-muted/40", className || ""].join(" ")}>
+      {/* Skeleton placeholder — visible until the real image fires onLoad. */}
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-muted/60" aria-hidden="true" />
+      )}
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        // `onError` also flips `loaded` so a broken thumb stops pulsing.
+        onError={() => setLoaded(true)}
+        className={[
+          "w-full h-full object-cover transition-opacity duration-200",
+          loaded ? "opacity-100" : "opacity-0",
+        ].join(" ")}
+      />
+    </div>
+  );
+};
 
 interface Props {
   /** When provided the gallery is in "picker" mode — clicking an asset returns its public URL. */
@@ -535,9 +609,16 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
               </div>
               {visibleAssets.map((asset) => {
                 const isImage = isImageMime(asset.mime_type);
-                // Pass `asset.bucket` so backfilled `editor-images` files
-                // resolve to the correct CDN URL (default is media-library).
+                // FULL-RESOLUTION URL — used for click-through, copy-link,
+                // and as fallback when the thumbnail isn't appropriate.
                 const url = getAssetPublicUrl(asset.storage_path, asset.bucket);
+                // THUMBNAIL URL — Supabase will return a re-encoded 88×88
+                // (44px @ 2x DPR) variant. Only computed for images;
+                // non-images render an icon instead. See `getAssetThumbnailUrl`
+                // for why this matters for memory + bandwidth.
+                const thumbUrl = isImage
+                  ? getAssetThumbnailUrl(asset.storage_path, asset.bucket, 88, 88)
+                  : "";
                 const isSelected = selectedAssetId === asset.id;
                 return (
                   <div
@@ -549,7 +630,12 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                         onClose?.();
                       }
                     }}
-                    className="grid items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors border-b border-border/15"
+                    // `[content-visibility:auto]` lets the browser skip
+                    // layout/paint for off-screen rows entirely.
+                    // `[contain-intrinsic-size:_auto_60px]` tells it to
+                    // reserve ~60px height per skipped row so the
+                    // scrollbar doesn't jump when rows materialise.
+                    className="grid items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors border-b border-border/15 [content-visibility:auto] [contain-intrinsic-size:_auto_60px]"
                     style={{
                       gridTemplateColumns: "44px 1fr 70px 70px",
                       backgroundColor: isSelected ? "hsl(var(--primary) / 0.08)" : "transparent",
@@ -557,7 +643,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                   >
                     <div className="w-11 h-11 rounded-md overflow-hidden flex items-center justify-center bg-muted/40 border border-border/40">
                       {isImage ? (
-                        <img src={url} alt={asset.alt_text || asset.title} className="w-full h-full object-cover" loading="lazy" />
+                        <LazyThumb src={thumbUrl} alt={asset.alt_text || asset.title} />
                       ) : (
                         <FileText size={18} className="text-muted-foreground" />
                       )}
@@ -601,9 +687,17 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
               </div>
 
               {isImageMime(selectedAsset.mime_type) ? (
+                // Detail-panel preview uses a 640px-wide transformed
+                // variant — large enough to look crisp at our 320px
+                // panel even on retina (2x DPR), small enough to keep
+                // the panel snappy when the user clicks through assets.
+                // The "Public URL" field below still copies the FULL
+                // resolution URL so external embeds work as expected.
                 <img
-                  src={getAssetPublicUrl(selectedAsset.storage_path, selectedAsset.bucket)}
+                  src={getAssetThumbnailUrl(selectedAsset.storage_path, selectedAsset.bucket, 640, 640)}
                   alt={selectedAsset.alt_text || selectedAsset.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full rounded-md border border-border/40"
                 />
               ) : (
