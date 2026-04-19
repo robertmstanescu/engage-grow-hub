@@ -5,50 +5,47 @@
  * The "Content" sub-tab in the Properties panel. Given the currently
  * selected page row, it renders the right field-set for that row's type.
  *
- * Internally this is a switch on `row.type` that delegates to one of:
- *   • HeroRowFieldsInline       (hero)
- *   • TitleLinesEditor + …      (text, boxed, contact)
- *   • PillarEditor              (service)
- *   • ImageTextEditor           (image_text)
- *   • ProfileEditor             (profile)
- *   • GridEditor                (grid)
- *   • LeadMagnetEditor          (lead_magnet)
+ * ─────────────────────────────────────────────────────────────────────────
+ * UI HIERARCHY — ACCORDION ORGANIZATION (Junior-Engineer Guide)
+ * ─────────────────────────────────────────────────────────────────────────
+ * Previously this editor rendered every field in one long vertical wall,
+ * which created cognitive overload — a non-technical editor would scan
+ * past 10–20 inputs trying to find the one field they wanted to change.
  *
- * Every variant shows a `commonMeta` block at the very top — currently
- * just the "Strip Title" field that names the row in the section list.
+ * We now group fields into 2 (or 3) collapsible Accordion sections:
  *
+ *   1. "Text & Content"        ← OPEN BY DEFAULT (most-edited)
+ *      ─ Eyebrow, title lines, subtitle, body, descriptions, copy,
+ *        button LABELS (because labels are copy).
+ *
+ *   2. "Media & Interactive"    ← Collapsed by default
+ *      ─ Images, icons, image alt text, button URLs, link URLs,
+ *        media-related arrays (services, items, logos, faqs cards).
+ *
+ *   3. "Design & Background"    ← (Not used here — that's RowStyleTab)
+ *      ─ Card colors, eyebrow color, subtitle color and any per-content
+ *        color overrides that don't belong on the row-level Style tab.
+ *
+ * WHERE TO ADD A NEW FIELD
+ * ────────────────────────
+ *   • Plain text the user reads on the page → "Text & Content"
+ *   • An image, file, icon, link, button URL → "Media & Interactive"
+ *   • A color / typography override scoped to this content (NOT the row
+ *     background) → "Design & Background"
+ *   • Anything that controls row-level layout / background / overlays /
+ *     gradients → put it in `RowStyleTab.tsx` instead, NOT here.
+ *
+ * Each row-type case below has its own `<Accordion>` block. When you add
+ * a new field, locate the matching `case "<type>":` and drop it into the
+ * appropriate `<AccordionItem>` so the grouping stays consistent.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
  * PROPS
  * ─────
- *   row              : PageRow                     — selected row (with the
- *                                                    ACTIVE column's content
- *                                                    already swapped in by
- *                                                    AdminDashboard, see the
- *                                                    `colContent` slice in
- *                                                    the dashboard)
- *   onContentChange  : (field, value) => void      — writes to the active
- *                                                    column's content
- *   onRowMetaChange  : (updates) => void           — writes to row-level
- *                                                    metadata (strip_title,
- *                                                    bg_color, layout, …)
- *   onDelete?        : () => void                  — currently unused but
- *                                                    kept on the interface
- *                                                    so future per-row
- *                                                    delete UIs can plug in
- *                                                    without a prop break
- *
- * WHY IT WAS EXTRACTED
- * ────────────────────
- * It was a 100-line switch statement at the bottom of AdminDashboard.tsx.
- * Hosting it in its own file:
- *   • shrinks the dashboard
- *   • makes the per-row-type field set easier to find
- *   • lets us add a new row type by editing one file
- *
- * STYLES — INLINE → TAILWIND
- * ──────────────────────────
- * No styling lives at this level — every visual choice belongs to the
- * Field/RichField/SectionBox primitives or to the per-type editors. The
- * file uses Tailwind utility classes only (`space-y-3`, `grid-cols-2`).
+ *   row              : PageRow
+ *   onContentChange  : (field, value) => void   — writes to the active column
+ *   onRowMetaChange  : (updates) => void        — writes to row-level meta
+ *   onDelete?        : () => void               — reserved for future use
  * ─────────────────────────────────────────────────────────────────────────
  */
 
@@ -63,6 +60,12 @@ import TitleLinesEditor from "./TitleLinesEditor";
 import HeroRowFieldsInline from "./HeroRowFieldsInline";
 import BoxedArrayField from "./BoxedArrayField";
 import { TestimonialEditor, LogoCloudEditor, FaqEditor } from "./NewRowEditors";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { type PageRow } from "@/types/rows";
 
 interface Props {
@@ -73,6 +76,17 @@ interface Props {
   onDelete?: () => void;
 }
 
+/**
+ * Shared accordion-trigger styling. Kept in one place so every section
+ * in this file looks identical and so a junior engineer can re-skin all
+ * triggers at once if the visual design ever changes.
+ */
+const TRIGGER_CLASS =
+  "py-2.5 px-3 rounded-md bg-muted/30 hover:bg-muted/50 hover:no-underline " +
+  "font-body text-[10px] uppercase tracking-[0.12em] text-foreground";
+
+const CONTENT_CLASS = "pt-3 pb-1 space-y-3";
+
 const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
   const content = row.content;
   // The row's own background colour drives the RichTextEditor's surface
@@ -80,7 +94,9 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
   // editing — see RichField docstring in FieldComponents for details.
   const bg = row.bg_color;
 
-  /** Always-rendered top-of-form block (Strip Title for now). */
+  /** Always-rendered top-of-form block (Strip Title for now).
+   *  Lives ABOVE the accordions because it's the row's identifier — the
+   *  user may need to rename a section regardless of which group is open. */
   const commonMeta = (
     <div className="space-y-2 mb-4">
       <Field
@@ -96,22 +112,39 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`,
   );
 
-  /** Optional eyebrow + note + CTA cluster shared by text & boxed rows. */
-  const noteAndButton = (
-    <SectionBox label="Note & Button">
-      <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
-      <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
-      <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
-      <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onContentChange("cta_url", v)} />
-    </SectionBox>
+  /**
+   * Reusable accordion shell. `defaultOpen` lists the values that should
+   * be expanded on first render — we always keep "text" open because copy
+   * editing is by far the most-frequent task.
+   */
+  const Shell = ({
+    children,
+    defaultOpen = ["text"],
+  }: {
+    children: React.ReactNode;
+    defaultOpen?: string[];
+  }) => (
+    <Accordion type="multiple" defaultValue={defaultOpen} className="space-y-2">
+      {children}
+    </Accordion>
   );
 
   switch (row.type) {
     case "hero":
+      // Hero has its own dense inline editor that already groups fields
+      // internally — we wrap it in a single accordion item so the
+      // experience stays consistent with other row types.
       return (
         <>
           {commonMeta}
-          <HeroRowFieldsInline content={content} onChange={onContentChange} bgColor={bg} />
+          <Shell defaultOpen={["text"]}>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <HeroRowFieldsInline content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
@@ -119,31 +152,57 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
       return (
         <>
           {commonMeta}
-          <div className="space-y-3">
-            <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
-            <SubtitleEditor
-              subtitle={content.subtitle || ""}
-              subtitleColor={content.subtitle_color || ""}
-              onSubtitleChange={(v) => onContentChange("subtitle", v)}
-              onColorChange={(v) => onContentChange("subtitle_color", v)}
-            />
-            <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
-            {noteAndButton}
-          </div>
+          <Shell>
+            {/* GROUP 1 — Copy the visitor reads. */}
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
+                <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
+                <SubtitleEditor
+                  subtitle={content.subtitle || ""}
+                  subtitleColor={content.subtitle_color || ""}
+                  onSubtitleChange={(v) => onContentChange("subtitle", v)}
+                  onColorChange={(v) => onContentChange("subtitle_color", v)}
+                />
+                <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
+                <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
+                <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* GROUP 2 — Anything clickable / linkable. */}
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onContentChange("cta_url", v)} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
     case "service":
+      // Services row delegates to a complex composite editor; surface it
+      // under a single "Text & Content" accordion for now. (Internal
+      // service-card colors and images are handled inside PillarEditor.)
       return (
         <>
           {commonMeta}
-          <PillarEditor
-            pillarContent={content}
-            servicesContent={{ services: content.services || [] }}
-            onPillarChange={onContentChange}
-            onServicesChange={(svcs) => onContentChange("services", svcs)}
-            bgColor={bg}
-          />
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <PillarEditor
+                  pillarContent={content}
+                  servicesContent={{ services: content.services || [] }}
+                  onPillarChange={onContentChange}
+                  onServicesChange={(svcs) => onContentChange("services", svcs)}
+                  bgColor={bg}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
@@ -151,19 +210,41 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
       return (
         <>
           {commonMeta}
-          <div className="space-y-3">
-            <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
-            <SubtitleEditor
-              subtitle={content.subtitle || ""}
-              subtitleColor={content.subtitle_color || ""}
-              onSubtitleChange={(v) => onContentChange("subtitle", v)}
-              onColorChange={(v) => onContentChange("subtitle_color", v)}
-            />
-            <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onContentChange("color_card_title", v)} />
-            <ColorField label="Card Body Color" value={content.color_card_body || ""} fallback="" onChange={(v) => onContentChange("color_card_body", v)} />
-            <BoxedArrayField content={content} onChange={onContentChange} bgColor={bg} />
-            {noteAndButton}
-          </div>
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
+                <SubtitleEditor
+                  subtitle={content.subtitle || ""}
+                  subtitleColor={content.subtitle_color || ""}
+                  onSubtitleChange={(v) => onContentChange("subtitle", v)}
+                  onColorChange={(v) => onContentChange("subtitle_color", v)}
+                />
+                <BoxedArrayField content={content} onChange={onContentChange} bgColor={bg} />
+                <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
+                <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
+                <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onContentChange("cta_url", v)} />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* GROUP 3 — Color overrides specific to this content
+                (NOT the row background — that lives in RowStyleTab). */}
+            <AccordionItem value="design" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Design &amp; Background</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onContentChange("color_card_title", v)} />
+                <ColorField label="Card Body Color" value={content.color_card_body || ""} fallback="" onChange={(v) => onContentChange("color_card_body", v)} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
@@ -171,32 +252,53 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
       return (
         <>
           {commonMeta}
-          <div className="space-y-3">
-            <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
-            <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
-            <SubtitleEditor
-              subtitle={content.subtitle || ""}
-              subtitleColor={content.subtitle_color || ""}
-              onSubtitleChange={(v) => onContentChange("subtitle", v)}
-              onColorChange={(v) => onContentChange("subtitle_color", v)}
-            />
-            <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
-            <Field label="Button Text" value={content.button_text || ""} onChange={(v) => onContentChange("button_text", v)} />
-            <SectionBox label="Colors">
-              <div className="grid grid-cols-2 gap-3">
-                <ColorField label="Eyebrow" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onContentChange("color_eyebrow", v)} />
-              </div>
-            </SectionBox>
-            <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
-          </div>
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
+                <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
+                <SubtitleEditor
+                  subtitle={content.subtitle || ""}
+                  subtitleColor={content.subtitle_color || ""}
+                  onSubtitleChange={(v) => onContentChange("subtitle", v)}
+                  onColorChange={(v) => onContentChange("subtitle_color", v)}
+                />
+                <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
+                <Field label="Button Text" value={content.button_text || ""} onChange={(v) => onContentChange("button_text", v)} />
+                <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="design" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Design &amp; Background</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <SectionBox label="Colors">
+                  <div className="grid grid-cols-2 gap-3">
+                    <ColorField label="Eyebrow" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onContentChange("color_eyebrow", v)} />
+                  </div>
+                </SectionBox>
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
     case "image_text":
+      // Composite editor handles its own internal grouping (image, text,
+      // shape selector). Surface as one Text & Content item — interactive
+      // controls inside the editor are still grouped together visually.
       return (
         <>
           {commonMeta}
-          <ImageTextEditor content={content} onChange={onContentChange} bgColor={bg} />
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImageTextEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
@@ -204,7 +306,14 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
       return (
         <>
           {commonMeta}
-          <ProfileEditor content={content} onChange={onContentChange} bgColor={bg} />
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ProfileEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
@@ -212,7 +321,14 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
       return (
         <>
           {commonMeta}
-          <GridEditor content={content} onChange={onContentChange} bgColor={bg} />
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <GridEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
@@ -220,33 +336,55 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
       return (
         <>
           {commonMeta}
-          <LeadMagnetEditor
-            content={content}
-            onChange={(next) => Object.entries(next).forEach(([k, v]) => onContentChange(k, v))}
-          />
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <LeadMagnetEditor
+                  content={content}
+                  onChange={(next) => Object.entries(next).forEach(([k, v]) => onContentChange(k, v))}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
     /* ── NEW ROW TYPES ───────────────────────────────────────────────
-     * For a junior engineer: each new case mirrors the simple pattern
-     * above — render `commonMeta` (Strip Title) then delegate the real
-     * field-set to a dedicated editor in `NewRowEditors.tsx`. The
-     * editor receives the active column's `content` and an
-     * `onContentChange(field, value)` setter that writes back to the
-     * same column. Add new fields by editing only the editor file. */
+     * For a junior engineer: each new row type should mirror the
+     * pattern above. Wrap the dedicated editor in a `<Shell>` and put
+     * its content inside `<AccordionItem value="text">`. If your
+     * editor introduces images / URLs / color overrides that are
+     * visually distinct, split them into their own AccordionItem
+     * with `value="media"` or `value="design"` respectively. */
     case "testimonial":
       return (
         <>
           {commonMeta}
-          <TestimonialEditor content={content} onChange={onContentChange} bgColor={bg} />
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <TestimonialEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
     case "logo_cloud":
+      // Logo cloud is intrinsically media — open Media group by default.
       return (
         <>
           {commonMeta}
-          <LogoCloudEditor content={content} onChange={onContentChange} />
+          <Shell defaultOpen={["media"]}>
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <LogoCloudEditor content={content} onChange={onContentChange} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
@@ -254,7 +392,14 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
       return (
         <>
           {commonMeta}
-          <FaqEditor content={content} onChange={onContentChange} bgColor={bg} />
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <FaqEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
         </>
       );
 
