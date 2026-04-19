@@ -186,8 +186,9 @@ export interface AssetUsage {
 export async function findAssetUsages(asset: MediaAsset): Promise<AssetUsage[]> {
   const usages: AssetUsage[] = [];
   // Both the public URL and the bare path get embedded by various editors,
-  // so we look for either.
-  const url = getAssetPublicUrl(asset.storage_path);
+  // so we look for either. Pass the asset's bucket so legacy
+  // `editor-images` files resolve to the right CDN URL.
+  const url = getAssetPublicUrl(asset.storage_path, asset.bucket);
   const matchesBlob = (blob: unknown) => {
     const text = JSON.stringify(blob ?? "");
     return (
@@ -258,9 +259,19 @@ export async function deleteAssetCompletely(asset: MediaAsset) {
    URL helpers
    ───────────────────────────────────────────────────────────────── */
 
-/** Public CDN URL for a file in the media-library bucket. */
-export const getAssetPublicUrl = (storagePath: string) =>
-  supabase.storage.from(BUCKET).getPublicUrl(storagePath).data.publicUrl;
+/**
+ * Public CDN URL for a file in any of the media buckets.
+ *
+ * Why the optional `bucket` arg? Historically all uploads went to
+ * `editor-images`. The new gallery defaults to `media-library` but we
+ * backfilled the legacy bucket into `media_assets` so existing files show
+ * up. Callers that have a full asset in hand should pass `asset.bucket` to
+ * make sure we hit the right bucket; callers that only have a path
+ * (e.g. embedded URLs in rich-text) can omit it and we fall back to the
+ * default `media-library`.
+ */
+export const getAssetPublicUrl = (storagePath: string, bucket: string = BUCKET) =>
+  supabase.storage.from(bucket).getPublicUrl(storagePath).data.publicUrl;
 
 /* ─────────────────────────────────────────────────────────────────
    Uploads

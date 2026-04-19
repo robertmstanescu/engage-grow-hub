@@ -478,8 +478,17 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
       <div className="grid gap-4" style={{ gridTemplateColumns: "200px 1fr 320px" }}>
         {/* Folder rail */}
         <div className="rounded-lg border border-border/40 bg-muted/10 p-2 max-h-[60vh] overflow-y-auto">
+          {/*
+            "Root" is a VIRTUAL entry — it represents every asset whose
+            `folder_id` is NULL, not an actual row in `media_folders`.
+            That means it can't be renamed or deleted (there's nothing in
+            the DB to update). The `title` tooltip explains this so admins
+            know why no pencil/trash icons appear next to it. To organise
+            files, create a real folder via "New folder" in the header.
+          */}
           <div
             onClick={() => setActiveFolderId(null)}
+            title="Root is a built-in view of files that aren't inside any folder. To organise them, create a folder using 'New folder' above — your custom folders below can be renamed."
             className="flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors"
             style={{
               backgroundColor: activeFolderId === null ? "hsl(var(--primary) / 0.12)" : "transparent",
@@ -489,11 +498,14 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
             <Folder size={13} className={activeFolderId === null ? "text-primary" : "text-muted-foreground"} />
             <span
               className={[
-                "flex-1 font-body text-xs",
+                "flex-1 font-body text-xs flex items-center gap-1.5",
                 activeFolderId === null ? "text-primary" : "text-foreground",
               ].join(" ")}
             >
               Root
+              <span className="font-body text-[8px] uppercase tracking-wider text-muted-foreground/70 px-1 py-px rounded bg-muted/40 border border-border/30">
+                built-in
+              </span>
             </span>
             <span className="font-body text-[10px] text-muted-foreground">
               {assets.filter((a) => a.folder_id === null).length}
@@ -523,7 +535,9 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
               </div>
               {visibleAssets.map((asset) => {
                 const isImage = isImageMime(asset.mime_type);
-                const url = getAssetPublicUrl(asset.storage_path);
+                // Pass `asset.bucket` so backfilled `editor-images` files
+                // resolve to the correct CDN URL (default is media-library).
+                const url = getAssetPublicUrl(asset.storage_path, asset.bucket);
                 const isSelected = selectedAssetId === asset.id;
                 return (
                   <div
@@ -588,7 +602,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
 
               {isImageMime(selectedAsset.mime_type) ? (
                 <img
-                  src={getAssetPublicUrl(selectedAsset.storage_path)}
+                  src={getAssetPublicUrl(selectedAsset.storage_path, selectedAsset.bucket)}
                   alt={selectedAsset.alt_text || selectedAsset.title}
                   className="w-full rounded-md border border-border/40"
                 />
@@ -702,7 +716,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                 </label>
                 <input
                   readOnly
-                  value={getAssetPublicUrl(selectedAsset.storage_path)}
+                  value={getAssetPublicUrl(selectedAsset.storage_path, selectedAsset.bucket)}
                   onFocus={(e) => e.currentTarget.select()}
                   className="w-full px-2.5 py-1.5 rounded-md font-body text-[10px] border border-border bg-background text-foreground"
                 />
