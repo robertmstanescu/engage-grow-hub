@@ -186,8 +186,9 @@ export interface AssetUsage {
 export async function findAssetUsages(asset: MediaAsset): Promise<AssetUsage[]> {
   const usages: AssetUsage[] = [];
   // Both the public URL and the bare path get embedded by various editors,
-  // so we look for either.
-  const url = getAssetPublicUrl(asset.storage_path);
+  // so we look for either. Pass the asset's bucket so legacy
+  // `editor-images` files resolve to the right CDN URL.
+  const url = getAssetPublicUrl(asset.storage_path, asset.bucket);
   const matchesBlob = (blob: unknown) => {
     const text = JSON.stringify(blob ?? "");
     return (
