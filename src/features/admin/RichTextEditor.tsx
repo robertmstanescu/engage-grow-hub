@@ -144,6 +144,19 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     onChange(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
   }, [onChange]);
 
+  // Debounced upstream push for raw typing — prevents per-keystroke
+  // re-renders of the entire admin tree. See file header for details.
+  const debouncedEmit = useDebouncedCallback((html: string) => {
+    onChange(html);
+  }, 300);
+
+  const emitChangeOnInput = useCallback(() => {
+    if (editorRef.current) {
+      normalizeRichTextContainerFontSizes(editorRef.current);
+    }
+    debouncedEmit(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
+  }, [debouncedEmit]);
+
   const saveSelection = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0 || !editorRef.current) return;
