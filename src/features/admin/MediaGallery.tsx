@@ -584,7 +584,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
         </div>
 
         {/* Detail panel */}
-        <div className="rounded-lg border border-border/40 bg-muted/10 p-4 max-h-[60vh] overflow-y-auto space-y-3">
+        <div className="rounded-lg border border-border/40 bg-muted/10 p-4 space-y-3">
           {selectedAsset ? (
             <>
               <div className="flex items-center justify-between">
