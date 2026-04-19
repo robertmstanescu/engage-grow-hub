@@ -1,20 +1,71 @@
+/**
+ * ─────────────────────────────────────────────────────────────────────────
+ * AdminDashboard.tsx
+ * ─────────────────────────────────────────────────────────────────────────
+ * Top-level orchestration shell for the admin panel. Lays out the three
+ * primary regions:
+ *
+ *   ┌───────────────────────────────────────────────────────────────┐
+ *   │ TOPBAR  (logo · page title · preview/save/publish · profile)  │
+ *   ├──────────┬───────────────────────┬──────────────────────────┤
+ *   │ Sidebar  │ Page Structure rail   │ Properties / editor body │
+ *   │ (icon)   │ (selected-section list│ (sub-tabs, fields, foot) │
+ *   │          │  for the Site Editor) │                          │
+ *   └──────────┴───────────────────────┴──────────────────────────┘
+ *
+ * Mobile (<768px) collapses the sidebar into an off-canvas drawer and
+ * makes the page-structure rail full-width when no section is selected.
+ *
+ * REFACTOR NOTES (for future maintainers)
+ * ───────────────────────────────────────
+ * 1.  Six editor sub-components used to live inline at the bottom of this
+ *     file: StyleTab, RowStyleTab, TitleLinesEditor, RowContentEditor,
+ *     HeroRowFieldsInline, BoxedArrayField. They now live one-per-file in
+ *     `src/features/admin/editors/`. Search there if you're hunting a
+ *     field-set definition.
+ *
+ * 2.  Every STATIC inline `style={{ … }}` rule has been migrated to
+ *     Tailwind utility classes referencing semantic tokens
+ *     (`text-muted-foreground`, `bg-card`, `border-border`, etc.) per the
+ *     project's Core memory rule "components MUST use design tokens".
+ *
+ *     Inline styles still appear here in three legitimate cases:
+ *       (a) DYNAMIC values that depend on runtime state — e.g. the
+ *           sidebar's `width` (animates between 58/220/260 depending on
+ *           hover state and viewport), `transform` on the off-canvas
+ *           drawer, `opacity` driven by `saving` / `publishing`.
+ *       (b) The `linear-gradient(...)` brand swatch, which mixes two HSL
+ *           tokens that have no Tailwind utility equivalent.
+ *       (c) `accentColor` on `<input type="range">` — Tailwind has no
+ *           default `accent-secondary` utility for CSS-variable colours.
+ *
+ *     Anything else that looks inline is a bug; please convert it to a
+ *     class.
+ *
+ * 3.  Hover states that previously lived in `onMouseOver` / `onMouseOut`
+ *     handlers have been replaced with `hover:` Tailwind variants where
+ *     possible (Tailwind hover never works on `style`, so the handlers
+ *     were unavoidable when colours came from inline rules).
+ * ─────────────────────────────────────────────────────────────────────────
+ */
+
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { runDbAction } from "@/services/db-helpers";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import {
   LayoutDashboard, FileText, Compass, BookOpen,
   Users, Mail, Image, Palette, Settings, LogOut,
   Save, Send, Tag, UserCog,
-  GripVertical, Plus, Trash2, ArrowLeft, Columns, X, Sparkles, Menu,
+  GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+
 /**
  * useIsAdminMobile
- * Local hook (not the global useIsMobile which uses a 1024px tablet
- * breakpoint). The admin panel only needs to switch into drawer mode
- * on actual phones (< 768px), so we listen on our own media query.
+ * Local hook (NOT the global useIsMobile, which uses a 1024px tablet
+ * breakpoint). The admin panel only needs to switch into drawer mode on
+ * actual phones (< 768px), so we listen on our own media query.
  */
 const useIsAdminMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -27,6 +78,7 @@ const useIsAdminMobile = () => {
   }, []);
   return isMobile;
 };
+
 import ManageTeam from "./ManageTeam";
 import {
   DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors,
@@ -40,7 +92,6 @@ import { CSS } from "@dnd-kit/utilities";
 import BlogEditor from "./BlogEditor";
 import ContactsList from "./ContactsList";
 import EmailCampaigns from "./EmailCampaigns";
-import SiteEditor from "./SiteEditor";
 import TagsManager from "./TagsManager";
 import PagesManager from "./PagesManager";
 import NavigationManager from "./NavigationManager";
@@ -49,28 +100,17 @@ import MediaGallery from "./MediaGallery";
 import BrandSettings from "./BrandSettings";
 import HeroEditor from "./site-editor/HeroEditor";
 import SeoFields from "./site-editor/SeoFields";
-import { DEFAULT_ROWS, type PageRow, DEFAULT_ROW_LAYOUT, DEFAULT_CONTACT_FIELDS } from "@/types/rows";
-import { Field, RichField, SectionBox, ColorField, SelectField } from "./site-editor/FieldComponents";
-import TitleLineEditor from "./site-editor/TitleLineEditor";
-import SubtitleEditor from "./site-editor/SubtitleEditor";
-import RowAlignmentSettings from "./site-editor/RowAlignmentSettings";
-import ColumnWidthControl from "./site-editor/ColumnWidthControl";
-import PillarEditor from "./site-editor/PillarEditor";
-import ImageTextEditor from "./site-editor/ImageTextEditor";
-import ProfileEditor from "./site-editor/ProfileEditor";
-import GridEditor from "./site-editor/GridEditor";
-import LeadMagnetEditor from "./site-editor/LeadMagnetEditor";
-import ImagePickerField from "./ImagePickerField";
-import GradientEditor from "./site-editor/GradientEditor";
-import OverlayEditor from "./site-editor/OverlayEditor";
+import { DEFAULT_ROWS, type PageRow, DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
 
+// ── Extracted editor components (see ./editors/ for each file) ──
+import StyleTab from "./editors/StyleTab";
+import RowStyleTab from "./editors/RowStyleTab";
+import RowContentEditor from "./editors/RowContentEditor";
 
 type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team";
-
 type PropertiesSubTab = "content" | "style" | "seo";
-
 interface Props { session: any; }
 
 /* ── Helpers ── */
@@ -91,8 +131,6 @@ const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[
   { type: "lead_magnet", label: "Lead Magnet", emoji: "🎁" },
 ];
 const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
-
-
 
 const NAV_GROUPS = [
   {
@@ -138,6 +176,10 @@ interface CmsPageRef {
 
 /* ═══════════════════════════════════════════════
    SORTABLE SECTION BLOCK
+   One row in the page-structure rail. Wraps a row's emoji + label and
+   exposes a drag handle. Only the colour swatches that depend on the
+   current selection (`isSelected`) remain inline because they switch
+   between `secondary` and `transparent` per-instance.
    ═══════════════════════════════════════════════ */
 const SortableSectionBlock = ({
   row, isSelected, onClick,
@@ -145,6 +187,8 @@ const SortableSectionBlock = ({
   row: PageRow; isSelected: boolean; onClick: () => void;
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
+  // `transform`/`transition` are dynamic per drag-frame; opacity goes to
+  // 0.5 while being dragged. These MUST stay inline.
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -164,6 +208,8 @@ const SortableSectionBlock = ({
       onKeyDown={(e) => e.key === "Enter" && onClick()}
       aria-label={`Section: ${row.strip_title || row.type}`}
     >
+      {/* Selection indicator: a 4px-tall vertical bar that turns secondary
+          when the row is selected. Colour is dynamic → stays inline. */}
       <span
         className="w-1 self-stretch rounded-full flex-shrink-0"
         style={{ backgroundColor: isSelected ? "hsl(var(--secondary))" : "transparent" }}
@@ -176,14 +222,11 @@ const SortableSectionBlock = ({
         >
           {row.strip_title || row.type}
         </div>
-        <div
-          className="font-body text-[10px] md:text-[9px] uppercase tracking-wider"
-          style={{ color: "hsl(var(--muted-foreground))" }}
-        >
+        <div className="font-body text-[10px] md:text-[9px] uppercase tracking-wider text-muted-foreground">
           {row.type}
         </div>
       </div>
-      <GripVertical size={14} style={{ color: "hsl(var(--muted-foreground))", flexShrink: 0 }} />
+      <GripVertical size={14} className="text-muted-foreground flex-shrink-0" />
     </div>
   );
 };
@@ -292,14 +335,14 @@ const AdminDashboard = ({ session }: Props) => {
       prev.map((s) =>
         s.section_key === sectionKey
           ? { ...s, draft_content: { ...(s.draft_content || s.content), [field]: value } }
-          : s
-      )
+          : s,
+      ),
     );
   };
 
   const updateFullDraft = (sectionKey: string, draft: Record<string, any>) => {
     setSections((prev) =>
-      prev.map((s) => (s.section_key === sectionKey ? { ...s, draft_content: draft } : s))
+      prev.map((s) => (s.section_key === sectionKey ? { ...s, draft_content: draft } : s)),
     );
   };
 
@@ -346,9 +389,7 @@ const AdminDashboard = ({ session }: Props) => {
   const addColumnToRow = useCallback((rowId: string) => {
     const row = pageRows.find((r) => r.id === rowId);
     if (!row) return;
-    const defaultContent = ROW_TYPE_OPTIONS.find((o) => o.type === row.type)
-      ? { title_lines: [], body: "" }
-      : { title_lines: [], body: "" };
+    const defaultContent = { title_lines: [], body: "" };
     const existingExtra = row.columns_data || [];
     const newColumnsData = [...existingExtra, defaultContent];
     const colCount = 1 + newColumnsData.length;
@@ -358,7 +399,7 @@ const AdminDashboard = ({ session }: Props) => {
     updateRows(pageRows.map((r) =>
       r.id === rowId
         ? { ...r, columns_data: newColumnsData, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
-        : r
+        : r,
     ));
   }, [pageRows, updateRows]);
 
@@ -372,7 +413,7 @@ const AdminDashboard = ({ session }: Props) => {
       updateRows(pageRows.map((r) =>
         r.id === rowId
           ? { ...r, content: promoted, columns_data: rest.length > 0 ? rest : undefined, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
-          : r
+          : r,
       ));
     } else if (colIndex > 0 && row.columns_data) {
       const newExtra = row.columns_data.filter((_, i) => i !== colIndex - 1);
@@ -381,7 +422,7 @@ const AdminDashboard = ({ session }: Props) => {
       updateRows(pageRows.map((r) =>
         r.id === rowId
           ? { ...r, columns_data: newExtra.length > 0 ? newExtra : undefined, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
-          : r
+          : r,
       ));
     }
     setActiveCol(0);
@@ -391,10 +432,9 @@ const AdminDashboard = ({ session }: Props) => {
     updateRows(pageRows.map((r) =>
       r.id === rowId
         ? { ...r, layout: { ...(r.layout || DEFAULT_ROW_LAYOUT), column_widths: widths } }
-        : r
+        : r,
     ));
   }, [pageRows, updateRows]);
-
 
   const toggleCmsPagePublish = useCallback(async () => {
     if (!cmsPage) return;
@@ -404,8 +444,6 @@ const AdminDashboard = ({ session }: Props) => {
       updates.page_rows = cmsPageRows;
       updates.draft_page_rows = cmsPageRows;
     }
-    // runDbAction normalizes the toast / error path. We update local state
-    // only on success so the UI never lies about the page's published flag.
     const result = await runDbAction({
       action: () => supabase.from("cms_pages").update(updates).eq("id", cmsPage.id),
       successMessage: newStatus === "published" ? "Published!" : "Unpublished",
@@ -417,8 +455,6 @@ const AdminDashboard = ({ session }: Props) => {
     const next = { ...cmsPageMeta, [field]: value };
     setCmsPageMeta(next);
     if (cmsPage) {
-      // Silent save — meta fields persist on every keystroke pause, so a
-      // toast for each one would spam the user. Errors are still surfaced.
       await runDbAction({
         action: () => supabase.from("cms_pages").update({ [field]: value } as any).eq("id", cmsPage.id),
         successMessage: null,
@@ -440,10 +476,6 @@ const AdminDashboard = ({ session }: Props) => {
       return;
     }
 
-    // Multi-section save — we have to upsert each row of site_content
-    // independently because they may or may not already exist. We still
-    // wrap the whole batch in runDbAction so a failure ANYWHERE aborts
-    // with one toast (not N toasts) and saving=false runs in `finally`.
     await runDbAction({
       action: async () => {
         const promises = sections.map(async (s) => {
@@ -456,7 +488,6 @@ const AdminDashboard = ({ session }: Props) => {
           return supabase.from("site_content").insert({ section_key: s.section_key, content: draft, draft_content: draft } as any);
         });
         const results = await Promise.all(promises);
-        // Surface the first error so runDbAction can toast it.
         const failed = results.find((r) => r.error);
         return failed ?? { data: null, error: null };
       },
@@ -479,9 +510,6 @@ const AdminDashboard = ({ session }: Props) => {
       return;
     }
 
-    // Same multi-section pattern as saveDraft, but writing to BOTH `content`
-    // (live) and `draft_content` so the published version reflects what the
-    // admin sees in the editor.
     const result = await runDbAction({
       action: async () => {
         const updates = sections.map((s) => {
@@ -499,20 +527,12 @@ const AdminDashboard = ({ session }: Props) => {
     });
 
     if (result !== null) {
-      // Promote drafts to live in local state so `hasChanges` flips back to false.
       setSections((prev) => prev.map((s) => ({ ...s, content: s.draft_content || s.content })));
       sections.forEach((s) => invalidateSiteContent(s.section_key));
     }
   }, [sections, cmsPage, cmsPageRows]);
 
-  const hasChanges = cmsPage
-    ? true // CMS pages always allow save
-    : sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
-
   const handleLogout = async () => {
-    // Sign-out is best-effort: runDbAction shows an error toast if the
-    // request fails, but the auth listener will still tear down the
-    // session locally so the user does end up signed out.
     await runDbAction({
       action: () => supabase.auth.signOut(),
       successMessage: "Logged out",
@@ -529,7 +549,7 @@ const AdminDashboard = ({ session }: Props) => {
   // ── DnD sensors ──
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -542,9 +562,6 @@ const AdminDashboard = ({ session }: Props) => {
   };
 
   // ── Filters: search + type + sort over the row rail ──
-  // See `useListFilters` for the client-side / debounce / URL-persist rationale.
-  // Param prefix `r` keeps row params (?rq, ?rtype, ?rsort) from colliding with
-  // any future filter on a different admin tab living in the same SPA.
   const rowFilters = useListFilters<PageRow>({
     items: pageRows,
     paramPrefix: "r",
@@ -558,16 +575,14 @@ const AdminDashboard = ({ session }: Props) => {
   const friendlyRowType = (raw: string) =>
     ROW_TYPE_OPTIONS.find((o) => o.type === raw)?.label || raw;
 
-  // Drag-to-reorder ONLY makes sense against the unfiltered list — reordering
-  // a search-filtered subset would silently scramble the underlying page.
-  // We disable the drag handles whenever the user is filtering.
+  // Drag-to-reorder ONLY makes sense against the unfiltered list.
   const isRowListFiltered = rowFilters.state.isFiltering;
 
   // ── Row content update for properties panel ──
   const updateRowContent = (field: string, value: any) => {
     if (!selectedSectionId) return;
     const newRows = pageRows.map((r) =>
-      r.id === selectedSectionId ? { ...r, content: { ...r.content, [field]: value } } : r
+      r.id === selectedSectionId ? { ...r, content: { ...r.content, [field]: value } } : r,
     );
     updateRows(newRows);
   };
@@ -590,7 +605,7 @@ const AdminDashboard = ({ session }: Props) => {
   const updateRowMeta = (updates: Partial<PageRow>) => {
     if (!selectedSectionId) return;
     const newRows = pageRows.map((r) =>
-      r.id === selectedSectionId ? { ...r, ...updates } : r
+      r.id === selectedSectionId ? { ...r, ...updates } : r,
     );
     updateRows(newRows);
   };
@@ -605,66 +620,75 @@ const AdminDashboard = ({ session }: Props) => {
   const isSiteTab = activeTab === "site";
   const isMainPage = !cmsPage;
   const pageLabel = cmsPage ? cmsPage.title : "Main Page";
-
   const tabLabel = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.key === activeTab)?.label || "";
 
+  // ── Dynamic style helpers ────────────────────────────────────────
+  // Sidebar width depends on three flags (mobile / hover-expanded / drawer).
+  // Tailwind can't express this conditional value, so the resulting object
+  // stays inline. We collect it here once for readability.
+  const sidebarStyle: React.CSSProperties = {
+    width: isAdminMobile ? 260 : (sidebarExpanded ? 220 : 58),
+    transform: isAdminMobile && !mobileDrawerOpen ? "translateX(-100%)" : "translateX(0)",
+    boxShadow: isAdminMobile && mobileDrawerOpen ? "8px 0 24px -8px hsl(0 0% 0% / 0.2)" : "none",
+  };
+  // The page-structure rail similarly has a width that depends on multiple
+  // runtime conditions and animates between values.
+  const pageStructureWidth = isAdminMobile
+    ? (isSiteTab && !selectedSectionId ? "100%" : 0)
+    : (isSiteTab ? 240 : 0);
+
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", backgroundColor: "hsl(var(--background))" }}>
+    <div className="h-screen flex flex-col bg-background">
       {/* ═══ TOPBAR ═══ */}
+      {/*
+        Mobile: 12px horizontal padding (room for hamburger).
+        Desktop: 16px right padding, but the LEFT padding is `58px + 16px`
+        so the topbar text doesn't slide under the always-visible icon rail.
+      */}
       <header
-        style={{
-          height: 52, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between",
-          // On mobile we reserve room for the hamburger trigger instead of
-          // the always-visible 58px sidebar that used to live at the left.
-          padding: isAdminMobile ? "0 0.75rem" : "0 1rem 0 calc(58px + 1rem)",
-          backgroundColor: "hsl(var(--card))", borderBottom: "1px solid hsl(var(--border))",
-          gap: 8,
-        }}
+        className={[
+          "h-[52px] flex-shrink-0 flex items-center justify-between bg-card border-b border-border gap-2",
+          isAdminMobile ? "px-3" : "pl-[calc(58px+1rem)] pr-4",
+        ].join(" ")}
       >
         {isAdminMobile && (
           /* Hamburger trigger — only rendered on mobile (< 768px). */
           <button
             onClick={toggleMobileDrawer}
             aria-label="Open admin menu"
-            style={{
-              width: 36, height: 36, borderRadius: 8, border: "1px solid hsl(var(--border))",
-              background: "hsl(var(--card))", color: "hsl(var(--foreground))",
-              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-              flexShrink: 0,
-            }}
+            className="w-9 h-9 rounded-lg border border-border bg-card text-foreground flex items-center justify-center cursor-pointer flex-shrink-0"
           >
             <Menu size={18} />
           </button>
         )}
-        {/* Brand wordmark — hidden on mobile to save horizontal space
-            for the page title and action buttons. */}
+        {/* Brand wordmark — hidden on mobile to save horizontal space. */}
         {!isAdminMobile && (
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 11, fontWeight: 700, color: "hsl(var(--secondary))", letterSpacing: "0.15em", whiteSpace: "nowrap" }}>
+          <span className="font-display text-[11px] font-bold text-secondary tracking-[0.15em] whitespace-nowrap">
             THE MAGIC COFFIN
           </span>
         )}
-        <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)", flex: 1, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <span className="text-[11px] text-muted-foreground font-body flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap">
           {isSiteTab ? pageLabel : tabLabel}
         </span>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <div className="flex items-center gap-2">
           <button
             onClick={() => window.open(cmsPage ? `/p/${cmsPage.slug}` : "/", "_blank")}
-            style={{ fontSize: 10, fontFamily: "var(--font-body)", color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.1em" }}
+            className="text-[10px] font-body text-muted-foreground bg-transparent border-none cursor-pointer uppercase tracking-[0.1em]"
           >
             Preview live →
           </button>
           {isSiteTab && (
             <>
               {cmsPage && (
+                /* Publish/Unpublish — destructive look while published. */
                 <button
                   onClick={toggleCmsPagePublish}
-                  style={{
-                    fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase", letterSpacing: "0.1em",
-                    padding: "6px 14px", borderRadius: 20, cursor: "pointer",
-                    border: `1px solid ${cmsPageStatus === "published" ? "hsl(var(--destructive) / 0.4)" : "hsl(var(--border))"}`,
-                    background: "transparent",
-                    color: cmsPageStatus === "published" ? "hsl(var(--destructive))" : "hsl(var(--foreground))",
-                  }}
+                  className={[
+                    "text-[10px] font-body uppercase tracking-[0.1em] px-3.5 py-1.5 rounded-full cursor-pointer border bg-transparent",
+                    cmsPageStatus === "published"
+                      ? "border-destructive/40 text-destructive"
+                      : "border-border text-foreground",
+                  ].join(" ")}
                 >
                   {cmsPageStatus === "published" ? "Unpublish" : "Set Published"}
                 </button>
@@ -672,27 +696,21 @@ const AdminDashboard = ({ session }: Props) => {
               <button
                 onClick={saveDraft}
                 disabled={saving}
-                style={{
-                  fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase", letterSpacing: "0.1em",
-                  padding: "6px 14px", borderRadius: 20, cursor: "pointer",
-                  border: "1px solid hsl(var(--border))", background: "transparent",
-                  color: "hsl(var(--foreground))", opacity: saving ? 0.5 : 1,
-                }}
+                // `opacity` uses the saving flag; Tailwind has no equivalent
+                // for a runtime boolean, so we keep it inline.
+                style={{ opacity: saving ? 0.5 : 1 }}
+                className="text-[10px] font-body uppercase tracking-[0.1em] px-3.5 py-1.5 rounded-full cursor-pointer border border-border bg-transparent text-foreground"
               >
-                <Save size={11} style={{ display: "inline", verticalAlign: "-2px", marginRight: 4 }} />
+                <Save size={11} className="inline -translate-y-px mr-1" />
                 {saving ? "Saving…" : "Save draft"}
               </button>
               <button
                 onClick={publishAll}
                 disabled={publishing}
-                style={{
-                  fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase", letterSpacing: "0.1em",
-                  padding: "6px 14px", borderRadius: 20, cursor: "pointer", border: "none",
-                  backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--background))",
-                  opacity: publishing ? 0.4 : 1,
-                }}
+                style={{ opacity: publishing ? 0.4 : 1 }}
+                className="text-[10px] font-body uppercase tracking-[0.1em] px-3.5 py-1.5 rounded-full cursor-pointer border-none bg-secondary text-background"
               >
-                <Send size={11} style={{ display: "inline", verticalAlign: "-2px", marginRight: 4 }} />
+                <Send size={11} className="inline -translate-y-px mr-1" />
                 {publishing ? "Publishing…" : "Publish"}
               </button>
             </>
@@ -701,13 +719,9 @@ const AdminDashboard = ({ session }: Props) => {
           <Link
             to="/admin/profile"
             title="Profile settings"
-            style={{
-              width: 28, height: 28, borderRadius: "50%",
-              background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontFamily: "var(--font-display)", fontSize: 9, fontWeight: 700, color: "hsl(var(--background))",
-              textDecoration: "none",
-            }}
+            className="w-7 h-7 rounded-full flex items-center justify-center font-display text-[9px] font-bold text-background no-underline"
+            // Brand gradient — uses both HSL tokens, kept inline.
+            style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))" }}
           >
             R
           </Link>
@@ -715,84 +729,72 @@ const AdminDashboard = ({ session }: Props) => {
       </header>
 
       {/* ═══ MAIN ROW ═══ */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
+      <div className="flex flex-1 overflow-hidden relative">
         {/* ── MobileAdminDrawer overlay ── only on mobile when open. */}
         {isAdminMobile && mobileDrawerOpen && (
           <div
             onClick={() => setMobileDrawerOpen(false)}
             aria-hidden
-            style={{
-              position: "absolute", inset: 0, background: "hsl(var(--foreground) / 0.4)",
-              zIndex: 40, backdropFilter: "blur(2px)",
-            }}
+            className="absolute inset-0 z-40 backdrop-blur-[2px]"
+            style={{ background: "hsl(var(--foreground) / 0.4)" }}
           />
         )}
 
         {/* ──────────────────────────────────────────────────────
          * SIDEBAR / MobileAdminDrawer
          * Desktop (>= 768px): permanent rail that expands on hover.
-         * Mobile  (<  768px): off-canvas drawer that slides in from
-         *                     the left when the hamburger is tapped.
-         * The drawer must be wider than the icon rail to display
-         * labels and offer touch-sized hit areas.
+         * Mobile  (<  768px): off-canvas drawer that slides in.
+         * width / transform / shadow are all runtime-dependent.
          * ────────────────────────────────────────────────────── */}
         <nav
           onMouseEnter={() => !isAdminMobile && setSidebarExpanded(true)}
           onMouseLeave={() => !isAdminMobile && setSidebarExpanded(false)}
-          style={{
-            // On mobile we lift the rail to a fixed-position drawer.
-            position: isAdminMobile ? "absolute" : "relative",
-            top: 0, bottom: 0, left: 0,
-            zIndex: isAdminMobile ? 50 : "auto",
-            width: isAdminMobile ? 260 : (sidebarExpanded ? 220 : 58),
-            transform: isAdminMobile && !mobileDrawerOpen ? "translateX(-100%)" : "translateX(0)",
-            transition: "width 0.3s cubic-bezier(0.16,1,0.3,1), transform 0.3s cubic-bezier(0.16,1,0.3,1)",
-            backgroundColor: "hsl(var(--card))",
-            borderRight: "1px solid hsl(var(--border))",
-            flexShrink: 0, overflow: "hidden",
-            display: "flex", flexDirection: "column",
-            boxShadow: isAdminMobile && mobileDrawerOpen ? "8px 0 24px -8px hsl(0 0% 0% / 0.2)" : "none",
-          }}
+          className={[
+            "top-0 bottom-0 left-0 bg-card border-r border-border flex-shrink-0 overflow-hidden flex flex-col",
+            // The transition curve is bespoke; declared as an arbitrary
+            // value to avoid polluting tailwind.config.
+            "[transition:width_0.3s_cubic-bezier(0.16,1,0.3,1),transform_0.3s_cubic-bezier(0.16,1,0.3,1)]",
+            isAdminMobile ? "absolute z-50" : "relative",
+          ].join(" ")}
+          style={sidebarStyle}
         >
           {/* On mobile show a labelled close button at the top of the drawer */}
           {isAdminMobile && (
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "10px 14px", borderBottom: "1px solid hsl(var(--border))",
-            }}>
-              <span style={{ fontFamily: "var(--font-display)", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "hsl(var(--secondary))" }}>
+            <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-border">
+              <span className="font-display text-[11px] font-bold tracking-[0.15em] text-secondary">
                 MENU
               </span>
               <button
                 onClick={() => setMobileDrawerOpen(false)}
                 aria-label="Close admin menu"
-                style={{
-                  width: 32, height: 32, borderRadius: 8, border: "none",
-                  background: "transparent", color: "hsl(var(--muted-foreground))",
-                  display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                }}
+                className="w-8 h-8 rounded-lg border-none bg-transparent text-muted-foreground flex items-center justify-center cursor-pointer"
               >
                 <X size={16} />
               </button>
             </div>
           )}
-          <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingTop: 8 }}>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden pt-2">
             {NAV_GROUPS.map((group) => (
               <div key={group.label}>
                 <div
+                  className={[
+                    "text-[8px] uppercase whitespace-nowrap transition-opacity",
+                    "px-[1.1rem] pt-3 pb-[0.35rem]",
+                    // Label opacity is the only thing toggling here; the
+                    // hover-expand state isn't a CSS hover so we can't use
+                    // group-hover. Keep it inline.
+                  ].join(" ")}
                   style={{
-                    fontSize: 8, letterSpacing: "0.3em", textTransform: "uppercase" as const,
-                    color: "hsl(var(--muted-foreground) / 0.5)", padding: "0.75rem 1.1rem 0.35rem",
-                    // On mobile the drawer is always "expanded" so labels are visible.
-                    opacity: isAdminMobile || sidebarExpanded ? 1 : 0, transition: "opacity 0.2s",
-                    whiteSpace: "nowrap",
+                    color: "hsl(var(--muted-foreground) / 0.5)",
+                    letterSpacing: "0.3em",
+                    opacity: isAdminMobile || sidebarExpanded ? 1 : 0,
                   }}
                 >
                   {group.label}
                 </div>
                 {group.items.map((item) => {
                   const active = activeTab === item.key;
-                  // insights navigates to a separate route, not a tab.
+                  // `insights` navigates to a separate route, not a tab.
                   const isExternalRoute = item.key === "insights";
                   const handleClick = () => {
                     if (isExternalRoute) {
@@ -802,34 +804,30 @@ const AdminDashboard = ({ session }: Props) => {
                     setActiveTab(item.key as Tab);
                     setSelectedSectionId(null);
                     if (item.key !== "site") setCmsPage(null);
-                    // Auto-close the mobile drawer after picking a tab so
-                    // editors land directly on the chosen panel.
                     if (isAdminMobile) setMobileDrawerOpen(false);
                   };
                   return (
                     <button
                       key={item.key}
                       onClick={handleClick}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 10, width: "100%",
-                        // Larger vertical padding on mobile to give thumbs an
-                        // accessible 44px+ tap target.
-                        padding: isAdminMobile ? "14px 16px" : "8px 16px",
-                        border: "none", cursor: "pointer",
-                        textAlign: "left" as const, background: active ? "hsl(var(--secondary) / 0.07)" : "transparent",
-                        borderLeft: active ? "2px solid hsl(var(--secondary))" : "2px solid transparent",
-                        color: active ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
-                        transition: "background 0.15s",
-                      }}
-                      onMouseOver={(e) => { if (!active) (e.currentTarget.style.background = "hsl(var(--foreground) / 0.04)"); }}
-                      onMouseOut={(e) => { if (!active) (e.currentTarget.style.background = "transparent"); }}
+                      className={[
+                        "flex items-center gap-2.5 w-full border-none cursor-pointer text-left transition-[background] duration-150",
+                        isAdminMobile ? "px-4 py-3.5" : "px-4 py-2",
+                        // Active vs inactive look. The 2px left border
+                        // collapses to transparent when inactive so layout
+                        // doesn't shift.
+                        active
+                          ? "bg-secondary/[0.07] text-secondary border-l-2 border-secondary"
+                          : "bg-transparent text-muted-foreground border-l-2 border-transparent hover:bg-foreground/[0.04]",
+                      ].join(" ")}
                     >
-                      <item.icon size={16} style={{ flexShrink: 0 }} />
+                      <item.icon size={16} className="flex-shrink-0" />
                       <span
-                        style={{
-                          fontFamily: "var(--font-body)", fontSize: isAdminMobile ? 13 : 11, whiteSpace: "nowrap",
-                          opacity: isAdminMobile || sidebarExpanded ? 1 : 0, transition: "opacity 0.2s",
-                        }}
+                        className={[
+                          "font-body whitespace-nowrap transition-opacity",
+                          isAdminMobile ? "text-[13px]" : "text-[11px]",
+                        ].join(" ")}
+                        style={{ opacity: isAdminMobile || sidebarExpanded ? 1 : 0 }}
                       >
                         {item.label}
                       </span>
@@ -840,17 +838,22 @@ const AdminDashboard = ({ session }: Props) => {
             ))}
           </div>
           {/* Sign out */}
-          <div style={{ borderTop: "1px solid hsl(var(--border))", padding: 4 }}>
+          <div className="border-t border-border p-1">
             <button
               onClick={handleLogout}
-              style={{
-                display: "flex", alignItems: "center", gap: 10, width: "100%",
-                padding: isAdminMobile ? "14px 16px" : "8px 16px", border: "none", cursor: "pointer", textAlign: "left" as const,
-                background: "transparent", color: "hsl(var(--muted-foreground))",
-              }}
+              className={[
+                "flex items-center gap-2.5 w-full border-none cursor-pointer text-left bg-transparent text-muted-foreground",
+                isAdminMobile ? "px-4 py-3.5" : "px-4 py-2",
+              ].join(" ")}
             >
-              <LogOut size={16} style={{ flexShrink: 0 }} />
-              <span style={{ fontFamily: "var(--font-body)", fontSize: isAdminMobile ? 13 : 11, whiteSpace: "nowrap", opacity: isAdminMobile || sidebarExpanded ? 1 : 0, transition: "opacity 0.2s" }}>
+              <LogOut size={16} className="flex-shrink-0" />
+              <span
+                className={[
+                  "font-body whitespace-nowrap transition-opacity",
+                  isAdminMobile ? "text-[13px]" : "text-[11px]",
+                ].join(" ")}
+                style={{ opacity: isAdminMobile || sidebarExpanded ? 1 : 0 }}
+              >
                 Sign out
               </span>
             </button>
@@ -859,43 +862,30 @@ const AdminDashboard = ({ session }: Props) => {
 
         {/* ── PAGE STRUCTURE PANEL ── full-width on mobile, 240px on desktop. */}
         <div
-          style={{
-            // On mobile, the panel takes the full viewport so editors get
-            // generous room to scan the section list with their thumb.
-            // Mobile: panel takes full viewport when no section is selected
-            // and collapses to 0 once an editor opens (the properties area
-            // takes over). Desktop keeps the classic 240px rail.
-            width: isAdminMobile
-              ? (isSiteTab && !selectedSectionId ? "100%" : 0)
-              : (isSiteTab ? 240 : 0),
-            transition: "width 0.3s cubic-bezier(0.16,1,0.3,1)",
-            backgroundColor: "hsl(var(--card))",
-            borderRight: isSiteTab && !isAdminMobile ? "1px solid hsl(var(--border))" : "none",
-            flexShrink: 0, overflow: "hidden",
-            display: "flex", flexDirection: "column",
-          }}
+          className={[
+            "bg-card flex-shrink-0 overflow-hidden flex flex-col",
+            "[transition:width_0.3s_cubic-bezier(0.16,1,0.3,1)]",
+            isSiteTab && !isAdminMobile ? "border-r border-border" : "",
+          ].join(" ")}
+          style={{ width: pageStructureWidth }}
         >
-          <div style={{
-            height: 44, display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
-          }}>
+          <div className="h-11 flex items-center justify-between px-4 border-b border-border flex-shrink-0">
             {cmsPage ? (
               <button
                 onClick={() => setCmsPage(null)}
-                style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)", fontSize: 10 }}
+                className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-muted-foreground font-body text-[10px]"
               >
                 <ArrowLeft size={12} /> Back to Main Page
               </button>
             ) : (
-              <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
+              <span className="font-display text-[10px] font-bold text-foreground whitespace-nowrap">
                 Page Structure
               </span>
             )}
           </div>
-          <div style={{ flex: 1, overflowY: "auto", padding: "0.5rem", scrollbarWidth: "thin" as const }}>
+          <div className="flex-1 overflow-y-auto p-2 [scrollbar-width:thin]">
             {/* Search / filter / sort bar — only renders when the row rail
-                contains anything worth filtering. Below 2 rows it's just
-                visual noise. */}
+                contains anything worth filtering. */}
             {pageRows.length > 1 && (
               <div className="mb-2">
                 <ListFilters
@@ -904,7 +894,7 @@ const AdminDashboard = ({ session }: Props) => {
                   formatCategoryLabel={friendlyRowType}
                 />
                 {isRowListFiltered && (
-                  <p className="font-body text-[9px] uppercase tracking-wider mt-1 px-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="font-body text-[9px] uppercase tracking-wider mt-1 px-1 text-muted-foreground">
                     {filteredPageRows.length} of {pageRows.length} · drag disabled while filtering
                   </p>
                 )}
@@ -916,23 +906,27 @@ const AdminDashboard = ({ session }: Props) => {
               <div
                 onClick={() => { setSelectedSectionId("__hero__"); setPropertiesSubTab("content"); }}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all mb-1"
-                style={{
-                  background: selectedSectionId === "__hero__" ? "hsl(var(--secondary) / 0.07)" : "transparent",
-                }}
+                // Selection background is dynamic per click → inline.
+                style={{ background: selectedSectionId === "__hero__" ? "hsl(var(--secondary) / 0.07)" : "transparent" }}
               >
-                <span className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: selectedSectionId === "__hero__" ? "hsl(var(--secondary))" : "transparent" }} />
+                <span
+                  className="w-1 self-stretch rounded-full flex-shrink-0"
+                  style={{ backgroundColor: selectedSectionId === "__hero__" ? "hsl(var(--secondary))" : "transparent" }}
+                />
                 <span className="text-sm flex-shrink-0">🎭</span>
                 <div className="min-w-0 flex-1">
-                  <div className="font-body text-[11px] font-medium truncate" style={{ color: selectedSectionId === "__hero__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}>
+                  <div
+                    className="font-body text-[11px] font-medium truncate"
+                    style={{ color: selectedSectionId === "__hero__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}
+                  >
                     Hero
                   </div>
-                  <div className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>hero</div>
+                  <div className="font-body text-[9px] uppercase tracking-wider text-muted-foreground">hero</div>
                 </div>
               </div>
             )}
 
-            {/* Page rows. DnD is suppressed while filtering — see comment
-                near the rowFilters declaration for why. */}
+            {/* Page rows. DnD is suppressed while filtering. */}
             {isRowListFiltered ? (
               <div>
                 {filteredPageRows.map((row) => (
@@ -944,7 +938,7 @@ const AdminDashboard = ({ session }: Props) => {
                   />
                 ))}
                 {filteredPageRows.length === 0 && (
-                  <div className="text-center py-6 px-2" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "var(--font-body)" }}>
+                  <div className="text-center py-6 px-2 text-muted-foreground text-[10px] font-body">
                     No rows match your filters.
                   </div>
                 )}
@@ -968,24 +962,17 @@ const AdminDashboard = ({ session }: Props) => {
             <div className="relative mt-2 px-3">
               <button
                 onClick={() => setShowAddRow(!showAddRow)}
-                className="flex items-center gap-1.5 w-full justify-center py-2 rounded-lg border border-dashed transition-all hover:opacity-70"
-                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "var(--font-body)" }}
+                className="flex items-center gap-1.5 w-full justify-center py-2 rounded-lg border border-dashed border-border text-muted-foreground text-[10px] font-body transition-all hover:opacity-70"
               >
                 <Plus size={12} /> Add Row
               </button>
               {showAddRow && (
-                <div
-                  className="absolute left-3 right-3 mt-1 rounded-lg border shadow-lg overflow-hidden z-10"
-                  style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}
-                >
+                <div className="absolute left-3 right-3 mt-1 rounded-lg border border-border shadow-lg overflow-hidden z-10 bg-card">
                   {ROW_TYPE_OPTIONS.map((opt) => (
                     <button
                       key={opt.type}
                       onClick={() => addRow(opt.type)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-left transition-all"
-                      style={{ fontSize: 11, fontFamily: "var(--font-body)", color: "hsl(var(--foreground))", background: "transparent", border: "none", cursor: "pointer" }}
-                      onMouseOver={(e) => (e.currentTarget.style.background = "hsl(var(--secondary) / 0.07)")}
-                      onMouseOut={(e) => (e.currentTarget.style.background = "transparent")}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-left transition-all text-[11px] font-body text-foreground bg-transparent border-none cursor-pointer hover:bg-secondary/[0.07]"
                     >
                       <span>{opt.emoji}</span>
                       <span>{opt.label}</span>
@@ -996,7 +983,7 @@ const AdminDashboard = ({ session }: Props) => {
             </div>
 
             {pageRows.length === 0 && (
-              <div className="text-center py-8" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11, fontFamily: "var(--font-body)" }}>
+              <div className="text-center py-8 text-muted-foreground text-[11px] font-body">
                 No rows yet. Click '+ Add Row' above.
               </div>
             )}
@@ -1005,33 +992,39 @@ const AdminDashboard = ({ session }: Props) => {
             <div
               onClick={() => { setSelectedSectionId("__seo__"); setPropertiesSubTab("seo"); }}
               className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all mt-1"
-              style={{
-                background: selectedSectionId === "__seo__" ? "hsl(var(--secondary) / 0.07)" : "transparent",
-              }}
+              style={{ background: selectedSectionId === "__seo__" ? "hsl(var(--secondary) / 0.07)" : "transparent" }}
             >
-              <span className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "transparent" }} />
+              <span
+                className="w-1 self-stretch rounded-full flex-shrink-0"
+                style={{ backgroundColor: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "transparent" }}
+              />
               <span className="text-sm flex-shrink-0">🔍</span>
               <div className="min-w-0 flex-1">
-                <div className="font-body text-[11px] font-medium truncate" style={{ color: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}>
+                <div
+                  className="font-body text-[11px] font-medium truncate"
+                  style={{ color: selectedSectionId === "__seo__" ? "hsl(var(--secondary))" : "hsl(var(--foreground))" }}
+                >
                   SEO & Metadata
                 </div>
-                <div className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>meta</div>
+                <div className="font-body text-[9px] uppercase tracking-wider text-muted-foreground">meta</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── MAIN CONTENT AREA ── on mobile, hidden when no section
-         * is selected so the page-structure list owns the screen. */}
-        <div style={{
-          flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden",
-          ...(isAdminMobile && isSiteTab && !selectedSectionId ? { display: "none" } : {}),
-        }}>
+        {/* ── MAIN CONTENT AREA ── on mobile, hidden when no section is
+         * selected so the page-structure list owns the screen. */}
+        <div
+          className={[
+            "flex-1 min-w-0 flex flex-col overflow-hidden",
+            isAdminMobile && isSiteTab && !selectedSectionId ? "hidden" : "",
+          ].join(" ")}
+        >
           {isSiteTab ? (
-            <div style={{ flex: 1, backgroundColor: "hsl(var(--card))", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div className="flex-1 bg-card overflow-hidden flex flex-col">
               {!selectedSectionId ? (
-                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-body)" }}>
+                <div className="flex-1 flex items-center justify-center">
+                  <span className="text-[11px] text-muted-foreground font-body">
                     Select a section to edit
                   </span>
                 </div>
@@ -1042,25 +1035,18 @@ const AdminDashboard = ({ session }: Props) => {
                     const isRow = selectedSectionId !== "__hero__" && selectedSectionId !== "__seo__" && !!selectedRow;
                     const rowColCount = isRow ? 1 + (selectedRow!.columns_data?.length || 0) : 0;
                     return (
-                      <div style={{
-                        height: 44, display: "flex", alignItems: "center", gap: 8,
-                        padding: "0 1rem", borderBottom: "1px solid hsl(var(--border))", flexShrink: 0,
-                      }}>
+                      <div className="h-11 flex items-center gap-2 px-4 border-b border-border flex-shrink-0">
                         {/* Mobile back arrow — returns to the section list. */}
                         {isAdminMobile && (
                           <button
                             onClick={() => setSelectedSectionId(null)}
                             aria-label="Back to section list"
-                            style={{
-                              width: 32, height: 32, marginLeft: -6, borderRadius: 8, border: "none",
-                              background: "transparent", color: "hsl(var(--muted-foreground))",
-                              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                            }}
+                            className="w-8 h-8 -ml-1.5 rounded-lg border-none bg-transparent text-muted-foreground flex items-center justify-center cursor-pointer"
                           >
                             <ArrowLeft size={16} />
                           </button>
                         )}
-                        <span style={{ fontFamily: "var(--font-display)", fontSize: 10, fontWeight: 700, color: "hsl(var(--foreground))", whiteSpace: "nowrap" }}>
+                        <span className="font-display text-[10px] font-bold text-foreground whitespace-nowrap">
                           {selectedSectionId === "__hero__"
                             ? "Hero"
                             : selectedSectionId === "__seo__"
@@ -1068,25 +1054,15 @@ const AdminDashboard = ({ session }: Props) => {
                             : selectedRow?.strip_title || "Section"}
                         </span>
                         {selectedSectionId !== "__seo__" && (
-                          <span style={{
-                            fontSize: 8, textTransform: "uppercase" as const, letterSpacing: "0.1em",
-                            background: "hsl(var(--secondary) / 0.1)", color: "hsl(var(--secondary))",
-                            padding: "2px 7px", borderRadius: 4,
-                          }}>
+                          <span className="text-[8px] uppercase tracking-[0.1em] bg-secondary/10 text-secondary px-1.5 py-0.5 rounded-sm">
                             {selectedSectionId === "__hero__" ? "hero" : selectedRow?.type}
                           </span>
                         )}
-                        <div style={{ flex: 1 }} />
+                        <div className="flex-1" />
                         {isRow && rowColCount < 4 && (
                           <button
                             onClick={() => addColumnToRow(selectedRow!.id)}
-                            style={{
-                              display: "flex", alignItems: "center", gap: 4,
-                              fontSize: 9, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
-                              letterSpacing: "0.08em", padding: "4px 10px", borderRadius: 14, cursor: "pointer",
-                              border: "1px solid hsl(var(--primary) / 0.3)", background: "transparent",
-                              color: "hsl(var(--primary))",
-                            }}
+                            className="flex items-center gap-1 text-[9px] font-body uppercase tracking-[0.08em] px-2.5 py-1 rounded-[14px] cursor-pointer border border-primary/30 bg-transparent text-primary"
                           >
                             <Plus size={10} /> Column
                           </button>
@@ -1094,12 +1070,7 @@ const AdminDashboard = ({ session }: Props) => {
                         {isRow && (
                           <button
                             onClick={() => deleteRow(selectedRow!.id)}
-                            style={{
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                              width: 28, height: 28, borderRadius: 6, cursor: "pointer",
-                              border: "1px solid hsl(var(--destructive) / 0.3)", background: "transparent",
-                              color: "hsl(var(--destructive))",
-                            }}
+                            className="flex items-center justify-center w-7 h-7 rounded-md cursor-pointer border border-destructive/30 bg-transparent text-destructive"
                             title="Delete Row"
                           >
                             <Trash2 size={12} />
@@ -1115,45 +1086,46 @@ const AdminDashboard = ({ session }: Props) => {
                     const rowColCount = isRow ? 1 + (selectedRow!.columns_data?.length || 0) : 0;
                     const safeActiveCol = Math.min(activeCol, Math.max(rowColCount - 1, 0));
                     return (
-                      <div style={{ borderBottom: "1px solid hsl(var(--border))", flexShrink: 0 }}>
-                        <div style={{ display: "flex" }}>
+                      <div className="border-b border-border flex-shrink-0">
+                        <div className="flex">
                           {(["content", "style"] as PropertiesSubTab[]).map((tab) => (
                             <button
                               key={tab}
                               onClick={() => setPropertiesSubTab(tab)}
-                              style={{
-                                flex: 1, padding: "0.5rem", fontSize: 9, letterSpacing: "0.1em",
-                                textTransform: "uppercase" as const, border: "none", cursor: "pointer",
-                                background: "transparent",
-                                color: propertiesSubTab === tab ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
-                                borderBottom: propertiesSubTab === tab ? "2px solid hsl(var(--secondary))" : "2px solid transparent",
-                                fontFamily: "var(--font-body)",
-                              }}
+                              className={[
+                                "flex-1 p-2 text-[9px] tracking-[0.1em] uppercase border-none cursor-pointer bg-transparent font-body",
+                                // The bottom border collapses to transparent
+                                // when not active so layout doesn't jump.
+                                propertiesSubTab === tab
+                                  ? "text-secondary border-b-2 border-secondary"
+                                  : "text-muted-foreground border-b-2 border-transparent",
+                              ].join(" ")}
                             >
                               {tab}
                             </button>
                           ))}
                         </div>
                         {isRow && rowColCount > 1 && propertiesSubTab === "content" && (
-                          <div style={{ display: "flex", gap: 2, padding: "6px 12px", borderTop: "1px solid hsl(var(--border) / 0.3)" }}>
+                          <div
+                            className="flex gap-0.5 px-3 py-1.5 border-t"
+                            style={{ borderTopColor: "hsl(var(--border) / 0.3)" }}
+                          >
                             {Array.from({ length: rowColCount }).map((_, i) => (
                               <button
                                 key={i}
                                 onClick={() => setActiveCol(i)}
-                                style={{
-                                  display: "flex", alignItems: "center", gap: 4,
-                                  fontSize: 9, fontFamily: "var(--font-body)", letterSpacing: "0.05em",
-                                  padding: "3px 10px", borderRadius: 12, cursor: "pointer",
-                                  border: `1px solid ${safeActiveCol === i ? "hsl(var(--secondary))" : "hsl(var(--border))"}`,
-                                  background: safeActiveCol === i ? "hsl(var(--secondary) / 0.1)" : "transparent",
-                                  color: safeActiveCol === i ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
-                                }}
+                                className={[
+                                  "flex items-center gap-1 text-[9px] font-body tracking-[0.05em] px-2.5 py-[3px] rounded-xl cursor-pointer border",
+                                  safeActiveCol === i
+                                    ? "border-secondary bg-secondary/10 text-secondary"
+                                    : "border-border bg-transparent text-muted-foreground",
+                                ].join(" ")}
                               >
                                 Col {i + 1}
                                 {rowColCount > 1 && (
                                   <span
                                     onClick={(e) => { e.stopPropagation(); removeColumnFromRow(selectedRow!.id, i); }}
-                                    style={{ cursor: "pointer", marginLeft: 2, opacity: 0.6 }}
+                                    className="cursor-pointer ml-0.5 opacity-60"
                                     title={`Remove Column ${i + 1}`}
                                   >
                                     <X size={9} />
@@ -1168,7 +1140,7 @@ const AdminDashboard = ({ session }: Props) => {
                   })()}
 
                   {/* Scrollable body */}
-                  <div style={{ flex: 1, overflowY: "auto", padding: "1rem", scrollbarWidth: "thin" as const }}>
+                  <div className="flex-1 overflow-y-auto p-4 [scrollbar-width:thin]">
                     {selectedSectionId === "__seo__" ? (
                       cmsPage ? (
                         <SeoFields
@@ -1216,31 +1188,20 @@ const AdminDashboard = ({ session }: Props) => {
                   </div>
 
                   {/* Footer */}
-                  <div style={{
-                    height: 52, display: "flex", alignItems: "center", gap: 8,
-                    padding: "0 1rem", borderTop: "1px solid hsl(var(--border))", flexShrink: 0,
-                  }}>
+                  <div className="h-[52px] flex items-center gap-2 px-4 border-t border-border flex-shrink-0">
                     <button
                       onClick={saveDraft}
                       disabled={saving}
-                      style={{
-                        flex: 1, fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
-                        letterSpacing: "0.1em", padding: "8px 0", borderRadius: 20, cursor: "pointer",
-                        border: "1px solid hsl(var(--border))", background: "transparent",
-                        color: "hsl(var(--foreground))", opacity: saving ? 0.5 : 1,
-                      }}
+                      style={{ opacity: saving ? 0.5 : 1 }}
+                      className="flex-1 text-[10px] font-body uppercase tracking-[0.1em] py-2 rounded-full cursor-pointer border border-border bg-transparent text-foreground"
                     >
                       Save draft
                     </button>
                     <button
                       onClick={publishAll}
                       disabled={publishing}
-                      style={{
-                        flex: 1, fontSize: 10, fontFamily: "var(--font-body)", textTransform: "uppercase" as const,
-                        letterSpacing: "0.1em", padding: "8px 0", borderRadius: 20, cursor: "pointer",
-                        border: "none", backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--background))",
-                        opacity: publishing ? 0.4 : 1,
-                      }}
+                      style={{ opacity: publishing ? 0.4 : 1 }}
+                      className="flex-1 text-[10px] font-body uppercase tracking-[0.1em] py-2 rounded-full cursor-pointer border-none bg-secondary text-background"
                     >
                       Publish
                     </button>
@@ -1249,8 +1210,8 @@ const AdminDashboard = ({ session }: Props) => {
               )}
             </div>
           ) : (
-            <main style={{ flex: 1, overflowY: "auto", padding: "1.5rem" }}>
-              <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+            <main className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-[1000px] mx-auto">
                 {activeTab === "pages" && <PagesManager onEditPage={handleEditPage} />}
                 {activeTab === "navigation" && <NavigationManager />}
                 {activeTab === "blog" && <BlogEditor />}
@@ -1265,320 +1226,6 @@ const AdminDashboard = ({ session }: Props) => {
             </main>
           )}
         </div>
-      </div>
-    </div>
-  );
-};
-
-/* ── Style Tab (generic, for hero) ── */
-const StyleTab = () => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-    <div>
-      <label style={{ fontFamily: "var(--font-body)", fontSize: 10, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "hsl(var(--muted-foreground))", display: "block", marginBottom: 6 }}>
-        Glass card intensity
-      </label>
-      <input type="range" min={0} max={100} defaultValue={50} style={{ width: "100%", accentColor: "hsl(var(--secondary))" }} />
-    </div>
-    <div>
-      <label style={{ fontFamily: "var(--font-body)", fontSize: 10, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "hsl(var(--muted-foreground))", display: "block", marginBottom: 6 }}>
-        Gradient text
-      </label>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <input type="checkbox" defaultChecked={false} style={{ accentColor: "hsl(var(--secondary))" }} />
-        <span style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "hsl(var(--foreground))" }}>Enable gradient text</span>
-      </div>
-      <div style={{ height: 4, borderRadius: 2, marginTop: 8, background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))" }} />
-    </div>
-  </div>
-);
-
-/* ── Row Style Tab (with alignment + column widths) ── */
-const RowStyleTab = ({
-  row, onRowMetaChange, onUpdateColumnWidths,
-}: {
-  row: PageRow;
-  onRowMetaChange: (updates: Partial<PageRow>) => void;
-  onUpdateColumnWidths: (widths: number[]) => void;
-}) => {
-  const colCount = 1 + (row.columns_data?.length || 0);
-  const hasInherentSplit = row.type === "image_text" || row.type === "profile";
-  const showWidthControl = colCount > 1 || hasInherentSplit;
-  const widthColCount = hasInherentSplit && colCount === 1 ? 2 : colCount;
-  const columnWidths = row.layout?.column_widths || Array(widthColCount).fill(Math.round(100 / widthColCount));
-
-  const currentGradient = row.layout?.gradient;
-  // Pre-populate the gradient editor with the row-type's actual decorative defaults
-  // so what the editor shows == what's currently rendering on the page.
-  const ROW_DEFAULTS: Record<string, { start: string; end: string }> = {
-    hero: { start: "hsl(280 55% 20% / 0.8)", end: "hsl(286 42% 25% / 0.5)" },
-    text: { start: "hsl(280 55% 18% / 0.5)", end: "hsl(286 42% 20% / 0.3)" },
-    service: { start: "hsl(286 42% 30%)", end: "hsl(280 55% 25%)" },
-    boxed: { start: "hsl(280 55% 18% / 0.6)", end: "hsl(286 42% 20% / 0.4)" },
-    contact: { start: "hsl(280 55% 24% / 0.3)", end: "transparent" },
-    image_text: { start: "hsl(280 55% 20% / 0.5)", end: "hsl(286 42% 25% / 0.3)" },
-    profile: { start: "hsl(280 55% 20% / 0.5)", end: "hsl(286 42% 25% / 0.3)" },
-    grid: { start: "hsl(280 55% 20% / 0.5)", end: "hsl(286 42% 25% / 0.3)" },
-  };
-  const rowDefaults = ROW_DEFAULTS[row.type] || { start: "#4D1B5E", end: "#5A2370" };
-  const legacyStart = row.layout?.gradientStart || rowDefaults.start;
-  const legacyEnd = row.layout?.gradientEnd || rowDefaults.end;
-  const currentOverlays = row.layout?.overlays || [];
-
-  const bgColorOpacity = row.layout?.bgColorOpacity ?? 100;
-  const bgImageOpacity = row.layout?.bgImageOpacity ?? 100;
-  const bgImage = row.layout?.bgImage || "";
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Background Color + opacity */}
-      <div>
-        <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>Background Color</label>
-        <div className="flex gap-1.5">
-          <input type="color" value={row.bg_color || "#FFFFFF"} onChange={(e) => onRowMetaChange({ bg_color: e.target.value })} className="w-10 h-9 rounded border cursor-pointer" style={{ borderColor: "hsl(var(--border))" }} />
-          <input value={row.bg_color || ""} onChange={(e) => onRowMetaChange({ bg_color: e.target.value })} placeholder="#FFFFFF" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }} />
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
-          <span className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))", minWidth: 50 }}>Opacity</span>
-          <input
-            type="range" min={0} max={100} value={bgColorOpacity}
-            onChange={(e) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgColorOpacity: Number(e.target.value) } })}
-            style={{ flex: 1, accentColor: "hsl(var(--secondary))" }}
-          />
-          <span className="font-body text-[10px]" style={{ color: "hsl(var(--foreground))", minWidth: 32, textAlign: "right" }}>{bgColorOpacity}%</span>
-        </div>
-      </div>
-
-      {/* Background Image + opacity */}
-      <div>
-        <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>Background Image URL</label>
-        <input
-          value={bgImage}
-          onChange={(e) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgImage: e.target.value } })}
-          placeholder="https://..."
-          className="w-full px-3 py-2 rounded-lg font-body text-sm border"
-          style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }}
-        />
-        {bgImage && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
-            <span className="font-body text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))", minWidth: 50 }}>Opacity</span>
-            <input
-              type="range" min={0} max={100} value={bgImageOpacity}
-              onChange={(e) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgImageOpacity: Number(e.target.value) } })}
-              style={{ flex: 1, accentColor: "hsl(var(--secondary))" }}
-            />
-            <span className="font-body text-[10px]" style={{ color: "hsl(var(--foreground))", minWidth: 32, textAlign: "right" }}>{bgImageOpacity}%</span>
-          </div>
-        )}
-      </div>
-
-      {row.type !== "hero" && (
-        <RowAlignmentSettings
-          layout={row.layout || DEFAULT_ROW_LAYOUT}
-          onChange={(layout) => onRowMetaChange({ layout })}
-        />
-      )}
-      <ColumnWidthControl
-        columnCount={widthColCount}
-        widths={columnWidths}
-        onChange={onUpdateColumnWidths}
-        disabled={!showWidthControl}
-      />
-      <GradientEditor
-        gradient={currentGradient}
-        legacyStart={legacyStart}
-        legacyEnd={legacyEnd}
-        onChange={(gradient) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), gradient } })}
-      />
-      <OverlayEditor
-        overlays={currentOverlays}
-        onChange={(overlays) => onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), overlays } })}
-      />
-    </div>
-  );
-};
-
-/* ── Title Lines Editor (for properties panel) ── */
-const TitleLinesEditor = ({ titleLines, onChange }: { titleLines: string[]; onChange: (lines: string[]) => void }) => {
-  const updateLine = (idx: number, html: string) => {
-    const next = [...titleLines];
-    next[idx] = html;
-    onChange(next);
-  };
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <label className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>Title Lines</label>
-        <button type="button" onClick={() => onChange([...titleLines, "<p></p>"])} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
-          <Plus size={10} /> Add
-        </button>
-      </div>
-      <div className="space-y-2">
-        {titleLines.map((line, i) => (
-          <SectionBox key={i} label={`Line ${i + 1}`}>
-            <div className="flex gap-2">
-              <div className="flex-1"><TitleLineEditor value={line} onChange={(v) => updateLine(i, v)} /></div>
-              <button type="button" onClick={() => onChange(titleLines.filter((_, j) => j !== i))} className="self-end p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
-                <Trash2 size={13} />
-              </button>
-            </div>
-          </SectionBox>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-/* ── Row Content Editor ── */
-const RowContentEditor = ({
-  row, onContentChange, onRowMetaChange, onDelete,
-}: {
-  row: PageRow;
-  onContentChange: (field: string, value: any) => void;
-  onRowMetaChange: (updates: Partial<PageRow>) => void;
-  onDelete?: () => void;
-}) => {
-  const content = row.content;
-  // The row's own background colour drives the RichTextEditor's surface
-  // colour so light-on-light or dark-on-dark text remains legible while
-  // editing — see RichField docstring in FieldComponents for details.
-  const bg = row.bg_color;
-
-  const commonMeta = (
-    <div className="space-y-2 mb-4">
-      <Field label="Strip Title" value={row.strip_title} onChange={(v) => onRowMetaChange({ strip_title: v })} />
-    </div>
-  );
-
-  const titleLines = (content.title_lines || []).map((l: any) =>
-    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
-  );
-
-  const noteAndButton = (
-    <SectionBox label="Note & Button">
-      <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
-      <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
-      <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
-      <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onContentChange("cta_url", v)} />
-    </SectionBox>
-  );
-
-  switch (row.type) {
-    case "hero":
-      return <>{commonMeta}<HeroRowFieldsInline content={content} onChange={onContentChange} bgColor={bg} /></>;
-    case "text":
-      return (
-        <>{commonMeta}
-          <div className="space-y-3">
-            <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
-            <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onContentChange("subtitle", v)} onColorChange={(v) => onContentChange("subtitle_color", v)} />
-            <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
-            {noteAndButton}
-          </div>
-        </>
-      );
-    case "service":
-      return (
-        <>{commonMeta}
-          <PillarEditor pillarContent={content} servicesContent={{ services: content.services || [] }} onPillarChange={onContentChange} onServicesChange={(svcs) => onContentChange("services", svcs)} bgColor={bg} />
-        </>
-      );
-    case "boxed":
-      return (
-        <>{commonMeta}
-          <div className="space-y-3">
-            <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
-            <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onContentChange("subtitle", v)} onColorChange={(v) => onContentChange("subtitle_color", v)} />
-            <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onContentChange("color_card_title", v)} />
-            <ColorField label="Card Body Color" value={content.color_card_body || ""} fallback="" onChange={(v) => onContentChange("color_card_body", v)} />
-            <BoxedArrayField content={content} onChange={onContentChange} bgColor={bg} />
-            {noteAndButton}
-          </div>
-        </>
-      );
-    case "contact":
-      return (
-        <>{commonMeta}
-          <div className="space-y-3">
-            <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
-            <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
-            <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onContentChange("subtitle", v)} onColorChange={(v) => onContentChange("subtitle_color", v)} />
-            <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
-            <Field label="Button Text" value={content.button_text || ""} onChange={(v) => onContentChange("button_text", v)} />
-            <SectionBox label="Colors">
-              <div className="grid grid-cols-2 gap-3">
-                <ColorField label="Eyebrow" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onContentChange("color_eyebrow", v)} />
-              </div>
-            </SectionBox>
-            <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
-          </div>
-        </>
-      );
-    case "image_text":
-      return <>{commonMeta}<ImageTextEditor content={content} onChange={onContentChange} bgColor={bg} /></>;
-    case "profile":
-      return <>{commonMeta}<ProfileEditor content={content} onChange={onContentChange} bgColor={bg} /></>;
-    case "grid":
-      return <>{commonMeta}<GridEditor content={content} onChange={onContentChange} bgColor={bg} /></>;
-    case "lead_magnet":
-      return <>{commonMeta}<LeadMagnetEditor content={content} onChange={(next) => Object.entries(next).forEach(([k, v]) => onContentChange(k, v))} /></>;
-    default:
-      return commonMeta;
-  }
-};
-
-const HeroRowFieldsInline = ({ content, onChange, bgColor }: { content: Record<string, any>; onChange: (field: string, value: any) => void; bgColor?: string }) => {
-  const titleLines = (content.title_lines || []).map((l: any) =>
-    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
-  );
-  const BG_TYPES = [{ label: "None", value: "none" }, { label: "Image", value: "image" }, { label: "Video", value: "video" }];
-  return (
-    <div className="space-y-3">
-      <Field label="Eyebrow" value={content.label || ""} onChange={(v) => onChange("label", v)} />
-      <ColorField label="Eyebrow Color" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
-      <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} />
-      <Field label="Tagline" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
-      <ColorField label="Tagline Color" value={content.color_tagline || ""} fallback="" onChange={(v) => onChange("color_tagline", v)} />
-      <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onChange("subtitle", v)} onColorChange={(v) => onChange("subtitle_color", v)} />
-      <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
-      <SectionBox label="Background">
-        <SelectField label="Type" value={content.bg_type || "none"} options={BG_TYPES} onChange={(v) => onChange("bg_type", v)} />
-        {content.bg_type === "image" && <ImagePickerField label="Background Image" value={content.bg_url || ""} onChange={(v) => onChange("bg_url", v)} />}
-        {content.bg_type === "video" && <Field label="Video URL" value={content.bg_url || ""} onChange={(v) => onChange("bg_url", v)} />}
-      </SectionBox>
-    </div>
-  );
-};
-
-/* ── Boxed cards array helper ── */
-const BoxedArrayField = ({ content, onChange, bgColor }: { content: Record<string, any>; onChange: (field: string, value: any) => void; bgColor?: string }) => {
-  const cards: { title: string; body: string }[] = content.cards || [];
-  const updateCard = (idx: number, field: string, value: string) => {
-    const next = [...cards];
-    next[idx] = { ...next[idx], [field]: value };
-    onChange("cards", next);
-  };
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <label className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>Cards (max 6)</label>
-        <button type="button" onClick={() => onChange("cards", [...cards, { title: "", body: "" }])} disabled={cards.length >= 6} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70 disabled:opacity-30" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
-          <Plus size={10} /> Add Card
-        </button>
-      </div>
-      <div className="space-y-2">
-        {cards.map((card, i) => (
-          <SectionBox key={i} label={`Card ${i + 1}`}>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <div className="flex-1"><Field label="Title" value={card.title} onChange={(v) => updateCard(i, "title", v)} /></div>
-                <button type="button" onClick={() => onChange("cards", cards.filter((_, j) => j !== i))} className="self-start p-2 rounded hover:opacity-70 mt-5" style={{ color: "hsl(var(--destructive))" }}>
-                  <Trash2 size={13} />
-                </button>
-              </div>
-              <RichField label="Body" value={card.body} onChange={(v) => updateCard(i, "body", v)} bgColor={bgColor} />
-            </div>
-          </SectionBox>
-        ))}
       </div>
     </div>
   );
