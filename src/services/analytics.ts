@@ -29,6 +29,26 @@ const CONSENT_STORAGE_KEY = "tmc_analytics_consent_v1";
 const VISITOR_COOKIE_NAME = "tmc_visitor_id";
 const VISITOR_COOKIE_TTL_DAYS = 365;
 
+/**
+ * Persistent localStorage key holding the visitor's stable UUID.
+ *
+ * WHY localStorage AND a cookie?
+ *   The cookie (`tmc_visitor_id`) is gated by GDPR consent and only set
+ *   when the user clicks "Accept" — it powers cross-device lead stitching.
+ *
+ *   The localStorage UUID (`mh_visitor_id`) is the DEDUP key for the
+ *   analytics dashboard. It's created on first page load regardless of
+ *   consent because it never leaves the browser as PII (it's a random
+ *   UUID with no link to identity) and we can't measure unique humans
+ *   without it. Specifically, IP-based dedup grossly mis-counts:
+ *     - Mobile carriers rotate IPs every few minutes.
+ *     - Office NATs make 200 colleagues look like 1 visitor.
+ *     - VPNs make 1 person look like 5.
+ *   The localStorage UUID survives all of that for the same browser
+ *   profile, so countUniqueHumanVisitors() can finally tell the truth.
+ */
+const STABLE_VISITOR_ID_KEY = "mh_visitor_id";
+
 export type ConsentStatus = "unknown" | "accepted" | "rejected";
 
 /**
@@ -48,7 +68,8 @@ export function getConsentStatus(): ConsentStatus {
 
 /**
  * Persist the user's consent decision. When they accept, also mint the
- * visitor_id cookie immediately so the very next beacon can use it.
+ * cross-session visitor cookie so the very next beacon can use it for
+ * lead-stitching (separate from the dedup-only `mh_visitor_id`).
  *
  * @param status - "accepted" enables session stitching, "rejected" keeps things anonymous
  */
@@ -67,14 +88,51 @@ export function setConsentStatus(status: "accepted" | "rejected"): void {
 }
 
 /**
- * Get-or-create the visitor_id cookie. Idempotent — safe to call on
- * every page view after consent. Returns `null` when no cookie exists
- * AND no consent has been granted (the caller should NOT mint one).
+ * Read the consent-gated visitor cookie used for lead stitching. Returns
+ * `null` when no cookie exists. This is SEPARATE from `getStableVisitorId`,
+ * which always returns a value and is used for dedup only.
  */
 export function getVisitorId(): string | null {
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(new RegExp(`(?:^|; )${VISITOR_COOKIE_NAME}=([^;]+)`));
   return match ? decodeURIComponent(match[1]) : null;
+}
+
+/**
+ * Get-or-create the persistent localStorage UUID used by the analytics
+ * beacon as its PRIMARY dedup key. Always returns a value (creates one
+ * if missing). Safe to call on every render.
+ *
+ * Junior dev note:
+ *   This MUST be called on every beacon — `track-visitor` then writes
+ *   `visitor_id` on every row, and `countUniqueHumanVisitors()` groups
+ *   on it before falling back to `ip_hash`. Without it, our "unique
+ *   humans" count is just "unique IPs" and is 30-300% inflated.
+ */
+export function getStableVisitorId(): string {
+  if (typeof window === "undefined") {
+    // SSR / non-browser context — return a throwaway so the caller can
+    // still send something rather than null. The edge function dedups
+    // anyway, so a one-shot id won't pollute counts.
+    return "ssr-" + Math.random().toString(36).slice(2, 10);
+  }
+  try {
+    const existing = window.localStorage.getItem(STABLE_VISITOR_ID_KEY);
+    if (existing && existing.length >= 8) return existing;
+    // Use crypto.randomUUID when available (all modern browsers); fall
+    // back to a base36 random for ancient environments.
+    const fresh =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : generateRandomVisitorId();
+    window.localStorage.setItem(STABLE_VISITOR_ID_KEY, fresh);
+    return fresh;
+  } catch {
+    // Private mode / storage disabled. Return a per-session value so the
+    // beacon still sends SOMETHING; the dashboard will treat it as a new
+    // visitor each tab open, which is the best we can do without storage.
+    return "nostore-" + Math.random().toString(36).slice(2, 10);
+  }
 }
 
 /**

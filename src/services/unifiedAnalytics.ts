@@ -70,16 +70,11 @@ function applyAnalyticsFilters(query: any, filters: AnalyticsRangeFilter): any {
   return q;
 }
 
-/**
- * Fetch the most recent rows in the filter window. Powers the "Live Feed"
- * and the "Path to Lead" table.
- */
-export const fetchRecentAnalyticsRows = async (filters: AnalyticsRangeFilter, limit = 25) => {
-  const base = supabase.from("unified_analytics_logs").select("*");
-  return applyAnalyticsFilters(base as never, filters)
-    .order("created_at", { ascending: false })
-    .limit(Math.min(limit, 200));
-};
+// Note: `fetchRecentAnalyticsRows` was removed when the "Live Feed" panel
+// was deprecated from the Insights dashboard. If you need to inspect the
+// raw rows for debugging, query `unified_analytics_logs` directly via the
+// Supabase SQL editor — keeping that data off the dashboard avoids a
+// constant DB read every time an admin opens /admin/insights.
 
 /**
  * Count rows in the filter window. We use `head: true, count: 'exact'`
