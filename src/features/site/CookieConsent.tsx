@@ -168,9 +168,10 @@ const CookieConsent = () => {
             </button>
           </div>
 
-          {/* Scrollable body. Capped height so the panel never exceeds the
-              viewport on small screens — keeps the close button reachable. */}
-          <div className="px-4 py-4 max-h-[60vh] overflow-y-auto">
+          {/* Body. Allowed to grow to fit all content — no scrollbar.
+              The panel expands naturally to whatever height the cookie
+              inventory needs. */}
+          <div className="px-4 py-4">
             {/* Current status pill */}
             <div className="mb-3">
               <p className="font-body text-[11px] uppercase tracking-wider opacity-60 mb-1.5">
