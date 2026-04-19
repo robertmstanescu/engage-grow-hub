@@ -344,6 +344,9 @@ const AdminDashboard = ({ session }: Props) => {
         setCmsPageRows(data.draft_page_rows || data.page_rows || []);
         setCmsPageStatus(data.status || "draft");
         setCmsPageMeta({ meta_title: data.meta_title || "", meta_description: data.meta_description || "" });
+        // Fresh load = clean state. Without this the dirty flag would
+        // carry over from a previously-edited page.
+        setCmsPageDirty(false);
       }
     };
     load();
@@ -390,10 +393,14 @@ const AdminDashboard = ({ session }: Props) => {
 
   const selectedRow = pageRows.find((r) => r.id === selectedSectionId) || null;
 
-  // Unified row update
+  // Unified row update. Junior dev note: any path that mutates rows
+  // must flow through here so the dirty flag stays in sync. If you add
+  // a direct `setCmsPageRows(...)` call somewhere else, also flip
+  // `setCmsPageDirty(true)` or the topbar indicator will lie.
   const updateRows = useCallback((newRows: PageRow[]) => {
     if (cmsPage) {
       setCmsPageRows(newRows);
+      setCmsPageDirty(true);
     } else {
       updateFullDraft("page_rows", { rows: newRows });
     }
