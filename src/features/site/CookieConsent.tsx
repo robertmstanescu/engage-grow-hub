@@ -38,13 +38,13 @@ type ViewMode = "compact" | "preferences" | "settings";
  */
 const COOKIE_INVENTORY: { name: string; purpose: string; lifespan: string }[] = [
   {
-    name: "tmc_visitor_id",
+    name: "Visitor ID",
     purpose:
       "A randomly generated ID that lets us connect a download or contact form back to the article that brought you to the site, so we can see which content is genuinely useful. It contains no personal information.",
     lifespan: "12 months",
   },
   {
-    name: "tmc_consent",
+    name: "Consent Given",
     purpose:
       "Remembers whether you accepted or rejected analytics cookies, so we don't ask you on every visit.",
     lifespan: "12 months",
