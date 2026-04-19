@@ -478,8 +478,17 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
       <div className="grid gap-4" style={{ gridTemplateColumns: "200px 1fr 320px" }}>
         {/* Folder rail */}
         <div className="rounded-lg border border-border/40 bg-muted/10 p-2 max-h-[60vh] overflow-y-auto">
+          {/*
+            "Root" is a VIRTUAL entry — it represents every asset whose
+            `folder_id` is NULL, not an actual row in `media_folders`.
+            That means it can't be renamed or deleted (there's nothing in
+            the DB to update). The `title` tooltip explains this so admins
+            know why no pencil/trash icons appear next to it. To organise
+            files, create a real folder via "New folder" in the header.
+          */}
           <div
             onClick={() => setActiveFolderId(null)}
+            title="Root is a built-in view of files that aren't inside any folder. To organise them, create a folder using 'New folder' above — your custom folders below can be renamed."
             className="flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors"
             style={{
               backgroundColor: activeFolderId === null ? "hsl(var(--primary) / 0.12)" : "transparent",
@@ -489,11 +498,14 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
             <Folder size={13} className={activeFolderId === null ? "text-primary" : "text-muted-foreground"} />
             <span
               className={[
-                "flex-1 font-body text-xs",
+                "flex-1 font-body text-xs flex items-center gap-1.5",
                 activeFolderId === null ? "text-primary" : "text-foreground",
               ].join(" ")}
             >
               Root
+              <span className="font-body text-[8px] uppercase tracking-wider text-muted-foreground/70 px-1 py-px rounded bg-muted/40 border border-border/30">
+                built-in
+              </span>
             </span>
             <span className="font-body text-[10px] text-muted-foreground">
               {assets.filter((a) => a.folder_id === null).length}
