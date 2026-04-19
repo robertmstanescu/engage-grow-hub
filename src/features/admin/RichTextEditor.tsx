@@ -26,6 +26,36 @@ import { normalizeRichTextContainerFontSizes, normalizeRichTextHtml } from "@/se
 import { uploadEditorImage } from "@/services/mediaStorage";
 import { runDbAction } from "@/services/db-helpers";
 import { useBrandColors } from "@/hooks/useBrandSettings";
+import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────
+ * KEYSTROKE-LAG ARCHITECTURE (junior-dev orientation)
+ * ─────────────────────────────────────────────────────────────────────────
+ * Like TitleLineEditor, the user-visible text lives in the contentEditable
+ * DOM node — never in React state. Typing is therefore instant: nothing
+ * waits on the parent's re-render and the cursor is never bumped.
+ *
+ * Upstream propagation has TWO speeds:
+ *
+ *   • emitChange()           — immediate. Called when the user clicks a
+ *                              toolbar button (bold, color, alignment,
+ *                              link, image…) or blurs the editor. The
+ *                              parent must learn about the formatting
+ *                              change right away.
+ *
+ *   • emitChangeDebounced()  — 300 ms debounce. Called from `onInput`
+ *                              (every keystroke). Bursts of typing fire
+ *                              `onChange` exactly ONCE when the user
+ *                              pauses. That collapses ~10 React tree
+ *                              re-renders per word into a single one.
+ *
+ * The eventual `onChange` push triggers the SILENT auto-save effect in
+ * `AdminDashboard` (see comments there). Auto-save writes ONLY to
+ * `draft_content` / `draft_page_rows` — the live `content` columns are
+ * untouched until the admin clicks "Publish".
+ * ─────────────────────────────────────────────────────────────────────────
+ */
 
 const FONT_OPTIONS = [
   { label: "Inter", value: "Inter, sans-serif" },
@@ -113,6 +143,19 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     }
     onChange(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
   }, [onChange]);
+
+  // Debounced upstream push for raw typing — prevents per-keystroke
+  // re-renders of the entire admin tree. See file header for details.
+  const debouncedEmit = useDebouncedCallback((html: string) => {
+    onChange(html);
+  }, 300);
+
+  const emitChangeOnInput = useCallback(() => {
+    if (editorRef.current) {
+      normalizeRichTextContainerFontSizes(editorRef.current);
+    }
+    debouncedEmit(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
+  }, [debouncedEmit]);
 
   const saveSelection = useCallback(() => {
     const selection = window.getSelection();
@@ -433,8 +476,13 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           aria-multiline="true"
           data-placeholder={placeholder || "Start writing..."}
           className="prose prose-sm max-w-none min-h-[300px] px-4 py-3 focus:outline-none"
-          onInput={emitChange}
-          onBlur={() => { saveSelection(); emitChange(); }}
+          onInput={emitChangeOnInput}
+          onBlur={() => {
+            saveSelection();
+            // Flush any pending debounced keystrokes so blur is never lossy.
+            debouncedEmit.cancel();
+            emitChange();
+          }}
           onKeyUp={saveSelection}
           onMouseUp={saveSelection}
           // Editor surface mirrors the live row's bg so light text

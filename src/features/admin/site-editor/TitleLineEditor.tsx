@@ -2,6 +2,31 @@ import { Palette, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import { useBrandColors } from "@/hooks/useBrandSettings";
 import { normalizeRichTextContainerFontSizes, normalizeRichTextHtml } from "@/services/richTextFontSize";
+import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────
+ * KEYSTROKE-LAG ARCHITECTURE (junior-dev orientation)
+ * ─────────────────────────────────────────────────────────────────────────
+ * The user-visible text in this editor lives in the contentEditable DOM
+ * node — NOT in React state. That means typing never schedules a React
+ * re-render and the cursor is never disturbed by the parent's tree
+ * rebuild. The on-screen letters appear instantly, no matter how slow
+ * the parent is.
+ *
+ * What we DO need to send upstream is the resulting HTML so the global
+ * `pageRows` blob in `AdminDashboard` matches what the user typed. That
+ * propagation is debounced (300ms): a burst of keystrokes fires `onChange`
+ * once when the user pauses, instead of once per letter. The debounced
+ * upstream call is what eventually triggers the SILENT auto-save effect
+ * in `AdminDashboard` (see comments there) — but the auto-save NEVER
+ * touches the live `content` columns, only `draft_content`.
+ *
+ * On `blur` we flush any pending debounce so closing the input never
+ * loses an in-flight keystroke. Toolbar actions (color, font, etc.)
+ * call `emitChangeNow` so formatting changes propagate immediately.
+ * ─────────────────────────────────────────────────────────────────────────
+ */
 
 const FONT_OPTIONS = [
   { label: "Display", value: "var(--font-title)" },
@@ -22,12 +47,34 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
   const selectionRef = useRef<Range | null>(null);
   const brandColors = useBrandColors();
 
-  const emitChange = useCallback(() => {
+  /**
+   * emitChangeNow — IMMEDIATE upstream propagation. Used by toolbar
+   * commands (color picker, font size, blur) where the user has clearly
+   * finished an edit and we want the global state to reflect it ASAP.
+   */
+  const emitChangeNow = useCallback(() => {
     if (editorRef.current) {
       normalizeRichTextContainerFontSizes(editorRef.current);
     }
     onChange(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
   }, [onChange]);
+
+  /**
+   * emitChangeDebounced — deferred upstream propagation, used on every
+   * keystroke. The user sees their letters instantly (contentEditable),
+   * but the parent component is only notified once they pause for 300ms.
+   * That collapses ~10 re-renders into 1 for typical typing speed.
+   */
+  const debouncedPush = useDebouncedCallback((html: string) => {
+    onChange(html);
+  }, 300);
+
+  const emitChange = useCallback(() => {
+    if (editorRef.current) {
+      normalizeRichTextContainerFontSizes(editorRef.current);
+    }
+    debouncedPush(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
+  }, [debouncedPush]);
 
   const saveSelection = useCallback(() => {
     const selection = window.getSelection();
@@ -56,10 +103,11 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
       if (editorRef.current) {
         normalizeRichTextContainerFontSizes(editorRef.current);
       }
-      saveSelection();
-      emitChange();
+    saveSelection();
+      // Toolbar actions = explicit edit → push immediately, no debounce.
+      emitChangeNow();
     },
-    [emitChange, restoreSelection, saveSelection]
+    [emitChangeNow, restoreSelection, saveSelection]
   );
 
   const applyFontSize = useCallback((fontSize: string) => {
@@ -71,8 +119,8 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
       normalizeRichTextContainerFontSizes(editorRef.current, fontSize);
     }
     saveSelection();
-    emitChange();
-  }, [emitChange, restoreSelection, saveSelection]);
+    emitChangeNow();
+  }, [emitChangeNow, restoreSelection, saveSelection]);
 
   const setColor = useCallback(() => {
     const color = window.prompt("Enter color (hex):", "#E5C54F");
@@ -131,7 +179,8 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
             document.execCommand("styleWithCSS", false, "true");
             document.execCommand("fontName", false, event.target.value);
             saveSelection();
-            emitChange();
+            // Toolbar = explicit edit → push immediately, no debounce.
+            emitChangeNow();
             event.target.value = "";
           }}
           className="font-body text-[10px] px-1 py-0.5 rounded border bg-transparent cursor-pointer"
@@ -178,7 +227,10 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
         onInput={emitChange}
         onBlur={() => {
           saveSelection();
-          emitChange();
+          // Flush pending debounce + push the final value synchronously
+          // so the parent never misses the user's last keystroke.
+          debouncedPush.cancel();
+          emitChangeNow();
         }}
         onKeyUp={saveSelection}
         onMouseUp={saveSelection}
