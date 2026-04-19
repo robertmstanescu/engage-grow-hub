@@ -49,7 +49,7 @@
  * ─────────────────────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { runDbAction } from "@/services/db-helpers";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
@@ -60,6 +60,12 @@ import {
   GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 /**
  * useIsAdminMobile
@@ -267,6 +273,37 @@ const AdminDashboard = ({ session }: Props) => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+
+  /**
+   * ─────────────────────────────────────────────────────────────
+   * UNSAVED CHANGES TRACKING — for the junior developer
+   * ─────────────────────────────────────────────────────────────
+   * The save indicator in the topbar must answer ONE question reliably:
+   *   "Has the admin edited something that has not yet been written
+   *    back to the database?"
+   *
+   * For the MAIN PAGE we have a draft/published split: every section
+   * row has a `content` (published) and a `draft_content` (in-flight)
+   * blob. If those two JSON blobs differ for ANY section, we still owe
+   * the database a write. We compare with `JSON.stringify` because the
+   * blobs are tree-shaped and `===` would only catch reference changes.
+   *
+   * For a CMS PAGE we keep a separate `cmsPageDirty` flag that's flipped
+   * to `true` every time `updateRows` mutates `cmsPageRows`, and reset
+   * to `false` after a successful save/publish. We don't have an "old"
+   * snapshot to diff against (we only loaded one row), so a manual flag
+   * is the simplest path.
+   *
+   * The boolean below is the single source of truth the topbar reads.
+   */
+  const [cmsPageDirty, setCmsPageDirty] = useState(false);
+  const hasUnsavedChanges = useMemo(() => {
+    if (cmsPage) return cmsPageDirty;
+    return sections.some((s) => {
+      const draft = s.draft_content ?? s.content;
+      return JSON.stringify(draft) !== JSON.stringify(s.content);
+    });
+  }, [sections, cmsPage, cmsPageDirty]);
 
   // Load main page data
   useEffect(() => {
