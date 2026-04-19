@@ -3,23 +3,25 @@
  *
  * Architecture
  * ────────────
- *   • Left rail : folder tree (root + 1 level of subfolders, enforced
- *     server-side by the `enforce_media_folder_depth` trigger).
- *   • Center    : list of assets in the currently-selected folder, with a
- *     thumbnail / PDF icon, file name, type, size, and date.
- *   • Right     : when an asset is selected, a side panel slides in with
- *     editable Title / Description / Alt-Text fields and a "Move to folder"
- *     dropdown. Edits commit on blur.
+ *   • Left rail : folder tree (root + 1 level of subfolders).
+ *   • Center    : list of assets in the currently-selected folder.
+ *   • Right     : when an asset is selected, a detail panel with editable
+ *                 Title / Filename / Description / Alt-Text fields, a
+ *                 "Move to folder" dropdown, AND a "Used in" list showing
+ *                 every page/post that references the asset.
  *
- * Why a full rewrite?
- *   The previous implementation listed files directly out of the
- *   `editor-images` bucket. The lead-magnet flow needs metadata (title,
- *   alt-text, folder) that only lives in `media_assets`, so the gallery
- *   must be the canonical UI for that table.
- *
- * Caching
- *   We keep folders + assets in component state and re-fetch after every
- *   mutation. Volumes are small (admin-only), so this is plenty fast.
+ * What changed in this revision (for the junior)
+ * ──────────────────────────────────────────────
+ * 1. Pencil/rename buttons on folders are now ALWAYS visible (not hidden
+ *    behind hover) so it's discoverable that you can rename them.
+ * 2. The detail panel exposes a NEW "Filename" input — committing it on
+ *    blur calls `renameAssetFile`, which atomically moves the file in
+ *    Storage and updates `media_assets.storage_path`. The public URL
+ *    therefore changes too, which is why we re-fetch usages afterward.
+ * 3. We call `findAssetUsages(asset)` whenever the selection changes, so
+ *    the admin sees a "Used in" list with clickable links to every blog
+ *    post / CMS page / site section that mentions the asset. This is the
+ *    safety net before they hit Delete.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -28,6 +30,7 @@ import {
   ChevronDown,
   ChevronRight,
   Edit2,
+  ExternalLink,
   FileText,
   Folder,
   FolderPlus,
@@ -44,13 +47,16 @@ import {
   deleteFolder,
   fetchAllAssets,
   fetchAllFolders,
+  findAssetUsages,
   getAssetPublicUrl,
   insertFolder,
   isImageMime,
   moveAssetToFolder,
+  renameAssetFile,
   renameFolder,
   updateAssetMetadata,
   uploadAssetWithProgress,
+  type AssetUsage,
   type MediaAsset,
   type MediaFolder,
 } from "@/services/mediaLibrary";
@@ -80,6 +86,9 @@ const formatDate = (iso: string) =>
 
 const ROOT_KEY = "__root__";
 
+/** Strip the extension off a storage_path for use in the rename input. */
+const filenameWithoutExt = (path: string) => path.replace(/\.[^.]+$/, "");
+
 /* ─────────────────────────────────────────────────────────────
    Component
    ───────────────────────────────────────────────────────────── */
@@ -98,6 +107,10 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
   const [uploadName, setUploadName] = useState<string | undefined>();
   const [uploadError, setUploadError] = useState<string | undefined>();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // ── NEW: usage discovery for the currently-selected asset.
+  // Resets to [] whenever the selection changes; we then kick off a fetch.
+  const [usages, setUsages] = useState<AssetUsage[]>([]);
+  const [usagesLoading, setUsagesLoading] = useState(false);
 
   /** Fetch all folders + all assets in parallel. */
   const refresh = useCallback(async () => {
@@ -143,6 +156,29 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
     () => assets.find((asset) => asset.id === selectedAssetId) || null,
     [assets, selectedAssetId],
   );
+
+  /* ── Usage discovery: re-runs whenever the user picks a different asset.
+   * Why a separate effect? Because the scan touches three tables and we
+   * don't want to block the main `refresh()` waterfall. The selection
+   * change is the only signal that should trigger a usage lookup. */
+  useEffect(() => {
+    if (!selectedAsset) {
+      setUsages([]);
+      return;
+    }
+    let cancelled = false;
+    setUsagesLoading(true);
+    findAssetUsages(selectedAsset)
+      .then((found) => {
+        if (!cancelled) setUsages(found);
+      })
+      .finally(() => {
+        if (!cancelled) setUsagesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedAsset?.id, selectedAsset?.storage_path]);
 
   /* ── Folder CRUD ── */
   const handleCreateFolder = async (parentId: string | null) => {
@@ -247,6 +283,23 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
     else refresh();
   };
 
+  /**
+   * Handler for the new "Filename" input in the detail panel.
+   * Junior dev note: this is intentionally NOT debounced — the rename
+   * touches Storage which is expensive, so we only fire once on blur and
+   * only when the value actually changed.
+   */
+  const commitFilenameRename = async (asset: MediaAsset, newName: string) => {
+    const current = filenameWithoutExt(asset.storage_path);
+    if (newName.trim() === current) return;
+    const { error } = await renameAssetFile(asset, newName);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("File renamed");
+      refresh();
+    }
+  };
+
   /* ── Render ── */
   const folderRow = (folder: MediaFolder, depth: number) => {
     const children = childMap.get(folder.id) || [];
@@ -257,7 +310,8 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
     return (
       <div key={folder.id}>
         <div
-          className="flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors group"
+          className="flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors"
+          // Background + indent are dynamic per-folder, so they stay inline.
           style={{
             backgroundColor: isActive ? "hsl(var(--primary) / 0.12)" : "transparent",
             paddingLeft: `${8 + depth * 14}px`,
@@ -282,7 +336,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
           ) : (
             <span className="w-[18px]" />
           )}
-          <Folder size={13} style={{ color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
+          <Folder size={13} className={isActive ? "text-primary" : "text-muted-foreground"} />
           {renamingFolderId === folder.id ? (
             <input
               autoFocus
@@ -294,21 +348,25 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                 if (e.key === "Escape") setRenamingFolderId(null);
               }}
               onClick={(e) => e.stopPropagation()}
-              className="flex-1 px-1.5 py-0.5 rounded font-body text-xs border min-w-0"
-              style={{ borderColor: "hsl(var(--primary) / 0.5)", backgroundColor: "hsl(var(--background))" }}
+              className="flex-1 px-1.5 py-0.5 rounded font-body text-xs border border-primary/50 bg-background min-w-0"
             />
           ) : (
             <span
-              className="flex-1 font-body text-xs truncate"
-              style={{ color: isActive ? "hsl(var(--primary))" : "hsl(var(--foreground))" }}
+              className={[
+                "flex-1 font-body text-xs truncate",
+                isActive ? "text-primary" : "text-foreground",
+              ].join(" ")}
             >
               {folder.name}
             </span>
           )}
-          <span className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-            {folderAssetCount}
-          </span>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="font-body text-[10px] text-muted-foreground">{folderAssetCount}</span>
+          {/*
+            Action cluster — ALWAYS visible (was hover-only before, which
+            made it hard for users to discover that folders are renameable).
+            We dim them with text-muted-foreground/70 + hover bumps to full.
+          */}
+          <div className="flex items-center gap-0.5">
             {depth === 0 && (
               <button
                 title="Add subfolder"
@@ -316,8 +374,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                   e.stopPropagation();
                   handleCreateFolder(folder.id);
                 }}
-                className="p-1 hover:opacity-70"
-                style={{ color: "hsl(var(--muted-foreground))" }}
+                className="p-1 text-muted-foreground/70 hover:text-foreground"
               >
                 <Plus size={11} />
               </button>
@@ -329,8 +386,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                 setRenamingFolderId(folder.id);
                 setRenameValue(folder.name);
               }}
-              className="p-1 hover:opacity-70"
-              style={{ color: "hsl(var(--muted-foreground))" }}
+              className="p-1 text-muted-foreground/70 hover:text-foreground"
             >
               <Edit2 size={11} />
             </button>
@@ -340,8 +396,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                 e.stopPropagation();
                 handleDeleteFolder(folder);
               }}
-              className="p-1 hover:opacity-70"
-              style={{ color: "hsl(var(--destructive))" }}
+              className="p-1 text-destructive/70 hover:text-destructive"
             >
               <Trash2 size={11} />
             </button>
@@ -368,25 +423,20 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h2
-          className="font-display text-lg font-bold flex items-center gap-2"
-          style={{ color: "hsl(var(--secondary))" }}
-        >
+        <h2 className="font-display text-lg font-bold flex items-center gap-2 text-secondary">
           <ImageIcon size={18} /> Media Library
         </h2>
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleCreateFolder(null)}
-            className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"
-            style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
+            className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full border border-border text-foreground hover:opacity-80 transition-opacity"
           >
             <FolderPlus size={12} /> New folder
           </button>
           <label
-            className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+            className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full cursor-pointer bg-primary text-primary-foreground hover:opacity-80 transition-opacity"
+            // Dim + disable while uploading — runtime flag, kept inline.
             style={{
-              backgroundColor: "hsl(var(--primary))",
-              color: "hsl(var(--primary-foreground))",
               opacity: uploadStatus === "uploading" ? 0.6 : 1,
               pointerEvents: uploadStatus === "uploading" ? "none" : "auto",
             }}
@@ -406,8 +456,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
           {isModal && onClose && (
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:opacity-70"
-              style={{ color: "hsl(var(--muted-foreground))" }}
+              className="p-2 rounded-full text-muted-foreground hover:opacity-70"
             >
               <X size={18} />
             </button>
@@ -426,12 +475,9 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
       )}
 
       {/* Body grid: rail / list / detail */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: "200px 1fr 280px" }}>
+      <div className="grid gap-4" style={{ gridTemplateColumns: "200px 1fr 320px" }}>
         {/* Folder rail */}
-        <div
-          className="rounded-lg border p-2 max-h-[60vh] overflow-y-auto"
-          style={{ borderColor: "hsl(var(--border) / 0.4)", backgroundColor: "hsl(var(--muted) / 0.1)" }}
-        >
+        <div className="rounded-lg border border-border/40 bg-muted/10 p-2 max-h-[60vh] overflow-y-auto">
           <div
             onClick={() => setActiveFolderId(null)}
             className="flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors"
@@ -440,14 +486,16 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
             }}
           >
             <span className="w-[18px]" />
-            <Folder size={13} style={{ color: activeFolderId === null ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
+            <Folder size={13} className={activeFolderId === null ? "text-primary" : "text-muted-foreground"} />
             <span
-              className="flex-1 font-body text-xs"
-              style={{ color: activeFolderId === null ? "hsl(var(--primary))" : "hsl(var(--foreground))" }}
+              className={[
+                "flex-1 font-body text-xs",
+                activeFolderId === null ? "text-primary" : "text-foreground",
+              ].join(" ")}
             >
               Root
             </span>
-            <span className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <span className="font-body text-[10px] text-muted-foreground">
               {assets.filter((a) => a.folder_id === null).length}
             </span>
           </div>
@@ -459,21 +507,14 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
           {loading ? (
             <ListSkeleton rows={6} rowHeight="h-14" />
           ) : visibleAssets.length === 0 ? (
-            <div
-              className="rounded-lg border-2 border-dashed py-12 text-center font-body text-sm"
-              style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}
-            >
+            <div className="rounded-lg border-2 border-dashed border-border py-12 text-center font-body text-sm text-muted-foreground">
               No files in this folder. Upload one to get started.
             </div>
           ) : (
             <div className="space-y-1">
               <div
-                className="grid items-center gap-3 px-3 py-2 rounded-lg font-body text-[9px] uppercase tracking-wider"
-                style={{
-                  gridTemplateColumns: "44px 1fr 70px 70px",
-                  color: "hsl(var(--muted-foreground))",
-                  backgroundColor: "hsl(var(--muted) / 0.15)",
-                }}
+                className="grid items-center gap-3 px-3 py-2 rounded-lg font-body text-[9px] uppercase tracking-wider text-muted-foreground bg-muted/15"
+                style={{ gridTemplateColumns: "44px 1fr 70px 70px" }}
               >
                 <span />
                 <span>Title</span>
@@ -494,38 +535,31 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                         onClose?.();
                       }
                     }}
-                    className="grid items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors"
+                    className="grid items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors border-b border-border/15"
                     style={{
                       gridTemplateColumns: "44px 1fr 70px 70px",
                       backgroundColor: isSelected ? "hsl(var(--primary) / 0.08)" : "transparent",
-                      borderBottom: "1px solid hsl(var(--border) / 0.15)",
                     }}
                   >
-                    <div
-                      className="w-11 h-11 rounded-md overflow-hidden flex items-center justify-center"
-                      style={{
-                        backgroundColor: "hsl(var(--muted) / 0.4)",
-                        border: "1px solid hsl(var(--border) / 0.4)",
-                      }}
-                    >
+                    <div className="w-11 h-11 rounded-md overflow-hidden flex items-center justify-center bg-muted/40 border border-border/40">
                       {isImage ? (
                         <img src={url} alt={asset.alt_text || asset.title} className="w-full h-full object-cover" loading="lazy" />
                       ) : (
-                        <FileText size={18} style={{ color: "hsl(var(--muted-foreground))" }} />
+                        <FileText size={18} className="text-muted-foreground" />
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-body text-xs truncate" style={{ color: "hsl(var(--foreground))" }}>
+                      <p className="font-body text-xs truncate text-foreground">
                         {asset.title || asset.storage_path.split("/").pop()}
                       </p>
-                      <p className="font-body text-[10px] truncate" style={{ color: "hsl(var(--muted-foreground))" }}>
+                      <p className="font-body text-[10px] truncate text-muted-foreground">
                         {asset.mime_type || "unknown"}
                       </p>
                     </div>
-                    <span className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <span className="font-body text-[10px] text-muted-foreground">
                       {formatBytes(asset.size_bytes)}
                     </span>
-                    <span className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <span className="font-body text-[10px] text-muted-foreground">
                       {formatDate(asset.created_at)}
                     </span>
                   </div>
@@ -536,20 +570,16 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
         </div>
 
         {/* Detail panel */}
-        <div
-          className="rounded-lg border p-4 max-h-[60vh] overflow-y-auto space-y-3"
-          style={{ borderColor: "hsl(var(--border) / 0.4)", backgroundColor: "hsl(var(--muted) / 0.1)" }}
-        >
+        <div className="rounded-lg border border-border/40 bg-muted/10 p-4 max-h-[60vh] overflow-y-auto space-y-3">
           {selectedAsset ? (
             <>
               <div className="flex items-center justify-between">
-                <h3 className="font-display text-sm font-bold" style={{ color: "hsl(var(--secondary))" }}>
+                <h3 className="font-display text-sm font-bold text-secondary">
                   Asset details
                 </h3>
                 <button
                   onClick={() => handleDeleteAsset(selectedAsset)}
-                  className="p-1.5 hover:opacity-70"
-                  style={{ color: "hsl(var(--destructive))" }}
+                  className="p-1.5 text-destructive hover:opacity-70"
                   title="Delete asset"
                 >
                   <Trash2 size={14} />
@@ -560,61 +590,89 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                 <img
                   src={getAssetPublicUrl(selectedAsset.storage_path)}
                   alt={selectedAsset.alt_text || selectedAsset.title}
-                  className="w-full rounded-md border"
-                  style={{ borderColor: "hsl(var(--border) / 0.4)" }}
+                  className="w-full rounded-md border border-border/40"
                 />
               ) : (
-                <div
-                  className="w-full h-32 rounded-md border flex flex-col items-center justify-center gap-2"
-                  style={{ borderColor: "hsl(var(--border) / 0.4)", backgroundColor: "hsl(var(--muted) / 0.4)" }}
-                >
-                  <FileText size={28} style={{ color: "hsl(var(--muted-foreground))" }} />
-                  <span className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <div className="w-full h-32 rounded-md border border-border/40 bg-muted/40 flex flex-col items-center justify-center gap-2">
+                  <FileText size={28} className="text-muted-foreground" />
+                  <span className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">
                     {selectedAsset.mime_type || "Document"}
                   </span>
                 </div>
               )}
 
               <div>
-                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
                   Title
                 </label>
                 <input
+                  // `key` forces React to remount this input when the user
+                  // picks a different asset, otherwise `defaultValue` would
+                  // stay stuck on the first asset's title.
+                  key={`title-${selectedAsset.id}`}
                   defaultValue={selectedAsset.title}
                   onBlur={(e) => commitAssetPatch(selectedAsset.id, { title: e.target.value.trim() })}
-                  className="w-full px-2.5 py-1.5 rounded-md font-body text-xs border"
-                  style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+                  className="w-full px-2.5 py-1.5 rounded-md font-body text-xs border border-border bg-background text-foreground"
                 />
               </div>
 
+              {/*
+                NEW — Filename rename. Junior dev note:
+                This actually MOVES the file in Supabase Storage and updates
+                the DB row's `storage_path` in a single atomic helper. We
+                show the extension separately because we never let users
+                change it (mime types must stay valid).
+              */}
               <div>
-                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                  Filename
+                </label>
+                <div className="flex items-center gap-1">
+                  <input
+                    key={`filename-${selectedAsset.id}-${selectedAsset.storage_path}`}
+                    defaultValue={filenameWithoutExt(selectedAsset.storage_path)}
+                    onBlur={(e) => commitFilenameRename(selectedAsset, e.target.value)}
+                    className="flex-1 px-2.5 py-1.5 rounded-md font-body text-xs border border-border bg-background text-foreground"
+                  />
+                  {selectedAsset.storage_path.includes(".") && (
+                    <span className="font-body text-[11px] text-muted-foreground whitespace-nowrap">
+                      .{selectedAsset.storage_path.split(".").pop()}
+                    </span>
+                  )}
+                </div>
+                <p className="font-body text-[9px] text-muted-foreground mt-1">
+                  Renaming changes the file's public URL.
+                </p>
+              </div>
+
+              <div>
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
                   Description
                 </label>
                 <textarea
+                  key={`desc-${selectedAsset.id}`}
                   defaultValue={selectedAsset.description}
                   rows={2}
                   onBlur={(e) => commitAssetPatch(selectedAsset.id, { description: e.target.value.trim() })}
-                  className="w-full px-2.5 py-1.5 rounded-md font-body text-xs border resize-none"
-                  style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+                  className="w-full px-2.5 py-1.5 rounded-md font-body text-xs border border-border bg-background text-foreground resize-none"
                 />
               </div>
 
               <div>
-                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
                   Alt text (max 100 chars)
                 </label>
                 <input
+                  key={`alt-${selectedAsset.id}`}
                   defaultValue={selectedAsset.alt_text}
                   maxLength={100}
                   onBlur={(e) => commitAssetPatch(selectedAsset.id, { alt_text: e.target.value.trim() })}
-                  className="w-full px-2.5 py-1.5 rounded-md font-body text-xs border"
-                  style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+                  className="w-full px-2.5 py-1.5 rounded-md font-body text-xs border border-border bg-background text-foreground"
                 />
               </div>
 
               <div>
-                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
                   Move to folder
                 </label>
                 <select
@@ -628,8 +686,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                       refresh();
                     }
                   }}
-                  className="w-full px-2.5 py-1.5 rounded-md font-body text-xs border"
-                  style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+                  className="w-full px-2.5 py-1.5 rounded-md font-body text-xs border border-border bg-background text-foreground"
                 >
                   {folderOptionsForMove.map((opt) => (
                     <option key={opt.id || ROOT_KEY} value={opt.id || ""}>
@@ -640,20 +697,61 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
               </div>
 
               <div>
-                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
                   Public URL
                 </label>
                 <input
                   readOnly
                   value={getAssetPublicUrl(selectedAsset.storage_path)}
                   onFocus={(e) => e.currentTarget.select()}
-                  className="w-full px-2.5 py-1.5 rounded-md font-body text-[10px] border"
-                  style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+                  className="w-full px-2.5 py-1.5 rounded-md font-body text-[10px] border border-border bg-background text-foreground"
                 />
+              </div>
+
+              {/*
+                NEW — "Used in" usage list. This is the safety net before
+                deleting/renaming. The list comes from `findAssetUsages`
+                which scans every blog post, CMS page and site_content
+                section for the asset's path / URL / id.
+              */}
+              <div>
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                  Used in
+                </label>
+                {usagesLoading ? (
+                  <p className="font-body text-[11px] text-muted-foreground italic">Scanning…</p>
+                ) : usages.length === 0 ? (
+                  <p className="font-body text-[11px] text-muted-foreground italic">
+                    Not referenced anywhere yet.
+                  </p>
+                ) : (
+                  <ul className="space-y-1">
+                    {usages.map((u, i) => (
+                      <li key={i} className="flex items-center gap-1.5 font-body text-[11px] text-foreground">
+                        <span className="text-muted-foreground">
+                          {u.source === "blog" ? "📰" : u.source === "cms" ? "📄" : "🏠"}
+                        </span>
+                        {u.href ? (
+                          <a
+                            href={u.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1 hover:underline truncate"
+                          >
+                            <span className="truncate">{u.label}</span>
+                            <ExternalLink size={10} />
+                          </a>
+                        ) : (
+                          <span className="truncate">{u.label}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </>
           ) : (
-            <div className="text-center py-8 font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <div className="text-center py-8 font-body text-xs text-muted-foreground">
               Select an asset to view its details.
             </div>
           )}
@@ -670,10 +768,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
           if (e.target === e.currentTarget) onClose?.();
         }}
       >
-        <div
-          className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl p-6 shadow-2xl"
-          style={{ backgroundColor: "hsl(var(--card))" }}
-        >
+        <div className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl p-6 shadow-2xl bg-card">
           {content}
         </div>
       </div>

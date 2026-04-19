@@ -49,7 +49,7 @@
  * ─────────────────────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { runDbAction } from "@/services/db-helpers";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
@@ -60,6 +60,12 @@ import {
   GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 /**
  * useIsAdminMobile
@@ -268,6 +274,37 @@ const AdminDashboard = ({ session }: Props) => {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
+  /**
+   * ─────────────────────────────────────────────────────────────
+   * UNSAVED CHANGES TRACKING — for the junior developer
+   * ─────────────────────────────────────────────────────────────
+   * The save indicator in the topbar must answer ONE question reliably:
+   *   "Has the admin edited something that has not yet been written
+   *    back to the database?"
+   *
+   * For the MAIN PAGE we have a draft/published split: every section
+   * row has a `content` (published) and a `draft_content` (in-flight)
+   * blob. If those two JSON blobs differ for ANY section, we still owe
+   * the database a write. We compare with `JSON.stringify` because the
+   * blobs are tree-shaped and `===` would only catch reference changes.
+   *
+   * For a CMS PAGE we keep a separate `cmsPageDirty` flag that's flipped
+   * to `true` every time `updateRows` mutates `cmsPageRows`, and reset
+   * to `false` after a successful save/publish. We don't have an "old"
+   * snapshot to diff against (we only loaded one row), so a manual flag
+   * is the simplest path.
+   *
+   * The boolean below is the single source of truth the topbar reads.
+   */
+  const [cmsPageDirty, setCmsPageDirty] = useState(false);
+  const hasUnsavedChanges = useMemo(() => {
+    if (cmsPage) return cmsPageDirty;
+    return sections.some((s) => {
+      const draft = s.draft_content ?? s.content;
+      return JSON.stringify(draft) !== JSON.stringify(s.content);
+    });
+  }, [sections, cmsPage, cmsPageDirty]);
+
   // Load main page data
   useEffect(() => {
     if (cmsPage) return;
@@ -307,6 +344,9 @@ const AdminDashboard = ({ session }: Props) => {
         setCmsPageRows(data.draft_page_rows || data.page_rows || []);
         setCmsPageStatus(data.status || "draft");
         setCmsPageMeta({ meta_title: data.meta_title || "", meta_description: data.meta_description || "" });
+        // Fresh load = clean state. Without this the dirty flag would
+        // carry over from a previously-edited page.
+        setCmsPageDirty(false);
       }
     };
     load();
@@ -353,10 +393,14 @@ const AdminDashboard = ({ session }: Props) => {
 
   const selectedRow = pageRows.find((r) => r.id === selectedSectionId) || null;
 
-  // Unified row update
+  // Unified row update. Junior dev note: any path that mutates rows
+  // must flow through here so the dirty flag stays in sync. If you add
+  // a direct `setCmsPageRows(...)` call somewhere else, also flip
+  // `setCmsPageDirty(true)` or the topbar indicator will lie.
   const updateRows = useCallback((newRows: PageRow[]) => {
     if (cmsPage) {
       setCmsPageRows(newRows);
+      setCmsPageDirty(true);
     } else {
       updateFullDraft("page_rows", { rows: newRows });
     }
@@ -454,18 +498,21 @@ const AdminDashboard = ({ session }: Props) => {
   const updateCmsPageMeta = useCallback(async (field: string, value: string) => {
     const next = { ...cmsPageMeta, [field]: value };
     setCmsPageMeta(next);
+    setCmsPageDirty(true);
     if (cmsPage) {
       await runDbAction({
         action: () => supabase.from("cms_pages").update({ [field]: value } as any).eq("id", cmsPage.id),
         successMessage: null,
       });
+      // Meta saves immediately on blur, so the dirty flag flips back.
+      setCmsPageDirty(false);
     }
   }, [cmsPage, cmsPageMeta]);
 
   // ── Save / Publish ──
   const saveDraft = useCallback(async () => {
     if (cmsPage) {
-      await runDbAction({
+      const result = await runDbAction({
         action: () => supabase
           .from("cms_pages")
           .update({ draft_page_rows: cmsPageRows as any } as any)
@@ -473,6 +520,8 @@ const AdminDashboard = ({ session }: Props) => {
         setLoading: setSaving,
         successMessage: "Draft saved",
       });
+      // Successful save → no more pending edits.
+      if (result !== null) setCmsPageDirty(false);
       return;
     }
 
@@ -494,6 +543,10 @@ const AdminDashboard = ({ session }: Props) => {
       setLoading: setSaving,
       successMessage: "Draft saved",
     });
+    // For the main page, "Save draft" doesn't promote draft → published,
+    // so `hasUnsavedChanges` (which compares the two blobs) stays true
+    // until Publish runs. That's intentional: a draft is still "unsaved
+    // relative to the live site".
   }, [sections, cmsPage, cmsPageRows]);
 
   const publishAll = useCallback(async () => {
@@ -527,8 +580,11 @@ const AdminDashboard = ({ session }: Props) => {
     });
 
     if (result !== null) {
+      // Promote drafts to live content locally — that flips
+      // `hasUnsavedChanges` to false because content === draft_content.
       setSections((prev) => prev.map((s) => ({ ...s, content: s.draft_content || s.content })));
       sections.forEach((s) => invalidateSiteContent(s.section_key));
+      setCmsPageDirty(false);
     }
   }, [sections, cmsPage, cmsPageRows]);
 
@@ -635,7 +691,7 @@ const AdminDashboard = ({ session }: Props) => {
   // runtime conditions and animates between values.
   const pageStructureWidth = isAdminMobile
     ? (isSiteTab && !selectedSectionId ? "100%" : 0)
-    : (isSiteTab ? 240 : 0);
+    : (isSiteTab ? 340 : 0);
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -680,7 +736,6 @@ const AdminDashboard = ({ session }: Props) => {
           {isSiteTab && (
             <>
               {cmsPage && (
-                /* Publish/Unpublish — destructive look while published. */
                 <button
                   onClick={toggleCmsPagePublish}
                   className={[
@@ -693,24 +748,56 @@ const AdminDashboard = ({ session }: Props) => {
                   {cmsPageStatus === "published" ? "Unpublish" : "Set Published"}
                 </button>
               )}
+              {/*
+                ─────────────────────────────────────────────────
+                SAVE STATUS INDICATOR — for the junior developer
+                ─────────────────────────────────────────────────
+                This little block is the user-facing answer to
+                `hasUnsavedChanges`. When TRUE we paint an amber dot
+                + "Unsaved draft" so the admin can't miss that a save
+                is owed. When FALSE we show a muted "Saved" with a
+                soft green dot. The text is wrapped in a flex pill
+                so it sits naturally next to the Save / Publish CTAs.
+              */}
+              <div
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full font-body text-[10px] uppercase tracking-[0.1em]"
+                aria-live="polite"
+              >
+                <span
+                  className={[
+                    "w-1.5 h-1.5 rounded-full",
+                    hasUnsavedChanges ? "bg-amber-500" : "bg-emerald-500",
+                  ].join(" ")}
+                  style={{ boxShadow: hasUnsavedChanges ? "0 0 6px hsl(38 92% 50% / 0.6)" : "none" }}
+                />
+                <span className={hasUnsavedChanges ? "text-amber-500" : "text-muted-foreground"}>
+                  {hasUnsavedChanges ? "Unsaved draft" : "Saved"}
+                </span>
+              </div>
               <button
                 onClick={saveDraft}
-                disabled={saving}
-                // `opacity` uses the saving flag; Tailwind has no equivalent
-                // for a runtime boolean, so we keep it inline.
-                style={{ opacity: saving ? 0.5 : 1 }}
+                disabled={saving || !hasUnsavedChanges}
+                style={{ opacity: saving ? 0.5 : (hasUnsavedChanges ? 1 : 0.5) }}
                 className="text-[10px] font-body uppercase tracking-[0.1em] px-3.5 py-1.5 rounded-full cursor-pointer border border-border bg-transparent text-foreground"
               >
                 <Save size={11} className="inline -translate-y-px mr-1" />
                 {saving ? "Saving…" : "Save draft"}
               </button>
+              {/*
+                Publish — visually distinct so it's impossible to miss.
+                Solid PRIMARY background, bolder weight, slightly larger
+                padding, and a soft glow when there are unsaved changes.
+              */}
               <button
                 onClick={publishAll}
                 disabled={publishing}
-                style={{ opacity: publishing ? 0.4 : 1 }}
-                className="text-[10px] font-body uppercase tracking-[0.1em] px-3.5 py-1.5 rounded-full cursor-pointer border-none bg-secondary text-background"
+                style={{
+                  opacity: publishing ? 0.4 : 1,
+                  boxShadow: hasUnsavedChanges ? "0 0 0 2px hsl(var(--primary) / 0.25)" : "none",
+                }}
+                className="text-[11px] font-body font-bold uppercase tracking-[0.12em] px-4 py-1.5 rounded-full cursor-pointer border-none bg-primary text-primary-foreground"
               >
-                <Send size={11} className="inline -translate-y-px mr-1" />
+                <Send size={12} className="inline -translate-y-px mr-1" />
                 {publishing ? "Publishing…" : "Publish"}
               </button>
             </>
@@ -1187,25 +1274,13 @@ const AdminDashboard = ({ session }: Props) => {
                     ) : null}
                   </div>
 
-                  {/* Footer */}
-                  <div className="h-[52px] flex items-center gap-2 px-4 border-t border-border flex-shrink-0">
-                    <button
-                      onClick={saveDraft}
-                      disabled={saving}
-                      style={{ opacity: saving ? 0.5 : 1 }}
-                      className="flex-1 text-[10px] font-body uppercase tracking-[0.1em] py-2 rounded-full cursor-pointer border border-border bg-transparent text-foreground"
-                    >
-                      Save draft
-                    </button>
-                    <button
-                      onClick={publishAll}
-                      disabled={publishing}
-                      style={{ opacity: publishing ? 0.4 : 1 }}
-                      className="flex-1 text-[10px] font-body uppercase tracking-[0.1em] py-2 rounded-full cursor-pointer border-none bg-secondary text-background"
-                    >
-                      Publish
-                    </button>
-                  </div>
+                  {/*
+                    Footer save/publish buttons were removed in the UX
+                    overhaul — Save draft + Publish now live permanently
+                    in the top sticky header alongside the unsaved-draft
+                    indicator, so there's a single, always-visible source
+                    of truth for save state.
+                  */}
                 </>
               )}
             </div>
