@@ -60,12 +60,7 @@ import {
   GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+// (Sheet/Drawer rollback: properties editor stays as a 3rd column.)
 
 /**
  * useIsAdminMobile
