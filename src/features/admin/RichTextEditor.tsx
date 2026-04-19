@@ -476,8 +476,13 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           aria-multiline="true"
           data-placeholder={placeholder || "Start writing..."}
           className="prose prose-sm max-w-none min-h-[300px] px-4 py-3 focus:outline-none"
-          onInput={emitChange}
-          onBlur={() => { saveSelection(); emitChange(); }}
+          onInput={emitChangeOnInput}
+          onBlur={() => {
+            saveSelection();
+            // Flush any pending debounced keystrokes so blur is never lossy.
+            debouncedEmit.cancel();
+            emitChange();
+          }}
           onKeyUp={saveSelection}
           onMouseUp={saveSelection}
           // Editor surface mirrors the live row's bg so light text
