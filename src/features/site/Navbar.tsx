@@ -108,7 +108,15 @@ const Navbar = () => {
         </a>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-5">
-          {allItems.map((item) => (
+          {/*
+            Render link list ONLY after the navbar config has loaded
+            from the database. Showing fallback labels first and then
+            swapping to the admin's customised labels causes a visible
+            text flicker — see `useSiteContentWithStatus` for the full
+            rationale. The empty <div> above keeps the column height
+            stable so layout doesn't jump when links appear.
+          */}
+          {!navLoading && allItems.map((item) => (
             <a
               key={item.label}
               href={item.href}
