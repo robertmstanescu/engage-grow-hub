@@ -39,6 +39,37 @@
  */
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { useSiteContent } from "@/hooks/useSiteContent";
+
+/**
+ * EDITABLE COPY for the error fallback.
+ *
+ * Admin can edit headline/body/buttons via PagesManager → "Error Pages"
+ * which writes to `site_content` under section_key `error_boundary`.
+ * Hardcoded fallback ensures the boundary still renders even if the DB
+ * is unreachable (which is exactly when an error is most likely!).
+ *
+ * THEME: LIGHT (intentional). See NotFound.tsx for the rationale.
+ */
+interface ErrorBoundaryContent {
+  headline: string;
+  body: string;
+  retry_label: string;
+  home_label: string;
+  technical_details_label: string;
+  row_fallback_label: string;
+  row_fallback_retry_label: string;
+}
+
+const ERROR_FALLBACK: ErrorBoundaryContent = {
+  headline: "Something went wrong",
+  body: "We hit an unexpected snag while loading this page. The rest of the site is still working — you can head back to the homepage or try again.",
+  retry_label: "Try again",
+  home_label: "Back to home",
+  technical_details_label: "Technical details",
+  row_fallback_label: "Section unavailable",
+  row_fallback_retry_label: "Retry",
+};
 
 interface Props {
   children: ReactNode;
@@ -82,67 +113,100 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-/** Branded full-page fallback. Used by Page + App boundaries. */
-const DefaultFallback = ({ error, reset }: { error: Error; reset: () => void }) => (
-  <div
-    className="min-h-screen flex items-center justify-center px-6"
-    style={{ backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
-  >
-    <div className="max-w-md text-center space-y-4">
-      <h1 className="font-display text-2xl font-bold" style={{ color: "hsl(var(--secondary))" }}>
-        Something went wrong
-      </h1>
-      <p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
-        We hit an unexpected snag while loading this page. The rest of the site is still working —
-        you can head back to the homepage or try again.
-      </p>
-      <details
-        className="text-left text-xs font-mono p-3 rounded-md"
-        style={{ backgroundColor: "hsl(var(--muted) / 0.3)", color: "hsl(var(--muted-foreground))" }}
-      >
-        <summary className="cursor-pointer">Technical details</summary>
-        <pre className="mt-2 whitespace-pre-wrap break-all">{error.message}</pre>
-      </details>
-      <div className="flex justify-center gap-3 pt-2">
-        <button
-          onClick={reset}
-          className="font-body text-xs uppercase tracking-wider px-5 py-2 rounded-full border hover:opacity-80"
-          style={{ borderColor: "hsl(var(--border))" }}
+/**
+ * Branded full-page fallback. Used by Page + App boundaries.
+ *
+ * Uses LIGHT theme tokens (`--light-bg` / `--light-fg`) — error pages
+ * intentionally break from the dark luxury aesthetic so they feel like
+ * neutral system pages. See NotFound.tsx for matching styling.
+ *
+ * Tries to read editable copy from `site_content.error_boundary`.
+ * If react-query throws inside this fallback (it shouldn't, but the
+ * boundary lives ABOVE the QueryClientProvider in some setups), the
+ * try/catch keeps us safe and we fall back to hardcoded strings.
+ */
+const DefaultFallback = ({ error, reset }: { error: Error; reset: () => void }) => {
+  let copy = ERROR_FALLBACK;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    copy = useSiteContent<ErrorBoundaryContent>("error_boundary", ERROR_FALLBACK);
+  } catch {
+    copy = ERROR_FALLBACK;
+  }
+
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center px-6"
+      style={{ backgroundColor: "hsl(var(--light-bg))", color: "hsl(var(--light-fg))" }}
+    >
+      <div className="max-w-md text-center space-y-4">
+        <h1 className="font-display text-2xl font-bold" style={{ color: "hsl(var(--light-fg))" }}>
+          {copy.headline}
+        </h1>
+        <p className="font-body text-sm" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>
+          {copy.body}
+        </p>
+        <details
+          className="text-left text-xs font-mono p-3 rounded-md"
+          style={{ backgroundColor: "hsl(var(--light-fg) / 0.06)", color: "hsl(var(--light-fg) / 0.7)" }}
         >
-          Try again
-        </button>
-        <a
-          href="/"
-          className="font-body text-xs uppercase tracking-wider px-5 py-2 rounded-full"
-          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-        >
-          Back to home
-        </a>
+          <summary className="cursor-pointer">{copy.technical_details_label}</summary>
+          <pre className="mt-2 whitespace-pre-wrap break-all">{error.message}</pre>
+        </details>
+        <div className="flex justify-center gap-3 pt-2">
+          <button
+            onClick={reset}
+            className="font-body text-xs uppercase tracking-wider px-5 py-2 rounded-full border hover:opacity-80"
+            style={{ borderColor: "hsl(var(--light-fg) / 0.3)", color: "hsl(var(--light-fg))" }}
+          >
+            {copy.retry_label}
+          </button>
+          <a
+            href="/"
+            className="font-body text-xs uppercase tracking-wider px-5 py-2 rounded-full"
+            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+          >
+            {copy.home_label}
+          </a>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 /**
  * Tiny inline fallback used per-row inside <PageRows/>. Doesn't take up
  * the full viewport — keeps the rest of the page reading naturally.
+ *
+ * Reads its labels from `site_content.error_boundary` so the same copy
+ * source powers all error UI on the site.
  */
-export const RowFallback = ({ error, reset }: { error: Error; reset: () => void }) => (
-  <div
-    className="my-4 mx-4 p-4 rounded-lg border text-center"
-    style={{
-      borderColor: "hsl(var(--destructive) / 0.3)",
-      backgroundColor: "hsl(var(--destructive) / 0.05)",
-      color: "hsl(var(--destructive))",
-    }}
-  >
-    <p className="font-body text-xs uppercase tracking-wider opacity-70">Section unavailable</p>
-    <p className="font-body text-[10px] mt-1 opacity-50">{error.message}</p>
-    <button
-      onClick={reset}
-      className="mt-2 font-body text-[10px] uppercase tracking-wider underline opacity-70 hover:opacity-100"
+export const RowFallback = ({ error, reset }: { error: Error; reset: () => void }) => {
+  let copy = ERROR_FALLBACK;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    copy = useSiteContent<ErrorBoundaryContent>("error_boundary", ERROR_FALLBACK);
+  } catch {
+    copy = ERROR_FALLBACK;
+  }
+
+  return (
+    <div
+      className="my-4 mx-4 p-4 rounded-lg border text-center"
+      style={{
+        borderColor: "hsl(var(--destructive) / 0.3)",
+        backgroundColor: "hsl(var(--destructive) / 0.05)",
+        color: "hsl(var(--destructive))",
+      }}
     >
-      Retry
-    </button>
-  </div>
-);
+      <p className="font-body text-xs uppercase tracking-wider opacity-70">{copy.row_fallback_label}</p>
+      <p className="font-body text-[10px] mt-1 opacity-50">{error.message}</p>
+      <button
+        onClick={reset}
+        className="mt-2 font-body text-[10px] uppercase tracking-wider underline opacity-70 hover:opacity-100"
+      >
+        {copy.row_fallback_retry_label}
+      </button>
+    </div>
+  );
+};

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye, Home } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye, Home, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import RowsManager from "./site-editor/RowsManager";
 import { SectionBox, Field } from "./site-editor/FieldComponents";
@@ -16,6 +16,51 @@ import {
 import { fetchSection, publishSection } from "@/services/siteContent";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
+
+/**
+ * ════════════════════════════════════════════════════════════════════
+ * ERROR PAGE COPY EDITORS
+ * ════════════════════════════════════════════════════════════════════
+ * The 404 (`/...not-found`) page and the global "Something went wrong"
+ * fallback are rendered by `src/pages/NotFound.tsx` and
+ * `src/components/ui/error-boundary.tsx` respectively. Their copy lives
+ * in `site_content` under the keys below so admins can edit it without
+ * touching code. If a key is missing in the DB, the components fall back
+ * to hardcoded defaults (defined in their own files) so the site still
+ * renders during error storms.
+ */
+const ERROR_404_KEY = "error_404";
+const ERROR_BOUNDARY_KEY = "error_boundary";
+
+interface Error404Content {
+  headline: string;
+  subhead: string;
+  cta_label: string;
+}
+const ERROR_404_DEFAULTS: Error404Content = {
+  headline: "404",
+  subhead: "Oops! We couldn’t find that page.",
+  cta_label: "Return to home",
+};
+
+interface ErrorBoundaryContent {
+  headline: string;
+  body: string;
+  retry_label: string;
+  home_label: string;
+  technical_details_label: string;
+  row_fallback_label: string;
+  row_fallback_retry_label: string;
+}
+const ERROR_BOUNDARY_DEFAULTS: ErrorBoundaryContent = {
+  headline: "Something went wrong",
+  body: "We hit an unexpected snag while loading this page. The rest of the site is still working — you can head back to the homepage or try again.",
+  retry_label: "Try again",
+  home_label: "Back to home",
+  technical_details_label: "Technical details",
+  row_fallback_label: "Section unavailable",
+  row_fallback_retry_label: "Retry",
+};
 
 interface CmsPage {
   id: string;
@@ -46,6 +91,10 @@ const PagesManager = ({ onEditPage }: Props) => {
   const [loading, setLoading] = useState(true);
   const [editingPage, setEditingPage] = useState<CmsPage | null>(null);
   const [editingBlog, setEditingBlog] = useState(false);
+  // Which error-page editor is open (null = none).
+  const [editingError, setEditingError] = useState<"404" | "boundary" | null>(null);
+  const [error404, setError404] = useState<Error404Content>(ERROR_404_DEFAULTS);
+  const [errorBoundary, setErrorBoundary] = useState<ErrorBoundaryContent>(ERROR_BOUNDARY_DEFAULTS);
   const [blogContent, setBlogContent] = useState<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string; meta_title: string; meta_description: string }>({
     rows_above: [], rows_below: [], header_title: "Insights & Articles", header_subtitle: "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.", meta_title: "", meta_description: "",
   });
@@ -73,7 +122,7 @@ const PagesManager = ({ onEditPage }: Props) => {
     setLoading(false);
   };
 
-  useEffect(() => { load(); loadBlogPage(); }, []);
+  useEffect(() => { load(); loadBlogPage(); loadErrorPages(); }, []);
 
   const loadBlogPage = async () => {
     const { data } = await fetchSection("blog_page");
@@ -90,11 +139,46 @@ const PagesManager = ({ onEditPage }: Props) => {
     }
   };
 
+  /**
+   * Load editable copy for the 404 + global error pages. We merge over
+   * the hardcoded defaults so newly-added fields auto-populate on first
+   * render, and so the editor never shows undefined inputs.
+   */
+  const loadErrorPages = async () => {
+    const [{ data: e404 }, { data: eBoundary }] = await Promise.all([
+      fetchSection(ERROR_404_KEY),
+      fetchSection(ERROR_BOUNDARY_KEY),
+    ]);
+    if (e404?.content) setError404({ ...ERROR_404_DEFAULTS, ...(e404.content as Error404Content) });
+    if (eBoundary?.content) setErrorBoundary({ ...ERROR_BOUNDARY_DEFAULTS, ...(eBoundary.content as ErrorBoundaryContent) });
+  };
+
   const saveBlogPage = (updates: Partial<typeof blogContent>) => {
     const next = { ...blogContent, ...updates };
     setBlogContent(next);
     return runDbAction({
       action: () => publishSection("blog_page", next),
+      successMessage: "Saved",
+      errorMessage: "Save failed",
+    });
+  };
+
+  /** Persist 404 copy. Field components save on blur, so this is debounced naturally. */
+  const saveError404 = (updates: Partial<Error404Content>) => {
+    const next = { ...error404, ...updates };
+    setError404(next);
+    return runDbAction({
+      action: () => publishSection(ERROR_404_KEY, next),
+      successMessage: "Saved",
+      errorMessage: "Save failed",
+    });
+  };
+
+  const saveErrorBoundary = (updates: Partial<ErrorBoundaryContent>) => {
+    const next = { ...errorBoundary, ...updates };
+    setErrorBoundary(next);
+    return runDbAction({
+      action: () => publishSection(ERROR_BOUNDARY_KEY, next),
       successMessage: "Saved",
       errorMessage: "Save failed",
     });
@@ -182,6 +266,82 @@ const PagesManager = ({ onEditPage }: Props) => {
   };
 
   if (loading) return <ListSkeleton rows={3} rowHeight="h-14" />;
+
+  /**
+   * ────────────────────────────────────────────────────────────────
+   * ERROR PAGE EDITORS
+   * ────────────────────────────────────────────────────────────────
+   * Inline editors for the 404 + global error fallback copy. Each
+   * <Field> auto-saves on blur via the saveError404/saveErrorBoundary
+   * helpers above (which write to `site_content` and toast).
+   *
+   * To add a new editable string:
+   *   1. Extend the corresponding interface (Error404Content / ErrorBoundaryContent).
+   *   2. Add it to the matching DEFAULTS object with a sensible value.
+   *   3. Add a <Field> below.
+   *   4. Read it in NotFound.tsx or error-boundary.tsx via useSiteContent().
+   */
+  if (editingError === "404") {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setEditingError(null)}
+          className="font-body text-xs uppercase tracking-wider hover:opacity-70"
+          style={{ color: "hsl(var(--primary))" }}>
+          ← Back to Pages
+        </button>
+        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--foreground))" }}>
+          404 / Not Found Page
+          <span className="font-body text-xs font-normal ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>system</span>
+        </h2>
+        <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Shown to visitors who land on a URL that doesn't exist. Light theme — kept visually neutral on purpose.
+        </p>
+        <div className="space-y-3">
+          <Field label="Headline" value={error404.headline} onChange={(v) => saveError404({ headline: v })} />
+          <Field label="Subhead" value={error404.subhead} onChange={(v) => saveError404({ subhead: v })} />
+          <Field label="CTA button label" value={error404.cta_label} onChange={(v) => saveError404({ cta_label: v })} />
+        </div>
+        <a
+          href="/__force-404-preview"
+          target="_blank"
+          className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80"
+          style={{ border: "1px solid hsl(var(--primary) / 0.4)", color: "hsl(var(--primary))" }}>
+          <Eye size={13} /> Preview live 404
+        </a>
+      </div>
+    );
+  }
+
+  if (editingError === "boundary") {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setEditingError(null)}
+          className="font-body text-xs uppercase tracking-wider hover:opacity-70"
+          style={{ color: "hsl(var(--primary))" }}>
+          ← Back to Pages
+        </button>
+        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--foreground))" }}>
+          Error / "Something went wrong" Page
+          <span className="font-body text-xs font-normal ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>system</span>
+        </h2>
+        <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Shown when a page or section crashes unexpectedly. The first 4 fields drive the full-page fallback; the last 2 drive the inline per-row fallback.
+        </p>
+        <div className="space-y-3">
+          <Field label="Headline" value={errorBoundary.headline} onChange={(v) => saveErrorBoundary({ headline: v })} />
+          <Field label="Body" value={errorBoundary.body} onChange={(v) => saveErrorBoundary({ body: v })} />
+          <Field label="Retry button label" value={errorBoundary.retry_label} onChange={(v) => saveErrorBoundary({ retry_label: v })} />
+          <Field label="Home button label" value={errorBoundary.home_label} onChange={(v) => saveErrorBoundary({ home_label: v })} />
+          <Field label="Technical details toggle label" value={errorBoundary.technical_details_label} onChange={(v) => saveErrorBoundary({ technical_details_label: v })} />
+          <Field label="Inline row fallback label" value={errorBoundary.row_fallback_label} onChange={(v) => saveErrorBoundary({ row_fallback_label: v })} />
+          <Field label="Inline row retry label" value={errorBoundary.row_fallback_retry_label} onChange={(v) => saveErrorBoundary({ row_fallback_retry_label: v })} />
+        </div>
+      </div>
+    );
+  }
+
 
   if (editingBlog) {
     return (
@@ -429,9 +589,52 @@ const PagesManager = ({ onEditPage }: Props) => {
             </a>
           </div>
         </div>
+
+        {/* 404 / Not Found */}
+        <div
+          className="flex items-center justify-between p-3 rounded-lg border"
+          style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+          <div className="flex items-center gap-3">
+            <AlertTriangle size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
+            <div>
+              <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>404 / Not Found</span>
+              <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>shown for unknown URLs</span>
+            </div>
+            <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setEditingError("404")}
+              className="p-2 rounded hover:opacity-70"
+              style={{ color: "hsl(var(--primary))" }}>
+              Edit
+            </button>
+          </div>
+        </div>
+
+        {/* Error / Something went wrong */}
+        <div
+          className="flex items-center justify-between p-3 rounded-lg border"
+          style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+          <div className="flex items-center gap-3">
+            <AlertTriangle size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
+            <div>
+              <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>Something went wrong</span>
+              <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>error fallback</span>
+            </div>
+            <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setEditingError("boundary")}
+              className="p-2 rounded hover:opacity-70"
+              style={{ color: "hsl(var(--primary))" }}>
+              Edit
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* CMS Pages */}
       {pages.length === 0 ? (
         <div className="py-12 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
           No custom pages yet. Create your first page above.
