@@ -139,7 +139,7 @@ const AdminInsights = () => {
       const [
         uniqueHumans, botCountResult, leadsResult,
         countriesResult, deviceResult, leaderboardResult,
-        journeysResult, recentResult, blogResult, pageResult,
+        journeysResult, blogResult, pageResult,
       ] = await Promise.all([
         countUniqueHumanVisitors(filters),
         countAnalyticsRows({ ...filters, trafficType: "bot" }),
@@ -148,7 +148,8 @@ const AdminInsights = () => {
         fetchDeviceBrowserBreakdown(filters),
         fetchBotLeaderboard(filters),
         fetchConvertedJourneys(filters, 15),
-        fetchRecentAnalyticsRows(filters, 25),
+        // `fetchRecentAnalyticsRows` intentionally NOT called — Live Feed
+        // panel was deprecated to reduce DB reads. See file header.
         fetchAllBlogPosts(),
         fetchAllCmsPages(),
       ]);
@@ -161,7 +162,6 @@ const AdminInsights = () => {
       setBrowsers(deviceResult.browsers || []);
       setBotLeaderboard(leaderboardResult.data || []);
       setJourneys(journeysResult.data || []);
-      setRecentRows((recentResult.data as UnifiedAnalyticsRecord[]) || []);
 
       const blogRows: AuditRow[] = ((blogResult.data as Array<Record<string, unknown>>) || []).map((post) => ({
         id: post.id as string,
