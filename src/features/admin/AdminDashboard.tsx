@@ -900,27 +900,49 @@ const AdminDashboard = ({ session }: Props) => {
                 ─────────────────────────────────────────────────
                 SAVE STATUS INDICATOR — for the junior developer
                 ─────────────────────────────────────────────────
-                This little block is the user-facing answer to
-                `hasUnsavedChanges`. When TRUE we paint an amber dot
-                + "Unsaved draft" so the admin can't miss that a save
-                is owed. When FALSE we show a muted "Saved" with a
-                soft green dot. The text is wrapped in a flex pill
-                so it sits naturally next to the Save / Publish CTAs.
+                Two pieces of state drive this pill:
+
+                  • autoSaveStatus  → "saving" | "saved" | "idle"
+                                      reflects the SILENT debounced
+                                      auto-save effect above.
+                  • hasUnsavedChanges → draft ≠ published copy.
+                                      True even after a successful
+                                      auto-save, because draft and
+                                      live still differ.
+
+                The label priority is:
+                  1. Saving…                — request in flight.
+                  2. Saved to Draft ✓       — auto-save just finished
+                                              AND the draft still differs
+                                              from the live site (i.e.
+                                              waiting for Publish).
+                  3. Saved                  — draft and live match.
+
+                There is intentionally NO toast on auto-save — that
+                would spam the screen every 500ms while typing.
               */}
               <div
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-full font-body text-[10px] uppercase tracking-[0.1em]"
                 aria-live="polite"
               >
-                <span
-                  className={[
-                    "w-1.5 h-1.5 rounded-full",
-                    hasUnsavedChanges ? "bg-amber-500" : "bg-emerald-500",
-                  ].join(" ")}
-                  style={{ boxShadow: hasUnsavedChanges ? "0 0 6px hsl(38 92% 50% / 0.6)" : "none" }}
-                />
-                <span className={hasUnsavedChanges ? "text-amber-500" : "text-muted-foreground"}>
-                  {hasUnsavedChanges ? "Unsaved draft" : "Saved"}
-                </span>
+                {autoSaveStatus === "saving" ? (
+                  <>
+                    <Loader2 size={11} className="animate-spin text-muted-foreground" />
+                    <span className="text-muted-foreground">Saving…</span>
+                  </>
+                ) : hasUnsavedChanges ? (
+                  <>
+                    <Check size={11} className="text-amber-500" />
+                    <span className="text-amber-500">Saved to Draft</span>
+                  </>
+                ) : (
+                  <>
+                    <span
+                      className="w-1.5 h-1.5 rounded-full bg-emerald-500"
+                    />
+                    <span className="text-muted-foreground">Saved</span>
+                  </>
+                )}
               </div>
               <button
                 onClick={saveDraft}
