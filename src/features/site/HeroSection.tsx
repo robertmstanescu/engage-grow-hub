@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
 
@@ -34,7 +34,20 @@ const fallback: HeroContent = {
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
 const HeroSection = () => {
-  const c = useSiteContent<HeroContent>("hero", fallback);
+  /**
+   * Loading-aware read of the "hero" CMS section.
+   *
+   * WHY `useSiteContentWithStatus` INSTEAD OF `useSiteContent`?
+   * The hero is the first thing users see. If we used the plain hook,
+   * the hardcoded `fallback` strings ("Your organisation has vampires.")
+   * would paint for a few hundred milliseconds before the real DB
+   * content arrived — a jarring text-swap. By gating render on
+   * `isLoading`, we paint NOTHING (just the ambient background) until
+   * we either have real content or react-query confirms there is none.
+   * Once cached after the first visit, `isLoading` is false on first
+   * render so repeat visits feel instant.
+   */
+  const { isLoading, content: c } = useSiteContentWithStatus<HeroContent>("hero", fallback);
 
   const titleLines: string[] = (c.title_lines || []).map((line: any) => {
     if (typeof line === "string") return line;

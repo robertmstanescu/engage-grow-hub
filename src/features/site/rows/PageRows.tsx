@@ -1,4 +1,4 @@
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
 import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import TextRow from "./TextRow";
@@ -87,10 +87,31 @@ const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number;
 };
 
 const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
-  const data = useSiteContent<{ rows: PageRow[] }>("page_rows", { rows: DEFAULT_ROWS });
+  /**
+   * Loading-aware read so we don't briefly render the hardcoded
+   * DEFAULT_ROWS layout (a placeholder rows skeleton from
+   * `src/types/rows.ts`) before the admin's real rows arrive from the
+   * database. While `isLoading` is true on a cold first visit we render
+   * NOTHING below the hero — far less jarring than flashing default
+   * content that vanishes a moment later. Once react-query's cache is
+   * warm (any previous visit in this tab session), `isLoading` is false
+   * on the very first render, so navigating between routes still feels
+   * instant.
+   */
+  const { isLoading, content: data } = useSiteContentWithStatus<{ rows: PageRow[] }>(
+    "page_rows",
+    { rows: DEFAULT_ROWS },
+  );
   const rows = data.rows || [];
   const autoAlignments = computeAutoAlignments(rows);
   const lastIndex = rows.length - 1;
+
+  // Cold-load guard: don't paint stale defaults. We still render the
+  // footer slot so the page never feels totally empty during the brief
+  // fetch window.
+  if (isLoading) {
+    return <>{footerSlot}</>;
+  }
 
   return (
     <>
