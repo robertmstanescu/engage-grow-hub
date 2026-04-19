@@ -716,7 +716,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                 </label>
                 <input
                   readOnly
-                  value={getAssetPublicUrl(selectedAsset.storage_path)}
+                  value={getAssetPublicUrl(selectedAsset.storage_path, selectedAsset.bucket)}
                   onFocus={(e) => e.currentTarget.select()}
                   className="w-full px-2.5 py-1.5 rounded-md font-body text-[10px] border border-border bg-background text-foreground"
                 />
