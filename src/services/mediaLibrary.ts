@@ -273,6 +273,53 @@ export async function deleteAssetCompletely(asset: MediaAsset) {
 export const getAssetPublicUrl = (storagePath: string, bucket: string = BUCKET) =>
   supabase.storage.from(bucket).getPublicUrl(storagePath).data.publicUrl;
 
+/**
+ * ─────────────────────────────────────────────────────────────────
+ * getAssetThumbnailUrl — bandwidth-saving image variant
+ * ─────────────────────────────────────────────────────────────────
+ * WHY THIS EXISTS (junior-engineer guide)
+ * ───────────────────────────────────────
+ * Supabase Storage exposes an on-the-fly image transformation service
+ * built on top of imgproxy. Appending query-string params like
+ * `?width=250&height=250&resize=cover` to a public CDN URL tells
+ * Supabase to deliver a re-encoded thumbnail INSTEAD of the raw file.
+ *
+ * Why this matters for our admin gallery:
+ *   • A 4 MB DSLR JPEG decoded in the browser eats roughly 4 × W × H
+ *     bytes of GPU memory. Multiply that by 100 thumbnails in the
+ *     grid and you get hundreds of MB resident, plus seconds of main-
+ *     thread decoding work that locks scrolling.
+ *   • Asking Supabase for a 250×250 variant brings each thumb down
+ *     to ~10–30 KB — typically 100×–500× smaller — and the decoded
+ *     bitmap fits in a few hundred KB instead of tens of MB.
+ *   • The CDN caches the transformed variant, so the second user to
+ *     load the same gallery pays only the network cost (kilobytes).
+ *
+ * IMPORTANT: Only call this on actual images. PDFs, videos, fonts,
+ * etc. would silently 404 on the transform endpoint, so callers MUST
+ * gate this behind `isImageMime(asset.mime_type)`.
+ *
+ * Always use `getAssetPublicUrl` (not this helper) when:
+ *   • copying the public link for embedding,
+ *   • opening the asset full-resolution in a new tab,
+ *   • inserting the URL into rich-text or row content.
+ * The transform URL is for in-browser DISPLAY only.
+ */
+export const getAssetThumbnailUrl = (
+  storagePath: string,
+  bucket: string = BUCKET,
+  width: number = 250,
+  height: number = 250,
+) => {
+  const base = getAssetPublicUrl(storagePath, bucket);
+  // The transformation params are appended verbatim. `resize=cover`
+  // mirrors CSS `object-fit: cover` so the thumbnail fills its box
+  // without distortion. Quality 70 is the sweet spot for photo thumbs
+  // (visibly indistinguishable from 90 at 250px, ~half the bytes).
+  const sep = base.includes("?") ? "&" : "?";
+  return `${base}${sep}width=${width}&height=${height}&resize=cover&quality=70`;
+};
+
 /* ─────────────────────────────────────────────────────────────────
    Uploads
    ───────────────────────────────────────────────────────────────── */
