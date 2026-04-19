@@ -3,23 +3,26 @@ import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   detectSearchEngine,
-  getConsentStatus,
-  getVisitorId,
+  getStableVisitorId,
   parseUserAgentForAnalytics,
 } from "@/services/analytics";
 
 /**
  * useAnalyticsBeacon — fires one beacon per route change.
  * ──────────────────────────────────────────────────────────────────────────
- * Replaces the older `useAiCrawlerBeacon`. Now logs BOTH humans and bots:
+ * Logs BOTH humans and bots:
  *
  *   - Bots: every hit (the edge function uses the request UA to identify them).
  *   - Humans: every page view sends path + parsed UA + referrer; the edge
  *     function adds country (from CF-IPCountry) and writes the row.
  *
- * Visitor ID is included only when consent has been granted. Without it,
- * the row is anonymous-by-default — usable for aggregate counts but not
- * for session stitching.
+ * The persistent `mh_visitor_id` (random UUID, localStorage) is sent on
+ * EVERY beacon so `countUniqueHumanVisitors` can dedup correctly across
+ * IP changes (mobile carriers, NATs, VPNs). This id is anonymous and is
+ * NOT gated by GDPR consent — it identifies a browser, not a person.
+ *
+ * The consent-gated `tmc_visitor_id` cookie remains separate and powers
+ * email→visitor stitching for the Path-to-Lead feature.
  *
  * Failure is non-fatal: if the analytics edge function is down, the page
  * still loads. The beacon is wrapped in try/catch and explicitly does
@@ -41,7 +44,9 @@ export function useAnalyticsBeacon(): void {
     // either device data only the browser knows, or pure metadata.
     const { browser, device } = parseUserAgentForAnalytics();
     const referrer = typeof document !== "undefined" ? document.referrer || "" : "";
-    const visitorId = getConsentStatus() === "accepted" ? getVisitorId() : null;
+    // Always send the stable visitor id — it's our PRIMARY dedup key on
+    // the server. See src/services/analytics.ts for the rationale.
+    const visitorId = getStableVisitorId();
 
     const body = {
       pagePath: pathname,
