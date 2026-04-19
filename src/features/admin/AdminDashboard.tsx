@@ -1292,7 +1292,15 @@ const AdminDashboard = ({ session }: Props) => {
                     const isRow = selectedSectionId !== "__hero__" && selectedSectionId !== "__seo__" && !!selectedRow;
                     const rowColCount = isRow ? 1 + (selectedRow!.columns_data?.length || 0) : 0;
                     return (
-                      <div className="h-11 flex items-center gap-2 px-4 border-b border-border flex-shrink-0">
+                      // ── STICKY PROPERTIES HEADER ──────────────────────────
+                      // The row title + Delete button must remain visible no
+                      // matter how far the user scrolls inside the editor body
+                      // below. We use `sticky top-0 z-10` (instead of fixed)
+                      // so the header still flows in the column layout and
+                      // shrinks gracefully on mobile. The translucent
+                      // `bg-card/95 backdrop-blur` keeps it readable when the
+                      // scrolled content slides underneath.
+                      <div className="sticky top-0 z-10 h-11 flex items-center gap-2 px-4 border-b border-border flex-shrink-0 bg-card/95 backdrop-blur">
                         {isAdminMobile && (
                           <button
                             onClick={() => setSelectedSectionId(null)}
