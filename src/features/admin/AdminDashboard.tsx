@@ -736,7 +736,6 @@ const AdminDashboard = ({ session }: Props) => {
           {isSiteTab && (
             <>
               {cmsPage && (
-                /* Publish/Unpublish — destructive look while published. */
                 <button
                   onClick={toggleCmsPagePublish}
                   className={[
@@ -749,24 +748,56 @@ const AdminDashboard = ({ session }: Props) => {
                   {cmsPageStatus === "published" ? "Unpublish" : "Set Published"}
                 </button>
               )}
+              {/*
+                ─────────────────────────────────────────────────
+                SAVE STATUS INDICATOR — for the junior developer
+                ─────────────────────────────────────────────────
+                This little block is the user-facing answer to
+                `hasUnsavedChanges`. When TRUE we paint an amber dot
+                + "Unsaved draft" so the admin can't miss that a save
+                is owed. When FALSE we show a muted "Saved" with a
+                soft green dot. The text is wrapped in a flex pill
+                so it sits naturally next to the Save / Publish CTAs.
+              */}
+              <div
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full font-body text-[10px] uppercase tracking-[0.1em]"
+                aria-live="polite"
+              >
+                <span
+                  className={[
+                    "w-1.5 h-1.5 rounded-full",
+                    hasUnsavedChanges ? "bg-amber-500" : "bg-emerald-500",
+                  ].join(" ")}
+                  style={{ boxShadow: hasUnsavedChanges ? "0 0 6px hsl(38 92% 50% / 0.6)" : "none" }}
+                />
+                <span className={hasUnsavedChanges ? "text-amber-500" : "text-muted-foreground"}>
+                  {hasUnsavedChanges ? "Unsaved draft" : "Saved"}
+                </span>
+              </div>
               <button
                 onClick={saveDraft}
-                disabled={saving}
-                // `opacity` uses the saving flag; Tailwind has no equivalent
-                // for a runtime boolean, so we keep it inline.
-                style={{ opacity: saving ? 0.5 : 1 }}
+                disabled={saving || !hasUnsavedChanges}
+                style={{ opacity: saving ? 0.5 : (hasUnsavedChanges ? 1 : 0.5) }}
                 className="text-[10px] font-body uppercase tracking-[0.1em] px-3.5 py-1.5 rounded-full cursor-pointer border border-border bg-transparent text-foreground"
               >
                 <Save size={11} className="inline -translate-y-px mr-1" />
                 {saving ? "Saving…" : "Save draft"}
               </button>
+              {/*
+                Publish — visually distinct so it's impossible to miss.
+                Solid PRIMARY background, bolder weight, slightly larger
+                padding, and a soft glow when there are unsaved changes.
+              */}
               <button
                 onClick={publishAll}
                 disabled={publishing}
-                style={{ opacity: publishing ? 0.4 : 1 }}
-                className="text-[10px] font-body uppercase tracking-[0.1em] px-3.5 py-1.5 rounded-full cursor-pointer border-none bg-secondary text-background"
+                style={{
+                  opacity: publishing ? 0.4 : 1,
+                  boxShadow: hasUnsavedChanges ? "0 0 0 2px hsl(var(--primary) / 0.25)" : "none",
+                }}
+                className="text-[11px] font-body font-bold uppercase tracking-[0.12em] px-4 py-1.5 rounded-full cursor-pointer border-none bg-primary text-primary-foreground"
               >
-                <Send size={11} className="inline -translate-y-px mr-1" />
+                <Send size={12} className="inline -translate-y-px mr-1" />
                 {publishing ? "Publishing…" : "Publish"}
               </button>
             </>
@@ -1243,25 +1274,13 @@ const AdminDashboard = ({ session }: Props) => {
                     ) : null}
                   </div>
 
-                  {/* Footer */}
-                  <div className="h-[52px] flex items-center gap-2 px-4 border-t border-border flex-shrink-0">
-                    <button
-                      onClick={saveDraft}
-                      disabled={saving}
-                      style={{ opacity: saving ? 0.5 : 1 }}
-                      className="flex-1 text-[10px] font-body uppercase tracking-[0.1em] py-2 rounded-full cursor-pointer border border-border bg-transparent text-foreground"
-                    >
-                      Save draft
-                    </button>
-                    <button
-                      onClick={publishAll}
-                      disabled={publishing}
-                      style={{ opacity: publishing ? 0.4 : 1 }}
-                      className="flex-1 text-[10px] font-body uppercase tracking-[0.1em] py-2 rounded-full cursor-pointer border-none bg-secondary text-background"
-                    >
-                      Publish
-                    </button>
-                  </div>
+                  {/*
+                    Footer save/publish buttons were removed in the UX
+                    overhaul — Save draft + Publish now live permanently
+                    in the top sticky header alongside the unsaved-draft
+                    indicator, so there's a single, always-visible source
+                    of truth for save state.
+                  */}
                 </>
               )}
             </div>
