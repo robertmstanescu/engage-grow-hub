@@ -498,18 +498,21 @@ const AdminDashboard = ({ session }: Props) => {
   const updateCmsPageMeta = useCallback(async (field: string, value: string) => {
     const next = { ...cmsPageMeta, [field]: value };
     setCmsPageMeta(next);
+    setCmsPageDirty(true);
     if (cmsPage) {
       await runDbAction({
         action: () => supabase.from("cms_pages").update({ [field]: value } as any).eq("id", cmsPage.id),
         successMessage: null,
       });
+      // Meta saves immediately on blur, so the dirty flag flips back.
+      setCmsPageDirty(false);
     }
   }, [cmsPage, cmsPageMeta]);
 
   // ── Save / Publish ──
   const saveDraft = useCallback(async () => {
     if (cmsPage) {
-      await runDbAction({
+      const result = await runDbAction({
         action: () => supabase
           .from("cms_pages")
           .update({ draft_page_rows: cmsPageRows as any } as any)
@@ -517,6 +520,8 @@ const AdminDashboard = ({ session }: Props) => {
         setLoading: setSaving,
         successMessage: "Draft saved",
       });
+      // Successful save → no more pending edits.
+      if (result !== null) setCmsPageDirty(false);
       return;
     }
 
@@ -538,6 +543,10 @@ const AdminDashboard = ({ session }: Props) => {
       setLoading: setSaving,
       successMessage: "Draft saved",
     });
+    // For the main page, "Save draft" doesn't promote draft → published,
+    // so `hasUnsavedChanges` (which compares the two blobs) stays true
+    // until Publish runs. That's intentional: a draft is still "unsaved
+    // relative to the live site".
   }, [sections, cmsPage, cmsPageRows]);
 
   const publishAll = useCallback(async () => {
