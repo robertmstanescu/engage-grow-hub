@@ -580,8 +580,11 @@ const AdminDashboard = ({ session }: Props) => {
     });
 
     if (result !== null) {
+      // Promote drafts to live content locally — that flips
+      // `hasUnsavedChanges` to false because content === draft_content.
       setSections((prev) => prev.map((s) => ({ ...s, content: s.draft_content || s.content })));
       sections.forEach((s) => invalidateSiteContent(s.section_key));
+      setCmsPageDirty(false);
     }
   }, [sections, cmsPage, cmsPageRows]);
 
@@ -688,7 +691,7 @@ const AdminDashboard = ({ session }: Props) => {
   // runtime conditions and animates between values.
   const pageStructureWidth = isAdminMobile
     ? (isSiteTab && !selectedSectionId ? "100%" : 0)
-    : (isSiteTab ? 240 : 0);
+    : (isSiteTab ? 340 : 0);
 
   return (
     <div className="h-screen flex flex-col bg-background">
