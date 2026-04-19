@@ -122,7 +122,7 @@ const PagesManager = ({ onEditPage }: Props) => {
     setLoading(false);
   };
 
-  useEffect(() => { load(); loadBlogPage(); }, []);
+  useEffect(() => { load(); loadBlogPage(); loadErrorPages(); }, []);
 
   const loadBlogPage = async () => {
     const { data } = await fetchSection("blog_page");
@@ -139,11 +139,46 @@ const PagesManager = ({ onEditPage }: Props) => {
     }
   };
 
+  /**
+   * Load editable copy for the 404 + global error pages. We merge over
+   * the hardcoded defaults so newly-added fields auto-populate on first
+   * render, and so the editor never shows undefined inputs.
+   */
+  const loadErrorPages = async () => {
+    const [{ data: e404 }, { data: eBoundary }] = await Promise.all([
+      fetchSection(ERROR_404_KEY),
+      fetchSection(ERROR_BOUNDARY_KEY),
+    ]);
+    if (e404?.content) setError404({ ...ERROR_404_DEFAULTS, ...(e404.content as Error404Content) });
+    if (eBoundary?.content) setErrorBoundary({ ...ERROR_BOUNDARY_DEFAULTS, ...(eBoundary.content as ErrorBoundaryContent) });
+  };
+
   const saveBlogPage = (updates: Partial<typeof blogContent>) => {
     const next = { ...blogContent, ...updates };
     setBlogContent(next);
     return runDbAction({
       action: () => publishSection("blog_page", next),
+      successMessage: "Saved",
+      errorMessage: "Save failed",
+    });
+  };
+
+  /** Persist 404 copy. Field components save on blur, so this is debounced naturally. */
+  const saveError404 = (updates: Partial<Error404Content>) => {
+    const next = { ...error404, ...updates };
+    setError404(next);
+    return runDbAction({
+      action: () => publishSection(ERROR_404_KEY, next),
+      successMessage: "Saved",
+      errorMessage: "Save failed",
+    });
+  };
+
+  const saveErrorBoundary = (updates: Partial<ErrorBoundaryContent>) => {
+    const next = { ...errorBoundary, ...updates };
+    setErrorBoundary(next);
+    return runDbAction({
+      action: () => publishSection(ERROR_BOUNDARY_KEY, next),
       successMessage: "Saved",
       errorMessage: "Save failed",
     });
