@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye, Home } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye, Home, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import RowsManager from "./site-editor/RowsManager";
 import { SectionBox, Field } from "./site-editor/FieldComponents";
@@ -16,6 +16,51 @@ import {
 import { fetchSection, publishSection } from "@/services/siteContent";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
+
+/**
+ * ════════════════════════════════════════════════════════════════════
+ * ERROR PAGE COPY EDITORS
+ * ════════════════════════════════════════════════════════════════════
+ * The 404 (`/...not-found`) page and the global "Something went wrong"
+ * fallback are rendered by `src/pages/NotFound.tsx` and
+ * `src/components/ui/error-boundary.tsx` respectively. Their copy lives
+ * in `site_content` under the keys below so admins can edit it without
+ * touching code. If a key is missing in the DB, the components fall back
+ * to hardcoded defaults (defined in their own files) so the site still
+ * renders during error storms.
+ */
+const ERROR_404_KEY = "error_404";
+const ERROR_BOUNDARY_KEY = "error_boundary";
+
+interface Error404Content {
+  headline: string;
+  subhead: string;
+  cta_label: string;
+}
+const ERROR_404_DEFAULTS: Error404Content = {
+  headline: "404",
+  subhead: "Oops! We couldn’t find that page.",
+  cta_label: "Return to home",
+};
+
+interface ErrorBoundaryContent {
+  headline: string;
+  body: string;
+  retry_label: string;
+  home_label: string;
+  technical_details_label: string;
+  row_fallback_label: string;
+  row_fallback_retry_label: string;
+}
+const ERROR_BOUNDARY_DEFAULTS: ErrorBoundaryContent = {
+  headline: "Something went wrong",
+  body: "We hit an unexpected snag while loading this page. The rest of the site is still working — you can head back to the homepage or try again.",
+  retry_label: "Try again",
+  home_label: "Back to home",
+  technical_details_label: "Technical details",
+  row_fallback_label: "Section unavailable",
+  row_fallback_retry_label: "Retry",
+};
 
 interface CmsPage {
   id: string;
