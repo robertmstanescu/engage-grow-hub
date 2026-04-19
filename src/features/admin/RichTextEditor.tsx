@@ -26,6 +26,36 @@ import { normalizeRichTextContainerFontSizes, normalizeRichTextHtml } from "@/se
 import { uploadEditorImage } from "@/services/mediaStorage";
 import { runDbAction } from "@/services/db-helpers";
 import { useBrandColors } from "@/hooks/useBrandSettings";
+import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────
+ * KEYSTROKE-LAG ARCHITECTURE (junior-dev orientation)
+ * ─────────────────────────────────────────────────────────────────────────
+ * Like TitleLineEditor, the user-visible text lives in the contentEditable
+ * DOM node — never in React state. Typing is therefore instant: nothing
+ * waits on the parent's re-render and the cursor is never bumped.
+ *
+ * Upstream propagation has TWO speeds:
+ *
+ *   • emitChange()           — immediate. Called when the user clicks a
+ *                              toolbar button (bold, color, alignment,
+ *                              link, image…) or blurs the editor. The
+ *                              parent must learn about the formatting
+ *                              change right away.
+ *
+ *   • emitChangeDebounced()  — 300 ms debounce. Called from `onInput`
+ *                              (every keystroke). Bursts of typing fire
+ *                              `onChange` exactly ONCE when the user
+ *                              pauses. That collapses ~10 React tree
+ *                              re-renders per word into a single one.
+ *
+ * The eventual `onChange` push triggers the SILENT auto-save effect in
+ * `AdminDashboard` (see comments there). Auto-save writes ONLY to
+ * `draft_content` / `draft_page_rows` — the live `content` columns are
+ * untouched until the admin clicks "Publish".
+ * ─────────────────────────────────────────────────────────────────────────
+ */
 
 const FONT_OPTIONS = [
   { label: "Inter", value: "Inter, sans-serif" },
