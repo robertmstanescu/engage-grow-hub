@@ -439,26 +439,11 @@ const AdminInsights = () => {
           </div>
         </div>
 
-        {/* ── Section D: Live Feed ── */}
-        <Panel title="Live Feed" loading={loading}>
-          {recentRows.length === 0 ? <Empty>No traffic in this window.</Empty> : (
-            <ul className="space-y-1.5 max-h-[400px] overflow-y-auto">
-              {recentRows.map((row) => (
-                <li key={row.id} className="p-2 rounded-lg border flex items-center justify-between gap-3" style={{ borderColor: "hsl(260 20% 92%)", backgroundColor: row.is_bot ? "hsl(46 75% 60% / 0.05)" : "hsl(30 20% 99%)" }}>
-                  <div className="min-w-0 flex-1 flex items-center gap-2">
-                    <Tag color={row.is_bot ? "gold" : "purple"}>{row.is_bot ? "BOT" : "HUMAN"}</Tag>
-                    <span className="font-body text-xs font-medium truncate" style={{ color: "hsl(260 20% 15%)" }}>{row.entity_name.split(" (")[0]}</span>
-                    <span className="font-body text-[11px] truncate" style={{ color: "hsl(260 20% 50%)" }}>{row.path}</span>
-                  </div>
-                  <div className="flex items-center gap-2 font-body text-[10px] flex-shrink-0" style={{ color: "hsl(260 20% 55%)" }}>
-                    {row.country && <span>{row.country}</span>}
-                    <span>{new Date(row.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Panel>
+        {/*
+          Live Feed panel removed — see file header. Don't reintroduce it
+          without product approval; it was a per-render `select *` against
+          `unified_analytics_logs` that scaled poorly and added clutter.
+        */}
       </div>
     </div>
   );
