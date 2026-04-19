@@ -101,6 +101,145 @@ export const moveAssetToFolder = (id: string, folderId: string | null) =>
   supabase.from("media_assets").update({ folder_id: folderId }).eq("id", id);
 
 /**
+ * Rename the underlying storage object (changes the visible filename in the
+ * URL) AND update the matching row's `storage_path`. We MOVE inside Supabase
+ * Storage rather than copy+delete because move is atomic on the server side
+ * and preserves the original `created_at`/uploaded-by metadata.
+ *
+ * Why we expose this as a single helper:
+ *   - Renaming is two operations (storage move + DB update). If we let the
+ *     caller do them separately the row could end up pointing at a 404.
+ *   - The new path is computed here so callers only need to think about a
+ *     human-readable filename — we do the slugification + extension
+ *     preservation.
+ *
+ * @param asset           the current MediaAsset (we need its old storage_path)
+ * @param newDisplayName  user-typed filename WITHOUT extension. We re-attach
+ *                        the original extension so the mime stays valid.
+ */
+export async function renameAssetFile(asset: MediaAsset, newDisplayName: string) {
+  const trimmed = newDisplayName.trim();
+  if (!trimmed) return { error: new Error("Filename cannot be empty") };
+
+  // Preserve the original extension so the file is still served with the
+  // right Content-Type. If the asset had no extension we just use the slug.
+  const oldExt = asset.storage_path.includes(".")
+    ? asset.storage_path.split(".").pop()
+    : "";
+  const safeBase = trimmed
+    .replace(/\.[^.]+$/, "") // user might have typed an extension — strip it
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 80) || "file";
+  const newPath = oldExt ? `${safeBase}.${oldExt}` : safeBase;
+
+  // No-op if the path is unchanged.
+  if (newPath === asset.storage_path) return { error: null };
+
+  const { error: moveErr } = await supabase.storage
+    .from(asset.bucket)
+    .move(asset.storage_path, newPath);
+  if (moveErr) return { error: moveErr };
+
+  const { error: dbErr } = await supabase
+    .from("media_assets")
+    .update({ storage_path: newPath })
+    .eq("id", asset.id);
+  if (dbErr) {
+    // Best-effort rollback: move the file back so the DB stays consistent.
+    await supabase.storage.from(asset.bucket).move(newPath, asset.storage_path);
+    return { error: dbErr };
+  }
+  return { error: null };
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Asset usage discovery
+   ─────────────────────────────────────────────────────────────────
+   We let admins see WHERE an asset is referenced before they delete or
+   rename it. Because rows store either the asset's `id` (lead magnets) or
+   its public URL string (most images embedded in rich text / hero
+   backgrounds / page rows), we have to scan both shapes.
+
+   This is intentionally a CLIENT-SIDE scan over the JSON payload. The
+   admin tables are small (dozens-to-hundreds of rows each) and a single
+   `select` is much cheaper than maintaining a denormalised join table or
+   a full-text index. If volumes ever grow past ~5k pages we should move
+   this into a Postgres function. */
+export interface AssetUsage {
+  /** "blog" | "cms" | "site" — drives which icon the gallery shows. */
+  source: "blog" | "cms" | "site";
+  /** Human-readable label, e.g. "Blog post: My title" or "Page: /about". */
+  label: string;
+  /** Optional URL the admin can click to jump to the consumer. */
+  href?: string;
+}
+
+/**
+ * Find every blog post, CMS page, and site_content section that mentions
+ * the given asset. The match is "this storage_path or asset id appears
+ * anywhere in the row's serialised JSON" — that catches references inside
+ * page_rows, hero backgrounds, lead-magnet pickers, etc., without needing
+ * to know each row type's schema in advance.
+ */
+export async function findAssetUsages(asset: MediaAsset): Promise<AssetUsage[]> {
+  const usages: AssetUsage[] = [];
+  // Both the public URL and the bare path get embedded by various editors,
+  // so we look for either.
+  const url = getAssetPublicUrl(asset.storage_path);
+  const matchesBlob = (blob: unknown) => {
+    const text = JSON.stringify(blob ?? "");
+    return (
+      text.includes(asset.storage_path) ||
+      text.includes(url) ||
+      text.includes(asset.id)
+    );
+  };
+
+  const [
+    { data: blogPosts },
+    { data: cmsPages },
+    { data: siteContent },
+  ] = await Promise.all([
+    supabase.from("blog_posts").select("id, title, slug, content, cover_image, og_image, lead_magnet_asset_id, lead_magnet_cover_id"),
+    supabase.from("cms_pages").select("id, title, slug, page_rows, draft_page_rows"),
+    supabase.from("site_content").select("section_key, content, draft_content"),
+  ]);
+
+  (blogPosts as any[] | null)?.forEach((post) => {
+    if (matchesBlob(post)) {
+      usages.push({
+        source: "blog",
+        label: `Blog: ${post.title || post.slug}`,
+        href: `/blog/${post.slug}`,
+      });
+    }
+  });
+
+  (cmsPages as any[] | null)?.forEach((page) => {
+    if (matchesBlob(page)) {
+      usages.push({
+        source: "cms",
+        label: `Page: ${page.title || page.slug}`,
+        href: `/p/${page.slug}`,
+      });
+    }
+  });
+
+  (siteContent as any[] | null)?.forEach((section) => {
+    if (matchesBlob(section)) {
+      usages.push({
+        source: "site",
+        label: `Main site · ${section.section_key}`,
+      });
+    }
+  });
+
+  return usages;
+}
+
+/**
  * Delete the underlying storage object AND the database row.
  *
  * We delete the storage object first so the row is never left orphaned with
