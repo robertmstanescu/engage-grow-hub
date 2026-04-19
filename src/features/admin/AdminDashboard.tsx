@@ -687,11 +687,26 @@ const AdminDashboard = ({ session }: Props) => {
     transform: isAdminMobile && !mobileDrawerOpen ? "translateX(-100%)" : "translateX(0)",
     boxShadow: isAdminMobile && mobileDrawerOpen ? "8px 0 24px -8px hsl(0 0% 0% / 0.2)" : "none",
   };
-  // The page-structure rail similarly has a width that depends on multiple
-  // runtime conditions and animates between values.
+  // ─────────────────────────────────────────────────────────────────
+  // PAGE-STRUCTURE RAIL WIDTH — for the junior developer
+  // ─────────────────────────────────────────────────────────────────
+  // The properties editor is now a right-side Sheet (off-canvas
+  // drawer) instead of a third column. That means the page-structure
+  // rail is free to take ALL remaining horizontal space whenever the
+  // Site tab is active. We still collapse it to 0 when the user
+  // navigates to a non-Site tab (Pages, Blog, Media, etc.) so those
+  // editors get the full canvas.
+  //
+  // On mobile the rail is full-width when on the Site tab; the Sheet
+  // overlays everything when opened.
   const pageStructureWidth = isAdminMobile
-    ? (isSiteTab && !selectedSectionId ? "100%" : 0)
-    : (isSiteTab ? 340 : 0);
+    ? (isSiteTab ? "100%" : 0)
+    : (isSiteTab ? "100%" : 0);
+  // Controls the right-side properties drawer. Open whenever a
+  // section (hero, a row, or seo) is selected. Closing the sheet
+  // simply clears `selectedSectionId`.
+  const isPropertiesOpen = isSiteTab && !!selectedSectionId;
+  const closeProperties = useCallback(() => setSelectedSectionId(null), []);
 
   return (
     <div className="h-screen flex flex-col bg-background">
