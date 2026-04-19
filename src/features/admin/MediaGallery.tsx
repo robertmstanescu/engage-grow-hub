@@ -602,7 +602,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
 
               {isImageMime(selectedAsset.mime_type) ? (
                 <img
-                  src={getAssetPublicUrl(selectedAsset.storage_path)}
+                  src={getAssetPublicUrl(selectedAsset.storage_path, selectedAsset.bucket)}
                   alt={selectedAsset.alt_text || selectedAsset.title}
                   className="w-full rounded-md border border-border/40"
                 />
