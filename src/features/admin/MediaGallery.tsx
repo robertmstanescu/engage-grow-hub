@@ -535,7 +535,9 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
               </div>
               {visibleAssets.map((asset) => {
                 const isImage = isImageMime(asset.mime_type);
-                const url = getAssetPublicUrl(asset.storage_path);
+                // Pass `asset.bucket` so backfilled `editor-images` files
+                // resolve to the correct CDN URL (default is media-library).
+                const url = getAssetPublicUrl(asset.storage_path, asset.bucket);
                 const isSelected = selectedAssetId === asset.id;
                 return (
                   <div
