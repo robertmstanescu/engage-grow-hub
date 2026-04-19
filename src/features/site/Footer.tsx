@@ -169,10 +169,14 @@ const Footer = () => {
                 // Defensive try/catch — dispatching a CustomEvent should
                 // never throw in a modern browser, but if some extension
                 // monkey-patches `dispatchEvent` we don't want the whole
-                // footer to crash. Worst case: the cookie banner just
-                // doesn't re-open and we log the failure for debugging.
+                // footer to crash. Worst case: the panel just doesn't
+                // re-open and we log the failure for debugging.
+                //
+                // Event name MUST match the listener inside
+                // `src/features/site/CookieConsent.tsx` ("tmc:open-consent").
+                // If you rename one, rename both.
                 try {
-                  window.dispatchEvent(new CustomEvent("cookie-settings:open"));
+                  window.dispatchEvent(new CustomEvent("tmc:open-consent"));
                 } catch (err) {
                   console.warn("Failed to open cookie settings:", err);
                 }
