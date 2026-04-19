@@ -91,6 +91,10 @@ const PagesManager = ({ onEditPage }: Props) => {
   const [loading, setLoading] = useState(true);
   const [editingPage, setEditingPage] = useState<CmsPage | null>(null);
   const [editingBlog, setEditingBlog] = useState(false);
+  // Which error-page editor is open (null = none).
+  const [editingError, setEditingError] = useState<"404" | "boundary" | null>(null);
+  const [error404, setError404] = useState<Error404Content>(ERROR_404_DEFAULTS);
+  const [errorBoundary, setErrorBoundary] = useState<ErrorBoundaryContent>(ERROR_BOUNDARY_DEFAULTS);
   const [blogContent, setBlogContent] = useState<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string; meta_title: string; meta_description: string }>({
     rows_above: [], rows_below: [], header_title: "Insights & Articles", header_subtitle: "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.", meta_title: "", meta_description: "",
   });
