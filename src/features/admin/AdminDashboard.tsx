@@ -1114,192 +1114,19 @@ const AdminDashboard = ({ session }: Props) => {
           </div>
         </div>
 
-        {/* ── MAIN CONTENT AREA ── on mobile, hidden when no section is
-         * selected so the page-structure list owns the screen. */}
-        <div
-          className={[
-            "flex-1 min-w-0 flex flex-col overflow-hidden",
-            isAdminMobile && isSiteTab && !selectedSectionId ? "hidden" : "",
-          ].join(" ")}
-        >
-          {isSiteTab ? (
-            <div className="flex-1 bg-card overflow-hidden flex flex-col">
-              {!selectedSectionId ? (
-                <div className="flex-1 flex items-center justify-center">
-                  <span className="text-[11px] text-muted-foreground font-body">
-                    Select a section to edit
-                  </span>
-                </div>
-              ) : (
-                <>
-                  {/* Properties Header */}
-                  {(() => {
-                    const isRow = selectedSectionId !== "__hero__" && selectedSectionId !== "__seo__" && !!selectedRow;
-                    const rowColCount = isRow ? 1 + (selectedRow!.columns_data?.length || 0) : 0;
-                    return (
-                      <div className="h-11 flex items-center gap-2 px-4 border-b border-border flex-shrink-0">
-                        {/* Mobile back arrow — returns to the section list. */}
-                        {isAdminMobile && (
-                          <button
-                            onClick={() => setSelectedSectionId(null)}
-                            aria-label="Back to section list"
-                            className="w-8 h-8 -ml-1.5 rounded-lg border-none bg-transparent text-muted-foreground flex items-center justify-center cursor-pointer"
-                          >
-                            <ArrowLeft size={16} />
-                          </button>
-                        )}
-                        <span className="font-display text-[10px] font-bold text-foreground whitespace-nowrap">
-                          {selectedSectionId === "__hero__"
-                            ? "Hero"
-                            : selectedSectionId === "__seo__"
-                            ? "SEO & Metadata"
-                            : selectedRow?.strip_title || "Section"}
-                        </span>
-                        {selectedSectionId !== "__seo__" && (
-                          <span className="text-[8px] uppercase tracking-[0.1em] bg-secondary/10 text-secondary px-1.5 py-0.5 rounded-sm">
-                            {selectedSectionId === "__hero__" ? "hero" : selectedRow?.type}
-                          </span>
-                        )}
-                        <div className="flex-1" />
-                        {isRow && rowColCount < 4 && (
-                          <button
-                            onClick={() => addColumnToRow(selectedRow!.id)}
-                            className="flex items-center gap-1 text-[9px] font-body uppercase tracking-[0.08em] px-2.5 py-1 rounded-[14px] cursor-pointer border border-primary/30 bg-transparent text-primary"
-                          >
-                            <Plus size={10} /> Column
-                          </button>
-                        )}
-                        {isRow && (
-                          <button
-                            onClick={() => deleteRow(selectedRow!.id)}
-                            className="flex items-center justify-center w-7 h-7 rounded-md cursor-pointer border border-destructive/30 bg-transparent text-destructive"
-                            title="Delete Row"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Sub-tabs + Column tabs */}
-                  {selectedSectionId !== "__seo__" && (() => {
-                    const isRow = selectedSectionId !== "__hero__" && !!selectedRow;
-                    const rowColCount = isRow ? 1 + (selectedRow!.columns_data?.length || 0) : 0;
-                    const safeActiveCol = Math.min(activeCol, Math.max(rowColCount - 1, 0));
-                    return (
-                      <div className="border-b border-border flex-shrink-0">
-                        <div className="flex">
-                          {(["content", "style"] as PropertiesSubTab[]).map((tab) => (
-                            <button
-                              key={tab}
-                              onClick={() => setPropertiesSubTab(tab)}
-                              className={[
-                                "flex-1 p-2 text-[9px] tracking-[0.1em] uppercase border-none cursor-pointer bg-transparent font-body",
-                                // The bottom border collapses to transparent
-                                // when not active so layout doesn't jump.
-                                propertiesSubTab === tab
-                                  ? "text-secondary border-b-2 border-secondary"
-                                  : "text-muted-foreground border-b-2 border-transparent",
-                              ].join(" ")}
-                            >
-                              {tab}
-                            </button>
-                          ))}
-                        </div>
-                        {isRow && rowColCount > 1 && propertiesSubTab === "content" && (
-                          <div
-                            className="flex gap-0.5 px-3 py-1.5 border-t"
-                            style={{ borderTopColor: "hsl(var(--border) / 0.3)" }}
-                          >
-                            {Array.from({ length: rowColCount }).map((_, i) => (
-                              <button
-                                key={i}
-                                onClick={() => setActiveCol(i)}
-                                className={[
-                                  "flex items-center gap-1 text-[9px] font-body tracking-[0.05em] px-2.5 py-[3px] rounded-xl cursor-pointer border",
-                                  safeActiveCol === i
-                                    ? "border-secondary bg-secondary/10 text-secondary"
-                                    : "border-border bg-transparent text-muted-foreground",
-                                ].join(" ")}
-                              >
-                                Col {i + 1}
-                                {rowColCount > 1 && (
-                                  <span
-                                    onClick={(e) => { e.stopPropagation(); removeColumnFromRow(selectedRow!.id, i); }}
-                                    className="cursor-pointer ml-0.5 opacity-60"
-                                    title={`Remove Column ${i + 1}`}
-                                  >
-                                    <X size={9} />
-                                  </span>
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Scrollable body */}
-                  <div className="flex-1 overflow-y-auto p-4 [scrollbar-width:thin]">
-                    {selectedSectionId === "__seo__" ? (
-                      cmsPage ? (
-                        <SeoFields
-                          metaTitle={cmsPageMeta.meta_title}
-                          metaDescription={cmsPageMeta.meta_description}
-                          onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
-                          onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
-                        />
-                      ) : (
-                        <SeoFields
-                          metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                          metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                          onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                          onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                        />
-                      )
-                    ) : selectedSectionId === "__hero__" ? (
-                      propertiesSubTab === "content" ? (
-                        <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
-                      ) : propertiesSubTab === "style" ? (
-                        <StyleTab />
-                      ) : null
-                    ) : selectedRow ? (
-                      propertiesSubTab === "content" ? (
-                        (() => {
-                          const rowColCount = 1 + (selectedRow.columns_data?.length || 0);
-                          const safeCol = Math.min(activeCol, rowColCount - 1);
-                          const colContent = safeCol === 0 ? selectedRow.content : (selectedRow.columns_data?.[safeCol - 1] || {});
-                          return (
-                            <RowContentEditor
-                              row={{ ...selectedRow, content: colContent }}
-                              onContentChange={updateColContent}
-                              onRowMetaChange={updateRowMeta}
-                            />
-                          );
-                        })()
-                      ) : propertiesSubTab === "style" ? (
-                        <RowStyleTab
-                          row={selectedRow}
-                          onRowMetaChange={updateRowMeta}
-                          onUpdateColumnWidths={(w) => updateColumnWidths(selectedRow.id, w)}
-                        />
-                      ) : null
-                    ) : null}
-                  </div>
-
-                  {/*
-                    Footer save/publish buttons were removed in the UX
-                    overhaul — Save draft + Publish now live permanently
-                    in the top sticky header alongside the unsaved-draft
-                    indicator, so there's a single, always-visible source
-                    of truth for save state.
-                  */}
-                </>
-              )}
-            </div>
-          ) : (
+        {/* ─────────────────────────────────────────────────────────────
+         * MAIN CONTENT AREA
+         * ─────────────────────────────────────────────────────────────
+         * On the Site tab the page-structure rail (rendered above) now
+         * fills 100% of the remaining width, so this area only renders
+         * the non-Site editors (Pages, Blog, Media, etc.).
+         *
+         * The properties editor — previously a third column — is now
+         * the <Sheet> mounted further down. It slides in from the
+         * right whenever a section is selected.
+         * ───────────────────────────────────────────────────────────── */}
+        {!isSiteTab && (
+          <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
             <main className="flex-1 overflow-y-auto p-6">
               <div className="max-w-[1000px] mx-auto">
                 {activeTab === "pages" && <PagesManager onEditPage={handleEditPage} />}
@@ -1314,9 +1141,188 @@ const AdminDashboard = ({ session }: Props) => {
                 {activeTab === "settings" && <GlobalSettings />}
               </div>
             </main>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════════
+        * PROPERTIES DRAWER (Sheet) — for the junior developer
+        * ═══════════════════════════════════════════════════════════════
+        * State flow:
+        *   1. The user clicks a row / Hero / SEO entry in the page-
+        *      structure rail. Each handler calls
+        *      `setSelectedSectionId(<id>)`.
+        *   2. `isPropertiesOpen` derives from `selectedSectionId`. When
+        *      it flips to `true` the <Sheet> auto-opens.
+        *   3. The user closes the drawer either by clicking the
+        *      built-in X, pressing Escape, or clicking the overlay.
+        *      Radix's `onOpenChange` fires with `false` and we clear
+        *      `selectedSectionId` via `closeProperties()`.
+        *
+        * Width strategy:
+        *   - Mobile (<640px): full screen (`w-full`) so the editor
+        *     stays touch-friendly.
+        *   - Desktop: a generous fixed width (480px) overriding the
+        *     SheetContent default of `sm:max-w-sm` (~24rem). We use
+        *     `sm:max-w-[480px]` to keep the sheet from getting huge
+        *     on ultrawide displays while still giving rich editors
+        *     enough room to breathe.
+        * ═══════════════════════════════════════════════════════════════ */}
+      <Sheet open={isPropertiesOpen} onOpenChange={(open) => { if (!open) closeProperties(); }}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-[480px] p-0 flex flex-col bg-card border-l border-border"
+        >
+          {selectedSectionId && (
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Properties Header — title + meta + per-row actions. */}
+              {(() => {
+                const isRow = selectedSectionId !== "__hero__" && selectedSectionId !== "__seo__" && !!selectedRow;
+                const rowColCount = isRow ? 1 + (selectedRow!.columns_data?.length || 0) : 0;
+                return (
+                  <SheetHeader className="h-11 flex flex-row items-center gap-2 px-4 border-b border-border flex-shrink-0 space-y-0">
+                    <SheetTitle className="font-display text-[10px] font-bold text-foreground whitespace-nowrap">
+                      {selectedSectionId === "__hero__"
+                        ? "Hero"
+                        : selectedSectionId === "__seo__"
+                        ? "SEO & Metadata"
+                        : selectedRow?.strip_title || "Section"}
+                    </SheetTitle>
+                    {selectedSectionId !== "__seo__" && (
+                      <span className="text-[8px] uppercase tracking-[0.1em] bg-secondary/10 text-secondary px-1.5 py-0.5 rounded-sm">
+                        {selectedSectionId === "__hero__" ? "hero" : selectedRow?.type}
+                      </span>
+                    )}
+                    <div className="flex-1" />
+                    {isRow && rowColCount < 4 && (
+                      <button
+                        onClick={() => addColumnToRow(selectedRow!.id)}
+                        className="flex items-center gap-1 text-[9px] font-body uppercase tracking-[0.08em] px-2.5 py-1 rounded-[14px] cursor-pointer border border-primary/30 bg-transparent text-primary"
+                      >
+                        <Plus size={10} /> Column
+                      </button>
+                    )}
+                    {isRow && (
+                      <button
+                        onClick={() => deleteRow(selectedRow!.id)}
+                        className="flex items-center justify-center w-7 h-7 rounded-md cursor-pointer border border-destructive/30 bg-transparent text-destructive mr-8"
+                        title="Delete Row"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    )}
+                  </SheetHeader>
+                );
+              })()}
+
+              {/* Sub-tabs + Column tabs */}
+              {selectedSectionId !== "__seo__" && (() => {
+                const isRow = selectedSectionId !== "__hero__" && !!selectedRow;
+                const rowColCount = isRow ? 1 + (selectedRow!.columns_data?.length || 0) : 0;
+                const safeActiveCol = Math.min(activeCol, Math.max(rowColCount - 1, 0));
+                return (
+                  <div className="border-b border-border flex-shrink-0">
+                    <div className="flex">
+                      {(["content", "style"] as PropertiesSubTab[]).map((tab) => (
+                        <button
+                          key={tab}
+                          onClick={() => setPropertiesSubTab(tab)}
+                          className={[
+                            "flex-1 p-2 text-[9px] tracking-[0.1em] uppercase border-none cursor-pointer bg-transparent font-body",
+                            propertiesSubTab === tab
+                              ? "text-secondary border-b-2 border-secondary"
+                              : "text-muted-foreground border-b-2 border-transparent",
+                          ].join(" ")}
+                        >
+                          {tab}
+                        </button>
+                      ))}
+                    </div>
+                    {isRow && rowColCount > 1 && propertiesSubTab === "content" && (
+                      <div
+                        className="flex gap-0.5 px-3 py-1.5 border-t"
+                        style={{ borderTopColor: "hsl(var(--border) / 0.3)" }}
+                      >
+                        {Array.from({ length: rowColCount }).map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setActiveCol(i)}
+                            className={[
+                              "flex items-center gap-1 text-[9px] font-body tracking-[0.05em] px-2.5 py-[3px] rounded-xl cursor-pointer border",
+                              safeActiveCol === i
+                                ? "border-secondary bg-secondary/10 text-secondary"
+                                : "border-border bg-transparent text-muted-foreground",
+                            ].join(" ")}
+                          >
+                            Col {i + 1}
+                            {rowColCount > 1 && (
+                              <span
+                                onClick={(e) => { e.stopPropagation(); removeColumnFromRow(selectedRow!.id, i); }}
+                                className="cursor-pointer ml-0.5 opacity-60"
+                                title={`Remove Column ${i + 1}`}
+                              >
+                                <X size={9} />
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Scrollable body */}
+              <div className="flex-1 overflow-y-auto p-4 [scrollbar-width:thin]">
+                {selectedSectionId === "__seo__" ? (
+                  cmsPage ? (
+                    <SeoFields
+                      metaTitle={cmsPageMeta.meta_title}
+                      metaDescription={cmsPageMeta.meta_description}
+                      onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
+                      onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
+                    />
+                  ) : (
+                    <SeoFields
+                      metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                      metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                      onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                      onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                    />
+                  )
+                ) : selectedSectionId === "__hero__" ? (
+                  propertiesSubTab === "content" ? (
+                    <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
+                  ) : propertiesSubTab === "style" ? (
+                    <StyleTab />
+                  ) : null
+                ) : selectedRow ? (
+                  propertiesSubTab === "content" ? (
+                    (() => {
+                      const rowColCount = 1 + (selectedRow.columns_data?.length || 0);
+                      const safeCol = Math.min(activeCol, rowColCount - 1);
+                      const colContent = safeCol === 0 ? selectedRow.content : (selectedRow.columns_data?.[safeCol - 1] || {});
+                      return (
+                        <RowContentEditor
+                          row={{ ...selectedRow, content: colContent }}
+                          onContentChange={updateColContent}
+                          onRowMetaChange={updateRowMeta}
+                        />
+                      );
+                    })()
+                  ) : propertiesSubTab === "style" ? (
+                    <RowStyleTab
+                      row={selectedRow}
+                      onRowMetaChange={updateRowMeta}
+                      onUpdateColumnWidths={(w) => updateColumnWidths(selectedRow.id, w)}
+                    />
+                  ) : null
+                ) : null}
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
