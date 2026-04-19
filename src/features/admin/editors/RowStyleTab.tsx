@@ -7,44 +7,40 @@
  * lead_magnet). It does NOT show for the standalone "Hero" section —
  * that one uses `<StyleTab />` instead.
  *
- * It bundles together every row-level visual control:
- *   • Background colour (with opacity slider)
- *   • Background image URL (with opacity slider, only when an image is set)
- *   • Row-internal alignment (RowAlignmentSettings — except on hero rows)
- *   • Column-width control (ColumnWidthControl — visible whenever the row
- *     has more than one column or an "inherent" image+text/profile split)
- *   • Gradient editor (GradientEditor, with row-type-aware defaults)
- *   • Decorative overlays (OverlayEditor)
+ * ─────────────────────────────────────────────────────────────────────────
+ * UI HIERARCHY — ACCORDION ORGANIZATION (Junior-Engineer Guide)
+ * ─────────────────────────────────────────────────────────────────────────
+ * Every visual control is grouped into a single "Design & Background"
+ * accordion (open by default — this entire tab is about design, so the
+ * user always wants its contents visible on first render). Inside that
+ * group the controls follow a deliberate top-to-bottom order:
  *
- * PROPS
- * ─────
- *   row                  : PageRow
- *   onRowMetaChange      : (updates: Partial<PageRow>) => void
- *   onUpdateColumnWidths : (widths: number[]) => void
+ *   1. Background color & opacity        (most-tweaked)
+ *   2. Background image & opacity        (set once, rarely changed)
+ *   3. Row internal alignment            (positioning of children)
+ *   4. Column-width control              (only if multi-column)
+ *   5. Gradient editor                   (decorative overlay)
+ *   6. Decorative overlays               (glows, blobs, etc.)
  *
- * WHY IT WAS EXTRACTED
- * ────────────────────
- * This was 100+ lines living inline at the bottom of AdminDashboard.tsx,
- * coupled to row-internal defaults that don't belong in an orchestration
- * file. Pulling it into editors/ makes the dashboard tab-mounting logic
- * (`propertiesSubTab === "style"`) trivial: it just renders one element.
+ * WHERE TO ADD A NEW STYLE FIELD
+ * ──────────────────────────────
+ *   • Anything that affects how the ROW renders visually (background,
+ *     spacing, gradient, overlay, layout) → add INSIDE the
+ *     "Design & Background" AccordionContent below.
+ *   • Anything that affects per-content COPY appearance (a card title
+ *     color, an eyebrow color tied to a specific block) → goes in
+ *     `RowContentEditor.tsx` under its "Design & Background" item, NOT
+ *     here. Rule of thumb: row-level → here, column-level → there.
+ *
+ * If a future redesign needs to split this into multiple groups (e.g.
+ * "Background", "Layout", "Effects"), copy the AccordionItem pattern
+ * from `RowContentEditor.tsx` and add additional <AccordionItem>s.
+ * ─────────────────────────────────────────────────────────────────────────
  *
  * STYLES — INLINE → TAILWIND
- * ──────────────────────────
- * All static layout/typography styles converted to Tailwind utilities.
- * Inline styles that REMAIN are the ones that legitimately must remain
+ * Inline styles that REMAIN are the ones that legitimately must stay
  * inline because the value is dynamic and Tailwind has no native
- * equivalent for them:
- *   • `style={{ accentColor: "hsl(var(--secondary))" }}` on `<input type=range>`
- *     — Tailwind has no built-in `accent-secondary` utility for CSS
- *       variable colours.
- *   • The bg colour input's `borderColor` could be `border-border`, and IS
- *     converted. The user-controlled colour preview block uses inline
- *     `value=` only (no inline style needed).
- *
- * The min-width pixel hints (`min-w-[50px]`, `min-w-[32px]`) came from
- * legacy `minWidth: 50` / `minWidth: 32` inline rules and are retained as
- * arbitrary-value Tailwind classes to keep visual parity exact.
+ * equivalent (e.g. `accentColor` on `<input type=range>`).
  * ─────────────────────────────────────────────────────────────────────────
  */
 
@@ -52,6 +48,12 @@ import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
 import ColumnWidthControl from "../site-editor/ColumnWidthControl";
 import GradientEditor from "../site-editor/GradientEditor";
 import OverlayEditor from "../site-editor/OverlayEditor";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
 
 interface Props {
@@ -75,6 +77,14 @@ const ROW_DEFAULTS: Record<string, { start: string; end: string }> = {
   profile: { start: "hsl(280 55% 20% / 0.5)", end: "hsl(286 42% 25% / 0.3)" },
   grid: { start: "hsl(280 55% 20% / 0.5)", end: "hsl(286 42% 25% / 0.3)" },
 };
+
+// Mirrors the trigger style used in RowContentEditor for visual parity
+// across the Properties panel. Update both files together if redesigning.
+const TRIGGER_CLASS =
+  "py-2.5 px-3 rounded-md bg-muted/30 hover:bg-muted/50 hover:no-underline " +
+  "font-body text-[10px] uppercase tracking-[0.12em] text-foreground";
+
+const CONTENT_CLASS = "pt-3 pb-1";
 
 const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   // ── Column count derivation ────────────────────────────────────────
@@ -101,125 +111,129 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   const bgImage = row.layout?.bgImage || "";
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* ── Background Colour + opacity ── */}
-      <div>
-        <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
-          Background Color
-        </label>
-        <div className="flex gap-1.5">
-          {/* Native colour picker. We let the browser draw the swatch. */}
-          <input
-            type="color"
-            value={row.bg_color || "#FFFFFF"}
-            onChange={(e) => onRowMetaChange({ bg_color: e.target.value })}
-            className="w-10 h-9 rounded border border-border cursor-pointer"
-          />
-          {/* Hex input mirroring the colour picker. We force a white surface
-              + dark text so the hex string remains legible regardless of the
-              admin's OS theme — these are the deliberate exceptions to the
-              "no inline colour" rule. */}
-          <input
-            value={row.bg_color || ""}
-            onChange={(e) => onRowMetaChange({ bg_color: e.target.value })}
-            placeholder="#FFFFFF"
-            className="flex-1 px-3 py-2 rounded-lg font-body text-sm border border-border bg-white text-[#1a1a1a]"
-          />
-        </div>
-        <div className="flex items-center gap-1.5 mt-1.5">
-          <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
-            Opacity
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={bgColorOpacity}
-            onChange={(e) =>
-              onRowMetaChange({
-                layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgColorOpacity: Number(e.target.value) },
-              })
-            }
-            className="flex-1"
-            style={{ accentColor: "hsl(var(--secondary))" }}
-          />
-          <span className="font-body text-[10px] text-foreground min-w-[32px] text-right">
-            {bgColorOpacity}%
-          </span>
-        </div>
-      </div>
+    <Accordion type="multiple" defaultValue={["design"]} className="space-y-2">
+      <AccordionItem value="design" className="border-none">
+        <AccordionTrigger className={TRIGGER_CLASS}>
+          Design &amp; Background
+        </AccordionTrigger>
+        <AccordionContent className={CONTENT_CLASS}>
+          <div className="flex flex-col gap-4">
+            {/* ── Background Colour + opacity ── */}
+            <div>
+              <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                Background Color
+              </label>
+              <div className="flex gap-1.5">
+                <input
+                  type="color"
+                  value={row.bg_color || "#FFFFFF"}
+                  onChange={(e) => onRowMetaChange({ bg_color: e.target.value })}
+                  className="w-10 h-9 rounded border border-border cursor-pointer"
+                />
+                <input
+                  value={row.bg_color || ""}
+                  onChange={(e) => onRowMetaChange({ bg_color: e.target.value })}
+                  placeholder="#FFFFFF"
+                  className="flex-1 px-3 py-2 rounded-lg font-body text-sm border border-border bg-white text-[#1a1a1a]"
+                />
+              </div>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
+                  Opacity
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={bgColorOpacity}
+                  onChange={(e) =>
+                    onRowMetaChange({
+                      layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgColorOpacity: Number(e.target.value) },
+                    })
+                  }
+                  className="flex-1"
+                  style={{ accentColor: "hsl(var(--secondary))" }}
+                />
+                <span className="font-body text-[10px] text-foreground min-w-[32px] text-right">
+                  {bgColorOpacity}%
+                </span>
+              </div>
+            </div>
 
-      {/* ── Background Image + opacity ── */}
-      <div>
-        <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
-          Background Image URL
-        </label>
-        <input
-          value={bgImage}
-          onChange={(e) =>
-            onRowMetaChange({
-              layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgImage: e.target.value },
-            })
-          }
-          placeholder="https://..."
-          className="w-full px-3 py-2 rounded-lg font-body text-sm border border-border bg-white text-[#1a1a1a]"
-        />
-        {bgImage && (
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
-              Opacity
-            </span>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={bgImageOpacity}
-              onChange={(e) =>
-                onRowMetaChange({
-                  layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgImageOpacity: Number(e.target.value) },
-                })
-              }
-              className="flex-1"
-              style={{ accentColor: "hsl(var(--secondary))" }}
+            {/* ── Background Image + opacity ── */}
+            <div>
+              <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                Background Image URL
+              </label>
+              <input
+                value={bgImage}
+                onChange={(e) =>
+                  onRowMetaChange({
+                    layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgImage: e.target.value },
+                  })
+                }
+                placeholder="https://..."
+                className="w-full px-3 py-2 rounded-lg font-body text-sm border border-border bg-white text-[#1a1a1a]"
+              />
+              {bgImage && (
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
+                    Opacity
+                  </span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={bgImageOpacity}
+                    onChange={(e) =>
+                      onRowMetaChange({
+                        layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgImageOpacity: Number(e.target.value) },
+                      })
+                    }
+                    className="flex-1"
+                    style={{ accentColor: "hsl(var(--secondary))" }}
+                  />
+                  <span className="font-body text-[10px] text-foreground min-w-[32px] text-right">
+                    {bgImageOpacity}%
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Hero rows manage their own internal alignment elsewhere. */}
+            {row.type !== "hero" && (
+              <RowAlignmentSettings
+                layout={row.layout || DEFAULT_ROW_LAYOUT}
+                onChange={(layout) => onRowMetaChange({ layout })}
+              />
+            )}
+
+            <ColumnWidthControl
+              columnCount={widthColCount}
+              widths={columnWidths}
+              onChange={onUpdateColumnWidths}
+              disabled={!showWidthControl}
             />
-            <span className="font-body text-[10px] text-foreground min-w-[32px] text-right">
-              {bgImageOpacity}%
-            </span>
+
+            <GradientEditor
+              gradient={currentGradient}
+              legacyStart={legacyStart}
+              legacyEnd={legacyEnd}
+              onChange={(gradient) =>
+                onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), gradient } })
+              }
+            />
+
+            <OverlayEditor
+              overlays={currentOverlays}
+              onChange={(overlays) =>
+                onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), overlays } })
+              }
+            />
           </div>
-        )}
-      </div>
-
-      {/* Hero rows manage their own internal alignment elsewhere. */}
-      {row.type !== "hero" && (
-        <RowAlignmentSettings
-          layout={row.layout || DEFAULT_ROW_LAYOUT}
-          onChange={(layout) => onRowMetaChange({ layout })}
-        />
-      )}
-
-      <ColumnWidthControl
-        columnCount={widthColCount}
-        widths={columnWidths}
-        onChange={onUpdateColumnWidths}
-        disabled={!showWidthControl}
-      />
-
-      <GradientEditor
-        gradient={currentGradient}
-        legacyStart={legacyStart}
-        legacyEnd={legacyEnd}
-        onChange={(gradient) =>
-          onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), gradient } })
-        }
-      />
-
-      <OverlayEditor
-        overlays={currentOverlays}
-        onChange={(overlays) =>
-          onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), overlays } })
-        }
-      />
-    </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 };
 
