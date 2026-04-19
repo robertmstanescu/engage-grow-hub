@@ -71,15 +71,69 @@ export const DEFAULT_ROW_LAYOUT: RowLayout = {
   alignment: "auto",
 };
 
+/**
+ * ─────────────────────────────────────────────────────────────────────
+ * PageRow — the canonical CMS row record
+ * ─────────────────────────────────────────────────────────────────────
+ * Stored as JSON in `cms_pages.page_rows` / `site_content.content.rows`.
+ *
+ * HOW TO ADD A NEW ROW TYPE (junior-engineer guide)
+ * 1. Add the new string to the `type` union below.
+ * 2. Pick a JSON shape for `content` (see `TestimonialItem` etc. for
+ *    examples of small typed sub-shapes you can co-locate here).
+ * 3. Register it in `ROW_TYPE_OPTIONS` in
+ *    `src/features/admin/AdminDashboard.tsx` so admins can add it.
+ * 4. Add a `case` in `RowContentEditor.tsx` (admin editor block).
+ * 5. Create `src/features/site/rows/<YourRow>.tsx` (public renderer).
+ * 6. Register the new component in the switch in
+ *    `src/features/site/rows/PageRows.tsx`.
+ * That's the entire pipeline — no DB migration is needed because
+ * `content` is a free-form JSON blob.
+ * ───────────────────────────────────────────────────────────────────── */
 export interface PageRow {
   id: string;
-  type: "hero" | "text" | "service" | "boxed" | "contact" | "image_text" | "profile" | "grid" | "lead_magnet";
+  type:
+    | "hero"
+    | "text"
+    | "service"
+    | "boxed"
+    | "contact"
+    | "image_text"
+    | "profile"
+    | "grid"
+    | "lead_magnet"
+    | "testimonial"   // NEW — quotes from clients (carousel)
+    | "logo_cloud"    // NEW — "Trusted by" logo strip
+    | "faq";          // NEW — accordion of Q/A pairs
   strip_title: string;
   bg_color: string;
   scope?: string;
   layout?: RowLayout;
   content: Record<string, any>;
   columns_data?: Record<string, any>[]; // extra columns beyond the first
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * Sub-shapes for the new row types. Keep these in sync if you rename
+ * fields — they are referenced by both the admin editor and the public
+ * renderers.
+ * ───────────────────────────────────────────────────────────────────── */
+export interface TestimonialItem {
+  quote: string;        // sanitised HTML (rich text)
+  name: string;         // client name
+  role?: string;        // role / company
+  avatar?: string;      // optional public image URL
+  avatar_alt?: string;  // alt text for the avatar
+}
+
+export interface FaqItem {
+  question: string;     // plain text
+  answer: string;       // sanitised HTML (rich text)
+}
+
+export interface LogoCloudLogo {
+  url: string;          // public image URL
+  alt?: string;         // logo alt text
 }
 
 export interface ContactField {
