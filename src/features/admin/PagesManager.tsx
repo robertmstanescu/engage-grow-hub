@@ -267,6 +267,82 @@ const PagesManager = ({ onEditPage }: Props) => {
 
   if (loading) return <ListSkeleton rows={3} rowHeight="h-14" />;
 
+  /**
+   * ────────────────────────────────────────────────────────────────
+   * ERROR PAGE EDITORS
+   * ────────────────────────────────────────────────────────────────
+   * Inline editors for the 404 + global error fallback copy. Each
+   * <Field> auto-saves on blur via the saveError404/saveErrorBoundary
+   * helpers above (which write to `site_content` and toast).
+   *
+   * To add a new editable string:
+   *   1. Extend the corresponding interface (Error404Content / ErrorBoundaryContent).
+   *   2. Add it to the matching DEFAULTS object with a sensible value.
+   *   3. Add a <Field> below.
+   *   4. Read it in NotFound.tsx or error-boundary.tsx via useSiteContent().
+   */
+  if (editingError === "404") {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setEditingError(null)}
+          className="font-body text-xs uppercase tracking-wider hover:opacity-70"
+          style={{ color: "hsl(var(--primary))" }}>
+          ← Back to Pages
+        </button>
+        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--foreground))" }}>
+          404 / Not Found Page
+          <span className="font-body text-xs font-normal ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>system</span>
+        </h2>
+        <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Shown to visitors who land on a URL that doesn't exist. Light theme — kept visually neutral on purpose.
+        </p>
+        <div className="space-y-3">
+          <Field label="Headline" value={error404.headline} onChange={(v) => saveError404({ headline: v })} />
+          <Field label="Subhead" value={error404.subhead} onChange={(v) => saveError404({ subhead: v })} />
+          <Field label="CTA button label" value={error404.cta_label} onChange={(v) => saveError404({ cta_label: v })} />
+        </div>
+        <a
+          href="/__force-404-preview"
+          target="_blank"
+          className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80"
+          style={{ border: "1px solid hsl(var(--primary) / 0.4)", color: "hsl(var(--primary))" }}>
+          <Eye size={13} /> Preview live 404
+        </a>
+      </div>
+    );
+  }
+
+  if (editingError === "boundary") {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setEditingError(null)}
+          className="font-body text-xs uppercase tracking-wider hover:opacity-70"
+          style={{ color: "hsl(var(--primary))" }}>
+          ← Back to Pages
+        </button>
+        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--foreground))" }}>
+          Error / "Something went wrong" Page
+          <span className="font-body text-xs font-normal ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>system</span>
+        </h2>
+        <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Shown when a page or section crashes unexpectedly. The first 4 fields drive the full-page fallback; the last 2 drive the inline per-row fallback.
+        </p>
+        <div className="space-y-3">
+          <Field label="Headline" value={errorBoundary.headline} onChange={(v) => saveErrorBoundary({ headline: v })} />
+          <Field label="Body" value={errorBoundary.body} onChange={(v) => saveErrorBoundary({ body: v })} />
+          <Field label="Retry button label" value={errorBoundary.retry_label} onChange={(v) => saveErrorBoundary({ retry_label: v })} />
+          <Field label="Home button label" value={errorBoundary.home_label} onChange={(v) => saveErrorBoundary({ home_label: v })} />
+          <Field label="Technical details toggle label" value={errorBoundary.technical_details_label} onChange={(v) => saveErrorBoundary({ technical_details_label: v })} />
+          <Field label="Inline row fallback label" value={errorBoundary.row_fallback_label} onChange={(v) => saveErrorBoundary({ row_fallback_label: v })} />
+          <Field label="Inline row retry label" value={errorBoundary.row_fallback_retry_label} onChange={(v) => saveErrorBoundary({ row_fallback_retry_label: v })} />
+        </div>
+      </div>
+    );
+  }
+
+
   if (editingBlog) {
     return (
       <div className="space-y-4">
@@ -513,9 +589,52 @@ const PagesManager = ({ onEditPage }: Props) => {
             </a>
           </div>
         </div>
+
+        {/* 404 / Not Found */}
+        <div
+          className="flex items-center justify-between p-3 rounded-lg border"
+          style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+          <div className="flex items-center gap-3">
+            <AlertTriangle size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
+            <div>
+              <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>404 / Not Found</span>
+              <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>shown for unknown URLs</span>
+            </div>
+            <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setEditingError("404")}
+              className="p-2 rounded hover:opacity-70"
+              style={{ color: "hsl(var(--primary))" }}>
+              Edit
+            </button>
+          </div>
+        </div>
+
+        {/* Error / Something went wrong */}
+        <div
+          className="flex items-center justify-between p-3 rounded-lg border"
+          style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
+          <div className="flex items-center gap-3">
+            <AlertTriangle size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
+            <div>
+              <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>Something went wrong</span>
+              <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>error fallback</span>
+            </div>
+            <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setEditingError("boundary")}
+              className="p-2 rounded hover:opacity-70"
+              style={{ color: "hsl(var(--primary))" }}>
+              Edit
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* CMS Pages */}
       {pages.length === 0 ? (
         <div className="py-12 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
           No custom pages yet. Create your first page above.
