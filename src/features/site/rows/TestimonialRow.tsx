@@ -77,7 +77,9 @@ const TestimonialRow = ({
   if (items.length === 0) return null;
 
   return (
-    <RowSection layout={l} bgColor={row.bg_color}>
+    <RowSection row={row}>
+      {/* `l` (resolved layout) is used inside via maxW; row prop carries
+       * bg_color, bg_image, gradients, overlays into <RowSection/>. */}
       <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} px-4 md:px-8`}>
         {/* Optional header */}
         {c.eyebrow && (

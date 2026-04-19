@@ -61,7 +61,7 @@ const FaqRow = ({
   if (items.length === 0 && titleLines.length === 0) return null;
 
   return (
-    <RowSection layout={l} bgColor={row.bg_color}>
+    <RowSection row={row}>
       <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} px-4 md:px-8`}>
         {c.eyebrow && (
           <RowEyebrow color={c.color_eyebrow || "hsl(var(--secondary))"} style={revealStyle(isVisible, -0.5)}>

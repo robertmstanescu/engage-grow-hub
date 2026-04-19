@@ -53,7 +53,7 @@ const LogoCloudRow = ({
   if (logos.length === 0 && !c.eyebrow) return null;
 
   return (
-    <RowSection layout={l} bgColor={row.bg_color}>
+    <RowSection row={row}>
       <div
         ref={ref as any}
         className={`${maxW} mx-auto px-4 md:px-8 ${textAlign}`}
