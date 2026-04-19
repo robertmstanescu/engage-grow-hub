@@ -118,6 +118,7 @@ interface Props { session: any; }
 const SECTION_EMOJI: Record<string, string> = {
   hero: "🎭", text: "✦", service: "💀", boxed: "✦", contact: "📬",
   image_text: "🖼", profile: "👤", grid: "📊", lead_magnet: "🎁",
+  testimonial: "💬", logo_cloud: "🏷", faq: "❓",
 };
 
 const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[] = [
@@ -130,6 +131,9 @@ const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[
   { type: "profile", label: "Profile", emoji: "👤" },
   { type: "grid", label: "Grid", emoji: "📊" },
   { type: "lead_magnet", label: "Lead Magnet", emoji: "🎁" },
+  { type: "testimonial", label: "Testimonials", emoji: "💬" },
+  { type: "logo_cloud", label: "Logo Cloud", emoji: "🏷" },
+  { type: "faq", label: "FAQ Accordion", emoji: "❓" },
 ];
 const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
 

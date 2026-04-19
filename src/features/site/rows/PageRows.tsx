@@ -10,6 +10,9 @@ import ImageTextRow from "./ImageTextRow";
 import ProfileRow from "./ProfileRow";
 import GridRow from "./GridRow";
 import LeadMagnetRow from "./LeadMagnetRow";
+import TestimonialRow from "./TestimonialRow";
+import LogoCloudRow from "./LogoCloudRow";
+import FaqRow from "./FaqRow";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -81,6 +84,12 @@ const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number;
       return wrapper(<GridRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
     case "lead_magnet":
       return wrapper(<LeadMagnetRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
+    case "testimonial":
+      return wrapper(<TestimonialRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
+    case "logo_cloud":
+      return wrapper(<LogoCloudRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
+    case "faq":
+      return wrapper(<FaqRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
     default:
       return null;
   }
