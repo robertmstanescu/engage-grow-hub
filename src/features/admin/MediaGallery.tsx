@@ -609,9 +609,16 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
               </div>
               {visibleAssets.map((asset) => {
                 const isImage = isImageMime(asset.mime_type);
-                // Pass `asset.bucket` so backfilled `editor-images` files
-                // resolve to the correct CDN URL (default is media-library).
+                // FULL-RESOLUTION URL — used for click-through, copy-link,
+                // and as fallback when the thumbnail isn't appropriate.
                 const url = getAssetPublicUrl(asset.storage_path, asset.bucket);
+                // THUMBNAIL URL — Supabase will return a re-encoded 88×88
+                // (44px @ 2x DPR) variant. Only computed for images;
+                // non-images render an icon instead. See `getAssetThumbnailUrl`
+                // for why this matters for memory + bandwidth.
+                const thumbUrl = isImage
+                  ? getAssetThumbnailUrl(asset.storage_path, asset.bucket, 88, 88)
+                  : "";
                 const isSelected = selectedAssetId === asset.id;
                 return (
                   <div
@@ -623,7 +630,12 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                         onClose?.();
                       }
                     }}
-                    className="grid items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors border-b border-border/15"
+                    // `[content-visibility:auto]` lets the browser skip
+                    // layout/paint for off-screen rows entirely.
+                    // `[contain-intrinsic-size:_auto_60px]` tells it to
+                    // reserve ~60px height per skipped row so the
+                    // scrollbar doesn't jump when rows materialise.
+                    className="grid items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors border-b border-border/15 [content-visibility:auto] [contain-intrinsic-size:_auto_60px]"
                     style={{
                       gridTemplateColumns: "44px 1fr 70px 70px",
                       backgroundColor: isSelected ? "hsl(var(--primary) / 0.08)" : "transparent",
@@ -631,7 +643,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
                   >
                     <div className="w-11 h-11 rounded-md overflow-hidden flex items-center justify-center bg-muted/40 border border-border/40">
                       {isImage ? (
-                        <img src={url} alt={asset.alt_text || asset.title} className="w-full h-full object-cover" loading="lazy" />
+                        <LazyThumb src={thumbUrl} alt={asset.alt_text || asset.title} />
                       ) : (
                         <FileText size={18} className="text-muted-foreground" />
                       )}
