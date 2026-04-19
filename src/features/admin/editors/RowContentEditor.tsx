@@ -62,6 +62,7 @@ import LeadMagnetEditor from "../site-editor/LeadMagnetEditor";
 import TitleLinesEditor from "./TitleLinesEditor";
 import HeroRowFieldsInline from "./HeroRowFieldsInline";
 import BoxedArrayField from "./BoxedArrayField";
+import { TestimonialEditor, LogoCloudEditor, FaqEditor } from "./NewRowEditors";
 import { type PageRow } from "@/types/rows";
 
 interface Props {
@@ -223,6 +224,37 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
             content={content}
             onChange={(next) => Object.entries(next).forEach(([k, v]) => onContentChange(k, v))}
           />
+        </>
+      );
+
+    /* ── NEW ROW TYPES ───────────────────────────────────────────────
+     * For a junior engineer: each new case mirrors the simple pattern
+     * above — render `commonMeta` (Strip Title) then delegate the real
+     * field-set to a dedicated editor in `NewRowEditors.tsx`. The
+     * editor receives the active column's `content` and an
+     * `onContentChange(field, value)` setter that writes back to the
+     * same column. Add new fields by editing only the editor file. */
+    case "testimonial":
+      return (
+        <>
+          {commonMeta}
+          <TestimonialEditor content={content} onChange={onContentChange} bgColor={bg} />
+        </>
+      );
+
+    case "logo_cloud":
+      return (
+        <>
+          {commonMeta}
+          <LogoCloudEditor content={content} onChange={onContentChange} />
+        </>
+      );
+
+    case "faq":
+      return (
+        <>
+          {commonMeta}
+          <FaqEditor content={content} onChange={onContentChange} bgColor={bg} />
         </>
       );
 
