@@ -99,7 +99,8 @@ const AdminInsights = () => {
   const [botLeaderboard, setBotLeaderboard] = useState<Array<{ entity_name: string; count: number }>>([]);
   const [auditRows, setAuditRows] = useState<AuditRow[]>([]);
   const [journeys, setJourneys] = useState<JourneyRecord[]>([]);
-  const [recentRows, setRecentRows] = useState<UnifiedAnalyticsRecord[]>([]);
+  // NOTE: `recentRows` (the Live Feed data) was removed — see file header
+  // for why. Don't add it back without product approval.
 
   // Compute the active filter window
   const filters: AnalyticsRangeFilter = useMemo(() => {
