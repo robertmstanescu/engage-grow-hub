@@ -179,7 +179,8 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
             document.execCommand("styleWithCSS", false, "true");
             document.execCommand("fontName", false, event.target.value);
             saveSelection();
-            emitChange();
+            // Toolbar = explicit edit → push immediately, no debounce.
+            emitChangeNow();
             event.target.value = "";
           }}
           className="font-body text-[10px] px-1 py-0.5 rounded border bg-transparent cursor-pointer"
