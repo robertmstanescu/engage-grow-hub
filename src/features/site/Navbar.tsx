@@ -2,14 +2,24 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContent, useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 const Navbar = () => {
   const branding = useSiteContent<Record<string, any>>("branding", {});
-  const navConfig = useSiteContent<Record<string, any>>("navbar", {});
+  /**
+   * Navbar links MUST come from the DB before we render link labels —
+   * otherwise users would briefly see hardcoded fallback labels
+   * ("Internal Communications", "Our Vows", etc.) and then watch them
+   * change to the admin's customised labels. We use the loading-aware
+   * variant here and hide the link list until the real config arrives.
+   * Branding/logo can stay on the plain hook because the fallback logo
+   * path is identical to the DB default for fresh projects.
+   */
+  const { isLoading: navLoading, content: navConfig } =
+    useSiteContentWithStatus<Record<string, any>>("navbar", {});
   const logoUrl = branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
   const emblemUrl = branding.emblem_logo_url || logoUrl;
   const isMobile = useIsMobile();
@@ -98,7 +108,15 @@ const Navbar = () => {
         </a>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-5">
-          {allItems.map((item) => (
+          {/*
+            Render link list ONLY after the navbar config has loaded
+            from the database. Showing fallback labels first and then
+            swapping to the admin's customised labels causes a visible
+            text flicker — see `useSiteContentWithStatus` for the full
+            rationale. The empty <div> above keeps the column height
+            stable so layout doesn't jump when links appear.
+          */}
+          {!navLoading && allItems.map((item) => (
             <a
               key={item.label}
               href={item.href}

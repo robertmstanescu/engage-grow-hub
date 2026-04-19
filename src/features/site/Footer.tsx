@@ -109,10 +109,80 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="pt-6 flex flex-wrap items-center justify-between gap-4" style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}>
+        {/*
+          Bottom legal row.
+          ───────────────────────────────────────────────────────────
+          Layout:
+            • flex-wrap so on very narrow screens the legal links can
+              drop to a second line under the copyright instead of
+              overflowing horizontally.
+            • justify-between pushes copyright to the LEFT and the
+              legal-link group to the RIGHT on desktop. On mobile the
+              wrap behaviour means each cluster sits on its own line.
+            • gap-4 prevents the two clusters from touching when they
+              share a row.
+          ───────────────────────────────────────────────────────────
+          Typography:
+            • Both the copyright text and the legal links share the
+              EXACT same classes (`font-body text-[11px] tracking-wide`)
+              and base color (`hsl(var(--foreground) / 0.2)`) so the
+              row reads as one consistent legal-line. Hover lifts the
+              link colour to `hsl(var(--foreground))` (full opacity)
+              over a 500ms transition matching the rest of the footer.
+            • The middot `·` between Privacy Policy and Cookie Settings
+              is a plain text separator. We deliberately use a literal
+              character (not a border) so it inherits the same colour
+              and never breaks at the wrong moment.
+          ───────────────────────────────────────────────────────────
+          Why a <button> for Cookie Settings (not an <a>)?
+            It does not navigate — it triggers a `cookie-settings:open`
+            CustomEvent that the cookie-consent banner listens for so
+            it can re-open. Using a <button> keeps semantics correct
+            for screen readers and keyboard users.
+        */}
+        <div
+          className="pt-6 flex flex-wrap items-center justify-between gap-4"
+          style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}
+        >
           <p className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--foreground) / 0.2)" }}>
             {footer.copyright || `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires`}
           </p>
+
+          <div className="flex items-center gap-2">
+            <a
+              href="/privacy-policy"
+              className="font-body text-[11px] tracking-wide transition-colors duration-500 hover:text-foreground"
+              style={{ color: "hsl(var(--foreground) / 0.2)" }}
+            >
+              Privacy Policy
+            </a>
+            <span
+              aria-hidden="true"
+              className="font-body text-[11px] tracking-wide"
+              style={{ color: "hsl(var(--foreground) / 0.2)" }}
+            >
+              ·
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                // Defensive try/catch — dispatching a CustomEvent should
+                // never throw in a modern browser, but if some extension
+                // monkey-patches `dispatchEvent` we don't want the whole
+                // footer to crash. Worst case: the cookie banner just
+                // doesn't re-open and we log the failure for debugging.
+                try {
+                  window.dispatchEvent(new CustomEvent("cookie-settings:open"));
+                } catch (err) {
+                  console.warn("Failed to open cookie settings:", err);
+                }
+              }}
+              className="font-body text-[11px] tracking-wide transition-colors duration-500 hover:text-foreground bg-transparent border-0 p-0 cursor-pointer"
+              style={{ color: "hsl(var(--foreground) / 0.2)" }}
+            >
+              Cookie Settings
+            </button>
+          </div>
         </div>
       </div>
     </footer>

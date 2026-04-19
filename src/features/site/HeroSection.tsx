@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
 
@@ -34,7 +34,20 @@ const fallback: HeroContent = {
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
 const HeroSection = () => {
-  const c = useSiteContent<HeroContent>("hero", fallback);
+  /**
+   * Loading-aware read of the "hero" CMS section.
+   *
+   * WHY `useSiteContentWithStatus` INSTEAD OF `useSiteContent`?
+   * The hero is the first thing users see. If we used the plain hook,
+   * the hardcoded `fallback` strings ("Your organisation has vampires.")
+   * would paint for a few hundred milliseconds before the real DB
+   * content arrived — a jarring text-swap. By gating render on
+   * `isLoading`, we paint NOTHING (just the ambient background) until
+   * we either have real content or react-query confirms there is none.
+   * Once cached after the first visit, `isLoading` is false on first
+   * render so repeat visits feel instant.
+   */
+  const { isLoading, content: c } = useSiteContentWithStatus<HeroContent>("hero", fallback);
 
   const titleLines: string[] = (c.title_lines || []).map((line: any) => {
     if (typeof line === "string") return line;
@@ -50,6 +63,25 @@ const HeroSection = () => {
   }
 
   const hasBg = c.bg_type && c.bg_type !== "none" && c.bg_url;
+
+  /**
+   * Cold-load guard — see comment on `useSiteContentWithStatus` above.
+   * On the very first visit (no cache yet) we render an empty hero
+   * shell that preserves layout height (so the page doesn't jump when
+   * content arrives) but paints zero text. As soon as react-query
+   * resolves, this branch is skipped and the real hero animates in.
+   * On every subsequent navigation the cache is warm, so this branch
+   * never executes.
+   */
+  if (isLoading) {
+    return (
+      <section
+        data-section="hero"
+        aria-busy="true"
+        className="scope-hero snap-section grain relative h-screen mesh-hero"
+      />
+    );
+  }
 
   return (
     <section data-section="hero" className="scope-hero snap-section grain relative h-screen flex flex-col justify-end overflow-hidden mesh-hero">

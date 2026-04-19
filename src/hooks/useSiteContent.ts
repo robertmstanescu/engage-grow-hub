@@ -89,6 +89,109 @@ const fetchSectionContent = async (sectionKey: string) => {
   return data;
 };
 
+/**
+ * ════════════════════════════════════════════════════════════════════
+ * useSiteContentWithStatus — loading-aware variant
+ * ════════════════════════════════════════════════════════════════════
+ *
+ * WHY THIS EXISTS (read this carefully if you're new to the codebase):
+ *
+ * The original `useSiteContent(key, fallback)` always returns a value
+ * of type T. While the network request is in flight, it returns the
+ * `fallback` argument. That's convenient for components that don't
+ * care about loading state, but it has a visible side-effect on the
+ * public site:
+ *
+ *   1. User opens themagiccoffin.com.
+ *   2. React mounts <HeroSection /> immediately (no data yet).
+ *   3. <HeroSection /> reads `useSiteContent("hero", FALLBACK)` and
+ *      receives FALLBACK on the very first render.
+ *   4. The browser PAINTS the fallback strings ("Your organisation
+ *      has vampires.", etc.) for ~50–300 ms.
+ *   5. The Supabase request resolves, react-query updates the cache,
+ *      the component re-renders with REAL content, and the user sees
+ *      the text "swap" in place. This is the FLASH OF FALLBACK CONTENT
+ *      bug we want to eliminate.
+ *
+ * HOW THIS HOOK FIXES IT:
+ *
+ * Instead of always returning T, this hook returns:
+ *   { data: T | null, isLoading: boolean, content: T }
+ *
+ *   - `isLoading` is true ONLY when react-query has no cached value
+ *     yet AND a fetch is currently in-flight. The moment the cache is
+ *     populated (even from a prior page view), `isLoading` flips to
+ *     false on the very first render — so cached navigations stay
+ *     instant.
+ *   - `data` is the resolved DB value, or `null` while loading.
+ *   - `content` is `data ?? fallback`. Use this once isLoading is
+ *     false to render real content with the fallback as a safety net
+ *     (e.g. truly empty DB row).
+ *
+ * HOW CONSUMERS USE IT:
+ *
+ *   const { isLoading, content } = useSiteContentWithStatus("hero", FALLBACK);
+ *   if (isLoading) return <HeroSkeleton />;   // or `return null`
+ *   return <h1>{content.title}</h1>;
+ *
+ * The skeleton/null branch is what prevents the flash: nothing
+ * paints until we have real DB content (or a confirmed empty row).
+ *
+ * IMPORTANT: We KEEP the existing `useSiteContent()` API unchanged so
+ * the ~20 other components in the codebase (admin editors, secondary
+ * sections) continue to work without modification. Only the highly
+ * visible above-the-fold components need the loading-aware variant.
+ */
+export const useSiteContentWithStatus = <T = any>(
+  sectionKey: string,
+  fallback: T,
+): { data: T | null; isLoading: boolean; content: T } => {
+  const preview = isPreviewMode();
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
+    queryKey: siteContentQueryKey(sectionKey),
+    queryFn: () => fetchSectionContent(sectionKey),
+    staleTime: 30 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    retry: 1,
+  });
+
+  // Same live-preview sync as the base hook — admins editing in
+  // ?preview=1 mode see their unsaved drafts via BroadcastChannel.
+  useEffect(() => {
+    if (!preview) return;
+    const sync = () => {
+      const next = getPreviewOverride<T>(sectionKey);
+      if (next) {
+        queryClient.setQueryData(siteContentQueryKey(sectionKey), {
+          content: next,
+          draft_content: next,
+        });
+      }
+    };
+    sync();
+    return subscribeLivePreview(sync);
+  }, [preview, sectionKey, queryClient]);
+
+  return useMemo(() => {
+    const raw = query.data;
+    const resolved = raw
+      ? ((preview ? raw.draft_content || raw.content : raw.content) as T)
+      : null;
+    // `isLoading` is react-query's "no data + currently fetching" flag.
+    // Critically, it is FALSE once we have ANY cached value — so repeat
+    // visits do not show the skeleton, only true cold loads do.
+    return {
+      data: resolved,
+      isLoading: query.isLoading,
+      content: resolved ?? fallback,
+    };
+  }, [query.data, query.isLoading, preview, fallback]);
+};
+
 export const useSiteContent = <T = any>(sectionKey: string, fallback: T): T => {
   const preview = isPreviewMode();
   const queryClient = useQueryClient();
