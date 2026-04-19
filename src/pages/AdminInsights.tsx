@@ -9,10 +9,23 @@
  *   A. Hero metrics  — Human Reach, AI Mindshare, Conversion Index
  *   B. Human report  — Top countries, device/browser breakdown, journeys
  *   C. AI report     — Bot leaderboard + content audit + llms.txt link
- *   D. Live feed     — last 25 hits in window
  *
  * Filters (top bar): date range, traffic type, category, country.
  * All panels read from the same filter state so the numbers always agree.
+ *
+ * ──────────────────────────────────────────────────────────────────────────
+ *  DEPRECATION NOTICE — please read before re-adding anything!
+ * ──────────────────────────────────────────────────────────────────────────
+ * The old "Live Feed" panel was intentionally REMOVED. It listed the most
+ * recent 25 raw analytics rows on every dashboard render, which:
+ *   • added visual clutter that distracted from the actual KPIs above,
+ *   • required a `select *` against `unified_analytics_logs` on every
+ *     refresh, which got expensive as the table grew.
+ *
+ * Do NOT re-introduce a Live Feed without a strong product reason. If you
+ * need to inspect raw rows, use the Supabase SQL editor directly. The
+ * helper that powered it (`fetchRecentAnalyticsRows`) was deleted from
+ * `src/services/unifiedAnalytics.ts` for the same reason.
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -25,7 +38,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchAllBlogPosts } from "@/services/blogPosts";
 import { fetchAllCmsPages } from "@/services/cmsPages";
 import {
-  fetchRecentAnalyticsRows,
   countAnalyticsRows,
   countUniqueHumanVisitors,
   fetchBotLeaderboard,
@@ -33,7 +45,6 @@ import {
   fetchTopCountries,
   fetchConvertedJourneys,
   countLeadsInWindow,
-  type UnifiedAnalyticsRecord,
   type AnalyticsRangeFilter,
   type TrafficTypeFilter,
   type JourneyRecord,
