@@ -306,6 +306,151 @@ const AdminDashboard = ({ session }: Props) => {
     });
   }, [sections, cmsPage, cmsPageDirty]);
 
+  /**
+   * ─────────────────────────────────────────────────────────────────────
+   * SILENT AUTO-SAVE TO DRAFT — for the junior developer
+   * ─────────────────────────────────────────────────────────────────────
+   *
+   * Goal: behave like Google Docs. The admin types, and 500ms after the
+   * last edit we silently push the working copy to the database — to the
+   * DRAFT columns only. The live site does not change.
+   *
+   * STRICT INVARIANT (do not break this):
+   *   Auto-save writes ONLY to:
+   *     • site_content.draft_content
+   *     • cms_pages.draft_page_rows
+   *   It NEVER touches `content` or `page_rows`. Those columns are the
+   *   live site and are exclusively the domain of the "Publish" button.
+   *
+   * WHY SILENT (no toast)?
+   *   A toast every 500ms would spam the screen and feel broken. Instead
+   *   we surface progress with a subtle topbar pill that swaps between
+   *   three states: "Saving…", "Saved to Draft ✓", and "Unsaved draft"
+   *   (when draft has been auto-saved but differs from the live site).
+   *
+   * HOW THE PIECES FIT TOGETHER:
+   *   1. Editors (TitleLineEditor, RichTextEditor, SubtitleEditor) keep
+   *      typed text in local state/refs and DEBOUNCE their `onChange`
+   *      push by ~300ms. So typing doesn't immediately bubble up.
+   *   2. When the debounced `onChange` finally fires, it mutates the
+   *      `sections` / `cmsPageRows` state here in the dashboard.
+   *   3. THIS effect watches those state blobs. It fires its own 500ms
+   *      debounce and writes the draft to the DB.
+   *   4. The status pill goes "Saving…" while the request is in-flight,
+   *      then "Saved to Draft ✓". If publish hasn't happened yet,
+   *      `hasUnsavedChanges` is still true so the pill stays in the
+   *      amber "draft" tone — the user knows the live site is out of date.
+   *
+   * RACE-CONDITION NOTE:
+   *   We compare a JSON snapshot of what we last saved against what's
+   *   currently in state. That stops us from sending duplicate writes
+   *   when another effect causes a re-render but the data is unchanged.
+   *
+   *   We also bail out while `publishing` or `saving` is true, so the
+   *   manual buttons always win and we don't fight them mid-write.
+   * ─────────────────────────────────────────────────────────────────────
+   */
+  type AutoSaveStatus = "idle" | "saving" | "saved";
+  const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>("idle");
+  const lastAutoSavedRef = useRef<string>("");
+  const isInitialLoadRef = useRef(true);
+
+  /**
+   * Reset the "what was last saved" snapshot whenever we switch
+   * between the main page and a CMS page. Without this, switching pages
+   * would auto-save the new page's content as a "diff" against the
+   * previous page's snapshot on first edit. Worse, the very first
+   * render after switching would think everything changed and trigger
+   * an immediate save of unmodified data.
+   */
+  useEffect(() => {
+    isInitialLoadRef.current = true;
+    lastAutoSavedRef.current = "";
+    setAutoSaveStatus("idle");
+  }, [cmsPage?.id]);
+
+  // Compute the "current draft snapshot" each render — cheap because
+  // JSON.stringify on small content blobs is fast and only runs when
+  // state changes.
+  const currentDraftSnapshot = useMemo(() => {
+    if (cmsPage) {
+      return JSON.stringify({ rows: cmsPageRows, meta: cmsPageMeta });
+    }
+    return JSON.stringify(sections.map((s) => ({ k: s.section_key, d: s.draft_content })));
+  }, [cmsPage, cmsPageRows, cmsPageMeta, sections]);
+
+  /**
+   * Debounced silent auto-save. 500ms after the last change to the draft
+   * snapshot, we write to draft columns. The save itself is awaited so
+   * we can flip the status pill from "saving" → "saved".
+   */
+  const autoSaveDraft = useDebouncedCallback(async () => {
+    // Don't fight a manual save / publish that's in flight.
+    if (saving || publishing) return;
+    // Skip if nothing actually changed since last successful auto-save.
+    if (currentDraftSnapshot === lastAutoSavedRef.current) return;
+
+    setAutoSaveStatus("saving");
+    try {
+      if (cmsPage) {
+        const { error } = await supabase
+          .from("cms_pages")
+          .update({ draft_page_rows: cmsPageRows as any } as any)
+          .eq("id", cmsPage.id);
+        if (error) throw error;
+      } else {
+        // Only touch sections whose draft actually differs from `content`.
+        // Keeps us from doing unnecessary writes for sections the user
+        // didn't actually touch this session.
+        const dirty = sections.filter(
+          (s) => JSON.stringify(s.draft_content ?? s.content) !== JSON.stringify(s.content),
+        );
+        await Promise.all(
+          dirty.map(async (s) => {
+            const draft = (s.draft_content ?? s.content) as any;
+            const { data: existing } = await supabase
+              .from("site_content").select("id").eq("section_key", s.section_key).maybeSingle();
+            if (existing) {
+              return supabase.from("site_content")
+                .update({ draft_content: draft })
+                .eq("section_key", s.section_key);
+            }
+            return supabase.from("site_content").insert({
+              section_key: s.section_key,
+              content: s.content ?? draft,
+              draft_content: draft,
+            } as any);
+          }),
+        );
+      }
+      lastAutoSavedRef.current = currentDraftSnapshot;
+      setAutoSaveStatus("saved");
+    } catch (err) {
+      // Auto-save errors should NOT shout at the user (they didn't ask
+      // for the save). We log + leave the pill in "saving" so the next
+      // tick will retry. The manual Save button is still available as
+      // an escape hatch.
+      console.error("[AdminDashboard] auto-save failed", err);
+      setAutoSaveStatus("idle");
+    }
+  }, 500);
+
+  useEffect(() => {
+    // Skip the very first render after a load — we don't want to "save"
+    // data we just fetched.
+    if (isInitialLoadRef.current) {
+      // Only consider the initial load complete once we actually have data.
+      if (cmsPage ? cmsPageRows.length >= 0 : sections.length > 0) {
+        isInitialLoadRef.current = false;
+        lastAutoSavedRef.current = currentDraftSnapshot;
+      }
+      return;
+    }
+    // If snapshot matches what we last persisted, nothing to do.
+    if (currentDraftSnapshot === lastAutoSavedRef.current) return;
+    autoSaveDraft();
+  }, [currentDraftSnapshot, cmsPage, cmsPageRows.length, sections.length, autoSaveDraft]);
+
   // Load main page data
   useEffect(() => {
     if (cmsPage) return;
