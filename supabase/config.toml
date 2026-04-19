@@ -21,3 +21,5 @@ project_id = "mbxqjjmjywsxibttjrgr"
     verify_jwt = false
   [functions.track-visitor]
     verify_jwt = false
+  [functions.generate-sitemap]
+    verify_jwt = false
