@@ -64,6 +64,25 @@ const HeroSection = () => {
 
   const hasBg = c.bg_type && c.bg_type !== "none" && c.bg_url;
 
+  /**
+   * Cold-load guard — see comment on `useSiteContentWithStatus` above.
+   * On the very first visit (no cache yet) we render an empty hero
+   * shell that preserves layout height (so the page doesn't jump when
+   * content arrives) but paints zero text. As soon as react-query
+   * resolves, this branch is skipped and the real hero animates in.
+   * On every subsequent navigation the cache is warm, so this branch
+   * never executes.
+   */
+  if (isLoading) {
+    return (
+      <section
+        data-section="hero"
+        aria-busy="true"
+        className="scope-hero snap-section grain relative h-screen mesh-hero"
+      />
+    );
+  }
+
   return (
     <section data-section="hero" className="scope-hero snap-section grain relative h-screen flex flex-col justify-end overflow-hidden mesh-hero">
       {hasBg && c.bg_type === "image" && (
