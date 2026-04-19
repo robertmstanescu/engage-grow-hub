@@ -49,15 +49,17 @@
  * ─────────────────────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { runDbAction } from "@/services/db-helpers";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
+import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import {
   LayoutDashboard, FileText, Compass, BookOpen,
   Users, Mail, Image, Palette, Settings, LogOut,
   Save, Send, Tag, UserCog,
   GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
+  Loader2, Check,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 // (Sheet/Drawer rollback: properties editor stays as a 3rd column.)
