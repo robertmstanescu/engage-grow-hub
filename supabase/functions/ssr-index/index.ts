@@ -145,14 +145,31 @@ const fetchTemplate = async (req: Request): Promise<string> => {
       if (res.ok) {
         const text = await res.text();
         // Sanity check — must contain at least one of our SSR markers.
-        if (text.includes("<!--SSR_TITLE-->")) return text;
+        if (text.includes("SSR:TITLE")) return text;
       }
     } catch {
       // try next candidate
     }
   }
   // Last-resort minimal template (matches index.html marker layout).
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><title><!--SSR_TITLE-->The Magic Coffin<!--/SSR_TITLE--></title><meta name="description" content="<!--SSR_DESCRIPTION--><!--/SSR_DESCRIPTION-->"><link rel="canonical" href="<!--SSR_CANONICAL-->https://themagiccoffin.com/<!--/SSR_CANONICAL-->"><!--SSR_OG_TAGS--><!--/SSR_OG_TAGS--><!--SSR_JSONLD--><!--/SSR_JSONLD--></head><body><div id="root"></div><!--SSR_NOSCRIPT--><!--/SSR_NOSCRIPT--></body></html>`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- SSR:TITLE -->
+<title>The Magic Coffin</title>
+<!-- SSR:DESCRIPTION -->
+<meta name="description" content="" />
+<!-- SSR:CANONICAL -->
+<link rel="canonical" href="https://themagiccoffin.com/" />
+<!-- SSR:OG_TAGS -->
+<!-- SSR:JSONLD -->
+</head>
+<body>
+<div id="root"></div>
+<!-- SSR:NOSCRIPT -->
+</body>
+</html>`;
 };
 
 /** Build SEO payload for the homepage from the `main_page_seo` site_content row. */
