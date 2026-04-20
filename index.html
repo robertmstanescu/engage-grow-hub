@@ -7,9 +7,16 @@
          stale index.html (and therefore stale JS bundle references)
          from disk after a deploy. Combined with the service-worker
          unregister script in <body>, this kills "zombie" client state. -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, post-check=0, pre-check=0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
+    <script>
+      window.onpageshow = function (event) {
+        if (event.persisted) {
+          window.location.reload();
+        }
+      };
+    </script>
     <title>The Magic Coffin for Silly Vampires | Internal Communications and Employee Experience Consulting</title>
     <meta
       name="description"
