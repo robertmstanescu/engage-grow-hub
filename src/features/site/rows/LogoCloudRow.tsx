@@ -45,6 +45,11 @@ const LogoCloudRow = ({
   const c = row.content || {};
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const logos: LogoCloudLogo[] = Array.isArray(c.logos) ? c.logos : [];
+  // Normalise title_lines: older entries may be plain strings.
+  const titleLines: string[] = (c.title_lines || []).map((li: any) =>
+    typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`,
+  );
+  const hasHeader = !!c.eyebrow || titleLines.length > 0 || !!c.subtitle || !!c.body;
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
   const justify =
     align === "left" ? "justify-start" : align === "right" ? "justify-end" : "justify-center";
@@ -52,7 +57,7 @@ const LogoCloudRow = ({
     align === "left" ? "text-left" : align === "right" ? "text-right" : "text-center";
   const { ref, isVisible } = useScrollReveal();
 
-  if (logos.length === 0 && !c.eyebrow) return null;
+  if (logos.length === 0 && !hasHeader) return null;
 
   return (
     <RowSection row={row}>
@@ -60,13 +65,34 @@ const LogoCloudRow = ({
         ref={ref as any}
         className={`${maxW} mx-auto px-4 md:px-8 ${textAlign}`}
       >
+        {/* ── Standard Brand Header block — see NewRowEditors.tsx for the
+         *  matching admin fields. Renders any combination of eyebrow,
+         *  title lines, subtitle, and rich-text body that the admin
+         *  filled in. Each typography component is shared with every
+         *  other row type for visual consistency. */}
         {c.eyebrow && (
-          <p
-            className="font-display text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-6"
-            style={revealStyle(isVisible, 0)}
-          >
+          <RowEyebrow color={c.color_eyebrow || "hsl(var(--secondary))"} style={revealStyle(isVisible, -0.5)}>
             {c.eyebrow}
-          </p>
+          </RowEyebrow>
+        )}
+        {titleLines.length > 0 && (
+          <RowTitle style={revealStyle(isVisible, 0)}>
+            {titleLines.map((line, i) => (
+              <span
+                key={i}
+                className="block"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(line) }}
+              />
+            ))}
+          </RowTitle>
+        )}
+        {c.subtitle && (
+          <RowSubtitle color={c.subtitle_color || ""} style={revealStyle(isVisible, 0.3)}>
+            {c.subtitle}
+          </RowSubtitle>
+        )}
+        {c.body && (
+          <RowBody html={sanitizeHtml(c.body)} style={revealStyle(isVisible, 0.35)} />
         )}
         <div
           className={`flex flex-wrap items-center gap-x-10 gap-y-6 ${justify}`}
