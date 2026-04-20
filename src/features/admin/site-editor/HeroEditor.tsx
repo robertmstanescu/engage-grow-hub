@@ -103,6 +103,25 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
 
       <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
 
+      {/*
+       * CALL TO ACTION block — Hero gets the same standardised CTA
+       * group used by ImageText/Grid/Profile rows. Reads from the same
+       * `cta_label` / `cta_url` / `note` keys. The public HeroSection
+       * renderer should conditionally render the button when cta_label
+       * is non-empty (consistency with the row renderers).
+       */}
+      <SectionBox label="Call to Action (Button)">
+        <Field
+          label="Button Label"
+          value={content.cta_label || ""}
+          onChange={(v) => onChange("cta_label", v.slice(0, 30))}
+          maxLength={30}
+          hint="Max 30 characters for mobile."
+        />
+        <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onChange("cta_url", v)} />
+        <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
+      </SectionBox>
+
       <SectionBox label="Background Media">
         <div className="space-y-3">
           <div className="flex gap-2">

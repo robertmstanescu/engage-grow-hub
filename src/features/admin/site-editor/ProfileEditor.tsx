@@ -64,10 +64,17 @@ const ProfileEditor = ({ content, onChange, bgColor }: Props) => {
         <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
       </SectionBox>
 
-      <SectionBox label="Note & Button">
-        <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
-        <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onChange("cta_label", v)} />
+      {/* CTA grouped — Button Label leads, Note demoted to bottom. */}
+      <SectionBox label="Call to Action (Button)">
+        <Field
+          label="Button Label"
+          value={content.cta_label || ""}
+          onChange={(v) => onChange("cta_label", v.slice(0, 30))}
+          maxLength={30}
+          hint="Max 30 characters for mobile."
+        />
         <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onChange("cta_url", v)} />
+        <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
       </SectionBox>
 
       <SectionBox label="Colors">
