@@ -85,25 +85,22 @@ const ImageTextEditor = ({ content, onChange, bgColor }: Props) => {
 
       {/*
        * CALL TO ACTION block.
-       * Junior note: grouping label + URL into one SectionBox reduces
-       * cognitive load — admins see the button as a single concept,
-       * not two unrelated fields. The Note field stays here because
-       * it visually belongs above the button on the public page.
-       *
-       * If `cta_label` is empty, the public renderer (ImageTextRow)
-       * MUST not render the <a/> button at all — see the conditional
-       * `{c.cta_label && (…)}` block in that file.
+       * Junior note: the BUTTON itself is the primary action — so its
+       * label/URL come FIRST. Note (a small caption above the button)
+       * is secondary and stays at the bottom. If `cta_label` is empty,
+       * the public renderer (ImageTextRow) MUST not render the <a/> at
+       * all — see the conditional `{c.cta_label && (…)}` block there.
        */}
       <SectionBox label="Call to Action (Button)">
-        <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
         <Field
           label="Button Label"
           value={content.cta_label || ""}
           onChange={(v) => onChange("cta_label", v.slice(0, 30))}
           maxLength={30}
-          hint={`${(content.cta_label || "").length}/30 — keep it short so it doesn't wrap on mobile.`}
+          hint="Max 30 characters for mobile."
         />
         <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onChange("cta_url", v)} />
+        <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
       </SectionBox>
 
       <SectionBox label="Colors">

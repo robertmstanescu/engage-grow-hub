@@ -270,7 +270,7 @@ const AdminDashboard = ({ session }: Props) => {
   const [cmsPage, setCmsPage] = useState<CmsPageRef | null>(null);
   const [cmsPageRows, setCmsPageRows] = useState<PageRow[]>([]);
   const [cmsPageStatus, setCmsPageStatus] = useState<string>("draft");
-  const [cmsPageMeta, setCmsPageMeta] = useState<{ meta_title: string; meta_description: string }>({ meta_title: "", meta_description: "" });
+  const [cmsPageMeta, setCmsPageMeta] = useState<{ meta_title: string; meta_description: string; ai_summary: string }>({ meta_title: "", meta_description: "", ai_summary: "" });
 
   // ── Site content state (main page) ──
   const [sections, setSections] = useState<SectionData[]>([]);
@@ -491,7 +491,7 @@ const AdminDashboard = ({ session }: Props) => {
       if (data) {
         setCmsPageRows(data.draft_page_rows || data.page_rows || []);
         setCmsPageStatus(data.status || "draft");
-        setCmsPageMeta({ meta_title: data.meta_title || "", meta_description: data.meta_description || "" });
+        setCmsPageMeta({ meta_title: data.meta_title || "", meta_description: data.meta_description || "", ai_summary: data.ai_summary || "" });
         // Fresh load = clean state. Without this the dirty flag would
         // carry over from a previously-edited page.
         setCmsPageDirty(false);
@@ -1412,13 +1412,18 @@ const AdminDashboard = ({ session }: Props) => {
                           metaDescription={cmsPageMeta.meta_description}
                           onTitleChange={(v) => updateCmsPageMeta("meta_title", v)}
                           onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
+                          aiSummary={cmsPageMeta.ai_summary}
+                          onAiSummaryChange={(v) => updateCmsPageMeta("ai_summary", v)}
                         />
                       ) : (
+                        // Main page — ai_summary lives inside the main_page_seo JSON blob.
                         <SeoFields
                           metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
                           metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
                           onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
                           onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                          aiSummary={(getDraft("main_page_seo") as any)?.ai_summary || ""}
+                          onAiSummaryChange={(v) => updateField("main_page_seo", "ai_summary", v)}
                         />
                       )
                     ) : selectedSectionId === "__hero__" ? (

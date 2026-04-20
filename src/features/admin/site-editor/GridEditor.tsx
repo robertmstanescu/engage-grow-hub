@@ -99,19 +99,19 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
       </SectionBox>
 
       {/*
-       * CALL TO ACTION block — see ImageTextEditor for the full rationale.
+       * CALL TO ACTION block — Button Label leads (it's the primary action).
        * Empty `cta_label` means GridRow must skip rendering the button.
        */}
       <SectionBox label="Call to Action (Button)">
-        <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
         <Field
           label="Button Label"
           value={content.cta_label || ""}
           onChange={(v) => onChange("cta_label", v.slice(0, 30))}
           maxLength={30}
-          hint={`${(content.cta_label || "").length}/30 — keep it short so it doesn't wrap on mobile.`}
+          hint="Max 30 characters for mobile."
         />
         <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onChange("cta_url", v)} />
+        <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
       </SectionBox>
 
       {/* Colors */}

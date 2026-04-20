@@ -423,6 +423,8 @@ const PagesManager = ({ onEditPage }: Props) => {
           {editingPage.title}
           <span className="font-body text-xs font-normal ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/{editingPage.slug}</span>
         </h2>
+        {/* SeoFields now hosts AEO too — pass aiSummary props to enable
+            the AI Search Summary block (60-320 char counter). */}
         <SeoFields
           metaTitle={editingPage.meta_title || ""}
           metaDescription={editingPage.meta_description || ""}
@@ -434,44 +436,15 @@ const PagesManager = ({ onEditPage }: Props) => {
             setEditingPage({ ...editingPage, meta_description: v });
             updateCmsPageMeta(editingPage.id, "meta_description", v);
           }}
+          aiSummary={editingPage.ai_summary || ""}
+          onAiSummaryChange={(v) => {
+            setEditingPage({ ...editingPage, ai_summary: v });
+            // Persist on every keystroke is fine here — input is short and the
+            // network write is idempotent. Toast only when the value is non-empty
+            // to avoid spamming on backspace-to-empty.
+            updateCmsPageMeta(editingPage.id, "ai_summary", v.trim());
+          }}
         />
-
-        {/* AI Search Summary — fed to /llms.txt for AI assistants. */}
-        <div
-          className="rounded-lg border p-4 space-y-2"
-          style={{ borderColor: "hsl(46 75% 40% / 0.4)", backgroundColor: "hsl(46 75% 60% / 0.06)" }}
-        >
-          <label
-            className="font-body text-[10px] uppercase tracking-wider font-medium block"
-            style={{ color: "hsl(var(--foreground))" }}
-          >
-            AI Search Summary
-          </label>
-          <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-            A 1-3 sentence summary written for AI assistants (ChatGPT, Claude, Perplexity). Aim for 60-320 characters.
-          </p>
-          <textarea
-            placeholder="Describe this page in plain language for AI crawlers."
-            value={editingPage.ai_summary || ""}
-            onChange={(e) => {
-              const value = e.target.value;
-              setEditingPage({ ...editingPage, ai_summary: value });
-            }}
-            onBlur={async (e) => {
-              const value = e.target.value.trim();
-              await updateCmsPageMeta(editingPage.id, "ai_summary", value);
-              if (value) {
-                toast.success("AEO Metadata Synchronized: Content is now ready for AI Crawlers.");
-              }
-            }}
-            rows={3}
-            className="w-full px-4 py-2.5 rounded-lg font-body text-sm border resize-none"
-            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
-          />
-          <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-            {(editingPage.ai_summary || "").length}/320 chars
-          </p>
-        </div>
         <RowsManager
           rows={draftRows}
           onChange={(rows) => {
