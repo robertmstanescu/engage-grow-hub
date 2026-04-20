@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/accordion";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
+import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 
 const FaqRow = ({
@@ -108,6 +109,13 @@ const FaqRow = ({
             </AccordionItem>
           ))}
         </Accordion>
+
+        {/* Universal subscribe widget — see SubscribeToggle.tsx. */}
+        {c.show_subscribe && (
+          <div className="mt-rhythm-loose" style={revealStyle(isVisible, 0.6)}>
+            <SubscribeWidget align={align} />
+          </div>
+        )}
       </div>
     </RowSection>
   );

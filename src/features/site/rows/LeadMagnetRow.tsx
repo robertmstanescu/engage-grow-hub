@@ -8,6 +8,7 @@
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import ResourceWidget from "@/features/site/ResourceWidget";
+import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 
 interface Props {
@@ -17,7 +18,7 @@ interface Props {
   vAlign?: VAlign;
 }
 
-const LeadMagnetRow = ({ row }: Props) => {
+const LeadMagnetRow = ({ row, align = "center" }: Props) => {
   const layout = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const c = row.content || {};
   const resourceAssetId: string | undefined = c.resource_asset_id;
@@ -59,6 +60,13 @@ const LeadMagnetRow = ({ row }: Props) => {
           title={c.title}
           description={c.description}
         />
+
+        {/* Universal subscribe widget — see SubscribeToggle.tsx. */}
+        {c.show_subscribe && (
+          <div className="mt-rhythm-loose">
+            <SubscribeWidget align={align} />
+          </div>
+        )}
       </div>
     </section>
   );
