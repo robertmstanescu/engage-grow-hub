@@ -103,7 +103,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
 
   return (
     <div className="space-y-4">
-      <SectionBox label="Pillar Header">
+      <SectionBox label="Section Header">
         <Field label="Eyebrow" value={pillarContent.eyebrow || pillarContent.pillar_number || ""} onChange={(v) => onPillarChange("eyebrow", v)} />
         <Field label="Title" value={pillarContent.title || ""} onChange={(v) => onPillarChange("title", v)} />
         <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} bgColor={bgColor} />

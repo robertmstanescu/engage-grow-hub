@@ -501,6 +501,9 @@ const HeadingRowItem = ({
           <ul className="space-y-1">
             {row.h2s.map((h, i) => (
               <li key={i} className="font-body text-xs text-muted-foreground truncate" title={h}>
+                {row.source === "blog_post" && (
+                  <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground/60 mr-1">(Excerpt)</span>
+                )}
                 {h}
               </li>
             ))}
@@ -639,6 +642,12 @@ const GlobalMetadata = () => {
         <header className="flex items-center gap-2">
           <BarChart3 size={14} className="text-secondary" />
           <h3 className="font-display text-sm uppercase tracking-wider text-foreground">Tracking IDs</h3>
+          <span
+            className="font-body text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-secondary/15 text-secondary border border-secondary/30"
+            title="These IDs are auto-injected into the live site <head> via usePageMeta."
+          >
+            Live
+          </span>
         </header>
         <p className="font-body text-[11px] text-muted-foreground">
           Enter only the ID — we generate the official snippet for each platform automatically.
