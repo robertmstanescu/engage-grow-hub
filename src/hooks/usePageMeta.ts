@@ -1,10 +1,35 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { fetchPublicSection } from "@/services/siteContent";
-...
+
+const CANONICAL_ORIGIN = "https://themagiccoffin.com";
+
+const ensureTrailingSlash = (path: string) =>
+  path.endsWith("/") ? path : `${path}/`;
+
+interface PageMetaProps {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  suffix?: string;
+}
+
+interface GlobalTags {
+  social_prefix?: string;
+  tracking?: { ga4?: string; meta_pixel?: string; linkedin_partner?: string };
+  organization?: { legal_name?: string; type?: string; social_links?: string[] };
+  json_ld_organization?: string;
+  custom_head_scripts?: string;
+}
+
+let globalTagsCache: GlobalTags | null = null;
+let globalTagsPromise: Promise<GlobalTags> | null = null;
+let scriptsInjected = false;
+
 const loadGlobalTags = (): Promise<GlobalTags> => {
   if (globalTagsCache) return Promise.resolve(globalTagsCache);
   if (globalTagsPromise) return globalTagsPromise;
+
   globalTagsPromise = (async () => {
     try {
       const { data, error } = await fetchPublicSection<GlobalTags>("global_seo_tags", "content");
@@ -17,6 +42,7 @@ const loadGlobalTags = (): Promise<GlobalTags> => {
       return {};
     }
   })();
+
   return globalTagsPromise;
 };
 
@@ -67,7 +93,6 @@ const injectGlobalScripts = (tags: GlobalTags) => {
     );
   }
 
-  // JSON-LD Organization schema (auto-built from structured fields if no override)
   const org = tags.organization;
   let jsonLd = tags.json_ld_organization?.trim();
   if (!jsonLd && org?.legal_name) {
@@ -81,6 +106,7 @@ const injectGlobalScripts = (tags: GlobalTags) => {
         : {}),
     });
   }
+
   if (jsonLd && !document.getElementById("mc-jsonld-org")) {
     const s = document.createElement("script");
     s.id = "mc-jsonld-org";
@@ -114,11 +140,14 @@ const usePageMeta = ({ title, description, ogImage, suffix = "The Magic Coffin f
         if (!content) return;
         const attr = property ? "property" : "name";
         let el = document.querySelector(`meta[${attr}="${name}"]`);
-        if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+        if (!el) {
+          el = document.createElement("meta");
+          el.setAttribute(attr, name);
+          document.head.appendChild(el);
+        }
         el.setAttribute("content", content);
       };
 
-      // Canonical link
       let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
       if (!canonical) {
         canonical = document.createElement("link");
