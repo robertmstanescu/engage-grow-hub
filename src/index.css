@@ -231,7 +231,7 @@
      surface its lively, liquid quality — without it, blurred backdrops
      turn muddy and grey. */
   .glass {
-    background: hsl(260 25% 12% / 0.2);
+    background: hsl(260 25% 12% / 0.35);
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);
     border: 1px solid hsl(280 20% 22% / 0.4);
