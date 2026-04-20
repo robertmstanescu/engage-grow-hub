@@ -1,5 +1,5 @@
 import { Instagram, Linkedin, Twitter, Facebook, Youtube } from "lucide-react";
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 
 const PLATFORMS = [
   { key: "linkedin", icon: Linkedin, label: "LinkedIn" },
@@ -34,24 +34,18 @@ interface FooterContent {
   columns?: FooterColumn[];
 }
 
-const defaultColumns: FooterColumn[] = [
-  { title: "Services", links: [{ label: "Internal Communications", href: "#internal-communications" }, { label: "Employee Experience", href: "#employee-experience" }] },
-  { title: "Company", links: [{ label: "Our Vows", href: "#vows" }, { label: "Blog", href: "/blog/" }, { label: "Contact", href: "#contact" }] },
-  { title: "Connect", links: [] },
-];
-
 const Footer = () => {
-  const socialLinks = useSiteContent<Record<string, string>>("social_links", {});
-  const footer = useSiteContent<FooterContent>("footer", {
-    copyright: `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires`,
-    tagline: "Based in Sweden 🇸🇪 · Operating globally",
-    columns: defaultColumns,
-  });
-  const branding = useSiteContent<Record<string, any>>("branding", {});
-  // Footer uses emblem logo (small icon) on all sizes
-  const emblemUrl = branding.emblem_logo_url || branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
+  const { content: socialLinks } = useSiteContentWithStatus<Record<string, string>>("social_links", {});
+  const { isLoading: footerLoading, content: footer } = useSiteContentWithStatus<FooterContent>("footer", {});
+  const { isLoading: brandingLoading, content: branding } = useSiteContentWithStatus<Record<string, any>>("branding", {});
 
-  const columns = footer.columns || defaultColumns;
+  // Wait for live backend data — never paint hardcoded fallback content.
+  if (footerLoading || brandingLoading) {
+    return <footer className="grain relative border-t" style={{ backgroundColor: "hsl(260 20% 4%)", borderColor: "hsl(var(--border) / 0.2)", minHeight: "200px" }} aria-busy="true" />;
+  }
+
+  const emblemUrl = branding.emblem_logo_url || branding.logo_url || "";
+  const columns = footer.columns || [];
   const activeLinks = PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
   const connectColumn = columns.find((c) => c.title.toLowerCase() === "connect");
 
@@ -65,19 +59,22 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">
           {/* Logo column — emblem */}
           <div className="col-span-2 md:col-span-1">
-            {/* Footer logo: below the fold by definition — lazy-load it. */}
-            <img
-              alt="Logo"
-              className="w-8 h-8 object-contain brightness-200 mb-4"
-              src={emblemUrl}
-              width={32}
-              height={32}
-              loading="lazy"
-              decoding="async"
-            />
-            <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.35)" }}>
-              {footer.tagline || "Based in Sweden 🇸🇪 · Operating globally"}
-            </p>
+            {emblemUrl ? (
+              <img
+                alt="Logo"
+                className="w-8 h-8 object-contain brightness-200 mb-4"
+                src={emblemUrl}
+                width={32}
+                height={32}
+                loading="lazy"
+                decoding="async"
+              />
+            ) : null}
+            {footer.tagline ? (
+              <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.35)" }}>
+                {footer.tagline}
+              </p>
+            ) : null}
           </div>
 
           {columns.map((col, i) => (
@@ -144,9 +141,11 @@ const Footer = () => {
           className="pt-6 flex flex-wrap items-center justify-between gap-4"
           style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}
         >
-          <p className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--foreground) / 0.2)" }}>
-            {footer.copyright || `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires`}
-          </p>
+          {footer.copyright ? (
+            <p className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--foreground) / 0.2)" }}>
+              {footer.copyright}
+            </p>
+          ) : <span />}
 
           <div className="flex items-center gap-2">
             <a
