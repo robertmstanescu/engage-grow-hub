@@ -64,7 +64,7 @@ const Blog = () => {
   });
 
   usePageMeta({
-    title: pageData.meta_title || pageData.header_title || "Blog",
+    title: pageData.meta_title || pageData.header_title || undefined,
     description: pageData.meta_description || pageData.header_subtitle || undefined,
   });
 
@@ -90,11 +90,11 @@ const Blog = () => {
         <div className="relative z-10 max-w-[800px] mx-auto px-8">
           {!blogPageLoading && pageData.header_title ? <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease }}
             className="font-display text-3xl md:text-5xl font-black leading-tight mb-5" style={{ color: "hsl(var(--foreground))" }}>
-            {pageData.header_title || "Insights & Articles"}
+            {pageData.header_title}
           </motion.h1> : null}
           {!blogPageLoading && pageData.header_subtitle ? <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease }}
             className="font-body-heading text-base md:text-lg max-w-[600px] mx-auto" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
-            {pageData.header_subtitle || ""}
+            {pageData.header_subtitle}
           </motion.p> : null}
         </div>
       </section>

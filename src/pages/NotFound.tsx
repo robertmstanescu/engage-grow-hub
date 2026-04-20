@@ -21,7 +21,7 @@
 
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 
 interface Error404Content {
   headline: string;
@@ -30,14 +30,14 @@ interface Error404Content {
 }
 
 const FALLBACK: Error404Content = {
-  headline: "404",
-  subhead: "Oops! We couldn’t find that page.",
-  cta_label: "Return to home",
+  headline: "",
+  subhead: "",
+  cta_label: "",
 };
 
 const NotFound = () => {
   const location = useLocation();
-  const content = useSiteContent<Error404Content>("error_404", FALLBACK);
+  const { isLoading, content } = useSiteContentWithStatus<Error404Content>("error_404", FALLBACK);
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
@@ -49,19 +49,19 @@ const NotFound = () => {
       style={{ backgroundColor: "hsl(var(--light-bg))", color: "hsl(var(--light-fg))" }}
     >
       <div className="text-center max-w-md">
-        <h1 className="font-display text-6xl font-bold mb-4" style={{ color: "hsl(var(--light-fg))" }}>
+        {!isLoading && content.headline ? <h1 className="font-display text-6xl font-bold mb-4" style={{ color: "hsl(var(--light-fg))" }}>
           {content.headline}
-        </h1>
-        <p className="font-body text-lg mb-6" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>
+        </h1> : null}
+        {!isLoading && content.subhead ? <p className="font-body text-lg mb-6" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>
           {content.subhead}
-        </p>
-        <a
+        </p> : null}
+        {!isLoading && content.cta_label ? <a
           href="/"
           className="inline-block font-body text-xs uppercase tracking-wider px-6 py-3 rounded-full hover:opacity-80 transition-opacity"
           style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >
           {content.cta_label}
-        </a>
+        </a> : null}
       </div>
     </div>
   );
