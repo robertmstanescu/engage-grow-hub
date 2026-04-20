@@ -69,10 +69,11 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
   const [current, setCurrent] = useState(0);
-  // Start reveal prep slightly BEFORE the row enters the viewport so the
-  // glass layer has time to warm up off-screen. This prevents the user
-  // from seeing the unsaturated first frame.
-  const { ref, isVisible } = useScrollReveal({ rootMargin: "160px 0px", threshold: 0.01 });
+  // Warm the service row much earlier while it is still off-screen so the
+  // card's glass buffer is ready by the time the user actually reaches it.
+  // A large positive rootMargin trades a bit of extra precompositing work
+  // for a reveal that appears fully saturated on first sight.
+  const { ref, isVisible } = useScrollReveal({ rootMargin: "420px 0px", threshold: 0.01 });
   const prev = useCallback(() => setCurrent((v) => v === 0 ? services.length - 1 : v - 1), [services.length]);
   const next = useCallback(() => setCurrent((v) => v === services.length - 1 ? 0 : v + 1), [services.length]);
 
@@ -179,8 +180,8 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
         </div>
 
         <div className="relative overflow-visible" style={revealStyle(isVisible, 4)}>
-          <AnimatePresence mode="wait">
-            <motion.div key={safeCurrent} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.5, ease }}>
+          <AnimatePresence initial={false}>
+            <motion.div key={safeCurrent} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease }}>
               <ServiceCard {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} />
             </motion.div>
           </AnimatePresence>

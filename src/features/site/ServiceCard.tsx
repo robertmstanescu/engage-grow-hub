@@ -70,20 +70,21 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
   useEffect(() => {
     setGlassReady(false);
 
-    let raf1 = 0;
-    let raf2 = 0;
+    let readyTimeout = 0;
+    let rafId = 0;
 
-    // Keep the glass shell mounted at near-zero opacity for two RAFs so the
-    // browser can allocate and rasterise the backdrop-filter before the user
-    // ever sees the card. The card only becomes visible once that warm-up
-    // window has passed, eliminating the unsaturated first frame.
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => setGlassReady(true));
-    });
+    // Keep the glass shell mounted at near-zero opacity long enough for the
+    // browser to allocate and rasterise the backdrop-filter off-screen.
+    // Using ~90ms (instead of just 2 RAFs) is more reliable on slower mobile
+    // GPUs, while ServiceRow now starts this work hundreds of pixels before
+    // the card is visible.
+    readyTimeout = window.setTimeout(() => {
+      rafId = requestAnimationFrame(() => setGlassReady(true));
+    }, 90);
 
     return () => {
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
+      window.clearTimeout(readyTimeout);
+      cancelAnimationFrame(rafId);
     };
   }, [tag, title, subtitle, description, price, time, note, deliverablesLabel]);
 
