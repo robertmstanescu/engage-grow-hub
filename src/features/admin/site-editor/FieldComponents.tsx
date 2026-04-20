@@ -36,7 +36,21 @@ const useDeferredValue = (externalValue: string, onCommit: (v: string) => void) 
   return { local, setLocal, commit };
 };
 
-export const Field = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => {
+export const Field = ({
+  label,
+  value,
+  onChange,
+  maxLength,
+  hint,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  /** Optional native maxLength on the underlying <input>. */
+  maxLength?: number;
+  /** Optional helper text shown beneath the input. */
+  hint?: string;
+}) => {
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
   return (
     <div>
@@ -46,9 +60,13 @@ export const Field = ({ label, value, onChange }: { label: string; value: string
         onChange={(e) => setLocal(e.target.value)}
         onBlur={commit}
         onKeyDown={(e) => { if (e.key === "Enter") commit(); }}
+        maxLength={maxLength}
         className="w-full px-3 py-2 rounded-lg font-body text-sm border"
         style={INPUT_STYLE}
       />
+      {hint && (
+        <p className="font-body text-[10px] text-muted-foreground mt-1">{hint}</p>
+      )}
     </div>
   );
 };
