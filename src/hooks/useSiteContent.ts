@@ -152,10 +152,14 @@ export const useSiteContentWithStatus = <T = any>(
   const query = useQuery({
     queryKey: siteContentQueryKey(sectionKey),
     queryFn: () => fetchSectionContent(sectionKey),
-    staleTime: 30 * 1000,
+    // ZERO-TRUST: never trust an in-memory snapshot — always revalidate.
+    // Safari's bfcache happily restores stale React-Query state across
+    // tab restores; staleTime: 0 + refetchOnMount: true forces a check
+    // on every mount so the live site mirrors the DB exactly.
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
-    refetchOnMount: "always",
+    refetchOnMount: true,
     retry: 1,
   });
 
