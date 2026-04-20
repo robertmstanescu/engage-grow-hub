@@ -289,12 +289,20 @@ Deno.serve(async (req: Request) => {
 
     let html = template;
     if (payload) {
-      html = replaceMarker(html, "SSR_TITLE", escapeHtml(payload.title));
-      html = replaceMarker(html, "SSR_DESCRIPTION", escapeHtml(payload.description));
-      html = replaceMarker(html, "SSR_CANONICAL", escapeHtml(payload.canonical));
-      html = replaceMarker(html, "SSR_OG_TAGS", buildOgTags(payload));
-      html = replaceMarker(html, "SSR_JSONLD", buildJsonLd(payload));
-      html = replaceMarker(html, "SSR_NOSCRIPT", buildNoscript(payload));
+      html = replaceMarker(html, "SSR:TITLE", `<title>${escapeHtml(payload.title)}</title>`);
+      html = replaceMarker(
+        html,
+        "SSR:DESCRIPTION",
+        `<meta name="description" content="${escapeHtml(payload.description)}" />`,
+      );
+      html = replaceMarker(
+        html,
+        "SSR:CANONICAL",
+        `<link rel="canonical" href="${escapeHtml(payload.canonical)}" />`,
+      );
+      html = replaceMarker(html, "SSR:OG_TAGS", buildOgTags(payload));
+      html = replaceMarker(html, "SSR:JSONLD", buildJsonLd(payload));
+      html = replaceMarker(html, "SSR:NOSCRIPT", buildNoscript(payload));
     }
 
     return new Response(html, {
