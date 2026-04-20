@@ -1,4 +1,4 @@
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/services/sanitize";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 
@@ -14,22 +14,27 @@ interface VowsContent {
   color_card_body?: string;
 }
 
-const fallback: VowsContent = {
-  title_lines: ["<p>Before we shake hands,</p>", "<p>here is what we vow.</p>"],
-  cards: [
-    { title: "Precision over pomp", body: "Our reports are as clear as a glass prism and as sharp as a stake. No buzzwords. No padding. No synergy." },
-    { title: "The human trace", body: "Behind every strategy is a handwritten insight. Your people are not capital. They are the life-force." },
-    { title: "Expansive horizons", body: "We don't just fix the room. We remove the ceiling. Every engagement is a door to something bigger." },
-  ],
-};
+const fallback: VowsContent = { title_lines: [], cards: [] };
 
 const VowsSection = () => {
-  const c = useSiteContent<VowsContent>("vows", fallback);
+  const { isLoading, content: c } = useSiteContentWithStatus<VowsContent>("vows", fallback);
+  const { ref, isVisible } = useScrollReveal();
+
+  if (isLoading) {
+    return (
+      <section
+        id="vows"
+        data-section="vows"
+        aria-busy="true"
+        className="snap-section grain relative py-32 md:py-40"
+        style={{ backgroundColor: "hsl(var(--vows-bg))", isolation: "isolate", paddingTop: "24px", paddingBottom: "24px" }}
+      />
+    );
+  }
+
   const titleLines: string[] = (c.title_lines || [c.title_line1 || "", c.title_line2 || ""]).map(
     (l: any) => (typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`)
   );
-
-  const { ref, isVisible } = useScrollReveal();
 
   return (
     <section id="vows" data-section="vows" className="snap-section grain relative py-32 md:py-40" style={{ backgroundColor: "hsl(var(--vows-bg))", isolation: "isolate", paddingTop: "24px", paddingBottom: "24px" }}>
