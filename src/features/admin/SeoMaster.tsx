@@ -165,36 +165,56 @@ const stripHtml = (input: unknown): string => {
 };
 
 /**
- * Walk a single row's content and pull H1 + H2 candidates.
- * `title_lines` may be an array of HTML strings OR plain strings — we
- * normalise both to plain text. `subtitle` is a single string.
+ * Pull plain-text strings out of a `title_lines` array.
+ * Entries may be HTML strings, plain strings, or `{text, type}` objects.
  */
-const extractFromRowContent = (content: unknown): { h1s: string[]; h2s: string[] } => {
-  const out = { h1s: [] as string[], h2s: [] as string[] };
-  if (!content || typeof content !== "object") return out;
+const titleLinesToStrings = (content: unknown): string[] => {
+  if (!content || typeof content !== "object") return [];
   const c = content as Record<string, any>;
-
-  if (Array.isArray(c.title_lines)) {
-    for (const line of c.title_lines) {
-      const text = stripHtml(line);
-      if (text) out.h1s.push(text);
-    }
+  if (!Array.isArray(c.title_lines)) return [];
+  const out: string[] = [];
+  for (const line of c.title_lines) {
+    const raw = typeof line === "string" ? line : line?.text ?? "";
+    const text = stripHtml(raw);
+    if (text) out.push(text);
   }
-  const subtitle = stripHtml(c.subtitle);
-  if (subtitle) out.h2s.push(subtitle);
-
   return out;
 };
 
-/** Walk all rows on a page and accumulate the H1/H2 lists. */
+/**
+ * Walk all rows on a page and produce a clean H1/H2 split.
+ *
+ * SEO HIERARCHY RULE (the #1 technical SEO requirement):
+ *   • Exactly one H1 per page — the hero's `title_lines`.
+ *   • H2s = `title_lines` of every OTHER row.
+ *   • The hero's `tagline` is NOT a heading (it renders as <p>) so
+ *     it is deliberately excluded from this audit.
+ *   • Per-row `subtitle` strings are stylised paragraphs in the live
+ *     site, so they are excluded too — auditing them would create
+ *     false-positive "H2" entries.
+ */
 const extractHeadings = (rows: any): { h1s: string[]; h2s: string[] } => {
   const acc = { h1s: [] as string[], h2s: [] as string[] };
   if (!Array.isArray(rows)) return acc;
-  for (const row of rows) {
-    const found = extractFromRowContent(row?.content);
-    acc.h1s.push(...found.h1s);
-    acc.h2s.push(...found.h2s);
+
+  // First hero row owns the H1. Everything else contributes H2s.
+  const heroIdx = rows.findIndex((r: any) => r?.row_type === "hero");
+
+  rows.forEach((row: any, i: number) => {
+    const lines = titleLinesToStrings(row?.content);
+    if (!lines.length) return;
+    if (i === heroIdx) {
+      acc.h1s.push(...lines);
+    } else {
+      acc.h2s.push(...lines);
+    }
+  });
+
+  // Fallback: page has no hero row → first row with title_lines becomes H1.
+  if (heroIdx === -1 && acc.h1s.length === 0 && acc.h2s.length > 0) {
+    acc.h1s.push(acc.h2s.shift()!);
   }
+
   return acc;
 };
 
@@ -384,8 +404,18 @@ const HeadingsAudit = () => {
               <tr className="text-left font-body text-[10px] uppercase tracking-wider text-muted-foreground">
                 <th className="px-3 py-2 font-medium">Page</th>
                 <th className="px-3 py-2 font-medium">Meta Title</th>
-                <th className="px-3 py-2 font-medium">H1 (title_lines)</th>
-                <th className="px-3 py-2 font-medium">H2 (subtitle)</th>
+                <th
+                  className="px-3 py-2 font-medium"
+                  title="The single, dominant heading for this page. Sourced from the Hero row's title_lines."
+                >
+                  Primary Heading (H1)
+                </th>
+                <th
+                  className="px-3 py-2 font-medium"
+                  title="Section headings for the rest of the page. Sourced from each non-hero row's title_lines."
+                >
+                  Section Headings (H2)
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -557,22 +587,35 @@ const GlobalMetadata = () => {
     );
   }
 
+  // Defensive accessors: if a stale state shape (e.g., from HMR or
+  // legacy DB row) ever leaves `tracking` / `organization` undefined,
+  // the renderer below would crash on `data.tracking.ga4`. Pull through
+  // `EMPTY_GLOBAL` defaults so the UI always has something to bind to.
+  const tracking = data.tracking ?? EMPTY_GLOBAL.tracking;
+  const organization = {
+    ...EMPTY_GLOBAL.organization,
+    ...(data.organization ?? {}),
+    social_links: Array.isArray(data.organization?.social_links)
+      ? data.organization!.social_links
+      : [],
+  };
+
   const setTracking = (k: keyof GlobalSeoTags["tracking"], v: string) =>
-    setData({ ...data, tracking: { ...data.tracking, [k]: v } });
+    setData({ ...data, tracking: { ...tracking, [k]: v } });
 
   const setOrg = <K extends keyof GlobalSeoTags["organization"]>(
     k: K,
     v: GlobalSeoTags["organization"][K],
-  ) => setData({ ...data, organization: { ...data.organization, [k]: v } });
+  ) => setData({ ...data, organization: { ...organization, [k]: v } });
 
   const updateSocialLink = (i: number, value: string) => {
-    const next = [...data.organization.social_links];
+    const next = [...organization.social_links];
     next[i] = value;
     setOrg("social_links", next);
   };
-  const addSocialLink = () => setOrg("social_links", [...data.organization.social_links, ""]);
+  const addSocialLink = () => setOrg("social_links", [...organization.social_links, ""]);
   const removeSocialLink = (i: number) =>
-    setOrg("social_links", data.organization.social_links.filter((_, j) => j !== i));
+    setOrg("social_links", organization.social_links.filter((_, j) => j !== i));
 
   return (
     <div className="space-y-5 max-w-3xl">
@@ -603,7 +646,7 @@ const GlobalMetadata = () => {
         <Field label="Google Analytics 4 (Measurement ID)" hint="Format: G-XXXXXXXXXX">
           <input
             type="text"
-            value={data.tracking.ga4}
+            value={tracking.ga4}
             onChange={(e) => setTracking("ga4", e.target.value.trim())}
             placeholder="G-XXXXXXXXXX"
             spellCheck={false}
@@ -613,7 +656,7 @@ const GlobalMetadata = () => {
         <Field label="Meta Pixel ID" hint="Numeric ID from Meta Events Manager (e.g., 1234567890)">
           <input
             type="text"
-            value={data.tracking.meta_pixel}
+            value={tracking.meta_pixel}
             onChange={(e) => setTracking("meta_pixel", e.target.value.trim())}
             placeholder="1234567890"
             spellCheck={false}
@@ -623,7 +666,7 @@ const GlobalMetadata = () => {
         <Field label="LinkedIn Partner ID" hint="From LinkedIn Campaign Manager → Insight Tag">
           <input
             type="text"
-            value={data.tracking.linkedin_partner}
+            value={tracking.linkedin_partner}
             onChange={(e) => setTracking("linkedin_partner", e.target.value.trim())}
             placeholder="1234567"
             spellCheck={false}
@@ -647,7 +690,7 @@ const GlobalMetadata = () => {
         <Field label="Legal Name" hint="The official registered business name.">
           <input
             type="text"
-            value={data.organization.legal_name}
+            value={organization.legal_name}
             onChange={(e) => setOrg("legal_name", e.target.value)}
             placeholder="The Magic Coffin Ltd."
             className="w-full px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary"
@@ -655,7 +698,7 @@ const GlobalMetadata = () => {
         </Field>
         <Field label="Organization Type" hint="Schema.org subtype that best describes your entity.">
           <select
-            value={data.organization.type}
+            value={organization.type}
             onChange={(e) => setOrg("type", e.target.value)}
             className="w-full px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground focus:outline-none focus:border-secondary"
           >
@@ -669,10 +712,10 @@ const GlobalMetadata = () => {
           hint="Each URL becomes a sameAs entry in the JSON-LD schema. LinkedIn, Twitter/X, Instagram, YouTube, etc."
         >
           <div className="space-y-2">
-            {data.organization.social_links.length === 0 && (
+            {organization.social_links.length === 0 && (
               <p className="font-body text-[11px] italic text-muted-foreground">No social profiles yet.</p>
             )}
-            {data.organization.social_links.map((url, i) => (
+            {organization.social_links.map((url, i) => (
               <div key={i} className="flex gap-2">
                 <input
                   type="url"
