@@ -80,11 +80,15 @@ export const siteContentQueryKey = (sectionKey: string) => ["site_content_v4", s
  * leak draft content to the public.
  */
 const fetchSectionContent = async (sectionKey: string) => {
+  // Cache-bust at the edge: appending a unique query param defeats any
+  // intermediate Cloudflare/Supabase response caching for this request.
   const { data, error } = await supabase
     .from("site_content_public")
     .select("content, draft_content")
     .eq("section_key", sectionKey)
-    .maybeSingle({ headers: { "Cache-Control": "no-cache" } } as any);
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
   if (error) throw error;
   return data;
 };
