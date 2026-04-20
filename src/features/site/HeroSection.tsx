@@ -148,7 +148,16 @@ const HeroSection = () => {
         </h1>
 
         {c.tagline && (
-          <motion.h2
+          /*
+           * SEO HIERARCHY (intentional choice):
+           * The tagline is rendered as a stylized <p>, NOT an <h2>.
+           * Reason: every page must have exactly one H1 (the hero
+           * `title_lines`) followed by H2 section headings from the
+           * downstream rows. Demoting this to <p> keeps the heading
+           * outline clean for search engines and screen readers while
+           * preserving the visual styling.
+           */
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.4 }}
             transition={{ duration: 1, delay: 0.8, ease }}
@@ -157,7 +166,7 @@ const HeroSection = () => {
             <EditableText sectionKey="hero" fieldPath="tagline" as="span">
               {c.tagline}
             </EditableText>
-          </motion.h2>
+          </motion.p>
         )}
 
         {c.subtitle && (
