@@ -86,10 +86,11 @@ const FaqRow = ({
           </RowSubtitle>
         )}
         {/* Optional rich-text body — part of the standard Brand Header
-         *  block exposed by every "new" row editor. Sanitised via
-         *  RowBody so HTML from the rich-text editor is safe. */}
+         *  block exposed by every "new" row editor. RowBody does NOT
+         *  sanitise the html prop itself, so we MUST pass it through
+         *  sanitizeHtml() here. */}
         {c.body && (
-          <RowBody html={c.body} style={revealStyle(isVisible, 0.35)} />
+          <RowBody html={sanitizeHtml(c.body)} style={revealStyle(isVisible, 0.35)} />
         )}
 
         <Accordion
