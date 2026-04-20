@@ -418,7 +418,7 @@ const HeadingRowItem = ({
           </ul>
         )}
         {multiH1 && (
-          <div className="font-body text-[9px] text-amber-600 mt-1">⚠ multiple H1s</div>
+          <div className="font-body text-[9px] text-destructive/80 mt-1">⚠ multiple H1s</div>
         )}
       </td>
       <td className="px-3 py-3 max-w-[280px]">
