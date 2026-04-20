@@ -65,14 +65,12 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         <div className={`grid ${getGridCols(cards.length)} gap-6 ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
           {cards.slice(0, 6).map((card, i) => (
             <div key={i}
-              className="rounded-xl p-7 text-left"
+              className="glass rounded-xl p-7 text-left"
               style={{
                 ...revealStyle(isVisible, i + 2),
-                // Apple Vibrancy: barely-there tint, heavy blur+saturation, faint inner highlight.
-                backgroundColor: "hsl(260 25% 12% / 0.2)",
-                backdropFilter: "blur(32px) saturate(180%)",
-                WebkitBackdropFilter: "blur(32px) saturate(180%)",
-                border: "1px solid hsl(280 20% 25% / 0.15)",
+                // `.glass` already provides the Apple-Vibrancy background,
+                // blur, saturation, border, and GPU-layer promotion — we
+                // only layer the boxed-row-specific shadow here.
                 boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
               }}>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
