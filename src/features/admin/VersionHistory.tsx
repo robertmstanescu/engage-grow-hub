@@ -153,7 +153,7 @@ const VersionHistory = () => {
                               className="px-4 py-3 flex items-center justify-between gap-4"
                             >
                               <div className="min-w-0">
-                                <div className="font-mono text-sm">
+                                <div className="font-mono text-sm text-black">
                                   v{v.version}
                                   {v.label ? (
                                     <span className="ml-2 text-xs text-muted-foreground">
