@@ -74,6 +74,9 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
   // A large positive rootMargin trades a bit of extra precompositing work
   // for a reveal that appears fully saturated on first sight.
   const { ref, isVisible } = useScrollReveal({ rootMargin: "420px 0px", threshold: 0.01 });
+  // Ghost opacity 0.01 keeps the AnimatePresence layer "warm" so the GPU
+  // never tears down and re-allocates the backdrop-filter buffer between
+  // carousel transitions — eliminates the saturation pop on swap.
   const prev = useCallback(() => setCurrent((v) => v === 0 ? services.length - 1 : v - 1), [services.length]);
   const next = useCallback(() => setCurrent((v) => v === services.length - 1 ? 0 : v + 1), [services.length]);
 
