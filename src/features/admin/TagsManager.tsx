@@ -25,16 +25,12 @@ interface TagsData {
   blog_categories: BlogCategory[];
 }
 
+// No hardcoded brand-specific defaults — admins start with empty lists
+// and build their own taxonomies via the "Add Tag Type" / "Add Category"
+// buttons. This keeps stale brand copy out of every fresh project.
 const DEFAULT_TAGS: TagsData = {
-  service_tag_types: [
-    { label: "Fixed project", value: "fixed", bgColor: "#4D1B5E", textColor: "#F9F0C1" },
-    { label: "Monthly retainer", value: "retainer", bgColor: "#E5C54F", textColor: "#2A0E33" },
-  ],
-  blog_categories: [
-    { label: "Internal Communications", bgColor: "#4D1B5E", textColor: "#F9F0C1" },
-    { label: "Employee Experience", bgColor: "#E5C54F", textColor: "#2A0E33" },
-    { label: "General", bgColor: "#7B3A91", textColor: "#FFFFFF" },
-  ],
+  service_tag_types: [],
+  blog_categories: [],
 };
 
 const TagsManager = () => {

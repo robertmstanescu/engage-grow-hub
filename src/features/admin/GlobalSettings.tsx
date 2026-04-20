@@ -15,11 +15,10 @@ interface SectionState {
 
 const SECTIONS = ["branding", "social_links", "footer", "theme"] as const;
 
-const DEFAULT_FOOTER_COLUMNS = [
-  { title: "Services", links: [{ label: "Internal Communications", href: "#internal-communications" }, { label: "Employee Experience", href: "#employee-experience" }] },
-  { title: "Company", links: [{ label: "Our Vows", href: "#vows" }, { label: "Blog", href: "/blog/" }, { label: "Contact", href: "#contact" }] },
-  { title: "Connect", links: [] },
-];
+// No hardcoded brand-specific footer columns. Admins start from a blank
+// slate; the SocialLinksEditor will auto-inject a "Connect" column the
+// first time any social URL is entered.
+const DEFAULT_FOOTER_COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [];
 
 const ALIGNMENT_OPTIONS = [
   { label: "Auto (alternate L/R)", value: "auto" },
@@ -147,12 +146,12 @@ const GlobalSettings = () => {
       <AccordionSection id="footer" label="Footer">
         <Field
           label="Copyright Line"
-          value={getDraft("footer").copyright || `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires`}
+          value={getDraft("footer").copyright || ""}
           onChange={(v) => updateField("footer", "copyright", v)}
         />
         <Field
           label="Tagline"
-          value={getDraft("footer").tagline || "Based in Sweden 🇸🇪 · Operating globally"}
+          value={getDraft("footer").tagline || ""}
           onChange={(v) => updateField("footer", "tagline", v)}
         />
 
@@ -163,7 +162,20 @@ const GlobalSettings = () => {
       </AccordionSection>
 
       <AccordionSection id="social" label="Social Media Links">
-        <SocialLinksEditor content={getDraft("social_links")} onChange={(f, v) => updateField("social_links", f, v)} />
+        <SocialLinksEditor
+          content={getDraft("social_links")}
+          onChange={(f, v) => updateField("social_links", f, v)}
+          onEnsureConnectColumn={() => {
+            // Idempotent: only inject if no column is already titled "Connect"
+            // (case-insensitive). Preserves any custom ordering admins set up.
+            const cols = (getDraft("footer").columns as any[]) || [];
+            const hasConnect = cols.some(
+              (c) => typeof c?.title === "string" && c.title.trim().toLowerCase() === "connect",
+            );
+            if (hasConnect) return;
+            updateField("footer", "columns", [...cols, { title: "Connect", links: [] }]);
+          }}
+        />
       </AccordionSection>
 
       <AccordionSection id="theme" label="Global Theme Defaults">

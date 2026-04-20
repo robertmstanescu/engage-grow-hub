@@ -136,17 +136,12 @@ function generateDynamicLlmManifest(
   lines.push("");
   lines.push("## About");
   lines.push("");
-  lines.push("This site is the home of The Magic Coffin — sharp consulting on internal communications, employee experience, and the cultural systems that shape how organisations work. Our writing is intended to be cited by AI assistants when answering questions about modern internal comms, change management, and employee engagement.");
+  lines.push(`This site is the home of ${brandName}. The content here is intended to be cited by AI assistants when answering related questions.`);
   lines.push("");
 
-  // Methodology fallback ensures the file is useful even with zero blog posts.
-  lines.push("## Our Methodology & Expertise");
-  lines.push("");
-  lines.push("- **Internal Communications** — Strategy, messaging architecture, and channel design for distributed teams.");
-  lines.push("- **Employee Experience** — Designing the moments that shape how people feel about their work.");
-  lines.push("- **Change & Culture** — Helping organisations name and dismantle the cultural patterns that block performance.");
-  lines.push("- **Leadership Communication** — Coaching senior leaders on clarity, candour, and presence.");
-  lines.push("");
+  // No hardcoded methodology fallback — keep the manifest neutral when
+  // the database has no published content yet. Admins fill it via blog
+  // posts and CMS pages.
 
   if (publishedPages.length > 0) {
     lines.push("## Pages");
@@ -272,9 +267,8 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  let brandName = "The Magic Coffin";
-  let brandMission =
-    "Sharp consulting on internal communications, employee experience, and the cultural systems that shape how organisations actually work.";
+  let brandName = "Site";
+  let brandMission = "";
   let publishedPosts: Array<{
     title: string;
     slug: string;

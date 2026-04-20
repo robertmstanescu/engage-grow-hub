@@ -20,14 +20,9 @@ interface Props {
 }
 
 const NavbarEditor = ({ content, onChange }: Props) => {
-  const subLinks = content.sub_links || [
-    { label: "Internal Communications", href: "#internal-communications" },
-    { label: "Employee Experience", href: "#employee-experience" },
-  ];
-  const links = content.links || [
-    { label: "Our Vows", href: "#vows" },
-    { label: "Contact", href: "#contact" },
-  ];
+  // No hardcoded brand-specific defaults — admins build nav from scratch.
+  const subLinks = content.sub_links || [];
+  const links = content.links || [];
 
   const updateSubLink = (index: number, field: string, value: string) => {
     const updated = [...subLinks];
@@ -163,7 +158,7 @@ const NavbarEditor = ({ content, onChange }: Props) => {
           <input
             type="text"
             placeholder="Button text"
-            value={content.cta_text || "Book a consultation"}
+            value={content.cta_text || ""}
             onChange={(e) => onChange("cta_text", e.target.value)}
             className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
             style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
@@ -171,7 +166,7 @@ const NavbarEditor = ({ content, onChange }: Props) => {
           <input
             type="text"
             placeholder="Link (e.g. #contact)"
-            value={content.cta_href || "#contact"}
+            value={content.cta_href || ""}
             onChange={(e) => onChange("cta_href", e.target.value)}
             className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
             style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
