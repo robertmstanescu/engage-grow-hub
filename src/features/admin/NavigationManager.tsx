@@ -76,12 +76,6 @@ const SortableLinkRow = ({
           className="w-full px-3 py-2 rounded-md font-body text-sm border appearance-none"
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
           <option value="">— custom —</option>
-          <optgroup label="Sections">
-            <option value="#internal-communications">↳ Internal Communications</option>
-            <option value="#employee-experience">↳ Employee Experience</option>
-            <option value="#vows">↳ Our Vows</option>
-            <option value="#contact">↳ Contact</option>
-          </optgroup>
           <optgroup label="Pages">
             <option value="/blog">Blog</option>
             {cmsPages.map((p) => (
@@ -91,7 +85,7 @@ const SortableLinkRow = ({
             ))}
           </optgroup>
         </select>
-        {!["#internal-communications", "#employee-experience", "#vows", "#contact", "/blog", ...cmsPages.map((p) => `/p/${p.slug}`)].includes(link.href) && link.href && (
+        {!["/blog", ...cmsPages.map((p) => `/p/${p.slug}`)].includes(link.href) && link.href && (
           <input
             type="text"
             placeholder="Custom link (e.g. /p/about or #section)"
@@ -142,14 +136,11 @@ const NavigationManager = () => {
     load();
   }, []);
 
-  const subLinks = content.sub_links || ensureIds([
-    { label: "Internal Communications", href: "#internal-communications" },
-    { label: "Employee Experience", href: "#employee-experience" },
-  ]);
-  const links = content.links || ensureIds([
-    { label: "Our Vows", href: "#vows" },
-    { label: "Contact", href: "#contact" },
-  ]);
+  // No hardcoded brand-specific defaults — admins start from a blank
+  // slate. The "Add Item" / "Add Link" buttons below let them build the
+  // nav from scratch.
+  const subLinks = content.sub_links || ensureIds([]);
+  const links = content.links || ensureIds([]);
 
   const updateField = (field: string, value: any) => {
     setContent((prev) => ({ ...prev, [field]: value }));
