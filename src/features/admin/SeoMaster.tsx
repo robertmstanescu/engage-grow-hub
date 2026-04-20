@@ -646,7 +646,7 @@ const GlobalMetadata = () => {
         <Field label="Google Analytics 4 (Measurement ID)" hint="Format: G-XXXXXXXXXX">
           <input
             type="text"
-            value={data.tracking.ga4}
+            value={tracking.ga4}
             onChange={(e) => setTracking("ga4", e.target.value.trim())}
             placeholder="G-XXXXXXXXXX"
             spellCheck={false}
@@ -656,7 +656,7 @@ const GlobalMetadata = () => {
         <Field label="Meta Pixel ID" hint="Numeric ID from Meta Events Manager (e.g., 1234567890)">
           <input
             type="text"
-            value={data.tracking.meta_pixel}
+            value={tracking.meta_pixel}
             onChange={(e) => setTracking("meta_pixel", e.target.value.trim())}
             placeholder="1234567890"
             spellCheck={false}
@@ -666,7 +666,7 @@ const GlobalMetadata = () => {
         <Field label="LinkedIn Partner ID" hint="From LinkedIn Campaign Manager → Insight Tag">
           <input
             type="text"
-            value={data.tracking.linkedin_partner}
+            value={tracking.linkedin_partner}
             onChange={(e) => setTracking("linkedin_partner", e.target.value.trim())}
             placeholder="1234567"
             spellCheck={false}
@@ -690,7 +690,7 @@ const GlobalMetadata = () => {
         <Field label="Legal Name" hint="The official registered business name.">
           <input
             type="text"
-            value={data.organization.legal_name}
+            value={organization.legal_name}
             onChange={(e) => setOrg("legal_name", e.target.value)}
             placeholder="The Magic Coffin Ltd."
             className="w-full px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary"
@@ -698,7 +698,7 @@ const GlobalMetadata = () => {
         </Field>
         <Field label="Organization Type" hint="Schema.org subtype that best describes your entity.">
           <select
-            value={data.organization.type}
+            value={organization.type}
             onChange={(e) => setOrg("type", e.target.value)}
             className="w-full px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground focus:outline-none focus:border-secondary"
           >
@@ -712,10 +712,10 @@ const GlobalMetadata = () => {
           hint="Each URL becomes a sameAs entry in the JSON-LD schema. LinkedIn, Twitter/X, Instagram, YouTube, etc."
         >
           <div className="space-y-2">
-            {data.organization.social_links.length === 0 && (
+            {organization.social_links.length === 0 && (
               <p className="font-body text-[11px] italic text-muted-foreground">No social profiles yet.</p>
             )}
-            {data.organization.social_links.map((url, i) => (
+            {organization.social_links.map((url, i) => (
               <div key={i} className="flex gap-2">
                 <input
                   type="url"
