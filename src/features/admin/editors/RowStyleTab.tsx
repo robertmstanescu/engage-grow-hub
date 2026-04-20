@@ -219,9 +219,23 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               gradient={currentGradient}
               legacyStart={legacyStart}
               legacyEnd={legacyEnd}
-              onChange={(gradient) =>
-                onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), gradient } })
-              }
+              onChange={(gradient) => {
+                // Sync legacy gradientStart/End from the new gradient stops so
+                // that even when the "Custom Gradient" toggle is off, the
+                // decorative legacy glow blobs use the admin's chosen colours.
+                const stops = gradient?.stops ?? [];
+                const sorted = [...stops].sort((a, b) => a.position - b.position);
+                const firstColor = sorted[0]?.color;
+                const lastColor = sorted[sorted.length - 1]?.color;
+                onRowMetaChange({
+                  layout: {
+                    ...(row.layout || DEFAULT_ROW_LAYOUT),
+                    gradient,
+                    ...(firstColor ? { gradientStart: firstColor } : {}),
+                    ...(lastColor ? { gradientEnd: lastColor } : {}),
+                  },
+                });
+              }}
             />
 
             <OverlayEditor

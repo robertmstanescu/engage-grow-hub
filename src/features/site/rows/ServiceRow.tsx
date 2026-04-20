@@ -109,7 +109,10 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
     <RowSection
       row={row}
       vAlign={vAlign}
-      defaultBg="hsl(var(--pillar-section-bg))"
+      // Only fall back to the pillar section CSS variable when the admin
+      // has NOT picked a custom bg_color in the Style tab. Otherwise the
+      // chosen colour would be overridden by the default token.
+      defaultBg={row.bg_color ? row.bg_color : "hsl(var(--pillar-section-bg))"}
       style={colorOverrides as React.CSSProperties}
       className="service-row"
     >

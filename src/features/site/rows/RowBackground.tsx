@@ -62,7 +62,7 @@ const LEGACY_BUILDERS: Record<string, LegacyBuilder> = {
 const LEGACY_OVERLAY_OPACITY: Record<string, number> = {
   hero: 1,        // Hero applies bgCss directly to <section>, no overlay div needed
   text: 0.4,
-  service: 0.1,   // Service uses two separate blobs at low opacity
+  service: 0.4,   // Aligned with other rows so picked colors actually paint on screen
   boxed: 0.6,
   contact: 0.3,
   image_text: 0.4,
