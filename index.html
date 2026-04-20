@@ -84,5 +84,23 @@
       </p>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Zombie service-worker killer. Earlier deploys may have registered
+      // a SW that intercepts fetches and serves stale assets indefinitely
+      // (especially on Safari). On every load we enumerate registrations,
+      // unregister them, and force ONE hard reload so the user lands on
+      // the fresh bundle. The sessionStorage flag prevents reload loops.
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistrations().then((regs) => {
+          if (regs.length === 0) return;
+          Promise.all(regs.map((r) => r.unregister())).then(() => {
+            if (!sessionStorage.getItem("sw-cleared")) {
+              sessionStorage.setItem("sw-cleared", "1");
+              window.location.reload();
+            }
+          });
+        });
+      }
+    </script>
   </body>
 </html>
