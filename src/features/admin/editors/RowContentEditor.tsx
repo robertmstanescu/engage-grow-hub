@@ -59,6 +59,7 @@ import LeadMagnetEditor from "../site-editor/LeadMagnetEditor";
 import TitleLinesEditor from "./TitleLinesEditor";
 import HeroRowFieldsInline from "./HeroRowFieldsInline";
 import BoxedArrayField from "./BoxedArrayField";
+import SubscribeToggle from "./SubscribeToggle";
 import { TestimonialEditor, LogoCloudEditor, FaqEditor } from "./NewRowEditors";
 import {
   Accordion,
@@ -94,15 +95,24 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
   // editing — see RichField docstring in FieldComponents for details.
   const bg = row.bg_color;
 
-  /** Always-rendered top-of-form block (Strip Title for now).
-   *  Lives ABOVE the accordions because it's the row's identifier — the
-   *  user may need to rename a section regardless of which group is open. */
+  /** Always-rendered top-of-form block: Strip Title + universal Subscribe
+   *  toggle. Lives ABOVE the accordions because:
+   *    • Strip Title identifies the row in the rail — needed regardless
+   *      of which accordion the user has open.
+   *    • The subscribe toggle is a global per-row capability we want
+   *      visible at a glance, not buried inside an accordion.
+   *  Both edits write through the same handlers used by the field
+   *  blocks below — see `onContentChange` / `onRowMetaChange`. */
   const commonMeta = (
     <div className="space-y-2 mb-4">
       <Field
         label="Strip Title"
         value={row.strip_title}
         onChange={(v) => onRowMetaChange({ strip_title: v })}
+      />
+      <SubscribeToggle
+        value={!!content.show_subscribe}
+        onChange={(v) => onContentChange("show_subscribe", v)}
       />
     </div>
   );
@@ -381,7 +391,7 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
             <AccordionItem value="media" className="border-none">
               <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
-                <LogoCloudEditor content={content} onChange={onContentChange} />
+                <LogoCloudEditor content={content} onChange={onContentChange} bgColor={bg} />
               </AccordionContent>
             </AccordionItem>
           </Shell>

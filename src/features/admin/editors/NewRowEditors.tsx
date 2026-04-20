@@ -2,36 +2,83 @@
  * ─────────────────────────────────────────────────────────────────────────
  * NewRowEditors.tsx
  * ─────────────────────────────────────────────────────────────────────────
- * Admin editor blocks for the three new row types:
+ * Admin editor blocks for the three "new" row types:
  *   • TestimonialEditor — manages an array of `TestimonialItem`
  *   • LogoCloudEditor   — manages an eyebrow + array of logo URLs
  *   • FaqEditor         — manages an array of `FaqItem`
  *
- * DATA CONTRACT (junior-engineer guide)
- * ─────────────────────────────────────
- * Each editor receives the row's `content` JSON and a generic
- * `onChange(field, value)` handler. The handler writes back to whichever
- * column is active (driven by `RowContentEditor.tsx` upstream). So when
- * we call `onChange("items", nextItems)` the array gets persisted to
- * `content.items` for the active column.
+ * STANDARDISED BRAND HEADER (junior-engineer guide)
+ * ─────────────────────────────────────────────────
+ * Every section on the public site needs a CONSISTENT heading hierarchy
+ * for SEO and visual rhythm. To enforce that, each editor here exposes
+ * the same five "Brand Header" fields that the Hero and Text rows use:
  *
- * To add a new field to any of these editors:
- *   1. Add a new <Field>/<RichField>/<ImagePickerField> below.
- *   2. Wire its `onChange` to update the relevant slot of `content`.
- *   3. Read it from the matching public renderer (TestimonialRow.tsx, …).
- * No schema migration needed — `content` is JSON.
+ *   • eyebrow         — small uppercase label above the title
+ *   • title_lines[]   — H1/H2 candidates, each on its own visual line
+ *   • subtitle        — short supporting line under the title
+ *   • subtitle_color  — optional override for the subtitle color
+ *   • body            — rich-text "section body" paragraph
  *
- * STYLING NOTE
- * ────────────
- * All visuals come from the shared <Field>/<SectionBox>/<RichField>
- * primitives in `FieldComponents.tsx`. Don't apply raw colors here —
- * the surface inherits the active theme through those primitives.
- * ───────────────────────────────────────────────────────────────────────── */
+ * The corresponding public renderers (TestimonialRow, FaqRow,
+ * LogoCloudRow) read these keys and render them via the shared
+ * <RowEyebrow/>, <RowTitle/>, <RowSubtitle/>, <RowBody/> typography
+ * primitives — search `src/features/site/rows/typography/` for the
+ * implementation.
+ *
+ * If you add a new row type, COPY THE BRAND HEADER BLOCK below verbatim
+ * so the heading hierarchy stays consistent across the site.
+ * ───────────────────────────────────────────────────────────────────── */
 
 import { Field, RichField, SectionBox } from "../site-editor/FieldComponents";
 import ImagePickerField from "../ImagePickerField";
+import TitleLinesEditor from "./TitleLinesEditor";
+import SubtitleEditor from "../site-editor/SubtitleEditor";
 import { Plus, Trash2 } from "lucide-react";
 import type { TestimonialItem, FaqItem, LogoCloudLogo } from "@/types/rows";
+
+/* ────────────────────────────────────────────────────────────────────
+ * Reusable "Brand Header" block. Renders the standard set of fields
+ * every section on the site should have. Centralising it here means
+ * one component to update if the heading structure ever changes.
+ * ──────────────────────────────────────────────────────────────────── */
+const BrandHeaderFields = ({
+  content,
+  onChange,
+  bgColor,
+}: {
+  content: Record<string, any>;
+  onChange: (field: string, value: any) => void;
+  bgColor?: string;
+}) => {
+  const titleLines: string[] = (content.title_lines || []).map((l: any) =>
+    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`,
+  );
+  return (
+    <SectionBox label="Section Header">
+      <Field
+        label="Eyebrow (optional)"
+        value={content.eyebrow || ""}
+        onChange={(v) => onChange("eyebrow", v)}
+      />
+      <TitleLinesEditor
+        titleLines={titleLines}
+        onChange={(v) => onChange("title_lines", v)}
+      />
+      <SubtitleEditor
+        subtitle={content.subtitle || ""}
+        subtitleColor={content.subtitle_color || ""}
+        onSubtitleChange={(v) => onChange("subtitle", v)}
+        onColorChange={(v) => onChange("subtitle_color", v)}
+      />
+      <RichField
+        label="Section Body (optional)"
+        value={content.body || ""}
+        onChange={(v) => onChange("body", v)}
+        bgColor={bgColor}
+      />
+    </SectionBox>
+  );
+};
 
 /* ────────────────────────────────────────────────────────────────────
  * Reusable "card list" primitive — renders a header + add/remove
@@ -93,8 +140,7 @@ export const TestimonialEditor = ({
   const items: TestimonialItem[] = Array.isArray(content.items) ? content.items : [];
   return (
     <div className="space-y-3">
-      <Field label="Eyebrow (optional)" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
-      <Field label="Subtitle (optional)" value={content.subtitle || ""} onChange={(v) => onChange("subtitle", v)} />
+      <BrandHeaderFields content={content} onChange={onChange} bgColor={bgColor} />
       <ArrayCardList<TestimonialItem>
         label="Testimonials"
         items={items}
@@ -129,18 +175,16 @@ export const TestimonialEditor = ({
 export const LogoCloudEditor = ({
   content,
   onChange,
+  bgColor,
 }: {
   content: Record<string, any>;
   onChange: (field: string, value: any) => void;
+  bgColor?: string;
 }) => {
   const logos: LogoCloudLogo[] = Array.isArray(content.logos) ? content.logos : [];
   return (
     <div className="space-y-3">
-      <Field
-        label="Eyebrow"
-        value={content.eyebrow || ""}
-        onChange={(v) => onChange("eyebrow", v)}
-      />
+      <BrandHeaderFields content={content} onChange={onChange} bgColor={bgColor} />
       <ArrayCardList<LogoCloudLogo>
         label="Logos"
         items={logos}
@@ -174,8 +218,7 @@ export const FaqEditor = ({
   const items: FaqItem[] = Array.isArray(content.items) ? content.items : [];
   return (
     <div className="space-y-3">
-      <Field label="Eyebrow (optional)" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
-      <Field label="Subtitle (optional)" value={content.subtitle || ""} onChange={(v) => onChange("subtitle", v)} />
+      <BrandHeaderFields content={content} onChange={onChange} bgColor={bgColor} />
       <ArrayCardList<FaqItem>
         label="Questions"
         items={items}

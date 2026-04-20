@@ -33,7 +33,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
+import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
+import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 
 const FaqRow = ({
@@ -84,6 +85,13 @@ const FaqRow = ({
             {c.subtitle}
           </RowSubtitle>
         )}
+        {/* Optional rich-text body — part of the standard Brand Header
+         *  block exposed by every "new" row editor. RowBody does NOT
+         *  sanitise the html prop itself, so we MUST pass it through
+         *  sanitizeHtml() here. */}
+        {c.body && (
+          <RowBody html={sanitizeHtml(c.body)} style={revealStyle(isVisible, 0.35)} />
+        )}
 
         <Accordion
           type="multiple"
@@ -108,6 +116,13 @@ const FaqRow = ({
             </AccordionItem>
           ))}
         </Accordion>
+
+        {/* Universal subscribe widget — see SubscribeToggle.tsx. */}
+        {c.show_subscribe && (
+          <div className="mt-rhythm-loose" style={revealStyle(isVisible, 0.6)}>
+            <SubscribeWidget align={align} />
+          </div>
+        )}
       </div>
     </RowSection>
   );

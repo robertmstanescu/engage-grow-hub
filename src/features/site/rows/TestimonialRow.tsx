@@ -47,7 +47,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
+import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
+import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 
 const TestimonialRow = ({
@@ -102,6 +103,10 @@ const TestimonialRow = ({
           <RowSubtitle color={c.subtitle_color || ""} style={revealStyle(isVisible, 0.3)}>
             {c.subtitle}
           </RowSubtitle>
+        )}
+        {/* Standard Brand Header body — see NewRowEditors.tsx. */}
+        {c.body && (
+          <RowBody html={sanitizeHtml(c.body)} style={revealStyle(isVisible, 0.35)} />
         )}
 
         {/*
@@ -167,6 +172,14 @@ const TestimonialRow = ({
             </>
           )}
         </Carousel>
+
+        {/* Universal subscribe widget — rendered when admin toggles
+         *  `show_subscribe` on this row. See SubscribeToggle.tsx. */}
+        {c.show_subscribe && (
+          <div className="mt-rhythm-loose" style={revealStyle(isVisible, 0.6)}>
+            <SubscribeWidget align={align} />
+          </div>
+        )}
       </div>
     </RowSection>
   );
