@@ -72,7 +72,7 @@ const getPreviewOverride = <T,>(sectionKey: string): T | null => {
 };
 
 /** Stable query key factory — keep all callers using the same shape. */
-export const siteContentQueryKey = (sectionKey: string) => ["site_content", sectionKey] as const;
+export const siteContentQueryKey = (sectionKey: string) => ["site_content_v4", sectionKey] as const;
 
 /**
  * The actual fetcher. Pulled from `site_content_public` (a view that
@@ -84,7 +84,7 @@ const fetchSectionContent = async (sectionKey: string) => {
     .from("site_content_public")
     .select("content, draft_content")
     .eq("section_key", sectionKey)
-    .maybeSingle();
+    .maybeSingle({ headers: { "Cache-Control": "no-cache" } } as any);
   if (error) throw error;
   return data;
 };
