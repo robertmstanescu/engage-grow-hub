@@ -33,7 +33,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
+import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 
@@ -84,6 +84,12 @@ const FaqRow = ({
           <RowSubtitle color={c.subtitle_color || ""} style={revealStyle(isVisible, 0.3)}>
             {c.subtitle}
           </RowSubtitle>
+        )}
+        {/* Optional rich-text body — part of the standard Brand Header
+         *  block exposed by every "new" row editor. Sanitised via
+         *  RowBody so HTML from the rich-text editor is safe. */}
+        {c.body && (
+          <RowBody html={c.body} style={revealStyle(isVisible, 0.35)} />
         )}
 
         <Accordion

@@ -391,7 +391,7 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
             <AccordionItem value="media" className="border-none">
               <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
-                <LogoCloudEditor content={content} onChange={onContentChange} />
+                <LogoCloudEditor content={content} onChange={onContentChange} bgColor={bg} />
               </AccordionContent>
             </AccordionItem>
           </Shell>
