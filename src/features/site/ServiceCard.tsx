@@ -70,7 +70,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
 
   return (
     <div
-      className={`rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""}`}
+      className={`rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""} [&_*]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)]`}
       style={{
         // Apple Vibrancy: ultra-thin tint, heavy blur+saturation, almost-invisible border.
         backgroundColor: "hsl(260 25% 12% / 0.25)",
