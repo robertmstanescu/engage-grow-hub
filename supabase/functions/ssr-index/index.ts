@@ -70,26 +70,29 @@ interface SeoPayload {
 }
 
 /**
- * Replace the default tag(s) immediately following a single-comment SSR
- * marker (e.g. `<!-- SSR:TITLE -->`) with `replacement`. The marker itself
- * is preserved so the served HTML stays self-describing.
+ * Replace the neutral default block that immediately follows a single-comment
+ * SSR marker (e.g. `<!-- SSR:TITLE -->`) with the rendered `replacement`.
+ * The default block is everything up to (but not including) the next HTML
+ * tag boundary marker we recognise — `<!--`, `<title`, `<meta`, `<link`,
+ * `<script`, `</head`, or `</body`.
  *
- * `defaultTagPattern` matches the neutral default block to swap out.
- * If no default block is present, the replacement is simply inserted
- * after the marker.
+ * The marker comment itself is preserved so the served HTML stays
+ * self-describing for inspection.
  */
 const replaceMarker = (
   html: string,
   marker: string,
-  defaultTagPattern: RegExp,
   replacement: string,
 ): string => {
-  const safeMarker = marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const safe = marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Greedy enough to swallow the default tag (which may itself contain
+  // `>` characters in attribute values), but stops at the next sibling
+  // marker comment or known tag start.
   const re = new RegExp(
-    `(<!--\\s*${safeMarker}\\s*-->)([\\s\\S]*?)(?=<!--|<title|<meta|<link|<script|</head|</body)`,
+    `(<!--\\s*${safe}\\s*-->)([\\s\\S]*?)(?=\\n\\s*(?:<!--|<title|<meta|<link|<script|</head|</body))`,
     "i",
   );
-  return html.replace(re, (_full, markerComment) => `${markerComment}\n    ${replacement}\n    `);
+  return html.replace(re, (_full, m) => `${m}\n    ${replacement}`);
 };
 
 const buildOgTags = (payload: SeoPayload): string => {
