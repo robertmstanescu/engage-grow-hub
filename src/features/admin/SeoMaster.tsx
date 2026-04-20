@@ -295,15 +295,11 @@ const HeadingsAudit = () => {
   const saveMetaTitle = useCallback(
     async (row: HeadingRow, value: string) => {
       if (value === row.metaTitle) return;
-      if (row.source === "cms_page") {
-        await runDbAction(() => updateCmsPageMeta(row.id, "meta_title", value), {
-          successMessage: "Meta title updated",
-        });
-      } else {
-        await runDbAction(() => updateBlogPost(row.id, { meta_title: value }), {
-          successMessage: "Meta title updated",
-        });
-      }
+      const action =
+        row.source === "cms_page"
+          ? () => updateCmsPageMeta(row.id, "meta_title", value)
+          : () => updateBlogPost(row.id, { meta_title: value });
+      await runDbAction({ action, successMessage: "Meta title updated" });
       // Reflect the new value locally so the input stays in sync without a refetch.
       setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, metaTitle: value } : r)));
     },
@@ -488,14 +484,14 @@ const GlobalMetadata = () => {
   };
 
   const handleSave = async () => {
-    setSaving(true);
     setJsonError(validateJsonLd(data.json_ld_organization));
-    await runDbAction(() => publishSection(GLOBAL_SEO_KEY, data), {
+    await runDbAction({
+      action: () => publishSection(GLOBAL_SEO_KEY, data),
+      setLoading: setSaving,
       successMessage: "Global SEO tags saved",
       errorMessage: "Failed to save global SEO tags",
     });
     invalidateSiteContent(GLOBAL_SEO_KEY);
-    setSaving(false);
   };
 
   if (loading) {
