@@ -69,7 +69,10 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
   const [current, setCurrent] = useState(0);
-  const { ref, isVisible } = useScrollReveal();
+  // Start reveal prep slightly BEFORE the row enters the viewport so the
+  // glass layer has time to warm up off-screen. This prevents the user
+  // from seeing the unsaturated first frame.
+  const { ref, isVisible } = useScrollReveal({ rootMargin: "160px 0px", threshold: 0.01 });
   const prev = useCallback(() => setCurrent((v) => v === 0 ? services.length - 1 : v - 1), [services.length]);
   const next = useCallback(() => setCurrent((v) => v === services.length - 1 ? 0 : v + 1), [services.length]);
 
