@@ -2,13 +2,22 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-const DEPLOYMENT_STORAGE_KEY = "__tmc_deployment_id__";
-const RELOAD_GUARD_KEY = "__tmc_deployment_reload__";
-const DEPLOYMENT_CHECK_TIMEOUT_MS = 1500;
+const RELOAD_GUARD_KEY = "__tmc_bundle_reload__";
+const DEPLOYMENT_CHECK_TIMEOUT_MS = 2000;
+const CURRENT_BUNDLE_PATH = new URL(import.meta.url).pathname;
 
-function readDeploymentCookie() {
-  const match = document.cookie.match(/(?:^|;\s*)__dpl=([^;]+)/);
-  return match?.[1] ?? null;
+function extractLatestBundlePath(html: string) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const moduleScript = doc.querySelector('script[type="module"][src]');
+  const src = moduleScript?.getAttribute("src");
+
+  if (!src) return null;
+
+  try {
+    return new URL(src, window.location.origin).pathname;
+  } catch {
+    return null;
+  }
 }
 
 async function selfHealStaleDeployment() {
@@ -19,7 +28,7 @@ async function selfHealStaleDeployment() {
 
   try {
     const response = await fetch(`${window.location.origin}/`, {
-      method: "HEAD",
+      method: "GET",
       cache: "no-store",
       credentials: "same-origin",
       headers: {
@@ -28,25 +37,18 @@ async function selfHealStaleDeployment() {
       signal: controller.signal,
     });
 
-    const liveDeploymentId = response.headers.get("x-deployment-id");
-    if (!liveDeploymentId) return;
+    const latestHtml = await response.text();
+    const latestBundlePath = extractLatestBundlePath(latestHtml);
 
-    const cookieDeploymentId = readDeploymentCookie();
-    const storedDeploymentId = localStorage.getItem(DEPLOYMENT_STORAGE_KEY);
-    const knownDeploymentId = cookieDeploymentId || storedDeploymentId;
-    const needsRefresh = Boolean(knownDeploymentId && knownDeploymentId !== liveDeploymentId);
-
-    localStorage.setItem(DEPLOYMENT_STORAGE_KEY, liveDeploymentId);
-
-    if (!needsRefresh) {
-      if (sessionStorage.getItem(RELOAD_GUARD_KEY) === liveDeploymentId) {
+    if (!latestBundlePath || latestBundlePath === CURRENT_BUNDLE_PATH) {
+      if (sessionStorage.getItem(RELOAD_GUARD_KEY) === latestBundlePath) {
         sessionStorage.removeItem(RELOAD_GUARD_KEY);
       }
       return;
     }
 
-    if (sessionStorage.getItem(RELOAD_GUARD_KEY) === liveDeploymentId) return;
-    sessionStorage.setItem(RELOAD_GUARD_KEY, liveDeploymentId);
+    if (sessionStorage.getItem(RELOAD_GUARD_KEY) === latestBundlePath) return;
+    sessionStorage.setItem(RELOAD_GUARD_KEY, latestBundlePath);
 
     if ("serviceWorker" in navigator) {
       const registrations = await navigator.serviceWorker.getRegistrations();
@@ -59,11 +61,11 @@ async function selfHealStaleDeployment() {
     }
 
     const refreshUrl = new URL(window.location.href);
-    refreshUrl.searchParams.set("__refresh", liveDeploymentId.slice(0, 8));
+    refreshUrl.searchParams.set("__refresh", latestBundlePath.split("/").pop() ?? "latest");
     window.location.replace(refreshUrl.toString());
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") return;
-    console.warn("Deployment freshness check failed", error);
+    console.warn("Bundle freshness check failed", error);
   } finally {
     window.clearTimeout(timeoutId);
   }
