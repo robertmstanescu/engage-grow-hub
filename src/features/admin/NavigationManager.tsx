@@ -293,26 +293,19 @@ const NavigationManager = () => {
             <input
               type="text"
               placeholder="Button text"
-              value={content.cta_text || "Book a consultation"}
+              value={content.cta_text || ""}
               onChange={(e) => updateField("cta_text", e.target.value)}
               className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
               style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
             />
-            <div className="flex-1 relative">
-              <select
-                value={content.cta_href || "#contact"}
-                onChange={(e) => updateField("cta_href", e.target.value)}
-                className="w-full px-3 py-2 rounded-md font-body text-sm border appearance-none"
-                style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
-                <option value="#contact">↳ Contact</option>
-                <option value="#internal-communications">↳ Internal Communications</option>
-                <option value="#employee-experience">↳ Employee Experience</option>
-                <option value="/blog">Blog</option>
-                {cmsPages.map((p) => (
-                  <option key={p.slug} value={`/p/${p.slug}`}>{p.title}</option>
-                ))}
-              </select>
-            </div>
+            <input
+              type="text"
+              placeholder="Custom link or /page or #section"
+              value={content.cta_href || ""}
+              onChange={(e) => updateField("cta_href", e.target.value)}
+              className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+            />
           </div>
         </div>
       </AccordionSection>
