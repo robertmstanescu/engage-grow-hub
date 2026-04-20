@@ -1,50 +1,14 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-
-const CANONICAL_ORIGIN = "https://themagiccoffin.com";
-
-const ensureTrailingSlash = (path: string) =>
-  path.endsWith("/") ? path : `${path}/`;
-
-interface PageMetaProps {
-  title?: string;
-  description?: string;
-  ogImage?: string;
-  suffix?: string;
-}
-
-/* ─────────────────────────────────────────────────────────────────────
-   GLOBAL HEAD INJECTOR
-   ─────────────────────────────────────────────────────────────────────
-   Loads the `global_seo_tags` row from site_content ONCE per session and
-   programmatically appends the official tracking snippets to <head>.
-   We tag every injected element with `data-mc-injected` so the cleanup
-   path (and HMR) doesn't accumulate duplicates.
-   ───────────────────────────────────────────────────────────────────── */
-
-interface GlobalTags {
-  social_prefix?: string;
-  tracking?: { ga4?: string; meta_pixel?: string; linkedin_partner?: string };
-  organization?: { legal_name?: string; type?: string; social_links?: string[] };
-  json_ld_organization?: string;
-  custom_head_scripts?: string;
-}
-
-let globalTagsCache: GlobalTags | null = null;
-let globalTagsPromise: Promise<GlobalTags> | null = null;
-let scriptsInjected = false;
-
+import { fetchPublicSection } from "@/services/siteContent";
+...
 const loadGlobalTags = (): Promise<GlobalTags> => {
   if (globalTagsCache) return Promise.resolve(globalTagsCache);
   if (globalTagsPromise) return globalTagsPromise;
   globalTagsPromise = (async () => {
     try {
-      const { data } = await (supabase as any)
-        .from("site_content_public")
-        .select("content")
-        .eq("section_key", "global_seo_tags")
-        .maybeSingle();
+      const { data, error } = await fetchPublicSection<GlobalTags>("global_seo_tags", "content");
+      if (error) throw error;
       const content = (data?.content || {}) as GlobalTags;
       globalTagsCache = content;
       return content;

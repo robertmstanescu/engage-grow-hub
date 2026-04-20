@@ -59,32 +59,11 @@
 
 import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
-
-const isPreviewMode = () =>
-  typeof window !== "undefined" &&
-  new URLSearchParams(window.location.search).get("preview") === "1";
-
-const getPreviewOverride = <T,>(sectionKey: string): T | null => {
-  if (!isPreviewMode()) return null;
-  return (readLivePreviewState().sections[sectionKey] as T) || null;
-};
-
-/** Stable query key factory — keep all callers using the same shape. */
-export const siteContentQueryKey = (sectionKey: string) => ["site_content", sectionKey] as const;
-
-/**
- * The actual fetcher. Pulled from `site_content_public` (a view that
- * hides admin-only columns from anon users) so we never accidentally
- * leak draft content to the public.
- */
+import { fetchPublicSection } from "@/services/siteContent";
+...
 const fetchSectionContent = async (sectionKey: string) => {
-  const { data, error } = await supabase
-    .from("site_content_public")
-    .select("content, draft_content")
-    .eq("section_key", sectionKey)
-    .maybeSingle();
+  const { data, error } = await fetchPublicSection(sectionKey, "content,draft_content");
   if (error) throw error;
   return data;
 };
