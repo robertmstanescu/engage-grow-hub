@@ -52,7 +52,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { runDbAction } from "@/services/db-helpers";
-import { invalidateSiteContent } from "@/hooks/useSiteContent";
+import { invalidateSiteContent, useSiteContent } from "@/hooks/useSiteContent";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import {
   LayoutDashboard, FileText, Compass, BookOpen,
