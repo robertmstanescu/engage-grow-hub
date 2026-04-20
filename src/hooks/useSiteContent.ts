@@ -72,7 +72,7 @@ const getPreviewOverride = <T,>(sectionKey: string): T | null => {
 };
 
 /** Stable query key factory — keep all callers using the same shape. */
-export const siteContentQueryKey = (sectionKey: string) => ["site_content_v3", sectionKey] as const;
+export const siteContentQueryKey = (sectionKey: string) => ["site_content", sectionKey] as const;
 
 /**
  * The actual fetcher. Pulled from `site_content_public` (a view that
@@ -183,7 +183,7 @@ export const useSiteContentWithStatus = <T = any>(
   return useMemo(() => {
     const raw = query.data;
     const resolved = raw
-      ? ((raw.draft_content || raw.content) as T)
+      ? ((preview ? raw.draft_content || raw.content : raw.content) as T)
       : null;
     // `isLoading` is react-query's "no data + currently fetching" flag.
     // Critically, it is FALSE once we have ANY cached value — so repeat
@@ -247,9 +247,9 @@ export const useSiteContent = <T = any>(sectionKey: string, fallback: T): T => {
   // prop so the FIRST paint always has something to render.
   return useMemo<T>(() => {
     if (!data) return fallback;
-    const resolved = data.draft_content || data.content;
+    const resolved = preview ? data.draft_content || data.content : data.content;
     return (resolved as T) ?? fallback;
-  }, [data, fallback]);
+  }, [data, preview, fallback]);
 };
 
 /**
