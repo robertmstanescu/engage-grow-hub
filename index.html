@@ -51,38 +51,44 @@
       values. Real users with JavaScript NEVER see these defaults —
       `usePageMeta` overwrites them within ~50ms.
 
-      Marker pairs the edge function recognises:
-        <!--SSR_TITLE-->…<!--/SSR_TITLE-->
-        <!--SSR_DESCRIPTION-->…<!--/SSR_DESCRIPTION-->
-        <!--SSR_OG_TAGS--><!--/SSR_OG_TAGS-->
-        <!--SSR_JSONLD--><!--/SSR_JSONLD-->
-        <!--SSR_NOSCRIPT--><!--/SSR_NOSCRIPT-->
-        <!--SSR_CANONICAL--><!--/SSR_CANONICAL-->
+      Single-comment markers the edge function recognises (no nested
+      pairs — HTML5 forbids `--` inside comments and Vite's parser
+      rejects markers inside attribute values):
+        <!-- SSR:TITLE -->
+        <!-- SSR:DESCRIPTION -->
+        <!-- SSR:CANONICAL -->
+        <!-- SSR:OG_TAGS -->
+        <!-- SSR:JSONLD -->
+        <!-- SSR:NOSCRIPT -->
 
-      Defaults inside the markers are intentionally brand-NEUTRAL so
-      that, even if the Worker is disabled or the edge function is
-      down, no stale brand copy ships to the wider web.
+      The edge function locates each marker and inserts a fully-formed
+      tag (or block of tags) immediately after it, replacing whatever
+      neutral default tag follows. Defaults are intentionally brand-
+      NEUTRAL so that, even if the Worker is disabled or the edge
+      function is down, no stale brand copy ships to the wider web.
       ────────────────────────────────────────────────────────────────
     -->
-    <title><!--SSR_TITLE-->The Magic Coffin<!--/SSR_TITLE--></title>
-    <meta name="description" content="<!--SSR_DESCRIPTION-->The Magic Coffin.<!--/SSR_DESCRIPTION-->" />
-    <link rel="canonical" href="<!--SSR_CANONICAL-->https://themagiccoffin.com/<!--/SSR_CANONICAL-->" />
+    <!-- SSR:TITLE -->
+    <title>The Magic Coffin</title>
+    <!-- SSR:DESCRIPTION -->
+    <meta name="description" content="The Magic Coffin." />
+    <!-- SSR:CANONICAL -->
+    <link rel="canonical" href="https://themagiccoffin.com/" />
 
-    <!--SSR_OG_TAGS-->
+    <!-- SSR:OG_TAGS -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="The Magic Coffin" />
     <meta property="og:url" content="https://themagiccoffin.com/" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="The Magic Coffin" />
-    <!--/SSR_OG_TAGS-->
 
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
-    <!--SSR_JSONLD--><!--/SSR_JSONLD-->
+    <!-- SSR:JSONLD -->
   </head>
   <body>
     <div id="root"></div>
-    <!--SSR_NOSCRIPT--><!--/SSR_NOSCRIPT-->
+    <!-- SSR:NOSCRIPT -->
     <script type="module" src="/src/main.tsx?v=BUILD_HASH"></script>
   </body>
 </html>
