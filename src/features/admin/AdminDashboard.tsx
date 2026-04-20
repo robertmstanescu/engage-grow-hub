@@ -867,11 +867,22 @@ const AdminDashboard = ({ session }: Props) => {
             <Menu size={18} />
           </button>
         )}
-        {/* Brand wordmark — hidden on mobile to save horizontal space. */}
-        {!isAdminMobile && (
-          <span className="font-display text-[11px] font-bold text-secondary tracking-[0.15em] whitespace-nowrap">
-            THE MAGIC COFFIN
-          </span>
+        {/* Brand mark — clickable favicon that returns to the live site.
+            Uses the Light Theme Favicon (admin surface is light). Hidden
+            on mobile to keep room for the hamburger + page label. */}
+        {!isAdminMobile && branding.favicon_light && (
+          <a
+            href="/"
+            title="Back to site"
+            aria-label="Back to site"
+            className="flex-shrink-0 w-7 h-7 rounded-md overflow-hidden flex items-center justify-center hover:opacity-80 transition-opacity"
+          >
+            <img
+              src={branding.favicon_light}
+              alt="Back to site"
+              className="w-full h-full object-contain"
+            />
+          </a>
         )}
         <span className="text-[11px] text-muted-foreground font-body flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap">
           {isSiteTab ? pageLabel : tabLabel}
