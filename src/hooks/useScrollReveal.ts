@@ -56,6 +56,12 @@ export const revealStyle = (
         ? "translate3d(0,0,0)"      // opacity-only on mobile — no layout shift
         : "translate3d(0,20px,0)",   // desktop keeps the slide-up
     transition: `opacity ${duration} ${ease} ${delay}, transform ${duration} ${ease} ${delay}`,
+    // 100ms processing buffer: when the reveal is triggered, hold the
+    // card invisible for one extra frame-cluster so the GPU can finish
+    // calculating the backdrop-filter saturation/blur BEFORE the fade
+    // begins. Eliminates the "color flicker" where the unsaturated
+    // base background flashes through during the first paint.
+    transitionDelay: isVisible ? "0.1s" : "0s",
     // Including `backdrop-filter` in will-change tells the GPU to pre-allocate
     // the buffer needed for the saturate/blur composite BEFORE the card fades
     // in. Without this, the first frame of the reveal shows un-saturated
