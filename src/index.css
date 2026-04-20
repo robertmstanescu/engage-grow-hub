@@ -225,15 +225,11 @@
       radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06), transparent), hsl(260 20% 4%);
   }
 
-  /* ── Glass panel ──
-     Apple "Vibrancy" standard: ultra-thin background tint + heavy blur
-     and saturation boost. The saturate() filter is what gives the
-     surface its lively, liquid quality — without it, blurred backdrops
-     turn muddy and grey. */
+  /* ── Glass panel ── */
   .glass {
-    background: hsl(260 25% 12% / 0.35);
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    background: hsl(260 25% 12% / 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid hsl(280 20% 22% / 0.4);
   }
 
@@ -241,7 +237,7 @@
     background: hsl(30 20% 96% / 0.8);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(280 20% 80% / 0.3);
+    border: 1px solid hsl(280 20% 80% / 0.4);
   }
 
   /* ── Glass button ── */
@@ -251,7 +247,7 @@
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid hsl(var(--accent) / 0.4);
     box-shadow:
-      0 4px 20px -4px hsl(var(--accent) / 0.3),
+      0 4px 20px -4px hsl(var(--accent) / 0.4),
       inset 0 1px 0 hsl(0 0% 100% / 0.15);
     color: hsl(var(--accent-foreground));
   }
