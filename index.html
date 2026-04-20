@@ -10,6 +10,13 @@
     />
     <meta name="author" content="The Magic Coffin for Silly Vampires" />
 
+    <!-- Cache-busting headers: Safari aggressively caches index.html, which
+         can serve stale builds even after a deploy. These force a revalidation
+         on every visit so users always get the latest bundle hashes. -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <link rel="canonical" href="https://themagiccoffin.com/" />
 
     <meta property="og:type" content="website" />
@@ -77,5 +84,15 @@
       </p>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Unregister any zombie service workers from previous deploys. We do
+         not ship a service worker today, so any registration found here is
+         stale and will trap old assets in Safari/Chrome caches. -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistrations().then((regs) => {
+          regs.forEach((reg) => reg.unregister());
+        });
+      }
+    </script>
   </body>
 </html>
