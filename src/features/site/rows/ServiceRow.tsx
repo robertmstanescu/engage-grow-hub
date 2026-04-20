@@ -174,7 +174,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
 
         <div className="relative overflow-visible" style={revealStyle(isVisible, 4)}>
           <AnimatePresence mode="wait">
-            <motion.div key={safeCurrent} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35, ease }}>
+            <motion.div key={safeCurrent} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.5, ease }}>
               <ServiceCard {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} />
             </motion.div>
           </AnimatePresence>
