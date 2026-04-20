@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchPublicSection } from "@/services/siteContent";
 
 const CANONICAL_ORIGIN = "https://themagiccoffin.com";
 
@@ -13,15 +13,6 @@ interface PageMetaProps {
   ogImage?: string;
   suffix?: string;
 }
-
-/* ─────────────────────────────────────────────────────────────────────
-   GLOBAL HEAD INJECTOR
-   ─────────────────────────────────────────────────────────────────────
-   Loads the `global_seo_tags` row from site_content ONCE per session and
-   programmatically appends the official tracking snippets to <head>.
-   We tag every injected element with `data-mc-injected` so the cleanup
-   path (and HMR) doesn't accumulate duplicates.
-   ───────────────────────────────────────────────────────────────────── */
 
 interface GlobalTags {
   social_prefix?: string;
@@ -38,13 +29,11 @@ let scriptsInjected = false;
 const loadGlobalTags = (): Promise<GlobalTags> => {
   if (globalTagsCache) return Promise.resolve(globalTagsCache);
   if (globalTagsPromise) return globalTagsPromise;
+
   globalTagsPromise = (async () => {
     try {
-      const { data } = await (supabase as any)
-        .from("site_content_public")
-        .select("content")
-        .eq("section_key", "global_seo_tags")
-        .maybeSingle();
+      const { data, error } = await fetchPublicSection<GlobalTags>("global_seo_tags", "content");
+      if (error) throw error;
       const content = (data?.content || {}) as GlobalTags;
       globalTagsCache = content;
       return content;
@@ -53,6 +42,7 @@ const loadGlobalTags = (): Promise<GlobalTags> => {
       return {};
     }
   })();
+
   return globalTagsPromise;
 };
 
@@ -103,7 +93,6 @@ const injectGlobalScripts = (tags: GlobalTags) => {
     );
   }
 
-  // JSON-LD Organization schema (auto-built from structured fields if no override)
   const org = tags.organization;
   let jsonLd = tags.json_ld_organization?.trim();
   if (!jsonLd && org?.legal_name) {
@@ -117,6 +106,7 @@ const injectGlobalScripts = (tags: GlobalTags) => {
         : {}),
     });
   }
+
   if (jsonLd && !document.getElementById("mc-jsonld-org")) {
     const s = document.createElement("script");
     s.id = "mc-jsonld-org";
@@ -150,11 +140,14 @@ const usePageMeta = ({ title, description, ogImage, suffix = "The Magic Coffin f
         if (!content) return;
         const attr = property ? "property" : "name";
         let el = document.querySelector(`meta[${attr}="${name}"]`);
-        if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+        if (!el) {
+          el = document.createElement("meta");
+          el.setAttribute(attr, name);
+          document.head.appendChild(el);
+        }
         el.setAttribute("content", content);
       };
 
-      // Canonical link
       let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
       if (!canonical) {
         canonical = document.createElement("link");
