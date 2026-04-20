@@ -34,19 +34,29 @@ interface FooterContent {
   columns?: FooterColumn[];
 }
 
+const defaultColumns: FooterColumn[] = [
+  { title: "Services", links: [{ label: "Internal Communications", href: "#internal-communications" }, { label: "Employee Experience", href: "#employee-experience" }] },
+  { title: "Company", links: [{ label: "Our Vows", href: "#vows" }, { label: "Blog", href: "/blog/" }, { label: "Contact", href: "#contact" }] },
+  { title: "Connect", links: [] },
+];
+
 const Footer = () => {
   const { isLoading: socialLoading, content: socialLinks } =
     useSiteContentWithStatus<Record<string, string>>("social_links", {});
   const { isLoading: footerLoading, content: footer } =
-    useSiteContentWithStatus<FooterContent>("footer", {});
+    useSiteContentWithStatus<FooterContent>("footer", {
+      copyright: `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires`,
+      tagline: "Based in Sweden 🇸🇪 · Operating globally",
+      columns: defaultColumns,
+    });
   const { isLoading: brandingLoading, content: branding } =
     useSiteContentWithStatus<Record<string, any>>("branding", {});
   // Footer uses emblem logo (small icon) on all sizes
   const emblemUrl = branding.emblem_logo_url || branding.logo_url || "";
 
-  const columns = footer.columns || [];
+  const columns = footer.columns || defaultColumns;
   const activeLinks = socialLoading ? [] : PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
-  const connectColumn = columns.find((c) => c.title?.toLowerCase() === "connect");
+  const connectColumn = columns.find((c) => c.title.toLowerCase() === "connect");
 
   return (
     <footer className="grain relative border-t" style={{ backgroundColor: "hsl(260 20% 4%)", borderColor: "hsl(var(--border) / 0.2)" }}>
@@ -142,7 +152,7 @@ const Footer = () => {
           style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}
         >
           <p className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--foreground) / 0.2)" }}>
-            {!footerLoading ? footer.copyright || null : null}
+            {!footerLoading ? footer.copyright || `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires` : null}
           </p>
 
           <div className="flex items-center gap-2">

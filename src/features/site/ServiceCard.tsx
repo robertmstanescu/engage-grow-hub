@@ -70,16 +70,14 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
 
   return (
     <div
-      className={`rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""} [&_h4]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_p]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)]`}
+      className={`glass rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""} [&_h4]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_p]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)]`}
       style={{
-        backgroundColor: "hsl(260 25% 12% / 0.5)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        border: "1px solid hsl(280 20% 25% / 0.35)",
-        boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4)",
-        transform: "translateZ(0)",
-        backfaceVisibility: "hidden",
-        isolation: "isolate",
+        // Visual extras layered ON TOP of the shared `.glass` utility:
+        // shadow + inner highlight specific to the service card. We render
+        // the card at full opacity from the very first paint so the
+        // saturated tag colour and glass surface appear instantly — no
+        // fade-in delay (matches the Vow cards which also paint instantly).
+        boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), 0 0 60px -20px hsl(280 55% 30% / 0.15), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
       }}>
       <div className={`${compact ? "p-4 md:p-5 flex-shrink-0" : "p-5 md:p-6"} ${alignClass}`}>
         <span className={`${cardTextAlign === "center" ? "mx-auto" : cardTextAlign === "right" ? "ml-auto" : ""} inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full mb-3 font-medium`} style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>

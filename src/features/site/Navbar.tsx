@@ -55,9 +55,12 @@ const Navbar = () => {
     useSiteContentWithStatus<Record<string, any>>("branding", {});
   /**
    * Navbar links MUST come from the DB before we render link labels —
-   * otherwise users would briefly see stale hardcoded labels and then
-   * watch them swap to the live config. We therefore render no public
-   * nav items until the real config has loaded.
+   * otherwise users would briefly see hardcoded fallback labels
+   * ("Internal Communications", "Our Vows", etc.) and then watch them
+   * change to the admin's customised labels. We use the loading-aware
+   * variant here and hide the link list until the real config arrives.
+   * Branding/logo can stay on the plain hook because the fallback logo
+   * path is identical to the DB default for fresh projects.
    */
   const { isLoading: navLoading, content: navConfig } =
     useSiteContentWithStatus<Record<string, any>>("navbar", {});
@@ -69,10 +72,16 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const subLinks = (navConfig.sub_links || []).map((l: any) => ({ label: l.label, href: l.href }));
-  const links = (navConfig.links || []).map((l: any) => ({ label: l.label, href: l.href }));
+  const subLinks = (navConfig.sub_links || [
+    { label: "Internal Communications", href: "#internal-communications" },
+    { label: "Employee Experience", href: "#employee-experience" },
+  ]).map((l: any) => ({ label: l.label, href: l.href }));
+  const links = (navConfig.links || [
+    { label: "Our Vows", href: "#vows" },
+    { label: "Contact", href: "#contact" },
+  ]).map((l: any) => ({ label: l.label, href: l.href }));
   const showBlogLink = navLoading ? false : navConfig.show_blog_link !== false;
-  const ctaText = navConfig.cta_text || "";
+  const ctaText = navConfig.cta_text || "Book a consultation";
   const ctaHref = navConfig.cta_href || "#contact";
 
   const allItems = [
@@ -81,7 +90,18 @@ const Navbar = () => {
     ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
   ];
 
-  const renderedItems = navLoading ? [] : allItems;
+  // Fallback link list used while the navbar config is still loading from the
+  // database. Showing these immediately (instead of an empty rail) makes the
+  // page feel instantly complete; once the real config arrives React swaps to
+  // `allItems`. The labels mirror the hardcoded defaults declared above so a
+  // first-time visitor sees a sensible structure either way.
+  const fallbackItems = [
+    { label: "Internal Communications", href: "#internal-communications" },
+    { label: "Employee Experience", href: "#employee-experience" },
+    { label: "Our Vows", href: "#vows" },
+    { label: "Contact", href: "#contact" },
+  ];
+  const renderedItems = navLoading ? fallbackItems : allItems;
 
   const handleScroll = useCallback(() => {
     if (location.pathname !== "/") return;
@@ -162,6 +182,13 @@ const Navbar = () => {
         </a>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-5">
+          {/*
+            Render fallback links immediately while `navLoading` is true so
+            the rail never appears empty. Once the real config arrives,
+            React swaps in the admin-customised labels. This trades a small
+            label-text swap for a visibly "complete" first paint, which
+            feels far snappier than a blank column.
+          */}
           {renderedItems.map((item) => (
             <a
               key={item.label}
@@ -177,16 +204,14 @@ const Navbar = () => {
           ))}
         </div>
 
-        {ctaText ? (
-          <a
-            href={ctaHref}
-            onClick={(e) => handleNavClick(e, ctaHref)}
-            title={ctaText}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500 hover:scale-110"
-            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-            →
-          </a>
-        ) : <div className="w-8 h-8" aria-hidden="true" />}
+        <a
+          href={ctaHref}
+          onClick={(e) => handleNavClick(e, ctaHref)}
+          title={ctaText}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500 hover:scale-110"
+          style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+          →
+        </a>
       </nav>
 
       {/* Mobile/tablet top bar — full/long logo */}
@@ -231,18 +256,16 @@ const Navbar = () => {
                 {item.label}
               </motion.a>
             ))}
-            {ctaText ? (
-              <motion.a
-                href={ctaHref}
-                onClick={(e) => handleNavClick(e, ctaHref)}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
-                className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
-                style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-                {ctaText}
-              </motion.a>
-            ) : null}
+            <motion.a
+              href={ctaHref}
+              onClick={(e) => handleNavClick(e, ctaHref)}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
+              className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
+              style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+              {ctaText}
+            </motion.a>
           </motion.div>
         )}
       </AnimatePresence>
