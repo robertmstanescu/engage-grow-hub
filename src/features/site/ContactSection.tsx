@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/services/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -17,20 +17,16 @@ interface ContactContent {
   body: string;
 }
 
-const fallback: ContactContent = {
-  title_lines: ["<p>Not sure where to start?</p>", "<p>Lift the lid first.</p>"],
-  body: "Book a free 30-minute consultation. We'll identify your biggest vampire moment and tell you honestly whether we're the right fit to bury it.",
-};
+const fallback: ContactContent = { title_lines: [], body: "" };
 
 const ContactSection = () => {
-  const c = useSiteContent<ContactContent>("contact", fallback);
-  const titleLines: string[] = (c.title_lines || [c.title_line1 || "", c.title_line2 || ""]).map(
-    (l: any) => (typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`)
-  );
-
+  const { isLoading, content: c } = useSiteContentWithStatus<ContactContent>("contact", fallback);
   const [formData, setFormData] = useState({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const titleLines: string[] = (c.title_lines || [c.title_line1 || "", c.title_line2 || ""]).map(
+    (l: any) => (typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`)
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +54,19 @@ const ContactSection = () => {
           </motion.div>
         </div>
       </section>
+    );
+  }
+
+  if (isLoading) {
+    // Reserve layout space so the page does not jump when the contact
+    // copy lands, but never paint the hardcoded fallback strings.
+    return (
+      <section
+        id="contact"
+        data-section="contact"
+        aria-busy="true"
+        className="snap-section section-light relative py-32 md:py-40"
+      />
     );
   }
 

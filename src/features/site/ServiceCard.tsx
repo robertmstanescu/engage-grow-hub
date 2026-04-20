@@ -1,4 +1,4 @@
-import { useState, memo, useCallback, useEffect } from "react";
+import { useState, memo, useCallback } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTagColors } from "@/hooks/useTagColors";
 
@@ -65,28 +65,6 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
   const adminColors = getTagColors(tagType);
   const bgHex = tagBgColor || adminColors.bgColor;
   const fgHex = tagTextColor || adminColors.textColor;
-  const [glassReady, setGlassReady] = useState(false);
-
-  useEffect(() => {
-    setGlassReady(false);
-
-    let readyTimeout = 0;
-    let rafId = 0;
-
-    // Keep the glass shell mounted at near-zero opacity long enough for the
-    // browser to allocate and rasterise the backdrop-filter off-screen.
-    // Using ~90ms (instead of just 2 RAFs) is more reliable on slower mobile
-    // GPUs, while ServiceRow now starts this work hundreds of pixels before
-    // the card is visible.
-    readyTimeout = window.setTimeout(() => {
-      rafId = requestAnimationFrame(() => setGlassReady(true));
-    }, 90);
-
-    return () => {
-      window.clearTimeout(readyTimeout);
-      cancelAnimationFrame(rafId);
-    };
-  }, [tag, title, subtitle, description, price, time, note, deliverablesLabel]);
 
   const alignClass = cardTextAlign === "center" ? "text-center" : cardTextAlign === "right" ? "text-right" : "text-left";
 
@@ -95,17 +73,11 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
       className={`glass rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""} [&_h4]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_p]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)]`}
       style={{
         // Visual extras layered ON TOP of the shared `.glass` utility:
-        // shadow + inner highlight specific to the service card and not
-        // shared with other glass surfaces. The background, blur,
-        // saturation, border and GPU-layer hints (translateZ +
-        // backface-visibility) all live in `.glass` so the browser
-        // caches them once instead of re-parsing inline-style strings
-        // on every render.
+        // shadow + inner highlight specific to the service card. We render
+        // the card at full opacity from the very first paint so the
+        // saturated tag colour and glass surface appear instantly — no
+        // fade-in delay (matches the Vow cards which also paint instantly).
         boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), 0 0 60px -20px hsl(280 55% 30% / 0.15), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
-        opacity: glassReady ? 1 : 0.01,
-        transition: `opacity 0.18s cubic-bezier(${ease.join(", ")})`,
-        willChange: glassReady ? "auto" : "opacity, backdrop-filter",
-        pointerEvents: glassReady ? "auto" : "none",
       }}>
       <div className={`${compact ? "p-4 md:p-5 flex-shrink-0" : "p-5 md:p-6"} ${alignClass}`}>
         <span className={`${cardTextAlign === "center" ? "mx-auto" : cardTextAlign === "right" ? "ml-auto" : ""} inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full mb-3 font-medium`} style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>

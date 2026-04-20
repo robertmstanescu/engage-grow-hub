@@ -1,15 +1,18 @@
 import { motion } from "framer-motion";
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/services/sanitize";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
-const fallback = {
-  text: 'We work across two disciplines: <strong>Internal Communications</strong> and <strong>Employee Experience</strong>. Every engagement starts with the same question — where is the life being drained? — and ends with something that actually works.',
-};
+const fallback = { text: "" };
 
 const IntroStrip = () => {
-  const c = useSiteContent<{ text: string }>("intro", fallback);
+  const { isLoading, content: c } = useSiteContentWithStatus<{ text: string }>("intro", fallback);
+  if (isLoading || !c.text) {
+    // Reserve vertical space so the page does not jump when content lands,
+    // but do NOT paint stale fallback copy that would flash on refresh.
+    return <div data-section="intro" aria-busy={isLoading} className="snap-section section-light relative py-24 md:py-32 px-3" />;
+  }
 
   return (
     <div data-section="intro" className="snap-section section-light relative py-24 md:py-32 px-3">
