@@ -93,17 +93,60 @@ interface HeadingRow {
   editPath?: string;
 }
 
+/**
+ * Global SEO tags shape.
+ *
+ * Templated fields (NEW)
+ * ──────────────────────
+ *   tracking.ga4              — Google Analytics 4 measurement ID (G-XXXXX)
+ *   tracking.meta_pixel       — Meta (Facebook) Pixel ID (numeric)
+ *   tracking.linkedin_partner — LinkedIn Insight Tag Partner ID
+ *   organization.legal_name   — Legal entity name (used in JSON-LD)
+ *   organization.type         — Schema.org Organization subtype
+ *   organization.social_links — Array of profile URLs (sameAs in JSON-LD)
+ *
+ * Free-text legacy fields (preserved)
+ * ───────────────────────────────────
+ *   custom_head_scripts       — Raw <head> escape hatch (advanced users only)
+ *   json_ld_organization      — Raw JSON-LD override (rare; usually auto-built)
+ *   social_prefix             — og:title / twitter:title prefix
+ */
 interface GlobalSeoTags {
   custom_head_scripts: string;
   json_ld_organization: string;
   social_prefix: string;
+  tracking: {
+    ga4: string;
+    meta_pixel: string;
+    linkedin_partner: string;
+  };
+  organization: {
+    legal_name: string;
+    type: string;
+    social_links: string[];
+  };
 }
 
 const EMPTY_GLOBAL: GlobalSeoTags = {
   custom_head_scripts: "",
   json_ld_organization: "",
   social_prefix: "",
+  tracking: { ga4: "", meta_pixel: "", linkedin_partner: "" },
+  organization: { legal_name: "", type: "Organization", social_links: [] },
 };
+
+/** Schema.org Organization subtypes — covers most business shapes. */
+const ORG_TYPES = [
+  "Organization",
+  "Corporation",
+  "LocalBusiness",
+  "EducationalOrganization",
+  "GovernmentOrganization",
+  "NGO",
+  "NewsMediaOrganization",
+  "PerformingGroup",
+  "SportsOrganization",
+] as const;
 
 const GLOBAL_SEO_KEY = "global_seo_tags";
 
