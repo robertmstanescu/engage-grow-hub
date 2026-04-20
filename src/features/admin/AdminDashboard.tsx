@@ -870,23 +870,8 @@ const AdminDashboard = ({ session }: Props) => {
             <Menu size={18} />
           </button>
         )}
-        {/* Brand mark — clickable favicon that returns to the live site.
-            Uses the Light Theme Favicon (admin surface is light). Hidden
-            on mobile to keep room for the hamburger + page label. */}
-        {!isAdminMobile && branding.favicon_light && (
-          <a
-            href="/"
-            title="Back to site"
-            aria-label="Back to site"
-            className="flex-shrink-0 w-7 h-7 rounded-md overflow-hidden flex items-center justify-center hover:opacity-80 transition-opacity"
-          >
-            <img
-              src={branding.favicon_light}
-              alt="Back to site"
-              className="w-full h-full object-contain"
-            />
-          </a>
-        )}
+        {/* Brand mark moved into the sidebar (top-left, above the icon
+            rail) — this header now keeps just the page-title + actions. */}
         <span className="text-[11px] text-muted-foreground font-body flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap">
           {isSiteTab ? pageLabel : tabLabel}
         </span>
@@ -1045,6 +1030,25 @@ const AdminDashboard = ({ session }: Props) => {
                 <X size={16} />
               </button>
             </div>
+          )}
+          {/* Light Theme Favicon — sits above the icon rail and links
+              back to the live site. Centred inside the 58px collapsed
+              rail so it aligns with the icons below; on hover-expand
+              and on mobile it stays anchored at the same left position. */}
+          {branding.favicon_light && (
+            <a
+              href="/"
+              title="Back to site"
+              aria-label="Back to site"
+              className="flex-shrink-0 flex items-center justify-start hover:opacity-80 transition-opacity border-b border-border"
+              style={{ width: 58, height: 52, paddingLeft: 17 }}
+            >
+              <img
+                src={branding.favicon_light}
+                alt="Back to site"
+                style={{ width: 24, height: 24, objectFit: "contain" }}
+              />
+            </a>
           )}
           <div className="flex-1 overflow-y-auto overflow-x-hidden pt-2">
             {NAV_GROUPS.map((group) => (
