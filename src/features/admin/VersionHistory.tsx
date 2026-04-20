@@ -124,7 +124,7 @@ const VersionHistory = () => {
                 >
                   <span className="flex items-center gap-2">
                     {isOpen ? (
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className="h-4 w-4 text-secondary" />
                     ) : (
                       <ChevronRight className="h-4 w-4 text-secondary" />
                     )}
@@ -169,7 +169,7 @@ const VersionHistory = () => {
                                 type="button"
                                 onClick={() => handleRestore(v.section_key, v.version)}
                                 disabled={restoring === id}
-                                className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/60 disabled:opacity-50"
+                                className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/60 disabled:opacity-50 text-primary"
                               >
                                 {restoring === id ? (
                                   <Loader2 className="h-3 w-3 animate-spin" />
