@@ -458,8 +458,37 @@ const HeadingRowItem = ({
           {row.slug}
           <ExternalLink size={10} />
         </a>
-        <div className="font-body text-[9px] uppercase tracking-wider text-muted-foreground/70 mt-0.5">
-          {row.source === "cms_page" ? "CMS Page" : "Blog Post"}
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground/70">
+            {row.source === "cms_page" ? "CMS Page" : "Blog Post"}
+          </span>
+          {/*
+            Phase-1 verification button.
+            ─────────────────────────────────────────────────────────
+            Calls the `ssr-index` edge function with the row's path so
+            admins can confirm — without deploying a Worker — what a
+            crawler / social scraper would receive. Opens in a new tab
+            (text/html), so you can View Source and inspect the rewritten
+            <head>.
+          */}
+          <button
+            type="button"
+            onClick={() => {
+              const projectId = (import.meta as any).env?.VITE_SUPABASE_PROJECT_ID;
+              if (!projectId) {
+                alert("Missing VITE_SUPABASE_PROJECT_ID — cannot open SSR preview.");
+                return;
+              }
+              const url = `https://${projectId}.supabase.co/functions/v1/ssr-index?path=${encodeURIComponent(
+                row.slug,
+              )}`;
+              window.open(url, "_blank", "noopener,noreferrer");
+            }}
+            className="font-body text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-secondary/40 text-secondary hover:bg-secondary/10"
+            title="Open the SSR-rendered HTML this page would serve to bots & social scrapers."
+          >
+            SSR preview
+          </button>
         </div>
       </td>
       <td className="px-3 py-3">
