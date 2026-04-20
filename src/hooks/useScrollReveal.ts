@@ -49,24 +49,24 @@ export const revealStyle = (
   const ease = "cubic-bezier(0.16, 1, 0.3, 1)";
 
   return {
-    opacity: isVisible ? 1 : 0,
+    // GHOST OPACITY: 0.01 instead of true 0. Browsers (esp. Chromium) skip
+    // backdrop-filter compositing for fully transparent layers as a power-
+    // saving optimisation, then have to re-prime the GPU buffer when the
+    // element becomes visible again — that re-prime is the "saturation
+    // pop" we kept seeing on first reveal. Keeping the layer marginally
+    // visible (1%) tricks the compositor into treating it as a live
+    // surface and pre-computing the blur/saturation BEFORE the fade-in
+    // begins, so the very first frame already shows the finished glass.
+    opacity: isVisible ? 1 : 0.01,
     transform: isVisible
       ? "translate3d(0,0,0)"
       : mobile
         ? "translate3d(0,0,0)"      // opacity-only on mobile — no layout shift
         : "translate3d(0,20px,0)",   // desktop keeps the slide-up
     transition: `opacity ${duration} ${ease} ${delay}, transform ${duration} ${ease} ${delay}`,
-    // 100ms processing buffer: when the reveal is triggered, hold the
-    // card invisible for one extra frame-cluster so the GPU can finish
-    // calculating the backdrop-filter saturation/blur BEFORE the fade
-    // begins. Eliminates the "color flicker" where the unsaturated
-    // base background flashes through during the first paint.
-    transitionDelay: isVisible ? "0.1s" : "0s",
     // Including `backdrop-filter` in will-change tells the GPU to pre-allocate
     // the buffer needed for the saturate/blur composite BEFORE the card fades
-    // in. Without this, the first frame of the reveal shows un-saturated
-    // content for ~16ms while the compositor sets up the filter — visible as
-    // a "saturation pop". Reset to `auto` once visible to free the buffer.
+    // in. Reset to `auto` once visible to free the buffer.
     willChange: isVisible ? "auto" : "opacity, transform, backdrop-filter",
     backfaceVisibility: "hidden" as const,
   };

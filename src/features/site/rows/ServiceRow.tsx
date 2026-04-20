@@ -75,7 +75,10 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
 
   if (!services.length) return null;
   const safeCurrent = Math.min(current, services.length - 1);
-  const variants = { enter: { opacity: 0 }, center: { opacity: 1 }, exit: { opacity: 0 } };
+  // Ghost opacity 0.01 (not 0) keeps the backdrop-filter layer "live" on
+  // the GPU between carousel transitions so the new card paints with full
+  // saturation on its very first frame instead of popping in a beat later.
+  const variants = { enter: { opacity: 0.01 }, center: { opacity: 1 }, exit: { opacity: 0.01 } };
 
   const colorOverrides = buildColorOverrides(c);
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };

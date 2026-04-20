@@ -70,7 +70,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
 
   return (
     <div
-      className={`glass rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""} [&_*]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)]`}
+      className={`glass rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""} [&_h4]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_p]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)]`}
       style={{
         // Visual extras layered ON TOP of the shared `.glass` utility:
         // shadow + inner highlight specific to the service card and not
