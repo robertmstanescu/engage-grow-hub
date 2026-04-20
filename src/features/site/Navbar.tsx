@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
+import { useSiteContent, useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -51,8 +51,7 @@ const ResponsiveLogo = ({
 );
 
 const Navbar = () => {
-  const { isLoading: brandingLoading, content: branding } =
-    useSiteContentWithStatus<Record<string, any>>("branding", {});
+  const branding = useSiteContent<Record<string, any>>("branding", {});
   /**
    * Navbar links MUST come from the DB before we render link labels —
    * otherwise users would briefly see hardcoded fallback labels
@@ -64,7 +63,7 @@ const Navbar = () => {
    */
   const { isLoading: navLoading, content: navConfig } =
     useSiteContentWithStatus<Record<string, any>>("navbar", {});
-  const logoUrl = branding.logo_url || "";
+  const logoUrl = branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
   const emblemUrl = branding.emblem_logo_url || logoUrl;
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -72,11 +71,17 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const subLinks = (navConfig.sub_links || []).map((l: any) => ({ label: l.label, href: l.href }));
-  const links = (navConfig.links || []).map((l: any) => ({ label: l.label, href: l.href }));
+  const subLinks = (navConfig.sub_links || [
+    { label: "Internal Communications", href: "#internal-communications" },
+    { label: "Employee Experience", href: "#employee-experience" },
+  ]).map((l: any) => ({ label: l.label, href: l.href }));
+  const links = (navConfig.links || [
+    { label: "Our Vows", href: "#vows" },
+    { label: "Contact", href: "#contact" },
+  ]).map((l: any) => ({ label: l.label, href: l.href }));
   const showBlogLink = navConfig.show_blog_link !== false;
-  const ctaText = navConfig.cta_text || "";
-  const ctaHref = navConfig.cta_href || "";
+  const ctaText = navConfig.cta_text || "Book a consultation";
+  const ctaHref = navConfig.cta_href || "#contact";
 
   const allItems = [
     ...subLinks.map((l: any) => ({ label: l.label, href: l.href })),
@@ -84,9 +89,19 @@ const Navbar = () => {
     ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
   ];
 
-  const renderedItems = navLoading ? [] : allItems;
-  const showCta = !navLoading && Boolean(ctaText && ctaHref);
-  const showLogo = !brandingLoading && Boolean(logoUrl);
+  // Fallback link list used while the navbar config is still loading from the
+  // database. Showing these immediately (instead of an empty rail) makes the
+  // page feel instantly complete; once the real config arrives React swaps to
+  // `allItems`. The labels mirror the hardcoded defaults declared above so a
+  // first-time visitor sees a sensible structure either way.
+  const fallbackItems = [
+    { label: "Internal Communications", href: "#internal-communications" },
+    { label: "Employee Experience", href: "#employee-experience" },
+    { label: "Our Vows", href: "#vows" },
+    { label: "Contact", href: "#contact" },
+    ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
+  ];
+  const renderedItems = navLoading ? fallbackItems : allItems;
 
   const handleScroll = useCallback(() => {
     if (location.pathname !== "/") return;
@@ -155,20 +170,23 @@ const Navbar = () => {
       <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
         style={{ backgroundColor: "hsl(var(--background) / 0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid hsl(var(--border) / 0.3)" }}>
         <a href="/" className="mb-4">
-          {showLogo ? (
-            <ResponsiveLogo
-              emblemUrl={emblemUrl}
-              logoUrl={logoUrl}
-              imgClassName="w-8 h-8 object-contain brightness-200"
-              width={32}
-              height={32}
-            />
-          ) : (
-            <span className="block w-8 h-8" aria-hidden="true" />
-          )}
+          <ResponsiveLogo
+            emblemUrl={emblemUrl}
+            logoUrl={logoUrl}
+            imgClassName="w-8 h-8 object-contain brightness-200"
+            width={32}
+            height={32}
+          />
         </a>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-5">
+          {/*
+            Render fallback links immediately while `navLoading` is true so
+            the rail never appears empty. Once the real config arrives,
+            React swaps in the admin-customised labels. This trades a small
+            label-text swap for a visibly "complete" first paint, which
+            feels far snappier than a blank column.
+          */}
           {renderedItems.map((item) => (
             <a
               key={item.label}
@@ -184,35 +202,27 @@ const Navbar = () => {
           ))}
         </div>
 
-        {showCta ? (
-          <a
-            href={ctaHref}
-            onClick={(e) => handleNavClick(e, ctaHref)}
-            title={ctaText}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500 hover:scale-110"
-            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-            →
-          </a>
-        ) : (
-          <span className="block w-8 h-8" aria-hidden="true" />
-        )}
+        <a
+          href={ctaHref}
+          onClick={(e) => handleNavClick(e, ctaHref)}
+          title={ctaText}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500 hover:scale-110"
+          style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+          →
+        </a>
       </nav>
 
       {/* Mobile/tablet top bar — full/long logo */}
       <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-5"
         style={{ backgroundColor: "hsl(var(--background) / 0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(var(--border) / 0.2)" }}>
         <a href="/" className="flex items-center flex-shrink-0">
-          {showLogo ? (
-            <ResponsiveLogo
-              emblemUrl={emblemUrl}
-              logoUrl={logoUrl}
-              className="flex items-center"
-              imgClassName="h-7 brightness-200 object-contain"
-              height={28}
-            />
-          ) : (
-            <span className="block h-7 w-28" aria-hidden="true" />
-          )}
+          <ResponsiveLogo
+            emblemUrl={emblemUrl}
+            logoUrl={logoUrl}
+            className="flex items-center"
+            imgClassName="h-7 brightness-200 object-contain"
+            height={28}
+          />
         </a>
         <button onClick={() => setMobileOpen(!mobileOpen)} style={{ color: "hsl(var(--foreground) / 0.7)" }}>
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -242,18 +252,16 @@ const Navbar = () => {
                 {item.label}
               </motion.a>
             ))}
-            {showCta ? (
-              <motion.a
-                href={ctaHref}
-                onClick={(e) => handleNavClick(e, ctaHref)}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
-                className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
-                style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-                {ctaText}
-              </motion.a>
-            ) : null}
+            <motion.a
+              href={ctaHref}
+              onClick={(e) => handleNavClick(e, ctaHref)}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
+              className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
+              style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+              {ctaText}
+            </motion.a>
           </motion.div>
         )}
       </AnimatePresence>
