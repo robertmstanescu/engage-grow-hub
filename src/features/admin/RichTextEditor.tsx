@@ -27,6 +27,7 @@ import { uploadEditorImage } from "@/services/mediaStorage";
 import { runDbAction } from "@/services/db-helpers";
 import { useBrandColors } from "@/hooks/useBrandSettings";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
+import { pickForeground } from "@/lib/pickForeground";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────
@@ -110,21 +111,10 @@ interface RichTextEditorProps {
   bgColor?: string;
 }
 
-/** Pick a readable foreground color for the given background. */
-const pickFg = (bg?: string): string => {
-  if (!bg) return "#F4F0EC"; // dark default → light text
-  // Hex luminance (#RRGGBB or #RGB)
-  const m = bg.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
-  if (m) {
-    const hex = m[1].length === 3 ? m[1].split("").map((c) => c + c).join("") : m[1];
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
-    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return lum > 0.6 ? "#1a1a1a" : "#F4F0EC";
-  }
-  return "#F4F0EC";
-};
+/** Pick a readable foreground color for the given background.
+ *  Re-exported through the shared `pickForeground` util so every editor
+ *  in the admin uses the same luminance threshold. */
+const pickFg = (bg?: string): string => pickForeground(bg);
 
 const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEditorProps) => {
   // Resolve the editor surface: explicit row bg, or a neutral dark.
@@ -145,10 +135,12 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   }, [onChange]);
 
   // Debounced upstream push for raw typing — prevents per-keystroke
-  // re-renders of the entire admin tree. See file header for details.
+  // re-renders of the entire admin tree. 1000ms gives the admin time
+  // to finish a sentence before the global cascade fires. See file
+  // header for the FOCUS PROTECTION rationale.
   const debouncedEmit = useDebouncedCallback((html: string) => {
     onChange(html);
-  }, 300);
+  }, 1000);
 
   const emitChangeOnInput = useCallback(() => {
     if (editorRef.current) {
@@ -340,6 +332,10 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   useEffect(() => {
     if (htmlMode) return; // Don't sync when in HTML mode
     if (!editorRef.current) return;
+    // FOCUS PROTECTION: while the user is typing in this editor, never
+    // let an upstream prop change overwrite their in-flight keystrokes —
+    // doing so would snap the cursor to the start of the line.
+    if (document.activeElement === editorRef.current) return;
     const sanitized = sanitizeHtml(content || "");
     if (editorRef.current.innerHTML !== sanitized) {
       editorRef.current.innerHTML = sanitized;

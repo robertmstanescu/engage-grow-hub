@@ -1,8 +1,9 @@
 import { Palette, RotateCcw } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useBrandColors } from "@/hooks/useBrandSettings";
 import { normalizeRichTextContainerFontSizes, normalizeRichTextHtml } from "@/services/richTextFontSize";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
+import { pickForeground } from "@/lib/pickForeground";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────
@@ -16,11 +17,20 @@ import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
  *
  * What we DO need to send upstream is the resulting HTML so the global
  * `pageRows` blob in `AdminDashboard` matches what the user typed. That
- * propagation is debounced (300ms): a burst of keystrokes fires `onChange`
- * once when the user pauses, instead of once per letter. The debounced
- * upstream call is what eventually triggers the SILENT auto-save effect
- * in `AdminDashboard` (see comments there) — but the auto-save NEVER
- * touches the live `content` columns, only `draft_content`.
+ * propagation is debounced (1000ms): a burst of keystrokes fires
+ * `onChange` once when the user pauses for a full second, instead of
+ * once per letter. This long debounce gives the admin enough breathing
+ * room to finish a thought before the global state cascade kicks in.
+ *
+ * FOCUS PROTECTION
+ * ────────────────
+ * The `useEffect` that mirrors the `value` prop into the contentEditable
+ * is GUARDED: it skips the sync whenever this editor currently owns the
+ * keyboard focus. Without that guard, an upstream re-render (often
+ * caused by our own debounced push) could overwrite the in-flight
+ * keystrokes and snap the cursor to the start of the line. With the
+ * guard, the live DOM is left alone while the user is typing — the
+ * value prop only "wins" when the user has moved on to another input.
  *
  * On `blur` we flush any pending debounce so closing the input never
  * loses an in-flight keystroke. Toolbar actions (color, font, etc.)
@@ -40,12 +50,23 @@ const SIZE_OPTIONS = ["14px", "18px", "24px", "32px", "44px", "56px"];
 interface Props {
   value: string;
   onChange: (html: string) => void;
+  /** Optional — when supplied, the editor surface mirrors this colour
+   *  and the typed text auto-switches to a readable foreground via
+   *  `pickForeground`. Used by RowContentEditor to thread the live row
+   *  background down so admins see the real contrast while editing. */
+  bgColor?: string;
 }
 
-const TitleLineEditor = ({ value, onChange }: Props) => {
+const TitleLineEditor = ({ value, onChange, bgColor }: Props) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const selectionRef = useRef<Range | null>(null);
   const brandColors = useBrandColors();
+
+  // Resolve writing surface colours. Default to a white card if no row
+  // bg is supplied (preserves old behaviour for callers that haven't
+  // wired bgColor yet).
+  const surfaceBg = bgColor || "#FFFFFF";
+  const surfaceFg = useMemo(() => (bgColor ? pickForeground(bgColor) : "#1a1a1a"), [bgColor]);
 
   /**
    * emitChangeNow — IMMEDIATE upstream propagation. Used by toolbar
@@ -62,12 +83,13 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
   /**
    * emitChangeDebounced — deferred upstream propagation, used on every
    * keystroke. The user sees their letters instantly (contentEditable),
-   * but the parent component is only notified once they pause for 300ms.
-   * That collapses ~10 re-renders into 1 for typical typing speed.
+   * but the parent component is only notified once they pause for 1000ms.
+   * That gives the admin time to finish a sentence before the global
+   * cascade (and any auto-save) fires.
    */
   const debouncedPush = useDebouncedCallback((html: string) => {
     onChange(html);
-  }, 300);
+  }, 1000);
 
   const emitChange = useCallback(() => {
     if (editorRef.current) {
@@ -128,12 +150,16 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
   }, [applyColor]);
 
   const resetColor = useCallback(() => {
-    const foreground = getComputedStyle(document.documentElement).getPropertyValue("--foreground").trim();
-    applyColor(foreground ? `hsl(${foreground})` : "#111111");
-  }, [applyColor]);
+    applyColor(surfaceFg);
+  }, [applyColor, surfaceFg]);
 
+  // FOCUS-PROTECTED VALUE SYNC. While the user is actively typing in
+  // this editor, do NOT overwrite the contentEditable from the prop —
+  // doing so would snap the cursor and destroy in-flight keystrokes.
+  // The prop only wins when this editor is not focused.
   useEffect(() => {
     if (!editorRef.current) return;
+    if (document.activeElement === editorRef.current) return;
     if (editorRef.current.innerHTML !== (value || "")) {
       editorRef.current.innerHTML = value || "";
     }
@@ -142,7 +168,7 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
   return (
     <div
       className="rounded-lg border overflow-hidden"
-      style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF" }}
+      style={{ borderColor: "hsl(var(--border))", backgroundColor: surfaceBg }}
     >
       <div
         className="flex items-center gap-0.5 px-2 py-1 border-b"
@@ -223,7 +249,7 @@ const TitleLineEditor = ({ value, onChange }: Props) => {
         role="textbox"
         aria-multiline="true"
         className="focus:outline-none px-3 py-2 font-display text-sm min-h-[36px]"
-        style={{ color: "#1a1a1a" }}
+        style={{ color: surfaceFg, backgroundColor: surfaceBg }}
         onInput={emitChange}
         onBlur={() => {
           saveSelection();
