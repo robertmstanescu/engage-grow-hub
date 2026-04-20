@@ -56,7 +56,12 @@ export const revealStyle = (
         ? "translate3d(0,0,0)"      // opacity-only on mobile — no layout shift
         : "translate3d(0,20px,0)",   // desktop keeps the slide-up
     transition: `opacity ${duration} ${ease} ${delay}, transform ${duration} ${ease} ${delay}`,
-    willChange: isVisible ? "auto" : "opacity, transform",
+    // Including `backdrop-filter` in will-change tells the GPU to pre-allocate
+    // the buffer needed for the saturate/blur composite BEFORE the card fades
+    // in. Without this, the first frame of the reveal shows un-saturated
+    // content for ~16ms while the compositor sets up the filter — visible as
+    // a "saturation pop". Reset to `auto` once visible to free the buffer.
+    willChange: isVisible ? "auto" : "opacity, transform, backdrop-filter",
     backfaceVisibility: "hidden" as const,
   };
 };
