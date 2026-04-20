@@ -92,11 +92,18 @@ const RowSection = ({
         backgroundColor: getRowBgColor(row, defaultBg),
         isolation: "isolate",
         scrollMarginTop: "0px",
-        ...getRowBgImageStyle(row),
         ...style,
       }}
     >
+      {/*
+        LAYER ORDER (bottom → top):
+        1. <RowBackground/>  — soft decorative glow / custom gradient
+        2. Background image  — sits ABOVE the glow so the 100px blur
+           does not wash it out
+        3. {children}        — actual row content, on top of everything
+      */}
       <RowBackground row={row} />
+      <div aria-hidden className="absolute inset-0 pointer-events-none" style={getRowBgImageStyle(row)} />
       {children}
     </section>
   );
