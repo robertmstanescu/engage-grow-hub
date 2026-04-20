@@ -1,5 +1,5 @@
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
-import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
+import { type PageRow } from "@/types/rows";
 import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import TextRow from "./TextRow";
 import ServiceRow from "./ServiceRow";
@@ -107,9 +107,13 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
    * on the very first render, so navigating between routes still feels
    * instant.
    */
+  // No hardcoded DEFAULT_ROWS fallback — passing an empty rows array
+  // means the only thing that can ever paint is what the admin actually
+  // saved. Combined with the `isLoading` guard below, no stale demo
+  // content can flash on a refresh.
   const { isLoading, content: data } = useSiteContentWithStatus<{ rows: PageRow[] }>(
     "page_rows",
-    { rows: DEFAULT_ROWS },
+    { rows: [] },
   );
   const rows = data.rows || [];
   const autoAlignments = computeAutoAlignments(rows);

@@ -34,27 +34,21 @@ interface FooterContent {
   columns?: FooterColumn[];
 }
 
-const defaultColumns: FooterColumn[] = [
-  { title: "Services", links: [{ label: "Internal Communications", href: "#internal-communications" }, { label: "Employee Experience", href: "#employee-experience" }] },
-  { title: "Company", links: [{ label: "Our Vows", href: "#vows" }, { label: "Blog", href: "/blog/" }, { label: "Contact", href: "#contact" }] },
-  { title: "Connect", links: [] },
-];
-
 const Footer = () => {
   const { isLoading: socialLoading, content: socialLinks } =
     useSiteContentWithStatus<Record<string, string>>("social_links", {});
+  // No hardcoded fallback content. The DB is the single source of truth;
+  // until "footer" arrives we render an empty shell rather than flashing
+  // stale defaults like "Based in Sweden 🇸🇪 · Operating globally" or a
+  // "Blog" link that may have been removed.
   const { isLoading: footerLoading, content: footer } =
-    useSiteContentWithStatus<FooterContent>("footer", {
-      copyright: `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires`,
-      tagline: "Based in Sweden 🇸🇪 · Operating globally",
-      columns: defaultColumns,
-    });
+    useSiteContentWithStatus<FooterContent>("footer", {});
   const { isLoading: brandingLoading, content: branding } =
     useSiteContentWithStatus<Record<string, any>>("branding", {});
   // Footer uses emblem logo (small icon) on all sizes
   const emblemUrl = branding.emblem_logo_url || branding.logo_url || "";
 
-  const columns = footer.columns || defaultColumns;
+  const columns = !footerLoading && Array.isArray(footer.columns) ? footer.columns : [];
   const activeLinks = socialLoading ? [] : PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
   const connectColumn = columns.find((c) => c.title.toLowerCase() === "connect");
 
@@ -152,7 +146,7 @@ const Footer = () => {
           style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}
         >
           <p className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--foreground) / 0.2)" }}>
-            {!footerLoading ? footer.copyright || `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires` : null}
+            {!footerLoading && footer.copyright ? footer.copyright : null}
           </p>
 
           <div className="flex items-center gap-2">
