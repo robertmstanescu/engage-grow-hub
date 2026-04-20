@@ -49,9 +49,12 @@ interface Props {
   titleLines: string[];
   /** Called whenever any line is edited, added, or removed. */
   onChange: (lines: string[]) => void;
+  /** Live row background — passed straight through to each line editor
+   *  so admins see the real on-page contrast while typing. */
+  bgColor?: string;
 }
 
-const TitleLinesEditor = ({ titleLines, onChange }: Props) => {
+const TitleLinesEditor = ({ titleLines, onChange, bgColor }: Props) => {
   /**
    * Mutate a single line in place. We clone the array so React notices
    * the reference change and re-renders downstream consumers.
@@ -84,7 +87,7 @@ const TitleLinesEditor = ({ titleLines, onChange }: Props) => {
           <SectionBox key={i} label={`Line ${i + 1}`}>
             <div className="flex gap-2">
               <div className="flex-1">
-                <TitleLineEditor value={line} onChange={(v) => updateLine(i, v)} />
+                <TitleLineEditor value={line} onChange={(v) => updateLine(i, v)} bgColor={bgColor} />
               </div>
               <button
                 type="button"
