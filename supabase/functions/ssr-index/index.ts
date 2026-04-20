@@ -69,13 +69,30 @@ interface SeoPayload {
   noscript: string;
 }
 
-/** Replace the contents between `<!--MARKER-->…<!--/MARKER-->` (inclusive of inner). */
-const replaceMarker = (html: string, marker: string, replacement: string): string => {
-  // Escape the marker name for regex safety. Markers are simple ASCII so
-  // this is mostly defensive — but better safe than sorry.
+/**
+ * Replace the neutral default block that immediately follows a single-comment
+ * SSR marker (e.g. `<!-- SSR:TITLE -->`) with the rendered `replacement`.
+ * The default block is everything up to (but not including) the next HTML
+ * tag boundary marker we recognise — `<!--`, `<title`, `<meta`, `<link`,
+ * `<script`, `</head`, or `</body`.
+ *
+ * The marker comment itself is preserved so the served HTML stays
+ * self-describing for inspection.
+ */
+const replaceMarker = (
+  html: string,
+  marker: string,
+  replacement: string,
+): string => {
   const safe = marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const re = new RegExp(`<!--${safe}-->[\\s\\S]*?<!--/${safe}-->`, "g");
-  return html.replace(re, `<!--${marker}-->${replacement}<!--/${marker}-->`);
+  // Greedy enough to swallow the default tag (which may itself contain
+  // `>` characters in attribute values), but stops at the next sibling
+  // marker comment or known tag start.
+  const re = new RegExp(
+    `(<!--\\s*${safe}\\s*-->)([\\s\\S]*?)(?=\\n\\s*(?:<!--|<title|<meta|<link|<script|</head|</body))`,
+    "i",
+  );
+  return html.replace(re, (_full, m) => `${m}\n    ${replacement}`);
 };
 
 const buildOgTags = (payload: SeoPayload): string => {
@@ -128,14 +145,31 @@ const fetchTemplate = async (req: Request): Promise<string> => {
       if (res.ok) {
         const text = await res.text();
         // Sanity check — must contain at least one of our SSR markers.
-        if (text.includes("<!--SSR_TITLE-->")) return text;
+        if (text.includes("SSR:TITLE")) return text;
       }
     } catch {
       // try next candidate
     }
   }
   // Last-resort minimal template (matches index.html marker layout).
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><title><!--SSR_TITLE-->The Magic Coffin<!--/SSR_TITLE--></title><meta name="description" content="<!--SSR_DESCRIPTION--><!--/SSR_DESCRIPTION-->"><link rel="canonical" href="<!--SSR_CANONICAL-->https://themagiccoffin.com/<!--/SSR_CANONICAL-->"><!--SSR_OG_TAGS--><!--/SSR_OG_TAGS--><!--SSR_JSONLD--><!--/SSR_JSONLD--></head><body><div id="root"></div><!--SSR_NOSCRIPT--><!--/SSR_NOSCRIPT--></body></html>`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- SSR:TITLE -->
+<title>The Magic Coffin</title>
+<!-- SSR:DESCRIPTION -->
+<meta name="description" content="" />
+<!-- SSR:CANONICAL -->
+<link rel="canonical" href="https://themagiccoffin.com/" />
+<!-- SSR:OG_TAGS -->
+<!-- SSR:JSONLD -->
+</head>
+<body>
+<div id="root"></div>
+<!-- SSR:NOSCRIPT -->
+</body>
+</html>`;
 };
 
 /** Build SEO payload for the homepage from the `main_page_seo` site_content row. */
@@ -272,12 +306,20 @@ Deno.serve(async (req: Request) => {
 
     let html = template;
     if (payload) {
-      html = replaceMarker(html, "SSR_TITLE", escapeHtml(payload.title));
-      html = replaceMarker(html, "SSR_DESCRIPTION", escapeHtml(payload.description));
-      html = replaceMarker(html, "SSR_CANONICAL", escapeHtml(payload.canonical));
-      html = replaceMarker(html, "SSR_OG_TAGS", buildOgTags(payload));
-      html = replaceMarker(html, "SSR_JSONLD", buildJsonLd(payload));
-      html = replaceMarker(html, "SSR_NOSCRIPT", buildNoscript(payload));
+      html = replaceMarker(html, "SSR:TITLE", `<title>${escapeHtml(payload.title)}</title>`);
+      html = replaceMarker(
+        html,
+        "SSR:DESCRIPTION",
+        `<meta name="description" content="${escapeHtml(payload.description)}" />`,
+      );
+      html = replaceMarker(
+        html,
+        "SSR:CANONICAL",
+        `<link rel="canonical" href="${escapeHtml(payload.canonical)}" />`,
+      );
+      html = replaceMarker(html, "SSR:OG_TAGS", buildOgTags(payload));
+      html = replaceMarker(html, "SSR:JSONLD", buildJsonLd(payload));
+      html = replaceMarker(html, "SSR:NOSCRIPT", buildNoscript(payload));
     }
 
     return new Response(html, {
