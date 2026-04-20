@@ -1,54 +1,49 @@
 import { Palette, RotateCcw } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
+import { useBrandColors } from "@/hooks/useBrandSettings";
+import { pickForeground } from "@/lib/pickForeground";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────
- * SubtitleEditor — local state + debounced upstream push
+ * SubtitleEditor — local state + debounced upstream push (1s)
  * ─────────────────────────────────────────────────────────────────────────
  *
  * KEYSTROKE-LAG ARCHITECTURE (junior-dev orientation)
  * ───────────────────────────────────────────────────
- * Previously this component called `onSubtitleChange` on EVERY keystroke,
- * which mutated the global `pageRows` blob in `AdminDashboard` and
- * cascaded a re-render through every editor on the page. Typing felt
- * janky — letters appeared in batches.
+ * Typed text lives in `localValue` (a plain `useState`) so what the user
+ * sees on screen is updated synchronously and the cursor never moves.
+ * We only push the value upstream after the user pauses for ONE FULL
+ * SECOND, which gives admins enough breathing room to finish a thought
+ * before the global re-render cascade fires.
  *
- * Now the typed text lives in `localValue` (a plain `useState`), so what
- * the user sees on screen is updated synchronously and the cursor never
- * moves. We only push the value upstream after the user pauses for
- * 300ms, which collapses ~10 React re-renders per word into 1.
- *
- * The eventual upstream call is what triggers the SILENT auto-save
- * effect in `AdminDashboard`. That effect writes ONLY to `draft_content`
- * — the live `content` columns stay frozen until "Publish" is clicked.
+ * FOCUS PROTECTION
+ * ────────────────
+ * The reconciliation `useEffect` is guarded: while this input owns the
+ * keyboard focus we IGNORE prop changes that would otherwise overwrite
+ * what the user is typing. Combined with `lastPushedRef`, this means:
+ *   • Our own debounced push echoes back as a prop change → ignored.
+ *   • The admin switches rows → input is not focused → prop wins.
  *
  * On blur we flush any pending push so we never lose the user's last
  * edit when they tab away.
- *
- * The `useEffect` reconciles `localValue` whenever the parent's `subtitle`
- * prop genuinely changes from outside (e.g. when the admin selects a
- * different row). It does NOT clobber the user's mid-typing state because
- * the parent only changes after we push upstream.
  * ─────────────────────────────────────────────────────────────────────────
  */
-
-const QUICK_COLORS = [
-  { label: "Gold", value: "#E5C54F" },
-  { label: "Violet", value: "#4D1B5E" },
-  { label: "Cream", value: "#F9F0C1" },
-  { label: "White", value: "#F4F0EC" },
-  { label: "Dark", value: "#1B1F24" },
-];
 
 interface Props {
   subtitle: string;
   subtitleColor: string;
   onSubtitleChange: (v: string) => void;
   onColorChange: (v: string) => void;
+  /** Live row background — when supplied, the input mirrors it and
+   *  text auto-switches to a readable foreground via `pickForeground`. */
+  bgColor?: string;
 }
 
-const SubtitleEditor = ({ subtitle, subtitleColor, onSubtitleChange, onColorChange }: Props) => {
+const SubtitleEditor = ({ subtitle, subtitleColor, onSubtitleChange, onColorChange, bgColor }: Props) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const brandColors = useBrandColors();
+
   // Local mirror — what the user sees and types into.
   const [localValue, setLocalValue] = useState(subtitle || "");
 
@@ -59,26 +54,41 @@ const SubtitleEditor = ({ subtitle, subtitleColor, onSubtitleChange, onColorChan
   const lastPushedRef = useRef(subtitle || "");
 
   useEffect(() => {
+    // FOCUS PROTECTION: never overwrite while the user is typing here.
+    if (document.activeElement === inputRef.current) return;
     if (subtitle !== lastPushedRef.current) {
       setLocalValue(subtitle || "");
       lastPushedRef.current = subtitle || "";
     }
   }, [subtitle]);
 
-  // Debounced push to the parent. 300ms feels instant to a user but
-  // is more than long enough to coalesce a fast typist's keystrokes.
+  // Debounced push to the parent (1s). Long enough to swallow a sentence,
+  // short enough that auto-save still fires while the admin is thinking.
   const debouncedPush = useDebouncedCallback((value: string) => {
     lastPushedRef.current = value;
     onSubtitleChange(value);
-  }, 300);
+  }, 1000);
+
+  // Resolve writing surface. If a row bg is provided, mirror it and
+  // pick a readable foreground; otherwise fall back to the admin's
+  // neutral background tokens.
+  const surfaceBg = bgColor || "hsl(var(--background))";
+  const surfaceFg = useMemo(
+    () => (subtitleColor ? subtitleColor : (bgColor ? pickForeground(bgColor) : "inherit")),
+    [bgColor, subtitleColor]
+  );
 
   return (
-    <div>
-      <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">
-        Subtitle <span className="text-muted-foreground/60">(Architects Daughter font)</span>
+    <div
+      className="rounded-lg p-3 space-y-2"
+      style={{ backgroundColor: surfaceBg, border: "1px solid hsl(var(--border) / 0.5)" }}
+    >
+      <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: pickForeground(surfaceBg), opacity: 0.7 }}>
+        Subtitle <span className="opacity-60">(Architects Daughter font)</span>
       </label>
       <div className="flex gap-2">
         <input
+          ref={inputRef}
           value={localValue}
           onChange={(e) => {
             const next = e.target.value;
@@ -91,28 +101,29 @@ const SubtitleEditor = ({ subtitle, subtitleColor, onSubtitleChange, onColorChan
             debouncedPush.flush();
           }}
           placeholder="Optional subtitle…"
-          className="flex-1 px-3 py-2 rounded-lg text-sm border"
+          className="flex-1 px-3 py-2 rounded-lg text-sm border bg-transparent"
           style={{
             borderColor: "hsl(var(--border))",
-            backgroundColor: "hsl(var(--background))",
             fontFamily: "'Architects Daughter', cursive",
-            color: subtitleColor || "inherit",
+            color: surfaceFg,
           }}
         />
       </div>
       {localValue && (
-        <div className="flex items-center gap-1 mt-1.5">
-          <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground mr-1">Color:</span>
-          {QUICK_COLORS.map((c) => (
+        <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+          <span className="font-body text-[9px] uppercase tracking-wider mr-1" style={{ color: pickForeground(surfaceBg), opacity: 0.7 }}>
+            Color:
+          </span>
+          {brandColors.slice(0, 6).map((c) => (
             <button
-              key={c.value}
+              key={c.id}
               type="button"
-              onClick={() => onColorChange(c.value)}
-              title={c.label}
+              onClick={() => onColorChange(c.hex)}
+              title={c.name}
               className="w-4 h-4 rounded-full border border-black/10 hover:scale-110 transition-transform"
               style={{
-                backgroundColor: c.value,
-                outline: subtitleColor === c.value ? "2px solid hsl(var(--primary))" : "none",
+                backgroundColor: c.hex,
+                outline: subtitleColor === c.hex ? "2px solid hsl(var(--primary))" : "none",
                 outlineOffset: "1px",
               }}
             />
@@ -125,7 +136,7 @@ const SubtitleEditor = ({ subtitle, subtitleColor, onSubtitleChange, onColorChan
             }}
             title="Custom color"
             className="p-1 rounded hover:opacity-70"
-            style={{ color: "hsl(var(--muted-foreground))" }}>
+            style={{ color: pickForeground(surfaceBg), opacity: 0.7 }}>
             <Palette size={12} />
           </button>
           <button
@@ -133,7 +144,7 @@ const SubtitleEditor = ({ subtitle, subtitleColor, onSubtitleChange, onColorChan
             onClick={() => onColorChange("")}
             title="Reset color"
             className="p-1 rounded hover:opacity-70"
-            style={{ color: "hsl(var(--muted-foreground))" }}>
+            style={{ color: pickForeground(surfaceBg), opacity: 0.7 }}>
             <RotateCcw size={11} />
           </button>
         </div>

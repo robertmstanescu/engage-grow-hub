@@ -145,10 +145,12 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   }, [onChange]);
 
   // Debounced upstream push for raw typing — prevents per-keystroke
-  // re-renders of the entire admin tree. See file header for details.
+  // re-renders of the entire admin tree. 1000ms gives the admin time
+  // to finish a sentence before the global cascade fires. See file
+  // header for the FOCUS PROTECTION rationale.
   const debouncedEmit = useDebouncedCallback((html: string) => {
     onChange(html);
-  }, 300);
+  }, 1000);
 
   const emitChangeOnInput = useCallback(() => {
     if (editorRef.current) {
@@ -340,6 +342,10 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   useEffect(() => {
     if (htmlMode) return; // Don't sync when in HTML mode
     if (!editorRef.current) return;
+    // FOCUS PROTECTION: while the user is typing in this editor, never
+    // let an upstream prop change overwrite their in-flight keystrokes —
+    // doing so would snap the cursor to the start of the line.
+    if (document.activeElement === editorRef.current) return;
     const sanitized = sanitizeHtml(content || "");
     if (editorRef.current.innerHTML !== sanitized) {
       editorRef.current.innerHTML = sanitized;
