@@ -90,7 +90,7 @@ const VersionHistory = () => {
   return (
     <div className="space-y-6">
       <header className="space-y-2">
-        <h2 className="text-2xl font-display flex items-center gap-2">
+        <h2 className="text-2xl font-display flex items-center gap-2 text-primary">
           <History className="h-6 w-6" />
           Version History
         </h2>
@@ -126,9 +126,9 @@ const VersionHistory = () => {
                     {isOpen ? (
                       <ChevronDown className="h-4 w-4" />
                     ) : (
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4 text-secondary" />
                     )}
-                    <span className="font-medium">{s.section_key}</span>
+                    <span className="font-medium text-secondary">{s.section_key}</span>
                   </span>
                   <span className="text-sm text-muted-foreground">
                     {s.count} version{s.count === 1 ? "" : "s"} · latest v{s.latest}
