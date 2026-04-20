@@ -1,22 +1,45 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Safari hard-cache defeat: prevents the browser from serving a
-         stale index.html (and therefore stale JS bundle references)
-         from disk after a deploy. Combined with the service-worker
-         unregister script in <body>, this kills "zombie" client state. -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
+    <!-- ZOMBIE KILLER — must run before ANY other script/asset so we
+         intercept stale service workers and bfcache restores before the
+         old bundle has a chance to boot. Order matters: this block is
+         intentionally the very first thing in <head>. -->
     <script>
+      // 1) Safari Back-Forward cache buster: when a page is restored
+      //    from bfcache (event.persisted === true) the JS heap, the
+      //    React-Query cache and any in-flight subscriptions are all
+      //    frozen-in-time snapshots. Force a fresh load.
       window.onpageshow = function (event) {
         if (event.persisted) {
           window.location.reload();
         }
       };
+      // 2) Zombie service-worker killer. Earlier deploys may have
+      //    registered a SW that intercepts fetches and serves stale
+      //    assets indefinitely (especially on Safari). Unregister all
+      //    of them and force ONE hard reload so the user lands on the
+      //    fresh bundle. The sessionStorage flag prevents reload loops.
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          if (regs.length === 0) return;
+          Promise.all(regs.map(function (r) { return r.unregister(); })).then(function () {
+            if (!sessionStorage.getItem("sw-cleared")) {
+              sessionStorage.setItem("sw-cleared", "1");
+              window.location.reload();
+            }
+          });
+        });
+      }
     </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Safari hard-cache defeat: prevents the browser from serving a
+         stale index.html (and therefore stale JS bundle references)
+         from disk after a deploy. -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>The Magic Coffin for Silly Vampires | Internal Communications and Employee Experience Consulting</title>
     <meta
       name="description"
@@ -90,24 +113,6 @@
         HR &amp; internal comms consulting for companies that are done with business as usual. Stockholm &amp; global.
       </p>
     </noscript>
-    <script type="module" src="/src/main.tsx"></script>
-    <script>
-      // Zombie service-worker killer. Earlier deploys may have registered
-      // a SW that intercepts fetches and serves stale assets indefinitely
-      // (especially on Safari). On every load we enumerate registrations,
-      // unregister them, and force ONE hard reload so the user lands on
-      // the fresh bundle. The sessionStorage flag prevents reload loops.
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.getRegistrations().then((regs) => {
-          if (regs.length === 0) return;
-          Promise.all(regs.map((r) => r.unregister())).then(() => {
-            if (!sessionStorage.getItem("sw-cleared")) {
-              sessionStorage.setItem("sw-cleared", "1");
-              window.location.reload();
-            }
-          });
-        });
-      }
-    </script>
+    <script type="module" src="/src/main.tsx?v=nuclear_sync_01"></script>
   </body>
 </html>
