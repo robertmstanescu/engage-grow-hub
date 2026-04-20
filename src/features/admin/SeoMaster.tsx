@@ -66,7 +66,7 @@
  */
 
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Loader2, Search, Globe, Code2, Sparkles, AlertCircle, ExternalLink } from "lucide-react";
+import { Loader2, Search, Globe, Code2, Sparkles, AlertCircle, ExternalLink, ChevronDown, ChevronRight, Plus, Trash2, BarChart3, Building2 } from "lucide-react";
 import { fetchAllCmsPages, updateCmsPageMeta } from "@/services/cmsPages";
 import { fetchAllBlogPosts, updateBlogPost } from "@/services/blogPosts";
 import { fetchSection, publishSection } from "@/services/siteContent";
@@ -495,14 +495,25 @@ const GlobalMetadata = () => {
   const [saving, setSaving] = useState(false);
   const [jsonError, setJsonError] = useState<string | null>(null);
 
-  // Initial load.
+  // Initial load — deep-merge to ensure nested defaults exist even if the
+  // saved row predates the templated schema.
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data: row } = await fetchSection<GlobalSeoTags>(GLOBAL_SEO_KEY);
+      const { data: row } = await fetchSection<Partial<GlobalSeoTags>>(GLOBAL_SEO_KEY);
       if (cancelled) return;
       if (row?.content) {
-        setData({ ...EMPTY_GLOBAL, ...(row.content as GlobalSeoTags) });
+        const c = row.content as Partial<GlobalSeoTags>;
+        setData({
+          ...EMPTY_GLOBAL,
+          ...c,
+          tracking: { ...EMPTY_GLOBAL.tracking, ...(c.tracking || {}) },
+          organization: {
+            ...EMPTY_GLOBAL.organization,
+            ...(c.organization || {}),
+            social_links: Array.isArray(c.organization?.social_links) ? c.organization!.social_links : [],
+          },
+        });
       }
       setLoading(false);
     })();
@@ -546,6 +557,23 @@ const GlobalMetadata = () => {
     );
   }
 
+  const setTracking = (k: keyof GlobalSeoTags["tracking"], v: string) =>
+    setData({ ...data, tracking: { ...data.tracking, [k]: v } });
+
+  const setOrg = <K extends keyof GlobalSeoTags["organization"]>(
+    k: K,
+    v: GlobalSeoTags["organization"][K],
+  ) => setData({ ...data, organization: { ...data.organization, [k]: v } });
+
+  const updateSocialLink = (i: number, value: string) => {
+    const next = [...data.organization.social_links];
+    next[i] = value;
+    setOrg("social_links", next);
+  };
+  const addSocialLink = () => setOrg("social_links", [...data.organization.social_links, ""]);
+  const removeSocialLink = (i: number) =>
+    setOrg("social_links", data.organization.social_links.filter((_, j) => j !== i));
+
   return (
     <div className="space-y-5 max-w-3xl">
       <div className="bg-muted/20 border border-border rounded-lg p-4 space-y-1">
@@ -559,53 +587,153 @@ const GlobalMetadata = () => {
         </p>
       </div>
 
-      <Field
-        label="Custom Scripts (Head)"
-        hint="Raw HTML/JS injected into <head> on every page. Use for analytics, verification meta tags, or third-party scripts."
-      >
-        <textarea
-          value={data.custom_head_scripts}
-          onChange={(e) => setData({ ...data, custom_head_scripts: e.target.value })}
-          rows={6}
-          spellCheck={false}
-          placeholder={`<meta name="google-site-verification" content="..." />\n<script>...</script>`}
-          className="w-full px-3 py-2 rounded-lg font-mono text-xs bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-secondary resize-y"
-        />
-      </Field>
+      {/* ── TRACKING IDs ──────────────────────────────────────────────
+          Replace the old "paste raw scripts" UX with three labelled
+          inputs. The wiring code (in usePageMeta / index.html) reads
+          these IDs and constructs the official snippet — no user-pasted
+          markup means no XSS risk and no malformed tags. */}
+      <section className="space-y-3 border border-border rounded-lg p-4 bg-card">
+        <header className="flex items-center gap-2">
+          <BarChart3 size={14} className="text-secondary" />
+          <h3 className="font-display text-sm uppercase tracking-wider text-foreground">Tracking IDs</h3>
+        </header>
+        <p className="font-body text-[11px] text-muted-foreground">
+          Enter only the ID — we generate the official snippet for each platform automatically.
+        </p>
+        <Field label="Google Analytics 4 (Measurement ID)" hint="Format: G-XXXXXXXXXX">
+          <input
+            type="text"
+            value={data.tracking.ga4}
+            onChange={(e) => setTracking("ga4", e.target.value.trim())}
+            placeholder="G-XXXXXXXXXX"
+            spellCheck={false}
+            className="w-full px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary"
+          />
+        </Field>
+        <Field label="Meta Pixel ID" hint="Numeric ID from Meta Events Manager (e.g., 1234567890)">
+          <input
+            type="text"
+            value={data.tracking.meta_pixel}
+            onChange={(e) => setTracking("meta_pixel", e.target.value.trim())}
+            placeholder="1234567890"
+            spellCheck={false}
+            className="w-full px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary"
+          />
+        </Field>
+        <Field label="LinkedIn Partner ID" hint="From LinkedIn Campaign Manager → Insight Tag">
+          <input
+            type="text"
+            value={data.tracking.linkedin_partner}
+            onChange={(e) => setTracking("linkedin_partner", e.target.value.trim())}
+            placeholder="1234567"
+            spellCheck={false}
+            className="w-full px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary"
+          />
+        </Field>
+      </section>
 
-      <Field
-        label="JSON-LD Schema (Organization)"
-        hint="Structured data describing your organization. Validated as JSON on save. Helps Google's Knowledge Graph and AI assistants understand your brand."
-        error={jsonError}
-      >
-        <textarea
-          value={data.json_ld_organization}
-          onChange={(e) => {
-            setData({ ...data, json_ld_organization: e.target.value });
-            setJsonError(null);
-          }}
-          onBlur={() => setJsonError(validateJsonLd(data.json_ld_organization))}
-          rows={10}
-          spellCheck={false}
-          placeholder={`{\n  "@context": "https://schema.org",\n  "@type": "Organization",\n  "name": "The Magic Coffin",\n  "url": "https://themagiccoffin.com"\n}`}
-          className="w-full px-3 py-2 rounded-lg font-mono text-xs bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-secondary resize-y"
-        />
-      </Field>
+      {/* ── BRAND IDENTITY (JSON-LD source) ──────────────────────────
+          Templated fields drive the Organization JSON-LD blob that
+          renders into <head>. Admins fill structured fields; the public
+          renderer (or a build step) assembles the schema.org payload. */}
+      <section className="space-y-3 border border-border rounded-lg p-4 bg-card">
+        <header className="flex items-center gap-2">
+          <Building2 size={14} className="text-secondary" />
+          <h3 className="font-display text-sm uppercase tracking-wider text-foreground">Brand Identity Schema</h3>
+        </header>
+        <p className="font-body text-[11px] text-muted-foreground">
+          Used to build a schema.org Organization JSON-LD tag — helps Google's Knowledge Graph and AI assistants understand who you are.
+        </p>
+        <Field label="Legal Name" hint="The official registered business name.">
+          <input
+            type="text"
+            value={data.organization.legal_name}
+            onChange={(e) => setOrg("legal_name", e.target.value)}
+            placeholder="The Magic Coffin Ltd."
+            className="w-full px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary"
+          />
+        </Field>
+        <Field label="Organization Type" hint="Schema.org subtype that best describes your entity.">
+          <select
+            value={data.organization.type}
+            onChange={(e) => setOrg("type", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground focus:outline-none focus:border-secondary"
+          >
+            {ORG_TYPES.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </Field>
+        <Field
+          label="Social Profile Links"
+          hint="Each URL becomes a sameAs entry in the JSON-LD schema. LinkedIn, Twitter/X, Instagram, YouTube, etc."
+        >
+          <div className="space-y-2">
+            {data.organization.social_links.length === 0 && (
+              <p className="font-body text-[11px] italic text-muted-foreground">No social profiles yet.</p>
+            )}
+            {data.organization.social_links.map((url, i) => (
+              <div key={i} className="flex gap-2">
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => updateSocialLink(i, e.target.value)}
+                  placeholder="https://linkedin.com/company/…"
+                  className="flex-1 px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeSocialLink(i)}
+                  className="p-2 rounded-lg border border-border text-destructive hover:bg-destructive/10"
+                  aria-label="Remove link"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addSocialLink}
+              className="inline-flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full border border-secondary/40 text-secondary hover:bg-secondary/10"
+            >
+              <Plus size={12} /> Add Link
+            </button>
+          </div>
+        </Field>
+      </section>
 
-      <Field
-        label="Global Social Sharing Prefix"
-        hint="Prepended to og:title and twitter:title for every shared link. Example: 'The Magic Coffin · '"
-      >
-        <input
-          type="text"
-          value={data.social_prefix}
-          onChange={(e) => setData({ ...data, social_prefix: e.target.value })}
-          maxLength={60}
-          placeholder="The Magic Coffin · "
-          className="w-full px-3 py-2 rounded-lg font-body text-sm bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary"
-        />
-        <div className="font-body text-[10px] text-muted-foreground mt-1">{data.social_prefix.length}/60</div>
-      </Field>
+      {/* ── SOCIAL SHARING ───────────────────────────────────────── */}
+      <section className="space-y-3 border border-border rounded-lg p-4 bg-card">
+        <header className="flex items-center gap-2">
+          <Globe size={14} className="text-secondary" />
+          <h3 className="font-display text-sm uppercase tracking-wider text-foreground">Social Sharing</h3>
+        </header>
+        <Field
+          label="Global Social Sharing Prefix"
+          hint="Prepended to og:title and twitter:title for every shared link. Example: 'The Magic Coffin · '"
+        >
+          <input
+            type="text"
+            value={data.social_prefix}
+            onChange={(e) => setData({ ...data, social_prefix: e.target.value })}
+            maxLength={60}
+            placeholder="The Magic Coffin · "
+            className="w-full px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary"
+          />
+          <div className="font-body text-[10px] text-muted-foreground mt-1">{data.social_prefix.length}/60</div>
+        </Field>
+      </section>
+
+      {/* ── ESCAPE HATCH (collapsed by default) ──────────────────────
+          The original raw <head> + JSON-LD textareas live behind a
+          disclosure. Most admins should never need to open this. */}
+      <AdvancedRawScripts
+        data={data}
+        setData={setData}
+        jsonError={jsonError}
+        setJsonError={setJsonError}
+        validateJsonLd={validateJsonLd}
+      />
 
       <div className="flex items-center justify-end gap-3 pt-2">
         <button
@@ -619,6 +747,94 @@ const GlobalMetadata = () => {
         </button>
       </div>
     </div>
+  );
+};
+
+/* ═════════════════════════════════════════════════════════════════════
+   ADVANCED ESCAPE HATCH
+   ─────────────────────────────────────────────────────────────────────
+   Power-user disclosure. Hidden by default so the templated UX stays
+   uncluttered. Opens to reveal the raw textareas the previous version
+   showed unconditionally — useful when an admin needs a script the
+   templates don't cover yet, or wants to override the auto-generated
+   JSON-LD entirely.
+   ═════════════════════════════════════════════════════════════════════ */
+
+const AdvancedRawScripts = ({
+  data,
+  setData,
+  jsonError,
+  setJsonError,
+  validateJsonLd,
+}: {
+  data: GlobalSeoTags;
+  setData: (next: GlobalSeoTags) => void;
+  jsonError: string | null;
+  setJsonError: (v: string | null) => void;
+  validateJsonLd: (v: string) => string | null;
+}) => {
+  const [open, setOpen] = useState(false);
+  const Chevron = open ? ChevronDown : ChevronRight;
+
+  return (
+    <section className="border border-dashed border-border rounded-lg bg-muted/10">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted/30 transition-colors rounded-lg"
+        aria-expanded={open}
+      >
+        <span className="flex items-center gap-2">
+          <Chevron size={14} className="text-muted-foreground" />
+          <Code2 size={14} className="text-muted-foreground" />
+          <span className="font-display text-sm uppercase tracking-wider text-foreground">Advanced: Raw Head Scripts</span>
+        </span>
+        <span className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">
+          Power users only
+        </span>
+      </button>
+
+      {open && (
+        <div className="px-4 pb-4 space-y-4">
+          <p className="font-body text-[11px] text-muted-foreground">
+            Use these escape hatches only when the templated fields above can't express what you need. Pasted markup is rendered verbatim into <code>&lt;head&gt;</code>.
+          </p>
+
+          <Field
+            label="Custom Scripts (Head)"
+            hint="Raw HTML/JS injected into <head> on every page. For verification meta tags or scripts the templates don't cover."
+          >
+            <textarea
+              value={data.custom_head_scripts}
+              onChange={(e) => setData({ ...data, custom_head_scripts: e.target.value })}
+              rows={6}
+              spellCheck={false}
+              placeholder={`<meta name="google-site-verification" content="..." />\n<script>...</script>`}
+              className="w-full px-3 py-2 rounded-lg font-mono text-xs bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-secondary resize-y"
+            />
+          </Field>
+
+          <Field
+            label="JSON-LD Schema (Override)"
+            hint="Optional. Overrides the auto-generated Organization schema built from Brand Identity above. Validated as JSON on save."
+            error={jsonError}
+          >
+            <textarea
+              value={data.json_ld_organization}
+              onChange={(e) => {
+                setData({ ...data, json_ld_organization: e.target.value });
+                setJsonError(null);
+              }}
+              onBlur={() => setJsonError(validateJsonLd(data.json_ld_organization))}
+              rows={10}
+              spellCheck={false}
+              placeholder={`{\n  "@context": "https://schema.org",\n  "@type": "Organization",\n  "name": "The Magic Coffin"\n}`}
+              className="w-full px-3 py-2 rounded-lg font-mono text-xs bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-secondary resize-y"
+            />
+          </Field>
+        </div>
+      )}
+    </section>
   );
 };
 
