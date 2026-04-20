@@ -1,5 +1,5 @@
 import { Instagram, Linkedin, Twitter, Facebook, Youtube } from "lucide-react";
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 
 const PLATFORMS = [
   { key: "linkedin", icon: Linkedin, label: "LinkedIn" },
@@ -41,18 +41,21 @@ const defaultColumns: FooterColumn[] = [
 ];
 
 const Footer = () => {
-  const socialLinks = useSiteContent<Record<string, string>>("social_links", {});
-  const footer = useSiteContent<FooterContent>("footer", {
-    copyright: `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires`,
-    tagline: "Based in Sweden 🇸🇪 · Operating globally",
-    columns: defaultColumns,
-  });
-  const branding = useSiteContent<Record<string, any>>("branding", {});
+  const { isLoading: socialLoading, content: socialLinks } =
+    useSiteContentWithStatus<Record<string, string>>("social_links", {});
+  const { isLoading: footerLoading, content: footer } =
+    useSiteContentWithStatus<FooterContent>("footer", {
+      copyright: `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires`,
+      tagline: "Based in Sweden 🇸🇪 · Operating globally",
+      columns: defaultColumns,
+    });
+  const { isLoading: brandingLoading, content: branding } =
+    useSiteContentWithStatus<Record<string, any>>("branding", {});
   // Footer uses emblem logo (small icon) on all sizes
-  const emblemUrl = branding.emblem_logo_url || branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
+  const emblemUrl = branding.emblem_logo_url || branding.logo_url || "";
 
   const columns = footer.columns || defaultColumns;
-  const activeLinks = PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
+  const activeLinks = socialLoading ? [] : PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
   const connectColumn = columns.find((c) => c.title.toLowerCase() === "connect");
 
   return (
@@ -66,18 +69,22 @@ const Footer = () => {
           {/* Logo column — emblem */}
           <div className="col-span-2 md:col-span-1">
             {/* Footer logo: below the fold by definition — lazy-load it. */}
-            <img
-              alt="Logo"
-              className="w-8 h-8 object-contain brightness-200 mb-4"
-              src={emblemUrl}
-              width={32}
-              height={32}
-              loading="lazy"
-              decoding="async"
-            />
-            <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.35)" }}>
-              {footer.tagline || "Based in Sweden 🇸🇪 · Operating globally"}
-            </p>
+            {!brandingLoading && emblemUrl ? (
+              <img
+                alt="Logo"
+                className="w-8 h-8 object-contain brightness-200 mb-4"
+                src={emblemUrl}
+                width={32}
+                height={32}
+                loading="lazy"
+                decoding="async"
+              />
+            ) : null}
+            {!footerLoading && footer.tagline ? (
+              <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.35)" }}>
+                {footer.tagline}
+              </p>
+            ) : null}
           </div>
 
           {columns.map((col, i) => (
@@ -145,7 +152,7 @@ const Footer = () => {
           style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}
         >
           <p className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--foreground) / 0.2)" }}>
-            {footer.copyright || `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires`}
+            {!footerLoading ? footer.copyright || `© ${new Date().getFullYear()} The Magic Coffin for Silly Vampires` : null}
           </p>
 
           <div className="flex items-center gap-2">

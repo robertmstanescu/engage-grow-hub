@@ -51,7 +51,8 @@ const ResponsiveLogo = ({
 );
 
 const Navbar = () => {
-  const branding = useSiteContent<Record<string, any>>("branding", {});
+  const { isLoading: brandingLoading, content: branding } =
+    useSiteContentWithStatus<Record<string, any>>("branding", {});
   /**
    * Navbar links MUST come from the DB before we render link labels —
    * otherwise users would briefly see hardcoded fallback labels
@@ -63,7 +64,7 @@ const Navbar = () => {
    */
   const { isLoading: navLoading, content: navConfig } =
     useSiteContentWithStatus<Record<string, any>>("navbar", {});
-  const logoUrl = branding.logo_url || "/lovable-uploads/25c16e30-e0dd-4cbd-b9b7-02f72d962fb9.png";
+  const logoUrl = branding.logo_url || "";
   const emblemUrl = branding.emblem_logo_url || logoUrl;
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -79,7 +80,7 @@ const Navbar = () => {
     { label: "Our Vows", href: "#vows" },
     { label: "Contact", href: "#contact" },
   ]).map((l: any) => ({ label: l.label, href: l.href }));
-  const showBlogLink = navConfig.show_blog_link !== false;
+  const showBlogLink = navLoading ? false : navConfig.show_blog_link !== false;
   const ctaText = navConfig.cta_text || "Book a consultation";
   const ctaHref = navConfig.cta_href || "#contact";
 
@@ -99,7 +100,6 @@ const Navbar = () => {
     { label: "Employee Experience", href: "#employee-experience" },
     { label: "Our Vows", href: "#vows" },
     { label: "Contact", href: "#contact" },
-    ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
   ];
   const renderedItems = navLoading ? fallbackItems : allItems;
 
@@ -170,13 +170,15 @@ const Navbar = () => {
       <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
         style={{ backgroundColor: "hsl(var(--background) / 0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid hsl(var(--border) / 0.3)" }}>
         <a href="/" className="mb-4">
-          <ResponsiveLogo
-            emblemUrl={emblemUrl}
-            logoUrl={logoUrl}
-            imgClassName="w-8 h-8 object-contain brightness-200"
-            width={32}
-            height={32}
-          />
+          {!brandingLoading && logoUrl ? (
+            <ResponsiveLogo
+              emblemUrl={emblemUrl}
+              logoUrl={logoUrl}
+              imgClassName="w-8 h-8 object-contain brightness-200"
+              width={32}
+              height={32}
+            />
+          ) : null}
         </a>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-5">
@@ -216,13 +218,15 @@ const Navbar = () => {
       <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-5"
         style={{ backgroundColor: "hsl(var(--background) / 0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(var(--border) / 0.2)" }}>
         <a href="/" className="flex items-center flex-shrink-0">
-          <ResponsiveLogo
-            emblemUrl={emblemUrl}
-            logoUrl={logoUrl}
-            className="flex items-center"
-            imgClassName="h-7 brightness-200 object-contain"
-            height={28}
-          />
+          {!brandingLoading && logoUrl ? (
+            <ResponsiveLogo
+              emblemUrl={emblemUrl}
+              logoUrl={logoUrl}
+              className="flex items-center"
+              imgClassName="h-7 brightness-200 object-contain"
+              height={28}
+            />
+          ) : null}
         </a>
         <button onClick={() => setMobileOpen(!mobileOpen)} style={{ color: "hsl(var(--foreground) / 0.7)" }}>
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
