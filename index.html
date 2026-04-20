@@ -51,15 +51,14 @@
       values. Real users with JavaScript NEVER see these defaults —
       `usePageMeta` overwrites them within ~50ms.
 
-      Single-comment markers the edge function recognises (no nested
-      pairs — HTML5 forbids `--` inside comments and Vite's parser
-      rejects markers inside attribute values):
-        <!-- SSR:TITLE -->
-        <!-- SSR:DESCRIPTION -->
-        <!-- SSR:CANONICAL -->
-        <!-- SSR:OG_TAGS -->
-        <!-- SSR:JSONLD -->
-        <!-- SSR:NOSCRIPT -->
+      Markers (single HTML comments, listed without angle brackets to
+      avoid nested-comment parse errors):
+        SSR:TITLE
+        SSR:DESCRIPTION
+        SSR:CANONICAL
+        SSR:OG_TAGS
+        SSR:JSONLD
+        SSR:NOSCRIPT
 
       The edge function locates each marker and inserts a fully-formed
       tag (or block of tags) immediately after it, replacing whatever
