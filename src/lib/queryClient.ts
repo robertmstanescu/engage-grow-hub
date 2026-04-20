@@ -18,13 +18,17 @@ import { QueryClient } from "@tanstack/react-query";
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Keep data fresh for 30s, then revalidate in the background so
-      // edits made in /admin show up on the public site after a quick
-      // navigation or tab focus.
-      staleTime: 30 * 1000,
+      // ZERO-TRUST CACHING: data is "stale" the moment it arrives, so
+      // every mount/focus triggers a background revalidation against
+      // Supabase. Combined with `refetchOnMount: true` and
+      // `refetchOnWindowFocus: true` this defeats Safari's aggressive
+      // bfcache/memory-cache reuse where stale React-Query snapshots
+      // would otherwise survive across tab restores.
+      staleTime: 0,
       gcTime: 10 * 60 * 1000,
       refetchOnWindowFocus: true,
-      refetchOnMount: "always",
+      refetchOnMount: true,
+      refetchOnReconnect: true,
       retry: 1,
     },
   },
