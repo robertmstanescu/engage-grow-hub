@@ -230,14 +230,14 @@
     background: hsl(260 25% 12% / 0.6);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(280 20% 22% / 0.4);
+    border: 1px solid hsl(280 20% 22% / 0.5);
   }
 
   .glass-light {
     background: hsl(30 20% 96% / 0.8);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(280 20% 80% / 0.4);
+    border: 1px solid hsl(280 20% 80% / 0.5);
   }
 
   /* ── Glass button ── */
