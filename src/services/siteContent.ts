@@ -67,7 +67,6 @@ const buildPublicSectionUrl = (key: string, columns: string) => {
   const params = new URLSearchParams({
     select: columns,
     section_key: `eq.${key}`,
-    _cb: Date.now().toString(),
   });
 
   return `${SUPABASE_URL}/rest/v1/site_content_public?${params.toString()}`;
@@ -76,8 +75,9 @@ const buildPublicSectionUrl = (key: string, columns: string) => {
 /**
  * Read published site content via a manual fetch that explicitly bypasses the
  * browser HTTP cache. Safari desktop has been observed to reuse stale REST
- * responses for this view even after a new frontend deploy; `cache: "no-store"`
- * plus a `_cb` query param makes every request unambiguously fresh.
+ * responses for this view even after a new frontend deploy, so we force
+ * revalidation with request cache directives instead of adding unsupported
+ * query params to the PostgREST URL.
  */
 export async function fetchPublicSection<T = Record<string, any>>(
   key: string,
