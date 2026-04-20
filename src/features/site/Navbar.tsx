@@ -72,36 +72,25 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const subLinks = (navConfig.sub_links || [
-    { label: "Internal Communications", href: "#internal-communications" },
-    { label: "Employee Experience", href: "#employee-experience" },
-  ]).map((l: any) => ({ label: l.label, href: l.href }));
-  const links = (navConfig.links || [
-    { label: "Our Vows", href: "#vows" },
-    { label: "Contact", href: "#contact" },
-  ]).map((l: any) => ({ label: l.label, href: l.href }));
-  const showBlogLink = navLoading ? false : navConfig.show_blog_link !== false;
-  const ctaText = navConfig.cta_text || "Book a consultation";
-  const ctaHref = navConfig.cta_href || "#contact";
+  // Source of truth = DB. We deliberately do NOT keep hardcoded link
+  // fallbacks anymore: showing stale labels (e.g. "Blog", "Our Vows")
+  // before the real config loads caused a visible content swap on every
+  // refresh, especially in Safari where bfcache could re-show very old
+  // values. While loading, the rail renders no items.
+  const subLinks = Array.isArray(navConfig.sub_links) ? navConfig.sub_links : [];
+  const links = Array.isArray(navConfig.links) ? navConfig.links : [];
+  const showBlogLink = !navLoading && navConfig.show_blog_link === true;
+  const ctaText = navConfig.cta_text || "";
+  const ctaHref = navConfig.cta_href || "";
 
-  const allItems = [
-    ...subLinks.map((l: any) => ({ label: l.label, href: l.href })),
-    ...links.map((l: any) => ({ label: l.label, href: l.href })),
-    ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
-  ];
-
-  // Fallback link list used while the navbar config is still loading from the
-  // database. Showing these immediately (instead of an empty rail) makes the
-  // page feel instantly complete; once the real config arrives React swaps to
-  // `allItems`. The labels mirror the hardcoded defaults declared above so a
-  // first-time visitor sees a sensible structure either way.
-  const fallbackItems = [
-    { label: "Internal Communications", href: "#internal-communications" },
-    { label: "Employee Experience", href: "#employee-experience" },
-    { label: "Our Vows", href: "#vows" },
-    { label: "Contact", href: "#contact" },
-  ];
-  const renderedItems = navLoading ? fallbackItems : allItems;
+  const allItems = navLoading
+    ? []
+    : [
+        ...subLinks.map((l: any) => ({ label: l.label, href: l.href })),
+        ...links.map((l: any) => ({ label: l.label, href: l.href })),
+        ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
+      ];
+  const renderedItems = allItems;
 
   const handleScroll = useCallback(() => {
     if (location.pathname !== "/") return;
@@ -204,14 +193,16 @@ const Navbar = () => {
           ))}
         </div>
 
-        <a
-          href={ctaHref}
-          onClick={(e) => handleNavClick(e, ctaHref)}
-          title={ctaText}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500 hover:scale-110"
-          style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-          →
-        </a>
+        {!navLoading && ctaHref ? (
+          <a
+            href={ctaHref}
+            onClick={(e) => handleNavClick(e, ctaHref)}
+            title={ctaText}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500 hover:scale-110"
+            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+            →
+          </a>
+        ) : null}
       </nav>
 
       {/* Mobile/tablet top bar — full/long logo */}
@@ -256,16 +247,18 @@ const Navbar = () => {
                 {item.label}
               </motion.a>
             ))}
-            <motion.a
-              href={ctaHref}
-              onClick={(e) => handleNavClick(e, ctaHref)}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
-              className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
-              style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-              {ctaText}
-            </motion.a>
+            {ctaHref && ctaText ? (
+              <motion.a
+                href={ctaHref}
+                onClick={(e) => handleNavClick(e, ctaHref)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
+                className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
+                style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+                {ctaText}
+              </motion.a>
+            ) : null}
           </motion.div>
         )}
       </AnimatePresence>

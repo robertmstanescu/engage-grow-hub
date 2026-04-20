@@ -20,15 +20,13 @@ interface HeroContent {
   title_line2?: string;
 }
 
+// No hardcoded copy — DB is the single source of truth. The hero is
+// gated on `isLoading` below, so this empty fallback is only ever used
+// as a typed safety net and never paints user-visible content.
 const fallback: HeroContent = {
-  label: "What we do",
-  tagline: "HR & Internal Comms Consulting",
-  title_lines: [
-    "<p>Your organisation has</p>",
-    '<p><span style="color: #E5C54F">vampires.</span></p>',
-    "<p>We bring the coffin.</p>",
-  ],
-  body: "Dead meetings. Blood-sucking cultures. Communications that say everything while meaning nothing. We bury all of it — and build something with an actual pulse in its place.",
+  label: "",
+  body: "",
+  title_lines: [],
 };
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
