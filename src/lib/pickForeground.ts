@@ -34,6 +34,15 @@ export const pickForeground = (bg?: string | null): string => {
   const trimmed = bg.trim();
   if (!trimmed) return LIGHT_FG;
 
+  // ── CSS variable guard ──────────────────────────────────────────────
+  // Our design system's --background token always represents the light
+  // admin surface, so text rendered on top of it must be dark to remain
+  // readable. The regex parsers below cannot evaluate `var(...)` refs,
+  // and would otherwise default to LIGHT_FG → invisible white-on-white.
+  if (trimmed.includes("var(--background)")) {
+    return DARK_FG;
+  }
+
   // ── Hex ─────────────────────────────────────────────────────────────
   const hexMatch = trimmed.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
   if (hexMatch) {
