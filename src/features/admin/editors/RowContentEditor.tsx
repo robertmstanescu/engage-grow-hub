@@ -168,12 +168,13 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
               <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
                 <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
-                <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
+                <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} bgColor={bg} />
                 <SubtitleEditor
                   subtitle={content.subtitle || ""}
                   subtitleColor={content.subtitle_color || ""}
                   onSubtitleChange={(v) => onContentChange("subtitle", v)}
                   onColorChange={(v) => onContentChange("subtitle_color", v)}
+                  bgColor={bg}
                 />
                 <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
                 <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
@@ -224,12 +225,13 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
             <AccordionItem value="text" className="border-none">
               <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
-                <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
+                <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} bgColor={bg} />
                 <SubtitleEditor
                   subtitle={content.subtitle || ""}
                   subtitleColor={content.subtitle_color || ""}
                   onSubtitleChange={(v) => onContentChange("subtitle", v)}
                   onColorChange={(v) => onContentChange("subtitle_color", v)}
+                  bgColor={bg}
                 />
                 <BoxedArrayField content={content} onChange={onContentChange} bgColor={bg} />
                 <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
@@ -267,12 +269,13 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
               <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
                 <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
-                <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} />
+                <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} bgColor={bg} />
                 <SubtitleEditor
                   subtitle={content.subtitle || ""}
                   subtitleColor={content.subtitle_color || ""}
                   onSubtitleChange={(v) => onContentChange("subtitle", v)}
                   onColorChange={(v) => onContentChange("subtitle_color", v)}
+                  bgColor={bg}
                 />
                 <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
                 <Field label="Button Text" value={content.button_text || ""} onChange={(v) => onContentChange("button_text", v)} />
