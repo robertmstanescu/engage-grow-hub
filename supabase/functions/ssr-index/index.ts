@@ -69,13 +69,27 @@ interface SeoPayload {
   noscript: string;
 }
 
-/** Replace the contents between `<!--MARKER-->…<!--/MARKER-->` (inclusive of inner). */
-const replaceMarker = (html: string, marker: string, replacement: string): string => {
-  // Escape the marker name for regex safety. Markers are simple ASCII so
-  // this is mostly defensive — but better safe than sorry.
-  const safe = marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const re = new RegExp(`<!--${safe}-->[\\s\\S]*?<!--/${safe}-->`, "g");
-  return html.replace(re, `<!--${marker}-->${replacement}<!--/${marker}-->`);
+/**
+ * Replace the default tag(s) immediately following a single-comment SSR
+ * marker (e.g. `<!-- SSR:TITLE -->`) with `replacement`. The marker itself
+ * is preserved so the served HTML stays self-describing.
+ *
+ * `defaultTagPattern` matches the neutral default block to swap out.
+ * If no default block is present, the replacement is simply inserted
+ * after the marker.
+ */
+const replaceMarker = (
+  html: string,
+  marker: string,
+  defaultTagPattern: RegExp,
+  replacement: string,
+): string => {
+  const safeMarker = marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(
+    `(<!--\\s*${safeMarker}\\s*-->)([\\s\\S]*?)(?=<!--|<title|<meta|<link|<script|</head|</body)`,
+    "i",
+  );
+  return html.replace(re, (_full, markerComment) => `${markerComment}\n    ${replacement}\n    `);
 };
 
 const buildOgTags = (payload: SeoPayload): string => {
