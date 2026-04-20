@@ -72,7 +72,7 @@ const getPreviewOverride = <T,>(sectionKey: string): T | null => {
 };
 
 /** Stable query key factory — keep all callers using the same shape. */
-export const siteContentQueryKey = (sectionKey: string) => ["site_content", sectionKey] as const;
+export const siteContentQueryKey = (sectionKey: string) => ["site_content_v4", sectionKey] as const;
 
 /**
  * The actual fetcher. Pulled from `site_content_public` (a view that
@@ -80,10 +80,14 @@ export const siteContentQueryKey = (sectionKey: string) => ["site_content", sect
  * leak draft content to the public.
  */
 const fetchSectionContent = async (sectionKey: string) => {
+  // Cache-bust at the edge: appending a unique query param defeats any
+  // intermediate Cloudflare/Supabase response caching for this request.
   const { data, error } = await supabase
     .from("site_content_public")
     .select("content, draft_content")
     .eq("section_key", sectionKey)
+    .order("updated_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
   if (error) throw error;
   return data;
