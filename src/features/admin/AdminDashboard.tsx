@@ -59,7 +59,7 @@ import {
   Users, Mail, Image, Palette, Settings, LogOut,
   Save, Send, Tag, UserCog,
   GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
-  Loader2, Check, Search,
+  Loader2, Check, Search, History,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 // (Sheet/Drawer rollback: properties editor stays as a 3rd column.)
@@ -112,8 +112,9 @@ import ListFilters from "@/components/ui/list-filters";
 import StyleTab from "./editors/StyleTab";
 import RowStyleTab from "./editors/RowStyleTab";
 import RowContentEditor from "./editors/RowContentEditor";
+import VersionHistory from "./VersionHistory";
 
-type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team" | "seo_master";
+type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team" | "seo_master" | "versions";
 type PropertiesSubTab = "content" | "style" | "seo";
 interface Props { session: any; }
 
@@ -164,6 +165,7 @@ const NAV_GROUPS = [
       { key: "brand" as Tab, icon: Palette, label: "Brand" },
       { key: "tags" as Tab, icon: Tag, label: "Tags" },
       { key: "seo_master" as Tab, icon: Search, label: "SEO Master" },
+      { key: "versions" as Tab, icon: History, label: "Version History" },
       { key: "team" as Tab, icon: UserCog, label: "Manage Team" },
       { key: "insights" as const, icon: Sparkles, label: "Insights" },
       { key: "settings" as Tab, icon: Settings, label: "Settings" },
@@ -1489,6 +1491,7 @@ const AdminDashboard = ({ session }: Props) => {
                 {activeTab === "tags" && <TagsManager />}
                 {activeTab === "team" && <ManageTeam />}
                 {activeTab === "seo_master" && <SeoMaster />}
+                {activeTab === "versions" && <VersionHistory />}
                 {activeTab === "settings" && <GlobalSettings />}
               </div>
             </main>
