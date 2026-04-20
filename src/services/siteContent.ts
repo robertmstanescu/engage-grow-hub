@@ -84,13 +84,12 @@ export async function fetchPublicSection<T = Record<string, any>>(
   columns = "content,draft_content",
 ): Promise<{ data: PublicSiteContentRow<T> | null; error: Error | null }> {
   try {
-    const session = (await supabase.auth.getSession()).data.session;
     const response = await fetch(buildPublicSectionUrl(key, columns), {
       method: "GET",
       cache: "no-store",
       headers: {
         apikey: SUPABASE_PUBLISHABLE_KEY,
-        Authorization: `Bearer ${session?.access_token ?? SUPABASE_PUBLISHABLE_KEY}`,
+        Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
         Accept: "application/json",
         "Accept-Profile": "public",
         "Cache-Control": "no-cache, no-store, must-revalidate",
