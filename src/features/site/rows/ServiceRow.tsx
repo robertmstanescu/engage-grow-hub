@@ -79,18 +79,10 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
 
   if (!services.length) return null;
   const safeCurrent = Math.min(current, services.length - 1);
-  // Circular reveal from center → outwards. We animate `clip-path` from a
-  // 0%-radius circle at the centre to a 100% circle that fully exposes the
-  // card. Combined with a small opacity bump this reads as the new card
-  // "blooming" into existence — a perfect cue for the colour-saturation
-  // change of the tag pill. Ghost opacity 0.01 (not 0) on enter/exit keeps
-  // the backdrop-filter layer live on the GPU so the new card paints with
-  // full saturation on its first frame.
-  const variants = {
-    enter:  { opacity: 0.01, clipPath: "circle(0% at 50% 50%)" },
-    center: { opacity: 1,    clipPath: "circle(100% at 50% 50%)" },
-    exit:   { opacity: 0.01, clipPath: "circle(0% at 50% 50%)" },
-  };
+  // Ghost opacity 0.01 (not 0) keeps the backdrop-filter layer "live" on
+  // the GPU between carousel transitions so the new card paints with full
+  // saturation on its very first frame instead of popping in a beat later.
+  const variants = { enter: { opacity: 0.01 }, center: { opacity: 1 }, exit: { opacity: 0.01 } };
 
   const colorOverrides = buildColorOverrides(c);
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
@@ -188,19 +180,8 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
         </div>
 
         <div className="relative overflow-visible" style={revealStyle(isVisible, 4)}>
-          <AnimatePresence initial={false} mode="wait">
-            <motion.div
-              key={safeCurrent}
-              variants={variants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                clipPath: { duration: 0.55, ease },
-                opacity:  { duration: 0.25, ease },
-              }}
-              style={{ willChange: "clip-path, opacity" }}
-            >
+          <AnimatePresence initial={false}>
+            <motion.div key={safeCurrent} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease }}>
               <ServiceCard {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} />
             </motion.div>
           </AnimatePresence>
