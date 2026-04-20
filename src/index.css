@@ -258,6 +258,11 @@
     border: 1px solid hsl(280 20% 25% / 0.1);
     transform: translateZ(0);
     backface-visibility: hidden;
+    /* `isolation: isolate` creates a new stacking context so the
+       backdrop-filter only composites against the immediate parent
+       layer instead of every layer behind it. Drastically reduces
+       GPU work and eliminates the saturation "pop" on reveal. */
+    isolation: isolate;
   }
 
   .glass-light {
@@ -267,6 +272,7 @@
     border: 1px solid hsl(280 20% 80% / 0.5);
     transform: translateZ(0);
     backface-visibility: hidden;
+    isolation: isolate;
   }
 
   /* ── Glass button ── */
