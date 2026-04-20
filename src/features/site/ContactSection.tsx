@@ -57,6 +57,19 @@ const ContactSection = () => {
     );
   }
 
+  if (isLoading) {
+    // Reserve layout space so the page does not jump when the contact
+    // copy lands, but never paint the hardcoded fallback strings.
+    return (
+      <section
+        id="contact"
+        data-section="contact"
+        aria-busy="true"
+        className="snap-section section-light relative py-32 md:py-40"
+      />
+    );
+  }
+
   return (
     <section id="contact" data-section="contact" className="snap-section section-light relative py-32 md:py-40">
       <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
