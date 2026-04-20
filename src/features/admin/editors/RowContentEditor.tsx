@@ -178,14 +178,16 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                 />
                 <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
                 <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
-                <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
               </AccordionContent>
             </AccordionItem>
 
-            {/* GROUP 2 — Anything clickable / linkable. */}
+            {/* GROUP 2 — Anything clickable / linkable.
+                Button Label lives here (next to its URL) so admins
+                configure the entire CTA in one place. */}
             <AccordionItem value="media" className="border-none">
               <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
+                <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
                 <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onContentChange("cta_url", v)} />
               </AccordionContent>
             </AccordionItem>
@@ -236,13 +238,15 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                 <BoxedArrayField content={content} onChange={onContentChange} bgColor={bg} />
                 <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
                 <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
-                <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
               </AccordionContent>
             </AccordionItem>
 
+            {/* Button Label sits with its URL so the CTA is configured
+                as one unit under Media & Interactive. */}
             <AccordionItem value="media" className="border-none">
               <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
+                <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
                 <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onContentChange("cta_url", v)} />
               </AccordionContent>
             </AccordionItem>
