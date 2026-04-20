@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
-import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
 import type { PageRow } from "@/types/rows";
 import TextRow from "@/features/site/rows/TextRow";
@@ -56,10 +56,10 @@ const Blog = () => {
   const [loading, setLoading] = useState(true);
   const { getCategoryColors } = useTagColors();
 
-  const pageData = useSiteContent<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string; meta_title: string; meta_description: string }>("blog_page", {
+  const { isLoading: blogPageLoading, content: pageData } = useSiteContentWithStatus<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string; meta_title: string; meta_description: string }>("blog_page", {
     rows_above: [], rows_below: [],
-    header_title: "Insights & Articles",
-    header_subtitle: "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.",
+    header_title: "",
+    header_subtitle: "",
     meta_title: "", meta_description: "",
   });
 
@@ -88,14 +88,14 @@ const Blog = () => {
 
       <section className="grain relative pt-36 pb-16 text-center mesh-hero">
         <div className="relative z-10 max-w-[800px] mx-auto px-8">
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease }}
+          {!blogPageLoading && pageData.header_title ? <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease }}
             className="font-display text-3xl md:text-5xl font-black leading-tight mb-5" style={{ color: "hsl(var(--foreground))" }}>
             {pageData.header_title || "Insights & Articles"}
-          </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease }}
+          </motion.h1> : null}
+          {!blogPageLoading && pageData.header_subtitle ? <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease }}
             className="font-body-heading text-base md:text-lg max-w-[600px] mx-auto" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
             {pageData.header_subtitle || ""}
-          </motion.p>
+          </motion.p> : null}
         </div>
       </section>
 
