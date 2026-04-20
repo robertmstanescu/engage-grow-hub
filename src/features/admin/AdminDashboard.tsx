@@ -59,7 +59,7 @@ import {
   Users, Mail, Image, Palette, Settings, LogOut,
   Save, Send, Tag, UserCog,
   GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
-  Loader2, Check,
+  Loader2, Check, Search,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 // (Sheet/Drawer rollback: properties editor stays as a 3rd column.)
@@ -101,6 +101,7 @@ import NavigationManager from "./NavigationManager";
 import GlobalSettings from "./GlobalSettings";
 import MediaGallery from "./MediaGallery";
 import BrandSettings from "./BrandSettings";
+import SeoMaster from "./SeoMaster";
 import HeroEditor from "./site-editor/HeroEditor";
 import SeoFields from "./site-editor/SeoFields";
 import { DEFAULT_ROWS, type PageRow, DEFAULT_ROW_LAYOUT } from "@/types/rows";
@@ -112,7 +113,7 @@ import StyleTab from "./editors/StyleTab";
 import RowStyleTab from "./editors/RowStyleTab";
 import RowContentEditor from "./editors/RowContentEditor";
 
-type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team";
+type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team" | "seo_master";
 type PropertiesSubTab = "content" | "style" | "seo";
 interface Props { session: any; }
 
@@ -162,6 +163,7 @@ const NAV_GROUPS = [
     items: [
       { key: "brand" as Tab, icon: Palette, label: "Brand" },
       { key: "tags" as Tab, icon: Tag, label: "Tags" },
+      { key: "seo_master" as Tab, icon: Search, label: "SEO Master" },
       { key: "team" as Tab, icon: UserCog, label: "Manage Team" },
       { key: "insights" as const, icon: Sparkles, label: "Insights" },
       { key: "settings" as Tab, icon: Settings, label: "Settings" },
@@ -1463,6 +1465,7 @@ const AdminDashboard = ({ session }: Props) => {
                 {activeTab === "brand" && <BrandSettings />}
                 {activeTab === "tags" && <TagsManager />}
                 {activeTab === "team" && <ManageTeam />}
+                {activeTab === "seo_master" && <SeoMaster />}
                 {activeTab === "settings" && <GlobalSettings />}
               </div>
             </main>
