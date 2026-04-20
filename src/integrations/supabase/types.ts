@@ -513,6 +513,36 @@ export type Database = {
         }
         Relationships: []
       }
+      site_content_versions: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string | null
+          section_key: string
+          version: number
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+          section_key: string
+          version: number
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+          section_key?: string
+          version?: number
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -653,6 +683,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      restore_site_content_version: {
+        Args: { _section_key: string; _version: number }
+        Returns: undefined
       }
       stitch_visitor_to_email: {
         Args: { _email: string; _visitor_id: string }
