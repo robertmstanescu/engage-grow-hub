@@ -72,11 +72,12 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
     <div
       className={`rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""}`}
       style={{
-        backgroundColor: "hsl(260 25% 12% / 0.5)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        border: "1px solid hsl(280 20% 25% / 0.35)",
-        boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), 0 0 60px -20px hsl(280 55% 30% / 0.15)",
+        // Apple Vibrancy: ultra-thin tint, heavy blur+saturation, almost-invisible border.
+        backgroundColor: "hsl(260 25% 12% / 0.25)",
+        backdropFilter: "blur(32px) saturate(180%)",
+        WebkitBackdropFilter: "blur(32px) saturate(180%)",
+        border: "1px solid hsl(280 20% 25% / 0.15)",
+        boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), 0 0 60px -20px hsl(280 55% 30% / 0.15), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
         backfaceVisibility: "hidden",
         transform: "translateZ(0)",
       }}>
@@ -89,7 +90,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
       <div className={compact ? "flex-1 min-h-0 overflow-visible" : ""}>
         <Deliverables label={deliverablesLabel} items={deliverables} textAlign={cardTextAlign} />
       </div>
-      <div className={`${compact ? "px-4 md:px-5" : "px-5 md:px-6"} py-3 flex justify-between items-center flex-wrap gap-2 flex-shrink-0`} style={{ backgroundColor: "hsl(var(--background) / 0.3)" }}>
+      <div className={`${compact ? "px-4 md:px-5" : "px-5 md:px-6"} py-3 flex justify-between items-center flex-wrap gap-2 flex-shrink-0`} style={{ backgroundColor: "hsl(var(--background) / 0.1)" }}>
         <a href="#contact" className="font-display text-[11px] font-bold tracking-wide hover:opacity-80 transition-all duration-500" style={{ color: "hsl(var(--pillar-cta-text))" }}>{price} →</a>
         <span className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--pillar-cta-time))" }}>{time}</span>
       </div>
