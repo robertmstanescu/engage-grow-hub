@@ -45,7 +45,6 @@ export const revealStyle = (
 ): React.CSSProperties => {
   const mobile = isMobile();
   const duration = mobile ? "0.5s" : "0.9s";
-  const delay = `${baseDelay + staggerIndex * (mobile ? 0.08 : 0.15)}s`;
   const ease = "cubic-bezier(0.16, 1, 0.3, 1)";
 
   return {
@@ -61,12 +60,12 @@ export const revealStyle = (
     transform: isVisible
       ? "translate3d(0,0,0)"
       : mobile
-        ? "translate3d(0,0,0)"      // opacity-only on mobile — no layout shift
-        : "translate3d(0,20px,0)",   // desktop keeps the slide-up
-    transition: `opacity ${duration} ${ease} ${delay}, transform ${duration} ${ease} ${delay}`,
-    // Including `backdrop-filter` in will-change tells the GPU to pre-allocate
-    // the buffer needed for the saturate/blur composite BEFORE the card fades
-    // in. Reset to `auto` once visible to free the buffer.
+        ? "translate3d(0,0,0)"
+        : "translate3d(0,20px,0)",
+    // No transition delay: as soon as the observer flips visible, the
+    // warmed layer starts animating immediately instead of waiting through
+    // an extra stagger window that makes the glass feel late.
+    transition: `opacity ${duration} ${ease}, transform ${duration} ${ease}`,
     willChange: isVisible ? "auto" : "opacity, transform, backdrop-filter",
     backfaceVisibility: "hidden" as const,
   };
