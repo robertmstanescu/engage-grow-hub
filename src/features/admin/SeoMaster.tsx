@@ -587,22 +587,35 @@ const GlobalMetadata = () => {
     );
   }
 
+  // Defensive accessors: if a stale state shape (e.g., from HMR or
+  // legacy DB row) ever leaves `tracking` / `organization` undefined,
+  // the renderer below would crash on `data.tracking.ga4`. Pull through
+  // `EMPTY_GLOBAL` defaults so the UI always has something to bind to.
+  const tracking = data.tracking ?? EMPTY_GLOBAL.tracking;
+  const organization = {
+    ...EMPTY_GLOBAL.organization,
+    ...(data.organization ?? {}),
+    social_links: Array.isArray(data.organization?.social_links)
+      ? data.organization!.social_links
+      : [],
+  };
+
   const setTracking = (k: keyof GlobalSeoTags["tracking"], v: string) =>
-    setData({ ...data, tracking: { ...data.tracking, [k]: v } });
+    setData({ ...data, tracking: { ...tracking, [k]: v } });
 
   const setOrg = <K extends keyof GlobalSeoTags["organization"]>(
     k: K,
     v: GlobalSeoTags["organization"][K],
-  ) => setData({ ...data, organization: { ...data.organization, [k]: v } });
+  ) => setData({ ...data, organization: { ...organization, [k]: v } });
 
   const updateSocialLink = (i: number, value: string) => {
-    const next = [...data.organization.social_links];
+    const next = [...organization.social_links];
     next[i] = value;
     setOrg("social_links", next);
   };
-  const addSocialLink = () => setOrg("social_links", [...data.organization.social_links, ""]);
+  const addSocialLink = () => setOrg("social_links", [...organization.social_links, ""]);
   const removeSocialLink = (i: number) =>
-    setOrg("social_links", data.organization.social_links.filter((_, j) => j !== i));
+    setOrg("social_links", organization.social_links.filter((_, j) => j !== i));
 
   return (
     <div className="space-y-5 max-w-3xl">
