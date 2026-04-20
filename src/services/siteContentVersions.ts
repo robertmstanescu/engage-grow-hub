@@ -53,7 +53,7 @@ export async function listAllSectionsWithCounts() {
   if (error || !data) return { data: null, error };
 
   const map = new Map<string, { latest: number; count: number }>();
-  for (const row of data as Array<{ section_key: string; version: number }>) {
+  for (const row of (data as unknown as Array<{ section_key: string; version: number }>) || []) {
     const cur = map.get(row.section_key) || { latest: 0, count: 0 };
     cur.count += 1;
     if (row.version > cur.latest) cur.latest = row.version;
