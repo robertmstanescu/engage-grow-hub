@@ -407,16 +407,14 @@ const SortableRowItem = ({
             </div>
           )}
 
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={getColContent(safeActiveCol).show_subscribe || false}
-              onChange={(e) => getColOnChange(safeActiveCol)("show_subscribe", e.target.checked)}
-              className="rounded"
-              style={{ accentColor: "hsl(var(--primary))" }}
-            />
-            <span className="font-body text-xs" style={{ color: "hsl(var(--foreground))" }}>Show Subscribe widget</span>
-          </label>
+          {/*
+           * NOTE: the "Show Subscribe widget" checkbox that previously
+           * lived here was moved into `RowContentEditor.tsx` (top of the
+           * Content tab) so it appears for EVERY row type and sits next
+           * to the rest of the row's editable fields. The underlying
+           * JSON key is unchanged (`content.show_subscribe`), so any
+           * existing rows that have it enabled keep working unchanged.
+           */}
           {renderEditorForContent(getColContent(safeActiveCol), getColOnChange(safeActiveCol))}
         </div>
       )}
