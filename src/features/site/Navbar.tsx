@@ -7,6 +7,49 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
+/**
+ * Browser-native responsive logo. The <picture> element lets the browser
+ * pick the correct asset BEFORE React/JS hydration runs, eliminating the
+ * "flash of mobile logo on desktop" flicker that a JS-driven swap caused.
+ *
+ * - Desktop (>=1024px): emblem (square mark) for the left rail
+ * - Mobile  (<1024px) : full/long logo for the top bar
+ *
+ * fetchPriority/loading/decoding attributes promote the logo to a priority
+ * paint so it appears as early as possible in the critical render path.
+ */
+type ResponsiveLogoProps = {
+  emblemUrl: string;
+  logoUrl: string;
+  className?: string;
+  imgClassName?: string;
+  width?: number;
+  height?: number;
+};
+const ResponsiveLogo = ({
+  emblemUrl,
+  logoUrl,
+  className,
+  imgClassName,
+  width,
+  height,
+}: ResponsiveLogoProps) => (
+  <picture className={className}>
+    <source media="(min-width: 1024px)" srcSet={emblemUrl} />
+    <img
+      src={logoUrl}
+      alt="Logo"
+      className={imgClassName}
+      width={width}
+      height={height}
+      // @ts-expect-error – React types lag behind the standard attribute name.
+      fetchpriority="high"
+      loading="eager"
+      decoding="sync"
+    />
+  </picture>
+);
+
 const Navbar = () => {
   const branding = useSiteContent<Record<string, any>>("branding", {});
   /**
@@ -45,6 +88,20 @@ const Navbar = () => {
     ...links.map((l: any) => ({ label: l.label, href: l.href })),
     ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
   ];
+
+  // Fallback link list used while the navbar config is still loading from the
+  // database. Showing these immediately (instead of an empty rail) makes the
+  // page feel instantly complete; once the real config arrives React swaps to
+  // `allItems`. The labels mirror the hardcoded defaults declared above so a
+  // first-time visitor sees a sensible structure either way.
+  const fallbackItems = [
+    { label: "Internal Communications", href: "#internal-communications" },
+    { label: "Employee Experience", href: "#employee-experience" },
+    { label: "Our Vows", href: "#vows" },
+    { label: "Contact", href: "#contact" },
+    ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
+  ];
+  const renderedItems = navLoading ? fallbackItems : allItems;
 
   const handleScroll = useCallback(() => {
     if (location.pathname !== "/") return;
@@ -96,27 +153,24 @@ const Navbar = () => {
       <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
         style={{ backgroundColor: "hsl(var(--background) / 0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid hsl(var(--border) / 0.3)" }}>
         <a href="/" className="mb-4">
-          {/* Navbar logo: small, above-the-fold — eager + sized to prevent CLS. */}
-          <img
-            alt="Logo"
-            className="w-8 h-8 object-contain brightness-200"
-            src={emblemUrl}
+          <ResponsiveLogo
+            emblemUrl={emblemUrl}
+            logoUrl={logoUrl}
+            imgClassName="w-8 h-8 object-contain brightness-200"
             width={32}
             height={32}
-            decoding="async"
           />
         </a>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-5">
           {/*
-            Render link list ONLY after the navbar config has loaded
-            from the database. Showing fallback labels first and then
-            swapping to the admin's customised labels causes a visible
-            text flicker — see `useSiteContentWithStatus` for the full
-            rationale. The empty <div> above keeps the column height
-            stable so layout doesn't jump when links appear.
+            Render fallback links immediately while `navLoading` is true so
+            the rail never appears empty. Once the real config arrives,
+            React swaps in the admin-customised labels. This trades a small
+            label-text swap for a visibly "complete" first paint, which
+            feels far snappier than a blank column.
           */}
-          {!navLoading && allItems.map((item) => (
+          {renderedItems.map((item) => (
             <a
               key={item.label}
               href={item.href}
@@ -145,13 +199,12 @@ const Navbar = () => {
       <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-5"
         style={{ backgroundColor: "hsl(var(--background) / 0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(var(--border) / 0.2)" }}>
         <a href="/" className="flex items-center flex-shrink-0">
-          {/* Mobile logo: above-the-fold, small intrinsic size to avoid CLS. */}
-          <img
-            alt="Logo"
-            className="h-7 brightness-200 object-contain"
-            src={logoUrl}
+          <ResponsiveLogo
+            emblemUrl={emblemUrl}
+            logoUrl={logoUrl}
+            className="flex items-center"
+            imgClassName="h-7 brightness-200 object-contain"
             height={28}
-            decoding="async"
           />
         </a>
         <button onClick={() => setMobileOpen(!mobileOpen)} style={{ color: "hsl(var(--foreground) / 0.7)" }}>
