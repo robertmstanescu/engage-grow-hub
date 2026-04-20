@@ -47,72 +47,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
-
 /** A single section row as stored in `site_content`. */
 export interface SiteContentRow<T = Record<string, any>> {
   section_key: string;
   content: T;
   draft_content: T | null;
-}
-
-/** Public-safe row shape returned by `site_content_public`. */
-export interface PublicSiteContentRow<T = Record<string, any>> {
-  content: T;
-  draft_content: T | null;
-}
-
-const buildPublicSectionUrl = (key: string, columns: string) => {
-  const params = new URLSearchParams({
-    select: columns,
-    section_key: `eq.${key}`,
-  });
-
-  return `${SUPABASE_URL}/rest/v1/site_content_public?${params.toString()}`;
-};
-
-/**
- * Read published site content via a manual fetch that explicitly bypasses the
- * browser HTTP cache. Safari desktop has been observed to reuse stale REST
- * responses for this view even after a new frontend deploy, so we force
- * revalidation with request cache directives instead of adding unsupported
- * query params to the PostgREST URL.
- */
-export async function fetchPublicSection<T = Record<string, any>>(
-  key: string,
-  columns = "content,draft_content",
-): Promise<{ data: PublicSiteContentRow<T> | null; error: Error | null }> {
-  try {
-    const response = await fetch(buildPublicSectionUrl(key, columns), {
-      method: "GET",
-      cache: "no-store",
-      headers: {
-        apikey: SUPABASE_PUBLISHABLE_KEY,
-        Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
-        Accept: "application/json",
-        "Accept-Profile": "public",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        Pragma: "no-cache",
-      },
-    });
-
-    if (!response.ok) {
-      const message = await response.text();
-      return {
-        data: null,
-        error: new Error(message || `Failed to fetch public site content for ${key}`),
-      };
-    }
-
-    const rows = (await response.json()) as PublicSiteContentRow<T>[];
-    return { data: rows[0] ?? null, error: null };
-  } catch (error) {
-    return {
-      data: null,
-      error: error instanceof Error ? error : new Error(`Failed to fetch public site content for ${key}`),
-    };
-  }
 }
 
 /** Fetch one section by key. Returns `null` if it doesn't exist yet. */

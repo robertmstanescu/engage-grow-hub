@@ -92,13 +92,15 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
 
   return (
     <div
-      className={`glass rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""} [&_h1]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_h2]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_h3]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_h4]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_h5]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_h6]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_p]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)]`}
+      className={`glass rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""} [&_h4]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_p]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)]`}
       style={{
-        // Visual extras ONLY. The `.glass` utility owns background,
-        // backdrop-filter, blur, saturation, border, and GPU-layer
-        // hints. Inline `backgroundColor` / `backdropFilter` here would
-        // override the optimised class and cause the dark "cold-glass"
-        // flicker we kept seeing on first paint.
+        // Visual extras layered ON TOP of the shared `.glass` utility:
+        // shadow + inner highlight specific to the service card and not
+        // shared with other glass surfaces. The background, blur,
+        // saturation, border and GPU-layer hints (translateZ +
+        // backface-visibility) all live in `.glass` so the browser
+        // caches them once instead of re-parsing inline-style strings
+        // on every render.
         boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), 0 0 60px -20px hsl(280 55% 30% / 0.15), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
         opacity: glassReady ? 1 : 0.01,
         transition: `opacity 0.18s cubic-bezier(${ease.join(", ")})`,

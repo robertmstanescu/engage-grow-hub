@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchPublicSection } from "@/services/siteContent";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface BrandColor {
   id: string;
@@ -61,12 +61,13 @@ export const invalidateBrandSettings = () => {
 /** Apply brand settings as CSS custom properties on :root */
 export const applyBrandCSSVars = (brand: BrandSettings) => {
   const root = document.documentElement;
+  // Map named brand colors
   brand.colors.forEach((c, i) => {
     const varName = `--brand-${c.name.toLowerCase().replace(/\s+/g, "-")}`;
     root.style.setProperty(varName, c.hex);
     root.style.setProperty(`--brand-color-${i}`, c.hex);
   });
-
+  // Typography
   const levels = ["h1", "h2", "h3", "body"] as const;
   for (const level of levels) {
     const t = brand.typography[level];
@@ -84,24 +85,28 @@ export const useBrandSettings = (): BrandSettings => {
     listeners.add(setBrand);
 
     if (!cachedBrand) {
-      fetchPublicSection<BrandSettings>("brand_settings", "content").then(({ data }) => {
-        const resolved = data?.content || DEFAULT_BRAND;
-        const merged: BrandSettings = {
-          colors: resolved.colors || DEFAULT_BRAND.colors,
-          typography: { ...DEFAULT_BRAND.typography, ...resolved.typography },
-        };
-        notify(merged);
-      });
+      supabase
+        .from("site_content_public")
+        .select("content")
+        .eq("section_key", "brand_settings")
+        .maybeSingle()
+        .then(({ data }: any) => {
+          const resolved = data?.content || DEFAULT_BRAND;
+          const merged: BrandSettings = {
+            colors: resolved.colors || DEFAULT_BRAND.colors,
+            typography: { ...DEFAULT_BRAND.typography, ...resolved.typography },
+          };
+          notify(merged);
+        });
     }
 
-    return () => {
-      listeners.delete(setBrand);
-    };
+    return () => { listeners.delete(setBrand); };
   }, []);
 
   return brand;
 };
 
+/** Just the colors, for quick-pick UIs */
 export const useBrandColors = (): BrandColor[] => {
   const brand = useBrandSettings();
   return brand.colors;
