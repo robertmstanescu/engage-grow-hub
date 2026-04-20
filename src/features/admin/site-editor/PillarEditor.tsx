@@ -176,19 +176,33 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
         </button>
         {showColors && (
           <div className="px-3 pb-3 space-y-2 border-t" style={{ borderColor: "hsl(var(--border) / 0.3)" }}>
-            <p className="font-body text-[9px] text-muted-foreground/60 pt-2">Customize every color in this pillar section. Leave empty to use defaults.</p>
-            <div className="grid grid-cols-2 gap-3">
-              {PILLAR_COLOR_FIELDS.map((cf) => (
-                <ColorField
-                  key={cf.key}
-                  label={cf.label}
-                  description={cf.description}
-                  value={pillarContent[cf.key] || ""}
-                  fallback={cf.fallback}
-                  onChange={(v) => onPillarChange(cf.key, v)}
-                />
+            <p className="font-body text-[9px] text-muted-foreground/60 pt-2">Organized by category. Leave empty to use defaults.</p>
+            <Accordion type="multiple" className="w-full">
+              {PILLAR_COLOR_GROUPS.map((group) => (
+                <AccordionItem key={group.id} value={group.id} className="border-b-0">
+                  <AccordionTrigger className="py-2 hover:no-underline">
+                    <span className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {group.label}
+                      <span className="ml-2 normal-case tracking-normal text-muted-foreground/50">({group.fields.length})</span>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      {group.fields.map((cf) => (
+                        <ColorField
+                          key={cf.key}
+                          label={cf.label}
+                          description={cf.description}
+                          value={pillarContent[cf.key] || ""}
+                          fallback={cf.fallback}
+                          onChange={(v) => onPillarChange(cf.key, v)}
+                        />
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </div>
+            </Accordion>
           </div>
         )}
       </div>
