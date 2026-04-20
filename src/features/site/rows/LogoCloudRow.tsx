@@ -27,8 +27,9 @@
 import type { PageRow, LogoCloudLogo } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { resolveImageAlt } from "@/services/imageAlt";
+import { sanitizeHtml } from "@/services/sanitize";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { RowSection } from "./typography";
+import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 
