@@ -247,6 +247,9 @@ const AdminDashboard = ({ session }: Props) => {
   const [activeTab, setActiveTab] = useState<Tab>("site");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const isAdminMobile = useIsAdminMobile();
+  // Branding (favicons live here) so the admin topbar can render the
+  // Light Theme Favicon as a "back to site" mark in the top-left.
+  const branding = useSiteContent<Record<string, any>>("branding", {});
   // MobileAdminDrawer open/close state. We toggle this with the
   // hamburger in the header on screens < 768px.
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
