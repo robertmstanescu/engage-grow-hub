@@ -120,9 +120,26 @@ const Navbar = () => {
   useEffect(() => {
     // Listen on the snap-container (scroll container) if available, else window
     const scrollContainer = document.querySelector('.snap-container') || window;
-    scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+    /*
+      requestAnimationFrame throttle — high-refresh-rate phones (90Hz/120Hz)
+      can fire `scroll` events 100+ times per second. Recomputing the active
+      section on every event blocks the main thread and causes jank during
+      momentum scrolling. Coalescing into a single rAF callback caps the work
+      to once-per-paint while keeping the active-link highlight visually
+      synchronised with the scroll position.
+    */
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        handleScroll();
+        ticking = false;
+      });
+    };
+    scrollContainer.addEventListener("scroll", onScroll, { passive: true });
     handleScroll();
-    return () => scrollContainer.removeEventListener("scroll", handleScroll);
+    return () => scrollContainer.removeEventListener("scroll", onScroll);
   }, [handleScroll]);
 
   const handleNavClick = (e: React.MouseEvent<HTMLElement>, href: string) => {
