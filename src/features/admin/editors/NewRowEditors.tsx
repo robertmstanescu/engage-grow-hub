@@ -63,12 +63,14 @@ const BrandHeaderFields = ({
       <TitleLinesEditor
         titleLines={titleLines}
         onChange={(v) => onChange("title_lines", v)}
+        bgColor={bgColor}
       />
       <SubtitleEditor
         subtitle={content.subtitle || ""}
         subtitleColor={content.subtitle_color || ""}
         onSubtitleChange={(v) => onChange("subtitle", v)}
         onColorChange={(v) => onChange("subtitle_color", v)}
+        bgColor={bgColor}
       />
       <RichField
         label="Section Body (optional)"

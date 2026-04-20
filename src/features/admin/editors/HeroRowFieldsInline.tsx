@@ -68,7 +68,7 @@ const HeroRowFieldsInline = ({ content, onChange, bgColor }: Props) => {
     <div className="space-y-3">
       <Field label="Eyebrow" value={content.label || ""} onChange={(v) => onChange("label", v)} />
       <ColorField label="Eyebrow Color" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
-      <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} />
+      <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
       <Field label="Tagline" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
       <ColorField label="Tagline Color" value={content.color_tagline || ""} fallback="" onChange={(v) => onChange("color_tagline", v)} />
       <SubtitleEditor
@@ -76,6 +76,7 @@ const HeroRowFieldsInline = ({ content, onChange, bgColor }: Props) => {
         subtitleColor={content.subtitle_color || ""}
         onSubtitleChange={(v) => onChange("subtitle", v)}
         onColorChange={(v) => onChange("subtitle_color", v)}
+        bgColor={bgColor}
       />
       <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
       <SectionBox label="Background">
