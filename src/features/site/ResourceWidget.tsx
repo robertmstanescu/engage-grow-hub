@@ -21,13 +21,11 @@
  */
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { fetchAssetById, getAssetPublicUrl, type MediaAsset } from "@/services/mediaLibrary";
 import { submitLeadAndGetDownload } from "@/services/leads";
 
 const CREAM = "#F4F0EC";
-const ease = [0.16, 1, 0.3, 1] as const;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface Props {
