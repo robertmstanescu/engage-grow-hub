@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/services/sanitize";
 
-const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
 const CREAM = "#F4F0EC";
@@ -43,7 +41,7 @@ const ContactSection = () => {
       <section id="contact" data-section="contact" className="snap-section section-light relative py-32 md:py-40">
         <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
         <div className="relative z-10 max-w-[520px] mr-auto ml-0 px-3 text-left">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease }}>
+          <div>
             <h3 className="font-display text-3xl md:text-4xl font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))" }}>Message received.</h3>
             <p className="font-body-heading text-base md:text-lg mb-8" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>We respond within 24 hours.</p>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
@@ -51,15 +49,13 @@ const ContactSection = () => {
               style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
               Send another message
             </button>
-          </motion.div>
+          </div>
         </div>
       </section>
     );
   }
 
   if (isLoading) {
-    // Reserve layout space so the page does not jump when the contact
-    // copy lands, but never paint the hardcoded fallback strings.
     return (
       <section
         id="contact"
@@ -75,19 +71,15 @@ const ContactSection = () => {
       <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
 
       <div className="relative z-10 max-w-[900px] mr-auto ml-0 px-3 text-left">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }} className="mb-14">
+        <div className="mb-14">
           <h3 className="font-display text-3xl md:text-4xl font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))" }}>
             {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
           </h3>
           <div className="font-body-heading text-base md:text-lg leading-relaxed" style={{ color: "hsl(var(--light-fg) / 0.7)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
-        </motion.div>
+        </div>
 
         {/* Purple glass form panel */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.15, ease }}
+        <div
           className="rounded-2xl p-8 md:p-10 relative overflow-hidden"
           style={{
             backgroundColor: "hsl(280 55% 24% / 0.9)",
@@ -116,7 +108,7 @@ const ContactSection = () => {
                       type={field.type} required={field.required}
                       value={formData[field.key as keyof typeof formData] as string}
                       onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                      className="w-full bg-transparent pb-3 font-body text-sm outline-none transition-all duration-500"
+                      className="w-full bg-transparent pb-3 font-body text-sm outline-none"
                       style={{ borderBottom: `1px solid ${CREAM}30`, color: CREAM }}
                       onFocus={(e) => e.currentTarget.style.borderBottomColor = "hsl(var(--accent))"}
                       onBlur={(e) => e.currentTarget.style.borderBottomColor = `${CREAM}30`}
@@ -129,7 +121,7 @@ const ContactSection = () => {
                 <label className="block font-body text-[10px] uppercase tracking-[0.25em] mb-2" style={{ color: `${CREAM}99` }}>Tell us about your vampire moment</label>
                 <textarea required rows={8} value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full bg-transparent pb-3 font-body text-sm outline-none transition-all duration-500 resize-none flex-1"
+                  className="w-full bg-transparent pb-3 font-body text-sm outline-none resize-none flex-1"
                   style={{ borderBottom: `1px solid ${CREAM}30`, color: CREAM }}
                   onFocus={(e) => e.currentTarget.style.borderBottomColor = "hsl(var(--accent))"}
                   onBlur={(e) => e.currentTarget.style.borderBottomColor = `${CREAM}30`}
@@ -143,12 +135,12 @@ const ContactSection = () => {
                 <span className="font-body text-xs" style={{ color: `${CREAM}99` }}>Keep me updated with insights and articles</span>
               </label>
               <button type="submit" disabled={submitting}
-                className="btn-glass font-display text-[11px] uppercase tracking-[0.1em] font-bold px-10 py-4 rounded-full transition-all duration-500 hover:scale-105 disabled:opacity-50">
+                className="btn-glass font-display text-[11px] uppercase tracking-[0.1em] font-bold px-10 py-4 rounded-full disabled:opacity-50">
                 {submitting ? "Sending…" : "Request a discovery call"}
               </button>
             </div>
           </form>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

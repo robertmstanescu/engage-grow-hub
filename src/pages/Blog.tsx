@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,8 +15,6 @@ import HeroRow from "@/features/site/rows/HeroRow";
 import ImageTextRow from "@/features/site/rows/ImageTextRow";
 import ProfileRow from "@/features/site/rows/ProfileRow";
 import GridRow from "@/features/site/rows/GridRow";
-
-const ease = [0.16, 1, 0.3, 1] as const;
 
 interface BlogPost {
   slug: string; title: string; excerpt: string | null; published_at: string | null; content: string; category: string;
@@ -88,14 +85,12 @@ const Blog = () => {
 
       <section className="grain relative pt-36 pb-16 text-center mesh-hero">
         <div className="relative z-10 max-w-[800px] mx-auto px-8">
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease }}
-            className="font-display text-3xl md:text-5xl font-black leading-tight mb-5" style={{ color: "hsl(var(--foreground))" }}>
+          <h1 className="font-display text-3xl md:text-5xl font-black leading-tight mb-5" style={{ color: "hsl(var(--foreground))" }}>
             {pageData.header_title || "Insights & Articles"}
-          </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease }}
-            className="font-body-heading text-base md:text-lg max-w-[600px] mx-auto" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
+          </h1>
+          <p className="font-body-heading text-base md:text-lg max-w-[600px] mx-auto" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
             {pageData.header_subtitle || ""}
-          </motion.p>
+          </p>
         </div>
       </section>
 
@@ -107,11 +102,10 @@ const Blog = () => {
             <p className="font-body text-sm text-center py-12" style={{ color: "hsl(var(--muted-foreground))" }}>No articles published yet.</p>
           ) : (
             <div className="space-y-6">
-              {posts.map((post, i) => (
-                <motion.article key={post.slug} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: i * 0.08, ease }}>
+              {posts.map((post) => (
+                <article key={post.slug}>
                   <Link to={`/blog/${post.slug}`}
-                    className="block glass rounded-xl p-6 md:p-8 transition-all duration-500 hover:glow-accent group">
+                    className="block glass rounded-xl p-6 md:p-8 hover:glow-accent group">
                     <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
                       {(() => {
                         const catColors = getCategoryColors(post.category);
@@ -121,10 +115,10 @@ const Blog = () => {
                       {post.published_at && <span className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{formatDate(post.published_at)}</span>}
                       <span className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>· {calculateReadTime(post.content)}</span>
                     </div>
-                    <h2 className="font-display text-lg md:text-xl font-bold leading-tight mb-2 group-hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>{post.title}</h2>
+                    <h2 className="font-display text-lg md:text-xl font-bold leading-tight mb-2 group-hover:opacity-80" style={{ color: "hsl(var(--foreground))" }}>{post.title}</h2>
                     {post.excerpt && <p className="font-body text-sm leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.5)" }}>{post.excerpt}</p>}
                   </Link>
-                </motion.article>
+                </article>
               ))}
             </div>
           )}

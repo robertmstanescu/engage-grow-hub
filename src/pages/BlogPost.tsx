@@ -1,6 +1,5 @@
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeHtml } from "@/services/sanitize";
@@ -11,8 +10,6 @@ import SubscribeWidget from "@/features/site/SubscribeWidget";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
-
-const ease = [0.16, 1, 0.3, 1] as const;
 
 interface BlogArticle {
   slug: string; title: string; published_at: string | null; content: string; category: string;
@@ -111,7 +108,7 @@ const BlogPost = () => {
             <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-8 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.4)" }}>
               <ArrowLeft size={14} /> All articles
             </Link>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease }}>
+            <div>
               <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-5">
                 {(() => { const cc = getCategoryColors(article.category); return (<span className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 rounded-full font-medium" style={{ backgroundColor: cc.bgColor, color: cc.textColor }}>{article.category}</span>); })()}
                 <span className="font-body text-xs" style={{ color: "hsl(var(--foreground) / 0.4)" }}>
@@ -128,12 +125,12 @@ const BlogPost = () => {
                   </div>
                 </div>
               )}
-            </motion.div>
+            </div>
           </div>
         </header>
 
         <div className="section-light py-16 px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.15, ease }}
+          <div
             className="max-w-[700px] mx-auto prose prose-sm md:prose-base prose-headings:font-display prose-headings:text-[hsl(260_20%_10%)] prose-p:text-[hsl(260_20%_10%_/_0.75)] prose-p:leading-[1.8] prose-a:text-[hsl(280_55%_24%)] prose-img:rounded-lg"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }} />
 
