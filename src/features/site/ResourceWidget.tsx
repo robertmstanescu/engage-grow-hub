@@ -255,7 +255,7 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
           </form>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
