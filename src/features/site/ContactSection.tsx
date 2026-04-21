@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/services/sanitize";
 
+const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
 const CREAM = "#F4F0EC";
@@ -41,7 +43,7 @@ const ContactSection = () => {
       <section id="contact" data-section="contact" className="snap-section section-light relative py-32 md:py-40">
         <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
         <div className="relative z-10 max-w-[520px] mr-auto ml-0 px-3 text-left">
-          <div>
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease }}>
             <h3 className="font-display text-3xl md:text-4xl font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))" }}>Message received.</h3>
             <p className="font-body-heading text-base md:text-lg mb-8" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>We respond within 24 hours.</p>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
@@ -49,7 +51,7 @@ const ContactSection = () => {
               style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
               Send another message
             </button>
-          </div>
+          </motion.div>
         </div>
       </section>
     );

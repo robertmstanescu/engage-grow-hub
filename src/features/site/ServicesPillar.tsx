@@ -33,6 +33,9 @@ interface ServicesPillarProps {
 
 const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, services, bgClass }: ServicesPillarProps) => {
   const [current, setCurrent] = useState(0);
+  // Direction: +1 = user clicked Next (right arrow). The new card slides
+  // in from the LEFT — opposite side of the arrow the user clicked.
+  // -1 = clicked Prev (left arrow), new card slides in from the RIGHT.
   const [direction, setDirection] = useState(0);
 
   if (!services || services.length === 0) return null;
@@ -41,10 +44,14 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
   const prev = () => { setDirection(-1); setCurrent((c) => c === 0 ? services.length - 1 : c - 1); };
   const next = () => { setDirection(1); setCurrent((c) => c === services.length - 1 ? 0 : c + 1); };
 
+  // Variants: when `direction === 1` (Next/right-arrow), the incoming
+  // card enters from the LEFT (negative x). When `direction === -1`
+  // (Prev/left-arrow), it enters from the RIGHT (positive x). Exit
+  // direction mirrors so the outgoing card slides toward the arrow.
   const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
+    enter: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
+    exit: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
   };
 
   return (
@@ -56,28 +63,17 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
 
       <div className="relative z-10 pt-20 md:pt-28 pb-8 px-3">
         <div className="max-w-[900px] mr-auto ml-0 text-left">
-          <motion.span
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
+          <span
             className="font-body text-[10px] tracking-[0.35em] uppercase block mb-5"
             style={{ color: "hsl(var(--pillar-label))" }}>
             {pillarNumber}
-          </motion.span>
-          <motion.h3
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease }}
+          </span>
+          <h3
             className="font-display text-2xl md:text-4xl font-bold leading-tight mb-5"
             style={{ color: "hsl(var(--pillar-heading))" }}>
             {title}
-          </motion.h3>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.1, ease }}
+          </h3>
+          <div
             className="font-body-heading text-base md:text-lg max-w-[600px] leading-relaxed"
             style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
@@ -112,7 +108,7 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
           </div>
           <div className="relative overflow-hidden">
             <AnimatePresence custom={direction} mode="wait">
-              <motion.div key={safeCurrent} custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.45, ease }}>
+              <motion.div key={safeCurrent} custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.5, ease }}>
                 <ServiceCard {...services[safeCurrent]} />
               </motion.div>
             </AnimatePresence>

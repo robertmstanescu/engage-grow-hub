@@ -69,20 +69,33 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
   const [current, setCurrent] = useState(0);
+  // Direction: +1 = user clicked Next (right arrow). The incoming card
+  // slides in from the RIGHT — opposite side of the arrow clicked, per
+  // design feedback. -1 = Prev (left arrow), incoming card from the LEFT.
+  const [direction, setDirection] = useState(0);
   // Warm the service row much earlier while it is still off-screen so the
   // card's glass buffer is ready by the time the user actually reaches it.
   // A large positive rootMargin trades a bit of extra precompositing work
   // for a reveal that appears fully saturated on first sight.
   const { ref, isVisible } = useScrollReveal({ rootMargin: "420px 0px", threshold: 0.01 });
-  const prev = useCallback(() => setCurrent((v) => v === 0 ? services.length - 1 : v - 1), [services.length]);
-  const next = useCallback(() => setCurrent((v) => v === services.length - 1 ? 0 : v + 1), [services.length]);
+  const prev = useCallback(() => {
+    setDirection(-1);
+    setCurrent((v) => v === 0 ? services.length - 1 : v - 1);
+  }, [services.length]);
+  const next = useCallback(() => {
+    setDirection(1);
+    setCurrent((v) => v === services.length - 1 ? 0 : v + 1);
+  }, [services.length]);
 
   if (!services.length) return null;
   const safeCurrent = Math.min(current, services.length - 1);
-  // Ghost opacity 0.01 (not 0) keeps the backdrop-filter layer "live" on
-  // the GPU between carousel transitions so the new card paints with full
-  // saturation on its very first frame instead of popping in a beat later.
-  const variants = { enter: { opacity: 0.01 }, center: { opacity: 1 }, exit: { opacity: 0.01 } };
+  // Slide-from-opposite-of-arrow variants. When Next (right arrow) is
+  // clicked the new card enters from the LEFT, and vice-versa for Prev.
+  const variants = {
+    enter: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
+  };
 
   const colorOverrides = buildColorOverrides(c);
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
@@ -179,9 +192,9 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
           <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
         </div>
 
-        <div className="relative overflow-visible" style={revealStyle(isVisible, 4)}>
-          <AnimatePresence initial={false}>
-            <motion.div key={safeCurrent} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease }}>
+        <div className="relative overflow-hidden" style={revealStyle(isVisible, 4)}>
+          <AnimatePresence initial={false} custom={direction} mode="wait">
+            <motion.div key={safeCurrent} custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.5, ease }}>
               <ServiceCard {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} />
             </motion.div>
           </AnimatePresence>

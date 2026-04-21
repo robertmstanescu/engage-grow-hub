@@ -21,11 +21,13 @@
  */
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { fetchAssetById, getAssetPublicUrl, type MediaAsset } from "@/services/mediaLibrary";
 import { submitLeadAndGetDownload } from "@/services/leads";
 
 const CREAM = "#F4F0EC";
+const ease = [0.16, 1, 0.3, 1] as const;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface Props {
@@ -149,7 +151,11 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
   const coverAlt = cover?.alt_text || heading;
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, ease }}
       className="overflow-hidden rounded-2xl"
       style={{
         backgroundColor: "hsl(280 55% 24%)",
@@ -249,7 +255,7 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
           </form>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
