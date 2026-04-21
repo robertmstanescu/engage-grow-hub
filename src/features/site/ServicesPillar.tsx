@@ -33,11 +33,9 @@ interface ServicesPillarProps {
 
 const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, services, bgClass }: ServicesPillarProps) => {
   const [current, setCurrent] = useState(0);
-  // Direction: +1 = user clicked Next (incoming card slides in from the
-  // RIGHT, i.e. opposite side of the right-arrow button). -1 = clicked Prev
-  // (incoming card slides in from the LEFT). Per design feedback the
-  // incoming card should always come from the OPPOSITE side of the arrow
-  // the user clicked.
+  // Direction: +1 = user clicked Next (right arrow). The new card slides
+  // in from the LEFT — opposite side of the arrow the user clicked.
+  // -1 = clicked Prev (left arrow), new card slides in from the RIGHT.
   const [direction, setDirection] = useState(0);
 
   if (!services || services.length === 0) return null;
@@ -46,14 +44,14 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
   const prev = () => { setDirection(-1); setCurrent((c) => c === 0 ? services.length - 1 : c - 1); };
   const next = () => { setDirection(1); setCurrent((c) => c === services.length - 1 ? 0 : c + 1); };
 
-  // Variants: when `direction === 1` (Next clicked, arrow on the right),
-  // the new card enters from the RIGHT (positive x) — opposite of the arrow.
-  // When `direction === -1` (Prev clicked, arrow on the left), it enters
-  // from the LEFT (negative x). The exiting card mirrors this in reverse.
+  // Variants: when `direction === 1` (Next/right-arrow), the incoming
+  // card enters from the LEFT (negative x). When `direction === -1`
+  // (Prev/left-arrow), it enters from the RIGHT (positive x). Exit
+  // direction mirrors so the outgoing card slides toward the arrow.
   const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
+    enter: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
+    exit: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
   };
 
   return (

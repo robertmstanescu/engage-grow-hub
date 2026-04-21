@@ -89,14 +89,12 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
 
   if (!services.length) return null;
   const safeCurrent = Math.min(current, services.length - 1);
-  // Slide-from-opposite-of-arrow variants. Combined opacity fade keeps the
-  // backdrop-filter glass layer alive across the transition (ghost 0.01
-  // would also work but a true 0 paired with the slide reads more
-  // confidently as a carousel rather than a fade).
+  // Slide-from-opposite-of-arrow variants. When Next (right arrow) is
+  // clicked the new card enters from the LEFT, and vice-versa for Prev.
   const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
+    enter: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
+    exit: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
   };
 
   const colorOverrides = buildColorOverrides(c);
