@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchPublicSiteContentValue } from "@/services/publicSiteContent";
 
 const CANONICAL_ORIGIN = "https://themagiccoffin.com";
 
@@ -40,14 +40,9 @@ const loadGlobalTags = (): Promise<GlobalTags> => {
   if (globalTagsPromise) return globalTagsPromise;
   globalTagsPromise = (async () => {
     try {
-      const { data } = await (supabase as any)
-        .from("site_content_public")
-        .select("content")
-        .eq("section_key", "global_seo_tags")
-        .maybeSingle();
-      const content = (data?.content || {}) as GlobalTags;
-      globalTagsCache = content;
-      return content;
+      const content = await fetchPublicSiteContentValue<GlobalTags>("global_seo_tags");
+      globalTagsCache = content || {};
+      return globalTagsCache;
     } catch {
       globalTagsCache = {};
       return {};

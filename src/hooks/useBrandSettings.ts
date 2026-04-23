@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchPublicSiteContentValue } from "@/services/publicSiteContent";
 
 export interface BrandColor {
   id: string;
@@ -85,18 +85,16 @@ export const useBrandSettings = (): BrandSettings => {
     listeners.add(setBrand);
 
     if (!cachedBrand) {
-      supabase
-        .from("site_content_public")
-        .select("content")
-        .eq("section_key", "brand_settings")
-        .maybeSingle()
-        .then(({ data }: any) => {
-          const resolved = data?.content || DEFAULT_BRAND;
+      fetchPublicSiteContentValue<Partial<BrandSettings>>("brand_settings")
+        .then((resolved) => {
           const merged: BrandSettings = {
-            colors: resolved.colors || DEFAULT_BRAND.colors,
-            typography: { ...DEFAULT_BRAND.typography, ...resolved.typography },
+            colors: resolved?.colors || DEFAULT_BRAND.colors,
+            typography: { ...DEFAULT_BRAND.typography, ...resolved?.typography },
           };
           notify(merged);
+        })
+        .catch(() => {
+          notify(DEFAULT_BRAND);
         });
     }
 
