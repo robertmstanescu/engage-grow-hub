@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "./ServiceCard";
 import { sanitizeHtml } from "@/services/sanitize";
-
-const ease = [0.16, 1, 0.3, 1] as const;
 
 interface Service {
   tag: string;
@@ -33,26 +30,12 @@ interface ServicesPillarProps {
 
 const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, services, bgClass }: ServicesPillarProps) => {
   const [current, setCurrent] = useState(0);
-  // Direction: +1 = user clicked Next (right arrow). The new card slides
-  // in from the LEFT — opposite side of the arrow the user clicked.
-  // -1 = clicked Prev (left arrow), new card slides in from the RIGHT.
-  const [direction, setDirection] = useState(0);
 
   if (!services || services.length === 0) return null;
   const safeCurrent = Math.min(current, services.length - 1);
 
-  const prev = () => { setDirection(-1); setCurrent((c) => c === 0 ? services.length - 1 : c - 1); };
-  const next = () => { setDirection(1); setCurrent((c) => c === services.length - 1 ? 0 : c + 1); };
-
-  // Variants: when `direction === 1` (Next/right-arrow), the incoming
-  // card enters from the LEFT (negative x). When `direction === -1`
-  // (Prev/left-arrow), it enters from the RIGHT (positive x). Exit
-  // direction mirrors so the outgoing card slides toward the arrow.
-  const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
-  };
+  const prev = () => setCurrent((c) => c === 0 ? services.length - 1 : c - 1);
+  const next = () => setCurrent((c) => c === services.length - 1 ? 0 : c + 1);
 
   return (
     <div id={id} data-section={id || "pillar"} className={`snap-section grain relative ${colorScope || ""}`} style={{ scrollMarginTop: "4rem", backgroundColor: "hsl(var(--pillar-section-bg))" }}>
@@ -91,7 +74,7 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
               {services.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => { setDirection(i > safeCurrent ? 1 : -1); setCurrent(i); }}
+                  onClick={() => setCurrent(i)}
                   className="w-2 h-2 rounded-full transition-all duration-500"
                   style={{
                     backgroundColor: i === safeCurrent ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.15)",
@@ -106,12 +89,8 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-          <div className="relative overflow-hidden">
-            <AnimatePresence custom={direction} mode="wait">
-              <motion.div key={safeCurrent} custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.5, ease }}>
-                <ServiceCard {...services[safeCurrent]} />
-              </motion.div>
-            </AnimatePresence>
+          <div className="relative">
+            <ServiceCard key={safeCurrent} {...services[safeCurrent]} />
           </div>
         </div>
       </div>
