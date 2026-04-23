@@ -10,8 +10,6 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSection } from "./typography";
 
-const ease = [0.16, 1, 0.3, 1] as const;
-
 const hexToHslChannels = (hex: string): string | null => {
   if (!hex || !hex.startsWith("#") || hex.length < 7) return null;
   const r = parseInt(hex.slice(1, 3), 16) / 255;
