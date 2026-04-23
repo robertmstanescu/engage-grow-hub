@@ -640,20 +640,6 @@ export type Database = {
           section_key: string | null
           updated_at: string | null
         }
-        Insert: {
-          content?: Json | null
-          draft_content?: never
-          id?: string | null
-          section_key?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          content?: Json | null
-          draft_content?: never
-          id?: string | null
-          section_key?: string | null
-          updated_at?: string | null
-        }
         Relationships: []
       }
     }
@@ -665,6 +651,16 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_site_content_public_rows: {
+        Args: never
+        Returns: {
+          content: Json
+          draft_content: Json
+          id: string
+          section_key: string
+          updated_at: string
+        }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       move_to_dlq: {
