@@ -9,3 +9,4 @@ Allow: /
 
 Host: https://themagiccoffin.com
 Sitemap: https://themagiccoffin.com/sitemap.xml
+Sitemap: https://sitemap.themagiccoffin.com/sitemap.xml
