@@ -180,7 +180,17 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
           <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
         </div>
 
-        <div className="relative" style={revealStyle(isVisible, 4)}>
+        {/*
+          RESERVED CAROUSEL HEIGHT — pairs with `vAlign="top"` above to
+          eliminate layout jitter. Without a min-height, the wrapper
+          collapses to whatever the currently-visible card needs, so a
+          short card (few deliverables) leaves blank space below and a
+          tall one pushes the whole row downward. Reserving enough room
+          for the tallest card keeps the carousel footprint stable as
+          users click through. `min-h-[60vh]` scales with the viewport
+          so it stays in proportion on every device.
+        */}
+        <div className="relative min-h-[520px] md:min-h-[60vh]" style={revealStyle(isVisible, 4)}>
           <ServiceCard key={safeCurrent} {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} />
         </div>
 
