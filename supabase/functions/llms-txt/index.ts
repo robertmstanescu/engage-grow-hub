@@ -339,7 +339,8 @@ Deno.serve(async (req) => {
   if (detectedBotName) {
     // Don't await — manifest delivery is more important than logging latency.
     recordAiBotActivity(
-      supabaseAdmin,
+      // deno-lint-ignore no-explicit-any
+      supabaseAdmin as any,
       detectedBotName,
       userAgent,
       wantsFull ? "/llms-full.txt" : "/llms.txt",
