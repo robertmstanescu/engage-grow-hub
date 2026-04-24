@@ -74,7 +74,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
                 boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
               }}>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
-                className="font-body-heading font-bold mb-3 text-lg leading-[1.6]" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
+                className="font-body-heading font-bold mb-3 text-lg leading-[1.6] text-[#e4c44e]" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
                 data-rte-fit=""
                 className="font-body text-xs leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: c.color_card_body || "hsl(var(--vows-card-body))", overflow: "visible", height: "auto" }}
