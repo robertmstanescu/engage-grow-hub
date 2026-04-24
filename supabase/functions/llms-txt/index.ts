@@ -23,7 +23,7 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { NodeHtmlMarkdown } from "npm:node-html-markdown@1.3.0";
+import { NodeHtmlMarkdown } from "https://esm.sh/node-html-markdown@1.3.0";
 
 // Single reusable instance — keeps headings, lists, links, code, blockquotes.
 // Pure-JS (no DOM dependency) so it runs cleanly in the Deno edge runtime.
