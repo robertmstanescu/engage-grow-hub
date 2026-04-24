@@ -61,7 +61,11 @@ const buildColorOverrides = (content: Record<string, any>): Record<string, strin
   return overrides;
 };
 
-const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
+// Note: `vAlign` is intentionally accepted but ignored — see the
+// LAYOUT LOCK comment on <RowSection> below. Keeping it in the prop
+// signature preserves API parity with the other row components so the
+// PageRows dispatcher can pass props uniformly.
+const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
@@ -110,7 +114,13 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
   return (
     <RowSection
       row={row}
-      vAlign={vAlign}
+      // LAYOUT LOCK: Force `top` alignment regardless of the inherited
+      // `vAlign` prop. Service rows host a carousel with cards of
+      // different heights — if the row centred itself vertically, the
+      // eyebrow/title/description above the cards would visibly jump up
+      // and down each time the user clicked Next/Prev. Anchoring to the
+      // top pins the header text in place; only the card content swaps.
+      vAlign="top"
       // Only fall back to the pillar section CSS variable when the admin
       // has NOT picked a custom bg_color in the Style tab. Otherwise the
       // chosen colour would be overridden by the default token.
@@ -174,7 +184,17 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
           <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
         </div>
 
-        <div className="relative" style={revealStyle(isVisible, 4)}>
+        {/*
+          RESERVED CAROUSEL HEIGHT — pairs with `vAlign="top"` above to
+          eliminate layout jitter. Without a min-height, the wrapper
+          collapses to whatever the currently-visible card needs, so a
+          short card (few deliverables) leaves blank space below and a
+          tall one pushes the whole row downward. Reserving enough room
+          for the tallest card keeps the carousel footprint stable as
+          users click through. `min-h-[60vh]` scales with the viewport
+          so it stays in proportion on every device.
+        */}
+        <div className="relative min-h-[520px] md:min-h-[60vh]" style={revealStyle(isVisible, 4)}>
           <ServiceCard key={safeCurrent} {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} />
         </div>
 
