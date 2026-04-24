@@ -110,7 +110,13 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { ro
   return (
     <RowSection
       row={row}
-      vAlign={vAlign}
+      // LAYOUT LOCK: Force `top` alignment regardless of the inherited
+      // `vAlign` prop. Service rows host a carousel with cards of
+      // different heights — if the row centred itself vertically, the
+      // eyebrow/title/description above the cards would visibly jump up
+      // and down each time the user clicked Next/Prev. Anchoring to the
+      // top pins the header text in place; only the card content swaps.
+      vAlign="top"
       // Only fall back to the pillar section CSS variable when the admin
       // has NOT picked a custom bg_color in the Style tab. Otherwise the
       // chosen colour would be overridden by the default token.
