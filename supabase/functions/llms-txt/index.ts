@@ -228,22 +228,21 @@ function generateFullLlmManifest(
       lines.push(`**AI Summary:** ${post.ai_summary}`);
     }
     lines.push("");
-    // Strip HTML tags for clean Markdown output. AI crawlers prefer prose
-    // over markup, and our blog content is stored as sanitized HTML.
-    const plainText = (post.content || "")
-      .replace(/<style[\s\S]*?<\/style>/gi, "")
-      .replace(/<script[\s\S]*?<\/script>/gi, "")
-      .replace(/<\/(p|div|h[1-6]|li|br)>/gi, "\n\n")
-      .replace(/<br\s*\/?>(?!\n)/gi, "\n")
-      .replace(/<[^>]+>/g, "")
-      .replace(/&nbsp;/g, " ")
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, "\"")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
-    lines.push(plainText);
+    // Convert sanitized HTML to clean Markdown using node-html-markdown.
+    // Preserves headings (#), lists (-), links ([text](url)), code blocks,
+    // blockquotes, and emphasis — exactly what AI crawlers expect.
+    let markdown = "";
+    try {
+      const cleanedHtml = (post.content || "")
+        .replace(/<style[\s\S]*?<\/style>/gi, "")
+        .replace(/<script[\s\S]*?<\/script>/gi, "");
+      markdown = htmlToMarkdown.translate(cleanedHtml).trim();
+    } catch (parseError) {
+      // Never let a single malformed post break the whole manifest.
+      console.error(`llms-txt: failed to parse post "${post.slug}":`, parseError);
+      markdown = "_(content unavailable)_";
+    }
+    lines.push(markdown);
     lines.push("");
     lines.push("---");
     lines.push("");
