@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import type { PageRow } from "@/types/rows";
 import { getRowBgColor, getRowBgImageStyle } from "../rowBackground";
 import RowBackground from "../RowBackground";
+import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEditor";
 import type { VAlign } from "../PageRows";
 
 interface Props {
