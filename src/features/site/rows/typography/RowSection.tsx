@@ -98,15 +98,18 @@ const RowSection = ({
     >
       {/*
         LAYER ORDER (bottom → top):
-        1. <RowBackground/>  — soft decorative glow / custom gradient
-        2. Background image  — sits ABOVE the glow so the 100px blur
-           does not wash it out
-        3. {children}        — actual row content, on top of everything
+        1. <RowBackground/>     — z-[-3]: gradient/glow layer at the very back
+        2. Background image     — z-[-2]: PNG/photo above glow, below overlays
+        3. Overlay elements     — z-[-1]: decorative PNGs (logos, shapes) above bg
+        4. {children}           — actual row content, on top of everything
       */}
-      {/* z-[-2]: gradient/glow layer always sits BEHIND the background image */}
-      <div className="absolute inset-0 pointer-events-none z-[-2]"><RowBackground row={row} /></div>
-      {/* z-[-1]: background image sits ABOVE the glow but BELOW the content */}
-      <div aria-hidden className="absolute inset-0 pointer-events-none z-[-1]" style={getRowBgImageStyle(row)} />
+      <div className="absolute inset-0 pointer-events-none z-[-3]"><RowBackground row={row} /></div>
+      <div aria-hidden className="absolute inset-0 pointer-events-none z-[-2]" style={getRowBgImageStyle(row)} />
+      {row.layout?.overlays?.length ? (
+        <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden">
+          {renderOverlayElements(row.layout.overlays)}
+        </div>
+      ) : null}
       {children}
     </section>
   );
