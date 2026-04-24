@@ -83,8 +83,20 @@ const HeroSection = () => {
 
   return (
     <section data-section="hero" className="scope-hero snap-section grain relative h-screen flex flex-col justify-end overflow-hidden mesh-hero">
+      {/*
+        LAYERING ORDER (bottom → top):
+        1. Ambient glow (z-[-2])      — decorative gradients sit at the very back
+        2. Background image (z-[-1])  — uploaded PNG/video sits ABOVE the glow
+                                        so it is never washed out by the blur
+        3. Content (z-10)             — text & CTAs always win
+      */}
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] z-[-2]"
+        style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
+      <div className="absolute top-1/4 right-0 w-[400px] h-[400px] rounded-full opacity-10 blur-[100px] z-[-2]"
+        style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
+
       {hasBg && c.bg_type === "image" && (
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-[-1]">
           {/*
             Hero background image — this is almost always the LCP
             (Largest Contentful Paint) element on the homepage.
@@ -106,17 +118,11 @@ const HeroSection = () => {
         </div>
       )}
       {hasBg && c.bg_type === "video" && (
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-[-1]">
           <video src={c.bg_url} autoPlay muted loop playsInline className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/60" />
         </div>
       )}
-
-      {/* Ambient glow */}
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px]"
-        style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
-      <div className="absolute top-1/4 right-0 w-[400px] h-[400px] rounded-full opacity-10 blur-[100px]"
-        style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
       <div className="relative z-10 w-full max-w-[1100px] px-3 pb-[4vh] pt-[15vh] flex flex-col justify-end">
         <motion.p

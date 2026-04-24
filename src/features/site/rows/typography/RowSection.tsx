@@ -102,8 +102,10 @@ const RowSection = ({
            does not wash it out
         3. {children}        — actual row content, on top of everything
       */}
-      <RowBackground row={row} />
-      <div aria-hidden className="absolute inset-0 pointer-events-none" style={getRowBgImageStyle(row)} />
+      {/* z-[-2]: gradient/glow layer always sits BEHIND the background image */}
+      <div className="absolute inset-0 pointer-events-none z-[-2]"><RowBackground row={row} /></div>
+      {/* z-[-1]: background image sits ABOVE the glow but BELOW the content */}
+      <div aria-hidden className="absolute inset-0 pointer-events-none z-[-1]" style={getRowBgImageStyle(row)} />
       {children}
     </section>
   );

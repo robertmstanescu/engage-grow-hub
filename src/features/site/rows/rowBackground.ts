@@ -59,12 +59,18 @@ export const getRowBgImageStyle = (row: PageRow): React.CSSProperties => {
   if (opacity >= 100) {
     return { backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center" };
   }
-  const veilAlpha = (100 - opacity) / 100;
+  // TRANSPARENT PNG SUPPORT: previously we composited a black veil
+  // (`rgba(0,0,0,${veilAlpha})`) over the image to simulate opacity.
+  // That mask filled in transparent regions of PNGs with solid black,
+  // hiding the row's brand colours underneath. Using a fully transparent
+  // gradient lets the row's base background "breathe" through any
+  // transparent pixels in the uploaded image.
   return {
-    backgroundImage: `linear-gradient(rgba(0,0,0,${veilAlpha}), rgba(0,0,0,${veilAlpha})), url(${url})`,
+    backgroundImage: `linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0)), url(${url})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundBlendMode: "normal",
+    opacity: opacity / 100,
   };
 };
 
