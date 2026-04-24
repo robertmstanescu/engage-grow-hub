@@ -61,7 +61,11 @@ const buildColorOverrides = (content: Record<string, any>): Record<string, strin
   return overrides;
 };
 
-const ServiceRow = ({ row, rowIndex, align = "center", vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
+// Note: `vAlign` is intentionally accepted but ignored — see the
+// LAYOUT LOCK comment on <RowSection> below. Keeping it in the prop
+// signature preserves API parity with the other row components so the
+// PageRows dispatcher can pass props uniformly.
+const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
