@@ -53,6 +53,7 @@ const CmsPageBuilder = ({ pageId }: Props) => {
   const [pageSlug, setPageSlug] = useState("");
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [unpublishing, setUnpublishing] = useState(false);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
