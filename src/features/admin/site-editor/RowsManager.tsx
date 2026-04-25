@@ -222,13 +222,143 @@ const RowsManager = ({ rows, onChange }: Props) => {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  /**
+   * ─────────────────────────────────────────────────────────────────────
+   * NESTED DRAG & DROP — US 3.1
+   * ─────────────────────────────────────────────────────────────────────
+   * We run TWO logical sortable contexts inside ONE `<DndContext>`:
+   *
+   *   1. ROW-level vertical sort  → ids = `row:<rowId>`
+   *   2. WIDGET-level cross-cell  → ids = `widget:<rowId>:<colIdx>`
+   *                                 droppable cells = `cell:<rowId>:<colIdx>`
+   *
+   * WHY a single DndContext (not nested ones):
+   * Nested DndContexts in @dnd-kit don't see each other's items, which
+   * makes cross-container DnD impossible. The official "Multiple
+   * Containers" recipe uses a single context and routes by id prefix.
+   * We do the same — `active.id` / `over.id` carry their type as a
+   * prefix so the handlers know what's being dragged where.
+   *
+   * WHY we mutate column CONTENT blobs (not yet PageWidget arrays):
+   * The renderer (`PageRows.tsx`) still consumes the legacy v1 row
+   * shape: `row.content` (col 0) + `row.columns_data[]` (cols 1..N),
+   * with a single `row.type` driving rendering. Swapping the *blobs*
+   * across cells of the same `row.type` is lossless and works today.
+   * Cross-row moves between rows of the SAME type also work. Moving
+   * across rows of DIFFERENT types would lose the schema for the
+   * destination renderer, so we block it with a toast and ask the
+   * user to use rows of the same type — until v2 widget arrays land.
+   * ───────────────────────────────────────────────────────────────────── */
+
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const parseWidgetId = (id: string): { rowId: string; colIdx: number } | null => {
+    if (typeof id !== "string" || !id.startsWith("widget:")) return null;
+    const [, rowId, colStr] = id.split(":");
+    const colIdx = Number(colStr);
+    if (!rowId || Number.isNaN(colIdx)) return null;
+    return { rowId, colIdx };
+  };
+
+  const parseCellId = (id: string): { rowId: string; colIdx: number } | null => {
+    if (typeof id !== "string" || !id.startsWith("cell:")) return null;
+    const [, rowId, colStr] = id.split(":");
+    const colIdx = Number(colStr);
+    if (!rowId || Number.isNaN(colIdx)) return null;
+    return { rowId, colIdx };
+  };
+
+  const parseRowId = (id: string): string | null => {
+    if (typeof id !== "string" || !id.startsWith("row:")) return null;
+    return id.slice(4);
+  };
+
+  /** Read the content blob at (rowId, colIdx) from the current `rows` state. */
+  const readCell = (rs: PageRow[], rowId: string, colIdx: number): Record<string, any> | null => {
+    const row = rs.find((r) => r.id === rowId);
+    if (!row) return null;
+    if (colIdx === 0) return row.content || {};
+    return row.columns_data?.[colIdx - 1] ?? null;
+  };
+
+  /** Write a new content blob at (rowId, colIdx) and return the new rows array. */
+  const writeCell = (rs: PageRow[], rowId: string, colIdx: number, value: Record<string, any>): PageRow[] => {
+    return rs.map((r) => {
+      if (r.id !== rowId) return r;
+      if (colIdx === 0) return { ...r, content: value };
+      const next = [...(r.columns_data || [])];
+      next[colIdx - 1] = value;
+      return { ...r, columns_data: next };
+    });
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(String(event.active.id));
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = rows.findIndex((r) => r.id === active.id);
-      const newIndex = rows.findIndex((r) => r.id === over.id);
-      onChange(arrayMove(rows, oldIndex, newIndex));
+    setActiveDragId(null);
+    if (!over) return;
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    if (activeId === overId) return;
+
+    // ── Case A: ROW reordering (vertical sort of strips) ───────────────
+    const activeRowId = parseRowId(activeId);
+    const overRowId = parseRowId(overId);
+    if (activeRowId && overRowId) {
+      const oldIndex = rows.findIndex((r) => r.id === activeRowId);
+      const newIndex = rows.findIndex((r) => r.id === overRowId);
+      if (oldIndex >= 0 && newIndex >= 0) onChange(arrayMove(rows, oldIndex, newIndex));
+      return;
     }
+
+    // ── Case B: WIDGET move (cell → cell, same or different row) ───────
+    const fromWidget = parseWidgetId(activeId);
+    if (!fromWidget) return;
+
+    // Drop target is either another widget (insert at that slot) or a
+    // bare cell (drop into the cell itself — important for empty cells).
+    const toWidget = parseWidgetId(overId);
+    const toCell = parseCellId(overId);
+    const target = toWidget || toCell;
+    if (!target) return;
+
+    const fromRow = rows.find((r) => r.id === fromWidget.rowId);
+    const toRow = rows.find((r) => r.id === target.rowId);
+    if (!fromRow || !toRow) return;
+
+    // Type-mismatch guard. Until v2 widget arrays land, each row has a
+    // single `type` driving its renderer. Moving a `contact` blob into
+    // a row whose type is `hero` would silently corrupt the destination.
+    // Block it with a toast — the data stays put, no loss.
+    if (fromRow.type !== toRow.type) {
+      toast.error("Can't move between row types yet", {
+        description: `Source is "${fromRow.type}", target is "${toRow.type}". Move within rows of the same type for now.`,
+      });
+      return;
+    }
+
+    // No-op if the user dropped a widget back onto its own cell with no
+    // sibling to swap with (single-widget-per-cell legacy shape).
+    if (fromWidget.rowId === target.rowId && fromWidget.colIdx === target.colIdx) return;
+
+    // SWAP the two cell blobs. Because each cell carries exactly one
+    // widget today, swap is the natural lossless operation:
+    //  - dragging onto an OCCUPIED cell exchanges contents
+    //  - dragging onto an EMPTY cell effectively MOVES the widget
+    //    (the source becomes empty `{}`)
+    // WHY swap, not splice: with a 1-widget-per-cell model, splice
+    // would require shifting all subsequent cells (and rebalancing
+    // column widths). Swap keeps the column geometry intact and is
+    // what users intuitively expect from drag-to-reorganise.
+    let next = rows;
+    const a = readCell(next, fromWidget.rowId, fromWidget.colIdx) || {};
+    const b = readCell(next, target.rowId, target.colIdx) || {};
+    next = writeCell(next, fromWidget.rowId, fromWidget.colIdx, b);
+    next = writeCell(next, target.rowId, target.colIdx, a);
+    onChange(next);
   };
 
   return (
