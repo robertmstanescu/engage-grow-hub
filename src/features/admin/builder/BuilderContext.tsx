@@ -177,6 +177,7 @@ const DISABLED: BuilderContextValue = {
   setActiveElement: () => {},
   commitTextAtPath: () => false,
   pageRows: undefined,
+  onRowsChange: undefined,
 };
 
 const BuilderContext = createContext<BuilderContextValue>(DISABLED);
