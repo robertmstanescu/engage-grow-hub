@@ -17,6 +17,9 @@ import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuild
 // the in-memory draft content. WYSIWYG, no markup duplication.
 import { HeroView } from "@/features/site/HeroSection";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
+// US 15.2 — selection state for the visual canvas.
+import { BuilderProvider, useBuilder } from "./builder/BuilderContext";
+import SelectableWrapper from "./builder/SelectableWrapper";
 
 interface SectionData {
   section_key: string;
@@ -45,7 +48,23 @@ const SECTION_NAV: { key: "hero" | "page_rows" | "main_page_seo"; label: string;
   { key: "main_page_seo", label: "SEO & Metadata", Icon: Search },
 ];
 
-const SiteEditor = () => {
+/**
+ * CanvasSelectionSurface — captures clicks on EMPTY canvas area to
+ * clear the active selection (US 15.2). Lives inside <BuilderProvider>
+ * so it can call `setActiveElement(null)` when the user clicks
+ * anywhere outside a SelectableWrapper. Selectable wrappers themselves
+ * call `e.stopPropagation()`, so a click that lands on a row/widget
+ * never reaches this handler.
+ */
+const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => {
+  const { setActiveElement } = useBuilder();
+  return (
+    <div onClick={() => setActiveElement(null)} className="contents">
+      {children}
+    </div>
+  );
+};
+
   const [sections, setSections] = useState<SectionData[]>([]);
   const [activeSection, setActiveSection] = useState<"hero" | "page_rows" | "main_page_seo">("hero");
   const [saving, setSaving] = useState<string | null>(null);
@@ -188,12 +207,18 @@ const SiteEditor = () => {
   const renderCanvas = () => {
     if (activeSection === "hero") {
       if (canvasMode === "preview") {
-        // HeroView is a PURE component (US 15.1). It accepts content as
-        // a prop and is unaware of the admin context.
+        // HeroView is a PURE component (US 15.1). Wrapped in
+        // SelectableWrapper (US 15.2) so editors can target it.
         return (
-          <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
-            <HeroView content={getDraft("hero") as any} />
-          </div>
+          <BuilderProvider>
+            <CanvasSelectionSurface>
+              <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
+                <SelectableWrapper id="hero" label="Hero" variant="row">
+                  <HeroView content={getDraft("hero") as any} />
+                </SelectableWrapper>
+              </div>
+            </CanvasSelectionSurface>
+          </BuilderProvider>
         );
       }
       return (
@@ -203,12 +228,17 @@ const SiteEditor = () => {
     if (activeSection === "page_rows") {
       if (canvasMode === "preview") {
         // RowsRenderer is the same component the public site uses (via
-        // PageRows). Feeding it the draft `pageRows` array gives an
-        // exact pixel-for-pixel preview of what will publish.
+        // PageRows). Inside RowsRenderer, every row + widget is wrapped
+        // in <SelectableWrapper> (US 15.2) — which short-circuits to a
+        // no-op fragment on the public site (no BuilderProvider there).
         return (
-          <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
-            <RowsRenderer rows={pageRows} />
-          </div>
+          <BuilderProvider>
+            <CanvasSelectionSurface>
+              <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
+                <RowsRenderer rows={pageRows} />
+              </div>
+            </CanvasSelectionSurface>
+          </BuilderProvider>
         );
       }
       return (

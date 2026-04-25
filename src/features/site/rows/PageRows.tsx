@@ -4,6 +4,10 @@ import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import { renderWidget } from "@/lib/WidgetRegistry";
 import WidgetWrapper from "@/components/widgets/WidgetWrapper";
 import { useGlobalWidgetMap, type GlobalWidget } from "@/hooks/useGlobalWidgets";
+// US 15.2 — selection chrome for the admin canvas. On the public site
+// the BuilderProvider is absent, so SelectableWrapper renders as a
+// no-op fragment (zero DOM, zero perf cost). See SelectableWrapper.tsx.
+import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -116,7 +120,16 @@ const RowRenderer = ({
           (Referenced global block was removed)
         </div>
       ) : (
-        <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
+        // US 15.2 — outer SelectableWrapper = the ROW; inner = the WIDGET.
+        // Two distinct ids so clicking the widget selects ONLY the widget
+        // (thanks to e.stopPropagation in SelectableWrapper). Clicking
+        // the row's blank space (anywhere not covered by the widget)
+        // selects the row instead.
+        <SelectableWrapper id={`row:${row.id}`} label={`Row · ${row.type}`} variant="row">
+          <SelectableWrapper id={`widget:${row.id}`} label={renderRow.type} variant="widget">
+            <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
+          </SelectableWrapper>
+        </SelectableWrapper>
       )}
     </div>
   );
