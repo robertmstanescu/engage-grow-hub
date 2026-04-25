@@ -50,6 +50,9 @@ import ElementsTray, {
   isTrayDragData,
   type TrayDragData,
 } from "./builder/ElementsTray";
+// US 3.5 — locked Header/Footer placeholders that frame the canvas
+// and route to the Global Elements editor on click.
+import LockedGlobalElement from "./builder/LockedGlobalElement";
 // US 17.2 — drop-target id parsing for tray-sourced drops.
 import { parseDropZoneId } from "./builder/CanvasDropZone";
 // US 17.2 — registry lookup so dropped widgets seed with proper defaults.
@@ -464,10 +467,14 @@ const SiteEditor = () => {
         // PageRows). Inside RowsRenderer, every row + widget is wrapped
         // in <SelectableWrapper> (US 15.2) — which short-circuits to a
         // no-op fragment on the public site (no BuilderProvider there).
+        // US 3.5 — frame the rows with locked Header/Footer placeholders
+        // so editors see the global chrome around their page edits.
         return (
           <CanvasSelectionSurface>
             <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
+              <LockedGlobalElement kind="header" />
               <RowsRenderer rows={pageRows} />
+              <LockedGlobalElement kind="footer" />
             </div>
           </CanvasSelectionSurface>
         );
