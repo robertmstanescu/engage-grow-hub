@@ -258,13 +258,16 @@ const SeoMaster = () => {
 
   return (
     <div className="space-y-6">
+      {/* US 4.2 — renamed "SEO Master" → "Global SEO Settings" so new
+          marketing hires immediately understand this is site-wide SEO
+          configuration (not a page-level editor). */}
       <header className="space-y-1">
-        <h1 className="font-display text-2xl text-foreground flex items-center gap-2">
+        <h1 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
           <Sparkles size={20} className="text-secondary" />
-          SEO Master
+          Global SEO Settings
         </h1>
         <p className="font-body text-sm text-muted-foreground">
-          Centralized control for headings, meta tags, and global SEO scripts. Edits here sync directly with the per-page editors.
+          Site-wide control for headings, meta tags, and global SEO scripts. Edits here sync directly with the per-page editors.
         </p>
       </header>
 
