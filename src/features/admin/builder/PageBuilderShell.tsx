@@ -355,7 +355,10 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                             the surrounding CanvasViewport supplies the
                             floating frame, and full-width hero rows must
                             still bleed edge-to-edge. */}
+                        {/* US 3.5 — global Header/Footer placeholders. */}
+                        <LockedGlobalElement kind="header" />
                         <RowsRenderer rows={props.pageRows} />
+                        <LockedGlobalElement kind="footer" />
                       </CanvasSelectionSurface>
                     </CanvasViewport>
                   </div>
