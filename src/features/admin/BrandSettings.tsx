@@ -3,9 +3,10 @@ import { Save, Send, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import { applyBrandCSSVars, DEFAULT_BRAND, type BrandSettings as BrandSettingsType, type BrandColor, type TypographyLevel } from "@/hooks/useBrandSettings";
 import { SectionBox } from "./site-editor/FieldComponents";
-import { fetchSection, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
+import { fetchSection, fetchSections, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
 import { SpinnerButton } from "@/components/ui/spinner-button";
+import BrandingEditor from "./BrandingEditor";
 
 /* ── WCAG Contrast helpers ── */
 const hexToRgb = (hex: string) => {
