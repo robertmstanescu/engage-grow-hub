@@ -123,15 +123,20 @@ Deno.serve(async (req) => {
   })();
 
   if (existing) {
+    // First-touch attribution wins: only set the column if it's still
+    // NULL on the existing row. Subsequent submissions don't overwrite
+    // the campaign that earned the lead.
+    const updatePayload: Record<string, unknown> = {
+      full_name: fullName,
+      company_university: companyUniversity,
+      title,
+      marketing_consent: marketingConsent,
+      download_history: newHistory,
+    };
+    if (attribution) updatePayload.attribution = attribution;
     const { error: updateError } = await supabase
       .from("leads")
-      .update({
-        full_name: fullName,
-        company_university: companyUniversity,
-        title,
-        marketing_consent: marketingConsent,
-        download_history: newHistory,
-      })
+      .update(updatePayload)
       .eq("id", existing.id);
     if (updateError) {
       console.error("Lead update failed", updateError);
@@ -145,6 +150,7 @@ Deno.serve(async (req) => {
       email,
       marketing_consent: marketingConsent,
       download_history: newHistory,
+      attribution,
     });
     if (insertError) {
       console.error("Lead insert failed", insertError);
