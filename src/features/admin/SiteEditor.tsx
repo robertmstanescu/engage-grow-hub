@@ -433,15 +433,17 @@ const SiteEditor = () => {
 
   return (
     <BuilderProvider>
-      {/* US 17.1 — single DndContext at the top of the builder so that
-          tray drags (left sidebar) and any future canvas-side targets
-          share one drag session. The DragOverlay renders the floating
-          ghost preview that follows the cursor across the whole screen. */}
-      <DndContext
+      {/* US 17.1 / 17.2 — single DndContext at the top of the builder so
+          tray drags (left sidebar) and canvas drop targets share one
+          drag session. The drop handler lives in <BuilderDndShell> so
+          it can call useBuilder() to auto-select the new widget. */}
+      <BuilderDndShell
         sensors={sensors}
+        activeDrag={activeDrag}
+        setActiveDrag={setActiveDrag}
         onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragCancel={() => setActiveDrag(null)}
+        pageRows={pageRows}
+        onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
       >
       <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
       {/* ─── Top toolbar (US 14.2 + US 16.2) ──────────────────────────
