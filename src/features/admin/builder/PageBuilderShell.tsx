@@ -57,6 +57,9 @@ import { generateRowId, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import InspectorPanel from "../inspector/InspectorPanel";
 import CanvasBreadcrumb from "./CanvasBreadcrumb";
+// US 3.5 — locked Header/Footer placeholders frame the canvas so the
+// admin sees global chrome around the page they are editing.
+import LockedGlobalElement from "./LockedGlobalElement";
 
 /* ------------------------------------------------------------------
  * BuilderDndShell — drop handler that needs `useBuilder()` (auto-select
