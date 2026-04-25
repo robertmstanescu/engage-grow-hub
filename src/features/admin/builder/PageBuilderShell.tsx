@@ -49,11 +49,12 @@ import { BuilderProvider, useBuilder } from "./BuilderContext";
 import ElementsTray, {
   TrayDragPreview,
   isTrayDragData,
+  isLayoutTrayDragData,
   type TrayDragData,
 } from "./ElementsTray";
 import { parseDropZoneId } from "./CanvasDropZone";
 import { getWidget } from "@/lib/WidgetRegistry";
-import { generateRowId, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
+import { generateRowId, DEFAULT_ROW_LAYOUT, buildEmptyV3Row, type PageRow } from "@/types/rows";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import InspectorPanel from "../inspector/InspectorPanel";
 import CanvasBreadcrumb from "./CanvasBreadcrumb";
