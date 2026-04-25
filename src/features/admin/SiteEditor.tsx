@@ -283,7 +283,16 @@ const SiteEditor = () => {
             className="h-full overflow-y-auto"
             style={{ backgroundColor: "hsl(var(--muted) / 0.35)" }}
           >
-            <div className="max-w-5xl mx-auto p-6">
+            <div
+              className="mx-auto p-6 transition-[max-width] duration-300 ease-out"
+              style={{
+                // WHY: dynamic max-width simulates the viewport without an
+                // iframe — the actual widget tree reflows at its real
+                // Tailwind breakpoints (md / lg) so editors see the true
+                // mobile/tablet stacking behavior.
+                maxWidth: canvasMaxWidth ? `${canvasMaxWidth}px` : "64rem", // 64rem = max-w-5xl
+              }}
+            >
               <div
                 className="rounded-lg border p-5 shadow-sm"
                 style={{
