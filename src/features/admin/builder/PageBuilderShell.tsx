@@ -181,7 +181,7 @@ const BuilderDndShell = ({
       type: data.type as PageRow["type"],
       strip_title: data.label || data.type,
       bg_color: "#FFFFFF",
-      content: { ...(def.defaultData as Record<string, any>) },
+      content: { ...seed },
       layout: { ...DEFAULT_ROW_LAYOUT },
     };
 
