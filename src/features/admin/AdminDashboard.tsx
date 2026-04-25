@@ -322,14 +322,6 @@ const AdminDashboard = ({ session }: Props) => {
     });
   }, [sections, cmsPage, cmsPageDirty]);
 
-  /* Debug Story 4.2 — guard against losing work on tab close / reload /
-   * browser-back. Native `beforeunload` only honours the warning when
-   * we have a strong reason: either the draft differs from the live
-   * site OR an auto-save is currently in flight (the user typed in the
-   * last 500ms and the silent save hasn't completed). Both windows
-   * count as "unsaved" from the user's perspective. */
-  useUnloadGuard(hasUnsavedChanges || autoSaveStatus === "saving");
-
   /**
    * ─────────────────────────────────────────────────────────────────────
    * SILENT AUTO-SAVE TO DRAFT — for the junior developer
