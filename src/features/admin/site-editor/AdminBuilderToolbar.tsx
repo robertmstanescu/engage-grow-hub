@@ -1,4 +1,4 @@
-import { Monitor, Tablet, Smartphone, Eye, Pencil, Save, Send, FileText, ExternalLink } from "lucide-react";
+import { Monitor, Tablet, Smartphone, Eye, Pencil, Save, Send, FileText, ExternalLink, EyeOff } from "lucide-react";
 
 /**
  * Viewport modes drive the Canvas wrapper width in SiteEditor.
