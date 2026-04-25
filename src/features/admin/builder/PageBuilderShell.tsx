@@ -360,8 +360,10 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
         pageRows={props.pageRows}
         onRowsChange={props.onRowsChange}
       >
-        {/* Fill the admin content area beneath the 52-px topbar so no grey strip shows below the canvas. */}
-        <div className="flex flex-col h-full min-h-0 flex-1">
+        {/* Full-screen builder overlay — covers the standard admin sidebar
+            so the canvas + side panes use 100% of the viewport. The user
+            exits via the toolbar's Back / Dashboard control. */}
+        <div className="fixed inset-0 z-50 bg-background flex flex-col h-screen w-screen overflow-hidden">
           <AdminBuilderToolbar
             viewport={viewport}
             onViewportChange={setViewport}
