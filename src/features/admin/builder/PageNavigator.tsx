@@ -353,6 +353,26 @@ const PageNavigator = ({
         </h3>
         <ElementsTray />
       </div>
+
+      <div
+        className="mt-auto border-t px-3 py-2"
+        style={{ borderColor: "hsl(var(--border))" }}
+      >
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="revision-history" className="border-0">
+            <AccordionTrigger className="py-2 font-body text-[10px] uppercase tracking-[0.18em] font-semibold hover:no-underline">
+              Revision History
+            </AccordionTrigger>
+            <AccordionContent className="pt-1 pb-2">
+              {revisionPanel || (
+                <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  Revision history is not available for this page.
+                </p>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
     </div>
   );
 };
