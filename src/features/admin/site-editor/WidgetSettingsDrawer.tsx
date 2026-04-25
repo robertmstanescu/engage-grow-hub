@@ -21,6 +21,7 @@
  * blob under the reserved `__design` key. We never mutate state here.
  */
 
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -29,8 +30,10 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
-import { Smartphone, Monitor } from "lucide-react";
+import { Smartphone, Monitor, BookmarkPlus, Loader2 } from "lucide-react";
 import { DEFAULT_DESIGN_SETTINGS, type WidgetDesignSettings } from "@/types/rows";
+import { useGlobalWidgets } from "@/hooks/useGlobalWidgets";
+import { toast } from "sonner";
 
 interface Props {
   open: boolean;
@@ -38,6 +41,26 @@ interface Props {
   design: WidgetDesignSettings;
   onChange: (next: WidgetDesignSettings) => void;
   widgetLabel: string;
+  /**
+   * Save-as-Global support (US 8.1). When provided, surfaces a button
+   * that snapshots the cell's current widget data into the
+   * `global_widgets` table, then converts the cell into a reference
+   * via `onConvertedToGlobal(globalId)`.
+   *
+   * Optional so legacy call sites keep working without modification.
+   */
+  saveAsGlobal?: {
+    /** The widget type (e.g. "contact", "hero") at this cell. */
+    widgetType: string;
+    /** The widget data blob to snapshot (excluding `__design`/`__global_ref`). */
+    snapshotData: Record<string, any>;
+    /** Suggested name (e.g. row strip title). */
+    suggestedName: string;
+    /** Called with the new global widget id once it's saved. */
+    onConvertedToGlobal: (globalId: string) => void;
+    /** When true, the cell is already a reference — disable the action. */
+    isAlreadyReference?: boolean;
+  };
 }
 
 const FIELD_LABEL = "font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block";
