@@ -10,6 +10,8 @@ type SubscribeWidgetAlignment = "left" | "center" | "right";
 interface SubscribeWidgetProps {
   className?: string;
   align?: SubscribeWidgetAlignment;
+  /** Optional override for the collapsed-state CTA copy. */
+  triggerLabel?: string;
 }
 
 /**
@@ -23,7 +25,7 @@ interface SubscribeWidgetProps {
  * scroll to the widget if needed.
  */
 const SubscribeWidget = forwardRef<HTMLDivElement, SubscribeWidgetProps>(
-  ({ className = "", align = "center" }, ref) => {
+  ({ className = "", align = "center", triggerLabel }, ref) => {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -112,7 +114,9 @@ const SubscribeWidget = forwardRef<HTMLDivElement, SubscribeWidgetProps>(
                 color: "hsl(var(--primary-foreground))",
               }}
             >
-              Keep me updated with insights &amp; articles
+              {triggerLabel && triggerLabel.trim().length > 0
+                ? triggerLabel
+                : "Keep me updated with insights & articles"}
             </motion.button>
           ) : (
             <motion.form
