@@ -123,7 +123,7 @@ import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 import SiteEditor from "./SiteEditor";
 import CmsPageBuilder from "./builder/CmsPageBuilder";
 
-type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team" | "seo_master" | "versions";
+type Tab = "overview" | "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team" | "seo_master" | "versions";
 type PropertiesSubTab = "content" | "style" | "seo";
 interface Props { session: any; }
 
