@@ -127,6 +127,19 @@ registerWidget({
   ),
 });
 
+// EPIC 13 / US 13.1 — standalone Image widget. Strict alt-text enforcement
+// is provided by `findMissingAltViolations` in services/contentAccessibility.
+registerWidget({
+  type: "image",
+  label: "Image",
+  icon: ImageIcon,
+  category: "Media",
+  defaultData: { ...IMAGE_ROW_DEFAULT },
+  adminComponent: ImageRowAdmin as any,
+  frontendComponent: ImageRow,
+  render: ({ row }) => <ImageRow row={row} />,
+});
+
 registerWidget({
   type: "profile",
   label: "Profile",
