@@ -32,6 +32,22 @@ const json = (status: number, body: unknown) =>
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_TEXT = 200;
 
+/** Epic 4 / US 4.1 — sanitise client-supplied marketing attribution. */
+const ALLOWED_ATTR_KEYS = new Set([
+  "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+  "gclid", "fbclid", "landing_path", "referrer", "first_seen_at",
+]);
+function sanitizeAttribution(raw: unknown): Record<string, string> | null {
+  if (!raw || typeof raw !== "object") return null;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (!ALLOWED_ATTR_KEYS.has(k)) continue;
+    if (typeof v !== "string" || v.trim() === "") continue;
+    out[k] = v.length > 500 ? v.slice(0, 500) : v;
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json(405, { error: "Method not allowed" });
@@ -58,6 +74,8 @@ Deno.serve(async (req) => {
   // sends their visitor_id so we can stitch their prior anonymous page
   // views to the email they just submitted (the "Path to Lead" feature).
   const visitorId = typeof body.visitor_id === "string" ? body.visitor_id.trim().slice(0, 64) : "";
+  // Epic 4 / US 4.1 — first-touch marketing attribution from localStorage.
+  const attribution = sanitizeAttribution(body.attribution);
 
   if (!fullName || fullName.length > MAX_TEXT) return json(400, { error: "Full name is required (max 200 chars)" });
   if (!companyUniversity || companyUniversity.length > MAX_TEXT) {
