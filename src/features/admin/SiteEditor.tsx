@@ -5,6 +5,8 @@ import { Layout, Search, Eye, Pencil } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import RowsManager from "./site-editor/RowsManager";
 import SeoFields from "./site-editor/SeoFields";
+// US 2.3 — unified left-rail navigator (Page Title + URL + Sections + Elements).
+import PageNavigator from "./builder/PageNavigator";
 import { DEFAULT_ROWS, type PageRow, normalizeRowsToV3 } from "@/types/rows";
 import type { ImperativePanelGroupHandle } from "react-resizable-panels";
 import {
