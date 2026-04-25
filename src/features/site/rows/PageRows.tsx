@@ -8,6 +8,9 @@ import { useGlobalWidgetMap, type GlobalWidget } from "@/hooks/useGlobalWidgets"
 // the BuilderProvider is absent, so SelectableWrapper renders as a
 // no-op fragment (zero DOM, zero perf cost). See SelectableWrapper.tsx.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
+// US 17.2 — drop targets between rows for tray-sourced widgets.
+// Renders nothing on the public site (no BuilderProvider above the tree).
+import CanvasDropZone from "@/features/admin/builder/CanvasDropZone";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
