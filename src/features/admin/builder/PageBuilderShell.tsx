@@ -274,6 +274,25 @@ export interface PageBuilderShellProps {
 
   /** Optional scheduling panel rendered above the revision history. */
   schedulePanel?: React.ReactNode;
+
+  /* ── US 2.3 — Left Navigator identity slots ────────────────────
+   * The Left Sidebar Navigator now shows the page's title and URL
+   * front-and-centre. Adapters supply the values + setters; omit a
+   * setter to render the corresponding field as read-only. */
+
+  /** Editable page title shown at the top of the Left Navigator. */
+  pageTitle: string;
+  onPageTitleChange?: (next: string) => void;
+
+  /** Page URL slug shown beneath the title. */
+  pageSlug: string;
+  onPageSlugChange?: (next: string) => void;
+
+  /** Set false to render the slug as a read-only badge (e.g. main page "/"). */
+  slugEditable?: boolean;
+
+  /** Optional URL prefix shown in front of the slug (default "/"). */
+  slugPrefix?: string;
 }
 
 const PageBuilderShell = (props: PageBuilderShellProps) => {
