@@ -117,8 +117,16 @@ const TestimonialRow = ({
          */}
         <Carousel
           opts={{ align: "start", loop: items.length > 2 }}
-          className="mt-10 relative"
+          className="mt-10 relative overflow-hidden"
         >
+          {/* "Light leak" spotlight — soft accent orb sits behind the glass
+           *  cards so the frosted backdrop-blur catches localized light.
+           *  Strictly decorative; pointer-events-none + -z-10 keep it
+           *  behind text and uninteractive. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-[300px] h-[300px] rounded-full bg-accent/20 blur-[100px]"
+          />
           <CarouselContent className="-ml-4">
             {items.map((item, i) => (
               <CarouselItem key={i} className="pl-4 basis-full md:basis-1/2">
