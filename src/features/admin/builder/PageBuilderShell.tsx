@@ -56,6 +56,7 @@ import { getWidget } from "@/lib/WidgetRegistry";
 import { generateRowId, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import InspectorPanel from "../inspector/InspectorPanel";
+import CanvasBreadcrumb from "./CanvasBreadcrumb";
 
 /* ------------------------------------------------------------------
  * BuilderDndShell — drop handler that needs `useBuilder()` (auto-select
