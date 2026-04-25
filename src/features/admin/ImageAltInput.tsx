@@ -114,7 +114,7 @@ const ImageAltInput = ({
         placeholder={placeholder}
         aria-describedby={`${id}-counter`}
         aria-invalid={isOver}
-        className="w-full px-3 py-1.5 rounded-lg font-body text-xs border"
+        className="w-full px-3 py-1.5 rounded-lg font-body text-xs border text-black"
         style={{
           borderColor: isOver ? "hsl(var(--destructive))" : "hsl(var(--border))",
           backgroundColor: "hsl(var(--background))",

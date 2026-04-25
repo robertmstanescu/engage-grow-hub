@@ -188,7 +188,7 @@ const WidgetInspectorTabs = ({
             >
               <div className="flex items-center gap-2">
                 <Smartphone size={14} style={{ color: "hsl(var(--muted-foreground))" }} />
-                <span className="font-body text-xs">Show on mobile</span>
+                <span className="font-body text-xs text-black">Show on mobile</span>
               </div>
               <Switch
                 checked={design.visibility.mobile}
@@ -203,7 +203,7 @@ const WidgetInspectorTabs = ({
             >
               <div className="flex items-center gap-2">
                 <Monitor size={14} style={{ color: "hsl(var(--muted-foreground))" }} />
-                <span className="font-body text-xs">Show on desktop</span>
+                <span className="font-body text-xs text-black">Show on desktop</span>
               </div>
               <Switch
                 checked={design.visibility.desktop}
