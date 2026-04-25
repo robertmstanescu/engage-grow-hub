@@ -152,9 +152,15 @@ const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
 
 const NAV_GROUPS = [
   {
+    label: "OVERVIEW",
+    items: [
+      { key: "overview" as Tab, icon: LayoutDashboard, label: "Dashboard" },
+    ],
+  },
+  {
     label: "CONTENT",
     items: [
-      { key: "site" as Tab, icon: LayoutDashboard, label: "Site Editor" },
+      { key: "site" as Tab, icon: FileText, label: "Site Editor" },
       { key: "pages" as Tab, icon: FileText, label: "Pages" },
       { key: "navigation" as Tab, icon: Compass, label: "Navigation" },
       { key: "blog" as Tab, icon: BookOpen, label: "Blog Posts" },
