@@ -163,6 +163,7 @@ export interface BuilderContextValue {
    * without `onRowsChange` (read-only mode).
    */
   onRowsChange?: (next: PageRow[]) => void;
+}
 
 const DISABLED: BuilderContextValue = {
   enabled: false,
