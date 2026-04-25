@@ -130,7 +130,7 @@ const RowRenderer = ({
 
     return (
       <div id={id} style={{ scrollMarginTop: "4rem", isolation: "isolate" }}>
-        <SelectableWrapper id={`row:${row.id}`} label="Row" variant="row">
+        <SelectableWrapper path={["row", row.id]} label="Row" variant="row">
           <div
             className="grid gap-8"
             style={{ gridTemplateColumns: widths.map((w) => `${w}fr`).join(" ") }}
@@ -197,13 +197,16 @@ const RowRenderer = ({
           (Referenced global block was removed)
         </div>
       ) : (
-        // US 15.2 — outer SelectableWrapper = the ROW; inner = the WIDGET.
-        // Two distinct ids so clicking the widget selects ONLY the widget
-        // (thanks to e.stopPropagation in SelectableWrapper). Clicking
-        // the row's blank space (anywhere not covered by the widget)
-        // selects the row instead.
-        <SelectableWrapper id={`row:${row.id}`} label={`Row · ${row.type}`} variant="row">
-          <SelectableWrapper id={`widget:${row.id}`} label={renderRow.type} variant="widget">
+        // EPIC 1 / US 1.1 — Atomic Canvas: paths are now hierarchical.
+        // outer SelectableWrapper = the ROW; inner = the WIDGET.
+        // Atomic-node wrappers (eyebrow / title / subtitle / image)
+        // live INSIDE each row component and extend these paths further.
+        <SelectableWrapper path={["row", row.id]} label={`Row · ${row.type}`} variant="row">
+          <SelectableWrapper
+            path={["row", row.id, "widget", row.id]}
+            label={renderRow.type}
+            variant="widget"
+          >
             <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
           </SelectableWrapper>
         </SelectableWrapper>
