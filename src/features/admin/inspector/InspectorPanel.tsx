@@ -40,6 +40,11 @@ import ImageTextEditor from "../site-editor/ImageTextEditor";
 import ProfileEditor from "../site-editor/ProfileEditor";
 import GridEditor from "../site-editor/GridEditor";
 import ContactAdmin from "@/features/widgets/contact/ContactAdmin";
+import TextRowEditor from "../site-editor/TextRowEditor";
+import BoxedRowEditor from "../site-editor/BoxedRowEditor";
+import LeadMagnetEditor from "../site-editor/LeadMagnetEditor";
+import VowsEditor from "../site-editor/VowsEditor";
+import { LogoCloudEditor } from "../editors/NewRowEditors";
 
 /* ════════════════════════════════════════════════════════════════════
  * InspectorPanel — US 16.1
@@ -398,6 +403,16 @@ const InspectorPanel = (props: InspectorPanelProps) => {
               return <ProfileEditor content={widgetContent} onChange={updateWidgetField} />;
             case "grid":
               return <GridEditor content={widgetContent} onChange={updateWidgetField} />;
+            case "text":
+              return <TextRowEditor content={widgetContent} onChange={updateWidgetField} />;
+            case "boxed":
+              return <BoxedRowEditor content={widgetContent} onChange={updateWidgetField} />;
+            case "lead_magnet":
+              return <LeadMagnetEditor content={widgetContent} onChange={updateWidgetField} />;
+            case "logo_cloud":
+              return <LogoCloudEditor content={widgetContent} onChange={updateWidgetField} />;
+            case "vows":
+              return <VowsEditor content={widgetContent} onChange={updateWidgetField} />;
             default:
               return (
                 <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
