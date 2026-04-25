@@ -22,6 +22,7 @@ import { HeroView } from "@/features/site/HeroSection";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 // US 15.2 — selection state for the visual canvas.
 import { BuilderProvider, useBuilder } from "./builder/BuilderContext";
+import CanvasBreadcrumb from "./builder/CanvasBreadcrumb";
 import SelectableWrapper from "./builder/SelectableWrapper";
 // US 16.1 — contextual right-pane inspector, dispatched by activeElement.
 import InspectorPanel from "./inspector/InspectorPanel";
@@ -609,15 +610,21 @@ const SiteEditor = () => {
           );
 
           const centerPane = (
-            <CanvasViewport
-              deviceWidth={deviceWidth}
-              viewport={viewport}
-              supportsPreview={supportsPreview}
-              canvasMode={canvasMode}
-              setCanvasMode={setCanvasMode}
-            >
-              {renderCanvas()}
-            </CanvasViewport>
+            <div className="flex flex-col h-full min-h-0">
+              <div className="flex-1 min-h-0">
+                <CanvasViewport
+                  deviceWidth={deviceWidth}
+                  viewport={viewport}
+                  supportsPreview={supportsPreview}
+                  canvasMode={canvasMode}
+                  setCanvasMode={setCanvasMode}
+                >
+                  {renderCanvas()}
+                </CanvasViewport>
+              </div>
+              {/* EPIC 1 / US 1.5 — interactive DOM breadcrumb */}
+              <CanvasBreadcrumb />
+            </div>
           );
 
           const rightPane = (

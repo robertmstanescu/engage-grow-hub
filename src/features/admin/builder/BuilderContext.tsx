@@ -147,6 +147,14 @@ export interface BuilderContextValue {
    * known field (in which case callers can fall back to the inspector).
    */
   commitTextAtPath: (path: NodePath, value: string, html?: boolean) => boolean;
+  /**
+   * EPIC 1 / US 1.5 — Breadcrumb Navigation
+   * Read-only access to the rows tree so the breadcrumb can resolve
+   * human-readable labels (row type, widget kind, item title, etc.)
+   * for each segment of the active path. May be undefined when the
+   * provider was mounted without rows (older callers).
+   */
+  pageRows?: PageRow[];
 }
 
 const DISABLED: BuilderContextValue = {
@@ -160,6 +168,7 @@ const DISABLED: BuilderContextValue = {
   activeElement: null,
   setActiveElement: () => {},
   commitTextAtPath: () => false,
+  pageRows: undefined,
 };
 
 const BuilderContext = createContext<BuilderContextValue>(DISABLED);
@@ -355,6 +364,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       activeElement: pathToLegacyId(activeNodePath),
       setActiveElement,
       commitTextAtPath,
+      pageRows,
     }),
     [
       activeNodePath,
@@ -365,6 +375,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       isPathEditing,
       setActiveElement,
       commitTextAtPath,
+      pageRows,
     ],
   );
 
