@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Layout, Image as ImageIcon, Search, Eye, Pencil } from "lucide-react";
+import { Layout, Search, Eye, Pencil } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
-import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
 import SeoFields from "./site-editor/SeoFields";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
@@ -18,12 +17,10 @@ import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuild
 import CanvasViewport from "./site-editor/CanvasViewport";
 // US 15.1 — render the SAME components the public site renders, against
 // the in-memory draft content. WYSIWYG, no markup duplication.
-import { HeroView } from "@/features/site/HeroSection";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 // US 15.2 — selection state for the visual canvas.
 import { BuilderProvider, useBuilder } from "./builder/BuilderContext";
 import CanvasBreadcrumb from "./builder/CanvasBreadcrumb";
-import SelectableWrapper from "./builder/SelectableWrapper";
 // US 16.1 — contextual right-pane inspector, dispatched by activeElement.
 import InspectorPanel from "./inspector/InspectorPanel";
 import RevisionHistoryPanel from "./builder/RevisionHistoryPanel";
