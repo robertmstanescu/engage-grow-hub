@@ -11,10 +11,22 @@ import { useBuilder } from "./BuilderContext";
  *     with ZERO extra DOM. This is critical: the same RowsRenderer
  *     ships to the live site.
  *
- * `e.stopPropagation()` on click is MANDATORY: when the user clicks a
- * widget that lives inside a row, we want only the WIDGET to become
- * active — not its parent row. Bubbling up would re-select the row a
- * frame later and the user could never select an inner element.
+ * EVENT BUBBLING — Debug Story 3.1
+ * --------------------------------
+ * Two layers of guard ensure clicks and hovers select the DEEPEST
+ * element under the cursor, never a parent:
+ *
+ *  1. Click — `e.stopPropagation()` on `onClick`. Without this a click
+ *     on a widget would bubble to its parent row and re-select the row
+ *     a frame later, making inner elements unreachable.
+ *
+ *  2. Hover — React's `onMouseEnter` / `onMouseLeave` are non-bubbling
+ *     but the BROWSER still fires them on every ancestor when the
+ *     cursor enters a descendant. So we instead listen on the bubbling
+ *     `onMouseOver` / `onMouseOut` events and call `stopPropagation()`
+ *     there: the deepest wrapper sees the event first, marks itself
+ *     hovered, then the parent never sees it. This eliminates the
+ *     "blue dashed border flickers between parent and child" bug.
  */
 interface SelectableWrapperProps {
   /** Globally-unique id for this selectable element (e.g. `widget:abc`). */
@@ -42,11 +54,31 @@ const SelectableWrapper = ({ id, label, variant = "widget", children }: Selectab
   const isActive = activeElement === id;
 
   const handleClick = (e: MouseEvent<HTMLDivElement>) => {
-    // WHY stopPropagation: a widget click should NOT bubble up and
-    // re-select its parent row. Without this, clicking inside a row
-    // would always end up selecting the row instead of the widget.
+    // Click guard — see component header for the full bubbling story.
     e.stopPropagation();
     setActiveElement(id);
+  };
+
+  const handleMouseOver = (e: MouseEvent<HTMLDivElement>) => {
+    // Hover guard — `mouseover` bubbles, so the DEEPEST wrapper handles
+    // it first. We `stopPropagation` so ancestor wrappers never flag
+    // themselves as hovered. The browser will still fire `mouseout` on
+    // the previous deepest element (handled below) before this one
+    // takes over.
+    e.stopPropagation();
+    if (!hovered) setHovered(true);
+  };
+
+  const handleMouseOut = (e: MouseEvent<HTMLDivElement>) => {
+    // Only clear hover when the cursor actually leaves this wrapper
+    // (i.e. relatedTarget is outside us). Without this guard a
+    // `mouseout` fired when the cursor moves between two children of
+    // the same wrapper would briefly drop the parent's hover state and
+    // cause flicker.
+    e.stopPropagation();
+    const next = e.relatedTarget as Node | null;
+    if (next && e.currentTarget.contains(next)) return;
+    setHovered(false);
   };
 
   // Outline color uses Tailwind blue tokens directly (per the AC spec).
@@ -62,8 +94,8 @@ const SelectableWrapper = ({ id, label, variant = "widget", children }: Selectab
     <div
       data-builder-id={id}
       data-builder-variant={variant}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
       onClick={handleClick}
       className={`relative ${outlineClass} transition-[outline,box-shadow] duration-100 cursor-pointer`}
       style={{
@@ -94,3 +126,4 @@ const SelectableWrapper = ({ id, label, variant = "widget", children }: Selectab
 };
 
 export default SelectableWrapper;
+
