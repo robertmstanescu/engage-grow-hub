@@ -138,9 +138,10 @@ const GlobalSettings = () => {
         </div>
       </div>
 
-      <AccordionSection id="branding" label="Logo & Favicon">
-        <BrandingEditor content={getDraft("branding")} onChange={(f, v) => updateField("branding", f, v)} />
-      </AccordionSection>
+      {/* Logo & Favicon moved to Brand Settings (Epic 1: Unified Brand Hub).
+       *  See src/features/admin/BrandSettings.tsx — the BrandingEditor now
+       *  renders there alongside colours and typography. */}
+
 
       <AccordionSection id="footer" label="Footer">
         <Field
