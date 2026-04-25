@@ -74,7 +74,7 @@ export const isLayoutTrayDragData = (
  * Single draggable card
  * ────────────────────────────────────────────────────────────────── */
 interface TrayCardProps {
-  def: WidgetDefinition;
+  def: WidgetDefinition<unknown>;
 }
 
 const TrayCard = ({ def }: TrayCardProps) => {
@@ -230,7 +230,7 @@ const ElementsTray = () => {
 
   // Group by `category` for a tidier menu. Widgets with no category
   // bucket into "Other" so they're never silently hidden.
-  const grouped = all.reduce<Record<string, WidgetDefinition[]>>((acc, def) => {
+  const grouped = all.reduce<Record<string, WidgetDefinition<unknown>[]>>((acc, def) => {
     const key = def.category || "Other";
     (acc[key] ??= []).push(def);
     return acc;

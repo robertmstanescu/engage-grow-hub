@@ -10,22 +10,31 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Database, Json } from "@/integrations/supabase/types";
 import type { PageRow } from "@/types/rows";
 
-export interface CmsPage {
-  id: string;
-  slug: string;
-  title: string;
-  template_type: string;
+/** Strict aliases for the generated `cms_pages` row shapes. */
+type CmsPageRow = Database["public"]["Tables"]["cms_pages"]["Row"];
+type CmsPageInsert = Database["public"]["Tables"]["cms_pages"]["Insert"];
+type CmsPageUpdate = Database["public"]["Tables"]["cms_pages"]["Update"];
+
+/**
+ * The `page_rows` / `draft_page_rows` columns are typed as `Json` in the
+ * generated DB types because Postgres `jsonb` is structurally opaque.
+ * `PageRow[]` is the application-level shape we serialise into those
+ * columns, so this single helper performs the one unavoidable widening
+ * (via `unknown`) at the boundary — every call site stays strict.
+ */
+const rowsToJson = (rows: PageRow[]): Json => rows as unknown as Json;
+
+/**
+ * Public-facing CMS page record. Mirrors the generated DB row but
+ * narrows `page_rows` / `draft_page_rows` to the application's
+ * `PageRow[]` shape so consumers don't have to widen `Json` themselves.
+ */
+export interface CmsPage extends Omit<CmsPageRow, "page_rows" | "draft_page_rows"> {
   page_rows: PageRow[];
   draft_page_rows: PageRow[] | null;
-  status: string;
-  created_at: string;
-  /** Last edited timestamp — surfaced in the Pages table view (US 3.2). */
-  updated_at: string;
-  meta_title?: string;
-  meta_description?: string;
-  ai_summary?: string;
 }
 
 export const fetchAllCmsPages = () =>
@@ -37,48 +46,61 @@ export const fetchPublishedCmsPageRefs = () =>
 export const fetchCmsPageById = (id: string) =>
   supabase.from("cms_pages").select("*").eq("id", id).maybeSingle();
 
-export const createCmsPage = (title: string, slug: string) =>
-  supabase.from("cms_pages").insert({
+export const createCmsPage = (title: string, slug: string) => {
+  const insert: CmsPageInsert = {
     title,
     slug,
     template_type: "blank",
-    page_rows: [],
+    page_rows: rowsToJson([]),
     status: "draft",
-  } as any);
+  };
+  return supabase.from("cms_pages").insert(insert);
+};
 
 export const deleteCmsPage = (id: string) =>
   supabase.from("cms_pages").delete().eq("id", id);
 
-export const saveCmsPageDraft = (id: string, rows: PageRow[]) =>
-  supabase.from("cms_pages").update({ draft_page_rows: rows as any } as any).eq("id", id);
+export const saveCmsPageDraft = (id: string, rows: PageRow[]) => {
+  const update: CmsPageUpdate = { draft_page_rows: rowsToJson(rows) };
+  return supabase.from("cms_pages").update(update).eq("id", id);
+};
 
-export const publishCmsPage = (id: string, rows: PageRow[]) =>
-  supabase
-    .from("cms_pages")
-    .update({
-      page_rows: rows as any,
-      draft_page_rows: rows as any,
-      status: "published",
-    } as any)
-    .eq("id", id);
+export const publishCmsPage = (id: string, rows: PageRow[]) => {
+  const update: CmsPageUpdate = {
+    page_rows: rowsToJson(rows),
+    draft_page_rows: rowsToJson(rows),
+    status: "published",
+  };
+  return supabase.from("cms_pages").update(update).eq("id", id);
+};
 
-export const togglePublishCmsPage = (id: string, newStatus: "published" | "draft") =>
-  supabase.from("cms_pages").update({ status: newStatus } as any).eq("id", id);
+export const togglePublishCmsPage = (id: string, newStatus: "published" | "draft") => {
+  const update: CmsPageUpdate = { status: newStatus };
+  return supabase.from("cms_pages").update(update).eq("id", id);
+};
 
-export const updateCmsPageMeta = (id: string, field: "meta_title" | "meta_description" | "ai_summary", value: string) =>
-  supabase.from("cms_pages").update({ [field]: value } as any).eq("id", id);
+export const updateCmsPageMeta = (
+  id: string,
+  field: "meta_title" | "meta_description" | "ai_summary",
+  value: string,
+) => {
+  const update: CmsPageUpdate = { [field]: value };
+  return supabase.from("cms_pages").update(update).eq("id", id);
+};
 
-export const saveCmsPageRows = (id: string, rows: PageRow[]) =>
-  supabase
-    .from("cms_pages")
-    .update({ page_rows: rows as any, draft_page_rows: rows as any } as any)
-    .eq("id", id);
+export const saveCmsPageRows = (id: string, rows: PageRow[]) => {
+  const update: CmsPageUpdate = {
+    page_rows: rowsToJson(rows),
+    draft_page_rows: rowsToJson(rows),
+  };
+  return supabase.from("cms_pages").update(update).eq("id", id);
+};
 
 /** Slugs reserved by the system — block users from claiming them. */
 export const RESERVED_SLUGS = ["admin", "blog", "unsubscribe", "api", "auth", "login", "signup", "p"];
 
 /**
- * Duplicate a CMS page (US 3.2). The clone:
+ * Duplicate a CMS page. The clone:
  *   • copies title + rows + meta from the source,
  *   • appends " (Copy)" to the title,
  *   • derives a unique slug by suffixing `-copy`, then `-copy-2`, etc.
@@ -95,12 +117,12 @@ export const duplicateCmsPage = async (sourceId: string) => {
     .eq("id", sourceId)
     .maybeSingle();
   if (fetchErr) return { data: null, error: fetchErr };
-  if (!src) return { data: null, error: { message: "Source page not found" } as any };
+  if (!src) return { data: null, error: { message: "Source page not found" } };
 
   const { data: existing } = await supabase.from("cms_pages").select("slug");
   const taken = new Set([
     ...RESERVED_SLUGS,
-    ...((existing as { slug: string }[] | null) || []).map((p) => p.slug),
+    ...((existing ?? []).map((p) => p.slug)),
   ]);
 
   // Find the first free `-copy[-N]` suffix.
@@ -112,15 +134,16 @@ export const duplicateCmsPage = async (sourceId: string) => {
     n += 1;
   }
 
-  return supabase.from("cms_pages").insert({
+  const insert: CmsPageInsert = {
     title: `${src.title} (Copy)`,
     slug: candidate,
     template_type: src.template_type,
-    page_rows: src.page_rows ?? [],
-    draft_page_rows: src.draft_page_rows ?? src.page_rows ?? [],
+    page_rows: src.page_rows ?? rowsToJson([]),
+    draft_page_rows: src.draft_page_rows ?? src.page_rows ?? rowsToJson([]),
     status: "draft",
     meta_title: src.meta_title,
     meta_description: src.meta_description,
     ai_summary: src.ai_summary,
-  } as any).select().maybeSingle();
+  };
+  return supabase.from("cms_pages").insert(insert).select().maybeSingle();
 };
