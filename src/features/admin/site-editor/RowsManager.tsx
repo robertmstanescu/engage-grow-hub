@@ -563,7 +563,7 @@ interface WidgetCellProps {
 }
 
 const WidgetCell = ({
-  rowId, rowType, colIdx, widthPct, isActive, isOccupied, onActivate,
+  rowId, rowType, colIdx, widthPct, isActive, isOccupied, onActivate, onInspect,
 }: WidgetCellProps) => {
   const widgetId = `widget:${rowId}:${colIdx}`;
   const cellId = `cell:${rowId}:${colIdx}`;
