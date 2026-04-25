@@ -126,6 +126,46 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   const brandColors = useBrandColors();
   const [htmlMode, setHtmlMode] = useState(false);
   const htmlTextareaRef = useRef<HTMLTextAreaElement>(null);
+  // Track the active selection's font + size so the dropdowns reflect
+  // what's currently in effect at the caret instead of always reading
+  // "Font" / "Size" placeholders.
+  const [activeFont, setActiveFont] = useState<string>("");
+  const [activeSize, setActiveSize] = useState<string>("");
+
+  /** Walk up from the caret/selection to find the first ancestor inside
+   *  the editor whose computed style we can inspect. */
+  const getCaretElement = (): HTMLElement | null => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return null;
+    let node: Node | null = sel.getRangeAt(0).startContainer;
+    if (node && node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+    if (!editorRef.current || !node || !editorRef.current.contains(node)) return null;
+    return node as HTMLElement;
+  };
+
+  /** Read the active font-family + font-size at the caret and update
+   *  dropdown state. Called on selection change / click / keyup. */
+  const syncToolbarState = useCallback(() => {
+    const el = getCaretElement();
+    if (!el) return;
+    const cs = window.getComputedStyle(el);
+    // Match font by checking which option is contained in the family stack
+    const family = cs.fontFamily || "";
+    const matchedFont = FONT_OPTIONS.find((f) => {
+      const first = f.value.split(",")[0].trim().replace(/['"]/g, "").toLowerCase();
+      return family.toLowerCase().includes(first);
+    });
+    setActiveFont(matchedFont?.value || "");
+    // Round computed pixel size to nearest option
+    const px = Math.round(parseFloat(cs.fontSize || "0"));
+    if (px > 0) {
+      const matchedSize = SIZE_OPTIONS.find((s) => parseInt(s.value, 10) === px);
+      setActiveSize(matchedSize?.value || `${px}px`);
+    } else {
+      setActiveSize("");
+    }
+  }, []);
+
 
   const emitChange = useCallback(() => {
     if (editorRef.current) {
@@ -156,7 +196,8 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     if (editorRef.current.contains(range.commonAncestorContainer)) {
       selectionRef.current = range.cloneRange();
     }
-  }, []);
+    syncToolbarState();
+  }, [syncToolbarState]);
 
   const restoreSelection = useCallback(() => {
     const selection = window.getSelection();
@@ -342,6 +383,20 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     }
   }, [content, htmlMode]);
 
+  // Listen for caret moves anywhere in the document to keep the font /
+  // size dropdowns in sync with the active selection inside this editor.
+  useEffect(() => {
+    const handler = () => {
+      if (!editorRef.current) return;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      if (!editorRef.current.contains(sel.getRangeAt(0).commonAncestorContainer)) return;
+      syncToolbarState();
+    };
+    document.addEventListener("selectionchange", handler);
+    return () => document.removeEventListener("selectionchange", handler);
+  }, [syncToolbarState]);
+
   const ToolbarButton = ({
     onClick, children, title, active,
   }: {
@@ -377,10 +432,13 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
         <select
-          defaultValue=""
+          value={activeFont}
           onChange={(event) => {
-            if (event.target.value) runCommand("fontName", event.target.value);
-            event.target.value = "";
+            const v = event.target.value;
+            if (v) {
+              setActiveFont(v);
+              runCommand("fontName", v);
+            }
           }}
           className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
           style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "120px" }}
@@ -393,16 +451,19 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
         </select>
 
         <select
-          defaultValue=""
+          value={SIZE_OPTIONS.some((s) => s.value === activeSize) ? activeSize : ""}
           onChange={(event) => {
-            if (event.target.value) applyFontSize(event.target.value);
-            event.target.value = "";
+            const v = event.target.value;
+            if (v) {
+              setActiveSize(v);
+              applyFontSize(v);
+            }
           }}
           className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
           style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "85px" }}
           title="Font Size"
         >
-          <option value="">Size</option>
+          <option value="">{activeSize || "Size"}</option>
           {SIZE_OPTIONS.map((size) => (
             <option key={size.value} value={size.value}>{size.label}</option>
           ))}
