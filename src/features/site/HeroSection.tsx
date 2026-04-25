@@ -146,30 +146,63 @@ const HeroSection = () => {
       {hasBg && c.bg_type === "video" && (
         <div className="absolute inset-0 z-[-1]">
           {/*
-            Hero background video — videos cannot be the LCP element,
-            so we mandate a `poster` attribute. The poster paints
-            instantly (it's a tiny WebP) while the MP4 streams in,
-            avoiding a blank black hero on slow networks. We prefer the
-            admin-supplied `bg_poster_url`; if missing, we synthesise a
-            small WebP from the video URL itself only if it's a
-            Supabase image (videos themselves can't be transcoded by
-            the image-transform endpoint). Falling back to no poster
-            is acceptable but degrades perceived load.
+            MOBILE GUARD — On phones/tablets we never download the MP4.
+            Cellular networks + battery + small screens make autoplaying
+            video a conversion-killer (and a data-plan tax). Instead we
+            render the admin-supplied poster (or a synthesised one from
+            the video URL if it lives on Supabase storage) as a static
+            optimized image. Desktop visitors still get the full motion
+            experience. The breakpoint comes from `useIsMobile` (1024px)
+            so it lines up with the rest of the responsive system.
           */}
-          <video
-            src={c.bg_url}
-            poster={
-              c.bg_poster_url
-                ? buildPosterUrl(c.bg_poster_url)
-                : undefined
-            }
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            className="w-full h-full object-cover"
-          />
+          {isMobile ? (
+            (() => {
+              const fallbackImg = c.bg_poster_url || (isSupabaseStorageUrl(c.bg_url) ? c.bg_url : undefined);
+              if (!fallbackImg) {
+                return <div className="absolute inset-0 bg-black" />;
+              }
+              return (
+                <img
+                  src={
+                    isSupabaseStorageUrl(fallbackImg)
+                      ? transformImageUrl(fallbackImg, { width: 1024, quality: 70 })
+                      : fallbackImg
+                  }
+                  srcSet={buildImageSrcSet(fallbackImg) || undefined}
+                  sizes="100vw"
+                  alt={c.bg_image_alt || ""}
+                  className="w-full h-full object-cover"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              );
+            })()
+          ) : (
+            /*
+              Hero background video (desktop only) — videos cannot be the
+              LCP element, so we mandate a `poster` attribute. The poster
+              paints instantly (a tiny WebP) while the MP4 streams in,
+              avoiding a blank black hero on slow networks. We prefer the
+              admin-supplied `bg_poster_url`; otherwise we synthesise a
+              small WebP from the video URL itself only if it's a
+              Supabase image (videos themselves can't be transcoded by
+              the image-transform endpoint).
+            */
+            <video
+              src={c.bg_url}
+              poster={
+                c.bg_poster_url
+                  ? buildPosterUrl(c.bg_poster_url)
+                  : undefined
+              }
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              className="w-full h-full object-cover"
+            />
+          )}
           <div className="absolute inset-0 bg-black/60" />
         </div>
       )}
