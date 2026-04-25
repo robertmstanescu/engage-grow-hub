@@ -360,26 +360,18 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                   className="h-full flex flex-col"
                   style={{ backgroundColor: "hsl(var(--card))" }}
                 >
-                  <div
-                    className="px-4 py-3 border-b"
-                    style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-                  >
-                    <h3
-                      className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
-                      style={{ color: "hsl(var(--muted-foreground))" }}
-                    >
-                      {props.title}
-                    </h3>
-                  </div>
-                  <div className="flex-1 min-h-0 px-3 py-3 overflow-y-auto">
-                    <h3
-                      className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
-                      style={{ color: "hsl(var(--muted-foreground))" }}
-                    >
-                      Elements
-                    </h3>
-                    <ElementsTray />
-                  </div>
+                  {/* US 2.3 — Left Sidebar Navigator: Page Title + URL
+                      slot at the top, then the canvas section list,
+                      then the Elements tray. */}
+                  <PageNavigator
+                    pageTitle={props.pageTitle}
+                    onPageTitleChange={props.onPageTitleChange}
+                    pageSlug={props.pageSlug}
+                    onPageSlugChange={props.onPageSlugChange}
+                    slugEditable={props.slugEditable}
+                    slugPrefix={props.slugPrefix}
+                    pageRows={props.pageRows}
+                  />
                 </aside>
               );
 
