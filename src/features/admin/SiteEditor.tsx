@@ -596,10 +596,13 @@ const SiteEditor = () => {
           </aside>
         </ResizablePanel>
 
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle onDoubleClick={resetLayout} />
 
-        {/* CENTER — Canvas (flexible, subtle gray bg) */}
-        <ResizablePanel defaultSize={57} minSize={30}>
+        {/* CENTER — Canvas (min 300px guaranteed) */}
+        <ResizablePanel
+          defaultSize={limits.centerDefault}
+          minSize={limits.centerMin}
+        >
           <CanvasViewport
             deviceWidth={deviceWidth}
             viewport={viewport}
@@ -611,10 +614,14 @@ const SiteEditor = () => {
           </CanvasViewport>
         </ResizablePanel>
 
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle onDoubleClick={resetLayout} />
 
-        {/* RIGHT — Inspector (300px default, max 400px) */}
-        <ResizablePanel defaultSize={25} minSize={18} maxSize={32}>
+        {/* RIGHT — Inspector (max 400px) */}
+        <ResizablePanel
+          defaultSize={limits.rightDefault}
+          minSize={limits.rightMin}
+          maxSize={limits.rightMax}
+        >
           <aside
             className="h-full flex flex-col"
             style={{ backgroundColor: "hsl(var(--card))" }}
