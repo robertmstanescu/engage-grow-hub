@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Layout, Image as ImageIcon, Search, Eye, Pencil } from "lucide-react";
@@ -7,11 +7,13 @@ import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
 import SeoFields from "./site-editor/SeoFields";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
+import type { ImperativePanelGroupHandle } from "react-resizable-panels";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { usePanelLimits } from "./builder/usePanelLimits";
 import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuilderToolbar";
 import CanvasViewport from "./site-editor/CanvasViewport";
 // US 15.1 — render the SAME components the public site renders, against
