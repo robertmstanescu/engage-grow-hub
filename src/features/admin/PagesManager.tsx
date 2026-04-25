@@ -135,7 +135,9 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
     searchableText: (p) => `${p.title} ${p.slug} ${p.status}`.toLowerCase(),
     categoryOf: (p) => p.status,
     alphaKey: (p) => p.title.toLowerCase(),
-    updatedKey: (p) => p.created_at,
+    // "Last Edited" is the natural sort axis for a CMS page table —
+    // editors usually want to find the page they touched most recently.
+    updatedKey: (p) => p.updated_at || p.created_at,
   });
   const filteredPages = pageFilters.filteredItems;
 
