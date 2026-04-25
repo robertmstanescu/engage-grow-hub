@@ -59,7 +59,9 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
         {c.eyebrow && (
           <SelectableWrapper path={[...basePath, "eyebrow"]} label="Eyebrow" variant="atom" inline>
             <RowEyebrow color={c.color_eyebrow || (isLight ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.5)")} style={revealStyle(isVisible, -0.5)}>
-              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
+              <CanvasEditable path={[...basePath, "eyebrow"]} value={c.eyebrow} as="span">
+                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
+              </CanvasEditable>
             </RowEyebrow>
           </SelectableWrapper>
         )}
@@ -67,7 +69,16 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
         {titleLines.length > 0 && (
           <SelectableWrapper path={[...basePath, "title"]} label="Title" variant="atom" inline>
             <RowTitle color={isLight ? "hsl(var(--primary))" : "hsl(var(--foreground))"} style={revealStyle(isVisible, 0)}>
-              {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
+              <CanvasEditable
+                path={[...basePath, "title"]}
+                /* When editing, the user types the title as plain text with
+                   newlines splitting lines. The provider's writeRowsAtPath
+                   re-splits on \n to populate `title_lines`. */
+                value={(c.title_lines || []).map((li: any) => typeof li === "string" ? li.replace(/<[^>]+>/g, "") : "").join("\n")}
+                as="span"
+              >
+                {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
+              </CanvasEditable>
             </RowTitle>
           </SelectableWrapper>
         )}
@@ -75,7 +86,9 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
         {c.subtitle && (
           <SelectableWrapper path={[...basePath, "subtitle"]} label="Subtitle" variant="atom" inline>
             <RowSubtitle color={c.subtitle_color || "inherit"} style={revealStyle(isVisible, 1)}>
-              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
+              <CanvasEditable path={[...basePath, "subtitle"]} value={c.subtitle} as="span">
+                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
+              </CanvasEditable>
             </RowSubtitle>
           </SelectableWrapper>
         )}
@@ -83,11 +96,20 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
         {c.body && (
           <SelectableWrapper path={[...basePath, "body"]} label="Body" variant="atom">
             <div style={revealStyle(isVisible, 2)}>
-              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.body`} html as="div"
-                data-rte-fit=""
+              <CanvasEditable
+                path={[...basePath, "body"]}
+                value={c.body}
+                html
+                as="div"
                 className={`font-body-heading font-medium leading-[1.6] ${isMultiCol ? "" : "max-w-[700px]"} mt-rhythm-tight [&_p]:mb-[5px] [&_p]:mt-[5px] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
                 style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)"), fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)" }}
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
+              >
+                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.body`} html as="div"
+                  data-rte-fit=""
+                  className={`font-body-heading font-medium leading-[1.6] ${isMultiCol ? "" : "max-w-[700px]"} mt-rhythm-tight [&_p]:mb-[5px] [&_p]:mt-[5px] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
+                  style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)"), fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)" }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
+              </CanvasEditable>
             </div>
           </SelectableWrapper>
         )}
