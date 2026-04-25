@@ -1223,12 +1223,12 @@ const AdminDashboard = ({ session }: Props) => {
                     }
                     setActiveTab(item.key as Tab);
                     setSelectedSectionId(null);
-                    if (item.key !== "site" && cmsPage) {
-                      // Leaving the builder while editing a CMS page
-                      // — strip the :pageId so the URL no longer claims
-                      // we're editing it (US 3.3).
-                      navigate("/admin/builder");
-                    }
+                    // Note: we intentionally do NOT change the URL when
+                    // switching to a non-builder tab. The Admin shell
+                    // hosts every tab, so the address bar can stay on
+                    // /admin/builder/:pageId — the user will return to
+                    // the same page when they re-enter the builder
+                    // (US 3.3).
                     if (isAdminMobile) setMobileDrawerOpen(false);
                   };
                   return (
