@@ -82,7 +82,7 @@ const EmptyHint = ({ children }: { children: React.ReactNode }) => (
 );
 
 const InspectorPanel = (props: InspectorPanelProps) => {
-  const { activeElement } = useBuilder();
+  const { activeElement, setActiveElement } = useBuilder();
   const {
     seoMetaTitle,
     seoMetaDescription,
