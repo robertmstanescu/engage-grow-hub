@@ -71,6 +71,8 @@ interface CmsPage {
   draft_page_rows: PageRow[] | null;
   status: string;
   created_at: string;
+  /** Last edited timestamp — surfaced in the Pages table view (US 3.2). */
+  updated_at: string;
   meta_title?: string;
   meta_description?: string;
   ai_summary?: string;
