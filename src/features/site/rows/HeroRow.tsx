@@ -44,13 +44,23 @@ const HeroRow = ({ row }: Props) => {
             decoding="async"
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
-          <div className="absolute inset-0 bg-black/60" />
+          {/*
+            Ticket 1.3 — Dynamic gradient overlay (replaces the old flat
+            `bg-black/60` wash). Dark at the bottom so the headline stays
+            readable on white-text layouts, fading to transparent at the
+            top so the image's true colors come through and the section
+            still feels like premium photography.
+            Uses --background tokens so the gradient adapts cleanly to
+            both light and dark themes.
+          */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent" />
         </div>
       )}
       {hasBg && bgType === "video" && (
         <div className="absolute inset-0 z-0">
           <video src={bgUrl} autoPlay muted loop playsInline className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/60" />
+          {/* Ticket 1.3 — see image branch above for the rationale. */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent" />
         </div>
       )}
 
