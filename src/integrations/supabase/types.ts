@@ -67,6 +67,7 @@ export type Database = {
           cover_image: string | null
           cover_image_alt: string | null
           created_at: string
+          draft_page_rows: Json | null
           excerpt: string | null
           id: string
           lead_magnet_asset_id: string | null
@@ -75,6 +76,7 @@ export type Database = {
           meta_title: string | null
           og_image: string | null
           og_image_alt: string | null
+          page_rows: Json
           published_at: string | null
           slug: string
           status: string
@@ -92,6 +94,7 @@ export type Database = {
           cover_image?: string | null
           cover_image_alt?: string | null
           created_at?: string
+          draft_page_rows?: Json | null
           excerpt?: string | null
           id?: string
           lead_magnet_asset_id?: string | null
@@ -100,6 +103,7 @@ export type Database = {
           meta_title?: string | null
           og_image?: string | null
           og_image_alt?: string | null
+          page_rows?: Json
           published_at?: string | null
           slug: string
           status?: string
@@ -117,6 +121,7 @@ export type Database = {
           cover_image?: string | null
           cover_image_alt?: string | null
           created_at?: string
+          draft_page_rows?: Json | null
           excerpt?: string | null
           id?: string
           lead_magnet_asset_id?: string | null
@@ -125,6 +130,7 @@ export type Database = {
           meta_title?: string | null
           og_image?: string | null
           og_image_alt?: string | null
+          page_rows?: Json
           published_at?: string | null
           slug?: string
           status?: string
