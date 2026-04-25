@@ -104,7 +104,8 @@ export interface PageRow {
     | "lead_magnet"
     | "testimonial"   // NEW — quotes from clients (carousel)
     | "logo_cloud"    // NEW — "Trusted by" logo strip
-    | "faq";          // NEW — accordion of Q/A pairs
+    | "faq"           // NEW — accordion of Q/A pairs
+    | "embed";        // NEW — raw HTML / iframe embed (sanitised, US 4.1)
   strip_title: string;
   bg_color: string;
   scope?: string;
