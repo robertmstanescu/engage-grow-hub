@@ -9,6 +9,7 @@ import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
+import { parseSpacing } from "@/lib/spacing";
 import type { Alignment, VAlign } from "./PageRows";
 
 interface Props {
