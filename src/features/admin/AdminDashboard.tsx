@@ -113,6 +113,11 @@ import StyleTab from "./editors/StyleTab";
 import RowStyleTab from "./editors/RowStyleTab";
 import RowContentEditor from "./editors/RowContentEditor";
 import VersionHistory from "./VersionHistory";
+// EPIC 14–17 — new three-pane builder shell. Mounted in place of the
+// legacy structure-rail + properties layout when the admin is editing
+// the MAIN PAGE site content. CMS-page editing still uses the legacy
+// path until the new builder learns to load arbitrary page rows.
+import SiteEditor from "./SiteEditor";
 
 type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team" | "seo_master" | "versions";
 type PropertiesSubTab = "content" | "style" | "seo";
