@@ -214,31 +214,37 @@ export type Database = {
       }
       contacts: {
         Row: {
+          ai_score: number | null
           attribution: Json | null
           company: string | null
           created_at: string
           email: string
           id: string
+          linkedin_url: string | null
           message: string | null
           name: string
           subscribed_to_marketing: boolean
         }
         Insert: {
+          ai_score?: number | null
           attribution?: Json | null
           company?: string | null
           created_at?: string
           email: string
           id?: string
+          linkedin_url?: string | null
           message?: string | null
           name: string
           subscribed_to_marketing?: boolean
         }
         Update: {
+          ai_score?: number | null
           attribution?: Json | null
           company?: string | null
           created_at?: string
           email?: string
           id?: string
+          linkedin_url?: string | null
           message?: string | null
           name?: string
           subscribed_to_marketing?: boolean
