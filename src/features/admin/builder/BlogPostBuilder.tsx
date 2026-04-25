@@ -18,6 +18,10 @@ import {
   DEFAULT_ROW_LAYOUT,
   type PageRow,
 } from "@/types/rows";
+import {
+  findMissingAltViolations,
+  formatAltMissingMessage,
+} from "@/services/contentAccessibility";
 import PageBuilderShell from "./PageBuilderShell";
 import RevisionHistoryPanel from "./RevisionHistoryPanel";
 import SchedulePublishPanel from "./SchedulePublishPanel";
