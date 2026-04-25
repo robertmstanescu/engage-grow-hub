@@ -159,14 +159,10 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     );
   }
 
-  /* ─── Special case — Hero section ─────────────────────────────── */
-  if (activeElement === "hero") {
-    return (
-      <Section title="Hero Section">
-        <HeroEditor content={heroContent} onChange={onHeroFieldChange} />
-      </Section>
-    );
-  }
+  /* US 2.1 — The "hero" special-case branch is gone. Hero is now an
+   * ordinary widget at page_rows[0]; selecting it routes through the
+   * `widget:<id>` branch which calls `<HeroRowFields/>` via the
+   * row-type fallback at the bottom of this component. */
 
   /* ─── State 4 — Cell selected → Cell Settings ─────────────────
    * activeElement looks like `cell:<rowId>:<colId>:<cellId>`. The
