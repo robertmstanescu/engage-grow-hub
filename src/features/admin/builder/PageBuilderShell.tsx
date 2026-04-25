@@ -239,6 +239,9 @@ export interface PageBuilderShellProps {
 
 const PageBuilderShell = (props: PageBuilderShellProps) => {
   const [viewport, setViewport] = useState<ViewportMode>("desktop");
+  // EPIC 2 / US 2.1 — in-place Edit/Preview toggle. When "preview", we
+  // hide the side panes so the canvas mimics the live site.
+  const [previewMode, setPreviewMode] = useState<"edit" | "preview">("edit");
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
   );
