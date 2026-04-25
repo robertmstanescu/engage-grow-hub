@@ -566,6 +566,18 @@ const SiteEditor = () => {
                 slugEditable={false}
                 slugPrefix="/"
                 pageRows={pageRows}
+                onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
+                schedulePanel={<SiteSectionSchedulePanel sectionKey={activeSection} hasUnsavedChanges={hasChanges} />}
+                revisionPanel={
+                  <RevisionHistoryPanel
+                    entityType="site_content"
+                    entityRef={activeSection}
+                    onRestored={() => {
+                      invalidateSiteContent(activeSection);
+                      reloadSections();
+                    }}
+                  />
+                }
               />
             </aside>
           );
