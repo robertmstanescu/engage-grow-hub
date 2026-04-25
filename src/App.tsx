@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -11,17 +11,40 @@ import AdminToolbar from "@/features/admin/AdminToolbar";
 import { useBrandSettings } from "@/hooks/useBrandSettings";
 import { queryClient } from "@/lib/queryClient";
 import { siteContentQueryKey } from "@/hooks/useSiteContent";
+// Public routes — eager-loaded so the homepage paints without a network round-trip.
 import Index from "./pages/Index.tsx";
 import Blog from "./pages/Blog.tsx";
 import BlogPost from "./pages/BlogPost.tsx";
-import Admin from "./pages/Admin.tsx";
-import AdminProfile from "./pages/AdminProfile.tsx";
-import AdminInsights from "./pages/AdminInsights.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
 import CmsPage from "./pages/CmsPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
+// Admin routes — lazy-loaded. These pages pull in @tiptap, @dnd-kit, recharts,
+// and the rest of the editor stack. Code-splitting them keeps that ~MB of
+// JS out of the public bundle so visitors get a fast INP.
+const Admin = lazy(() => import("./pages/Admin.tsx"));
+const AdminProfile = lazy(() => import("./pages/AdminProfile.tsx"));
+const AdminInsights = lazy(() => import("./pages/AdminInsights.tsx"));
 import { useAnalyticsBeacon } from "@/hooks/useAnalyticsBeacon";
 import CookieConsent from "@/features/site/CookieConsent";
+
+/**
+ * Branded fallback shown while an admin chunk is downloading. Keeps the
+ * jump from "click admin link" to "first paint" feeling intentional, and
+ * uses the brand's secondary color so it doesn't look like a default
+ * spinner. Public visitors never see this — only admins navigating into
+ * /admin/* routes.
+ */
+const AdminChunkFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="flex flex-col items-center gap-3">
+      <div className="h-8 w-8 rounded-full border-2 border-secondary/30 border-t-secondary animate-spin" />
+      <p className="font-body text-xs uppercase tracking-[0.25em] text-muted-foreground">
+        Loading admin
+      </p>
+    </div>
+  </div>
+);
+
 
 /**
  * Bridge between the imperative `invalidateSiteContent()` helper (used
@@ -110,10 +133,46 @@ const App = () => (
               <Route path="/" element={<PageBoundary><Index /></PageBoundary>} />
               <Route path="/blog" element={<PageBoundary><Blog /></PageBoundary>} />
               <Route path="/blog/:slug" element={<PageBoundary><BlogPost /></PageBoundary>} />
-              <Route path="/admin" element={<PageBoundary><Admin /></PageBoundary>} />
-              <Route path="/admin/profile" element={<PageBoundary><AdminProfile /></PageBoundary>} />
-              <Route path="/admin/ai-insights" element={<PageBoundary><AdminInsights /></PageBoundary>} />
-              <Route path="/admin/insights" element={<PageBoundary><AdminInsights /></PageBoundary>} />
+              <Route
+                path="/admin"
+                element={
+                  <PageBoundary>
+                    <Suspense fallback={<AdminChunkFallback />}>
+                      <Admin />
+                    </Suspense>
+                  </PageBoundary>
+                }
+              />
+              <Route
+                path="/admin/profile"
+                element={
+                  <PageBoundary>
+                    <Suspense fallback={<AdminChunkFallback />}>
+                      <AdminProfile />
+                    </Suspense>
+                  </PageBoundary>
+                }
+              />
+              <Route
+                path="/admin/ai-insights"
+                element={
+                  <PageBoundary>
+                    <Suspense fallback={<AdminChunkFallback />}>
+                      <AdminInsights />
+                    </Suspense>
+                  </PageBoundary>
+                }
+              />
+              <Route
+                path="/admin/insights"
+                element={
+                  <PageBoundary>
+                    <Suspense fallback={<AdminChunkFallback />}>
+                      <AdminInsights />
+                    </Suspense>
+                  </PageBoundary>
+                }
+              />
               <Route path="/unsubscribe" element={<PageBoundary><Unsubscribe /></PageBoundary>} />
               <Route path="/p/:slug" element={<PageBoundary><CmsPage /></PageBoundary>} />
               <Route path="/:slug" element={<PageBoundary><CmsPage /></PageBoundary>} />
