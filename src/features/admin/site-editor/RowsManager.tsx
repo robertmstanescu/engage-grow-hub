@@ -40,6 +40,29 @@ const ROW_TYPES = [
   { type: "grid" as const, label: "Grid", icon: Grid3X3, defaultContent: { eyebrow: "", title: "", description: "", items: [], color_eyebrow: "", color_title: "", color_description: "", color_card_border: "", color_card_border_hover: "", color_card_title: "", color_card_description: "", color_stat_number: "", color_stat_label: "" } },
 ];
 
+/**
+ * Layout presets exposed by the "Add Row" menu.
+ *
+ * WHY this replaces the old content-type dropdown:
+ * Per the new page-builder paradigm, an admin first chooses a LAYOUT
+ * (how many columns and their distribution), then drops widgets into
+ * each cell. So "Add Row" no longer asks "what content?" — it asks
+ * "what shape?". Widget content is added later, per-cell.
+ */
+const LAYOUT_PRESETS: Array<{
+  id: string;
+  label: string;
+  widths: number[];
+  Icon: any;
+}> = [
+  { id: "100",         label: "100%",       widths: [100],            Icon: Square   },
+  { id: "50-50",       label: "50 / 50",    widths: [50, 50],         Icon: Columns2 },
+  { id: "33-33-33",    label: "33 / 33 / 33", widths: [33, 34, 33],   Icon: Columns3 },
+  { id: "25-25-25-25", label: "25 × 4",     widths: [25, 25, 25, 25], Icon: Columns4 },
+  { id: "60-40",       label: "60 / 40",    widths: [60, 40],         Icon: Columns2 },
+  { id: "40-60",       label: "40 / 60",    widths: [40, 60],         Icon: Columns2 },
+];
+
 interface Props {
   rows: PageRow[];
   onChange: (rows: PageRow[]) => void;
@@ -49,14 +72,32 @@ const RowsManager = ({ rows, onChange }: Props) => {
   const [openRow, setOpenRow] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
 
-  const addRow = (type: PageRow["type"]) => {
-    const template = ROW_TYPES.find((t) => t.type === type)!;
+  /**
+   * Add an EMPTY row with N columns of the chosen layout. The row is
+   * stored as a generic "text" row (the legacy renderers still drive
+   * existing content), but every column starts with an empty content
+   * blob — surfaced in the editor as dashed "+ Add Widget" cells.
+   *
+   * WHY type:"text" as the carrier: until the widget runtime ships
+   * (later story), the rest of the codebase still expects `row.type`.
+   * "text" is the safest no-op shape (no required fields, no crashes
+   * if rendered empty). When the widget engine lands we'll swap this
+   * for a dedicated "container" type.
+   */
+  const addRowWithLayout = (preset: typeof LAYOUT_PRESETS[number]) => {
+    const colCount = preset.widths.length;
+    const emptyContent = {} as Record<string, any>;
     const newRow: PageRow = {
       id: generateRowId(),
-      type,
-      strip_title: `New ${template.label} Row`,
-      bg_color: type === "boxed" ? "#2A0E33" : "#FFFFFF",
-      content: { ...template.defaultContent },
+      type: "text",
+      strip_title: `New ${colCount}-Column Row`,
+      bg_color: "#FFFFFF",
+      content: { ...emptyContent },
+      columns_data: colCount > 1 ? Array.from({ length: colCount - 1 }, () => ({ ...emptyContent })) : undefined,
+      layout: {
+        ...DEFAULT_ROW_LAYOUT,
+        column_widths: colCount > 1 ? preset.widths : undefined,
+      },
     };
     onChange([...rows, newRow]);
     setOpenRow(newRow.id);
