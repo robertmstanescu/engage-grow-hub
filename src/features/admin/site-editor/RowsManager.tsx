@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles, Image, User, Grid3X3, Columns, Square, Columns2, Columns3, Columns4 } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles, Image, User, Grid3X3, Columns, Square, Columns2, Columns3, Columns4, Grip } from "lucide-react";
+import { toast } from "sonner";
 import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
 import RowAlignmentSettings from "./RowAlignmentSettings";
 import ColumnWidthControl from "./ColumnWidthControl";
@@ -19,7 +20,10 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
   type DragEndEvent,
+  type DragStartEvent,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -27,6 +31,7 @@ import {
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
+  rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -217,13 +222,143 @@ const RowsManager = ({ rows, onChange }: Props) => {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  /**
+   * ─────────────────────────────────────────────────────────────────────
+   * NESTED DRAG & DROP — US 3.1
+   * ─────────────────────────────────────────────────────────────────────
+   * We run TWO logical sortable contexts inside ONE `<DndContext>`:
+   *
+   *   1. ROW-level vertical sort  → ids = `row:<rowId>`
+   *   2. WIDGET-level cross-cell  → ids = `widget:<rowId>:<colIdx>`
+   *                                 droppable cells = `cell:<rowId>:<colIdx>`
+   *
+   * WHY a single DndContext (not nested ones):
+   * Nested DndContexts in @dnd-kit don't see each other's items, which
+   * makes cross-container DnD impossible. The official "Multiple
+   * Containers" recipe uses a single context and routes by id prefix.
+   * We do the same — `active.id` / `over.id` carry their type as a
+   * prefix so the handlers know what's being dragged where.
+   *
+   * WHY we mutate column CONTENT blobs (not yet PageWidget arrays):
+   * The renderer (`PageRows.tsx`) still consumes the legacy v1 row
+   * shape: `row.content` (col 0) + `row.columns_data[]` (cols 1..N),
+   * with a single `row.type` driving rendering. Swapping the *blobs*
+   * across cells of the same `row.type` is lossless and works today.
+   * Cross-row moves between rows of the SAME type also work. Moving
+   * across rows of DIFFERENT types would lose the schema for the
+   * destination renderer, so we block it with a toast and ask the
+   * user to use rows of the same type — until v2 widget arrays land.
+   * ───────────────────────────────────────────────────────────────────── */
+
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const parseWidgetId = (id: string): { rowId: string; colIdx: number } | null => {
+    if (typeof id !== "string" || !id.startsWith("widget:")) return null;
+    const [, rowId, colStr] = id.split(":");
+    const colIdx = Number(colStr);
+    if (!rowId || Number.isNaN(colIdx)) return null;
+    return { rowId, colIdx };
+  };
+
+  const parseCellId = (id: string): { rowId: string; colIdx: number } | null => {
+    if (typeof id !== "string" || !id.startsWith("cell:")) return null;
+    const [, rowId, colStr] = id.split(":");
+    const colIdx = Number(colStr);
+    if (!rowId || Number.isNaN(colIdx)) return null;
+    return { rowId, colIdx };
+  };
+
+  const parseRowId = (id: string): string | null => {
+    if (typeof id !== "string" || !id.startsWith("row:")) return null;
+    return id.slice(4);
+  };
+
+  /** Read the content blob at (rowId, colIdx) from the current `rows` state. */
+  const readCell = (rs: PageRow[], rowId: string, colIdx: number): Record<string, any> | null => {
+    const row = rs.find((r) => r.id === rowId);
+    if (!row) return null;
+    if (colIdx === 0) return row.content || {};
+    return row.columns_data?.[colIdx - 1] ?? null;
+  };
+
+  /** Write a new content blob at (rowId, colIdx) and return the new rows array. */
+  const writeCell = (rs: PageRow[], rowId: string, colIdx: number, value: Record<string, any>): PageRow[] => {
+    return rs.map((r) => {
+      if (r.id !== rowId) return r;
+      if (colIdx === 0) return { ...r, content: value };
+      const next = [...(r.columns_data || [])];
+      next[colIdx - 1] = value;
+      return { ...r, columns_data: next };
+    });
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(String(event.active.id));
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = rows.findIndex((r) => r.id === active.id);
-      const newIndex = rows.findIndex((r) => r.id === over.id);
-      onChange(arrayMove(rows, oldIndex, newIndex));
+    setActiveDragId(null);
+    if (!over) return;
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    if (activeId === overId) return;
+
+    // ── Case A: ROW reordering (vertical sort of strips) ───────────────
+    const activeRowId = parseRowId(activeId);
+    const overRowId = parseRowId(overId);
+    if (activeRowId && overRowId) {
+      const oldIndex = rows.findIndex((r) => r.id === activeRowId);
+      const newIndex = rows.findIndex((r) => r.id === overRowId);
+      if (oldIndex >= 0 && newIndex >= 0) onChange(arrayMove(rows, oldIndex, newIndex));
+      return;
     }
+
+    // ── Case B: WIDGET move (cell → cell, same or different row) ───────
+    const fromWidget = parseWidgetId(activeId);
+    if (!fromWidget) return;
+
+    // Drop target is either another widget (insert at that slot) or a
+    // bare cell (drop into the cell itself — important for empty cells).
+    const toWidget = parseWidgetId(overId);
+    const toCell = parseCellId(overId);
+    const target = toWidget || toCell;
+    if (!target) return;
+
+    const fromRow = rows.find((r) => r.id === fromWidget.rowId);
+    const toRow = rows.find((r) => r.id === target.rowId);
+    if (!fromRow || !toRow) return;
+
+    // Type-mismatch guard. Until v2 widget arrays land, each row has a
+    // single `type` driving its renderer. Moving a `contact` blob into
+    // a row whose type is `hero` would silently corrupt the destination.
+    // Block it with a toast — the data stays put, no loss.
+    if (fromRow.type !== toRow.type) {
+      toast.error("Can't move between row types yet", {
+        description: `Source is "${fromRow.type}", target is "${toRow.type}". Move within rows of the same type for now.`,
+      });
+      return;
+    }
+
+    // No-op if the user dropped a widget back onto its own cell with no
+    // sibling to swap with (single-widget-per-cell legacy shape).
+    if (fromWidget.rowId === target.rowId && fromWidget.colIdx === target.colIdx) return;
+
+    // SWAP the two cell blobs. Because each cell carries exactly one
+    // widget today, swap is the natural lossless operation:
+    //  - dragging onto an OCCUPIED cell exchanges contents
+    //  - dragging onto an EMPTY cell effectively MOVES the widget
+    //    (the source becomes empty `{}`)
+    // WHY swap, not splice: with a 1-widget-per-cell model, splice
+    // would require shifting all subsequent cells (and rebalancing
+    // column widths). Swap keeps the column geometry intact and is
+    // what users intuitively expect from drag-to-reorganise.
+    let next = rows;
+    const a = readCell(next, fromWidget.rowId, fromWidget.colIdx) || {};
+    const b = readCell(next, target.rowId, target.colIdx) || {};
+    next = writeCell(next, fromWidget.rowId, fromWidget.colIdx, b);
+    next = writeCell(next, target.rowId, target.colIdx, a);
+    onChange(next);
   };
 
   return (
@@ -280,8 +415,22 @@ const RowsManager = ({ rows, onChange }: Props) => {
         </div>
       </div>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={rows.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+      {/*
+       * Single DndContext routes BOTH row sorting AND widget cell-to-cell
+       * moves. Routing happens in `handleDragEnd` by id-prefix.
+       * `closestCenter` works well for both axes; widget moves rely on
+       * the cell droppable being detected when hovering anywhere over it.
+       */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={rows.map((r) => `row:${r.id}`)}
+          strategy={verticalListSortingStrategy}
+        >
           {rows.map((row) => {
             const TypeIcon = ROW_TYPES.find((t) => t.type === row.type)?.icon || Type;
             return (
@@ -303,7 +452,158 @@ const RowsManager = ({ rows, onChange }: Props) => {
             );
           })}
         </SortableContext>
+        {/*
+         * DragOverlay: a translucent ghost following the cursor while
+         * dragging. Important because cells re-mount during cross-row
+         * moves; without an overlay the dragged element can flicker.
+         */}
+        <DragOverlay>
+          {activeDragId ? (
+            <div
+              className="rounded-md border-2 border-dashed px-3 py-2 font-body text-[10px] uppercase tracking-wider shadow-lg"
+              style={{
+                borderColor: "hsl(var(--primary))",
+                backgroundColor: "hsl(var(--background))",
+                color: "hsl(var(--primary))",
+              }}
+            >
+              {activeDragId.startsWith("row:") ? "Moving row…" : "Moving widget…"}
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────────────────
+ * WidgetCell — a single droppable cell in the row's column grid.
+ *
+ * Two roles in one component:
+ *   1. DROPPABLE TARGET  — registered via `useDroppable` so the parent
+ *                          DndContext can resolve drops onto the cell
+ *                          itself (critical for EMPTY cells; without
+ *                          this they'd have no `over.id`).
+ *   2. SORTABLE ITEM     — when occupied, the cell ALSO registers as a
+ *                          sortable widget (via `useSortable`) so the
+ *                          user can pick it up and drop it elsewhere.
+ *
+ * Empty cells skip the sortable wrapper and just show the "+ Add Widget"
+ * affordance — there's nothing to pick up, only somewhere to drop into.
+ *
+ * WHY useDroppable on the SAME node when occupied:
+ * `useSortable` already provides droppable semantics for the cell node.
+ * For empty cells we need a separate `useDroppable` (id `cell:...`)
+ * because there is no sortable item to register the area as droppable.
+ * ───────────────────────────────────────────────────────────────────── */
+
+interface WidgetCellProps {
+  rowId: string;
+  rowType: string;
+  colIdx: number;
+  widthPct: number;
+  isActive: boolean;
+  isOccupied: boolean;
+  onActivate: () => void;
+}
+
+const WidgetCell = ({
+  rowId, rowType, colIdx, widthPct, isActive, isOccupied, onActivate,
+}: WidgetCellProps) => {
+  const widgetId = `widget:${rowId}:${colIdx}`;
+  const cellId = `cell:${rowId}:${colIdx}`;
+
+  // Sortable handle ONLY when there's a widget to pick up.
+  const sortable = useSortable({ id: widgetId, disabled: !isOccupied });
+  // Empty cells need an explicit droppable so drops resolve to a target.
+  const dropTarget = useDroppable({ id: cellId, disabled: isOccupied });
+
+  // Pick the right ref/transform pair depending on cell state.
+  const setNodeRef = isOccupied ? sortable.setNodeRef : dropTarget.setNodeRef;
+  const style: React.CSSProperties = isOccupied
+    ? {
+        transform: CSS.Transform.toString(sortable.transform),
+        transition: sortable.transition,
+        opacity: sortable.isDragging ? 0.4 : 1,
+      }
+    : {};
+
+  if (!isOccupied) {
+    return (
+      <button
+        ref={setNodeRef as any}
+        type="button"
+        onClick={onActivate}
+        className="flex flex-col items-center justify-center gap-1 min-h-[88px] rounded-md border-2 border-dashed transition-colors hover:opacity-80"
+        style={{
+          ...style,
+          borderColor: dropTarget.isOver
+            ? "hsl(var(--primary))"
+            : isActive
+              ? "hsl(var(--primary))"
+              : "hsl(var(--primary) / 0.4)",
+          backgroundColor: dropTarget.isOver
+            ? "hsl(var(--primary) / 0.08)"
+            : "hsl(var(--background))",
+          color: "hsl(var(--primary))",
+        }}
+        title={`Column ${colIdx + 1} — Add Widget (drop here)`}
+      >
+        <Plus size={18} />
+        <span className="font-body text-[10px] uppercase tracking-wider">Add Widget</span>
+        <span className="font-body text-[9px] text-muted-foreground">
+          Col {colIdx + 1} · {Math.round(widthPct)}%
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <div
+      ref={setNodeRef as any}
+      style={{
+        ...style,
+        borderColor: isActive ? "hsl(var(--primary))" : "hsl(var(--primary) / 0.4)",
+        backgroundColor: "hsl(var(--background))",
+      }}
+      className="flex items-center gap-2 min-h-[88px] rounded-md border-2 px-2.5 py-2"
+    >
+      {/*
+       * WHY the grip is a separate element (not the whole cell):
+       * dnd-kit listeners on the entire cell would swallow clicks
+       * meant for the "Edit" affordance. Restricting drag activation
+       * to the Grip icon keeps interaction predictable.
+       */}
+      <button
+        type="button"
+        className="cursor-grab active:cursor-grabbing p-1 rounded hover:opacity-70 touch-none flex-shrink-0"
+        style={{ color: "hsl(var(--muted-foreground))" }}
+        {...sortable.attributes}
+        {...sortable.listeners}
+        title="Drag widget"
+        aria-label={`Drag widget in column ${colIdx + 1}`}
+      >
+        <Grip size={14} />
+      </button>
+      <button
+        type="button"
+        onClick={onActivate}
+        className="flex-1 text-left min-w-0"
+        title={`Edit widget in column ${colIdx + 1}`}
+      >
+        <div
+          className="font-body text-[11px] font-medium truncate"
+          style={{ color: "hsl(var(--foreground))" }}
+        >
+          {rowType}
+        </div>
+        <div
+          className="font-body text-[9px] text-muted-foreground"
+          style={{ color: "hsl(var(--muted-foreground))" }}
+        >
+          Col {colIdx + 1} · {Math.round(widthPct)}%
+        </div>
+      </button>
     </div>
   );
 };
@@ -330,7 +630,10 @@ const SortableRowItem = ({
   onAddColumn, onRemoveColumn, onUpdateColumnContent, onUpdateColumnWidths,
   renderEditorForContent,
 }: SortableRowItemProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
+  // WHY prefixed id: the parent <DndContext> distinguishes ROW drags
+  // from WIDGET drags by id-prefix ("row:" vs "widget:") so a single
+  // context can route both interactions safely.
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `row:${row.id}` });
   const [activeCol, setActiveCol] = useState(0);
 
   const colCount = 1 + (row.columns_data?.length || 0);
@@ -477,62 +780,57 @@ const SortableRowItem = ({
 
 
           {/*
-           * Empty-layout visual scaffold.
+           * ─────────────────────────────────────────────────────────────
+           * WIDGET CELL GRID (US 3.1 — nested DnD surface)
+           * ─────────────────────────────────────────────────────────────
+           * Renders one cell per column. Each cell is a droppable target
+           * (`cell:<rowId>:<colIdx>`). Occupied cells contain a sortable
+           * "widget chip" (`widget:<rowId>:<colIdx>`) with a Grip handle.
            *
-           * WHY this exists: when an admin picks a layout from the new
-           * "Add Row" menu, the row arrives with N empty column blobs.
-           * To make the shape OBVIOUS (and prove the layout selector
-           * worked) we render a CSS-grid of dashed cells — one per
-           * column — each carrying a "+ Add Widget" affordance.
+           * Why this surface is ALWAYS visible (not just when empty):
+           * Per US 3.1 the admin must be able to drag widgets between
+           * cells and across rows. That requires every cell to be a
+           * droppable AND every occupied cell to expose a drag handle.
+           * The previous "only-when-empty" scaffold made occupied cells
+           * undraggable, which defeated the whole feature.
            *
-           * We use plain CSS Grid here (not @dnd-kit) per Dev Notes:
-           * widget DnD is intentionally deferred to a later story.
-           * The cell click is a no-op for now; it just confirms the
-           * UX path. The Add Column / Width controls above already
-           * mutate the underlying columns, so this stays purely
-           * presentational.
-           *
-           * Visibility rule: only when EVERY column is empty (i.e. a
-           * freshly created layout-only row). Once any column carries
-           * content, the regular per-column editor takes over so we
-           * don't shadow legacy rows.
+           * Why we wrap each row's widgets in their own SortableContext:
+           * @dnd-kit needs a SortableContext to enable smooth in-context
+           * reordering hints. We use `rectSortingStrategy` because the
+           * cells are laid out in a grid (not a vertical list).
            */}
           {(() => {
-            const allEmpty = Array.from({ length: colCount }).every((_, i) => {
-              const c = getColContent(i);
-              return !c || Object.keys(c).length === 0;
-            });
-            if (!allEmpty) return null;
             const widthsForGrid = columnWidths.slice(0, colCount);
+            const widgetIds = Array.from({ length: colCount }).map(
+              (_, i) => `widget:${row.id}:${i}`,
+            );
             return (
-              <div
-                className="grid gap-2 p-3 rounded-lg"
-                style={{
-                  gridTemplateColumns: widthsForGrid.map((w) => `${w}fr`).join(" "),
-                  backgroundColor: "hsl(var(--muted) / 0.2)",
-                }}
-              >
-                {Array.from({ length: colCount }).map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setActiveCol(i)}
-                    className="flex flex-col items-center justify-center gap-1 min-h-[88px] rounded-md border-2 border-dashed transition-colors hover:opacity-80"
-                    style={{
-                      borderColor: safeActiveCol === i ? "hsl(var(--primary))" : "hsl(var(--primary) / 0.4)",
-                      backgroundColor: "hsl(var(--background))",
-                      color: "hsl(var(--primary))",
-                    }}
-                    title={`Column ${i + 1} — Add Widget`}
-                  >
-                    <Plus size={18} />
-                    <span className="font-body text-[10px] uppercase tracking-wider">Add Widget</span>
-                    <span className="font-body text-[9px] text-muted-foreground">
-                      Col {i + 1} · {Math.round(widthsForGrid[i])}%
-                    </span>
-                  </button>
-                ))}
-              </div>
+              <SortableContext items={widgetIds} strategy={rectSortingStrategy}>
+                <div
+                  className="grid gap-2 p-3 rounded-lg"
+                  style={{
+                    gridTemplateColumns: widthsForGrid.map((w) => `${w}fr`).join(" "),
+                    backgroundColor: "hsl(var(--muted) / 0.2)",
+                  }}
+                >
+                  {Array.from({ length: colCount }).map((_, i) => {
+                    const content = getColContent(i);
+                    const isOccupied = !!content && Object.keys(content).length > 0;
+                    return (
+                      <WidgetCell
+                        key={i}
+                        rowId={row.id}
+                        rowType={row.type}
+                        colIdx={i}
+                        widthPct={widthsForGrid[i]}
+                        isActive={safeActiveCol === i}
+                        isOccupied={isOccupied}
+                        onActivate={() => setActiveCol(i)}
+                      />
+                    );
+                  })}
+                </div>
+              </SortableContext>
             );
           })()}
 
