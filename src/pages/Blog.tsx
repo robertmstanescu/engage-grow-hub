@@ -53,7 +53,9 @@ const Blog = () => {
   return (
     <div className="min-h-screen lg:pl-16">
       <Navbar />
-      {(pageData.rows_above || []).map((row, i) => <RowRenderer key={row.id} row={row} rowIndex={i} />)}
+      {pageData.rows_above && pageData.rows_above.length > 0 && (
+        <RowsRenderer rows={pageData.rows_above} />
+      )}
 
       <section className="grain relative pt-36 pb-16 text-center mesh-hero">
         <div className="relative z-10 max-w-[800px] mx-auto px-8">
