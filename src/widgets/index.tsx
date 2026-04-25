@@ -28,6 +28,11 @@ import HeroRow from "@/features/site/rows/HeroRow";
 import TextRow from "@/features/site/rows/TextRow";
 import ServiceRow from "@/features/site/rows/ServiceRow";
 import BoxedRow from "@/features/site/rows/BoxedRow";
+// Contact widget self-registers (US 2.2 — first modular widget extracted).
+import "@/features/widgets/contact";
+import TextRow from "@/features/site/rows/TextRow";
+import ServiceRow from "@/features/site/rows/ServiceRow";
+import BoxedRow from "@/features/site/rows/BoxedRow";
 import ContactRow from "@/features/site/rows/ContactRow";
 import ImageTextRow from "@/features/site/rows/ImageTextRow";
 import ProfileRow from "@/features/site/rows/ProfileRow";
