@@ -408,7 +408,7 @@ const InspectorPanel = (props: InspectorPanelProps) => {
             case "boxed":
               return <BoxedRowEditor content={widgetContent} onChange={updateWidgetField} />;
             case "lead_magnet":
-              return <LeadMagnetEditor content={widgetContent} onChange={updateWidgetField} />;
+              return <LeadMagnetEditor content={widgetContent} onChange={replaceWidgetContent} />;
             case "logo_cloud":
               return <LogoCloudEditor content={widgetContent} onChange={updateWidgetField} />;
             case "vows":
