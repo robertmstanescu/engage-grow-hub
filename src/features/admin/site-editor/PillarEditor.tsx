@@ -46,51 +46,58 @@ type PillarColorGroup = {
   fields: PillarColorField[];
 };
 
+/**
+ * Section colours are organised by the 4 visible "levels" of a pillar
+ * row (top → accordion → CTA bar → note), each with the Text /
+ * Background pair the admin actually has direct control over.
+ *
+ * What was REMOVED:
+ *   • `color_card_bg` (was "Card Surface") — the card surface inherits
+ *     from the row background and was never visibly applied; exposing
+ *     it confused admins.
+ *   • `color_deliverables_bg` (was "Accordion Background") — same
+ *     story; the deliverables panel is transparent over the card.
+ *
+ * Backwards compat: any value previously saved under those two keys
+ * stays in the database untouched (we just stop rendering the inputs).
+ * The renderer was already tolerant of empty values.
+ */
 const PILLAR_COLOR_GROUPS: PillarColorGroup[] = [
   {
-    id: "infrastructure",
-    label: "Section Infrastructure",
+    id: "top",
+    label: "Top — Section header",
     fields: [
-      { key: "color_section_bg", label: "Section Background", description: "Background of the entire pillar section", fallback: "#FFFFFF" },
-      { key: "color_divider_from", label: "Glow Start", description: "Starting color of the gradient divider line above the section", fallback: "#4D1B5E" },
-      { key: "color_divider_to", label: "Glow End", description: "Ending color of the gradient divider line", fallback: "#7B3A91" },
-      { key: "color_label", label: "Eyebrow Text", description: "The small eyebrow text above the title (e.g. 'Pillar 01')", fallback: "#7B3A91" },
-      { key: "color_heading", label: "Section Title", description: "The main heading of the pillar section", fallback: "#2A0E33" },
-      { key: "color_heading_sub", label: "Section Description", description: "The description text below the title", fallback: "#2A0E33" },
-    ],
-  },
-  {
-    id: "card",
-    label: "Card Aesthetics",
-    fields: [
-      { key: "color_card_bg", label: "Card Surface", description: "Background of each service card", fallback: "#FFFFFF" },
-      { key: "color_card_title", label: "Card Title", description: "Title text inside each service card", fallback: "#2A0E33" },
-      { key: "color_subtitle", label: "Card Sub-header / Bullets", description: "Subtitle text and bullet markers in cards", fallback: "#7B3A91" },
+      { key: "color_section_bg", label: "Background", description: "Background of the entire pillar section", fallback: "#FFFFFF" },
+      { key: "color_label", label: "Eyebrow Text", description: "Small eyebrow text above the title", fallback: "#7B3A91" },
+      { key: "color_heading", label: "Title Text", description: "Main heading of the pillar section", fallback: "#2A0E33" },
+      { key: "color_heading_sub", label: "Description Text", description: "Description text below the title", fallback: "#2A0E33" },
+      { key: "color_card_title", label: "Card Title Text", description: "Title text inside each service card", fallback: "#2A0E33" },
+      { key: "color_subtitle", label: "Card Subtitle Text", description: "Subtitle text and bullet markers in cards", fallback: "#7B3A91" },
       { key: "color_card_description", label: "Card Body Text", description: "Description text inside each service card", fallback: "#555555" },
-      { key: "color_deliverables_bg", label: "Accordion Background", description: "Background of the collapsible deliverables section", fallback: "#F9F0C1" },
-      { key: "color_deliverables_label", label: "Accordion Label", description: "The 'What's inside' toggle text color", fallback: "#4D1B5E" },
     ],
   },
   {
-    id: "footer",
-    label: "Action Bar & Footer",
+    id: "accordion",
+    label: "Accordion — Deliverables",
     fields: [
-      { key: "color_meta_bg", label: "Bottom Bar BG", description: "Background of the price/timeline footer bar", fallback: "#E5C54F" },
-      { key: "color_meta_fg", label: "Bottom Bar Text", description: "Text color in the price/timeline footer bar", fallback: "#2A0E33" },
-      { key: "color_cta_text", label: "CTA Link Color", description: "Color of the price/CTA link in cards", fallback: "#E5C54F" },
-      { key: "color_cta_time", label: "Timeline Color", description: "Color of the timeline text in cards", fallback: "#999999" },
+      { key: "color_deliverables_label", label: "Toggle Text", description: "Color of the 'What's inside' toggle text", fallback: "#4D1B5E" },
     ],
   },
   {
-    id: "navigation",
-    label: "Navigation & Interaction",
+    id: "cta",
+    label: "CTA — Bottom action bar",
     fields: [
-      { key: "color_primary", label: "Primary Accent", description: "Used for navigation dots, card borders, and arrow buttons", fallback: "#4D1B5E" },
-      { key: "color_carousel_btn_bg", label: "Arrow Button BG", description: "Background of carousel prev/next buttons. Leave empty to auto-detect.", fallback: "" },
-      { key: "color_carousel_btn_fg", label: "Arrow Icon", description: "Icon color of carousel prev/next buttons. Leave empty to auto-detect.", fallback: "" },
-      { key: "color_dot_active", label: "Active Indicator", description: "Active dot indicator color. Leave empty to use theme accent.", fallback: "" },
-      { key: "color_dot_inactive", label: "Inactive Indicator", description: "Inactive dot indicator color. Leave empty to auto-detect.", fallback: "" },
-      { key: "color_note_border", label: "Note Border", description: "Left border color of the optional note section", fallback: "#7B3A91" },
+      { key: "color_meta_bg", label: "Background", description: "Background of the price/timeline footer bar", fallback: "#E5C54F" },
+      { key: "color_meta_fg", label: "Text", description: "Text color in the price/timeline footer bar", fallback: "#2A0E33" },
+      { key: "color_cta_text", label: "CTA Link Text", description: "Color of the price/CTA link in cards", fallback: "#E5C54F" },
+      { key: "color_cta_time", label: "Timeline Text", description: "Color of the timeline text in cards", fallback: "#999999" },
+    ],
+  },
+  {
+    id: "note",
+    label: "Note — Optional footnote",
+    fields: [
+      { key: "color_note_border", label: "Border Accent", description: "Left border color of the optional note section", fallback: "#7B3A91" },
     ],
   },
 ];
