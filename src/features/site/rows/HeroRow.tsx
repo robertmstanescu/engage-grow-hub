@@ -72,7 +72,7 @@ const HeroRow = ({ row }: Props) => {
       <div ref={ref} className="relative z-10 w-full max-w-[1100px] px-4 sm:px-6 pb-[4vh] pt-[15vh] flex flex-col justify-end overflow-visible">
         {c.label && (
           <p className="font-body tracking-[0.35em] uppercase mb-[2vh]"
-            style={{ ...revealStyle(isVisible, 0), color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)" }}>
+            style={{ ...revealStyle(isVisible, 0), color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(14px, 1.5vw, 16px)" }}>
             {c.label}
           </p>
         )}
