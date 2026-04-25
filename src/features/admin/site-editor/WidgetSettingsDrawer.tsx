@@ -28,11 +28,17 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
+import { Smartphone, Monitor } from "lucide-react";
 import { DEFAULT_DESIGN_SETTINGS, type WidgetDesignSettings } from "@/types/rows";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  design: WidgetDesignSettings;
+  onChange: (next: WidgetDesignSettings) => void;
+  widgetLabel: string;
+}
   design: WidgetDesignSettings;
   onChange: (next: WidgetDesignSettings) => void;
   widgetLabel: string;
