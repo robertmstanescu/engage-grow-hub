@@ -56,6 +56,17 @@ export interface InspectorPanelProps {
   onSeoTitleChange: (v: string) => void;
   onSeoDescriptionChange: (v: string) => void;
 
+  // Page Settings (US 3.4) — optional fallback fields shown when the
+  // canvas selection is empty. Each is independently optional so the
+  // main-page builder can opt out of slug/page-name (those concepts
+  // don't apply to `site_content`) while CMS pages pass the full set.
+  pageName?: string;
+  onPageNameChange?: (v: string) => void;
+  pageSlug?: string;
+  onPageSlugChange?: (v: string) => void;
+  ogImage?: string;
+  onOgImageChange?: (v: string) => void;
+
   // Hero (special-cased single section) ------------------------------
   heroContent: Record<string, any>;
   onHeroFieldChange: (field: string, value: any) => void;
