@@ -2,13 +2,44 @@ import { Plus, Trash2 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import RichTextEditor from "../RichTextEditor";
 import { useBrandColors } from "@/hooks/useBrandSettings";
+// US 3.2 — pull the live cell/row background colour from context so
+// inputs adopt that surface and labels get readable contrast.
+import { useSurfaceBg } from "../inspector/SurfaceBgContext";
+import { pickForeground } from "@/lib/pickForeground";
 
-/* Shared style: always legible regardless of site theme */
+/* Shared default style: always legible on the white admin pane. When a
+ * surface bg colour is in scope (US 3.2) `useSurfaceStyle()` overrides
+ * the background + text colour so the editor mirrors the live row. */
 const INPUT_STYLE: React.CSSProperties = {
   borderColor: "hsl(var(--border))",
   backgroundColor: "#FFFFFF",
   color: "#1a1a1a",
 };
+
+/* US 3.2 — derive input + label styles from the ambient surface colour.
+ *   • bg is `null` (no provider, or empty colour) → fall back to the
+ *     opaque white admin surface so inputs stay legible.
+ *   • bg is set → inputs adopt that bg, text uses pickForeground(),
+ *     labels use the same foreground at 80% opacity for hierarchy. */
+const useSurfaceStyle = () => {
+  const bg = useSurfaceBg();
+  if (!bg) {
+    return {
+      input: INPUT_STYLE,
+      label: undefined as React.CSSProperties | undefined,
+    };
+  }
+  const fg = pickForeground(bg);
+  return {
+    input: {
+      borderColor: "hsl(var(--border))",
+      backgroundColor: bg,
+      color: fg,
+    } as React.CSSProperties,
+    label: { color: fg, opacity: 0.8 } as React.CSSProperties,
+  };
+};
+
 
 /**
  * A controlled text input that keeps local state while typing
