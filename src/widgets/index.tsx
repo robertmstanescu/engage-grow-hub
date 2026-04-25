@@ -50,10 +50,11 @@ import TestimonialRow from "@/features/site/rows/TestimonialRow";
 import LogoCloudRow from "@/features/site/rows/LogoCloudRow";
 import FaqRow from "@/features/site/rows/FaqRow";
 
-// Contact widget — first modular widget extracted under
-// src/features/widgets/contact (US 2.2). It self-registers on import.
-// Other widgets will follow the same pattern as they're extracted.
+// Modular widgets — each self-registers on import. Keep this list
+// alphabetical so it's obvious whether a given widget is wired up.
 import "@/features/widgets/contact";
+import "@/features/widgets/cta-button";
+import "@/features/widgets/subscribe";
 
 /* ──────────────────────────────────────────────────────────────────────
  * Built-in widget registrations.
