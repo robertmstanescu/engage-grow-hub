@@ -568,6 +568,25 @@ const RowsManager = ({ rows, onChange }: Props) => {
         const label = colCount > 1
           ? `${targetRow.type} · Col ${target.colIdx + 1} of ${colCount} · ${targetRow.strip_title}`
           : `${targetRow.type} · ${targetRow.strip_title}`;
+        const existingRef = readGlobalRef(cellContent);
+        // Convert this cell into a Global Block reference (US 8.1).
+        const onConvertedToGlobal = (globalId: string) => {
+          // Preserve `__design` so per-instance chrome survives the swap.
+          const localDesign = (cellContent as any)?.__design;
+          const next: Record<string, any> = { [GLOBAL_REF_KEY]: globalId };
+          if (localDesign) next.__design = localDesign;
+          if (target.colIdx === 0) {
+            updateRow(target.rowId, { content: next });
+          } else {
+            onChange(rows.map((r) => {
+              if (r.id !== target.rowId || !r.columns_data) return r;
+              const cols = [...r.columns_data];
+              cols[target.colIdx - 1] = next;
+              return { ...r, columns_data: cols };
+            }));
+          }
+          toast.success("Linked to Global Block — edits will now sync everywhere.");
+        };
         return (
           <WidgetSettingsDrawer
             open={true}
@@ -575,6 +594,13 @@ const RowsManager = ({ rows, onChange }: Props) => {
             design={design}
             onChange={writeDesign}
             widgetLabel={label}
+            saveAsGlobal={{
+              widgetType: targetRow.type,
+              snapshotData: cellContent,
+              suggestedName: targetRow.strip_title || `${targetRow.type} block`,
+              onConvertedToGlobal,
+              isAlreadyReference: !!existingRef,
+            }}
           />
         );
       })()}
