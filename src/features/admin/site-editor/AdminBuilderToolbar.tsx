@@ -83,7 +83,20 @@ const AdminBuilderToolbar = ({
   onPublish,
   publishing,
   hasChanges,
+  publishStatus,
+  onUnpublish,
+  unpublishing,
 }: AdminBuilderToolbarProps) => {
+  // The "Publish" button is enabled when:
+  //   • there are unsaved changes (always — clicking it pushes them live), OR
+  //   • the entity is a draft (lets the admin promote a freshly-loaded
+  //     draft straight to live without first making a no-op edit).
+  // For sections without a lifecycle (publishStatus === undefined) we
+  // keep the legacy behaviour: enable only when there are changes.
+  const isDraft = publishStatus === "draft";
+  const publishEnabled = hasChanges || isDraft;
+  const showUnpublish = !!onUnpublish && publishStatus === "published";
+
   // Reusable segment styling so the two pill groups stay visually identical.
   const segmentBtn = (active: boolean): React.CSSProperties => ({
     backgroundColor: active ? "hsl(var(--accent))" : "transparent",
