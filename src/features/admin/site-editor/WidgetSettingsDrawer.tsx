@@ -31,7 +31,8 @@ import {
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Smartphone, Monitor, BookmarkPlus, Loader2 } from "lucide-react";
-import { DEFAULT_DESIGN_SETTINGS, type WidgetDesignSettings } from "@/types/rows";
+import type { WidgetDesignSettings } from "@/types/rows";
+import { DEFAULT_DESIGN_SETTINGS } from "@/lib/constants/rowDefaults";
 import { useGlobalWidgets } from "@/hooks/useGlobalWidgets";
 import { toast } from "sonner";
 

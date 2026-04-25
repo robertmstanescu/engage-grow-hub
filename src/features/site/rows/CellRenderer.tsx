@@ -26,13 +26,8 @@
 
 import type { ReactNode } from "react";
 import { useDroppable } from "@dnd-kit/core";
-import {
-  type PageCell,
-  type PageColumn,
-  readCellLayout,
-  readCellStyle,
-  readCellSpan,
-} from "@/types/rows";
+import type { PageCell, PageColumn } from "@/types/rows";
+import { readCellLayout, readCellStyle, readCellSpan } from "@/lib/constants/rowDefaults";
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
 import { buildDropZoneId } from "@/features/admin/builder/CanvasDropZone";

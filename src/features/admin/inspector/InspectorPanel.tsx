@@ -3,13 +3,14 @@ import { MousePointer2, Trash2 } from "lucide-react";
 import { useBuilder } from "../builder/BuilderContext";
 import { useInspectorFocus } from "./useInspectorFocus";
 import { getWidget } from "@/lib/WidgetRegistry";
-import { type PageRow, DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import type { PageRow } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { confirmDestructive } from "@/components/ConfirmDialog";
 import { countRowWidgets } from "../builder/rowWidgetCount";
 import CellSettingsEditor from "./CellSettingsEditor";
 import { type BoxField } from "./BoxModelControl";
 import WidgetInspectorTabs, { pickTabForFocusKey, type InspectorTab } from "./WidgetInspectorTabs";
-import { DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/types/rows";
+import { DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/lib/constants/rowDefaults";
 // Debug Story 1.1 — sibling-safe widget lookup/patch helpers. The
 // inspector cannot just `pageRows.find(r => r.id === widgetId)` because
 // v2/v3 rows host MANY widgets per row; that lookup either misses the

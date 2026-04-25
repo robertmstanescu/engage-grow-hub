@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles, Image, User, Grid3X3, Columns, Square, Columns2, Columns3, Columns4, Grip, Settings, Layers, Link2 } from "lucide-react";
 import { toast } from "sonner";
-import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, DEFAULT_DESIGN_SETTINGS, readDesignSettings, readGlobalRef, GLOBAL_REF_KEY, type PageRow, type WidgetDesignSettings } from "@/types/rows";
+import type { PageRow, WidgetDesignSettings } from "@/types/rows";
+import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, DEFAULT_DESIGN_SETTINGS, readDesignSettings, readGlobalRef, GLOBAL_REF_KEY } from "@/lib/constants/rowDefaults";
 import { useGlobalWidgets } from "@/hooks/useGlobalWidgets";
 import RowAlignmentSettings from "./RowAlignmentSettings";
 import ColumnWidthControl from "./ColumnWidthControl";

@@ -13,11 +13,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  generateRowId,
-  DEFAULT_ROW_LAYOUT,
-  type PageRow,
-} from "@/types/rows";
+import type { PageRow } from "@/types/rows";
+import { generateRowId, DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import {
   findMissingAltViolations,
   formatAltMissingMessage,

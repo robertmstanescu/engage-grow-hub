@@ -1,5 +1,5 @@
 import type { PageRow } from "@/types/rows";
-import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { buildGradientCSS } from "@/features/admin/site-editor/GradientEditor";
 
 /**

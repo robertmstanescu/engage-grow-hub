@@ -24,7 +24,7 @@
  * ───────────────────────────────────────────────────────────────────────── */
 
 import type { PageRow, FaqItem } from "@/types/rows";
-import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import {
   Accordion,

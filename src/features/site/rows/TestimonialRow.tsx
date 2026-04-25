@@ -36,7 +36,7 @@
 
 import type { PageRow } from "@/types/rows";
 import type { TestimonialItem } from "@/types/rows";
-import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import { resolveImageAlt } from "@/services/imageAlt";
 import {

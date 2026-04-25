@@ -22,18 +22,8 @@
  * cell, with no panel-flipping.
  */
 
-import {
-  type PageCell,
-  type PageCellLayout,
-  type PageCellStyle,
-  type PageCellSpan,
-  type CellDirection,
-  type CellVAlign,
-  type CellHAlign,
-  readCellLayout,
-  readCellStyle,
-  readCellSpan,
-} from "@/types/rows";
+import type { PageCell, PageCellLayout, PageCellStyle, PageCellSpan, CellDirection, CellVAlign, CellHAlign } from "@/types/rows";
+import { readCellLayout, readCellStyle, readCellSpan } from "@/lib/constants/rowDefaults";
 import { Field, SelectField, ColorField, SectionBox, TextArea } from "../site-editor/FieldComponents";
 
 interface Props {

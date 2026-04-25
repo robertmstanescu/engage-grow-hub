@@ -1,14 +1,8 @@
 import { useMemo } from "react";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
-import {
-  type PageRow,
-  type PageRowV3,
-  type PageCell,
-  type PageWidget,
-  normalizeRowsToV3,
-  readDesignSettings,
-  readGlobalRef,
-} from "@/types/rows";
+import type { PageRow, PageRowV3, PageCell, PageWidget } from "@/types/rows";
+import { readDesignSettings, readGlobalRef } from "@/lib/constants/rowDefaults";
+import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import { renderWidget } from "@/lib/WidgetRegistry";
 import WidgetWrapper from "@/components/widgets/WidgetWrapper";

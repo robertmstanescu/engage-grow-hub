@@ -7,7 +7,9 @@ import RowsManager from "./site-editor/RowsManager";
 import SeoFields from "./site-editor/SeoFields";
 // US 2.3 — unified left-rail navigator (Page Title + URL + Sections + Elements).
 import PageNavigator from "./builder/PageNavigator";
-import { DEFAULT_ROWS, type PageRow, normalizeRowsToV3 } from "@/types/rows";
+import type { PageRow } from "@/types/rows";
+import { DEFAULT_ROWS } from "@/lib/constants/rowDefaults";
+import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import type { ImperativePanelGroupHandle } from "react-resizable-panels";
 import {
   ResizableHandle,
@@ -55,7 +57,7 @@ import { isSectionNavDragData } from "./builder/PageNavigator";
 import { parseDropZoneId } from "./builder/CanvasDropZone";
 // US 17.2 — registry lookup so dropped widgets seed with proper defaults.
 import { getWidget } from "@/lib/WidgetRegistry";
-import { generateRowId, DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import { generateRowId, DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 
 
 interface SectionData {

@@ -13,13 +13,7 @@
  * so running them on already-migrated data is a no-op.
  */
 
-import type {
-  ColumnLayoutPreset,
-  PageColumn,
-  PageRow,
-  PageRowV2,
-  PageRowV3,
-} from "@/types/rows";
+import type { ColumnLayoutPreset, PageColumn, PageRow, PageRowV2, PageRowV3 } from "@/types/rows";
 import { isPageRowV2, isPageRowV3 } from "@/types/rows";
 import { buildEmptyCell, generateRowId } from "@/lib/constants/rowDefaults";
 

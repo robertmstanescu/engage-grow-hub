@@ -10,19 +10,7 @@
  * from services, hooks and migration code without pulling UI in.
  */
 
-import type {
-  ContactField,
-  GradientConfig,
-  PageCell,
-  PageCellLayout,
-  PageCellSpan,
-  PageCellStyle,
-  PageRow,
-  PageRowV3,
-  RowLayout,
-  WidgetDesignSettings,
-  ColumnLayoutPreset,
-} from "@/types/rows";
+import type { ContactField, GradientConfig, PageCell, PageCellLayout, PageCellSpan, PageCellStyle, PageRow, PageRowV3, RowLayout, WidgetDesignSettings, ColumnLayoutPreset } from "@/types/rows";
 
 /* ─── Gradient ─────────────────────────────────────────────────────── */
 
