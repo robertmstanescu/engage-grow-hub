@@ -11,6 +11,7 @@ import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 // US 17.2 — drop targets between rows for tray-sourced widgets.
 // Renders nothing on the public site (no BuilderProvider above the tree).
 import CanvasDropZone from "@/features/admin/builder/CanvasDropZone";
+import { useBuilder } from "@/features/admin/builder/BuilderContext";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
