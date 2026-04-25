@@ -60,10 +60,10 @@ const NavbarEditor = ({ content, onChange }: Props) => {
         <label className="font-body text-xs uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>
           Services Dropdown Label
         </label>
-        <input
+        <DeferredInput
           type="text"
           value={content.services_label || "Services"}
-          onChange={(e) => onChange("services_label", e.target.value)}
+          onChange={(v) => onChange("services_label", v)}
           className="w-full px-3 py-2 rounded-md font-body text-sm border"
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
         />
