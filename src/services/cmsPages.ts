@@ -76,3 +76,51 @@ export const saveCmsPageRows = (id: string, rows: PageRow[]) =>
 
 /** Slugs reserved by the system — block users from claiming them. */
 export const RESERVED_SLUGS = ["admin", "blog", "unsubscribe", "api", "auth", "login", "signup", "p"];
+
+/**
+ * Duplicate a CMS page (US 3.2). The clone:
+ *   • copies title + rows + meta from the source,
+ *   • appends " (Copy)" to the title,
+ *   • derives a unique slug by suffixing `-copy`, then `-copy-2`, etc.
+ *     until it clears existing slugs AND the reserved list,
+ *   • starts as a draft so duplicating never accidentally publishes a
+ *     half-finished page to the live site.
+ *
+ * Returns the inserted row (so the caller can navigate or refresh).
+ */
+export const duplicateCmsPage = async (sourceId: string) => {
+  const { data: src, error: fetchErr } = await supabase
+    .from("cms_pages")
+    .select("*")
+    .eq("id", sourceId)
+    .maybeSingle();
+  if (fetchErr) return { data: null, error: fetchErr };
+  if (!src) return { data: null, error: { message: "Source page not found" } as any };
+
+  const { data: existing } = await supabase.from("cms_pages").select("slug");
+  const taken = new Set([
+    ...RESERVED_SLUGS,
+    ...((existing as { slug: string }[] | null) || []).map((p) => p.slug),
+  ]);
+
+  // Find the first free `-copy[-N]` suffix.
+  const baseSlug = `${src.slug}-copy`;
+  let candidate = baseSlug;
+  let n = 2;
+  while (taken.has(candidate)) {
+    candidate = `${baseSlug}-${n}`;
+    n += 1;
+  }
+
+  return supabase.from("cms_pages").insert({
+    title: `${src.title} (Copy)`,
+    slug: candidate,
+    template_type: src.template_type,
+    page_rows: src.page_rows ?? [],
+    draft_page_rows: src.draft_page_rows ?? src.page_rows ?? [],
+    status: "draft",
+    meta_title: src.meta_title,
+    meta_description: src.meta_description,
+    ai_summary: src.ai_summary,
+  } as any).select().maybeSingle();
+};
