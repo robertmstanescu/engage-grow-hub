@@ -286,6 +286,13 @@ const InspectorPanel = (props: InspectorPanelProps) => {
   }
 
   return <EmptyHint>Select an element on the canvas to edit its settings.</EmptyHint>;
+  };
+
+  return (
+    <div ref={containerRef} className="h-full">
+      {renderBody()}
+    </div>
+  );
 };
 
 export default InspectorPanel;
