@@ -1024,7 +1024,7 @@ const AdminDashboard = ({ session }: Props) => {
         <span className="text-[11px] text-muted-foreground font-body flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap flex items-center justify-center gap-2">
           {cmsPage && (
             <button
-              onClick={() => setCmsPage(null)}
+              onClick={goToMainPageBuilder}
               className="flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] bg-transparent border-none cursor-pointer text-muted-foreground hover:text-foreground"
               title="Back to Main Page"
             >
@@ -1223,7 +1223,12 @@ const AdminDashboard = ({ session }: Props) => {
                     }
                     setActiveTab(item.key as Tab);
                     setSelectedSectionId(null);
-                    if (item.key !== "site") setCmsPage(null);
+                    if (item.key !== "site" && cmsPage) {
+                      // Leaving the builder while editing a CMS page
+                      // — strip the :pageId so the URL no longer claims
+                      // we're editing it (US 3.3).
+                      navigate("/admin/builder");
+                    }
                     if (isAdminMobile) setMobileDrawerOpen(false);
                   };
                   return (
@@ -1292,7 +1297,7 @@ const AdminDashboard = ({ session }: Props) => {
           <div className="h-11 flex items-center justify-between px-4 border-b border-border flex-shrink-0">
             {cmsPage ? (
               <button
-                onClick={() => setCmsPage(null)}
+                onClick={goToMainPageBuilder}
                 className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-muted-foreground font-body text-[10px]"
               >
                 <ArrowLeft size={12} /> Back to Main Page
