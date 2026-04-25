@@ -23,32 +23,13 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").repla
 
 type RenderableRow = PageRow | PageRowV2 | PageRowV3;
 
-const buildHomepageHeroRow = (content: Record<string, any>): PageRow => ({
-  id: "__homepage_hero__",
-  type: "hero",
-  strip_title: "Hero",
-  bg_color: "#000000",
-  scope: "hero",
-  content,
-  layout: { ...DEFAULT_ROW_LAYOUT, paddingTop: 0, paddingBottom: 0 },
-});
+/* US 2.1 — Legacy hero bridge removed.
+ * The hero is now an ordinary `type: "hero"` widget that lives at
+ * `page_rows[0]` after the one-time data migration. The injection
+ * helpers (`buildHomepageHeroRow`, `hasHeroContent`,
+ * `rowContainsHeroWidget`) and the `heroContent` prop pipeline are
+ * gone — the unified canvas is the single source of truth. */
 
-const hasHeroContent = (content: Record<string, any>) =>
-  !!content && Object.values(content).some((value) => Array.isArray(value) ? value.length > 0 : !!value);
-
-const rowContainsHeroWidget = (row: RenderableRow) => {
-  if (!isPageRowV2(row)) return row.type === "hero";
-  return row.columns.some((column) => {
-    // v3: walk cells; v2 fallback: walk widgets directly on the column.
-    if (Array.isArray((column as any).cells) && (column as any).cells.length > 0) {
-      return (column as any).cells.some((cell: any) =>
-        Array.isArray(cell.widgets) && cell.widgets.some((w: any) => w.type === "hero"),
-      );
-    }
-    return Array.isArray((column as any).widgets)
-      && (column as any).widgets.some((w: any) => w.type === "hero");
-  });
-};
 
 /** Read the first widget type in a v2/v3 row, walking cells when needed. */
 const firstWidgetTypeInLayoutRow = (row: PageRowV2 | PageRowV3): string | undefined => {
