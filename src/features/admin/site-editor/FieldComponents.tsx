@@ -152,7 +152,7 @@ export const ArrayField = ({ label, items, onChange, placeholder }: { label: str
   };
 
   return (
-    <div>
+    <div data-inspector-field={slugifyLabel(label)}>
       <div className="flex items-center justify-between mb-1">
         <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">{label}</label>
         <button
