@@ -15,6 +15,7 @@ import { DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/types/rows";
 // is just a NEW HOST for these — the editors themselves are unchanged.
 import HeroEditor from "../site-editor/HeroEditor";
 import SeoFields from "../site-editor/SeoFields";
+import PageSettingsEditor from "./PageSettingsEditor";
 import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
 import ColumnWidthControl from "../site-editor/ColumnWidthControl";
 import { ColorField } from "../site-editor/FieldComponents";
