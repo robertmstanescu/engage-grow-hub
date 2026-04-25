@@ -112,6 +112,13 @@ export interface PageRow {
   layout?: RowLayout;
   content: Record<string, any>;
   columns_data?: Record<string, any>[]; // extra columns beyond the first
+  /**
+   * Custom CSS scoped to THIS row (Epic 2 — US 2.2). The renderer
+   * (`RowSection`) replaces the `&` token with `#row-<id>` and injects
+   * a sibling `<style>` block so rules cannot leak to other rows.
+   * Empty / undefined = no injection at all.
+   */
+  customCss?: string;
 }
 
 /* ─────────────────────────────────────────────────────────────────────
