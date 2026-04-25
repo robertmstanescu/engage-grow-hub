@@ -183,7 +183,7 @@ const Navbar = () => {
               key={item.label}
               href={item.href}
               onClick={(e) => handleNavClick(e, item.href)}
-              className="side-nav-label font-body"
+              className="side-nav-label font-body text-xs"
               style={{
                 color: isActive(item.href) ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.35)",
                 fontWeight: isActive(item.href) ? 600 : 400,
