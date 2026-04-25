@@ -184,13 +184,55 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     [emitChange, focusEditor, restoreSelection, saveSelection]
   );
 
+  /**
+   * applyFontSize — manual span wrapping with cursor repositioning.
+   *
+   * Why not just rely on `normalizeRichTextContainerFontSizes`? Because
+   * after `execCommand("fontSize", "7")` the browser's selection lives
+   * inside a `<font size="7">` node. When we replace that node with a
+   * fresh `<span style="font-size: …">`, the original Range is orphaned
+   * and the toolbar reads the OLD computed size on the next sync.
+   *
+   * Here we:
+   *   1. Force HTML output (`styleWithCSS = false`) so we get `<font>`
+   *      tags we can find deterministically.
+   *   2. Manually swap each `<font size="7">` for a `<span style="…">`.
+   *   3. Reposition the caret at the end of the LAST new span so the
+   *      next `syncToolbarState()` call reads the new size.
+   */
   const applyFontSize = useCallback(
     (fontSize: string) => {
       focusEditor();
       restoreSelection();
-      document.execCommand("styleWithCSS", false, "true");
+      document.execCommand("styleWithCSS", false, "false");
       document.execCommand("fontSize", false, "7");
+
       if (editorRef.current) {
+        const fonts = Array.from(
+          editorRef.current.querySelectorAll('font[size="7"]')
+        ) as HTMLElement[];
+        let lastSpan: HTMLSpanElement | null = null;
+
+        fonts.forEach((font) => {
+          const span = document.createElement("span");
+          span.style.fontSize = fontSize;
+          while (font.firstChild) span.appendChild(font.firstChild);
+          font.parentNode?.replaceChild(span, font);
+          lastSpan = span;
+        });
+
+        // Move the caret into the freshly created span so the toolbar
+        // immediately reflects the active size.
+        if (lastSpan) {
+          const sel = window.getSelection();
+          if (sel) {
+            const range = document.createRange();
+            range.selectNodeContents(lastSpan);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          }
+        }
         normalizeRichTextContainerFontSizes(editorRef.current, fontSize);
       }
       saveSelection();
