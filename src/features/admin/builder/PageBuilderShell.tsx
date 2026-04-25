@@ -217,6 +217,17 @@ export interface PageBuilderShellProps {
   onSeoTitleChange: (v: string) => void;
   onSeoDescriptionChange: (v: string) => void;
 
+  /** US 3.4 — Page Settings shown in the Inspector when nothing on the
+   *  canvas is selected. All optional so adapters that don't need slug /
+   *  internal-name editing (e.g. the blog-post builder, which already
+   *  has its own dedicated editor for those) can opt out. */
+  pageName?: string;
+  onPageNameChange?: (v: string) => void;
+  pageSlug?: string;
+  onPageSlugChange?: (v: string) => void;
+  ogImage?: string;
+  onOgImageChange?: (v: string) => void;
+
   /** Save / publish actions. The shell renders the buttons; the adapter
    * implements the actual DB writes. */
   onSaveDraft: () => Promise<void> | void;
