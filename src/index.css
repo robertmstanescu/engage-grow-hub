@@ -263,8 +263,8 @@
     background: hsl(260 25% 12% / 0.15);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    /* Hairline border to define the sharp edge */
+    border: 1px solid rgba(255, 255, 255, 0.08);
     transform: translateZ(0);
     backface-visibility: hidden;
     /* `isolation: isolate` creates a new stacking context so the
@@ -272,14 +272,14 @@
        layer instead of every layer behind it. Drastically reduces
        GPU work and eliminates the saturation "pop" on reveal. */
     isolation: isolate;
-    /* Smooth luminous hover — border + glow ease in/out so the card
-       feels physically lit rather than flicker-swapped. */
-    transition: border-color 300ms ease, box-shadow 300ms ease, background-color 300ms ease;
+    transition: all 300ms ease;
   }
 
   .glass:hover {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    /* Sharp gold outline — no outer glow to keep corners crisp */
+    border: 1px solid hsl(var(--accent) / 0.8);
+    box-shadow: inset 0 0 0 1px hsl(var(--accent) / 0.2);
+    background-color: hsl(260 25% 12% / 0.3);
   }
 
   .glass-light {
@@ -314,20 +314,17 @@
 
   /* ── Glass button ── */
   .btn-glass {
+    /* Keep the gradient, but sharpen the shadow */
     background: linear-gradient(135deg, hsl(var(--accent) / 0.9) 0%, hsl(var(--accent) / 0.7) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid hsl(var(--accent) / 0.4);
-    box-shadow:
-      0 4px 20px -4px hsl(var(--accent) / 0.4),
-      inset 0 1px 0 hsl(0 0% 100% / 0.15);
+    border: 1px solid hsl(var(--accent));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
     color: hsl(var(--accent-foreground));
   }
 
   .btn-glass:hover {
-    box-shadow:
-      0 10px 30px -10px rgba(0, 0, 0, 0.5),
-      inset 0 1px 0 hsl(0 0% 100% / 0.3);
+    box-shadow: inset 0 0 0 2px hsl(var(--accent-foreground) / 0.2);
   }
 
   /* ──────────────────────────────────────────────────────────────────
