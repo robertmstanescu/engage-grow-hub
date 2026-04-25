@@ -44,11 +44,13 @@ import {
   type DragEndEvent,
   type DropAnimation,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import ElementsTray, {
   TrayDragPreview,
   isTrayDragData,
   type TrayDragData,
 } from "./builder/ElementsTray";
+import { isSectionNavDragData } from "./builder/PageNavigator";
 // US 17.2 — drop-target id parsing for tray-sourced drops.
 import { parseDropZoneId } from "./builder/CanvasDropZone";
 // US 17.2 — registry lookup so dropped widgets seed with proper defaults.
