@@ -9,6 +9,8 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { resolveImageAlt } from "@/services/imageAlt";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
+// EPIC 1 / US 1.1 — atomic-node selection.
+import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 
 const CLIP_PATHS: Record<string, string> = {
   puddle:
