@@ -165,6 +165,9 @@ export interface PageBuilderShellProps {
   /** Optional content rendered at the bottom of the inspector pane
    *  (e.g. revision-history panel for the current entity). */
   inspectorFooter?: React.ReactNode;
+
+  /** Optional scheduling panel rendered above the revision history. */
+  schedulePanel?: React.ReactNode;
 }
 
 const PageBuilderShell = (props: PageBuilderShellProps) => {
