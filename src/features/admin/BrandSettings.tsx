@@ -192,6 +192,132 @@ const BrandSettings = () => {
         </div>
       </div>
 
+      {/* ──────────────────────────────────────────────────────────────
+       *  BRAND PREVIEW BOARD (US 1.2)
+       *  ──────────────────────────────────────────────────────────────
+       *  Live, unsaved preview of how the brand kit renders together:
+       *  the uploaded logo on top of the Primary Brand Colour, with H1
+       *  / H2 / body type rendered using the typography currently in
+       *  local state. No DB write needed — purely reads `brand` and
+       *  `branding` so admins see changes the instant they edit a
+       *  font, weight, colour, or upload a new logo.
+       *
+       *  Contrast: we test the primary colour against #FFFFFF and
+       *  #1A1A1A using the existing WCAG `contrastRatio` helper and
+       *  pick whichever ratio is higher. This guarantees text never
+       *  becomes invisible if the admin chooses, e.g., a pale yellow.
+       *  ────────────────────────────────────────────────────────── */}
+      {(() => {
+        const primaryHex = brand.colors[0]?.hex || "#2A0E33";
+        const fg =
+          contrastRatio(primaryHex, "#FFFFFF") >= contrastRatio(primaryHex, "#1A1A1A")
+            ? "#FFFFFF"
+            : "#1A1A1A";
+        const subtleFg = fg === "#FFFFFF" ? "rgba(255,255,255,0.72)" : "rgba(26,26,26,0.72)";
+        const dividerFg = fg === "#FFFFFF" ? "rgba(255,255,255,0.18)" : "rgba(26,26,26,0.15)";
+        const logo = branding.logo_url || branding.emblem_logo_url || "";
+        const t = brand.typography;
+        return (
+          <div
+            className="rounded-lg border overflow-hidden"
+            style={{ borderColor: "hsl(var(--border))", backgroundColor: primaryHex }}
+            aria-label="Live brand preview"
+          >
+            <div className="px-6 py-7 md:px-8 md:py-9">
+              <div
+                className="flex items-center justify-between gap-4 pb-5 border-b"
+                style={{ borderColor: dividerFg }}
+              >
+                {logo ? (
+                  <img
+                    src={logo}
+                    alt="Brand logo preview"
+                    className="max-h-10 md:max-h-12 max-w-[180px] object-contain"
+                  />
+                ) : (
+                  <span
+                    className="font-body text-xs uppercase tracking-[0.25em]"
+                    style={{ color: subtleFg }}
+                  >
+                    No logo uploaded
+                  </span>
+                )}
+                <span
+                  className="font-body text-[10px] uppercase tracking-[0.25em]"
+                  style={{ color: subtleFg }}
+                >
+                  Brand Preview · Live
+                </span>
+              </div>
+
+              <div className="pt-5 space-y-3">
+                <h1
+                  style={{
+                    fontFamily: t.h1.fontFamily,
+                    fontSize: t.h1.fontSize,
+                    lineHeight: t.h1.lineHeight,
+                    fontWeight: Number(t.h1.fontWeight),
+                    color: fg,
+                    margin: 0,
+                  }}
+                >
+                  Building unforgettable brands.
+                </h1>
+                <h2
+                  style={{
+                    fontFamily: t.h2.fontFamily,
+                    fontSize: t.h2.fontSize,
+                    lineHeight: t.h2.lineHeight,
+                    fontWeight: Number(t.h2.fontWeight),
+                    color: fg,
+                    margin: 0,
+                  }}
+                >
+                  A subhead in your H2 style
+                </h2>
+                <p
+                  style={{
+                    fontFamily: t.body.fontFamily,
+                    fontSize: t.body.fontSize,
+                    lineHeight: t.body.lineHeight,
+                    fontWeight: Number(t.body.fontWeight),
+                    color: subtleFg,
+                    margin: 0,
+                    maxWidth: "60ch",
+                  }}
+                >
+                  Body text rendered with your selected font family, size, weight, and
+                  line-height — paired against the Primary brand colour and a contrast-safe
+                  foreground so you can judge legibility before publishing.
+                </p>
+              </div>
+
+              {brand.colors.length > 1 && (
+                <div
+                  className="pt-5 mt-5 border-t flex flex-wrap items-center gap-2"
+                  style={{ borderColor: dividerFg }}
+                >
+                  <span
+                    className="font-body text-[10px] uppercase tracking-[0.25em]"
+                    style={{ color: subtleFg }}
+                  >
+                    Palette
+                  </span>
+                  {brand.colors.map((c) => (
+                    <div
+                      key={c.id}
+                      title={`${c.name} · ${c.hex}`}
+                      className="w-6 h-6 rounded-full border"
+                      style={{ backgroundColor: c.hex, borderColor: dividerFg }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── Logos & Favicons (moved from GlobalSettings as part of
        *  Epic 1: The Unified Brand Hub) ── */}
       <AccordionSection id="branding" label="Logos & Favicon">
