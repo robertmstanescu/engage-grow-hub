@@ -84,12 +84,20 @@ const CmsPageBuilder = ({ pageId }: Props) => {
       rows: record.draft_page_rows || record.page_rows || [],
       meta_title: record.meta_title || "",
       meta_description: record.meta_description || "",
+      title: record.title || "",
+      slug: record.slug || "",
     });
   }, [record]);
 
   const currentSnapshot = useMemo(
-    () => JSON.stringify({ rows: draftRows, meta_title: seoTitle, meta_description: seoDescription }),
-    [draftRows, seoTitle, seoDescription],
+    () => JSON.stringify({
+      rows: draftRows,
+      meta_title: seoTitle,
+      meta_description: seoDescription,
+      title: pageTitle,
+      slug: pageSlug,
+    }),
+    [draftRows, seoTitle, seoDescription, pageTitle, pageSlug],
   );
 
   const hasChanges = !!record && initialSnapshot !== currentSnapshot;
@@ -98,8 +106,33 @@ const CmsPageBuilder = ({ pageId }: Props) => {
   // hasn't been pushed to the database yet.
   useUnloadGuard(hasChanges);
 
+  /** US 2.3 — Slug uniqueness guard. The slug is the route, so two CMS
+   *  pages can't share one. We check the table for collisions before
+   *  writing; on conflict we surface a toast and abort the save. */
+  const checkSlugAvailable = useCallback(async (): Promise<boolean> => {
+    if (!record) return false;
+    if ((pageSlug || "") === (record.slug || "")) return true; // unchanged
+    if (!pageSlug) {
+      toast.error("Page URL cannot be empty");
+      return false;
+    }
+    const { data: clash } = await supabase
+      .from("cms_pages")
+      .select("id")
+      .eq("slug", pageSlug)
+      .neq("id", record.id)
+      .maybeSingle();
+    if (clash) {
+      toast.error(`The URL "/${pageSlug}" is already in use by another page`);
+      return false;
+    }
+    return true;
+  }, [record, pageSlug]);
+
   const onSaveDraft = useCallback(async () => {
     if (!record) return;
+    const slugOk = await checkSlugAvailable();
+    if (!slugOk) return;
     setSaving(true);
     const { error } = await supabase
       .from("cms_pages")
@@ -107,16 +140,25 @@ const CmsPageBuilder = ({ pageId }: Props) => {
         draft_page_rows: draftRows as any,
         meta_title: seoTitle,
         meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
       } as any)
       .eq("id", record.id);
     if (error) toast.error(error.message);
     else {
       toast.success("Draft saved");
       // Refresh the snapshot so hasChanges resets.
-      setRecord({ ...record, draft_page_rows: draftRows, meta_title: seoTitle, meta_description: seoDescription });
+      setRecord({
+        ...record,
+        draft_page_rows: draftRows,
+        meta_title: seoTitle,
+        meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
+      });
     }
     setSaving(false);
-  }, [record, draftRows, seoTitle, seoDescription]);
+  }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, checkSlugAvailable]);
 
   const onPublish = useCallback(async () => {
     if (!record) return;
@@ -133,6 +175,9 @@ const CmsPageBuilder = ({ pageId }: Props) => {
       return;
     }
 
+    const slugOk = await checkSlugAvailable();
+    if (!slugOk) return;
+
     setPublishing(true);
     const { error } = await supabase
       .from("cms_pages")
@@ -141,21 +186,34 @@ const CmsPageBuilder = ({ pageId }: Props) => {
         draft_page_rows: draftRows as any,
         meta_title: seoTitle,
         meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
         status: "published",
       } as any)
       .eq("id", record.id);
     if (error) toast.error(error.message);
     else {
       toast.success("Published");
-      setRecord({ ...record, page_rows: draftRows, draft_page_rows: draftRows, meta_title: seoTitle, meta_description: seoDescription, status: "published" });
+      setRecord({
+        ...record,
+        page_rows: draftRows,
+        draft_page_rows: draftRows,
+        meta_title: seoTitle,
+        meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
+        status: "published",
+      });
     }
     setPublishing(false);
-  }, [record, draftRows, seoTitle, seoDescription]);
+  }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, checkSlugAvailable]);
 
   const onPreview = useCallback(() => {
     if (!record) return;
-    onSaveDraft().then(() => window.open(`/${record.slug}?preview=1`, "_blank"));
-  }, [record, onSaveDraft]);
+    // Use the latest in-memory slug — typing a new slug and hitting
+    // Preview should land on the new URL once the save completes.
+    onSaveDraft().then(() => window.open(`/${pageSlug || record.slug}?preview=1`, "_blank"));
+  }, [record, onSaveDraft, pageSlug]);
 
   if (!record) {
     return (
@@ -167,7 +225,13 @@ const CmsPageBuilder = ({ pageId }: Props) => {
 
   return (
     <PageBuilderShell
-      title={record.title || record.slug}
+      title={pageTitle || pageSlug || "Untitled page"}
+      pageTitle={pageTitle}
+      onPageTitleChange={setPageTitle}
+      pageSlug={pageSlug}
+      onPageSlugChange={setPageSlug}
+      slugEditable={true}
+      slugPrefix="/"
       pageRows={draftRows}
       onRowsChange={setDraftRows}
       seoMetaTitle={seoTitle}
@@ -184,7 +248,7 @@ const CmsPageBuilder = ({ pageId }: Props) => {
         <SchedulePublishPanel
           entityType="cms_pages"
           entityId={record.id}
-          entityLabel={record.title || record.slug}
+          entityLabel={pageTitle || pageSlug}
           hasUnsavedChanges={hasChanges}
         />
       }
