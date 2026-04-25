@@ -61,6 +61,7 @@ import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
 import { fetchPublicSiteContentRow } from "@/services/publicSiteContent";
+import { migrateSiteContentRows } from "@/types/rows";
 
 const isPreviewMode = () =>
   typeof window !== "undefined" &&
@@ -75,12 +76,35 @@ const getPreviewOverride = <T,>(sectionKey: string): T | null => {
 export const siteContentQueryKey = (sectionKey: string) => ["site_content_v4", sectionKey] as const;
 
 /**
+ * Section keys whose payload contains a `rows` array (page builder
+ * shape). For these we run the v1 → v2 nested-widget migration on read
+ * so downstream code can safely assume the new schema regardless of
+ * what's stored in the database.
+ */
+const ROWS_BEARING_SECTIONS = new Set(["page_rows"]);
+
+const normaliseSectionPayload = <T,>(sectionKey: string, payload: T): T => {
+  if (!ROWS_BEARING_SECTIONS.has(sectionKey)) return payload;
+  return migrateSiteContentRows(payload as any) as T;
+};
+
+/**
  * The actual fetcher. Pulled from `site_content_public` (a view that
  * hides admin-only columns from anon users) so we never accidentally
  * leak draft content to the public.
  */
 const fetchSectionContent = async (sectionKey: string) => {
-  return fetchPublicSiteContentRow(sectionKey);
+  const row = await fetchPublicSiteContentRow(sectionKey);
+  if (!row) return row;
+  // Apply migration to BOTH content and draft_content so admin
+  // preview mode also sees the normalised shape.
+  return {
+    ...row,
+    content: normaliseSectionPayload(sectionKey, row.content),
+    draft_content: row.draft_content
+      ? normaliseSectionPayload(sectionKey, row.draft_content)
+      : row.draft_content,
+  };
 };
 
 /**
