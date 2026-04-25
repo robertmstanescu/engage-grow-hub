@@ -341,6 +341,7 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
               </aside>
             </ResizablePanel>
           </ResizablePanelGroup>
+          </div>
         </div>
       </BuilderDndShell>
     </BuilderProvider>
