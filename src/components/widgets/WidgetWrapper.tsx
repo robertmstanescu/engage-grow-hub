@@ -134,9 +134,26 @@ const WidgetWrapper = ({ design, children, className }: Props) => {
   // responsive `hidden` classes.
   if (!hasStyles && !visClass) return <>{children}</>;
 
-  const composedClass = [className, visClass].filter(Boolean).join(" ") || undefined;
+  /* useId gives us a stable, SSR-safe per-instance id. We strip the
+   * leading colons React uses (`:r1:`) and prefix a readable token so
+   * the resulting class is a valid CSS identifier. */
+  const reactId = useId().replace(/[:]/g, "");
+  const scope = `widget-scope-${reactId}`;
+  const customCss = design.customCss?.trim();
+  const scopedCss = customCss ? scopeCss(customCss, scope) : "";
+
+  const composedClass = [className, visClass, customCss ? scope : null]
+    .filter(Boolean)
+    .join(" ") || undefined;
+
   return (
     <div className={composedClass} style={hasStyles ? designToStyle(design) : undefined}>
+      {scopedCss && (
+        /* Inline <style> tag is fine inside <body> in HTML5 and keeps
+         * the CSS co-located with the widget — no global stylesheet
+         * mutation, no leakage when the widget unmounts. */
+        <style dangerouslySetInnerHTML={{ __html: scopedCss }} />
+      )}
       {children}
     </div>
   );
