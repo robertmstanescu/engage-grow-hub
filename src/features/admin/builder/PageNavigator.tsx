@@ -305,16 +305,22 @@ const PageNavigator = ({
         </div>
       </div>
 
+      {schedulePanel ? (
+        <div
+          className="px-4 py-3 border-b"
+          style={{ borderColor: "hsl(var(--border))" }}
+        >
+          {schedulePanel}
+        </div>
+      ) : null}
+
       {/* ── Slot 3 ── Sections of the canvas ───────────────────── */}
       <div className="px-3 pt-3 pb-2">
         <h3 className="admin-section-label font-body text-[10px] mb-2">
           Sections
         </h3>
       </div>
-      <nav
-        className="flex-shrink-0 overflow-y-auto px-2 pb-3 space-y-0.5"
-        style={{ maxHeight: "32%" }}
-      >
+      <nav className="flex-shrink-0 px-2 pb-3 space-y-0.5">
         {sections.length === 0 ? (
           <p
             className="px-3 py-2 font-body text-xs italic"
@@ -323,26 +329,17 @@ const PageNavigator = ({
             No sections yet — drag an element onto the canvas.
           </p>
         ) : (
-          sections.map((section) => {
-            const isActive = section.id === activeRowId;
-            return (
-              <button
+          <SortableContext items={sections.map((section) => `${SECTION_DRAG_ID_PREFIX}${section.id}`)} strategy={verticalListSortingStrategy}>
+            {sections.map((section) => (
+              <SectionButton
                 key={section.id}
-                type="button"
-                onClick={() => goToSection(section.id)}
-                data-active={isActive ? "true" : "false"}
-                className="admin-sidebar-item w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left font-body text-xs"
-              >
-                <span
-                  className="font-mono text-[10px] tabular-nums"
-                  style={{ color: "inherit", opacity: 0.7, minWidth: 18 }}
-                >
-                  {String(section.index + 1).padStart(2, "0")}
-                </span>
-                <span className="flex-1 truncate">{section.label}</span>
-              </button>
-            );
-          })
+                section={section}
+                isActive={section.id === activeRowId}
+                onSelect={goToSection}
+                onRename={renameSection}
+              />
+            ))}
+          </SortableContext>
         )}
       </nav>
 
