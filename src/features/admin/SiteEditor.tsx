@@ -654,6 +654,12 @@ const SiteEditor = () => {
                   seoMetaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
                   onSeoTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
                   onSeoDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                  /* US 3.4 — main page has no internal name / slug
+                   * (it's always at "/"). We do still surface the OG
+                   * image alongside SEO meta so editors can manage
+                   * link-preview imagery without leaving the canvas. */
+                  ogImage={(getDraft("main_page_seo") as any)?.og_image || ""}
+                  onOgImageChange={(v) => updateField("main_page_seo", "og_image", v)}
                   heroContent={getDraft("hero")}
                   onHeroFieldChange={(f, v) => updateField("hero", f, v)}
                   pageRows={pageRows}
