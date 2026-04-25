@@ -83,7 +83,7 @@ const TrayCard = ({ def }: TrayCardProps) => {
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `${TRAY_DRAG_ID_PREFIX}${def.type}`,
-    data: { source: "tray", type: def.type, label } satisfies TrayDragData,
+    data: { source: "tray", kind: "widget", type: def.type, label } satisfies TrayDragData,
   });
 
   return (
