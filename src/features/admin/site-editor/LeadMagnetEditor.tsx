@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchAllAssets, type MediaAsset, isImageMime } from "@/services/mediaLibrary";
+import { DeferredInput, DeferredTextarea } from "./DeferredInput";
 
 interface Props {
   content: Record<string, any>;
