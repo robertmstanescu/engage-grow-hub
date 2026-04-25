@@ -13,10 +13,10 @@ import { useMomentumSnap } from "@/hooks/useMomentumSnap";
  *
  * The `.snap-container` wrapper is the scroll container. Native CSS
  * `scroll-snap-type` is disabled so we can implement a precise 51%
- * threshold rule via {@link useThresholdSnap}: scroll past 51% of the
- * current row and the page animates to the next row; below that, it
- * settles back. This gives the slide-deck feel without the violent
- * mid-scroll yank of `mandatory`.
+ * threshold rule via {@link useMomentumSnap}: after the user finishes
+ * scrolling, the page glides to the section that matches their scroll
+ * direction over up to 1.5s. The footer below the last row stays
+ * freely accessible.
  */
 const Index = () => {
   const seo = useSiteContent<{ meta_title: string; meta_description: string }>("main_page_seo", { meta_title: "", meta_description: "" });
@@ -27,7 +27,7 @@ const Index = () => {
     description: seo.meta_description || undefined,
   });
 
-  useThresholdSnap(containerRef);
+  useMomentumSnap(containerRef);
 
   return (
     <div ref={containerRef} className="snap-container lg:pl-16">
