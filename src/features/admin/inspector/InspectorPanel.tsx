@@ -111,7 +111,6 @@ const InspectorPanel = (props: InspectorPanelProps) => {
    * (e.g. clicking the green border in the canvas pings borderRadius,
    * which lives in Design — flip the tab BEFORE the focus hook runs so
    * it can scroll/flash the input). */
-  const { activeNodePath } = useBuilder();
   const [widgetTab, setWidgetTab] = useState<InspectorTab>("content");
   const focusLeaf = useMemo(() => {
     const tail = activeNodePath?.slice(4) ?? [];
