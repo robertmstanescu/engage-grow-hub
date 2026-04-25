@@ -22,6 +22,71 @@ function sanitizeAttribution(raw: unknown): Record<string, string> | null {
   return Object.keys(out).length > 0 ? out : null
 }
 
+/**
+ * Epic 4 / US 4.4 — Zero-Party Data progressive profiling.
+ * See submit-lead/index.ts for the full rationale; rules duplicated
+ * here intentionally because edge functions cannot share modules.
+ *   • Top-level: max 50 keys
+ *   • Key:       string, 1–64 chars, alphanumeric / `_-.` only
+ *   • Value:     string | number | boolean | null | string[]
+ *                  - string capped at 1000 chars
+ *                  - array capped at 50 entries, each entry capped at 200 chars
+ */
+const ZPD_KEY_REGEX = /^[A-Za-z0-9_.-]{1,64}$/
+function sanitizeZeroPartyData(raw: unknown): Record<string, unknown> | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
+  const out: Record<string, unknown> = {}
+  let kept = 0
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (kept >= 50) break
+    if (!ZPD_KEY_REGEX.test(k)) continue
+    if (v === null) { out[k] = null; kept++; continue }
+    if (typeof v === 'boolean' || typeof v === 'number') {
+      if (typeof v === 'number' && !Number.isFinite(v)) continue
+      out[k] = v; kept++; continue
+    }
+    if (typeof v === 'string') {
+      out[k] = v.length > 1000 ? v.slice(0, 1000) : v
+      kept++; continue
+    }
+    if (Array.isArray(v)) {
+      const arr: string[] = []
+      for (const item of v) {
+        if (arr.length >= 50) break
+        if (typeof item !== 'string') continue
+        arr.push(item.length > 200 ? item.slice(0, 200) : item)
+      }
+      out[k] = arr; kept++; continue
+    }
+  }
+  return Object.keys(out).length > 0 ? out : null
+}
+
+/**
+ * Deep-merge two plain objects. `incoming` wins on conflicts so the
+ * latest answer overwrites a stale one. Arrays are replaced wholesale.
+ */
+function deepMergeJson(
+  existing: Record<string, unknown> | null | undefined,
+  incoming: Record<string, unknown> | null | undefined,
+): Record<string, unknown> {
+  const base: Record<string, unknown> = existing && typeof existing === 'object' && !Array.isArray(existing)
+    ? { ...existing } : {}
+  if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) return base
+  for (const [k, v] of Object.entries(incoming)) {
+    const prev = base[k]
+    if (
+      v && typeof v === 'object' && !Array.isArray(v) &&
+      prev && typeof prev === 'object' && !Array.isArray(prev)
+    ) {
+      base[k] = deepMergeJson(prev as Record<string, unknown>, v as Record<string, unknown>)
+    } else {
+      base[k] = v
+    }
+  }
+  return base
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
