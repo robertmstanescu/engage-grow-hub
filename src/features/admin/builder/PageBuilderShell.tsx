@@ -392,6 +392,19 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                 </aside>
               );
 
+              // EPIC 2 / US 2.1 — preview mode strips the side panes so
+              // the canvas mimics the live site (toolbar + canvas only).
+              if (previewMode === "preview") {
+                return (
+                  <div
+                    className="flex-1 min-h-0 border-x border-b rounded-b-lg overflow-hidden"
+                    style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+                  >
+                    {centerPane}
+                  </div>
+                );
+              }
+
               if (limits.stack) {
                 return (
                   <div
