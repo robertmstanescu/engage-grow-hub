@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 import { SectionBox, Field, RichField, ColorField } from "./FieldComponents";
+import { DeferredTextarea } from "./DeferredInput";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
 
