@@ -45,6 +45,11 @@ const CmsPageBuilder = ({ pageId }: Props) => {
   const [draftRows, setDraftRows] = useState<PageRow[]>([]);
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
+  // US 2.3 — Page identity (title + slug) is now edited in the Left
+  // Navigator. We mirror them as local state so users can type freely
+  // and Save Draft / Publish persists the change.
+  const [pageTitle, setPageTitle] = useState("");
+  const [pageSlug, setPageSlug] = useState("");
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
@@ -65,6 +70,8 @@ const CmsPageBuilder = ({ pageId }: Props) => {
     setDraftRows(normalizeRowsToV3(rec.draft_page_rows || rec.page_rows || []) as unknown as PageRow[]);
     setSeoTitle(rec.meta_title || "");
     setSeoDescription(rec.meta_description || "");
+    setPageTitle(rec.title || "");
+    setPageSlug(rec.slug || "");
   }, [pageId]);
 
   useEffect(() => {
