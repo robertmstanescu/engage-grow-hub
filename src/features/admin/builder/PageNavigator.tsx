@@ -114,6 +114,8 @@ const PageNavigator = ({
   slugEditable = true,
   slugPrefix = "/",
   pageRows,
+  schedulePanel,
+  revisionPanel,
 }: PageNavigatorProps) => {
   const { activeNodePath, setActiveElement } = useBuilder();
 
