@@ -224,6 +224,7 @@ export type Database = {
           message: string | null
           name: string
           subscribed_to_marketing: boolean
+          zero_party_data: Json
         }
         Insert: {
           ai_score?: number | null
@@ -236,6 +237,7 @@ export type Database = {
           message?: string | null
           name: string
           subscribed_to_marketing?: boolean
+          zero_party_data?: Json
         }
         Update: {
           ai_score?: number | null
@@ -248,6 +250,7 @@ export type Database = {
           message?: string | null
           name?: string
           subscribed_to_marketing?: boolean
+          zero_party_data?: Json
         }
         Relationships: []
       }
@@ -434,6 +437,7 @@ export type Database = {
           marketing_consent: boolean
           title: string
           updated_at: string
+          zero_party_data: Json
         }
         Insert: {
           attribution?: Json | null
@@ -446,6 +450,7 @@ export type Database = {
           marketing_consent?: boolean
           title: string
           updated_at?: string
+          zero_party_data?: Json
         }
         Update: {
           attribution?: Json | null
@@ -458,6 +463,7 @@ export type Database = {
           marketing_consent?: boolean
           title?: string
           updated_at?: string
+          zero_party_data?: Json
         }
         Relationships: []
       }
