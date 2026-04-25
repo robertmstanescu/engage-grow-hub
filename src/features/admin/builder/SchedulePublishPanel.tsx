@@ -82,11 +82,11 @@ const SchedulePublishPanel = ({
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from(entityType as any)
         .select("publish_at, expiry_at")
         .eq("id", entityId)
-        .maybeSingle();
+        .maybeSingle() as any);
       if (cancelled) return;
       if (!error && data) {
         const row = data as { publish_at: string | null; expiry_at: string | null };
