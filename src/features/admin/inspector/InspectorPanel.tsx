@@ -291,6 +291,39 @@ const InspectorPanel = (props: InspectorPanelProps) => {
 
   /* ─── State 3 — Widget selected → widget admin editor ─────────── */
   if (kind === "widget") {
+    /* US 2.3 — Box Model spacing controls live at the TOP of every
+     * widget inspector so designers can adjust margin/padding without
+     * hunting for it inside per-widget admin UIs. The values are stored
+     * under the reserved `__design` key on the widget content blob and
+     * applied uniformly by `WidgetWrapper`. */
+    const design = readDesignSettings(row.content);
+    const updateDesignField = (field: BoxField, value: number) => {
+      const nextDesign = { ...DEFAULT_DESIGN_SETTINGS, ...design, [field]: value };
+      onRowsChange(
+        pageRows.map((r) =>
+          r.id === rowId
+            ? { ...r, content: { ...r.content, __design: nextDesign } }
+            : r,
+        ),
+      );
+    };
+
+    const boxModelSection = (
+      <Section title="Spacing (Box Model)">
+        <BoxModelControl
+          marginTop={design.marginTop}
+          marginRight={design.marginRight}
+          marginBottom={design.marginBottom}
+          marginLeft={design.marginLeft}
+          paddingTop={design.paddingTop}
+          paddingRight={design.paddingRight}
+          paddingBottom={design.paddingBottom}
+          paddingLeft={design.paddingLeft}
+          onChange={updateDesignField}
+        />
+      </Section>
+    );
+
     // First try the WidgetRegistry (US 16.1 dev note: "this is where
     // the WidgetRegistry shines"). If the widget self-registered an
     // adminComponent, render it directly.
@@ -298,9 +331,12 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     if (def?.adminComponent) {
       const Admin = def.adminComponent;
       return (
-        <Section title={def.label || row.type}>
-          <Admin content={row.content} onChange={updateRowContent} />
-        </Section>
+        <>
+          {boxModelSection}
+          <Section title={def.label || row.type}>
+            <Admin content={row.content} onChange={updateRowContent} />
+          </Section>
+        </>
       );
     }
 
@@ -337,7 +373,12 @@ const InspectorPanel = (props: InspectorPanelProps) => {
       }
     })();
 
-    return <Section title={`Widget · ${row.type}`}>{legacyEditor}</Section>;
+    return (
+      <>
+        {boxModelSection}
+        <Section title={`Widget · ${row.type}`}>{legacyEditor}</Section>
+      </>
+    );
   }
 
   return <EmptyHint>Select an element on the canvas to edit its settings.</EmptyHint>;
