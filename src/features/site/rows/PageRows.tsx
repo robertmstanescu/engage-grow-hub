@@ -1,5 +1,12 @@
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
-import { type PageRow, readDesignSettings, readGlobalRef } from "@/types/rows";
+import {
+  DEFAULT_ROW_LAYOUT,
+  type PageRow,
+  type PageRowV2,
+  isPageRowV2,
+  readDesignSettings,
+  readGlobalRef,
+} from "@/types/rows";
 import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import { renderWidget } from "@/lib/WidgetRegistry";
 import WidgetWrapper from "@/components/widgets/WidgetWrapper";
@@ -14,6 +21,26 @@ import CanvasDropZone from "@/features/admin/builder/CanvasDropZone";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+type RenderableRow = PageRow | PageRowV2;
+
+const buildHomepageHeroRow = (content: Record<string, any>): PageRow => ({
+  id: "__homepage_hero__",
+  type: "hero",
+  strip_title: "Hero",
+  bg_color: "#000000",
+  scope: "hero",
+  content,
+  layout: { ...DEFAULT_ROW_LAYOUT, paddingTop: 0, paddingBottom: 0 },
+});
+
+const hasHeroContent = (content: Record<string, any>) =>
+  !!content && Object.values(content).some((value) => Array.isArray(value) ? value.length > 0 : !!value);
+
+const rowContainsHeroWidget = (row: RenderableRow) =>
+  isPageRowV2(row)
+    ? row.columns.some((column) => column.widgets.some((widget) => widget.type === "hero"))
+    : row.type === "hero";
 
 export type Alignment = "left" | "right" | "center";
 export type VAlign = "top" | "middle" | "bottom";
