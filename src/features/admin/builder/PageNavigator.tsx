@@ -1,47 +1,33 @@
 /**
  * ════════════════════════════════════════════════════════════════════
- * PageNavigator — Left Sidebar Navigator (US 2.3)
+ * PageNavigator — Left Sidebar Navigator
  * ════════════════════════════════════════════════════════════════════
  *
- * Renders the LEFT pane of the visual page builder. Replaces the old
- * "Navigator" / "Elements" stack with a structured 3-zone layout that
- * makes the editing context immediately obvious:
+ * STRICT VERTICAL HIERARCHY (top → bottom):
  *
- *   ┌─ Slot 1 ─ Page Title (editable input)
- *   ├─ Slot 2 ─ Page URL Slug (editable input or read-only label)
- *   ├─ Slot 3 ─ Sections of the canvas (one row per page row, named
- *   │           by the row's strip_title / first widget label, with a
- *   │           click target that selects the row in the inspector and
- *   │           scrolls the canvas to it)
- *   └─ Slot 4 ─ Elements tray (drag source for new widgets)
+ *   ┌─ 1. Page Title (editable input)
+ *   ├─ 2. Page URL slug (editable / read-only)
+ *   ├─ 3. Schedule panel (rendered natively, immediately visible)
+ *   ├─ 4. Sections (one row per page row, click-to-jump)
+ *   ├─ 5. Elements tray (drag source for new widgets)
+ *   └─ 6. Revision History (collapsed Accordion at the very bottom)
  *
- * WHY THE SECTION LIST IS DERIVED, NOT STORED:
- *   Rows ARE the sections. Storing a parallel "sections" array would
- *   double the source of truth and rot. Instead we derive a friendly
- *   label from each row at render time:
- *
- *     row.strip_title          (admin-set label, takes priority)
- *       ↓
- *     widgetRegistry[type].label  (e.g. "Hero Banner")
- *       ↓
- *     prettified row.type      (e.g. "image_text" → "Image Text")
- *
- * SLUG EDITABILITY:
- *   The main page (SiteEditor) renders with `slugEditable={false}` —
- *   the homepage URL is fixed at "/". CMS pages and blog posts pass
- *   `slugEditable={true}` so editors can rename routes inline.
- *
- *   The slug input is sanitised to URL-safe characters on every change
- *   (lowercase, hyphens, no spaces) so editors can type freely without
- *   producing broken routes. Adapters validate uniqueness on save.
+ * The whole sidebar uses overflow-y-auto so the editor can scroll
+ * cleanly even when the page has many sections / a long revision list.
  * ──────────────────────────────────────────────────────────────────── */
 
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Link2 } from "lucide-react";
 import type { PageRow } from "@/types/rows";
 import { getWidget } from "@/lib/WidgetRegistry";
 import { useBuilder } from "./BuilderContext";
 import ElementsTray from "./ElementsTray";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 /** Convert a snake_case widget type to "Snake Case" Title Case. */
 const prettifyType = (s: string) =>
@@ -52,14 +38,11 @@ const sectionLabelForRow = (row: any): string => {
   if (row?.strip_title && String(row.strip_title).trim().length > 0) {
     return String(row.strip_title);
   }
-  // v3 — first widget inside the first cell of the first column.
-  const firstWidget =
-    row?.columns?.[0]?.cells?.[0]?.widgets?.[0] ?? null;
+  const firstWidget = row?.columns?.[0]?.cells?.[0]?.widgets?.[0] ?? null;
   if (firstWidget?.type) {
     const def = getWidget(firstWidget.type);
     return def?.label || prettifyType(firstWidget.type);
   }
-  // Legacy fallback (a row that hasn't been normalised yet).
   if (row?.type) {
     const def = getWidget(row.type);
     return def?.label || prettifyType(row.type);
@@ -76,24 +59,22 @@ const sanitiseSlug = (raw: string) =>
     .replace(/-+/g, "-");
 
 export interface PageNavigatorProps {
-  /** Editable page title shown at the very top. */
   pageTitle: string;
   onPageTitleChange?: (next: string) => void;
 
-  /** Page URL slug. */
   pageSlug: string;
   onPageSlugChange?: (next: string) => void;
 
-  /** When false, the slug field renders as a read-only badge (e.g. the
-   *  main page's "/" route which can't be renamed). */
   slugEditable?: boolean;
-
-  /** Optional URL prefix shown in front of the slug (e.g. "/" for CMS
-   *  pages, "/blog/" for blog posts). */
   slugPrefix?: string;
 
-  /** All rows in the current draft — used to render the section list. */
   pageRows: PageRow[];
+
+  /** Schedule controls rendered natively beneath the URL slug. */
+  schedulePanel?: ReactNode;
+
+  /** Revision history rendered inside the bottom Accordion. */
+  revisionPanel?: ReactNode;
 }
 
 const PageNavigator = ({
@@ -104,11 +85,11 @@ const PageNavigator = ({
   slugEditable = true,
   slugPrefix = "/",
   pageRows,
+  schedulePanel,
+  revisionPanel,
 }: PageNavigatorProps) => {
   const { activeNodePath, setActiveElement } = useBuilder();
 
-  /** Resolve the active row id from the selection path so we can mark
-   *  the corresponding section as active in the navigator. */
   const activeRowId =
     activeNodePath && activeNodePath[0] === "row" ? activeNodePath[1] : null;
 
@@ -122,13 +103,8 @@ const PageNavigator = ({
     [pageRows],
   );
 
-  /** Click-to-jump: select the row AND smoothly scroll the canvas to it.
-   *  The canvas paints each row inside a `<div id={row.scope || slug>`
-   *  so we walk to it via querySelector — this is identical to how the
-   *  CanvasBreadcrumb resolves nodes, so behaviour stays consistent. */
   const goToSection = (rowId: string) => {
     setActiveElement(`row:${rowId}`);
-    // Defer the scroll so the inspector / selection wrappers settle first.
     requestAnimationFrame(() => {
       const el = document.querySelector(`[data-section-row-id="${rowId}"]`);
       if (el && "scrollIntoView" in el) {
@@ -141,13 +117,14 @@ const PageNavigator = ({
   const slugReadOnly = !slugEditable || !onPageSlugChange;
 
   return (
-    <div className="flex flex-col h-full">
-      {/* ── Slot 1+2 ── Page identity card ───────────────────────── */}
+    /* Whole sidebar scrolls as a single column so the new strict
+       hierarchy never clips off-screen on shorter viewports. */
+    <div className="h-full overflow-y-auto overflow-x-hidden flex flex-col">
+      {/* ── 1+2 ── Page identity card ────────────────────────────── */}
       <div
         className="px-4 pt-4 pb-3 border-b space-y-3"
         style={{ borderColor: "hsl(var(--border))" }}
       >
-        {/* Slot 1 — Page Title (US 4.1: stronger label & input contrast) */}
         <div className="space-y-1">
           <label className="admin-section-label block font-body text-[10px]">
             Page Title
@@ -164,7 +141,9 @@ const PageNavigator = ({
               borderColor: "hsl(var(--border))",
             }}
             onFocus={(e) => {
-              if (!titleReadOnly) e.currentTarget.style.borderColor = "hsl(var(--admin-primary, 239 84% 53%))";
+              if (!titleReadOnly)
+                e.currentTarget.style.borderColor =
+                  "hsl(var(--admin-primary, 239 84% 53%))";
             }}
             onBlur={(e) => {
               e.currentTarget.style.borderColor = "hsl(var(--border))";
@@ -172,7 +151,6 @@ const PageNavigator = ({
           />
         </div>
 
-        {/* Slot 2 — Page URL Slug */}
         <div className="space-y-1">
           <label className="admin-section-label block font-body text-[10px]">
             Page URL
@@ -180,7 +158,9 @@ const PageNavigator = ({
           <div
             className="flex items-center gap-1.5 rounded-md px-2 py-1.5 border"
             style={{
-              backgroundColor: slugReadOnly ? "hsl(var(--muted) / 0.6)" : "hsl(0 0% 100%)",
+              backgroundColor: slugReadOnly
+                ? "hsl(var(--muted) / 0.6)"
+                : "hsl(0 0% 100%)",
               borderColor: "hsl(var(--border))",
             }}
           >
@@ -198,9 +178,7 @@ const PageNavigator = ({
               type="text"
               value={pageSlug}
               readOnly={slugReadOnly}
-              onChange={(e) =>
-                onPageSlugChange?.(sanitiseSlug(e.target.value))
-              }
+              onChange={(e) => onPageSlugChange?.(sanitiseSlug(e.target.value))}
               placeholder={slugReadOnly ? "" : "page-slug"}
               className="flex-1 min-w-0 bg-transparent border-0 font-mono text-xs focus:outline-none p-0"
               style={{ color: "hsl(var(--foreground))" }}
@@ -209,16 +187,24 @@ const PageNavigator = ({
         </div>
       </div>
 
-      {/* ── Slot 3 ── Sections of the canvas ───────────────────── */}
+      {/* ── 3 ── Schedule (native, immediately visible) ──────────── */}
+      {schedulePanel ? (
+        <div
+          className="px-4 py-3 border-b"
+          style={{ borderColor: "hsl(var(--border))" }}
+        >
+          <h3 className="admin-section-label font-body text-[10px] mb-2">
+            Schedule
+          </h3>
+          {schedulePanel}
+        </div>
+      ) : null}
+
+      {/* ── 4 ── Sections of the canvas ──────────────────────────── */}
       <div className="px-3 pt-3 pb-2">
-        <h3 className="admin-section-label font-body text-[10px] mb-2">
-          Sections
-        </h3>
+        <h3 className="admin-section-label font-body text-[10px]">Sections</h3>
       </div>
-      <nav
-        className="flex-shrink-0 overflow-y-auto px-2 pb-3 space-y-0.5"
-        style={{ maxHeight: "32%" }}
-      >
+      <nav className="px-2 pb-3 space-y-0.5">
         {sections.length === 0 ? (
           <p
             className="px-3 py-2 font-body text-xs italic"
@@ -250,9 +236,9 @@ const PageNavigator = ({
         )}
       </nav>
 
-      {/* ── Slot 4 ── Elements tray ─────────────────────────────── */}
+      {/* ── 5 ── Elements tray ──────────────────────────────────── */}
       <div
-        className="flex-1 min-h-0 border-t px-3 py-3 overflow-y-auto"
+        className="border-t px-3 py-3"
         style={{ borderColor: "hsl(var(--border))" }}
       >
         <h3 className="admin-section-label font-body text-[10px] mb-3">
@@ -260,6 +246,27 @@ const PageNavigator = ({
         </h3>
         <ElementsTray />
       </div>
+
+      {/* ── 6 ── Revision History (collapsed accordion, very bottom) */}
+      {revisionPanel ? (
+        <div
+          className="mt-auto border-t"
+          style={{ borderColor: "hsl(var(--border))" }}
+        >
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="revisions" className="border-0">
+              <AccordionTrigger className="px-4 py-2.5 hover:no-underline">
+                <span className="admin-section-label font-body text-[10px]">
+                  Revision History
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4">
+                {revisionPanel}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      ) : null}
     </div>
   );
 };
