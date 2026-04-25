@@ -402,21 +402,26 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
 
               const rightPane = (
                 <aside
-                  className="h-full flex flex-col"
+                  className="h-full flex flex-col min-w-0"
                   style={{ backgroundColor: "hsl(var(--card))" }}
                 >
                   <div
                     className="px-4 py-3 border-b"
                     style={{ borderColor: "hsl(var(--border) / 0.5)" }}
                   >
+                    {/* US 3.1 — "Inspector" → "Element Settings" (user-facing). */}
                     <h3
                       className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
                       style={{ color: "hsl(var(--muted-foreground))" }}
                     >
-                      Inspector
+                      Element Settings
                     </h3>
                   </div>
-                  <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                  {/* US 3.1 — strict scroll container. overflow-x-hidden +
+                      min-w-0 keeps long inputs from blowing out the panel,
+                      and gap-4 between sections (Content / Design /
+                      Scheduling) prevents visual collisions. */}
+                  <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 p-4 flex flex-col gap-4">
                     <InspectorPanel
                       seoMetaTitle={props.seoMetaTitle}
                       seoMetaDescription={props.seoMetaDescription}
