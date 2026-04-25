@@ -265,8 +265,18 @@ const AdminDashboard = ({ session }: Props) => {
   // EPIC 3 / US 3.1 — admins land on the overview dashboard, not the
   // raw site editor. The previous behaviour ("site" by default) made it
   // far too easy to fat-finger a layout the moment you logged in.
+  // EPIC 3 / US 3.3 — the Site Editor is now URL-addressable:
+  //   /admin/builder            → main page
+  //   /admin/builder/:pageId    → CMS page by id
+  // The :pageId is the source of truth; <cmsPage> state is hydrated
+  // from the URL by the effect below.
   const location = useLocation();
-  const initialTab: Tab = location.pathname.startsWith("/admin/site") ? "site" : "overview";
+  const navigate = useNavigate();
+  const { pageId: routePageId } = useParams<{ pageId?: string }>();
+  const isBuilderRoute =
+    location.pathname.startsWith("/admin/site") ||
+    location.pathname.startsWith("/admin/builder");
+  const initialTab: Tab = isBuilderRoute ? "site" : "overview";
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   // Set when the overview dashboard's "Create New Page" CTA is clicked.
   // Hands off to PagesManager which auto-opens its inline create form.
