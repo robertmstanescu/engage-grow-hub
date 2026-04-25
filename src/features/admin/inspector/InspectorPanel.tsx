@@ -10,6 +10,9 @@ import CellSettingsEditor from "./CellSettingsEditor";
 import { type BoxField } from "./BoxModelControl";
 import WidgetInspectorTabs, { pickTabForFocusKey, type InspectorTab } from "./WidgetInspectorTabs";
 import { DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/types/rows";
+// US 3.2 — provide the live cell/row bg colour to nested field components
+// so Title/Subtitle/Body inputs adopt the same surface as the canvas.
+import { SurfaceBgProvider } from "./SurfaceBgContext";
 // Debug Story 1.1 — sibling-safe widget lookup/patch helpers. The
 // inspector cannot just `pageRows.find(r => r.id === widgetId)` because
 // v2/v3 rows host MANY widgets per row; that lookup either misses the
