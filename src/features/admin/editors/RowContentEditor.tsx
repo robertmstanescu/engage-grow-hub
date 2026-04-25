@@ -114,6 +114,37 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
         value={!!content.show_subscribe}
         onChange={(v) => onContentChange("show_subscribe", v)}
       />
+      {/* ── Advanced · Custom CSS (Epic 2 — US 2.2) ────────────────
+       *  Row-level scoped CSS. The `&` token is rewritten to
+       *  `#row-<row.id>` by `RowSection`, so rules cannot leak to
+       *  other rows. We render this collapsed by default to keep
+       *  the form light for non-technical editors. */}
+      <Accordion type="multiple" className="space-y-2">
+        <AccordionItem value="row-advanced" className="border-none">
+          <AccordionTrigger className={TRIGGER_CLASS}>Advanced · Custom CSS</AccordionTrigger>
+          <AccordionContent className={CONTENT_CLASS}>
+            <textarea
+              value={row.customCss || ""}
+              onChange={(e) => onRowMetaChange({ customCss: e.target.value } as any)}
+              spellCheck={false}
+              rows={8}
+              placeholder={"& { border: 10px solid pink !important; }\n& h1 { font-size: 50px; }"}
+              className="w-full px-3 py-2 rounded-md font-mono text-xs leading-relaxed border resize-y"
+              style={{
+                backgroundColor: "#0f172a",
+                color: "#e2e8f0",
+                borderColor: "hsl(var(--border))",
+                tabSize: 2,
+              }}
+            />
+            <p className="font-body text-[10px] text-muted-foreground mt-1.5 leading-relaxed">
+              Use <code className="font-mono">&amp;</code> to target this specific row.
+              Example: <code className="font-mono">&amp; {`{ background: red; }`}</code>{" "}
+              <code className="font-mono">&amp; h1 {`{ font-size: 50px; }`}</code>
+            </p>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 
