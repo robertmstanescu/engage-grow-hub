@@ -167,20 +167,139 @@ const BuilderContext = createContext<BuilderContextValue>(DISABLED);
 /**
  * Provider — mount once around the admin canvas. Anything outside this
  * provider gets the DISABLED stub and behaves like the public site.
+ *
+ * EPIC 1 / US 1.4 — Direct Canvas Editing:
+ *   The provider can optionally receive `pageRows` + `onRowsChange`.
+ *   When supplied, `commitTextAtPath` will walk the path and write the
+ *   new value back into the rows tree. We hold these in refs so the
+ *   commit callback stays stable across renders (preventing
+ *   contentEditable from re-mounting and losing caret position).
  */
-export const BuilderProvider = ({ children }: { children: ReactNode }) => {
+interface BuilderProviderProps {
+  children: ReactNode;
+  pageRows?: PageRow[];
+  onRowsChange?: (rows: PageRow[]) => void;
+}
+
+/**
+ * Resolve the leaf field at the end of a NodePath inside the rows tree
+ * and write `value` to it. Returns true when the path was understood.
+ *
+ * Supported path shapes (covers the v3 schema atoms used by TextRow,
+ * ServiceRow, HeroRow, etc.):
+ *
+ *   ["row", rowId, "widget", rowId, "col", colIndex, "<field>"]
+ *      → row.content[<field>] (col 0) or row.columns_data[col-1][<field>] (col >0)
+ *
+ *   ["row", rowId, "widget", rowId, "item", itemId, "<field>"]
+ *      → finds the item by id inside row.content.{services|items|features|...}
+ *
+ *   ["row", rowId, "widget", rowId, "<field>"]
+ *      → row.content[<field>]
+ *
+ * Special handling: a `title` leaf maps to `title_lines` (string[]) by
+ * splitting the incoming text on newlines. This keeps multi-line titles
+ * round-trippable.
+ */
+const writeRowsAtPath = (
+  rows: PageRow[],
+  path: NodePath,
+  value: string,
+): { rows: PageRow[]; ok: boolean } => {
+  if (path.length < 3 || path[0] !== "row") return { rows, ok: false };
+  const rowId = path[1];
+  const rowIdx = rows.findIndex((r) => r.id === rowId);
+  if (rowIdx === -1) return { rows, ok: false };
+
+  // Strip leading ["row", rowId] then optional ["widget", rowId].
+  let rest = path.slice(2);
+  if (rest[0] === "widget" && rest[1] === rowId) rest = rest.slice(2);
+  if (rest.length === 0) return { rows, ok: false };
+
+  const row = rows[rowIdx];
+  const setLeafOnObject = (obj: Record<string, any>, leaf: string, v: string) => {
+    if (leaf === "title") {
+      const lines = v.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+      return { ...obj, title_lines: lines.length > 0 ? lines : [v] };
+    }
+    return { ...obj, [leaf]: v };
+  };
+
+  // Column path: ["col", colIndex, leaf]
+  if (rest[0] === "col" && rest.length >= 3) {
+    const colIndex = Number(rest[1]);
+    const leaf = rest[rest.length - 1];
+    if (Number.isNaN(colIndex)) return { rows, ok: false };
+    if (colIndex === 0) {
+      const nextContent = setLeafOnObject(row.content || {}, leaf, value);
+      const nextRows = rows.slice();
+      nextRows[rowIdx] = { ...row, content: nextContent };
+      return { rows: nextRows, ok: true };
+    }
+    const cdIdx = colIndex - 1;
+    const cd = (row.columns_data || []).slice();
+    cd[cdIdx] = setLeafOnObject(cd[cdIdx] || {}, leaf, value);
+    const nextRows = rows.slice();
+    nextRows[rowIdx] = { ...row, columns_data: cd };
+    return { rows: nextRows, ok: true };
+  }
+
+  // Item path: ["item", itemId, leaf]
+  if (rest[0] === "item" && rest.length >= 3) {
+    const itemId = rest[1];
+    const leaf = rest[rest.length - 1];
+    const content = { ...(row.content || {}) } as Record<string, any>;
+    let mutated = false;
+    for (const collectionKey of ["services", "items", "features", "pillars", "cards", "logos"]) {
+      const list = content[collectionKey];
+      if (Array.isArray(list)) {
+        const idx = list.findIndex((it: any) => it && it.id === itemId);
+        if (idx !== -1) {
+          const nextList = list.slice();
+          nextList[idx] = setLeafOnObject(list[idx] || {}, leaf, value);
+          content[collectionKey] = nextList;
+          mutated = true;
+          break;
+        }
+      }
+    }
+    if (!mutated) return { rows, ok: false };
+    const nextRows = rows.slice();
+    nextRows[rowIdx] = { ...row, content };
+    return { rows: nextRows, ok: true };
+  }
+
+  // Bare ["<field>"] on the row content.
+  if (rest.length === 1) {
+    const leaf = rest[0];
+    const nextContent = setLeafOnObject(row.content || {}, leaf, value);
+    const nextRows = rows.slice();
+    nextRows[rowIdx] = { ...row, content: nextContent };
+    return { rows: nextRows, ok: true };
+  }
+
+  return { rows, ok: false };
+};
+
+export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderProviderProps) => {
   const [activeNodePath, setActiveNodePathState] = useState<NodePath | null>(null);
   const [editingPath, setEditingPathState] = useState<NodePath | null>(null);
 
+  // Hold the rows + setter in refs so commitTextAtPath stays referentially
+  // stable. contentEditable is fragile w.r.t. parent re-renders (caret
+  // jumping); a stable callback minimizes that.
+  const rowsRef = useRef<PageRow[] | undefined>(pageRows);
+  rowsRef.current = pageRows;
+  const onRowsChangeRef = useRef<typeof onRowsChange>(onRowsChange);
+  onRowsChangeRef.current = onRowsChange;
+
   const setActiveNodePath = useCallback((path: NodePath | null) => {
     setActiveNodePathState(path);
-    // Selecting a different node always exits inline edit mode.
     setEditingPathState((prev) => (prev && pathsEqual(prev, path) ? prev : null));
   }, []);
 
   const setEditingPath = useCallback((path: NodePath | null) => {
     setEditingPathState(path);
-    // Entering edit also makes the path the active selection.
     if (path) setActiveNodePathState(path);
   }, []);
 
@@ -203,6 +322,18 @@ export const BuilderProvider = ({ children }: { children: ReactNode }) => {
     [editingPath],
   );
 
+  const commitTextAtPath = useCallback(
+    (path: NodePath, value: string): boolean => {
+      const rows = rowsRef.current;
+      const setter = onRowsChangeRef.current;
+      if (!rows || !setter) return false;
+      const { rows: next, ok } = writeRowsAtPath(rows, path, value);
+      if (ok) setter(next);
+      return ok;
+    },
+    [],
+  );
+
   const value = useMemo<BuilderContextValue>(
     () => ({
       enabled: true,
@@ -214,6 +345,7 @@ export const BuilderProvider = ({ children }: { children: ReactNode }) => {
       isPathEditing,
       activeElement: pathToLegacyId(activeNodePath),
       setActiveElement,
+      commitTextAtPath,
     }),
     [
       activeNodePath,
@@ -223,6 +355,7 @@ export const BuilderProvider = ({ children }: { children: ReactNode }) => {
       isPathActive,
       isPathEditing,
       setActiveElement,
+      commitTextAtPath,
     ],
   );
 
