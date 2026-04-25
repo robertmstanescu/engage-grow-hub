@@ -630,19 +630,6 @@ const SiteEditor = () => {
                   pageRows={pageRows}
                   onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
                 />
-                <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                  <SiteSectionSchedulePanel sectionKey={activeSection} />
-                </div>
-                <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                  <RevisionHistoryPanel
-                    entityType="site_content"
-                    entityRef={activeSection}
-                    onRestored={() => {
-                      invalidateSiteContent(activeSection);
-                      reloadSections();
-                    }}
-                  />
-                </div>
               </div>
             </aside>
           );
