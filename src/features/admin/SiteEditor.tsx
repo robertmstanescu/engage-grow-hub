@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Save, Eye, Send, FileText, Layout, Image as ImageIcon, Search, MousePointer2 } from "lucide-react";
+import { Layout, Image as ImageIcon, Search, MousePointer2 } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
@@ -12,6 +12,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuilderToolbar";
 
 interface SectionData {
   section_key: string;
