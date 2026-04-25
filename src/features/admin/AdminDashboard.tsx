@@ -118,6 +118,7 @@ import VersionHistory from "./VersionHistory";
 // the MAIN PAGE site content. CMS-page editing still uses the legacy
 // path until the new builder learns to load arbitrary page rows.
 import SiteEditor from "./SiteEditor";
+import CmsPageBuilder from "./builder/CmsPageBuilder";
 
 type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team" | "seo_master" | "versions";
 type PropertiesSubTab = "content" | "style" | "seo";
@@ -833,12 +834,12 @@ const AdminDashboard = ({ session }: Props) => {
 
   const isSiteTab = activeTab === "site";
   const isMainPage = !cmsPage;
-  // EPIC 14–17 — when the admin is on the Site tab AND editing the main
-  // page, mount the new <SiteEditor /> builder shell. The new builder owns
-  // its own toolbar/save/publish/structure UI, so we collapse the legacy
-  // rail and hide the legacy topbar buttons in this mode. CMS pages keep
-  // the legacy path until SiteEditor learns to load arbitrary pages.
-  const useNewBuilder = isSiteTab && isMainPage;
+  // EPIC 14–17 + US 17.x — when the admin is on the Site tab, mount the
+  // new visual builder for BOTH the main page (SiteEditor) AND CMS pages
+  // (CmsPageBuilder). The new builder owns its own toolbar/save/publish/
+  // structure UI, so we collapse the legacy rail and hide the legacy
+  // topbar buttons in this mode.
+  const useNewBuilder = isSiteTab; // covers both main page and CMS page
   const pageLabel = cmsPage ? cmsPage.title : "Main Page";
   const tabLabel = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.key === activeTab)?.label || "";
 
@@ -1319,10 +1320,10 @@ const AdminDashboard = ({ session }: Props) => {
           ].join(" ")}
         >
           {useNewBuilder ? (
-            // EPIC 14–17 — new three-pane builder shell. Fully self-
-            // contained (own toolbar, own structure rail, own inspector).
+            // EPIC 14–17 + US 17.x — new three-pane builder shell for
+            // both the main page (SiteEditor) and CMS pages (CmsPageBuilder).
             <div className="flex-1 overflow-hidden">
-              <SiteEditor />
+              {cmsPage ? <CmsPageBuilder pageId={cmsPage.id} /> : <SiteEditor />}
             </div>
           ) : isSiteTab ? (
             <div className="flex-1 bg-card overflow-hidden flex flex-col">
