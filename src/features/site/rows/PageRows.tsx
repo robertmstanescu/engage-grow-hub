@@ -222,7 +222,7 @@ const RowRenderer = ({
   });
 
   return (
-    <div id={id} style={{ scrollMarginTop: "4rem", isolation: "isolate" }}>
+    <div id={id} data-section-row-id={row.id} style={{ scrollMarginTop: "4rem", isolation: "isolate" }}>
       <SelectableWrapper path={["row", row.id]} label="Row" variant="row">
         <div
           className="grid gap-8"
