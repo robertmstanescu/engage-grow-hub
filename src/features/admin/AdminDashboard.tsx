@@ -276,7 +276,16 @@ const AdminDashboard = ({ session }: Props) => {
   const isBuilderRoute =
     location.pathname.startsWith("/admin/site") ||
     location.pathname.startsWith("/admin/builder");
-  const initialTab: Tab = isBuilderRoute ? "site" : "overview";
+  // US 3.5 — the locked Header/Footer overlays in the canvas link
+  // here with `?tab=navigation` or `?tab=settings` so they can deep-
+  // link into the Global Elements editor without bypassing this shell.
+  const queryTab = (() => {
+    const t = new URLSearchParams(location.search).get("tab");
+    if (!t) return null;
+    const allowed: Tab[] = ["overview","site","pages","navigation","blog","contacts","emails","media","brand","tags","settings","team","seo_master","versions"];
+    return (allowed as string[]).includes(t) ? (t as Tab) : null;
+  })();
+  const initialTab: Tab = queryTab ?? (isBuilderRoute ? "site" : "overview");
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   // Set when the overview dashboard's "Create New Page" CTA is clicked.
   // Hands off to PagesManager which auto-opens its inline create form.
