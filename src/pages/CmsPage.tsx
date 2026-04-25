@@ -77,7 +77,7 @@ const CmsPage = () => {
 
 const CmsPageBody = ({ rows, isPreview }: { rows: PageRow[]; isPreview: boolean }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  useThresholdSnap(containerRef);
+  useMomentumSnap(containerRef);
   return (
     <div ref={containerRef} className="snap-container lg:pl-16">
       <Navbar />
