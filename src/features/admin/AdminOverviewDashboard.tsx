@@ -179,8 +179,7 @@ const AdminOverviewDashboard = ({ onNavigate, onCreatePage }: Props) => {
         <button
           type="button"
           onClick={onCreatePage}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full font-display text-[11px] uppercase tracking-[0.12em] font-bold hover:opacity-90 transition shadow-lg"
-          style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--secondary-foreground))" }}
+          className="text-black"
         >
           <Plus size={14} />
           Create New Page
