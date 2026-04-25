@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 import { SectionBox, Field, RichField, ColorField } from "./FieldComponents";
+import { DeferredTextarea } from "./DeferredInput";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
 
@@ -79,11 +80,11 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
         <div className="space-y-2">
           {achievements.map((text, i) => (
             <div key={i} className="flex items-start gap-2">
-              <textarea
+              <DeferredTextarea
                 className="flex-1 px-3 py-2 rounded-lg font-body text-sm border resize-none text-black"
                 rows={2}
                 value={text}
-                onChange={(e) => updateAchievement(i, e.target.value)}
+                onChange={(v) => updateAchievement(i, v)}
                 placeholder="Achievement text"
                 style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF" }}
               />

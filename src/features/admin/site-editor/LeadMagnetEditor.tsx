@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchAllAssets, type MediaAsset, isImageMime } from "@/services/mediaLibrary";
+import { DeferredInput, DeferredTextarea } from "./DeferredInput";
 
 interface Props {
   content: Record<string, any>;
@@ -85,11 +86,11 @@ const LeadMagnetEditor = ({ content, onChange }: Props) => {
         <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">
           Heading override
         </label>
-        <input
+        <DeferredInput
           className={inputClass}
           style={inputStyle}
           value={content.title || ""}
-          onChange={(e) => update({ title: e.target.value })}
+          onChange={(v) => update({ title: v })}
           placeholder="Defaults to asset title"
         />
       </div>
@@ -98,12 +99,12 @@ const LeadMagnetEditor = ({ content, onChange }: Props) => {
         <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">
           Description override
         </label>
-        <textarea
+        <DeferredTextarea
           className={inputClass}
           style={inputStyle}
           rows={2}
           value={content.description || ""}
-          onChange={(e) => update({ description: e.target.value })}
+          onChange={(v) => update({ description: v })}
           placeholder="Defaults to asset description"
         />
       </div>

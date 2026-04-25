@@ -1,4 +1,5 @@
 import { Plus, Trash2, GripVertical } from "lucide-react";
+import { DeferredInput } from "./DeferredInput";
 
 interface NavLink {
   label: string;
@@ -59,10 +60,10 @@ const NavbarEditor = ({ content, onChange }: Props) => {
         <label className="font-body text-xs uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>
           Services Dropdown Label
         </label>
-        <input
+        <DeferredInput
           type="text"
           value={content.services_label || "Services"}
-          onChange={(e) => onChange("services_label", e.target.value)}
+          onChange={(v) => onChange("services_label", v)}
           className="w-full px-3 py-2 rounded-md font-body text-sm border"
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
         />
@@ -76,19 +77,19 @@ const NavbarEditor = ({ content, onChange }: Props) => {
         {subLinks.map((link, i) => (
           <div key={i} className="flex items-center gap-2">
             <GripVertical size={14} className="text-muted-foreground flex-shrink-0" />
-            <input
+            <DeferredInput
               type="text"
               placeholder="Label"
               value={link.label}
-              onChange={(e) => updateSubLink(i, "label", e.target.value)}
+              onChange={(v) => updateSubLink(i, "label", v)}
               className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
               style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
             />
-            <input
+            <DeferredInput
               type="text"
               placeholder="Link (e.g. #section-id)"
               value={link.href}
-              onChange={(e) => updateSubLink(i, "href", e.target.value)}
+              onChange={(v) => updateSubLink(i, "href", v)}
               className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
               style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
             />
@@ -110,19 +111,19 @@ const NavbarEditor = ({ content, onChange }: Props) => {
         {links.map((link, i) => (
           <div key={i} className="flex items-center gap-2">
             <GripVertical size={14} className="text-muted-foreground flex-shrink-0" />
-            <input
+            <DeferredInput
               type="text"
               placeholder="Label"
               value={link.label}
-              onChange={(e) => updateLink(i, "label", e.target.value)}
+              onChange={(v) => updateLink(i, "label", v)}
               className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
               style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
             />
-            <input
+            <DeferredInput
               type="text"
               placeholder="Link (e.g. #vows or /page)"
               value={link.href}
-              onChange={(e) => updateLink(i, "href", e.target.value)}
+              onChange={(v) => updateLink(i, "href", v)}
               className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
               style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
             />
@@ -155,19 +156,19 @@ const NavbarEditor = ({ content, onChange }: Props) => {
           Call-to-Action Button
         </label>
         <div className="flex gap-2">
-          <input
+          <DeferredInput
             type="text"
             placeholder="Button text"
             value={content.cta_text || ""}
-            onChange={(e) => onChange("cta_text", e.target.value)}
+            onChange={(v) => onChange("cta_text", v)}
             className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
             style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
           />
-          <input
+          <DeferredInput
             type="text"
             placeholder="Link (e.g. #contact)"
             value={content.cta_href || ""}
-            onChange={(e) => onChange("cta_href", e.target.value)}
+            onChange={(v) => onChange("cta_href", v)}
             className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
             style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
           />
