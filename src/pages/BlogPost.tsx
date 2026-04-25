@@ -139,10 +139,21 @@ const BlogPost = () => {
         </header>
 
         <div className="section-light py-16 px-8">
-          <div
-            className="max-w-[700px] mx-auto prose prose-sm md:prose-base prose-headings:font-display prose-headings:text-[hsl(260_20%_10%)] prose-p:text-[hsl(260_20%_10%_/_0.75)] prose-p:leading-[1.8] prose-a:text-[hsl(280_55%_24%)] prose-img:rounded-lg"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }} />
-
+          {(() => {
+            // Prefer widget rows when the post has been (re-)composed in
+            // the new builder. Fall back to legacy HTML for posts that
+            // haven't been migrated.
+            const rows = (isPreview && article.draft_page_rows) || article.page_rows || [];
+            if (rows.length > 0) {
+              return <RowsRenderer rows={rows as PageRow[]} />;
+            }
+            return (
+              <div
+                className="max-w-[700px] mx-auto prose prose-sm md:prose-base prose-headings:font-display prose-headings:text-[hsl(260_20%_10%)] prose-p:text-[hsl(260_20%_10%_/_0.75)] prose-p:leading-[1.8] prose-a:text-[hsl(280_55%_24%)] prose-img:rounded-lg"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
+              />
+            );
+          })()}
           {article.lead_magnet_asset_id && (
             <div className="max-w-[900px] mx-auto mt-12">
               <ResourceWidget
