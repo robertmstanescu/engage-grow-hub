@@ -2,6 +2,7 @@ import { useState, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getAttributionForPayload } from "@/services/attribution";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 type SubscribeWidgetAlignment = "left" | "center" | "right";
@@ -65,6 +66,8 @@ const SubscribeWidget = forwardRef<HTMLDivElement, SubscribeWidgetProps>(
             company: null,
             message: null,
             subscribed_to_marketing: true,
+            // Epic 4 / US 4.1 — first-touch marketing attribution.
+            attribution: getAttributionForPayload(),
           },
         });
         if (error) throw error;
