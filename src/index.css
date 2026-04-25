@@ -560,6 +560,9 @@
 
   /* ── Side nav ── */
   .side-nav-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
     letter-spacing: 0.15em;
     font-size: 14px;
     text-transform: uppercase;
