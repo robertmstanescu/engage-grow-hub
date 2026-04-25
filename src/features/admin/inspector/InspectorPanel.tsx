@@ -308,16 +308,15 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     );
   }
 
-  /* ─── State 3 — Widget selected → widget admin editor ─────────── */
+  /* ─── State 3 — Widget selected → tabbed widget inspector (US 2.5) */
   if (kind === "widget") {
-    /* US 2.3 — Box Model spacing controls live at the TOP of every
-     * widget inspector so designers can adjust margin/padding without
-     * hunting for it inside per-widget admin UIs. The values are stored
-     * under the reserved `__design` key on the widget content blob and
-     * applied uniformly by `WidgetWrapper`. */
+    /* Design settings live under the reserved `__design` key on the
+     * widget content blob and are applied uniformly by `WidgetWrapper`.
+     * We expose a single helper to PATCH any subset of the design and
+     * write the merged result back through `onRowsChange`. */
     const design = readDesignSettings(row.content);
-    const updateDesignField = (field: BoxField, value: number) => {
-      const nextDesign = { ...DEFAULT_DESIGN_SETTINGS, ...design, [field]: value };
+    const writeDesign = (patch: Partial<typeof design>) => {
+      const nextDesign = { ...DEFAULT_DESIGN_SETTINGS, ...design, ...patch };
       onRowsChange(
         pageRows.map((r) =>
           r.id === rowId
@@ -326,76 +325,71 @@ const InspectorPanel = (props: InspectorPanelProps) => {
         ),
       );
     };
+    const updateDesignField = (field: BoxField, value: number) =>
+      writeDesign({ [field]: value } as Partial<typeof design>);
 
-    const boxModelSection = (
-      <Section title="Spacing (Box Model)">
-        <BoxModelControl
-          marginTop={design.marginTop}
-          marginRight={design.marginRight}
-          marginBottom={design.marginBottom}
-          marginLeft={design.marginLeft}
-          paddingTop={design.paddingTop}
-          paddingRight={design.paddingRight}
-          paddingBottom={design.paddingBottom}
-          paddingLeft={design.paddingLeft}
-          onChange={updateDesignField}
-        />
-      </Section>
-    );
-
-    // First try the WidgetRegistry (US 16.1 dev note: "this is where
-    // the WidgetRegistry shines"). If the widget self-registered an
-    // adminComponent, render it directly.
+    /* Resolve the per-widget admin editor — registry first, then a
+     * legacy switch for widgets that haven't been ported yet. The
+     * resulting node renders inside the Content tab. */
     const def = getWidget(row.type);
-    if (def?.adminComponent) {
-      const Admin = def.adminComponent;
-      return (
-        <>
-          {boxModelSection}
-          <Section title={def.label || row.type}>
-            <Admin content={row.content} onChange={updateRowContent} />
-          </Section>
-        </>
-      );
-    }
+    const contentEditor = def?.adminComponent
+      ? (() => {
+          const Admin = def.adminComponent!;
+          return <Admin content={row.content} onChange={updateRowContent} />;
+        })()
+      : (() => {
+          switch (row.type) {
+            case "hero":
+              return <HeroRowFields content={row.content} onChange={updateRowContent} />;
+            case "service":
+              return (
+                <PillarEditor
+                  pillarContent={row.content}
+                  servicesContent={{ services: row.content.services || [] }}
+                  onPillarChange={updateRowContent}
+                  onServicesChange={(svcs) => updateRowContent("services", svcs)}
+                />
+              );
+            case "contact":
+              return <ContactAdmin content={row.content} onChange={updateRowContent} />;
+            case "image_text":
+              return <ImageTextEditor content={row.content} onChange={updateRowContent} />;
+            case "profile":
+              return <ProfileEditor content={row.content} onChange={updateRowContent} />;
+            case "grid":
+              return <GridEditor content={row.content} onChange={updateRowContent} />;
+            default:
+              return (
+                <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  No inspector editor available for widget type "{row.type}". Edit it from the row's form view instead.
+                </p>
+              );
+          }
+        })();
 
-    // Legacy fallback — a switch over the row type for widgets that
-    // haven't been ported to the registry's `adminComponent` slot yet.
-    // Same dispatch as `RowsManager.renderRowEditorForContent`.
-    const legacyEditor = (() => {
-      switch (row.type) {
-        case "hero":
-          return <HeroRowFields content={row.content} onChange={updateRowContent} />;
-        case "service":
-          return (
-            <PillarEditor
-              pillarContent={row.content}
-              servicesContent={{ services: row.content.services || [] }}
-              onPillarChange={updateRowContent}
-              onServicesChange={(svcs) => updateRowContent("services", svcs)}
-            />
-          );
-        case "contact":
-          return <ContactAdmin content={row.content} onChange={updateRowContent} />;
-        case "image_text":
-          return <ImageTextEditor content={row.content} onChange={updateRowContent} />;
-        case "profile":
-          return <ProfileEditor content={row.content} onChange={updateRowContent} />;
-        case "grid":
-          return <GridEditor content={row.content} onChange={updateRowContent} />;
-        default:
-          return (
-            <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-              No inspector editor available for widget type "{row.type}". Edit it from the row's form view instead.
-            </p>
-          );
-      }
-    })();
+    const widgetLabel = def?.label || row.type;
 
     return (
       <>
-        {boxModelSection}
-        <Section title={`Widget · ${row.type}`}>{legacyEditor}</Section>
+        <div className="mb-4">
+          <h3
+            className="font-body text-[11px] uppercase tracking-[0.18em] font-semibold"
+            style={{ color: "hsl(var(--foreground))" }}
+          >
+            Widget · {widgetLabel}
+          </h3>
+        </div>
+        <WidgetInspectorTabs
+          activeTab={widgetTab}
+          onTabChange={setWidgetTab}
+          contentEditor={contentEditor}
+          design={design}
+          onDesignFieldChange={updateDesignField}
+          onDesignBgChange={(color) => writeDesign({ bgColor: color })}
+          onDesignRadiusChange={(px) => writeDesign({ borderRadius: px })}
+          onVisibilityChange={(visibility) => writeDesign({ visibility })}
+          onCustomCssChange={(customCss) => writeDesign({ customCss })}
+        />
       </>
     );
   }
