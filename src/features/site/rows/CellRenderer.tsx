@@ -25,6 +25,7 @@
  */
 
 import type { ReactNode } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import {
   type PageCell,
   type PageColumn,
@@ -34,6 +35,7 @@ import {
 } from "@/types/rows";
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
+import { buildDropZoneId } from "@/features/admin/builder/CanvasDropZone";
 
 /* ─── style helpers ──────────────────────────────────────────────── */
 
@@ -146,7 +148,7 @@ const CellRenderer = ({ rowId, column, cell, renderWidgets }: CellRendererProps)
   // collapse to a zero-height div so the column grid stays intact.
   const inner = isEmpty ? (
     builderEnabled ? (
-      <EmptyCellPlaceholder />
+      <EmptyCellPlaceholder rowId={rowId} colId={column.id} cellId={cell.id} />
     ) : null
   ) : (
     renderWidgets(cell, widgetBasePath)
@@ -175,34 +177,63 @@ const CellRenderer = ({ rowId, column, cell, renderWidgets }: CellRendererProps)
 
 /**
  * The "+" affordance shown for cells with no widgets. Builder-only.
- * The actual widget-picker UI is wired up by the builder shell which
- * listens for clicks on `[data-cell-add-target]` (so this file stays
- * decoupled from any specific dnd / tray implementation).
+ *
+ * Two affordances in one component:
+ *   1. CLICK   → bubbles to the surrounding SelectableWrapper which
+ *                sets the activeNodePath to this cell, so the inspector
+ *                opens "Cell Settings" and the editor sees the controls.
+ *   2. DROP    → registers a dnd-kit droppable so a widget dragged from
+ *                the ElementsTray lands directly inside the cell. The
+ *                drop is parsed in `BuilderDndShell` via `parseDropZoneId`.
+ *
+ * `data-cell-add-target` is preserved as a hook for any future
+ * widget-picker pop-over (e.g. click-to-pick instead of drag).
  */
-const EmptyCellPlaceholder = () => (
-  <div
-    data-cell-add-target="true"
-    className="flex items-center justify-center w-full"
-    style={{
-      minHeight: 96,
-      border: "1px dashed hsl(var(--border))",
-      borderRadius: 6,
-      color: "hsl(var(--muted-foreground))",
-      fontSize: 12,
-      cursor: "copy",
-      transition: "background-color 120ms ease, border-color 120ms ease",
-    }}
-  >
-    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full"
-      style={{ backgroundColor: "hsl(var(--muted) / 0.6)" }}>
-      <span style={{
-        display: "inline-block", width: 16, height: 16, borderRadius: 999,
-        backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))",
-        textAlign: "center", lineHeight: "16px", fontWeight: 700,
-      }}>+</span>
-      <span className="font-body text-[11px] uppercase tracking-wider">Add widget</span>
-    </span>
-  </div>
-);
+interface EmptyCellPlaceholderProps {
+  rowId: string;
+  colId: string;
+  cellId: string;
+}
+
+const EmptyCellPlaceholder = ({ rowId, colId, cellId }: EmptyCellPlaceholderProps) => {
+  const dropId = buildDropZoneId({ kind: "cell", rowId, colId, cellId });
+  const { setNodeRef, isOver, active } = useDroppable({ id: dropId });
+  const dragging = !!active;
+
+  return (
+    <div
+      ref={setNodeRef}
+      data-cell-add-target="true"
+      data-canvas-drop-zone={dropId}
+      className="flex items-center justify-center w-full"
+      style={{
+        minHeight: 96,
+        border: isOver
+          ? "2px solid hsl(var(--accent))"
+          : dragging
+            ? "1px dashed hsl(var(--accent) / 0.6)"
+            : "1px dashed hsl(var(--border))",
+        backgroundColor: isOver ? "hsl(var(--accent) / 0.12)" : "transparent",
+        borderRadius: 6,
+        color: "hsl(var(--muted-foreground))",
+        fontSize: 12,
+        cursor: dragging ? "copy" : "pointer",
+        transition: "background-color 120ms ease, border-color 120ms ease",
+      }}
+    >
+      <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full"
+        style={{ backgroundColor: "hsl(var(--muted) / 0.6)" }}>
+        <span style={{
+          display: "inline-block", width: 16, height: 16, borderRadius: 999,
+          backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))",
+          textAlign: "center", lineHeight: "16px", fontWeight: 700,
+        }}>+</span>
+        <span className="font-body text-[11px] uppercase tracking-wider">
+          {isOver ? "Drop to add" : "Add widget"}
+        </span>
+      </span>
+    </div>
+  );
+};
 
 export default CellRenderer;

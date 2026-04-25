@@ -104,6 +104,39 @@ const BuilderDndShell = ({
     const def = getWidget(data.type);
     if (!def) return;
 
+    // ── Cell-drop branch (US 1.2) ────────────────────────────────
+    // Drop landed inside an empty cell on a v3 row. We push a new
+    // PageWidget into that cell instead of creating a new row.
+    if (drop.kind === "cell") {
+      const newWidgetId = generateRowId();
+      const next = pageRows.map((r: any) => {
+        if (r.id !== drop.rowId || !Array.isArray(r.columns)) return r;
+        return {
+          ...r,
+          columns: r.columns.map((col: any) => {
+            if (col.id !== drop.colId) return col;
+            return {
+              ...col,
+              cells: (col.cells || []).map((cc: any) => {
+                if (cc.id !== drop.cellId) return cc;
+                return {
+                  ...cc,
+                  widgets: [
+                    ...(cc.widgets || []),
+                    { id: newWidgetId, type: data.type, data: { ...(def.defaultData as Record<string, any>) } },
+                  ],
+                };
+              }),
+            };
+          }),
+        };
+      });
+      onRowsChange(next);
+      // Select the new widget so the inspector opens its editor.
+      setActiveElement(`widget:${newWidgetId}`);
+      return;
+    }
+
     const newRow: PageRow = {
       id: generateRowId(),
       type: data.type as PageRow["type"],
