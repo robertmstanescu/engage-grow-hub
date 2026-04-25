@@ -424,6 +424,23 @@ const SiteEditor = () => {
                 );
               })}
             </nav>
+
+            {/* US 17.1 — Elements Tray. Sits under the Navigator in the
+                same scroll container so editors can drag any registered
+                widget directly onto the canvas. Drop handling lives in
+                the parent <DndContext> (see handleDragEnd). */}
+            <div
+              className="border-t px-3 py-3 overflow-y-auto"
+              style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+            >
+              <h3
+                className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
+                style={{ color: "hsl(var(--muted-foreground))" }}
+              >
+                Elements
+              </h3>
+              <ElementsTray />
+            </div>
           </aside>
         </ResizablePanel>
 
