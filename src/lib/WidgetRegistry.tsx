@@ -124,6 +124,16 @@ export const registerWidget = <TData = Record<string, any>>(
     console.error("[WidgetRegistry] registerWidget called without a type", def);
     return;
   }
+  // US 1.1/1.2 — coerce a missing `defaultData` to `{}` so downstream
+  // spread-merge code never produces an undefined-data widget. We log a
+  // dev warning so the author notices, but never crash the registry.
+  if (def.defaultData == null) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[WidgetRegistry] Widget "${def.type}" registered without defaultData; coercing to {}.`,
+    );
+    def = { ...def, defaultData: {} as TData };
+  }
   widgets.set(def.type, def as WidgetDefinition);
 };
 
