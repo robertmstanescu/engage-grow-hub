@@ -37,6 +37,11 @@ import ElementsTray, {
   isTrayDragData,
   type TrayDragData,
 } from "./builder/ElementsTray";
+// US 17.2 — drop-target id parsing for tray-sourced drops.
+import { parseDropZoneId } from "./builder/CanvasDropZone";
+// US 17.2 — registry lookup so dropped widgets seed with proper defaults.
+import { getWidget } from "@/lib/WidgetRegistry";
+import { generateRowId, DEFAULT_ROW_LAYOUT, type PageRow as PageRowType } from "@/types/rows";
 
 
 interface SectionData {
