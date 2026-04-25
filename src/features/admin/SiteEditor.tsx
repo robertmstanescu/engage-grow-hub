@@ -78,8 +78,11 @@ interface SectionData {
  * the right — mirroring Webflow / Figma. Inner widget editors are unchanged
  * in this story; only the outer shell is rebuilt (US 14.1).
  */
-const SECTION_NAV: { key: "hero" | "page_rows" | "main_page_seo"; label: string; Icon: any }[] = [
-  { key: "hero", label: "Hero Section", Icon: ImageIcon },
+/* US 2.1 — The "hero" entry is gone. Hero is now an ordinary widget
+ * at page_rows[0]; no separate left-rail tab and no separate Supabase
+ * section. The remaining sections are page_rows (the canvas) and
+ * main_page_seo (page-wide metadata). */
+const SECTION_NAV: { key: "page_rows" | "main_page_seo"; label: string; Icon: any }[] = [
   { key: "page_rows", label: "Page Rows", Icon: Layout },
   { key: "main_page_seo", label: "SEO & Metadata", Icon: Search },
 ];
