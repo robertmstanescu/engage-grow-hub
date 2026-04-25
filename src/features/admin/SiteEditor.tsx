@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Layout, Image as ImageIcon, Search, MousePointer2 } from "lucide-react";
+import { Layout, Image as ImageIcon, Search, MousePointer2, Eye, Pencil } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
@@ -13,6 +13,10 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuilderToolbar";
+// US 15.1 — render the SAME components the public site renders, against
+// the in-memory draft content. WYSIWYG, no markup duplication.
+import { HeroView } from "@/features/site/HeroSection";
+import { RowsRenderer } from "@/features/site/rows/PageRows";
 
 interface SectionData {
   section_key: string;
