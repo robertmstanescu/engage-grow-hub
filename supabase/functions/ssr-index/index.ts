@@ -267,7 +267,8 @@ const buildCmsSeo = async (
  * the caller will return the neutral template untouched.
  */
 const resolvePath = async (
-  supabase: ReturnType<typeof createClient>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
   path: string,
 ): Promise<SeoPayload | null> => {
   // Normalise: strip query/hash, collapse trailing slash for matching.
