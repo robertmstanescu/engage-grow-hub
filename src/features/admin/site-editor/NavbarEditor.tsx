@@ -77,19 +77,19 @@ const NavbarEditor = ({ content, onChange }: Props) => {
         {subLinks.map((link, i) => (
           <div key={i} className="flex items-center gap-2">
             <GripVertical size={14} className="text-muted-foreground flex-shrink-0" />
-            <input
+            <DeferredInput
               type="text"
               placeholder="Label"
               value={link.label}
-              onChange={(e) => updateSubLink(i, "label", e.target.value)}
+              onChange={(v) => updateSubLink(i, "label", v)}
               className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
               style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
             />
-            <input
+            <DeferredInput
               type="text"
               placeholder="Link (e.g. #section-id)"
               value={link.href}
-              onChange={(e) => updateSubLink(i, "href", e.target.value)}
+              onChange={(v) => updateSubLink(i, "href", v)}
               className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
               style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
             />
