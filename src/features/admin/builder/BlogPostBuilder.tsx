@@ -20,6 +20,7 @@ import {
 } from "@/types/rows";
 import PageBuilderShell from "./PageBuilderShell";
 import RevisionHistoryPanel from "./RevisionHistoryPanel";
+import SchedulePublishPanel from "./SchedulePublishPanel";
 
 interface BlogPostRecord {
   id: string;
