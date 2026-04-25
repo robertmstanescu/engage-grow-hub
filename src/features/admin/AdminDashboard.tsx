@@ -923,11 +923,26 @@ const AdminDashboard = ({ session }: Props) => {
   };
 
   // ── Edit page handler (from PagesManager) ──
+  // US 3.3 — push the page id onto the URL. The effect above will pick
+  // up the new :pageId param and hydrate `cmsPage`. Doing it through
+  // the router (rather than `setCmsPage` directly) means refresh,
+  // history-back, and shareable links all work for free.
   const handleEditPage = (page: CmsPageRef | null) => {
-    setCmsPage(page);
     setActiveTab("site");
     setSelectedSectionId(null);
+    if (page) {
+      navigate(`/admin/builder/${page.id}`);
+    } else {
+      navigate("/admin/builder");
+    }
   };
+
+  // Helper used by every "Back to Main Page" affordance — keeps URL,
+  // tab, and `cmsPage` state in lock-step (US 3.3).
+  const goToMainPageBuilder = () => {
+    navigate("/admin/builder");
+  };
+
 
   const isSiteTab = activeTab === "site";
   const isMainPage = !cmsPage;
