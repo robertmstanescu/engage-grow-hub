@@ -360,9 +360,9 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                   className="h-full flex flex-col"
                   style={{ backgroundColor: "hsl(var(--card))" }}
                 >
-                  {/* US 2.3 — Left Sidebar Navigator: Page Title + URL
-                      slot at the top, then the canvas section list,
-                      then the Elements tray. */}
+                  {/* US 2.3 — Left Sidebar Navigator: Page Title + URL,
+                      Schedule (page-level setting), canvas section list,
+                      Elements tray, and (collapsed) Revision history. */}
                   <PageNavigator
                     pageTitle={props.pageTitle}
                     onPageTitleChange={props.onPageTitleChange}
@@ -371,6 +371,8 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     slugEditable={props.slugEditable}
                     slugPrefix={props.slugPrefix}
                     pageRows={props.pageRows}
+                    schedulePanel={props.schedulePanel}
+                    revisionPanel={props.inspectorFooter}
                   />
                 </aside>
               );
