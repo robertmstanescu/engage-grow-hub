@@ -36,12 +36,31 @@
  *   producing broken routes. Adapters validate uniqueness on save.
  * ──────────────────────────────────────────────────────────────────── */
 
-import { useMemo } from "react";
-import { Link2, History, ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link2, History, ChevronRight, GripVertical } from "lucide-react";
 import type { PageRow } from "@/types/rows";
 import { getWidget } from "@/lib/WidgetRegistry";
 import { useBuilder } from "./BuilderContext";
 import ElementsTray from "./ElementsTray";
+// Sortable section list (drag to reorder rows from the navigator).
+// We mount a NESTED DndContext so section drags don't collide with the
+// outer tray/canvas drag session — the two contexts wrap disjoint DOM
+// subtrees and pointer activation is local to whichever was started.
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 /** Convert a snake_case widget type to "Snake Case" Title Case. */
 const prettifyType = (s: string) =>
