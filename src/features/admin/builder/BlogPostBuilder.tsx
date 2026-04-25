@@ -172,6 +172,13 @@ const BlogPostBuilder = ({ postId }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      inspectorFooter={
+        <RevisionHistoryPanel
+          entityType="blog_post"
+          entityRef={record.id}
+          onRestored={load}
+        />
+      }
     />
   );
 };
