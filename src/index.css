@@ -166,14 +166,21 @@
   .snap-container {
     /*
      * Native CSS scroll-snap is disabled in favour of JS-driven
-     * threshold snapping (see useThresholdSnap). Browsers don't expose
-     * a snap-threshold property, so we control the 51% rule manually.
+     * momentum snapping (see useMomentumSnap). This lets us run a
+     * direction-aware glide of up to 1.5s, AND keep the footer
+     * accessible below the last row — neither of which CSS snap
+     * can do natively.
      */
     scroll-snap-type: none;
     overflow-y: auto;
     overflow-x: hidden;
     height: 100vh;
-    scroll-behavior: smooth;
+    /*
+     * `scroll-behavior: smooth` is intentionally OFF here because
+     * the snap hook drives its own rAF tween. Letting both run at
+     * once causes a fight between the two animations.
+     */
+    scroll-behavior: auto;
   }
 
   [id] {
