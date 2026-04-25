@@ -25,7 +25,7 @@
     --border: 280 20% 18%;
     --input: 280 20% 18%;
     --ring: 280 55% 24%;
-    --radius: 0rem;
+    --radius: 0.75rem;
 
     /* Light section tokens */
     --light-bg: 30 20% 94%; /* Isabelline */
@@ -122,34 +122,19 @@
 
   h1,
   h2,
-  h3,
-  h4 {
-    font-family: var(--font-header); /* Bricolage */
+  h3 {
+    font-family: var(--font-title);
     text-wrap: balance;
-    letter-spacing: -0.02em;
   }
 
   .font-display {
-    font-family: var(--font-title); /* Unbounded */
-    letter-spacing: -0.04em; /* Tighten up giant text */
-  }
-
-  /* Force tiny widely-tracked uppercase labels (e.g. HeroRow eyebrows) to Unbounded */
-  .tracking-\[0\.35em\] {
     font-family: var(--font-title);
-    font-weight: 700;
   }
   .font-body-heading {
     font-family: var(--font-header);
   }
   .font-body {
     font-family: var(--font-body);
-  }
-
-  .eyebrow-text {
-    font-family: var(--font-title);
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
   }
 
   html {
@@ -179,7 +164,7 @@
    * resolve against sibling rows.
    */
   .snap-container {
-    scroll-snap-type: y proximity;
+    scroll-snap-type: y mandatory;
     overflow-y: auto;
     overflow-x: hidden;
     height: 100vh;
@@ -270,8 +255,7 @@
     background: hsl(260 25% 12% / 0.15);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    /* Hairline border to define the sharp edge */
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid hsl(280 20% 25% / 0.1);
     transform: translateZ(0);
     backface-visibility: hidden;
     /* `isolation: isolate` creates a new stacking context so the
@@ -279,14 +263,14 @@
        layer instead of every layer behind it. Drastically reduces
        GPU work and eliminates the saturation "pop" on reveal. */
     isolation: isolate;
-    transition: all 300ms ease;
+    /* Smooth luminous hover — border + glow ease in/out so the card
+       feels physically lit rather than flicker-swapped. */
+    transition: border-color 300ms ease, box-shadow 300ms ease, background-color 300ms ease;
   }
 
   .glass:hover {
-    /* Sharp gold outline — no outer glow to keep corners crisp */
-    border: 1px solid hsl(var(--accent) / 0.8);
-    box-shadow: inset 0 0 0 1px hsl(var(--accent) / 0.2);
-    background-color: hsl(260 25% 12% / 0.3);
+    border: 1px solid hsl(var(--accent) / 0.5);
+    box-shadow: 0 0 20px -5px hsl(var(--accent) / 0.2);
   }
 
   .glass-light {
@@ -321,17 +305,20 @@
 
   /* ── Glass button ── */
   .btn-glass {
-    /* Keep the gradient, but sharpen the shadow */
     background: linear-gradient(135deg, hsl(var(--accent) / 0.9) 0%, hsl(var(--accent) / 0.7) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid hsl(var(--accent));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border: 1px solid hsl(var(--accent) / 0.4);
+    box-shadow:
+      0 4px 20px -4px hsl(var(--accent) / 0.4),
+      inset 0 1px 0 hsl(0 0% 100% / 0.15);
     color: hsl(var(--accent-foreground));
   }
 
   .btn-glass:hover {
-    box-shadow: inset 0 0 0 2px hsl(var(--accent-foreground) / 0.2);
+    box-shadow:
+      0 6px 30px -4px hsl(var(--accent) / 0.45),
+      inset 0 1px 0 hsl(0 0% 100% / 0.2);
   }
 
   /* ──────────────────────────────────────────────────────────────────
@@ -576,27 +563,12 @@
     writing-mode: vertical-rl;
     text-orientation: mixed;
     transform: rotate(180deg);
-    font-family: var(--font-title);
-    font-size: 11px;
-    letter-spacing: 0.25em;
-    font-weight: 500;
+    letter-spacing: 0.15em;
+    font-size: 10px;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 500ms cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
-    opacity: 0.5;
-    color: hsl(var(--foreground));
-  }
-
-  .side-nav-label:hover {
-    opacity: 1;
-    letter-spacing: 0.3em;
-  }
-
-  .side-nav-label[data-active="true"] {
-    opacity: 1;
-    color: hsl(var(--accent));
-    font-weight: 600;
   }
 
   /* ── Navbar scope (for admin pages) ── */

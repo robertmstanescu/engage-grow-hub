@@ -60,7 +60,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
       defaultBg="hsl(260 20% 6%)"
       innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
     >
-      <div className={`relative z-10 ${maxW} w-full px-6 lg:pl-24 ${containerPos}`}>
+      <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos}`}>
         <div className="grid grid-cols-1 gap-rhythm-loose items-start" style={{ gridTemplateColumns: window.innerWidth > 768 ? gridCols : undefined }}>
           {/* Left column: Image + Name + Credentials */}
           <div className="flex flex-col items-center" style={revealStyle(isVisible, 1)}>

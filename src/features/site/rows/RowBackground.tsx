@@ -32,21 +32,23 @@ type LegacyBuilder = (gradStart: string, gradEnd: string) => string;
 
 const LEGACY_BUILDERS: Record<string, LegacyBuilder> = {
   hero: (gs, ge) =>
-    `radial-gradient(ellipse 100% 80% at 20% 100%, ${gs} 0%, transparent 70%), radial-gradient(ellipse 80% 60% at 90% 10%, ${ge} 0%, transparent 70%), radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06) 0%, transparent 70%), hsl(260 20% 4%)`,
+    `radial-gradient(ellipse 100% 80% at 20% 100%, ${gs}, transparent), radial-gradient(ellipse 80% 60% at 90% 10%, ${ge}, transparent), radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06), transparent), hsl(260 20% 4%)`,
   text: (gs, ge) =>
-    `radial-gradient(ellipse 80% 60% at 30% 70%, ${gs} 0%, transparent 70%), radial-gradient(ellipse 60% 40% at 70% 30%, ${ge} 0%, transparent 70%)`,
+    `radial-gradient(ellipse 80% 60% at 30% 70%, ${gs}, transparent), radial-gradient(ellipse 60% 40% at 70% 30%, ${ge}, transparent)`,
   service: (gs, ge) =>
-    `radial-gradient(circle at 100% 0%, ${gs} 0%, transparent 70%), radial-gradient(circle at 0% 100%, ${ge} 0%, transparent 70%)`,
+    // Service uses two stacked radial blobs (handled below as two layers in JSX),
+    // but for completeness we expose a combined CSS string here too.
+    `radial-gradient(circle at 100% 0%, ${gs}, transparent 60%), radial-gradient(circle at 0% 100%, ${ge}, transparent 60%)`,
   boxed: (gs, ge) =>
-    `radial-gradient(ellipse 80% 60% at 10% 90%, ${gs} 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge} 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04) 0%, transparent 70%)`,
+    `radial-gradient(ellipse 80% 60% at 10% 90%, ${gs}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge}, transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)`,
   contact: (gs, ge) =>
-    `radial-gradient(ellipse 80% 60% at 50% 50%, ${gs} 0%, ${ge} 70%)`,
+    `radial-gradient(ellipse 80% 60% at 50% 50%, ${gs}, ${ge})`,
   image_text: (gs, ge) =>
-    `radial-gradient(ellipse 80% 60% at 20% 80%, ${gs} 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge} 0%, transparent 70%)`,
+    `radial-gradient(ellipse 80% 60% at 20% 80%, ${gs}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge}, transparent)`,
   profile: (gs, ge) =>
-    `radial-gradient(ellipse 80% 60% at 20% 80%, ${gs} 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge} 0%, transparent 70%)`,
+    `radial-gradient(ellipse 80% 60% at 20% 80%, ${gs}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge}, transparent)`,
   grid: (gs, ge) =>
-    `radial-gradient(ellipse 80% 60% at 20% 80%, ${gs} 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge} 0%, transparent 70%)`,
+    `radial-gradient(ellipse 80% 60% at 20% 80%, ${gs}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge}, transparent)`,
 };
 
 /**
@@ -136,7 +138,7 @@ const RowBackground = ({ row, legacyDefaults }: RowBackgroundProps) => {
   return (
     <div
       aria-hidden
-      className="absolute inset-0 pointer-events-none"
+      className="absolute inset-0 pointer-events-none blur-[100px]"
       style={{
         background: builder(gradStart, gradEnd),
         opacity,

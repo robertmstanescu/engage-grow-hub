@@ -176,7 +176,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
       defaultBg="hsl(260 20% 6%)"
       innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
     >
-      <div className={`relative z-10 ${maxW} w-full px-6 lg:pl-24 ${containerPos} ${contentAlign}`}>
+      <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos} ${contentAlign}`}>
         <div className="mb-rhythm-loose">
           {c.eyebrow && (
             <RowEyebrow color={c.color_eyebrow} style={revealStyle(isVisible, 0)}>

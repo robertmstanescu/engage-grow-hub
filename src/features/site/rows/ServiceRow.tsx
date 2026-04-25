@@ -133,7 +133,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
       style={colorOverrides as React.CSSProperties}
       className="service-row"
     >
-      <div ref={ref} className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 lg:pl-24 ${rowTextAlign}`}>
+      <div ref={ref} className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
         {/*
           ATOMIC-NODE WRAPPERS (EPIC 1 / US 1.1)
           --------------------------------------

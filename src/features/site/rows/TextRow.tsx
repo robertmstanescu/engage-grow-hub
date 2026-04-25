@@ -147,7 +147,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
         ml-auto / mr-auto to shift left or right. Without `w-full`,
         the wrapper would shrink-to-fit and ml-auto would be a no-op.
       */}
-      <div ref={ref} className={`relative z-10 px-6 lg:pl-24 w-full ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1200px]"} ${containerPos}` : ""} ${contentAlign}`}>
+      <div ref={ref} className={`relative z-10 px-6 w-full ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1200px]"} ${containerPos}` : ""} ${contentAlign}`}>
         {isMultiCol ? (
           <div style={multiColGridStyle(widths)} className="items-start">
             {contents.map((c, i) => renderColumnContent(c, i))}

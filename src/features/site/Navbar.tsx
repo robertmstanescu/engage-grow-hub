@@ -157,12 +157,7 @@ const Navbar = () => {
     <>
       {/* Desktop side navigation — emblem logo */}
       <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
-        style={{
-          backgroundColor: "rgba(123, 58, 145, 0.8)", /* #7B3A91 at 80% opacity */
-          backdropFilter: "blur(16px) saturate(180%)",
-          WebkitBackdropFilter: "blur(16px) saturate(180%)",
-          borderRight: "1px solid rgba(255, 255, 255, 0.15)",
-        }}>
+        style={{ backgroundColor: "hsl(var(--background) / 0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid hsl(var(--border) / 0.3)" }}>
         <a href="/" className="mb-4">
           {!brandingLoading && logoUrl ? (
             <ResponsiveLogo
@@ -188,9 +183,11 @@ const Navbar = () => {
               key={item.label}
               href={item.href}
               onClick={(e) => handleNavClick(e, item.href)}
-              className="side-nav-label"
-              data-active={isActive(item.href)}
-            >
+              className="side-nav-label font-body"
+              style={{
+                color: isActive(item.href) ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.35)",
+                fontWeight: isActive(item.href) ? 600 : 400,
+              }}>
               {item.label}
             </a>
           ))}
@@ -210,12 +207,7 @@ const Navbar = () => {
 
       {/* Mobile/tablet top bar — full/long logo */}
       <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-5"
-        style={{
-          backgroundColor: "rgba(123, 58, 145, 0.85)",
-          backdropFilter: "blur(16px) saturate(180%)",
-          WebkitBackdropFilter: "blur(16px) saturate(180%)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.15)",
-        }}>
+        style={{ backgroundColor: "hsl(var(--background) / 0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(var(--border) / 0.2)" }}>
         <a href="/" className="flex items-center flex-shrink-0">
           {!brandingLoading && logoUrl ? (
             <ResponsiveLogo
@@ -241,11 +233,7 @@ const Navbar = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-6"
-            style={{
-              backgroundColor: "rgba(123, 58, 145, 0.95)", /* Slightly darker for readability */
-              backdropFilter: "blur(24px) saturate(180%)",
-              WebkitBackdropFilter: "blur(24px) saturate(180%)",
-            }}>
+            style={{ backgroundColor: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" }}>
             {allItems.map((item, i) => (
               <motion.a
                 key={item.label}
@@ -266,7 +254,7 @@ const Navbar = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
-                className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 mt-4"
+                className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
                 style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
                 {ctaText}
               </motion.a>

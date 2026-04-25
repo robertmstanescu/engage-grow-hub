@@ -36,7 +36,7 @@ const Index = () => {
   });
 
   return (
-    <div className="snap-container">
+    <div className="snap-container lg:pl-16">
       <Navbar />
       {/* US 2.1 — Hero is now an ordinary widget at page_rows[0]; no
           isolated heroContent prop or HeroSection injection. */}

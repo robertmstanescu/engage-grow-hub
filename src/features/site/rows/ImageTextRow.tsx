@@ -193,7 +193,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
       innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
     >
       <div
-        className={`relative z-10 ${maxW} w-full px-6 lg:pl-24 ${containerPos}`}
+        className={`relative z-10 ${maxW} w-full px-6 ${containerPos}`}
         style={{
           display: "grid",
           gridTemplateColumns: `1fr`,
@@ -221,7 +221,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
         </div>
       </div>
       {c.show_subscribe && (
-        <div className="relative z-10 mt-rhythm-loose px-6 lg:pl-24" style={revealStyle(isVisible, 5)}>
+        <div className="relative z-10 mt-rhythm-loose px-6" style={revealStyle(isVisible, 5)}>
           <SubscribeWidget align={align} />
         </div>
       )}

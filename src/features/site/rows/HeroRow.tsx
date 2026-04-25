@@ -69,10 +69,10 @@ const HeroRow = ({ row }: Props) => {
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] pointer-events-none"
         style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
 
-      <div ref={ref} className="relative z-10 w-full max-w-[1100px] px-4 sm:px-6 lg:pl-24 pb-[4vh] pt-[15vh] flex flex-col justify-end overflow-visible">
+      <div ref={ref} className="relative z-10 w-full max-w-[1100px] px-4 sm:px-6 pb-[4vh] pt-[15vh] flex flex-col justify-end overflow-visible">
         {c.label && (
           <p className="font-body tracking-[0.35em] uppercase mb-[2vh]"
-            style={{ ...revealStyle(isVisible, 0), color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(14px, 1.5vw, 16px)" }}>
+            style={{ ...revealStyle(isVisible, 0), color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)" }}>
             {c.label}
           </p>
         )}
@@ -90,7 +90,7 @@ const HeroRow = ({ row }: Props) => {
 
         {c.tagline && (
           <p className="font-body tracking-[0.3em] uppercase mt-[2vh]"
-            style={{ ...revealStyle(isVisible, titleLines.length + 1, 0.1), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(14px, 1.5vw, 16px)", opacity: isVisible ? 0.4 : 0 }}>
+            style={{ ...revealStyle(isVisible, titleLines.length + 1, 0.1), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)", opacity: isVisible ? 0.4 : 0 }}>
             {c.tagline}
           </p>
         )}
@@ -112,7 +112,7 @@ const HeroRow = ({ row }: Props) => {
         {c.cta_url && c.cta_label && (
           <div className="mt-[2vh]" style={revealStyle(isVisible, titleLines.length + 4, 0.1)}>
             <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
-              className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 inline-block"
+              className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
               style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
               {c.cta_label}
             </a>
