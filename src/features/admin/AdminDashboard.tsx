@@ -115,6 +115,7 @@ import RowContentEditor from "./editors/RowContentEditor";
 import VersionHistory from "./VersionHistory";
 import { confirmDestructive } from "@/components/ConfirmDialog";
 import { countRowWidgets } from "./builder/rowWidgetCount";
+import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 // EPIC 14–17 — new three-pane builder shell. Mounted in place of the
 // legacy structure-rail + properties layout when the admin is editing
 // the MAIN PAGE site content. CMS-page editing still uses the legacy
