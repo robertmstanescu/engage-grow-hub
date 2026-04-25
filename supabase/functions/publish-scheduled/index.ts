@@ -25,23 +25,32 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
+const CRON_SECRET = Deno.env.get("PUBLISH_SCHEDULED_CRON_SECRET") || SERVICE_ROLE;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   // ── Authn / Authz ────────────────────────────────────────
+  // Three accepted callers:
+  //   (a) pg_cron, which sends a shared secret in X-Cron-Secret
+  //   (b) admin user manually triggering from the UI (Bearer JWT)
+  //   (c) service_role key (server-to-server)
   const auth = req.headers.get("Authorization") || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  const cronSecret = req.headers.get("X-Cron-Secret") || "";
 
   let isAuthorized = false;
 
-  // (a) cron / server-to-server: service role JWT
-  if (token && token === SERVICE_ROLE) {
+  if (cronSecret && cronSecret === CRON_SECRET) {
     isAuthorized = true;
   }
 
-  // (b) human admin: validate JWT and check is_admin
+  if (!isAuthorized && token && token === SERVICE_ROLE) {
+    isAuthorized = true;
+  }
+
   if (!isAuthorized && token) {
     try {
       const userClient = createClient(SUPABASE_URL, ANON_KEY, {
