@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Layout, Image as ImageIcon, Search, MousePointer2, Eye, Pencil } from "lucide-react";
+import { Layout, Image as ImageIcon, Search, Eye, Pencil } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
@@ -20,6 +20,8 @@ import { RowsRenderer } from "@/features/site/rows/PageRows";
 // US 15.2 — selection state for the visual canvas.
 import { BuilderProvider, useBuilder } from "./builder/BuilderContext";
 import SelectableWrapper from "./builder/SelectableWrapper";
+// US 16.1 — contextual right-pane inspector, dispatched by activeElement.
+import InspectorPanel from "./inspector/InspectorPanel";
 
 interface SectionData {
   section_key: string;
@@ -209,16 +211,16 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
       if (canvasMode === "preview") {
         // HeroView is a PURE component (US 15.1). Wrapped in
         // SelectableWrapper (US 15.2) so editors can target it.
+        // The BuilderProvider lives at the top level of SiteEditor
+        // (US 16.1) so the right-pane Inspector shares selection state.
         return (
-          <BuilderProvider>
-            <CanvasSelectionSurface>
-              <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
-                <SelectableWrapper id="hero" label="Hero" variant="row">
-                  <HeroView content={getDraft("hero") as any} />
-                </SelectableWrapper>
-              </div>
-            </CanvasSelectionSurface>
-          </BuilderProvider>
+          <CanvasSelectionSurface>
+            <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
+              <SelectableWrapper id="hero" label="Hero" variant="row">
+                <HeroView content={getDraft("hero") as any} />
+              </SelectableWrapper>
+            </div>
+          </CanvasSelectionSurface>
         );
       }
       return (
@@ -232,13 +234,11 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
         // in <SelectableWrapper> (US 15.2) — which short-circuits to a
         // no-op fragment on the public site (no BuilderProvider there).
         return (
-          <BuilderProvider>
-            <CanvasSelectionSurface>
-              <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
-                <RowsRenderer rows={pageRows} />
-              </div>
-            </CanvasSelectionSurface>
-          </BuilderProvider>
+          <CanvasSelectionSurface>
+            <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
+              <RowsRenderer rows={pageRows} />
+            </div>
+          </CanvasSelectionSurface>
         );
       }
       return (
@@ -274,7 +274,8 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
     viewport === "mobile" ? 375 : viewport === "tablet" ? 768 : undefined;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
+    <BuilderProvider>
+      <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
       {/* ─── Top toolbar (US 14.2) ────────────────────────────────── */}
       <AdminBuilderToolbar
         viewport={viewport}
@@ -438,26 +439,25 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
               </h3>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
-              {/*
-                Inner inspector content is rendered by individual editors
-                (e.g. WidgetSettingsDrawer launched from RowsManager). This
-                pane shows the empty-state hint until a future story moves
-                that drawer into this slot.
-              */}
-              <div
-                className="flex flex-col items-center justify-center text-center h-full min-h-[280px] gap-3"
-                style={{ color: "hsl(var(--muted-foreground))" }}
-              >
-                <MousePointer2 size={28} strokeWidth={1.4} />
-                <p className="font-body text-xs leading-relaxed max-w-[220px]">
-                  Select a widget on the canvas to see its settings here.
-                </p>
-              </div>
+              {/* US 16.1 — chameleon inspector. Reads activeElement from
+                  the BuilderContext (lifted to the top of SiteEditor) and
+                  renders SEO / row layout / widget admin accordingly. */}
+              <InspectorPanel
+                seoMetaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                seoMetaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                onSeoTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                onSeoDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                heroContent={getDraft("hero")}
+                onHeroFieldChange={(f, v) => updateField("hero", f, v)}
+                pageRows={pageRows}
+                onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
+              />
             </div>
           </aside>
         </ResizablePanel>
       </ResizablePanelGroup>
-    </div>
+      </div>
+    </BuilderProvider>
   );
 };
 
