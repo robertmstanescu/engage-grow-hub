@@ -561,9 +561,6 @@ const SiteEditor = () => {
             {renderCanvas()}
           </CanvasViewport>
         </ResizablePanel>
-            </div>
-          </section>
-        </ResizablePanel>
 
         <ResizableHandle withHandle />
 
