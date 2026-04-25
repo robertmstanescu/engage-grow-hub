@@ -279,6 +279,8 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
           <AdminBuilderToolbar
             viewport={viewport}
             onViewportChange={setViewport}
+            previewMode={previewMode}
+            onPreviewModeChange={setPreviewMode}
             onSaveDraft={() => props.onSaveDraft()}
             saving={props.saving}
             saveLabel="Save Draft"
