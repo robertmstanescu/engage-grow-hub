@@ -191,13 +191,24 @@ export const RowsRenderer = ({
         if (index === lastIndex && footerSlot) {
           return (
             <div key={row.id} className="snap-section">
+              {/* US 17.2 — insertion point BEFORE this row */}
+              <CanvasDropZone position={{ kind: "before", rowId: row.id }} />
               {rendered}
               {footerSlot}
             </div>
           );
         }
-        return rendered;
+        return (
+          <div key={row.id}>
+            {/* US 17.2 — insertion point BEFORE this row */}
+            <CanvasDropZone position={{ kind: "before", rowId: row.id }} />
+            {rendered}
+          </div>
+        );
       })}
+      {/* US 17.2 — final insertion point at the END of the page so
+          editors can always append a fresh widget at the bottom. */}
+      <CanvasDropZone position={{ kind: "end" }} />
       {/* Fallback if no rows */}
       {rows.length === 0 && footerSlot}
     </>
