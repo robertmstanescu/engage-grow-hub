@@ -95,6 +95,64 @@ const WidgetSettingsDrawer = ({
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
+          {/* ── Visibility (US 6.2) ────────────────────────────── */}
+          {/*
+           * Per-breakpoint show/hide. We surface this at the TOP of
+           * the drawer because it's the highest-impact toggle: a
+           * "hidden on mobile" widget skips painting entirely below
+           * 768px, which dwarfs any margin/padding tweak in effect.
+           *
+           * WHY two switches instead of a single radio with three
+           * states (mobile/desktop/both): admins routinely want
+           * "hidden everywhere" while they tweak content without
+           * deleting the widget, and the two-toggle UI lets them
+           * express that without a fourth radio option.
+           */}
+          <section>
+            <h3 className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+              Visibility
+            </h3>
+            <div className="space-y-2">
+              <label className="flex items-center justify-between gap-3 px-3 py-2 rounded-md" style={{ backgroundColor: "hsl(var(--muted) / 0.3)" }}>
+                <span className="flex items-center gap-2 font-body text-xs" style={{ color: "hsl(var(--foreground))" }}>
+                  <Smartphone size={14} />
+                  Show on mobile
+                  <span className="font-body text-[9px] text-muted-foreground">(&lt; 768px)</span>
+                </span>
+                <Switch
+                  checked={design.visibility.mobile}
+                  onCheckedChange={(checked) =>
+                    update("visibility", { ...design.visibility, mobile: checked })
+                  }
+                />
+              </label>
+              <label className="flex items-center justify-between gap-3 px-3 py-2 rounded-md" style={{ backgroundColor: "hsl(var(--muted) / 0.3)" }}>
+                <span className="flex items-center gap-2 font-body text-xs" style={{ color: "hsl(var(--foreground))" }}>
+                  <Monitor size={14} />
+                  Show on desktop
+                  <span className="font-body text-[9px] text-muted-foreground">(≥ 768px)</span>
+                </span>
+                <Switch
+                  checked={design.visibility.desktop}
+                  onCheckedChange={(checked) =>
+                    update("visibility", { ...design.visibility, desktop: checked })
+                  }
+                />
+              </label>
+              {/*
+               * Friendly belt-and-braces hint when the admin has hidden
+               * the widget at every breakpoint. We DON'T auto-correct —
+               * juniors might want this for a temporarily disabled CTA —
+               * but we surface the consequence so it isn't a silent foot-gun.
+               */}
+              {!design.visibility.mobile && !design.visibility.desktop && (
+                <p className="font-body text-[10px] mt-1" style={{ color: "hsl(var(--destructive))" }}>
+                  This widget is hidden on every screen size.
+                </p>
+              )}
+            </div>
+          </section>
+
           {/* ── Background ─────────────────────────────────────── */}
           <section>
             <h3 className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
