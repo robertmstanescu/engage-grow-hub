@@ -69,6 +69,7 @@ export type Database = {
           created_at: string
           draft_page_rows: Json | null
           excerpt: string | null
+          expiry_at: string | null
           id: string
           lead_magnet_asset_id: string | null
           lead_magnet_cover_id: string | null
@@ -77,6 +78,7 @@ export type Database = {
           og_image: string | null
           og_image_alt: string | null
           page_rows: Json
+          publish_at: string | null
           published_at: string | null
           slug: string
           status: string
@@ -96,6 +98,7 @@ export type Database = {
           created_at?: string
           draft_page_rows?: Json | null
           excerpt?: string | null
+          expiry_at?: string | null
           id?: string
           lead_magnet_asset_id?: string | null
           lead_magnet_cover_id?: string | null
@@ -104,6 +107,7 @@ export type Database = {
           og_image?: string | null
           og_image_alt?: string | null
           page_rows?: Json
+          publish_at?: string | null
           published_at?: string | null
           slug: string
           status?: string
@@ -123,6 +127,7 @@ export type Database = {
           created_at?: string
           draft_page_rows?: Json | null
           excerpt?: string | null
+          expiry_at?: string | null
           id?: string
           lead_magnet_asset_id?: string | null
           lead_magnet_cover_id?: string | null
@@ -131,6 +136,7 @@ export type Database = {
           og_image?: string | null
           og_image_alt?: string | null
           page_rows?: Json
+          publish_at?: string | null
           published_at?: string | null
           slug?: string
           status?: string
@@ -160,10 +166,12 @@ export type Database = {
           ai_summary: string | null
           created_at: string
           draft_page_rows: Json | null
+          expiry_at: string | null
           id: string
           meta_description: string | null
           meta_title: string | null
           page_rows: Json
+          publish_at: string | null
           slug: string
           status: string
           template_type: string
@@ -174,10 +182,12 @@ export type Database = {
           ai_summary?: string | null
           created_at?: string
           draft_page_rows?: Json | null
+          expiry_at?: string | null
           id?: string
           meta_description?: string | null
           meta_title?: string | null
           page_rows?: Json
+          publish_at?: string | null
           slug: string
           status?: string
           template_type?: string
@@ -188,10 +198,12 @@ export type Database = {
           ai_summary?: string | null
           created_at?: string
           draft_page_rows?: Json | null
+          expiry_at?: string | null
           id?: string
           meta_description?: string | null
           meta_title?: string | null
           page_rows?: Json
+          publish_at?: string | null
           slug?: string
           status?: string
           template_type?: string
@@ -233,8 +245,10 @@ export type Database = {
       email_campaigns: {
         Row: {
           created_at: string
+          expiry_at: string | null
           html_content: string
           id: string
+          publish_at: string | null
           recipient_count: number | null
           sent_at: string | null
           status: string
@@ -243,8 +257,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          expiry_at?: string | null
           html_content?: string
           id?: string
+          publish_at?: string | null
           recipient_count?: number | null
           sent_at?: string | null
           status?: string
@@ -253,8 +269,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          expiry_at?: string | null
           html_content?: string
           id?: string
+          publish_at?: string | null
           recipient_count?: number | null
           sent_at?: string | null
           status?: string
@@ -374,6 +392,24 @@ export type Database = {
           name?: string
           type?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      internal_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string
         }
         Relationships: []
       }
@@ -559,21 +595,27 @@ export type Database = {
         Row: {
           content: Json
           draft_content: Json | null
+          expiry_at: string | null
           id: string
+          publish_at: string | null
           section_key: string
           updated_at: string
         }
         Insert: {
           content?: Json
           draft_content?: Json | null
+          expiry_at?: string | null
           id?: string
+          publish_at?: string | null
           section_key: string
           updated_at?: string
         }
         Update: {
           content?: Json
           draft_content?: Json | null
+          expiry_at?: string | null
           id?: string
+          publish_at?: string | null
           section_key?: string
           updated_at?: string
         }
@@ -720,6 +762,7 @@ export type Database = {
         Args: { _revision_id: string }
         Returns: undefined
       }
+      run_scheduled_publishing: { Args: never; Returns: Json }
       snapshot_page_revision: {
         Args: {
           _content: Json
