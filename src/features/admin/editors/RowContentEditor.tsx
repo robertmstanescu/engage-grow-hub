@@ -50,6 +50,7 @@
  */
 
 import { Field, RichField, ColorField, SectionBox } from "../site-editor/FieldComponents";
+import { resolveRowBgColor } from "@/lib/rowForeground";
 import SubtitleEditor from "../site-editor/SubtitleEditor";
 import PillarEditor from "../site-editor/PillarEditor";
 import ImageTextEditor from "../site-editor/ImageTextEditor";
