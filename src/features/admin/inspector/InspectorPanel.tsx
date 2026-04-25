@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import { MousePointer2, Trash2 } from "lucide-react";
 import { useBuilder } from "../builder/BuilderContext";
+import { useInspectorFocus } from "./useInspectorFocus";
 import { getWidget } from "@/lib/WidgetRegistry";
 import { type PageRow, DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { confirmDestructive } from "@/components/ConfirmDialog";
