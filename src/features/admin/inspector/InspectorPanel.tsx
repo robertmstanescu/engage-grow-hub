@@ -96,6 +96,14 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     onRowsChange,
   } = props;
 
+  /* US 1.3 — auto-scroll the matching input into view + flash it green
+   * whenever `activeNodePath` updates. The hook is a no-op on the public
+   * site and when the path stops at the widget level. */
+  const containerRef = useRef<HTMLDivElement>(null);
+  useInspectorFocus(containerRef);
+
+  const renderBody = () => {
+
   /* ─── State 1 — nothing selected → page SEO settings ─────────── */
   if (!activeElement) {
     return (
