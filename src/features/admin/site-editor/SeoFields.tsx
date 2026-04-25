@@ -116,8 +116,10 @@ const SeoFields = ({
           Meta Description (for search engines)
         </label>
         <textarea
-          value={metaDescription || ""}
-          onChange={(e) => onDescriptionChange(e.target.value)}
+          value={desc.local}
+          onChange={(e) => desc.setLocal(e.target.value)}
+          onBlur={desc.commit}
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); desc.commit(); } }}
           rows={2}
           maxLength={160}
           placeholder="Brief description for search engines (max 160 chars)"
@@ -125,7 +127,7 @@ const SeoFields = ({
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
         />
         <span className="font-body text-[9px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-          {(metaDescription || "").length}/160
+          {desc.local.length}/160
         </span>
       </div>
 
