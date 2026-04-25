@@ -58,7 +58,7 @@ import { useSearchParams } from "react-router-dom";
  * the same SPA don't collide on the same `?q=` key.
  */
 
-export type SortMode = "manual" | "updated" | "alpha";
+export type SortMode = "manual" | "updated" | "alpha" | "score";
 
 interface UseListFiltersOptions<T> {
   /** Source array (already fetched). Filtering runs in-memory over this. */
