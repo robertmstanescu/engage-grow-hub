@@ -36,10 +36,13 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  defaultDropAnimationSideEffects,
+  pointerWithin,
   useSensor,
   useSensors,
   type DragStartEvent,
   type DragEndEvent,
+  type DropAnimation,
 } from "@dnd-kit/core";
 import ElementsTray, {
   TrayDragPreview,
