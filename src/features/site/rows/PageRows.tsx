@@ -1,18 +1,7 @@
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { type PageRow } from "@/types/rows";
 import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
-import TextRow from "./TextRow";
-import ServiceRow from "./ServiceRow";
-import BoxedRow from "./BoxedRow";
-import ContactRow from "./ContactRow";
-import HeroRow from "./HeroRow";
-import ImageTextRow from "./ImageTextRow";
-import ProfileRow from "./ProfileRow";
-import GridRow from "./GridRow";
-import LeadMagnetRow from "./LeadMagnetRow";
-import TestimonialRow from "./TestimonialRow";
-import LogoCloudRow from "./LogoCloudRow";
-import FaqRow from "./FaqRow";
+import { renderWidget } from "@/lib/WidgetRegistry";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
