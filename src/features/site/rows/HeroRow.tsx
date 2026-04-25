@@ -13,7 +13,9 @@ interface Props {
 const HeroRow = ({ row }: Props) => {
   const c = row.content;
   const titleLines: string[] = (c.title_lines || []).map((line: any) =>
-    typeof line === "string" ? (line.startsWith("<") ? line : `<p>${line}</p>`) : `<p>${line}</p>`
+    typeof line === "string"
+      ? (line.startsWith("<") ? line : `<span class="block">${line}</span>`)
+      : `<span class="block">${line}</span>`
   );
 
   const bgType = c.bg_type || "none";
