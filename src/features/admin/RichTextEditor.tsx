@@ -27,7 +27,6 @@ import { uploadEditorImage } from "@/services/mediaStorage";
 import { runDbAction } from "@/services/db-helpers";
 import { useBrandColors } from "@/hooks/useBrandSettings";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
-import { pickForeground } from "@/lib/pickForeground";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────
@@ -110,11 +109,6 @@ interface RichTextEditorProps {
    */
   bgColor?: string;
 }
-
-/** Pick a readable foreground color for the given background.
- *  Re-exported through the shared `pickForeground` util so every editor
- *  in the admin uses the same luminance threshold. */
-const pickFg = (bg?: string): string => pickForeground(bg);
 
 const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps) => {
   // The editor surface is transparent and inherits parent text color,
