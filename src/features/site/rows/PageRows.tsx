@@ -299,7 +299,13 @@ export const RowsRenderer = ({
   );
 };
 
-const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
+const PageRows = ({
+  footerSlot,
+  heroContent,
+}: {
+  footerSlot?: React.ReactNode;
+  heroContent?: Record<string, any>;
+}) => {
   /**
    * Loading-aware read so we don't briefly render the hardcoded
    * DEFAULT_ROWS layout (a placeholder rows skeleton from
@@ -319,7 +325,10 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
     "page_rows",
     { rows: [] },
   );
-  const rows = data.rows || [];
+  const storedRows: RenderableRow[] = data.rows || [];
+  const rows = heroContent && hasHeroContent(heroContent) && !storedRows.some(rowContainsHeroWidget)
+    ? [buildHomepageHeroRow(heroContent), ...storedRows]
+    : storedRows;
 
   // Cold-load guard: don't paint stale defaults. We still render the
   // footer slot so the page never feels totally empty during the brief
