@@ -385,22 +385,9 @@ export const RowsRenderer = ({
 
 const PageRows = ({
   footerSlot,
-  heroContent,
 }: {
   footerSlot?: React.ReactNode;
-  heroContent?: Record<string, any>;
 }) => {
-  /**
-   * Loading-aware read so we don't briefly render the hardcoded
-   * DEFAULT_ROWS layout (a placeholder rows skeleton from
-   * `src/types/rows.ts`) before the admin's real rows arrive from the
-   * database. While `isLoading` is true on a cold first visit we render
-   * NOTHING below the hero — far less jarring than flashing default
-   * content that vanishes a moment later. Once react-query's cache is
-   * warm (any previous visit in this tab session), `isLoading` is false
-   * on the very first render, so navigating between routes still feels
-   * instant.
-   */
   // No hardcoded DEFAULT_ROWS fallback — passing an empty rows array
   // means the only thing that can ever paint is what the admin actually
   // saved. Combined with the `isLoading` guard below, no stale demo
@@ -409,10 +396,7 @@ const PageRows = ({
     "page_rows",
     { rows: [] },
   );
-  const storedRows: RenderableRow[] = data.rows || [];
-  const rows = heroContent && hasHeroContent(heroContent) && !storedRows.some(rowContainsHeroWidget)
-    ? [buildHomepageHeroRow(heroContent), ...storedRows]
-    : storedRows;
+  const rows: RenderableRow[] = data.rows || [];
 
   // Cold-load guard: don't paint stale defaults. We still render the
   // footer slot so the page never feels totally empty during the brief
