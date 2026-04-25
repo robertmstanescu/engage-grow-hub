@@ -126,14 +126,16 @@ const CellRenderer = ({ rowId, column, cell, renderWidgets }: CellRendererProps)
     ...directionToFlex(layout.direction),
     ...vAlignToFlex(layout.verticalAlign, layout.direction),
     ...hAlignToFlex(layout.justify, layout.direction),
-    gap: layout.gap,
-    paddingTop: layout.paddingTop,
-    paddingRight: layout.paddingRight,
-    paddingBottom: layout.paddingBottom,
-    paddingLeft: layout.paddingLeft,
-    minHeight: layout.minHeight || undefined,
+    // US 2.4 — force every user-defined spacing through `parseSpacing`
+    // so the rendered DOM carries explicit `<n>px` strings.
+    gap: parseSpacing(layout.gap),
+    paddingTop: parseSpacing(layout.paddingTop),
+    paddingRight: parseSpacing(layout.paddingRight),
+    paddingBottom: parseSpacing(layout.paddingBottom),
+    paddingLeft: parseSpacing(layout.paddingLeft),
+    minHeight: parseSpacing(layout.minHeight),
     backgroundColor: style.bgColor || undefined,
-    borderRadius: style.borderRadius || undefined,
+    borderRadius: parseSpacing(style.borderRadius),
     border: style.borderWidth > 0 && style.borderColor
       ? `${style.borderWidth}px solid ${style.borderColor}`
       : undefined,
