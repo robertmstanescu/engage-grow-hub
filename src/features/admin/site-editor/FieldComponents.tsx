@@ -68,7 +68,7 @@ export const Field = ({
 }) => {
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
   return (
-    <div>
+    <div data-inspector-field={slugifyLabel(label)}>
       <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
       <input
         value={local}
