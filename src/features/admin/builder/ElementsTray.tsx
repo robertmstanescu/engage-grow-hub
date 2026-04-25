@@ -31,22 +31,44 @@
  */
 
 import { useDraggable } from "@dnd-kit/core";
-import { Blocks } from "lucide-react";
+import { Blocks, Columns2, Columns3, Columns4, Square } from "lucide-react";
 import { listWidgets, type WidgetDefinition } from "@/lib/WidgetRegistry";
 
 /** Stable id prefix used by the DnD context to recognise tray sources. */
 export const TRAY_DRAG_ID_PREFIX = "new-widget-";
+export const TRAY_LAYOUT_DRAG_ID_PREFIX = "new-layout-";
 
-/** Shape of the payload attached to a tray-card drag event. */
-export interface TrayDragData {
-  source: "tray";
-  type: string;
-  label: string;
-}
+/**
+ * Shape of the payload attached to a tray-card drag event.
+ * `kind` distinguishes:
+ *   • `"widget"` — drop creates a single widget (legacy default).
+ *   • `"layout"` — drop creates an EMPTY v3 row with N columns/cells so
+ *      the editor can sketch structure first, then drop widgets into the
+ *      cells. `columnCount` is the number of columns to seed.
+ */
+export type TrayDragData =
+  | {
+      source: "tray";
+      kind?: "widget";
+      type: string;
+      label: string;
+    }
+  | {
+      source: "tray";
+      kind: "layout";
+      type: "layout";
+      label: string;
+      columnCount: 1 | 2 | 3 | 4;
+    };
 
 /** Type guard for `active.data.current` coming from the tray. */
 export const isTrayDragData = (d: unknown): d is TrayDragData =>
   !!d && typeof d === "object" && (d as any).source === "tray" && typeof (d as any).type === "string";
+
+export const isLayoutTrayDragData = (
+  d: TrayDragData,
+): d is Extract<TrayDragData, { kind: "layout" }> =>
+  (d as any).kind === "layout";
 
 /* ──────────────────────────────────────────────────────────────────
  * Single draggable card
