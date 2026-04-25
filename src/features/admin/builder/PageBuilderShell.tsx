@@ -374,6 +374,9 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
             onPublish={() => props.onPublish()}
             publishing={props.publishing}
             hasChanges={props.hasChanges}
+            publishStatus={props.publishStatus}
+            onUnpublish={props.onUnpublish ? () => props.onUnpublish?.() : undefined}
+            unpublishing={props.unpublishing}
           />
 
           {/* Debug Story 1.2 — at very narrow widths the 3-pane budget
