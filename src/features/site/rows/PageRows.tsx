@@ -4,6 +4,10 @@ import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import { renderWidget } from "@/lib/WidgetRegistry";
 import WidgetWrapper from "@/components/widgets/WidgetWrapper";
 import { useGlobalWidgetMap, type GlobalWidget } from "@/hooks/useGlobalWidgets";
+// US 15.2 — selection chrome for the admin canvas. On the public site
+// the BuilderProvider is absent, so SelectableWrapper renders as a
+// no-op fragment (zero DOM, zero perf cost). See SelectableWrapper.tsx.
+import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
