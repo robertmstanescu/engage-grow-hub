@@ -156,19 +156,19 @@ const NavbarEditor = ({ content, onChange }: Props) => {
           Call-to-Action Button
         </label>
         <div className="flex gap-2">
-          <input
+          <DeferredInput
             type="text"
             placeholder="Button text"
             value={content.cta_text || ""}
-            onChange={(e) => onChange("cta_text", e.target.value)}
+            onChange={(v) => onChange("cta_text", v)}
             className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
             style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
           />
-          <input
+          <DeferredInput
             type="text"
             placeholder="Link (e.g. #contact)"
             value={content.cta_href || ""}
-            onChange={(e) => onChange("cta_href", e.target.value)}
+            onChange={(v) => onChange("cta_href", v)}
             className="flex-1 px-3 py-2 rounded-md font-body text-sm border"
             style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
           />
