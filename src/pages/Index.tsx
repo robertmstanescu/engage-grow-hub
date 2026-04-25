@@ -4,7 +4,7 @@ import PageRows from "@/features/site/rows/PageRows";
 import Footer from "@/features/site/Footer";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
-import { useThresholdSnap } from "@/hooks/useThresholdSnap";
+import { useMomentumSnap } from "@/hooks/useMomentumSnap";
 
 /**
  * Index — the public homepage.
