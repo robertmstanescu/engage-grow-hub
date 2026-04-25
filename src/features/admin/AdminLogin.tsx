@@ -70,7 +70,7 @@ const AdminLogin = () => {
   /** Google / Apple SSO via Lovable Cloud's managed OAuth. */
   const handleSso = async (provider: "google" | "apple") => {
     const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: `${window.location.origin}/admin`,
+      redirect_uri: `${window.location.origin}/admin/dashboard`,
     });
     if (result.error) toast.error("SSO sign-in failed");
   };
