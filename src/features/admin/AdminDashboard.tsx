@@ -151,6 +151,21 @@ const ROW_TYPE_OPTIONS: { type: PageRow["type"]; label: string; emoji: string }[
 ];
 const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
 
+/* US 4.2 — Dashboard Nomenclature & Taxonomy
+ * --------------------------------------------------------------
+ * Labels rewritten to match the vocabulary marketing/content hires
+ * already use in the wild. Old internal/jargony names below; new
+ * user-facing names beside each item:
+ *
+ *   "Site Editor"  →  "Page Builder"        (visual canvas tool)
+ *   "Pages"        →  "Page Manager"        (CRUD list of pages)
+ *   "SEO Master"   →  "Global SEO Settings" (site-wide metadata)
+ *
+ * Tab keys ("site", "pages", "seo_master") are STABLE — they're used
+ * by routing, persisted state, and analytics. Only the human-facing
+ * `label` strings change here. Do not rename the keys without a
+ * coordinated migration of any URL deep-links that reference them.
+ */
 const NAV_GROUPS = [
   {
     label: "OVERVIEW",
@@ -161,8 +176,8 @@ const NAV_GROUPS = [
   {
     label: "CONTENT",
     items: [
-      { key: "site" as Tab, icon: FileText, label: "Site Editor" },
-      { key: "pages" as Tab, icon: FileText, label: "Pages" },
+      { key: "site" as Tab, icon: FileText, label: "Page Builder" },
+      { key: "pages" as Tab, icon: FileText, label: "Page Manager" },
       { key: "navigation" as Tab, icon: Compass, label: "Navigation" },
       { key: "blog" as Tab, icon: BookOpen, label: "Blog Posts" },
     ],
@@ -180,7 +195,7 @@ const NAV_GROUPS = [
     items: [
       { key: "brand" as Tab, icon: Palette, label: "Brand" },
       { key: "tags" as Tab, icon: Tag, label: "Tags" },
-      { key: "seo_master" as Tab, icon: Search, label: "SEO Master" },
+      { key: "seo_master" as Tab, icon: Search, label: "Global SEO Settings" },
       { key: "versions" as Tab, icon: History, label: "Version History" },
       { key: "team" as Tab, icon: UserCog, label: "Manage Team" },
       { key: "insights" as const, icon: Sparkles, label: "Insights" },

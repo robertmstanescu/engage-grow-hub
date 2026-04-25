@@ -499,7 +499,14 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--foreground))" }}>Pages</h2>
+        {/* US 4.2 — "Pages" → "Page Manager" so the header matches the
+            sidebar label and reads as the CRUD surface for pages. */}
+        <div className="space-y-1">
+          <h2 className="font-display text-xl font-bold" style={{ color: "hsl(var(--foreground))" }}>Page Manager</h2>
+          <p className="font-body text-xs text-muted-foreground">
+            Create, edit, and organise every page on your site.
+          </p>
+        </div>
         <button
           onClick={() => setShowCreate(!showCreate)}
           className="flex items-center gap-1 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
