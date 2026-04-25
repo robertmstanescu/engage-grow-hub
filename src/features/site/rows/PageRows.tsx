@@ -1,7 +1,8 @@
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
-import { type PageRow } from "@/types/rows";
+import { type PageRow, readDesignSettings } from "@/types/rows";
 import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import { renderWidget } from "@/lib/WidgetRegistry";
+import WidgetWrapper from "@/components/widgets/WidgetWrapper";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
