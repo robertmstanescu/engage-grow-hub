@@ -251,6 +251,21 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
     });
   };
 
+  /**
+   * Duplicate a page (US 3.2). Server-side helper handles the slug
+   * collision logic — we just toast and reload. We deliberately do NOT
+   * jump the user into the new page's editor: the table view is the
+   * mental model here, and surprising context switches break flow.
+   */
+  const duplicatePage = async (id: string) => {
+    const result = await runDbAction({
+      action: () => duplicateCmsPage(id),
+      successMessage: "Page duplicated",
+      errorMessage: "Could not duplicate page",
+    });
+    if (result !== null) load();
+  };
+
   const savePageRows = async (page: CmsPage, rows: PageRow[]) => {
     const result = await runDbAction({
       action: () => saveCmsPageRows(page.id, rows),
