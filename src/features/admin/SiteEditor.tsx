@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Save, ChevronDown, ChevronUp, Eye, Send, FileText } from "lucide-react";
+import { Save, Eye, Send, FileText, Layout, Image as ImageIcon, Search, MousePointer2 } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
 import SeoFields from "./site-editor/SeoFields";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 interface SectionData {
   section_key: string;
@@ -14,9 +19,30 @@ interface SectionData {
   draft_content: Record<string, any> | null;
 }
 
+/**
+ * EPIC 14 — Three-Pane Builder Shell
+ *
+ * Layout:
+ *   ┌──────────────┬─────────────────────────┬───────────────┐
+ *   │  Library /   │        Canvas           │   Inspector   │
+ *   │  Navigator   │  (active section editor)│  (settings)   │
+ *   │   ~250 px    │      flex (slate)       │    ~300 px    │
+ *   └──────────────┴─────────────────────────┴───────────────┘
+ *
+ * WHY: Replaces the legacy vertical accordion. Editors now have persistent
+ * tools on the left, the page in the center, and contextual settings on
+ * the right — mirroring Webflow / Figma. Inner widget editors are unchanged
+ * in this story; only the outer shell is rebuilt (US 14.1).
+ */
+const SECTION_NAV: { key: "hero" | "page_rows" | "main_page_seo"; label: string; Icon: any }[] = [
+  { key: "hero", label: "Hero Section", Icon: ImageIcon },
+  { key: "page_rows", label: "Page Rows", Icon: Layout },
+  { key: "main_page_seo", label: "SEO & Metadata", Icon: Search },
+];
+
 const SiteEditor = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
-  const [openSection, setOpenSection] = useState<string | null>("hero");
+  const [activeSection, setActiveSection] = useState<"hero" | "page_rows" | "main_page_seo">("hero");
   const [saving, setSaving] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
 
@@ -125,80 +151,224 @@ const SiteEditor = () => {
 
   const pageRows: PageRow[] = (getDraft("page_rows") as any)?.rows || [];
 
+  // Per-section dirty indicator for the navigator
+  const isDirty = (key: string) => {
+    const s = getSection(key);
+    if (!s) return false;
+    return JSON.stringify(s.draft_content) !== JSON.stringify(s.content);
+  };
+
+  /* ─── Canvas content for the active section ─────────────────────── */
+  const renderCanvas = () => {
+    if (activeSection === "hero") {
+      return (
+        <div className="space-y-4">
+          <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
+          <button
+            onClick={() => saveDraft("hero")}
+            disabled={saving === "hero"}
+            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50"
+            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+          >
+            <Save size={13} /> {saving === "hero" ? "Saving…" : "Save Draft"}
+          </button>
+        </div>
+      );
+    }
+    if (activeSection === "page_rows") {
+      return (
+        <div className="space-y-4">
+          <RowsManager rows={pageRows} onChange={(rows) => updateFullDraft("page_rows", { rows })} />
+          <button
+            onClick={() => saveDraft("page_rows")}
+            disabled={saving === "page_rows"}
+            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50"
+            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+          >
+            <Save size={13} /> {saving === "page_rows" ? "Saving…" : "Save Draft"}
+          </button>
+        </div>
+      );
+    }
+    // SEO
+    return (
+      <div className="space-y-4">
+        <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+          OG image for social sharing is set via the Publish button. These fields control search engine metadata only.
+        </p>
+        <SeoFields
+          metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+          metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+          onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+          onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+        />
+        <button
+          onClick={() => saveDraft("main_page_seo")}
+          disabled={saving === "main_page_seo"}
+          className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50"
+          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+        >
+          <Save size={13} /> {saving === "main_page_seo" ? "Saving…" : "Save Draft"}
+        </button>
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Edit Main Page</h2>
+    <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px] gap-2">
+      {/* ─── Toolbar (above the three panes) ──────────────────────── */}
+      <div className="flex items-center justify-between flex-shrink-0">
+        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>
+          Edit Main Page
+        </h2>
         <div className="flex items-center gap-2">
-          <button onClick={openPreview} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity" style={{ border: "1px solid hsl(var(--border))", color: "hsl(var(--foreground))" }}>
+          {hasChanges && (
+            <span
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-body text-[11px]"
+              style={{ backgroundColor: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent-foreground))" }}
+            >
+              <FileText size={12} /> Unpublished changes
+            </span>
+          )}
+          <button
+            onClick={openPreview}
+            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            style={{ border: "1px solid hsl(var(--border))", color: "hsl(var(--foreground))" }}
+          >
             <Eye size={13} /> Preview
           </button>
-          <button onClick={publishAll} disabled={publishing || !hasChanges} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40" style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+          <button
+            onClick={publishAll}
+            disabled={publishing || !hasChanges}
+            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40"
+            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
+          >
             <Send size={13} /> {publishing ? "Publishing…" : "Publish All"}
           </button>
         </div>
       </div>
 
-      {hasChanges && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg font-body text-xs" style={{ backgroundColor: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent-foreground))" }}>
-          <FileText size={13} /> You have unpublished draft changes.
-        </div>
-      )}
+      {/* ─── Three-pane resizable shell ──────────────────────────── */}
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="flex-1 rounded-lg border overflow-hidden"
+        style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+      >
+        {/* LEFT — Library / Navigator (250px default, min 200px) */}
+        <ResizablePanel defaultSize={18} minSize={14} maxSize={28}>
+          <aside
+            className="h-full flex flex-col"
+            style={{ backgroundColor: "hsl(var(--card))" }}
+          >
+            <div
+              className="px-4 py-3 border-b"
+              style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+            >
+              <h3
+                className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
+                style={{ color: "hsl(var(--muted-foreground))" }}
+              >
+                Navigator
+              </h3>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+              {SECTION_NAV.map(({ key, label, Icon }) => {
+                const active = activeSection === key;
+                const dirty = isDirty(key);
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setActiveSection(key)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left font-body text-sm transition-colors"
+                    style={{
+                      backgroundColor: active ? "hsl(var(--accent) / 0.18)" : "transparent",
+                      color: active ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+                      fontWeight: active ? 500 : 400,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!active) e.currentTarget.style.backgroundColor = "hsl(var(--muted) / 0.5)";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!active) e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                  >
+                    <Icon size={15} />
+                    <span className="flex-1 truncate">{label}</span>
+                    {dirty && (
+                      <span
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: "hsl(var(--accent))" }}
+                        aria-label="Unsaved changes"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+        </ResizablePanel>
 
-      {/* Hero section */}
-      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
-        <button onClick={() => setOpenSection(openSection === "hero" ? null : "hero")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
-          <span className="font-body text-sm font-medium">Hero Section</span>
-          {openSection === "hero" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-        {openSection === "hero" && (
-          <div className="px-4 pb-4 space-y-4">
-            <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
-            <button onClick={() => saveDraft("hero")} disabled={saving === "hero"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-              <Save size={13} /> {saving === "hero" ? "Saving…" : "Save Draft"}
-            </button>
-          </div>
-        )}
-      </div>
+        <ResizableHandle withHandle />
 
-      {/* SEO & Metadata */}
-      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
-        <button onClick={() => setOpenSection(openSection === "seo" ? null : "seo")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
-          <span className="font-body text-sm font-medium">SEO & Metadata</span>
-          {openSection === "seo" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-        {openSection === "seo" && (
-          <div className="px-4 pb-4 space-y-4">
-            <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-              OG image for social sharing is set via the Publish button. These fields control search engine metadata only.
-            </p>
-            <SeoFields
-              metaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-              metaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-              onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-              onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-            />
-            <button onClick={() => saveDraft("main_page_seo")} disabled={saving === "main_page_seo"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-              <Save size={13} /> {saving === "main_page_seo" ? "Saving…" : "Save Draft"}
-            </button>
-          </div>
-        )}
-      </div>
-      {/* Page Rows */}
-      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
-        <button onClick={() => setOpenSection(openSection === "page_rows" ? null : "page_rows")} className="w-full flex items-center justify-between px-4 py-3 text-left hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--foreground))" }}>
-          <span className="font-body text-sm font-medium">Page Rows</span>
-          {openSection === "page_rows" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-        {openSection === "page_rows" && (
-          <div className="px-4 pb-4 space-y-4">
-            <RowsManager rows={pageRows} onChange={(rows) => updateFullDraft("page_rows", { rows })} />
-            <button onClick={() => saveDraft("page_rows")} disabled={saving === "page_rows"} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-              <Save size={13} /> {saving === "page_rows" ? "Saving…" : "Save Draft"}
-            </button>
-          </div>
-        )}
-      </div>
+        {/* CENTER — Canvas (flexible, subtle gray bg) */}
+        <ResizablePanel defaultSize={57} minSize={30}>
+          <section
+            className="h-full overflow-y-auto"
+            style={{ backgroundColor: "hsl(var(--muted) / 0.35)" }}
+          >
+            <div className="max-w-5xl mx-auto p-6">
+              <div
+                className="rounded-lg border p-5 shadow-sm"
+                style={{
+                  backgroundColor: "hsl(var(--card))",
+                  borderColor: "hsl(var(--border) / 0.5)",
+                }}
+              >
+                {renderCanvas()}
+              </div>
+            </div>
+          </section>
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
+
+        {/* RIGHT — Inspector (300px default, max 400px) */}
+        <ResizablePanel defaultSize={25} minSize={18} maxSize={32}>
+          <aside
+            className="h-full flex flex-col"
+            style={{ backgroundColor: "hsl(var(--card))" }}
+          >
+            <div
+              className="px-4 py-3 border-b"
+              style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+            >
+              <h3
+                className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
+                style={{ color: "hsl(var(--muted-foreground))" }}
+              >
+                Inspector
+              </h3>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {/*
+                Inner inspector content is rendered by individual editors
+                (e.g. WidgetSettingsDrawer launched from RowsManager). This
+                pane shows the empty-state hint until a future story moves
+                that drawer into this slot.
+              */}
+              <div
+                className="flex flex-col items-center justify-center text-center h-full min-h-[280px] gap-3"
+                style={{ color: "hsl(var(--muted-foreground))" }}
+              >
+                <MousePointer2 size={28} strokeWidth={1.4} />
+                <p className="font-body text-xs leading-relaxed max-w-[220px]">
+                  Select a widget on the canvas to see its settings here.
+                </p>
+              </div>
+            </div>
+          </aside>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };
