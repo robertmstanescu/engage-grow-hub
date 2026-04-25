@@ -143,6 +143,47 @@ Deno.serve(async (req) => {
     console.error('Email notification error:', e)
   }
 
+  // Epic 4 / US 4.2 — Fire-and-forget AI enrichment webhook (LinkedIn /
+  // company enrichment). Must NOT block the user response. We use
+  // EdgeRuntime.waitUntil so Deno keeps the request alive after the
+  // 200 has been flushed to the client.
+  const enrichmentUrl = Deno.env.get('LEAD_ENRICHMENT_WEBHOOK_URL')
+  if (enrichmentUrl) {
+    const enrichmentPayload = {
+      source: 'submit-contact',
+      lead_id: id,
+      email,
+      name,
+      company,
+      message,
+      attribution,
+      submitted_at: new Date().toISOString(),
+    }
+    const enrichmentTask = fetch(enrichmentUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(enrichmentPayload),
+      // 8s safety cap so a hung webhook can never leak workers forever.
+      signal: AbortSignal.timeout(8000),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          const txt = await r.text().catch(() => '')
+          console.error(`Enrichment webhook non-OK [${r.status}]:`, txt.slice(0, 500))
+        }
+      })
+      .catch((err) => {
+        console.error('Enrichment webhook failed (non-fatal):', err)
+      })
+    try {
+      // @ts-ignore - EdgeRuntime is provided by the Supabase Edge runtime.
+      EdgeRuntime.waitUntil(enrichmentTask)
+    } catch {
+      // EdgeRuntime not available (e.g. local dev); the promise still runs,
+      // we just don't get the lifecycle guarantee. Intentionally not awaited.
+    }
+  }
+
   return new Response(
     JSON.stringify({ success: true, id }),
     { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

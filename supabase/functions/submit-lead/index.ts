@@ -173,7 +173,46 @@ Deno.serve(async (req) => {
     }
   }
 
-  // ── 7. Return the download URL ───────────────────────────────────────
+  // ── 7. Fire-and-forget AI enrichment webhook (Epic 4 / US 4.2) ───────
+  // Triggers external automation (n8n/Make/AI Agent) to scrape LinkedIn
+  // and company data. MUST NOT block the user response — we wrap the
+  // fetch in EdgeRuntime.waitUntil so it survives past the 200 OK.
+  const enrichmentUrl = Deno.env.get("LEAD_ENRICHMENT_WEBHOOK_URL");
+  if (enrichmentUrl) {
+    const enrichmentPayload = {
+      source: "submit-lead",
+      email,
+      name: fullName,
+      company: companyUniversity,
+      title,
+      asset_title: assetTitle,
+      attribution,
+      submitted_at: new Date().toISOString(),
+    };
+    const enrichmentTask = fetch(enrichmentUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(enrichmentPayload),
+      signal: AbortSignal.timeout(8000),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          const txt = await r.text().catch(() => "");
+          console.error(`Enrichment webhook non-OK [${r.status}]:`, txt.slice(0, 500));
+        }
+      })
+      .catch((err) => {
+        console.error("Enrichment webhook failed (non-fatal):", err);
+      });
+    try {
+      // @ts-ignore - EdgeRuntime is provided by the Supabase Edge runtime.
+      EdgeRuntime.waitUntil(enrichmentTask);
+    } catch {
+      // Local dev fallback — the promise still runs detached.
+    }
+  }
+
+  // ── 8. Return the download URL ───────────────────────────────────────
   const { data: publicUrlData } = supabase.storage.from(asset.bucket).getPublicUrl(asset.storage_path);
 
   return json(200, {
