@@ -30,6 +30,11 @@ import ImageTextEditor from "../site-editor/ImageTextEditor";
 import ProfileEditor from "../site-editor/ProfileEditor";
 import GridEditor from "../site-editor/GridEditor";
 import ContactAdmin from "@/features/widgets/contact/ContactAdmin";
+// Catch-all editor for widget types that don't have a dedicated
+// inspector-friendly admin (lead_magnet, text, boxed, testimonial,
+// logo_cloud, faq, etc.). Reuses the legacy form-driven UI so editors
+// keep full edit access from the Inspector.
+import RowContentEditor from "../editors/RowContentEditor";
 
 /* ════════════════════════════════════════════════════════════════════
  * InspectorPanel — US 16.1
