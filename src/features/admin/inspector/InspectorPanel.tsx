@@ -169,7 +169,7 @@ const InspectorPanel = (props: InspectorPanelProps) => {
         {row.columns_data && row.columns_data.length > 1 && (
           <Section title="Column widths">
             <ColumnWidthControl
-              count={row.columns_data.length}
+              columnCount={row.columns_data.length}
               widths={layout.column_widths}
               onChange={(widths) =>
                 updateRow({ layout: { ...layout, column_widths: widths } })
