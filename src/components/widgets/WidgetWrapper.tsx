@@ -23,6 +23,7 @@
 
 import { useId, type CSSProperties, type ReactNode } from "react";
 import type { WidgetDesignSettings } from "@/types/rows";
+import { parseSpacing } from "@/lib/spacing";
 
 interface Props {
   design: WidgetDesignSettings;
@@ -57,16 +58,20 @@ const scopeCss = (raw: string, scope: string): string => {
  * "what you see is what you get".
  */
 export const designToStyle = (d: WidgetDesignSettings): CSSProperties => {
+  // US 2.4 — every spacing value is forced through `parseSpacing` so it
+  // surfaces in the DOM as an explicit `"<n>px"` string. Undefined
+  // returns mean "no override" and are simply omitted from the style
+  // object so the cascade can take over.
   const style: CSSProperties = {
-    marginTop: d.marginTop || undefined,
-    marginRight: d.marginRight || undefined,
-    marginBottom: d.marginBottom || undefined,
-    marginLeft: d.marginLeft || undefined,
-    paddingTop: d.paddingTop || undefined,
-    paddingRight: d.paddingRight || undefined,
-    paddingBottom: d.paddingBottom || undefined,
-    paddingLeft: d.paddingLeft || undefined,
-    borderRadius: d.borderRadius || undefined,
+    marginTop: parseSpacing(d.marginTop),
+    marginRight: parseSpacing(d.marginRight),
+    marginBottom: parseSpacing(d.marginBottom),
+    marginLeft: parseSpacing(d.marginLeft),
+    paddingTop: parseSpacing(d.paddingTop),
+    paddingRight: parseSpacing(d.paddingRight),
+    paddingBottom: parseSpacing(d.paddingBottom),
+    paddingLeft: parseSpacing(d.paddingLeft),
+    borderRadius: parseSpacing(d.borderRadius),
   };
   // Only set bg when explicitly provided — empty string == "transparent
   // / inherit from row", which is the safest fallback for legacy rows.
