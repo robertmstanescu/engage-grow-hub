@@ -1,5 +1,12 @@
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
-import { type PageRow, readDesignSettings, readGlobalRef } from "@/types/rows";
+import {
+  DEFAULT_ROW_LAYOUT,
+  type PageRow,
+  type PageRowV2,
+  isPageRowV2,
+  readDesignSettings,
+  readGlobalRef,
+} from "@/types/rows";
 import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import { renderWidget } from "@/lib/WidgetRegistry";
 import WidgetWrapper from "@/components/widgets/WidgetWrapper";
@@ -15,6 +22,26 @@ import { useBuilder } from "@/features/admin/builder/BuilderContext";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
+type RenderableRow = PageRow | PageRowV2;
+
+const buildHomepageHeroRow = (content: Record<string, any>): PageRow => ({
+  id: "__homepage_hero__",
+  type: "hero",
+  strip_title: "Hero",
+  bg_color: "#000000",
+  scope: "hero",
+  content,
+  layout: { ...DEFAULT_ROW_LAYOUT, paddingTop: 0, paddingBottom: 0 },
+});
+
+const hasHeroContent = (content: Record<string, any>) =>
+  !!content && Object.values(content).some((value) => Array.isArray(value) ? value.length > 0 : !!value);
+
+const rowContainsHeroWidget = (row: RenderableRow) =>
+  isPageRowV2(row)
+    ? row.columns.some((column) => column.widgets.some((widget) => widget.type === "hero"))
+    : row.type === "hero";
+
 export type Alignment = "left" | "right" | "center";
 export type VAlign = "top" | "middle" | "bottom";
 
@@ -24,15 +51,18 @@ export type VAlign = "top" | "middle" | "bottom";
  * - After a group of pillar rows, resume with the opposite of the pre-pillar alignment.
  * - All other rows alternate left/right.
  */
-const computeAutoAlignments = (rows: PageRow[]): Alignment[] => {
+const computeAutoAlignments = (rows: RenderableRow[]): Alignment[] => {
   const alignments: Alignment[] = [];
   let current: Alignment = "left";
   let prePillar: Alignment | null = null;
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const isPillar = row.type === "service";
-    const prevWasPillar = i > 0 && rows[i - 1].type === "service";
+    const rowType = isPageRowV2(row) ? row.columns[0]?.widgets[0]?.type : row.type;
+    const prev = i > 0 ? rows[i - 1] : null;
+    const prevType = prev ? (isPageRowV2(prev) ? prev.columns[0]?.widgets[0]?.type : prev.type) : null;
+    const isPillar = rowType === "service";
+    const prevWasPillar = prevType === "service";
 
     if (isPillar) {
       // Service rows default to "center" in auto mode
@@ -50,7 +80,7 @@ const computeAutoAlignments = (rows: PageRow[]): Alignment[] => {
   return alignments;
 };
 
-const resolveAlignment = (row: PageRow, autoAlign: Alignment): Alignment => {
+const resolveAlignment = (row: RenderableRow, autoAlign: Alignment): Alignment => {
   const explicit = row.layout?.alignment;
   if (explicit && explicit !== "auto") return explicit;
   return autoAlign;
@@ -62,14 +92,57 @@ const RowRenderer = ({
   align,
   globalMap,
 }: {
-  row: PageRow;
+  row: RenderableRow;
   rowIndex: number;
   align: Alignment;
   globalMap: Map<string, GlobalWidget>;
 }) => {
   const id = row.scope || slugify(row.strip_title);
-  const isService = row.type === "service";
   const vAlign: VAlign = row.layout?.verticalAlign || "middle";
+
+  if (isPageRowV2(row)) {
+    const widths = row.layout?.column_widths || row.columns.map(() => Math.round(100 / Math.max(row.columns.length, 1)));
+    const renderedColumns = row.columns.map((column, columnIndex) => (
+      <div key={column.id} className="min-w-0 space-y-6">
+        {column.widgets.map((widget) => {
+          const legacyRow: PageRow = {
+            id: widget.id,
+            type: widget.type as PageRow["type"],
+            strip_title: row.strip_title,
+            bg_color: row.bg_color,
+            scope: row.scope,
+            layout: row.layout,
+            content: widget.data || {},
+          };
+          return (
+            <RowRenderer
+              key={widget.id}
+              row={legacyRow}
+              rowIndex={rowIndex}
+              align={align}
+              globalMap={globalMap}
+            />
+          );
+        })}
+        {column.widgets.length === 0 && <div className="min-h-24" />}
+      </div>
+    ));
+
+    return (
+      <div id={id} style={{ scrollMarginTop: "4rem", isolation: "isolate" }}>
+        <SelectableWrapper id={`row:${row.id}`} label="Row" variant="row">
+          <div
+            className="grid gap-8"
+            style={{ gridTemplateColumns: widths.map((w) => `${w}fr`).join(" ") }}
+          >
+            {renderedColumns}
+          </div>
+        </SelectableWrapper>
+      </div>
+    );
+  }
+
+  const isService = row.type === "service";
 
   // ── Global Widget reference resolution (US 8.1) ──────────────────
   // If the cell content carries `__global_ref`, we substitute the
@@ -157,7 +230,7 @@ export const RowsRenderer = ({
   rows,
   footerSlot,
 }: {
-  rows: PageRow[];
+  rows: RenderableRow[];
   footerSlot?: React.ReactNode;
 }) => {
   const autoAlignments = computeAutoAlignments(rows);
@@ -184,7 +257,7 @@ export const RowsRenderer = ({
         const rendered = (
           <ErrorBoundary
             key={row.id}
-            label={`row:${row.type}`}
+            label={`row:${isPageRowV2(row) ? "layout" : row.type}`}
             fallback={(error, reset) => <RowFallback error={error} reset={reset} />}
           >
             <RowRenderer
@@ -226,7 +299,13 @@ export const RowsRenderer = ({
   );
 };
 
-const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
+const PageRows = ({
+  footerSlot,
+  heroContent,
+}: {
+  footerSlot?: React.ReactNode;
+  heroContent?: Record<string, any>;
+}) => {
   /**
    * Loading-aware read so we don't briefly render the hardcoded
    * DEFAULT_ROWS layout (a placeholder rows skeleton from
@@ -246,7 +325,10 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
     "page_rows",
     { rows: [] },
   );
-  const rows = data.rows || [];
+  const storedRows: RenderableRow[] = data.rows || [];
+  const rows = heroContent && hasHeroContent(heroContent) && !storedRows.some(rowContainsHeroWidget)
+    ? [buildHomepageHeroRow(heroContent), ...storedRows]
+    : storedRows;
 
   // Cold-load guard: don't paint stale defaults. We still render the
   // footer slot so the page never feels totally empty during the brief
