@@ -13,6 +13,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuilderToolbar";
+import CanvasViewport from "./site-editor/CanvasViewport";
 // US 15.1 — render the SAME components the public site renders, against
 // the in-memory draft content. WYSIWYG, no markup duplication.
 import { HeroView } from "@/features/site/HeroSection";
@@ -426,10 +427,19 @@ const SiteEditor = () => {
   // Preview/Edit toggle is hidden for SEO (no visual rep).
   const supportsPreview = activeSection === "hero" || activeSection === "page_rows";
 
-  // Mobile/tablet canvas constraint (per US 14.2 dev notes — no iframes,
-  // just a max-width swap so the rendered widget tree reflows naturally).
-  const canvasMaxWidth =
-    viewport === "mobile" ? 375 : viewport === "tablet" ? 768 : undefined;
+  // ─── Viewport simulation (US 14.2, hardened) ────────────────────
+  // PROBLEM with the previous max-width-only approach: tailwind's `md:`
+  // / `lg:` variants are evaluated against the REAL viewport, so even
+  // when the canvas was visually narrowed to 375px, every nested widget
+  // still believed it was on desktop. To get true device behaviour we
+  // render the simulated viewport at its natural CSS pixel WIDTH and
+  // scale-down with CSS transform so it visually fits the canvas column.
+  // The viewport meta + media queries inside the wrapper still see the
+  // original parent width (CSS limitation — only iframes get isolated
+  // breakpoints), but the LAYOUT WIDTH the widgets compute against is
+  // now correct, which is what 95% of "looks wrong on phone" bugs are.
+  const deviceWidth =
+    viewport === "mobile" ? 390 : viewport === "tablet" ? 820 : null;
 
   return (
     <BuilderProvider>
@@ -542,70 +552,15 @@ const SiteEditor = () => {
 
         {/* CENTER — Canvas (flexible, subtle gray bg) */}
         <ResizablePanel defaultSize={57} minSize={30}>
-          <section
-            className="h-full overflow-y-auto"
-            style={{ backgroundColor: "hsl(var(--muted) / 0.35)" }}
+          <CanvasViewport
+            deviceWidth={deviceWidth}
+            viewport={viewport}
+            supportsPreview={supportsPreview}
+            canvasMode={canvasMode}
+            setCanvasMode={setCanvasMode}
           >
-            <div
-              className="mx-auto p-6 transition-[max-width] duration-300 ease-out"
-              style={{
-                // WHY: dynamic max-width simulates the viewport without an
-                // iframe — the actual widget tree reflows at its real
-                // Tailwind breakpoints (md / lg) so editors see the true
-                // mobile/tablet stacking behavior.
-                maxWidth: canvasMaxWidth ? `${canvasMaxWidth}px` : "64rem", // 64rem = max-w-5xl
-              }}
-            >
-              {/* US 15.1 — Preview / Edit toggle (per-section, hidden for SEO) */}
-              {supportsPreview && (
-                <div className="flex items-center justify-end mb-3">
-                  <div
-                    className="inline-flex items-center rounded-full border p-0.5"
-                    style={{ borderColor: "hsl(var(--border) / 0.6)", backgroundColor: "hsl(var(--card))" }}
-                    role="group"
-                    aria-label="Canvas mode"
-                  >
-                    {([
-                      { key: "preview", label: "Preview", Icon: Eye },
-                      { key: "edit", label: "Edit", Icon: Pencil },
-                    ] as const).map(({ key, label, Icon }) => {
-                      const active = canvasMode === key;
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => setCanvasMode(key)}
-                          aria-pressed={active}
-                          className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full transition-colors"
-                          style={{
-                            backgroundColor: active ? "hsl(var(--accent))" : "transparent",
-                            color: active ? "hsl(var(--accent-foreground))" : "hsl(var(--muted-foreground))",
-                          }}
-                        >
-                          <Icon size={12} /> {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <div
-                className="rounded-lg border shadow-sm overflow-hidden"
-                style={{
-                  // WHY no padding when previewing: the live frontend
-                  // components own their own spacing/backgrounds (e.g.
-                  // hero is full-bleed). Padding the wrapper would crop
-                  // their visual edge. Edit mode keeps the comfy padding.
-                  backgroundColor: "hsl(var(--card))",
-                  borderColor: "hsl(var(--border) / 0.5)",
-                  padding: canvasMode === "preview" && supportsPreview ? 0 : "1.25rem",
-                }}
-              >
-                {renderCanvas()}
-              </div>
-            </div>
-          </section>
+            {renderCanvas()}
+          </CanvasViewport>
         </ResizablePanel>
 
         <ResizableHandle withHandle />
