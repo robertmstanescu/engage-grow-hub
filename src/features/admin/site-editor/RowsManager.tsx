@@ -659,6 +659,24 @@ const WidgetCell = ({
           Col {colIdx + 1} · {Math.round(widthPct)}%
         </div>
       </button>
+      {/*
+       * Inspector trigger (US 6.1). Opens the global "Settings" drawer
+       * for this cell so the admin can edit margin / padding / bg /
+       * radius without polluting the widget's own editor with the same
+       * controls. Stops propagation so the parent edit button's click
+       * doesn't fire alongside (we don't want to switch the active
+       * column tab AND open the drawer at the same time).
+       */}
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onInspect(); }}
+        className="p-1.5 rounded hover:opacity-70 flex-shrink-0"
+        style={{ color: "hsl(var(--muted-foreground))" }}
+        title={`Widget settings (column ${colIdx + 1})`}
+        aria-label={`Open widget settings for column ${colIdx + 1}`}
+      >
+        <Settings size={14} />
+      </button>
     </div>
   );
 };
