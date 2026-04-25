@@ -52,6 +52,12 @@ const SiteEditor = () => {
   const [publishing, setPublishing] = useState(false);
   // US 14.2 — viewport simulation. Drives a max-width on the canvas wrapper.
   const [viewport, setViewport] = useState<ViewportMode>("desktop");
+  // US 15.1 — Canvas mode: "preview" shows the actual frontend
+  // components rendering live draft state (WYSIWYG); "edit" shows the
+  // existing form-based editors (HeroEditor / RowsManager) so editors
+  // can still drag, drop and configure widgets in the form-driven UI.
+  // Default to preview because that's the whole point of US 15.1.
+  const [canvasMode, setCanvasMode] = useState<"preview" | "edit">("preview");
 
   useEffect(() => {
     const fetchAll = async () => {
