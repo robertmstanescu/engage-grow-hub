@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState, useEffect, useRef } from "react";
 
 /**
  * Hard limit for image alt text — enforced in three places:
