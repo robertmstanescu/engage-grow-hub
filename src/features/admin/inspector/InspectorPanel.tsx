@@ -215,11 +215,16 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     );
   }
 
-  /* ─── Parse the selection id (`row:<id>` or `widget:<id>`) ───── */
+  /* ─── Parse the selection id (`row:<id>` or `widget:<id>`) ─────
+   *
+   * Debug Story 1.1 — for `widget:<id>` the parsed `rowId` is actually
+   * the WIDGET id, which won't match any row in v2/v3 layouts. So we
+   * only enforce the row-lookup guard for the row branch; the widget
+   * branch resolves its target via `findWidgetLocation`. */
   const [kind, rowId] = activeElement.split(":");
   const row = pageRows.find((r) => r.id === rowId);
 
-  if (!row) {
+  if (kind === "row" && !row) {
     return (
       <EmptyHint>The selected element no longer exists. Click anywhere on the canvas to clear the selection.</EmptyHint>
     );
@@ -227,7 +232,7 @@ const InspectorPanel = (props: InspectorPanelProps) => {
 
   // Helpers — patch a single ROW in place (v1 row-only operations).
   // For widget-level updates we use the sibling-safe widgetLocator
-  // helpers below.
+  // helpers in the widget branch below.
   const updateRow = (patch: Partial<PageRow>) => {
     onRowsChange(pageRows.map((r) => (r.id === rowId ? { ...r, ...patch } : r)));
   };
