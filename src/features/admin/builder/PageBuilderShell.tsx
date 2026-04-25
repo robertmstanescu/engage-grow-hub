@@ -371,6 +371,8 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     slugEditable={props.slugEditable}
                     slugPrefix={props.slugPrefix}
                     pageRows={props.pageRows}
+                    schedulePanel={props.schedulePanel}
+                    revisionPanel={props.inspectorFooter}
                   />
                 </aside>
               );
