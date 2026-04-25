@@ -430,7 +430,7 @@ const SiteEditor = () => {
                 widget directly onto the canvas. Drop handling lives in
                 the parent <DndContext> (see handleDragEnd). */}
             <div
-              className="border-t px-3 py-3 overflow-y-auto"
+              className="flex-1 min-h-0 border-t px-3 py-3 overflow-y-auto"
               style={{ borderColor: "hsl(var(--border) / 0.5)" }}
             >
               <h3
