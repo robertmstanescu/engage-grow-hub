@@ -272,7 +272,7 @@ const PageNavigator = ({
   schedulePanel,
   revisionPanel,
 }: PageNavigatorProps) => {
-  const { activeNodePath, setActiveElement } = useBuilder();
+  const { activeNodePath, setActiveElement, onRowsChange } = useBuilder();
 
   /** Resolve the active row id from the selection path so we can mark
    *  the corresponding section as active in the navigator. */
@@ -303,6 +303,39 @@ const PageNavigator = ({
       }
     });
   };
+
+  /** Inline rename — writes to `row.strip_title`, which is the first
+   *  field `sectionLabelForRow` consults. Falls through silently when
+   *  the BuilderContext was mounted without `onRowsChange` (read-only). */
+  const handleRename = (rowId: string, nextLabel: string) => {
+    if (!onRowsChange) return;
+    onRowsChange(
+      (pageRows || []).map((r) =>
+        r.id === rowId ? ({ ...r, strip_title: nextLabel } as PageRow) : r,
+      ),
+    );
+  };
+
+  /** Drag-to-reorder — driven by the nested DndContext below. We use
+   *  arrayMove against the row ids so v3 column/cell trees stay intact
+   *  (no per-cell mutation, just a top-level shuffle). */
+  const handleReorder = (event: DragEndEvent) => {
+    if (!onRowsChange) return;
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const fromIdx = (pageRows || []).findIndex((r) => r.id === active.id);
+    const toIdx = (pageRows || []).findIndex((r) => r.id === over.id);
+    if (fromIdx === -1 || toIdx === -1) return;
+    onRowsChange(arrayMove(pageRows || [], fromIdx, toIdx));
+  };
+
+  /** Local sensors for the SECTION sortable. distance:5 prevents a
+   *  click from registering as a drag, so double-click rename still
+   *  works. The outer tray DndContext owns its own sensors and is
+   *  unaffected by anything bound here. */
+  const sectionSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+  );
 
   const titleReadOnly = !onPageTitleChange;
   const slugReadOnly = !slugEditable || !onPageSlugChange;
