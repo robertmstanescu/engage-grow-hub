@@ -63,36 +63,53 @@ const isPathPrefix = (prefix: NodePath, full: NodePath) => {
 
 /**
  * Convert a legacy "kind:id" string into a path array.
- * "hero"             → ["hero"]
- * "row:row_x"        → ["row","row_x"]
- * "widget:row_x"     → ["row","row_x","widget","row_x"]
+ * "hero"                       → ["hero"]
+ * "row:row_x"                  → ["row","row_x"]
+ * "widget:row_x"               → ["row","row_x","widget","row_x"]
+ * "cell:row_x:col_y:cell_z"    → ["row","row_x","col","col_y","cell","cell_z"]
  *
- * The `widget:` shorthand expands to a row+widget pair so that
- * downstream consumers (Inspector) can find the parent row.
+ * The `widget:` shorthand expands to a row+widget pair; the `cell:`
+ * shorthand expands to the full row→col→cell triple. Both let callers
+ * round-trip selection state without losing context.
  */
 const legacyIdToPath = (id: string): NodePath => {
   if (!id) return [];
   if (!id.includes(":")) return [id];
-  const [kind, rowId, ...rest] = id.split(":");
-  if (kind === "row") return ["row", rowId, ...rest];
-  if (kind === "widget") return ["row", rowId, "widget", rowId, ...rest];
-  return [kind, rowId, ...rest];
+  const [kind, ...rest] = id.split(":");
+  if (kind === "row") return ["row", ...rest];
+  if (kind === "widget") {
+    const [rowId, ...trailing] = rest;
+    return ["row", rowId, "widget", rowId, ...trailing];
+  }
+  if (kind === "cell" && rest.length >= 3) {
+    const [rowId, colId, cellId, ...trailing] = rest;
+    return ["row", rowId, "col", colId, "cell", cellId, ...trailing];
+  }
+  return [kind, ...rest];
 };
 
 /**
  * Convert a path back into a legacy "kind:id" string for components
  * that haven't been migrated yet (InspectorPanel, etc.).
  *
- *   ["hero"]                        → "hero"
- *   ["row","row_x"]                 → "row:row_x"
- *   ["row","row_x","widget","row_x"] → "widget:row_x"
- *   ["row","row_x","widget","row_x","item","svc_y","eyebrow"]
- *                                   → "widget:row_x"   (selection collapses
- *                                       to widget level for legacy reads)
+ *   ["hero"]                                      → "hero"
+ *   ["row","row_x"]                               → "row:row_x"
+ *   ["row","row_x","widget","row_x"]              → "widget:row_x"
+ *   ["row","row_x","col","col_y","cell","cell_z"] → "cell:row_x:col_y:cell_z"
+ *   ["row","row_x","widget","row_x","item",
+ *    "svc_y","eyebrow"]                           → "widget:row_x"  (selection
+ *                                                       collapses to widget level
+ *                                                       for legacy reads; the
+ *                                                       full path is still
+ *                                                       available via
+ *                                                       activeNodePath)
  */
 const pathToLegacyId = (path: NodePath | null): string | null => {
   if (!path || path.length === 0) return null;
   if (path.length === 1) return path[0];
+  if (path[0] === "row" && path.length >= 6 && path[2] === "col" && path[4] === "cell") {
+    return `cell:${path[1]}:${path[3]}:${path[5]}`;
+  }
   if (path[0] === "row" && path.length >= 4 && path[2] === "widget") {
     return `widget:${path[1]}`;
   }
