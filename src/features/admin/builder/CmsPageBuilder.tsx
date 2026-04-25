@@ -264,6 +264,9 @@ const CmsPageBuilder = ({ pageId }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      publishStatus={record.status}
+      onUnpublish={onUnpublish}
+      unpublishing={unpublishing}
       schedulePanel={
         <SchedulePublishPanel
           entityType="cms_pages"
