@@ -45,13 +45,18 @@ const LeadMagnetRow = ({ row, align = "center" }: Props) => {
 
   return (
     <section
-      className="px-6"
+      // US 2.4 — strip hardcoded Tailwind padding utilities from
+      // user-editable wrappers; the horizontal gutter is now driven by
+      // an explicit `px` inline style alongside the user-defined
+      // top/bottom spacing.
       style={{
         backgroundColor: row.bg_color || "transparent",
-        paddingTop: layout.paddingTop,
-        paddingBottom: layout.paddingBottom,
-        marginTop: layout.marginTop,
-        marginBottom: layout.marginBottom,
+        paddingLeft: "24px",
+        paddingRight: "24px",
+        paddingTop: parseSpacing(layout.paddingTop),
+        paddingBottom: parseSpacing(layout.paddingBottom),
+        marginTop: parseSpacing(layout.marginTop),
+        marginBottom: parseSpacing(layout.marginBottom),
       }}
     >
       <div className="max-w-[1100px] mx-auto">
