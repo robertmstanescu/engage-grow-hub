@@ -294,6 +294,11 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     pageRows={props.pageRows}
                     onRowsChange={props.onRowsChange}
                   />
+                  {props.schedulePanel ? (
+                    <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+                      {props.schedulePanel}
+                    </div>
+                  ) : null}
                   {props.inspectorFooter ? (
                     <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
                       {props.inspectorFooter}
