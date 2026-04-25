@@ -98,9 +98,16 @@ export const Field = ({
   hint?: string;
 }) => {
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
+  // US 3.2 — adopt parent cell/row bg if a SurfaceBgProvider is in scope.
+  const surface = useSurfaceStyle();
   return (
     <div data-inspector-field={slugifyLabel(label)}>
-      <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
+      <label
+        className="font-body text-[10px] uppercase tracking-wider mb-1 block"
+        style={surface.label ?? { color: "hsl(var(--muted-foreground))" }}
+      >
+        {label}
+      </label>
       <input
         value={local}
         onChange={(e) => setLocal(e.target.value)}
@@ -108,10 +115,15 @@ export const Field = ({
         onKeyDown={(e) => { if (e.key === "Enter") commit(); }}
         maxLength={maxLength}
         className="w-full px-3 py-2 rounded-lg font-body text-sm border"
-        style={INPUT_STYLE}
+        style={surface.input}
       />
       {hint && (
-        <p className="font-body text-[10px] text-muted-foreground mt-1">{hint}</p>
+        <p
+          className="font-body text-[10px] mt-1"
+          style={surface.label ?? { color: "hsl(var(--muted-foreground))" }}
+        >
+          {hint}
+        </p>
       )}
     </div>
   );
@@ -119,16 +131,23 @@ export const Field = ({
 
 export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; value: string; onChange: (v: string) => void; rows?: number }) => {
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
+  // US 3.2 — surface-aware textarea (Title/Subtitle/Body inputs).
+  const surface = useSurfaceStyle();
   return (
     <div data-inspector-field={slugifyLabel(label)}>
-      <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
+      <label
+        className="font-body text-[10px] uppercase tracking-wider mb-1 block"
+        style={surface.label ?? { color: "hsl(var(--muted-foreground))" }}
+      >
+        {label}
+      </label>
       <textarea
         value={local}
         onChange={(e) => setLocal(e.target.value)}
         onBlur={commit}
         rows={rows}
-        className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none text-black"
-        style={INPUT_STYLE}
+        className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none"
+        style={surface.input}
       />
     </div>
   );
@@ -141,13 +160,29 @@ export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; 
  * surface mirrors the row's "Style State" — that's what makes white /
  * grey text legible on the white admin panel. Callers should pass
  * `row.bg_color` (or the resolved gradient stop) in.
+ *
+ * US 3.2 — if no `bgColor` prop is supplied we fall back to the ambient
+ * SurfaceBg from context, so widget editors that don't explicitly thread
+ * the colour still benefit automatically.
  */
-export const RichField = ({ label, value, onChange, bgColor }: { label: string; value: string; onChange: (v: string) => void; bgColor?: string }) => (
-  <div data-inspector-field={slugifyLabel(label)}>
-    <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
-    <RichTextEditor content={value || ""} onChange={onChange} bgColor={bgColor} />
-  </div>
-);
+export const RichField = ({ label, value, onChange, bgColor }: { label: string; value: string; onChange: (v: string) => void; bgColor?: string }) => {
+  const ambient = useSurfaceBg();
+  const effectiveBg = bgColor ?? ambient ?? undefined;
+  const labelStyle = effectiveBg
+    ? { color: pickForeground(effectiveBg), opacity: 0.8 }
+    : { color: "hsl(var(--muted-foreground))" };
+  return (
+    <div data-inspector-field={slugifyLabel(label)}>
+      <label
+        className="font-body text-[10px] uppercase tracking-wider mb-1 block"
+        style={labelStyle}
+      >
+        {label}
+      </label>
+      <RichTextEditor content={value || ""} onChange={onChange} bgColor={effectiveBg} />
+    </div>
+  );
+};
 
 export const SelectField = ({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { label: string; value: string }[] }) => (
   <div data-inspector-field={slugifyLabel(label)}>
