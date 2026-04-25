@@ -159,10 +159,13 @@ const AdminOverviewDashboard = ({ onNavigate, onCreatePage }: Props) => {
 
   return (
     <div className="p-6 md:p-10 max-w-6xl mx-auto space-y-10">
-      {/* Hero / Welcome */}
+      {/* US 4.2 — Hero / Welcome
+          Heavier font weights on the welcome heading & a clear
+          eyebrow so the descriptive copy below reads as supporting
+          text, not as another heading. */}
       <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
-          <p className="font-body text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="font-body text-[11px] uppercase tracking-[0.2em] font-semibold text-muted-foreground">
             Admin Dashboard
           </p>
           <h1
@@ -186,11 +189,16 @@ const AdminOverviewDashboard = ({ onNavigate, onCreatePage }: Props) => {
         </button>
       </header>
 
-      {/* Quick Stats */}
+      {/* US 4.2 — Quick Stats
+          Section headers now use a real semibold display heading so
+          they're visibly heavier than the cards' captions below. */}
       <section>
-        <h2 className="font-display text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
+        <h2 className="font-display text-base font-semibold mb-1" style={{ color: "hsl(var(--foreground))" }}>
           Quick Stats
         </h2>
+        <p className="font-body text-xs text-muted-foreground mb-4">
+          A snapshot of what's currently published on your site.
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard
             icon={FileText}
@@ -215,14 +223,19 @@ const AdminOverviewDashboard = ({ onNavigate, onCreatePage }: Props) => {
 
       {/* Recent Edits */}
       <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-            Recent Edits
-          </h2>
+        <div className="flex items-end justify-between mb-4">
+          <div className="space-y-1">
+            <h2 className="font-display text-base font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+              Recent Edits
+            </h2>
+            <p className="font-body text-xs text-muted-foreground">
+              The most recent changes across every page and post.
+            </p>
+          </div>
           <button
             type="button"
             onClick={() => onNavigate("versions")}
-            className="font-body text-[11px] text-muted-foreground hover:text-foreground transition inline-flex items-center gap-1"
+            className="font-body text-xs font-medium text-muted-foreground hover:text-foreground transition inline-flex items-center gap-1"
           >
             View history <ArrowRight size={12} />
           </button>
@@ -251,7 +264,7 @@ const AdminOverviewDashboard = ({ onNavigate, onCreatePage }: Props) => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div
-                        className="font-body text-sm font-medium truncate"
+                        className="font-body text-sm font-semibold truncate"
                         style={{ color: "hsl(var(--foreground))" }}
                       >
                         {rev.label || rev.entity_ref}
@@ -269,15 +282,21 @@ const AdminOverviewDashboard = ({ onNavigate, onCreatePage }: Props) => {
         </div>
       </section>
 
-      {/* Quick Actions */}
+      {/* US 4.2 — Quick Actions / Jump To
+          Labels updated to match the new dashboard taxonomy:
+          "Site Editor" → "Page Builder", "Pages" → "Page Manager".
+          The TabKey values are unchanged so routing still works. */}
       <section>
-        <h2 className="font-display text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
-          Jump to
+        <h2 className="font-display text-base font-semibold mb-1" style={{ color: "hsl(var(--foreground))" }}>
+          Jump To
         </h2>
+        <p className="font-body text-xs text-muted-foreground mb-4">
+          Quick links to the tools you reach for most often.
+        </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { key: "site" as TabKey, label: "Site Editor" },
-            { key: "pages" as TabKey, label: "Pages" },
+            { key: "site" as TabKey, label: "Page Builder" },
+            { key: "pages" as TabKey, label: "Page Manager" },
             { key: "blog" as TabKey, label: "Blog" },
             { key: "media" as TabKey, label: "Media" },
           ].map((a) => (
@@ -285,7 +304,7 @@ const AdminOverviewDashboard = ({ onNavigate, onCreatePage }: Props) => {
               key={a.key}
               type="button"
               onClick={() => onNavigate(a.key)}
-              className="px-4 py-3 rounded-xl border bg-card text-left font-body text-sm hover:border-secondary/60 transition"
+              className="px-4 py-3 rounded-xl border bg-card text-left font-body text-sm font-medium hover:border-secondary/60 transition"
               style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
             >
               {a.label}
