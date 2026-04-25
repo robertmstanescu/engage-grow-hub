@@ -1,4 +1,4 @@
-import { Monitor, Tablet, Smartphone, Eye, Save, Send, FileText } from "lucide-react";
+import { Monitor, Tablet, Smartphone, Eye, Pencil, Save, Send, FileText, ExternalLink } from "lucide-react";
 
 /**
  * Viewport modes drive the Canvas wrapper width in SiteEditor.
@@ -13,16 +13,33 @@ import { Monitor, Tablet, Smartphone, Eye, Save, Send, FileText } from "lucide-r
  */
 export type ViewportMode = "desktop" | "tablet" | "mobile";
 
+/**
+ * EPIC 2 / US 2.1 — Topbar Action Consolidation
+ * ----------------------------------------------
+ * Edit / Preview is now an in-place TOGGLE that hides or shows the left
+ * (Elements) and right (Inspector) panes. It's grouped with the viewport
+ * segment in the toolbar's CENTER so context-switching feels like one
+ * unified control panel.
+ *
+ *   "edit"    — full 3-pane builder (default)
+ *   "preview" — toolbar + canvas only (mimics the live site)
+ */
+export type PreviewMode = "edit" | "preview";
+
 interface AdminBuilderToolbarProps {
   viewport: ViewportMode;
   onViewportChange: (v: ViewportMode) => void;
+
+  /** In-place Edit/Preview toggle (US 2.1). */
+  previewMode: PreviewMode;
+  onPreviewModeChange: (m: PreviewMode) => void;
 
   // Save Draft (active section)
   onSaveDraft: () => void;
   saving: boolean;
   saveLabel?: string;
 
-  // Preview & Publish
+  // Open the rendered page in a new tab (separate from the in-place toggle).
   onPreview: () => void;
   onPublish: () => void;
   publishing: boolean;
@@ -35,9 +52,16 @@ const VIEWPORTS: { key: ViewportMode; label: string; Icon: typeof Monitor }[] = 
   { key: "mobile", label: "Mobile", Icon: Smartphone },
 ];
 
+const MODES: { key: PreviewMode; label: string; Icon: typeof Pencil }[] = [
+  { key: "edit", label: "Edit", Icon: Pencil },
+  { key: "preview", label: "Preview", Icon: Eye },
+];
+
 const AdminBuilderToolbar = ({
   viewport,
   onViewportChange,
+  previewMode,
+  onPreviewModeChange,
   onSaveDraft,
   saving,
   saveLabel = "Save Draft",
@@ -46,12 +70,21 @@ const AdminBuilderToolbar = ({
   publishing,
   hasChanges,
 }: AdminBuilderToolbarProps) => {
+  // Reusable segment styling so the two pill groups stay visually identical.
+  const segmentBtn = (active: boolean): React.CSSProperties => ({
+    backgroundColor: active ? "hsl(var(--accent))" : "transparent",
+    color: active ? "hsl(var(--accent-foreground))" : "hsl(var(--muted-foreground))",
+  });
+
   return (
     <div
-      className="sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-2.5 border-b backdrop-blur-md"
+      className="sticky top-0 z-30 grid items-center gap-3 px-4 py-2.5 border-b backdrop-blur-md"
       style={{
         backgroundColor: "hsl(var(--card) / 0.95)",
         borderColor: "hsl(var(--border) / 0.5)",
+        // 3-column grid keeps the center group truly centered, regardless
+        // of how wide the left title or right action cluster grows.
+        gridTemplateColumns: "1fr auto 1fr",
       }}
     >
       {/* LEFT — title + dirty pill */}
@@ -75,48 +108,93 @@ const AdminBuilderToolbar = ({
         )}
       </div>
 
-      {/* CENTER — viewport toggles */}
-      <div
-        className="flex items-center rounded-full border p-0.5"
-        style={{ borderColor: "hsl(var(--border) / 0.6)" }}
-        role="group"
-        aria-label="Viewport"
-      >
-        {VIEWPORTS.map(({ key, label, Icon }) => {
-          const active = viewport === key;
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => onViewportChange(key)}
-              title={label}
-              aria-label={label}
-              aria-pressed={active}
-              className="flex items-center justify-center w-9 h-8 rounded-full transition-colors"
-              style={{
-                backgroundColor: active ? "hsl(var(--accent))" : "transparent",
-                color: active
-                  ? "hsl(var(--accent-foreground))"
-                  : "hsl(var(--muted-foreground))",
-              }}
-            >
-              <Icon size={15} strokeWidth={1.75} />
-            </button>
-          );
-        })}
+      {/* CENTER — viewport segment + edit/preview segment, fused. */}
+      <div className="flex items-center gap-2 justify-self-center">
+        <div
+          className="flex items-center rounded-full border p-0.5"
+          style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+          role="group"
+          aria-label="Viewport"
+        >
+          {VIEWPORTS.map(({ key, label, Icon }) => {
+            const active = viewport === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onViewportChange(key)}
+                title={label}
+                aria-label={label}
+                aria-pressed={active}
+                className="flex items-center justify-center w-9 h-8 rounded-full transition-colors"
+                style={segmentBtn(active)}
+              >
+                <Icon size={15} strokeWidth={1.75} />
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Vertical divider — visual cue that these are two related but
+            distinct control groups. */}
+        <span
+          aria-hidden="true"
+          className="h-5 w-px"
+          style={{ backgroundColor: "hsl(var(--border) / 0.6)" }}
+        />
+
+        <div
+          className="flex items-center rounded-full border p-0.5"
+          style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+          role="group"
+          aria-label="Canvas mode"
+        >
+          {MODES.map(({ key, label, Icon }) => {
+            const active = previewMode === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onPreviewModeChange(key)}
+                title={label}
+                aria-label={label}
+                aria-pressed={active}
+                className="flex items-center gap-1.5 h-8 rounded-full transition-colors px-3"
+                style={segmentBtn(active)}
+              >
+                <Icon size={14} strokeWidth={1.75} />
+                <span className="font-body text-[11px] uppercase tracking-wider">
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* RIGHT — Save Draft / Preview / Publish */}
-      <div className="flex items-center gap-2">
+      {/* RIGHT — Save Draft + Publish (open-in-new-tab is a small icon). */}
+      <div className="flex items-center gap-2 justify-self-end">
+        {/* Open in new tab — kept as a discrete utility, separate from the
+            in-place Preview toggle in the center group. */}
+        <button
+          onClick={onPreview}
+          title="Open preview in new tab"
+          aria-label="Open preview in new tab"
+          className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full transition-colors hover:opacity-80"
+          style={{
+            border: "1px solid hsl(var(--border))",
+            color: "hsl(var(--muted-foreground))",
+          }}
+        >
+          <ExternalLink size={13} />
+        </button>
+
         <button
           onClick={onSaveDraft}
           disabled={saving}
           title={hasChanges ? "You have unsaved changes — click to save the draft" : "No changes to save"}
           className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full hover:opacity-80 transition-all disabled:opacity-50"
           style={{
-            // US 16.2 — accent the Save Draft button when the local
-            // draft state has diverged from the database, so editors are
-            // visually nudged to persist their work.
             backgroundColor: hasChanges ? "hsl(var(--accent) / 0.18)" : "transparent",
             border: hasChanges
               ? "1px solid hsl(var(--accent))"
@@ -127,16 +205,7 @@ const AdminBuilderToolbar = ({
         >
           <Save size={12} /> {saving ? "Saving…" : saveLabel}
         </button>
-        <button
-          onClick={onPreview}
-          className="hidden sm:flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full hover:opacity-80 transition-opacity"
-          style={{
-            border: "1px solid hsl(var(--border))",
-            color: "hsl(var(--foreground))",
-          }}
-        >
-          <Eye size={12} /> Preview
-        </button>
+
         <button
           onClick={onPublish}
           disabled={publishing || !hasChanges}
