@@ -22,6 +22,22 @@ import { BuilderProvider, useBuilder } from "./builder/BuilderContext";
 import SelectableWrapper from "./builder/SelectableWrapper";
 // US 16.1 — contextual right-pane inspector, dispatched by activeElement.
 import InspectorPanel from "./inspector/InspectorPanel";
+// US 17.1 — draggable widget library (left sidebar).
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragStartEvent,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import ElementsTray, {
+  TrayDragPreview,
+  isTrayDragData,
+  type TrayDragData,
+} from "./builder/ElementsTray";
+
 
 interface SectionData {
   section_key: string;
