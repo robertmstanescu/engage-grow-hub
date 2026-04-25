@@ -1,5 +1,4 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Eye, Pencil } from "lucide-react";
 import type { ViewportMode } from "./AdminBuilderToolbar";
 
 /**
@@ -28,22 +27,41 @@ import type { ViewportMode } from "./AdminBuilderToolbar";
  *   90 % case (widgets that lay out by their own width) this is enough.
  *   If you ever need true media-query isolation, swap in an iframe here
  *   pointing at `/?preview=1`.
+ *
+ * EPIC 2 / US 2.2 — Canvas Framing & 24 px Safe Zones
+ * ---------------------------------------------------
+ *   • Outer canvas surface uses a neutral grey (#E5E7EB) so the site
+ *     reads as "floating" on a workspace, not colliding with the dark
+ *     admin sidebars.
+ *   • The site renderer is wrapped in a frame with EXACTLY 24 px of
+ *     padding on all sides (i.e. the rendered site's width is
+ *     `calc(100% - 48px)`), `shadow-xl`, and a subtle border. This
+ *     padding lives on the ADMIN wrapper — it's never applied to the
+ *     site itself, so full-width hero rows still bleed edge-to-edge
+ *     inside the floating frame.
+ *   • The redundant in-canvas Edit/Preview toggle is gone; that lives
+ *     in the toolbar now (US 2.1).
  */
 interface CanvasViewportProps {
   deviceWidth: number | null;          // 390, 820, or null (= full width)
   viewport: ViewportMode;
-  supportsPreview: boolean;
-  canvasMode: "preview" | "edit";
-  setCanvasMode: (m: "preview" | "edit") => void;
+  /**
+   * Kept for back-compat with existing callers (SiteEditor, PageBuilderShell).
+   * The in-canvas toggle has been removed in favour of the toolbar control,
+   * so these are accepted but no longer rendered.
+   */
+  supportsPreview?: boolean;
+  canvasMode?: "preview" | "edit";
+  setCanvasMode?: (m: "preview" | "edit") => void;
   children: React.ReactNode;
 }
 
+// EPIC 2 / US 2.2 — exact safe-zone gutter requested by the spec.
+const SAFE_ZONE_PX = 24;
+
 const CanvasViewport = ({
   deviceWidth,
-  viewport,
-  supportsPreview,
-  canvasMode,
-  setCanvasMode,
+  viewport: _viewport,
   children,
 }: CanvasViewportProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -70,99 +88,74 @@ const CanvasViewport = ({
       setScale(1);
       return;
     }
-    // 32px gutter so the device frame doesn't kiss the column edges.
-    const usable = Math.max(containerWidth - 32, 200);
+    // Account for the safe-zone gutter (24 px each side) so the device
+    // frame doesn't kiss the canvas edges.
+    const usable = Math.max(containerWidth - SAFE_ZONE_PX * 2, 200);
     setScale(Math.min(1, usable / deviceWidth));
   }, [deviceWidth, containerWidth]);
 
   return (
     <section
+      ref={containerRef}
       className="h-full overflow-y-auto"
-      style={{ backgroundColor: "hsl(var(--muted) / 0.35)" }}
+      style={{
+        // Neutral workspace grey that reads as a "table" the site sits on.
+        // Hex is from the AC; a tiny inline override keeps it identical
+        // across light/dark admin themes (the canvas itself is always
+        // light because the rendered site provides its own colour scheme).
+        backgroundColor: "#E5E7EB",
+        padding: SAFE_ZONE_PX,
+      }}
     >
-      <div ref={containerRef} className="mx-auto p-6">
-        {/* Preview / Edit toggle */}
-        {supportsPreview && (
-          <div className="flex items-center justify-between mb-3">
-            <span
-              className="font-body text-[10px] uppercase tracking-[0.18em]"
-              style={{ color: "hsl(var(--muted-foreground))" }}
-            >
-              {viewport === "desktop"
-                ? "Desktop"
-                : viewport === "tablet"
-                ? `Tablet · ${deviceWidth}px`
-                : `Mobile · ${deviceWidth}px`}
-            </span>
-            <div
-              className="inline-flex items-center rounded-full border p-0.5"
-              style={{ borderColor: "hsl(var(--border) / 0.6)", backgroundColor: "hsl(var(--card))" }}
-              role="group"
-              aria-label="Canvas mode"
-            >
-              {([
-                { key: "preview" as const, label: "Preview", Icon: Eye },
-                { key: "edit" as const, label: "Edit", Icon: Pencil },
-              ]).map(({ key, label, Icon }) => {
-                const active = canvasMode === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setCanvasMode(key)}
-                    aria-pressed={active}
-                    className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full transition-colors"
-                    style={{
-                      backgroundColor: active ? "hsl(var(--accent))" : "transparent",
-                      color: active ? "hsl(var(--accent-foreground))" : "hsl(var(--muted-foreground))",
-                    }}
-                  >
-                    <Icon size={12} /> {label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Device-sized stage. */}
-        {deviceWidth ? (
-          // Wrapper reserves the SCALED footprint so the canvas scrolls
-          // correctly. Inner stage renders at full device width and scales.
+      {deviceWidth ? (
+        // ──────────────────────────────────────────────────────────────
+        // Mobile / Tablet — keep the realistic device frame, but the
+        // 24 px gutter comes from the outer section above. Wrapper
+        // reserves the SCALED footprint so the canvas scrolls correctly.
+        // ──────────────────────────────────────────────────────────────
+        <div
+          className="mx-auto"
+          style={{
+            width: deviceWidth * scale,
+          }}
+        >
           <div
-            className="mx-auto"
+            className="rounded-[28px] border-[10px] overflow-hidden bg-card mx-auto origin-top"
             style={{
-              width: deviceWidth * scale,
-              // Height auto-flows from content × scale; we let the inner
-              // stage decide its own height and just transform-scale it.
-            }}
-          >
-            <div
-              className="rounded-[28px] border-[10px] shadow-2xl overflow-hidden bg-card mx-auto origin-top"
-              style={{
-                width: deviceWidth,
-                borderColor: "hsl(var(--foreground) / 0.85)",
-                transform: `scale(${scale})`,
-                transformOrigin: "top left",
-              }}
-            >
-              {children}
-            </div>
-          </div>
-        ) : (
-          <div
-            className="rounded-lg border shadow-sm overflow-hidden mx-auto"
-            style={{
-              maxWidth: "64rem",
-              backgroundColor: "hsl(var(--card))",
-              borderColor: "hsl(var(--border) / 0.5)",
-              padding: canvasMode === "preview" && supportsPreview ? 0 : "1.25rem",
+              width: deviceWidth,
+              borderColor: "hsl(var(--foreground) / 0.85)",
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
+              // Stronger shadow than before so the device "lifts" off
+              // the new lighter canvas background.
+              boxShadow:
+                "0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 10px 20px -6px rgba(0, 0, 0, 0.18)",
             }}
           >
             {children}
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        // ──────────────────────────────────────────────────────────────
+        // Desktop — floating site frame at full available width
+        // (calc(100% - 48px) is implicit because the outer section has
+        // 24 px padding on each side). NO inner padding: the site itself
+        // owns its own bleed for full-width heroes.
+        // ──────────────────────────────────────────────────────────────
+        <div
+          className="rounded-lg border overflow-hidden mx-auto w-full"
+          style={{
+            backgroundColor: "hsl(var(--card))",
+            borderColor: "hsl(var(--border) / 0.5)",
+            // shadow-xl in inline form so the colour stays consistent
+            // even when the surrounding theme is dark.
+            boxShadow:
+              "0 20px 25px -5px rgba(0, 0, 0, 0.18), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+          }}
+        >
+          {children}
+        </div>
+      )}
     </section>
   );
 };
