@@ -94,6 +94,16 @@ export interface PageNavigatorProps {
 
   /** All rows in the current draft — used to render the section list. */
   pageRows: PageRow[];
+
+  /** Optional scheduling panel rendered directly under the Page URL slot.
+   *  (Moved here from the right sidebar so scheduling sits with page
+   *  identity instead of competing with element-level inputs.) */
+  schedulePanel?: React.ReactNode;
+
+  /** Optional revision-history panel rendered below the Elements tray
+   *  inside a collapsed disclosure — out of sight until the editor wants
+   *  to roll back. */
+  revisionPanel?: React.ReactNode;
 }
 
 const PageNavigator = ({
