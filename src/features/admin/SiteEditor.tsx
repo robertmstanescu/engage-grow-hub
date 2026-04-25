@@ -298,10 +298,6 @@ const SiteEditor = () => {
   // Preview/Edit toggle is hidden for SEO (no visual rep).
   const supportsPreview = activeSection === "hero" || activeSection === "page_rows";
 
-  // Friendly label for the toolbar Save button (active section)
-  const activeSectionLabel =
-    SECTION_NAV.find((s) => s.key === activeSection)?.label ?? "Section";
-
   // Mobile/tablet canvas constraint (per US 14.2 dev notes — no iframes,
   // just a max-width swap so the rendered widget tree reflows naturally).
   const canvasMaxWidth =
@@ -310,13 +306,15 @@ const SiteEditor = () => {
   return (
     <BuilderProvider>
       <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
-      {/* ─── Top toolbar (US 14.2) ────────────────────────────────── */}
+      {/* ─── Top toolbar (US 14.2 + US 16.2) ──────────────────────────
+          One global Save Draft button (saves every dirty section in a
+          single batch). Accents itself when there are unsaved changes. */}
       <AdminBuilderToolbar
         viewport={viewport}
         onViewportChange={setViewport}
-        onSaveDraft={() => saveDraft(activeSection)}
-        saving={saving === activeSection}
-        saveLabel={`Save ${activeSectionLabel}`}
+        onSaveDraft={saveAllDrafts}
+        saving={saving === "__all__"}
+        saveLabel="Save Draft"
         onPreview={openPreview}
         onPublish={publishAll}
         publishing={publishing}
