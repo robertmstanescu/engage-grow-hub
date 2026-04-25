@@ -36,6 +36,7 @@ import {
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
 import { buildDropZoneId } from "@/features/admin/builder/CanvasDropZone";
+import { parseSpacing } from "@/lib/spacing";
 
 /* ─── style helpers ──────────────────────────────────────────────── */
 
