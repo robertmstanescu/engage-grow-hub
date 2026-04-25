@@ -209,16 +209,16 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
       if (canvasMode === "preview") {
         // HeroView is a PURE component (US 15.1). Wrapped in
         // SelectableWrapper (US 15.2) so editors can target it.
+        // The BuilderProvider lives at the top level of SiteEditor
+        // (US 16.1) so the right-pane Inspector shares selection state.
         return (
-          <BuilderProvider>
-            <CanvasSelectionSurface>
-              <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
-                <SelectableWrapper id="hero" label="Hero" variant="row">
-                  <HeroView content={getDraft("hero") as any} />
-                </SelectableWrapper>
-              </div>
-            </CanvasSelectionSurface>
-          </BuilderProvider>
+          <CanvasSelectionSurface>
+            <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
+              <SelectableWrapper id="hero" label="Hero" variant="row">
+                <HeroView content={getDraft("hero") as any} />
+              </SelectableWrapper>
+            </div>
+          </CanvasSelectionSurface>
         );
       }
       return (
@@ -232,13 +232,11 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
         // in <SelectableWrapper> (US 15.2) — which short-circuits to a
         // no-op fragment on the public site (no BuilderProvider there).
         return (
-          <BuilderProvider>
-            <CanvasSelectionSurface>
-              <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
-                <RowsRenderer rows={pageRows} />
-              </div>
-            </CanvasSelectionSurface>
-          </BuilderProvider>
+          <CanvasSelectionSurface>
+            <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
+              <RowsRenderer rows={pageRows} />
+            </div>
+          </CanvasSelectionSurface>
         );
       }
       return (
