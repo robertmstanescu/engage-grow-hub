@@ -148,6 +148,13 @@ const CmsPageBuilder = ({ pageId }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      inspectorFooter={
+        <RevisionHistoryPanel
+          entityType="cms_page"
+          entityRef={record.id}
+          onRestored={load}
+        />
+      }
     />
   );
 };
