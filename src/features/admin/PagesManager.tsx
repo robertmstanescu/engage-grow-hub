@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye, Home, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye, Home, AlertTriangle, Copy, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import RowsManager from "./site-editor/RowsManager";
 import { SectionBox, Field } from "./site-editor/FieldComponents";
