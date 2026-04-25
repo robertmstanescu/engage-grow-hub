@@ -3,9 +3,10 @@ import { Save, Send, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import { applyBrandCSSVars, DEFAULT_BRAND, type BrandSettings as BrandSettingsType, type BrandColor, type TypographyLevel } from "@/hooks/useBrandSettings";
 import { SectionBox } from "./site-editor/FieldComponents";
-import { fetchSection, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
+import { fetchSection, fetchSections, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
 import { SpinnerButton } from "@/components/ui/spinner-button";
+import BrandingEditor from "./BrandingEditor";
 
 /* ── WCAG Contrast helpers ── */
 const hexToRgb = (hex: string) => {
@@ -44,24 +45,43 @@ const WEIGHT_OPTIONS = ["300", "400", "500", "600", "700", "800", "900"];
 const BrandSettings = () => {
   const [brand, setBrand] = useState<BrandSettingsType>(DEFAULT_BRAND);
   const [published, setPublished] = useState<BrandSettingsType>(DEFAULT_BRAND);
+  /* Logos & favicons live in the legacy `branding` section_key so that
+   * downstream consumers (Navbar, Footer, FaviconManager, AdminDashboard)
+   * keep working unchanged. We co-load and co-save them here so the admin
+   * gets a single Brand Hub experience as required by Epic 1. */
+  const [branding, setBranding] = useState<Record<string, any>>({});
+  const [publishedBranding, setPublishedBranding] = useState<Record<string, any>>({});
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [isPublishingChanges, setIsPublishingChanges] = useState(false);
-  const [openSection, setOpenSection] = useState<string | null>("palette");
+  const [openSection, setOpenSection] = useState<string | null>("branding");
   const [contrastFg, setContrastFg] = useState("#FFFFFF");
   const [contrastBg, setContrastBg] = useState("#2A0E33");
 
   useEffect(() => {
-    fetchSection<any>("brand_settings").then(({ data }) => {
-      if (data) {
-        const live = { ...DEFAULT_BRAND, ...data.content, typography: { ...DEFAULT_BRAND.typography, ...(data.content?.typography || {}) } };
-        const draft = data.draft_content
-          ? { ...DEFAULT_BRAND, ...data.draft_content, typography: { ...DEFAULT_BRAND.typography, ...(data.draft_content?.typography || {}) } }
+    /* Pull both sections in one round-trip. brand_settings drives colours
+     * & typography; branding drives logos & favicons. */
+    fetchSections(["brand_settings", "branding"]).then(({ data }) => {
+      const bs = data?.find((r: any) => r.section_key === "brand_settings");
+      const br = data?.find((r: any) => r.section_key === "branding");
+
+      if (bs) {
+        const live = { ...DEFAULT_BRAND, ...bs.content, typography: { ...DEFAULT_BRAND.typography, ...(bs.content?.typography || {}) } };
+        const draft = bs.draft_content
+          ? { ...DEFAULT_BRAND, ...bs.draft_content, typography: { ...DEFAULT_BRAND.typography, ...(bs.draft_content?.typography || {}) } }
           : live;
         setBrand(draft);
         setPublished(live);
       }
+
+      const liveBranding = br?.content || {};
+      const draftBranding = br?.draft_content || liveBranding;
+      setBranding(draftBranding);
+      setPublishedBranding(liveBranding);
     });
   }, []);
+
+  const updateBrandingField = (field: string, value: any) =>
+    setBranding((prev) => ({ ...prev, [field]: value }));
 
   const updateColor = (idx: number, field: keyof BrandColor, value: string) => {
     setBrand((prev) => {
@@ -89,26 +109,46 @@ const BrandSettings = () => {
     }));
   };
 
+  /* Save / publish operate on BOTH sections atomically from the user's
+   * point of view (one click). We run them sequentially because if the
+   * branding upsert fails we still want the brand_settings error to be
+   * surfaced — runDbAction will throw on the first error. */
   const handleSaveDraft = () =>
     runDbAction({
-      action: () => saveDraftSection("brand_settings", brand),
+      action: async () => {
+        const r1 = await saveDraftSection("brand_settings", brand);
+        if ((r1 as any)?.error) throw (r1 as any).error;
+        const r2 = await saveDraftSection("branding", branding);
+        if ((r2 as any)?.error) throw (r2 as any).error;
+        return { error: null };
+      },
       setLoading: setIsSavingChanges,
       successMessage: "Brand settings draft saved",
     });
 
   const handlePublish = () =>
     runDbAction({
-      action: () => publishSection("brand_settings", brand),
+      action: async () => {
+        const r1 = await publishSection("brand_settings", brand);
+        if ((r1 as any)?.error) throw (r1 as any).error;
+        const r2 = await publishSection("branding", branding);
+        if ((r2 as any)?.error) throw (r2 as any).error;
+        return { error: null };
+      },
       setLoading: setIsPublishingChanges,
       successMessage: "Brand settings published!",
       onSuccess: () => {
         invalidateSiteContent("brand_settings");
+        invalidateSiteContent("branding");
         applyBrandCSSVars(brand);
         setPublished(brand);
+        setPublishedBranding(branding);
       },
     });
 
-  const hasChanges = JSON.stringify(brand) !== JSON.stringify(published);
+  const hasChanges =
+    JSON.stringify(brand) !== JSON.stringify(published) ||
+    JSON.stringify(branding) !== JSON.stringify(publishedBranding);
   const ratio = contrastRatio(contrastFg, contrastBg);
   const passAA = ratio >= 4.5;
   const passAALarge = ratio >= 3;
@@ -151,6 +191,12 @@ const BrandSettings = () => {
           </SpinnerButton>
         </div>
       </div>
+
+      {/* ── Logos & Favicons (moved from GlobalSettings as part of
+       *  Epic 1: The Unified Brand Hub) ── */}
+      <AccordionSection id="branding" label="Logos & Favicon">
+        <BrandingEditor content={branding} onChange={updateBrandingField} />
+      </AccordionSection>
 
       {/* ── Colour Palette ── */}
       <AccordionSection id="palette" label="Colour Palette">

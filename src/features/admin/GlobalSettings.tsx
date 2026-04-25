@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Save, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
-import BrandingEditor from "./BrandingEditor";
 import SocialLinksEditor from "./site-editor/SocialLinksEditor";
 import { Field, ColorField } from "./site-editor/FieldComponents";
 import { fetchSections, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
@@ -13,7 +12,7 @@ interface SectionState {
   draft: Record<string, any>;
 }
 
-const SECTIONS = ["branding", "social_links", "footer", "theme"] as const;
+const SECTIONS = ["social_links", "footer", "theme"] as const;
 
 // No hardcoded brand-specific footer columns. Admins start from a blank
 // slate; the SocialLinksEditor will auto-inject a "Connect" column the
@@ -31,7 +30,7 @@ const GlobalSettings = () => {
   const [data, setData] = useState<Record<string, SectionState>>({});
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [isPublishingChanges, setIsPublishingChanges] = useState(false);
-  const [openSection, setOpenSection] = useState<string | null>("branding");
+  const [openSection, setOpenSection] = useState<string | null>("footer");
 
   useEffect(() => {
     const load = async () => {
@@ -139,9 +138,10 @@ const GlobalSettings = () => {
         </div>
       </div>
 
-      <AccordionSection id="branding" label="Logo & Favicon">
-        <BrandingEditor content={getDraft("branding")} onChange={(f, v) => updateField("branding", f, v)} />
-      </AccordionSection>
+      {/* Logo & Favicon moved to Brand Settings (Epic 1: Unified Brand Hub).
+       *  See src/features/admin/BrandSettings.tsx — the BrandingEditor now
+       *  renders there alongside colours and typography. */}
+
 
       <AccordionSection id="footer" label="Footer">
         <Field
