@@ -238,36 +238,30 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
     (fontSize: string) => {
       focusEditor();
       restoreSelection();
+
       document.execCommand("styleWithCSS", false, "false");
       document.execCommand("fontSize", false, "7");
-
       if (editorRef.current) {
-        const fonts = Array.from(
-          editorRef.current.querySelectorAll('font[size="7"]')
-        ) as HTMLElement[];
-        let lastFont: HTMLElement | null = null;
-
+        const fonts = Array.from(editorRef.current.querySelectorAll('font[size="7"]'));
+        let lastSpan: HTMLSpanElement | null = null;
         fonts.forEach((font) => {
-          // Mutate the existing font tag to preserve the user's cursor selection
-          font.removeAttribute("size");
-          font.style.fontSize = fontSize;
-          // Convert it to a span safely without replacement if possible, or just let the normalizer handle it later
-          lastFont = font;
+          const span = document.createElement("span");
+          span.style.fontSize = fontSize;
+          while (font.firstChild) span.appendChild(font.firstChild);
+          font.parentNode?.replaceChild(span, font);
+          lastSpan = span;
         });
-
-        // Move the caret into the freshly mutated node so the toolbar
-        // immediately reflects the active size.
-        if (lastFont) {
+        // Restore cursor inside the new element so the dropdown syncs
+        if (lastSpan) {
           const sel = window.getSelection();
           if (sel) {
             const range = document.createRange();
-            range.selectNodeContents(lastFont);
+            range.selectNodeContents(lastSpan);
             range.collapse(false);
             sel.removeAllRanges();
             sel.addRange(range);
           }
         }
-        normalizeRichTextContainerFontSizes(editorRef.current, fontSize);
       }
       saveSelection();
       emitChange();
