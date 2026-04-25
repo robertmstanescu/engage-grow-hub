@@ -41,7 +41,7 @@ import ElementsTray, {
 import { parseDropZoneId } from "./builder/CanvasDropZone";
 // US 17.2 — registry lookup so dropped widgets seed with proper defaults.
 import { getWidget } from "@/lib/WidgetRegistry";
-import { generateRowId, DEFAULT_ROW_LAYOUT, type PageRow as PageRowType } from "@/types/rows";
+import { generateRowId, DEFAULT_ROW_LAYOUT } from "@/types/rows";
 
 
 interface SectionData {
