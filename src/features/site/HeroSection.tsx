@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
 import {
