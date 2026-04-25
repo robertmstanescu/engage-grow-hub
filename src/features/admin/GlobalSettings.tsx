@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Save, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
-import BrandingEditor from "./BrandingEditor";
 import SocialLinksEditor from "./site-editor/SocialLinksEditor";
 import { Field, ColorField } from "./site-editor/FieldComponents";
 import { fetchSections, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
