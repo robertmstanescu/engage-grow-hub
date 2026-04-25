@@ -24,6 +24,7 @@ import SelectableWrapper from "./builder/SelectableWrapper";
 // US 16.1 — contextual right-pane inspector, dispatched by activeElement.
 import InspectorPanel from "./inspector/InspectorPanel";
 import RevisionHistoryPanel from "./builder/RevisionHistoryPanel";
+import SiteSectionSchedulePanel from "./builder/SiteSectionSchedulePanel";
 // US 17.1 — draggable widget library (left sidebar).
 import {
   DndContext,
