@@ -16,7 +16,7 @@ import WidgetWrapper from "@/components/widgets/WidgetWrapper";
 import { useGlobalWidgetMap, type GlobalWidget } from "@/hooks/useGlobalWidgets";
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import CanvasDropZone from "@/features/admin/builder/CanvasDropZone";
-import { useBuilder } from "@/features/admin/builder/BuilderContext";
+import { useBuilder, type NodePath } from "@/features/admin/builder/BuilderContext";
 import CellRenderer from "./CellRenderer";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
