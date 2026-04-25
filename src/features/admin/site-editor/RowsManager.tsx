@@ -456,6 +456,7 @@ const RowsManager = ({ rows, onChange }: Props) => {
                 onUpdateColumnContent={(colDataIdx, field, value) => updateColumnContent(row.id, colDataIdx, field, value)}
                 onUpdateColumnWidths={(widths) => updateColumnWidths(row.id, widths)}
                 renderEditorForContent={(content, onContentChange) => renderRowEditorForContent(row, content, onContentChange)}
+                onInspectCell={(colIdx) => setInspectedCell({ rowId: row.id, colIdx })}
               />
             );
           })}
