@@ -81,13 +81,9 @@ registerWidget({
   ),
 });
 
-registerWidget({
-  type: "contact",
-  defaultData: {},
-  render: ({ row, align, vAlign }) => (
-    <ContactRow row={row} align={align} vAlign={vAlign} />
-  ),
-});
+// `contact` is registered by `src/features/widgets/contact/index.tsx`
+// (imported above). Do not re-register here — last write would win.
+
 
 registerWidget({
   type: "image_text",
