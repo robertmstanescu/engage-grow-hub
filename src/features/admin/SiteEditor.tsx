@@ -22,6 +22,22 @@ import { BuilderProvider, useBuilder } from "./builder/BuilderContext";
 import SelectableWrapper from "./builder/SelectableWrapper";
 // US 16.1 — contextual right-pane inspector, dispatched by activeElement.
 import InspectorPanel from "./inspector/InspectorPanel";
+// US 17.1 — draggable widget library (left sidebar).
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragStartEvent,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import ElementsTray, {
+  TrayDragPreview,
+  isTrayDragData,
+  type TrayDragData,
+} from "./builder/ElementsTray";
+
 
 interface SectionData {
   section_key: string;
@@ -80,6 +96,26 @@ const SiteEditor = () => {
   // can still drag, drop and configure widgets in the form-driven UI.
   // Default to preview because that's the whole point of US 15.1.
   const [canvasMode, setCanvasMode] = useState<"preview" | "edit">("preview");
+
+  /* ─── US 17.1 — drag-and-drop (Elements Tray → canvas) ──────────
+   * Sensors with a small activation distance prevent accidental
+   * drags when an editor merely clicks a tray card. The active
+   * payload is mirrored into local state so the <DragOverlay> can
+   * render a styled floating preview that follows the cursor. */
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+  );
+  const [activeDrag, setActiveDrag] = useState<TrayDragData | null>(null);
+
+  const handleDragStart = (e: DragStartEvent) => {
+    const data = e.active.data.current;
+    if (isTrayDragData(data)) setActiveDrag(data);
+  };
+  const handleDragEnd = (_e: DragEndEvent) => {
+    // US 17.2 will turn a drop on the canvas into a real new row.
+    // For 17.1 we just clear the preview state.
+    setActiveDrag(null);
+  };
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -305,6 +341,16 @@ const SiteEditor = () => {
 
   return (
     <BuilderProvider>
+      {/* US 17.1 — single DndContext at the top of the builder so that
+          tray drags (left sidebar) and any future canvas-side targets
+          share one drag session. The DragOverlay renders the floating
+          ghost preview that follows the cursor across the whole screen. */}
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveDrag(null)}
+      >
       <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
       {/* ─── Top toolbar (US 14.2 + US 16.2) ──────────────────────────
           One global Save Draft button (saves every dirty section in a
@@ -344,7 +390,7 @@ const SiteEditor = () => {
                 Navigator
               </h3>
             </div>
-            <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+            <nav className="flex-shrink-0 overflow-y-auto p-2 space-y-1 max-h-[40%]">
               {SECTION_NAV.map(({ key, label, Icon }) => {
                 const active = activeSection === key;
                 const dirty = isDirty(key);
@@ -378,6 +424,23 @@ const SiteEditor = () => {
                 );
               })}
             </nav>
+
+            {/* US 17.1 — Elements Tray. Sits under the Navigator in the
+                same scroll container so editors can drag any registered
+                widget directly onto the canvas. Drop handling lives in
+                the parent <DndContext> (see handleDragEnd). */}
+            <div
+              className="flex-1 min-h-0 border-t px-3 py-3 overflow-y-auto"
+              style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+            >
+              <h3
+                className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
+                style={{ color: "hsl(var(--muted-foreground))" }}
+              >
+                Elements
+              </h3>
+              <ElementsTray />
+            </div>
           </aside>
         </ResizablePanel>
 
@@ -489,6 +552,14 @@ const SiteEditor = () => {
         </ResizablePanel>
       </ResizablePanelGroup>
       </div>
+
+      {/* Floating drag preview — rendered into a portal by dnd-kit so it
+          escapes the sidebar's overflow:hidden and follows the cursor
+          across the entire viewport. */}
+      <DragOverlay dropAnimation={null}>
+        {activeDrag ? <TrayDragPreview data={activeDrag} /> : null}
+      </DragOverlay>
+      </DndContext>
     </BuilderProvider>
   );
 };

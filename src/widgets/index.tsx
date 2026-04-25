@@ -23,6 +23,19 @@
  */
 
 import { registerWidget } from "@/lib/WidgetRegistry";
+import {
+  ImageIcon,
+  Type,
+  LayoutGrid,
+  Boxes,
+  ImagePlus,
+  UserSquare2,
+  Grid3x3,
+  MailOpen,
+  Quote,
+  GalleryHorizontalEnd,
+  HelpCircle,
+} from "lucide-react";
 
 import HeroRow from "@/features/site/rows/HeroRow";
 import TextRow from "@/features/site/rows/TextRow";
@@ -48,10 +61,18 @@ import "@/features/widgets/contact";
  * adapts the standard `WidgetRenderContext` to the (sometimes legacy)
  * prop signature of each row component, so individual renderers don't
  * need to be refactored to fit a one-size-fits-all signature.
+ *
+ * `label`, `icon` and `category` (US 17.1) drive the Elements Tray —
+ * the draggable widget library in the Left Sidebar. Keep them concise:
+ * one short noun ("Hero", "Text", "Image + Text") plus a recognisable
+ * Lucide glyph.
  * ────────────────────────────────────────────────────────────────────── */
 
 registerWidget({
   type: "hero",
+  label: "Hero",
+  icon: ImageIcon,
+  category: "Layout",
   defaultData: {},
   frontendComponent: HeroRow,
   render: ({ row }) => <HeroRow row={row} />,
@@ -59,6 +80,9 @@ registerWidget({
 
 registerWidget({
   type: "text",
+  label: "Text",
+  icon: Type,
+  category: "Content",
   defaultData: { title_lines: [], subtitle: "", body: "" },
   render: ({ row, rowIndex, align, vAlign }) => (
     <TextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
@@ -67,6 +91,9 @@ registerWidget({
 
 registerWidget({
   type: "service",
+  label: "Services",
+  icon: LayoutGrid,
+  category: "Content",
   defaultData: { eyebrow: "", title: "", description: "", services: [] },
   render: ({ row, rowIndex, align, vAlign }) => (
     <ServiceRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
@@ -75,6 +102,9 @@ registerWidget({
 
 registerWidget({
   type: "boxed",
+  label: "Boxed Cards",
+  icon: Boxes,
+  category: "Content",
   defaultData: { title_lines: [], cards: [] },
   render: ({ row, rowIndex, align, vAlign }) => (
     <BoxedRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
@@ -87,6 +117,9 @@ registerWidget({
 
 registerWidget({
   type: "image_text",
+  label: "Image + Text",
+  icon: ImagePlus,
+  category: "Media",
   defaultData: {},
   render: ({ row, rowIndex, align, vAlign }) => (
     <ImageTextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
@@ -95,6 +128,9 @@ registerWidget({
 
 registerWidget({
   type: "profile",
+  label: "Profile",
+  icon: UserSquare2,
+  category: "Content",
   defaultData: {},
   render: ({ row, rowIndex, align, vAlign }) => (
     <ProfileRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
@@ -103,6 +139,9 @@ registerWidget({
 
 registerWidget({
   type: "grid",
+  label: "Grid",
+  icon: Grid3x3,
+  category: "Layout",
   defaultData: { items: [] },
   render: ({ row, rowIndex, align, vAlign }) => (
     <GridRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
@@ -111,6 +150,9 @@ registerWidget({
 
 registerWidget({
   type: "lead_magnet",
+  label: "Lead Magnet",
+  icon: MailOpen,
+  category: "Marketing",
   defaultData: {},
   render: ({ row, rowIndex, align, vAlign }) => (
     <LeadMagnetRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
@@ -119,6 +161,9 @@ registerWidget({
 
 registerWidget({
   type: "testimonial",
+  label: "Testimonials",
+  icon: Quote,
+  category: "Social",
   defaultData: { items: [] },
   render: ({ row, rowIndex, align, vAlign }) => (
     <TestimonialRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
@@ -127,6 +172,9 @@ registerWidget({
 
 registerWidget({
   type: "logo_cloud",
+  label: "Logo Cloud",
+  icon: GalleryHorizontalEnd,
+  category: "Social",
   defaultData: { logos: [] },
   render: ({ row, rowIndex, align, vAlign }) => (
     <LogoCloudRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
@@ -135,6 +183,9 @@ registerWidget({
 
 registerWidget({
   type: "faq",
+  label: "FAQ",
+  icon: HelpCircle,
+  category: "Content",
   defaultData: { items: [] },
   render: ({ row, rowIndex, align, vAlign }) => (
     <FaqRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
