@@ -44,6 +44,20 @@ interface AdminBuilderToolbarProps {
   onPublish: () => void;
   publishing: boolean;
   hasChanges: boolean;
+
+  /**
+   * Optional publish lifecycle controls. When provided we render an
+   * "Unpublish" button next to "Publish" if the entity is currently
+   * `published`. The Publish button is also enabled even with no
+   * unsaved changes when the entity is still a `draft` — so admins
+   * can promote a freshly-loaded draft straight to live.
+   *
+   * Section editors (e.g. Hero, About) don't have a draft/published
+   * lifecycle, so these props are optional.
+   */
+  publishStatus?: "draft" | "published" | string;
+  onUnpublish?: () => void;
+  unpublishing?: boolean;
 }
 
 const VIEWPORTS: { key: ViewportMode; label: string; Icon: typeof Monitor }[] = [
