@@ -370,6 +370,36 @@ const WidgetSettingsDrawer = ({
             </div>
           </section>
 
+          {/* ── Advanced · Custom CSS (Epic 2 — US 2.1) ─────────
+           *  Scoped CSS authored by advanced admins. The `&` token
+           *  is rewritten in `WidgetWrapper` to a per-instance class
+           *  so rules cannot leak globally. Dark IDE-style textarea
+           *  to telegraph "code, not copy". */}
+          <section>
+            <h3 className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+              Advanced · Custom CSS
+            </h3>
+            <textarea
+              value={design.customCss || ""}
+              onChange={(e) => update("customCss", e.target.value)}
+              spellCheck={false}
+              rows={8}
+              placeholder={"& { background: red; }\n& h1 { font-size: 50px; }"}
+              className="w-full px-3 py-2 rounded-md font-mono text-xs leading-relaxed border resize-y"
+              style={{
+                backgroundColor: "#0f172a",
+                color: "#e2e8f0",
+                borderColor: "hsl(var(--border))",
+                tabSize: 2,
+              }}
+            />
+            <p className="font-body text-[10px] text-muted-foreground mt-1.5 leading-relaxed">
+              Use <code className="font-mono">&amp;</code> to target this specific widget.
+              Example: <code className="font-mono">&amp; {`{ background: red; }`}</code>{" "}
+              <code className="font-mono">&amp; h1 {`{ font-size: 50px; }`}</code>
+            </p>
+          </section>
+
           <div className="pt-2 border-t" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
             <button
               type="button"
