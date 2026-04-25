@@ -170,6 +170,7 @@ export type Database = {
           id: string
           meta_description: string | null
           meta_title: string | null
+          og_image: string | null
           page_rows: Json
           publish_at: string | null
           slug: string
@@ -186,6 +187,7 @@ export type Database = {
           id?: string
           meta_description?: string | null
           meta_title?: string | null
+          og_image?: string | null
           page_rows?: Json
           publish_at?: string | null
           slug: string
@@ -202,6 +204,7 @@ export type Database = {
           id?: string
           meta_description?: string | null
           meta_title?: string | null
+          og_image?: string | null
           page_rows?: Json
           publish_at?: string | null
           slug?: string
