@@ -430,6 +430,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       activeElement: pathToLegacyId(activeNodePath),
       setActiveElement,
       commitTextAtPath,
+      addWidgetToCell,
       pageRows,
     }),
     [
@@ -441,6 +442,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       isPathEditing,
       setActiveElement,
       commitTextAtPath,
+      addWidgetToCell,
       pageRows,
     ],
   );
