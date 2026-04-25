@@ -66,6 +66,21 @@ interface Props {
 const FIELD_LABEL = "font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block";
 const NUM_INPUT = "w-full px-2 py-1.5 rounded-md font-body text-sm border";
 
+/**
+ * Strip the engine's reserved keys (`__design`, `__global_ref`) from a
+ * widget's content blob before saving it as a Global Block. The global
+ * record stores the WIDGET'S OWN data only — per-instance chrome lives
+ * on each referencing cell.
+ */
+const stripReservedKeys = (data: Record<string, any>): Record<string, any> => {
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(data || {})) {
+    if (k === "__design" || k === "__global_ref") continue;
+    out[k] = v;
+  }
+  return out;
+};
+
 const NumberField = ({
   label, value, onChange, max = 200,
 }: { label: string; value: number; onChange: (n: number) => void; max?: number }) => (
