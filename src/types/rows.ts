@@ -171,6 +171,20 @@ export interface WidgetDesignSettings {
   bgColor: string;
   /** Border radius in px applied to all four corners. */
   borderRadius: number;
+  /**
+   * Responsive visibility flags (US 6.2). Both default to `true` so
+   * existing rows render everywhere. The frontend wrapper translates
+   * these into Tailwind `hidden` / `md:hidden` / `md:block` classes.
+   *
+   * Breakpoint contract: we use Tailwind's `md` (≥768px) as the
+   * "desktop" threshold. Below it counts as mobile. This matches the
+   * rest of the codebase's responsive breakpoint convention so admins
+   * see consistent behaviour across the site.
+   */
+  visibility: {
+    mobile: boolean;
+    desktop: boolean;
+  };
 }
 
 export const DEFAULT_DESIGN_SETTINGS: WidgetDesignSettings = {
@@ -184,6 +198,7 @@ export const DEFAULT_DESIGN_SETTINGS: WidgetDesignSettings = {
   paddingLeft: 0,
   bgColor: "",
   borderRadius: 0,
+  visibility: { mobile: true, desktop: true },
 };
 
 /**
@@ -194,13 +209,26 @@ export const DEFAULT_DESIGN_SETTINGS: WidgetDesignSettings = {
  * WHY we merge defensively: corrupted or partial blobs (the QA matrix
  * in WIDGETS.md explicitly tests for this) would otherwise yield
  * `undefined` styles and broken layouts.
+ *
+ * WHY visibility is merged separately: it's a NESTED object, so a
+ * shallow spread would let a stored `{ visibility: { mobile: false } }`
+ * silently drop `desktop` to `undefined` — which evaluates falsy and
+ * would hide the widget on desktop too. A second merge keeps each
+ * flag's default unless explicitly overridden.
  */
 export const readDesignSettings = (
   content: Record<string, any> | null | undefined,
-): WidgetDesignSettings => ({
-  ...DEFAULT_DESIGN_SETTINGS,
-  ...((content && (content as any).__design) || {}),
-});
+): WidgetDesignSettings => {
+  const stored = (content && (content as any).__design) || {};
+  return {
+    ...DEFAULT_DESIGN_SETTINGS,
+    ...stored,
+    visibility: {
+      ...DEFAULT_DESIGN_SETTINGS.visibility,
+      ...(stored.visibility || {}),
+    },
+  };
+};
 
 export interface ContactField {
   key: string;
