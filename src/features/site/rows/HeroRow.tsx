@@ -90,7 +90,7 @@ const HeroRow = ({ row }: Props) => {
 
         {c.tagline && (
           <p className="font-body tracking-[0.3em] uppercase mt-[2vh]"
-            style={{ ...revealStyle(isVisible, titleLines.length + 1, 0.1), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)", opacity: isVisible ? 0.4 : 0 }}>
+            style={{ ...revealStyle(isVisible, titleLines.length + 1, 0.1), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(14px, 1.5vw, 16px)", opacity: isVisible ? 0.4 : 0 }}>
             {c.tagline}
           </p>
         )}
