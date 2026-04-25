@@ -558,6 +558,8 @@ interface WidgetCellProps {
   isActive: boolean;
   isOccupied: boolean;
   onActivate: () => void;
+  /** Open the global "Inspector" drawer for this cell (US 6.1). */
+  onInspect: () => void;
 }
 
 const WidgetCell = ({
