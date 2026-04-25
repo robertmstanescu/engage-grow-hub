@@ -222,6 +222,9 @@ const SiteEditor = () => {
   // can still drag, drop and configure widgets in the form-driven UI.
   // Default to preview because that's the whole point of US 15.1.
   const [canvasMode, setCanvasMode] = useState<"preview" | "edit">("preview");
+  // EPIC 2 / US 2.1 — in-place Edit/Preview toggle for the toolbar.
+  // Defaults to "edit" so editors land in the full builder.
+  const [previewMode, setPreviewMode] = useState<"edit" | "preview">("edit");
 
   // Debug Story 1.1 — pixel-anchored panel limits + double-click reset.
   const limits = usePanelLimits();
