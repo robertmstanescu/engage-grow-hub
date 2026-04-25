@@ -15,7 +15,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { type PageRow } from "@/types/rows";
+import { type PageRow, normalizeRowsToV3 } from "@/types/rows";
 import {
   findMissingAltViolations,
   formatAltMissingMessage,
@@ -60,7 +60,9 @@ const CmsPageBuilder = ({ pageId }: Props) => {
     }
     const rec = data as unknown as CmsPageRecord;
     setRecord(rec);
-    setDraftRows((rec.draft_page_rows || rec.page_rows || []) as PageRow[]);
+    // US 2.2 — Normalize to v3 on read so the builder + inspector see
+    // the Atomic Node Tree exclusively.
+    setDraftRows(normalizeRowsToV3(rec.draft_page_rows || rec.page_rows || []) as unknown as PageRow[]);
     setSeoTitle(rec.meta_title || "");
     setSeoDescription(rec.meta_description || "");
   }, [pageId]);

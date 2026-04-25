@@ -1,12 +1,11 @@
+import { useMemo } from "react";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import {
-  DEFAULT_ROW_LAYOUT,
   type PageRow,
-  type PageRowV2,
   type PageRowV3,
   type PageCell,
-  isPageRowV2,
-  isPageRowV3,
+  type PageWidget,
+  normalizeRowsToV3,
   readDesignSettings,
   readGlobalRef,
 } from "@/types/rows";
@@ -21,25 +20,30 @@ import CellRenderer from "./CellRenderer";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-type RenderableRow = PageRow | PageRowV2 | PageRowV3;
+/* ════════════════════════════════════════════════════════════════════
+ * RENDERING ENGINE — V3 ATOMIC NODE TREE ONLY
+ * ════════════════════════════════════════════════════════════════════
+ *
+ * US 2.1 — Legacy hero bridge removed. The hero is an ordinary
+ *          `type: "hero"` widget at `page_rows[0]`.
+ *
+ * US 2.2 — V1/V2 rendering branches removed. Every row entering this
+ *          renderer is guaranteed to be a `PageRowV3` (rows → columns →
+ *          cells → widgets) thanks to `normalizeRowsToV3()` applied at
+ *          the `RowsRenderer` entry point. The renderer therefore
+ *          assumes 100% Atomic Node Tree compliance — no `if (isLegacy)`
+ *          forks, no `column.widgets` fallbacks, no synthetic v2 cells.
+ *          If a v1/v2 payload is ever passed in, it is upgraded once at
+ *          the boundary and the rest of the pipeline never sees it.
+ * ──────────────────────────────────────────────────────────────────── */
 
-/* US 2.1 — Legacy hero bridge removed.
- * The hero is now an ordinary `type: "hero"` widget that lives at
- * `page_rows[0]` after the one-time data migration. The injection
- * helpers (`buildHomepageHeroRow`, `hasHeroContent`,
- * `rowContainsHeroWidget`) and the `heroContent` prop pipeline are
- * gone — the unified canvas is the single source of truth. */
 
-
-/** Read the first widget type in a v2/v3 row, walking cells when needed. */
-const firstWidgetTypeInLayoutRow = (row: PageRowV2 | PageRowV3): string | undefined => {
-  const col0: any = row.columns?.[0];
+/** Read the first widget type in a v3 row, walking cells. */
+const firstWidgetTypeInLayoutRow = (row: PageRowV3): string | undefined => {
+  const col0 = row.columns?.[0];
   if (!col0) return undefined;
-  if (Array.isArray(col0.cells) && col0.cells.length > 0) {
-    const cell0 = col0.cells[0];
-    return cell0?.widgets?.[0]?.type;
-  }
-  return col0.widgets?.[0]?.type;
+  const cell0 = col0.cells?.[0];
+  return cell0?.widgets?.[0]?.type;
 };
 
 export type Alignment = "left" | "right" | "center";
@@ -51,23 +55,20 @@ export type VAlign = "top" | "middle" | "bottom";
  * - After a group of pillar rows, resume with the opposite of the pre-pillar alignment.
  * - All other rows alternate left/right.
  */
-const computeAutoAlignments = (rows: RenderableRow[]): Alignment[] => {
+const computeAutoAlignments = (rows: PageRowV3[]): Alignment[] => {
   const alignments: Alignment[] = [];
   let current: Alignment = "left";
   let prePillar: Alignment | null = null;
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const rowType = isPageRowV2(row) ? firstWidgetTypeInLayoutRow(row) : row.type;
+    const rowType = firstWidgetTypeInLayoutRow(row);
     const prev = i > 0 ? rows[i - 1] : null;
-    const prevType = prev
-      ? (isPageRowV2(prev) ? firstWidgetTypeInLayoutRow(prev) : prev.type)
-      : null;
+    const prevType = prev ? firstWidgetTypeInLayoutRow(prev) : null;
     const isPillar = rowType === "service";
     const prevWasPillar = prevType === "service";
 
     if (isPillar) {
-      // Service rows default to "center" in auto mode
       if (!prevWasPillar) prePillar = current;
       alignments.push("center");
     } else {
@@ -82,10 +83,83 @@ const computeAutoAlignments = (rows: RenderableRow[]): Alignment[] => {
   return alignments;
 };
 
-const resolveAlignment = (row: RenderableRow, autoAlign: Alignment): Alignment => {
+const resolveAlignment = (row: PageRowV3, autoAlign: Alignment): Alignment => {
   const explicit = row.layout?.alignment;
   if (explicit && explicit !== "auto") return explicit;
   return autoAlign;
+};
+
+/* ──────────────────────────────────────────────────────────────────
+ * WidgetNode — render a SINGLE PageWidget inside a v3 cell.
+ *
+ * Builds an internal `PageRow`-shaped view of the widget so the
+ * existing `renderWidget()` registry (which expects `{ row, rowIndex,
+ * align, vAlign }`) can paint it without per-widget code changes. This
+ * is a render-target adapter, NOT a legacy fallback — the v3 renderer
+ * always walks rows → columns → cells → widgets and dispatches each
+ * widget through this adapter exactly once.
+ * ──────────────────────────────────────────────────────────────────── */
+const WidgetNode = ({
+  widget,
+  parentRow,
+  rowIndex,
+  align,
+  vAlign,
+  globalMap,
+}: {
+  widget: PageWidget;
+  parentRow: PageRowV3;
+  rowIndex: number;
+  align: Alignment;
+  vAlign: VAlign;
+  globalMap: Map<string, GlobalWidget>;
+}) => {
+  const adapterRow: PageRow = {
+    id: widget.id,
+    type: widget.type as PageRow["type"],
+    strip_title: parentRow.strip_title,
+    bg_color: parentRow.bg_color,
+    scope: parentRow.scope,
+    layout: parentRow.layout,
+    content: widget.data || {},
+  };
+
+  // ── Global Widget reference resolution (US 8.1) ──────────────────
+  const globalRef = readGlobalRef(adapterRow.content);
+  let renderRow = adapterRow;
+  let missingGlobal = false;
+  if (globalRef) {
+    const g = globalMap.get(globalRef);
+    if (g) {
+      const localDesign = (adapterRow.content as any)?.__design;
+      const mergedContent = localDesign
+        ? { ...g.data, __design: localDesign }
+        : g.data;
+      renderRow = { ...adapterRow, type: g.type as PageRow["type"], content: mergedContent };
+    } else {
+      missingGlobal = true;
+    }
+  }
+
+  if (missingGlobal) {
+    return (
+      <div className="py-8 text-center font-body text-xs text-muted-foreground">
+        (Referenced global block was removed)
+      </div>
+    );
+  }
+
+  const rendered = renderWidget({ row: renderRow, rowIndex, align, vAlign });
+  if (rendered === null) return null;
+
+  const design = readDesignSettings(renderRow.content);
+  const widgetPath: NodePath = ["row", parentRow.id, "widget", widget.id];
+
+  return (
+    <SelectableWrapper path={widgetPath} label={renderRow.type} variant="widget">
+      <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
+    </SelectableWrapper>
+  );
 };
 
 const RowRenderer = ({
@@ -93,205 +167,70 @@ const RowRenderer = ({
   rowIndex,
   align,
   globalMap,
-  nested = false,
-  parentRowId,
 }: {
-  row: RenderableRow;
+  row: PageRowV3;
   rowIndex: number;
   align: Alignment;
   globalMap: Map<string, GlobalWidget>;
-  /**
-   * `nested = true` means this RowRenderer is being used to paint a
-   * single widget INSIDE a v2/v3 cell. In that case we MUST NOT add
-   * the outer `["row", row.id]` SelectableWrapper, because `row.id`
-   * here is a synthetic widget-id pretending to be a row-id — the
-   * inspector would parse the resulting selection as `row:<widgetId>`
-   * and fail with "selected element no longer exists" (Debug Story 1.1
-   * regression). Instead we wrap with `["row", parentRowId, "widget",
-   * widget.id]` so the path matches what `findWidgetLocation` expects.
-   */
-  nested?: boolean;
-  parentRowId?: string;
 }) => {
   const id = row.scope || slugify(row.strip_title);
   const vAlign: VAlign = row.layout?.verticalAlign || "middle";
 
-  if (isPageRowV2(row)) {
-    const widths = row.layout?.column_widths || row.columns.map(() => Math.round(100 / Math.max(row.columns.length, 1)));
+  const widths =
+    row.layout?.column_widths ||
+    row.columns.map(() => Math.round(100 / Math.max(row.columns.length, 1)));
 
-    /**
-     * Helper — paint the widgets inside a single cell. Each widget is
-     * rendered through the existing RowRenderer (legacy v1 shape) so we
-     * keep one widget pipeline for hero/text/service/contact/etc.
-     */
-    const renderWidgetsForCell = (cell: PageCell, _basePath: string[]) =>
-      cell.widgets.map((widget) => {
-        const legacyRow: PageRow = {
-          id: widget.id,
-          type: widget.type as PageRow["type"],
-          strip_title: row.strip_title,
-          bg_color: row.bg_color,
-          scope: row.scope,
-          layout: row.layout,
-          content: widget.data || {},
-        };
-        return (
-          <RowRenderer
-            key={widget.id}
-            row={legacyRow}
-            rowIndex={rowIndex}
-            align={align}
-            globalMap={globalMap}
-            nested
-            parentRowId={row.id}
-          />
-        );
-      });
+  const renderWidgetsForCell = (cell: PageCell, _basePath: string[]) =>
+    cell.widgets.map((widget) => (
+      <WidgetNode
+        key={widget.id}
+        widget={widget}
+        parentRow={row}
+        rowIndex={rowIndex}
+        align={align}
+        vAlign={vAlign}
+        globalMap={globalMap}
+      />
+    ));
 
-    const renderedColumns = row.columns.map((column) => {
-      // v3: columns own cells; v2 fallback: synthesize a single cell
-      // from the column's widgets so the renderer has one code path.
-      const cells: PageCell[] = Array.isArray(column.cells) && column.cells.length > 0
-        ? column.cells
-        : [{
-            id: `${column.id}-cell`,
-            layout: { direction: "vertical", verticalAlign: "top", justify: "stretch", gap: 24, paddingTop: 0, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, minHeight: 0 },
-            style: { bgColor: "", borderRadius: 0, borderColor: "", borderWidth: 0, customClass: "", customCss: "" },
-            span: { col: 1, row: 1 },
-            widgets: column.widgets || [],
-          }];
-      const cellDirection = column.cell_direction || "vertical";
-      return (
-        <div
-          key={column.id}
-          className="min-w-0"
-          style={{
-            display: "flex",
-            flexDirection: cellDirection === "vertical" ? "column" : "row",
-            gap: 24,
-          }}
-        >
-          {cells.map((cell) => (
-            <CellRenderer
-              key={cell.id}
-              rowId={row.id}
-              column={column}
-              cell={cell}
-              renderWidgets={renderWidgetsForCell}
-            />
-          ))}
-        </div>
-      );
-    });
-
+  const renderedColumns = row.columns.map((column) => {
+    // v3 invariant: every column owns at least one cell. Normalization
+    // at the entry point guarantees this — no fallback synthesis here.
+    const cells: PageCell[] = column.cells || [];
+    const cellDirection = column.cell_direction || "vertical";
     return (
-      <div id={id} style={{ scrollMarginTop: "4rem", isolation: "isolate" }}>
-        <SelectableWrapper path={["row", row.id]} label="Row" variant="row">
-          <div
-            className="grid gap-8"
-            style={{ gridTemplateColumns: widths.map((w) => `${w}fr`).join(" ") }}
-          >
-            {renderedColumns}
-          </div>
-        </SelectableWrapper>
+      <div
+        key={column.id}
+        className="min-w-0"
+        style={{
+          display: "flex",
+          flexDirection: cellDirection === "vertical" ? "column" : "row",
+          gap: 24,
+        }}
+      >
+        {cells.map((cell) => (
+          <CellRenderer
+            key={cell.id}
+            rowId={row.id}
+            column={column}
+            cell={cell}
+            renderWidgets={renderWidgetsForCell}
+          />
+        ))}
       </div>
     );
-  }
-
-  const isService = row.type === "service";
-
-  // ── Global Widget reference resolution (US 8.1) ──────────────────
-  // If the cell content carries `__global_ref`, we substitute the
-  // GLOBAL widget data for the local content and use the GLOBAL
-  // type for rendering. Per-instance `__design` overrides survive
-  // (see `buildGlobalRefContent` in src/types/rows.ts).
-  //
-  // WHY we resolve here (and not inside each widget):
-  // The renderer is the single point that calls `renderWidget`, so
-  // intercepting here means EVERY widget — present and future —
-  // gains global-block support for free, no per-widget code change.
-  const globalRef = readGlobalRef(row.content);
-  let renderRow = row;
-  let missingGlobal = false;
-  if (globalRef) {
-    const g = globalMap.get(globalRef);
-    if (g) {
-      // Preserve the row container metadata (id, strip_title, layout,
-      // bg_color) but swap the content + type to the global widget's.
-      // Re-attach `__design` so per-instance margin/padding still apply.
-      const localDesign = (row.content as any)?.__design;
-      const mergedContent = localDesign
-        ? { ...g.data, __design: localDesign }
-        : g.data;
-      renderRow = { ...row, type: g.type as PageRow["type"], content: mergedContent };
-    } else {
-      missingGlobal = true;
-    }
-  }
-
-  // Engine no longer hardcodes which component renders which row.
-  // The WidgetRegistry resolves `row.type` → render fn at runtime, so
-  // adding a new widget never requires editing this file (OCP).
-  // See `src/widgets/index.tsx` for the bootstrap registrations and
-  // `WIDGETS.md` (repo root) for the 4-step extension guide.
-  const rendered = missingGlobal ? null : renderWidget({ row: renderRow, rowIndex, align, vAlign });
-  if (rendered === null && !missingGlobal) return null;
-
-  // Generic visual chrome (margin / padding / bg / radius) lives in a
-  // wrapper instead of every widget — see WidgetWrapper.tsx and US 6.1.
-  // The wrapper short-circuits to `<>{children}</>` when no overrides
-  // are present, so un-customised rows render the EXACT same DOM as
-  // before this story landed (zero visual regression risk).
-  const design = readDesignSettings(renderRow.content);
-
-  // ── Selection wrapping ─────────────────────────────────────────
-  // When `nested = true` we're rendering a widget INSIDE a v2/v3 cell,
-  // so:
-  //   • The CellRenderer already provides the row/col/cell selection
-  //     scope; we MUST NOT add a second `["row", row.id]` wrapper here
-  //     because `row.id` is actually the WIDGET id (we built a synthetic
-  //     legacyRow above). That would route clicks to `row:<widgetId>`,
-  //     which the inspector tries to resolve against `pageRows` and
-  //     fails — the user sees "selected element no longer exists".
-  //   • The widget's selection path must use the REAL parent row id so
-  //     `findWidgetLocation` can walk columns→cells→widgets and match
-  //     by widget id.
-  const widgetPath: NodePath = nested && parentRowId
-    ? ["row", parentRowId, "widget", row.id]
-    : ["row", row.id, "widget", row.id];
-
-  const widgetWrapped = (
-    <SelectableWrapper
-      path={widgetPath}
-      label={renderRow.type}
-      variant="widget"
-    >
-      <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
-    </SelectableWrapper>
-  );
-
-  // Top-level rows still need an outer Row wrapper for the row-level
-  // selection chrome (alignment, bg, padding settings live there).
-  // Nested widgets skip it because their parent row already paints one.
-  const wrapped = nested
-    ? widgetWrapped
-    : (
-        <SelectableWrapper path={["row", row.id]} label={`Row · ${row.type}`} variant="row">
-          {widgetWrapped}
-        </SelectableWrapper>
-      );
+  });
 
   return (
-    <div id={id} style={{ scrollMarginTop: isService ? "0px" : "4rem", isolation: "isolate" }}>
-      {missingGlobal ? (
-        // Soft fallback for a deleted global block — keep the page
-        // alive instead of rendering blank or 500-ing.
-        <div className="py-8 text-center font-body text-xs text-muted-foreground">
-          (Referenced global block was removed)
+    <div id={id} style={{ scrollMarginTop: "4rem", isolation: "isolate" }}>
+      <SelectableWrapper path={["row", row.id]} label="Row" variant="row">
+        <div
+          className="grid gap-8"
+          style={{ gridTemplateColumns: widths.map((w) => `${w}fr`).join(" ") }}
+        >
+          {renderedColumns}
         </div>
-      ) : (
-        wrapped
-      )}
+      </SelectableWrapper>
     </div>
   );
 };
@@ -307,18 +246,25 @@ const RowRenderer = ({
  * every keystroke, while the public site continues to use <PageRows />
  * unchanged. Same widget tree, same DOM, same animations.
  *
- * RULE: this renderer is COMPLETELY IGNORANT of the admin panel. It
- * only takes `rows` and produces HTML.
+ * US 2.2 — This is the SINGLE chokepoint where rows are normalized to
+ * v3. Every downstream renderer (RowRenderer, CellRenderer, WidgetNode)
+ * relies on the v3 invariant. Callers may pass v1/v2/v3 freely; the
+ * renderer upgrades once and never branches on schema again.
  */
 export const RowsRenderer = ({
   rows,
   footerSlot,
 }: {
-  rows: RenderableRow[];
+  rows: Array<PageRow | PageRowV3 | any>;
   footerSlot?: React.ReactNode;
 }) => {
-  const autoAlignments = computeAutoAlignments(rows);
-  const lastIndex = rows.length - 1;
+  // US 2.2 — Normalize at the boundary. Memoized on `rows` identity so
+  // we don't re-walk the tree on every parent re-render. Idempotent for
+  // already-v3 input (the migrator no-ops).
+  const v3Rows = useMemo(() => normalizeRowsToV3(rows), [rows]);
+
+  const autoAlignments = computeAutoAlignments(v3Rows);
+  const lastIndex = v3Rows.length - 1;
 
   // Resolve `__global_ref` references in cell content to live data
   // from the `global_widgets` table (US 8.1).
@@ -327,13 +273,11 @@ export const RowsRenderer = ({
   // Builder-only: drop zones must NOT alter the public DOM. On the
   // live site `enabled` is false → we render the original tree exactly
   // as it was before US 17.2 (no extra wrapper divs, no drop zones).
-  // The previous version of this code wrapped non-last rows in an
-  // extra <div> which broke scroll-snap on the homepage.
   const { enabled: builderEnabled } = useBuilder();
 
   return (
     <>
-      {rows.map((row, index) => {
+      {v3Rows.map((row, index) => {
         // Per-row ErrorBoundary — see error-boundary.tsx for the full
         // 3-layer rationale. If a single row throws (bad JSON, missing
         // field, plugin crash), only THIS row collapses to a tiny
@@ -341,7 +285,7 @@ export const RowsRenderer = ({
         const rendered = (
           <ErrorBoundary
             key={row.id}
-            label={`row:${isPageRowV2(row) ? "layout" : row.type}`}
+            label="row:layout"
             fallback={(error, reset) => <RowFallback error={error} reset={reset} />}
           >
             <RowRenderer
@@ -378,7 +322,7 @@ export const RowsRenderer = ({
       {/* End-of-page drop zone — admin only. */}
       {builderEnabled && <CanvasDropZone position={{ kind: "end" }} />}
       {/* Fallback if no rows */}
-      {rows.length === 0 && footerSlot}
+      {v3Rows.length === 0 && footerSlot}
     </>
   );
 };
@@ -396,7 +340,7 @@ const PageRows = ({
     "page_rows",
     { rows: [] },
   );
-  const rows: RenderableRow[] = data.rows || [];
+  const rows = data.rows || [];
 
   // Cold-load guard: don't paint stale defaults. We still render the
   // footer slot so the page never feels totally empty during the brief

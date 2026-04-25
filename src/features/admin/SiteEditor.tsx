@@ -5,7 +5,7 @@ import { Layout, Search, Eye, Pencil } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import RowsManager from "./site-editor/RowsManager";
 import SeoFields from "./site-editor/SeoFields";
-import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
+import { DEFAULT_ROWS, type PageRow, normalizeRowsToV3 } from "@/types/rows";
 import type { ImperativePanelGroupHandle } from "react-resizable-panels";
 import {
   ResizableHandle,
@@ -414,7 +414,11 @@ const SiteEditor = () => {
     }
   }, [sections.length]);
 
-  const pageRows: PageRow[] = (getDraft("page_rows") as any)?.rows || [];
+  // US 2.2 — Normalize draft to v3 on every read so widgetLocator,
+  // RowsRenderer, and the inspector all operate on the Atomic Node Tree
+  // exclusively. Stale v1/v2 payloads in the draft (loaded from DB
+  // before the schema cut) get upgraded once on the way in.
+  const pageRows: PageRow[] = normalizeRowsToV3((getDraft("page_rows") as any)?.rows || []) as unknown as PageRow[];
 
   // Per-section dirty indicator for the navigator
   const isDirty = (key: string) => {

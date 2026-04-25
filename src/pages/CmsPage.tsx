@@ -3,58 +3,21 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
-import TextRow from "@/features/site/rows/TextRow";
-import ServiceRow from "@/features/site/rows/ServiceRow";
-import BoxedRow from "@/features/site/rows/BoxedRow";
-import ContactRow from "@/features/site/rows/ContactRow";
-import HeroRow from "@/features/site/rows/HeroRow";
-import ImageTextRow from "@/features/site/rows/ImageTextRow";
-import ProfileRow from "@/features/site/rows/ProfileRow";
-import GridRow from "@/features/site/rows/GridRow";
+import { RowsRenderer } from "@/features/site/rows/PageRows";
 import type { PageRow } from "@/types/rows";
-import type { Alignment, VAlign } from "@/features/site/rows/PageRows";
 import NotFound from "./NotFound";
 import usePageMeta from "@/hooks/usePageMeta";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
 
-const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-
-const resolveAlignment = (row: PageRow): Alignment => {
-  const explicit = row.layout?.alignment;
-  if (explicit && explicit !== "auto") return explicit;
-  return "left";
-};
-
-const resolveVAlign = (row: PageRow): VAlign => row.layout?.verticalAlign || "middle";
-
-/**
- * RowRenderer wraps each row in its own try/catch. The outer ErrorBoundary
- * inside <PageRows/> handles the homepage; on CMS pages we render rows
- * directly so we keep the same try/catch fallback here.
+/* ════════════════════════════════════════════════════════════════════
+ * CmsPage — public renderer for `cms_pages` records.
  *
- * If you change this list, also update PageRows.tsx so both renderers
- * stay in sync.
- */
-const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
-  try {
-    if (!row || !row.type) return null;
-    const id = row.scope || slugify(row.strip_title || "section");
-    const align = resolveAlignment(row);
-    const vAlign = resolveVAlign(row);
-    const wrapper = (children: React.ReactNode) => (<div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>);
-    switch (row.type) {
-      case "hero": return wrapper(<HeroRow row={row} />);
-      case "text": return wrapper(<TextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-      case "service": return wrapper(<ServiceRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-      case "boxed": return wrapper(<BoxedRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-      case "contact": return wrapper(<ContactRow row={row} align={align} vAlign={vAlign} />);
-      case "image_text": return wrapper(<ImageTextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-      case "profile": return wrapper(<ProfileRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-      case "grid": return wrapper(<GridRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-      default: return null;
-    }
-  } catch { return <div className="py-8 text-center font-body text-sm text-destructive">Row render error</div>; }
-};
+ * US 2.2 — All row rendering now flows through the shared
+ * `RowsRenderer` component (which normalizes any v1/v2 payload to v3 at
+ * its entry point). This removes the parallel V1-only switch that used
+ * to live here, leaving exactly ONE rendering engine for the entire
+ * site (homepage, CMS pages, blog posts).
+ * ──────────────────────────────────────────────────────────────────── */
 
 const SYSTEM_ROUTES = ["blog", "admin", "unsubscribe", "api", "auth", "login", "signup", "p"];
 
@@ -67,7 +30,10 @@ const CmsPage = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  usePageMeta({ title: livePreviewPage?.meta_title || page?.meta_title || page?.title || undefined, description: livePreviewPage?.meta_description || page?.meta_description || undefined });
+  usePageMeta({
+    title: livePreviewPage?.meta_title || page?.meta_title || page?.title || undefined,
+    description: livePreviewPage?.meta_description || page?.meta_description || undefined,
+  });
 
   useEffect(() => {
     if (!slug || !isPreview) { setLivePreviewPage(null); return; }
@@ -121,12 +87,7 @@ const CmsPage = () => {
             <Footer />
           </>
         ) : (
-          rows.map((row, index) => index === rows.length - 1 ? (
-            <div key={row.id} className="snap-section">
-              <RowRenderer row={row} rowIndex={index} />
-              <Footer />
-            </div>
-          ) : <RowRenderer key={row.id} row={row} rowIndex={index} />)
+          <RowsRenderer rows={rows} footerSlot={<Footer />} />
         )}
       </div>
     </div>

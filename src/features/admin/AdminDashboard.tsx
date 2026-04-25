@@ -105,7 +105,7 @@ import BrandSettings from "./BrandSettings";
 import SeoMaster from "./SeoMaster";
 import HeroEditor from "./site-editor/HeroEditor";
 import SeoFields from "./site-editor/SeoFields";
-import { DEFAULT_ROWS, type PageRow, DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import { DEFAULT_ROWS, type PageRow, DEFAULT_ROW_LAYOUT, normalizeRowsToV3 } from "@/types/rows";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
 
@@ -527,7 +527,8 @@ const AdminDashboard = ({ session }: Props) => {
         .eq("id", cmsPage.id)
         .maybeSingle() as any;
       if (data) {
-        setCmsPageRows(data.draft_page_rows || data.page_rows || []);
+        // US 2.2 — Normalize to v3 at the boundary.
+        setCmsPageRows(normalizeRowsToV3(data.draft_page_rows || data.page_rows || []) as unknown as PageRow[]);
         setCmsPageStatus(data.status || "draft");
         setCmsPageMeta({ meta_title: data.meta_title || "", meta_description: data.meta_description || "", ai_summary: data.ai_summary || "" });
         // Fresh load = clean state. Without this the dirty flag would

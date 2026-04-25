@@ -7,14 +7,7 @@ import { useTagColors } from "@/hooks/useTagColors";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
 import type { PageRow } from "@/types/rows";
-import TextRow from "@/features/site/rows/TextRow";
-import ServiceRow from "@/features/site/rows/ServiceRow";
-import BoxedRow from "@/features/site/rows/BoxedRow";
-import ContactRow from "@/features/site/rows/ContactRow";
-import HeroRow from "@/features/site/rows/HeroRow";
-import ImageTextRow from "@/features/site/rows/ImageTextRow";
-import ProfileRow from "@/features/site/rows/ProfileRow";
-import GridRow from "@/features/site/rows/GridRow";
+import { RowsRenderer } from "@/features/site/rows/PageRows";
 
 interface BlogPost {
   slug: string; title: string; excerpt: string | null; published_at: string | null; content: string; category: string;
@@ -26,27 +19,6 @@ const calculateReadTime = (content: string) => {
 };
 
 const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-
-const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-
-const RowRenderer = ({ row, rowIndex }: { row: PageRow; rowIndex: number }) => {
-  try {
-    if (!row || !row.type) return null;
-    const id = row.scope || slugify(row.strip_title || "section");
-    const wrapper = (children: React.ReactNode) => (<div id={id} style={{ scrollMarginTop: "4rem" }}>{children}</div>);
-    switch (row.type) {
-      case "hero": return wrapper(<HeroRow row={row} />);
-      case "text": return wrapper(<TextRow row={row} rowIndex={rowIndex} />);
-      case "service": return wrapper(<ServiceRow row={row} rowIndex={rowIndex} />);
-      case "boxed": return wrapper(<BoxedRow row={row} rowIndex={rowIndex} />);
-      case "contact": return wrapper(<ContactRow row={row} />);
-      case "image_text": return wrapper(<ImageTextRow row={row} rowIndex={rowIndex} />);
-      case "profile": return wrapper(<ProfileRow row={row} rowIndex={rowIndex} />);
-      case "grid": return wrapper(<GridRow row={row} rowIndex={rowIndex} />);
-      default: return null;
-    }
-  } catch { return null; }
-};
 
 const Blog = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -81,7 +53,9 @@ const Blog = () => {
   return (
     <div className="min-h-screen lg:pl-16">
       <Navbar />
-      {(pageData.rows_above || []).map((row, i) => <RowRenderer key={row.id} row={row} rowIndex={i} />)}
+      {pageData.rows_above && pageData.rows_above.length > 0 && (
+        <RowsRenderer rows={pageData.rows_above} />
+      )}
 
       <section className="grain relative pt-36 pb-16 text-center mesh-hero">
         <div className="relative z-10 max-w-[800px] mx-auto px-8">
@@ -125,7 +99,9 @@ const Blog = () => {
         </div>
       </section>
 
-      {(pageData.rows_below || []).map((row, i) => <RowRenderer key={row.id} row={row} rowIndex={i} />)}
+      {pageData.rows_below && pageData.rows_below.length > 0 && (
+        <RowsRenderer rows={pageData.rows_below} />
+      )}
       <Footer />
     </div>
   );
