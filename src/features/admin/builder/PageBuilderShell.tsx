@@ -407,13 +407,11 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                 >
                   <div
                     className="px-4 py-3 border-b"
-                    style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+                    style={{ borderColor: "hsl(var(--border))" }}
                   >
-                    {/* US 3.1 — "Inspector" → "Element Settings" (user-facing). */}
-                    <h3
-                      className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
-                      style={{ color: "hsl(var(--muted-foreground))" }}
-                    >
+                    {/* US 3.1 — "Inspector" → "Element Settings" (user-facing).
+                        US 4.1 — admin-section-label upgrades contrast. */}
+                    <h3 className="admin-section-label font-body text-[10px]">
                       Element Settings
                     </h3>
                   </div>

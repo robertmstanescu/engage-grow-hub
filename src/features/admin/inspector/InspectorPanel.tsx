@@ -79,10 +79,9 @@ export interface InspectorPanelProps {
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="mb-5">
-    <h4
-      className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-2.5"
-      style={{ color: "hsl(var(--muted-foreground))" }}
-    >
+    {/* US 4.1 — admin-section-label gives slate-600 + bold so the header
+        stops vanishing into the white panel surface. */}
+    <h4 className="admin-section-label font-body text-[10px] mb-2.5">
       {title}
     </h4>
     <div className="space-y-3">{children}</div>
