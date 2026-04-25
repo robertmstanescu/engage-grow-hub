@@ -192,6 +192,9 @@ const PageNavigator = ({
   slugEditable = true,
   slugPrefix = "/",
   pageRows,
+  onRowsChange,
+  schedulePanel,
+  revisionPanel,
 }: PageNavigatorProps) => {
   const { activeNodePath, setActiveElement } = useBuilder();
 
@@ -206,9 +209,14 @@ const PageNavigator = ({
         id: row.id,
         index,
         label: sectionLabelForRow(row),
+        fallbackLabel: fallbackLabelForRow(row),
       })),
     [pageRows],
   );
+
+  const renameSection = (rowId: string, next: string) => {
+    onRowsChange(pageRows.map((row) => (row.id === rowId ? { ...row, strip_title: next } : row)));
+  };
 
   /** Click-to-jump: select the row AND smoothly scroll the canvas to it.
    *  The canvas paints each row inside a `<div id={row.scope || slug>`
@@ -229,7 +237,7 @@ const PageNavigator = ({
   const slugReadOnly = !slugEditable || !onPageSlugChange;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0 overflow-y-auto">
       {/* ── Slot 1+2 ── Page identity card ───────────────────────── */}
       <div
         className="px-4 pt-4 pb-3 border-b space-y-3"
