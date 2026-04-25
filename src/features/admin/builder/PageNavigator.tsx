@@ -94,6 +94,142 @@ const sanitiseSlug = (raw: string) =>
     .replace(/[^a-z0-9-]/g, "")
     .replace(/-+/g, "-");
 
+/* ──────────────────────────────────────────────────────────────────
+ * SortableSectionItem — one row in the Sections list.
+ *
+ * Two interactions on top of the existing click-to-jump:
+ *
+ *   • DOUBLE-CLICK to rename inline. The label becomes a text input
+ *     committed on Blur or Enter. We commit to `row.strip_title`,
+ *     which is the same field the renderer falls back to for the
+ *     section label, so the change is visible immediately.
+ *
+ *   • DRAG (via the GripVertical handle) to reorder. The drag handle
+ *     is the ONLY surface bound to dnd-kit's listeners — clicks on the
+ *     label still fire `onClick` so navigation keeps working.
+ * ────────────────────────────────────────────────────────────────── */
+interface SortableSectionItemProps {
+  id: string;
+  index: number;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+  onRename: (next: string) => void;
+}
+
+const SortableSectionItem = ({
+  id,
+  index,
+  label,
+  isActive,
+  onClick,
+  onRename,
+}: SortableSectionItemProps) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    backgroundColor: isActive ? "hsl(var(--accent) / 0.18)" : "transparent",
+    color: isActive ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+    fontWeight: isActive ? 500 : 400,
+  };
+
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(label);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Re-sync the local draft if the upstream label changes while we're
+  // NOT editing. When editing, keep the user's in-flight text untouched.
+  useEffect(() => {
+    if (!editing) setDraft(label);
+  }, [label, editing]);
+
+  // Auto-focus + select the input the moment we enter rename mode.
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    const trimmed = draft.trim();
+    // Only fire an upstream write if something actually changed —
+    // avoids flagging the page as dirty for a no-op double-click.
+    if (trimmed && trimmed !== label) onRename(trimmed);
+    else setDraft(label);
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="group/section flex items-center gap-1 px-2 py-1.5 rounded-md font-body text-xs transition-colors"
+      onMouseEnter={(e) => {
+        if (!isActive) e.currentTarget.style.backgroundColor = "hsl(var(--muted) / 0.5)";
+      }}
+      onMouseLeave={(e) => {
+        if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
+      }}
+    >
+      {/* Drag handle — ONLY this element binds dnd-kit listeners so
+          clicks/double-clicks on the label aren't swallowed by drag. */}
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        aria-label="Reorder section"
+        className="flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/section:opacity-60 hover:opacity-100 transition-opacity touch-none"
+        style={{ color: "hsl(var(--muted-foreground))" }}
+      >
+        <GripVertical size={12} aria-hidden />
+      </button>
+
+      <span
+        className="font-mono text-[10px] tabular-nums"
+        style={{ color: "hsl(var(--muted-foreground))", minWidth: 18 }}
+      >
+        {String(index + 1).padStart(2, "0")}
+      </span>
+
+      {editing ? (
+        <input
+          ref={inputRef}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") {
+              setDraft(label);
+              setEditing(false);
+            }
+          }}
+          className="flex-1 min-w-0 bg-transparent border-0 px-1 -mx-1 rounded focus:outline-none focus:ring-1"
+          style={{
+            color: "hsl(var(--foreground))",
+            boxShadow: "inset 0 0 0 1px hsl(var(--accent) / 0.4)",
+          }}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={onClick}
+          onDoubleClick={() => setEditing(true)}
+          className="flex-1 min-w-0 truncate text-left bg-transparent border-0 p-0 cursor-pointer"
+          style={{ color: "inherit" }}
+          title="Click to jump · Double-click to rename"
+        >
+          {label}
+        </button>
+      )}
+    </div>
+  );
+};
+
 export interface PageNavigatorProps {
   /** Editable page title shown at the very top. */
   pageTitle: string;
