@@ -918,8 +918,11 @@ const AdminDashboard = ({ session }: Props) => {
           >
             Preview live →
           </button>
-          {isSiteTab && (
-            <>
+          {/* Legacy topbar Save/Publish controls — only shown when the new
+              builder is NOT active (i.e. CMS-page editing). The new
+              <SiteEditor /> brings its own AdminBuilderToolbar with Save
+              Draft + Publish so we suppress these to avoid duplicates. */}
+          {isSiteTab && !useNewBuilder && (
               {cmsPage && (
                 <button
                   onClick={toggleCmsPagePublish}
