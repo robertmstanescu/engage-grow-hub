@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, Image, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -73,12 +73,34 @@ const ImagePickerField = ({ label, value, onChange, altValue, onAltChange }: Pro
         </div>
       )}
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = ""; }} />
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder="Or paste image URL…" className="w-full mt-1.5 px-3 py-1.5 rounded-lg font-body text-xs border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }} />
+      <UrlInput value={value} onCommit={onChange} />
       {value && onAltChange && (
         <ImageAltInput value={altValue ?? ""} onChange={onAltChange} />
       )}
       {showGallery && <MediaGallery isModal onSelect={onChange} onClose={() => setShowGallery(false)} />}
     </div>
+  );
+};
+
+/**
+ * Local deferred URL input — keeps focus and lets the admin type a
+ * full URL without firing `onChange` (and thus a save) per keystroke.
+ * Commits on blur or Enter.
+ */
+const UrlInput = ({ value, onCommit }: { value: string; onCommit: (v: string) => void }) => {
+  const [local, setLocal] = useState(value || "");
+  useEffect(() => { setLocal(value || ""); }, [value]);
+  const commit = () => { if (local !== value) onCommit(local); };
+  return (
+    <input
+      value={local}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => { if (e.key === "Enter") (e.currentTarget as HTMLInputElement).blur(); }}
+      placeholder="Or paste image URL…"
+      className="w-full mt-1.5 px-3 py-1.5 rounded-lg font-body text-xs border"
+      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+    />
   );
 };
 

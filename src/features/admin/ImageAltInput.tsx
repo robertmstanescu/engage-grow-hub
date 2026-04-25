@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState, useEffect, useRef } from "react";
 
 /**
  * Hard limit for image alt text — enforced in three places:
@@ -62,7 +62,29 @@ const ImageAltInput = ({
   placeholder = "Describe the image in 100 characters or less",
 }: ImageAltInputProps) => {
   const id = useId();
-  const length = value.length;
+  /*
+   * Defer parent updates until blur/Enter so admins can type a full
+   * description without each keystroke triggering a parent re-render
+   * (which previously felt like the input was "stuck letter by
+   * letter" on slower pages).
+   */
+  const [local, setLocal] = useState(value || "");
+  const committedRef = useRef(value || "");
+  useEffect(() => {
+    if (value !== committedRef.current) {
+      setLocal(value || "");
+      committedRef.current = value || "";
+    }
+  }, [value]);
+  const commit = () => {
+    if (local !== committedRef.current) {
+      committedRef.current = local;
+      onChange(local);
+    }
+    onBlur?.();
+  };
+
+  const length = local.length;
   const isOver = length > ALT_TEXT_MAX_LENGTH;
   const isNearLimit = length >= ALT_TEXT_MAX_LENGTH - 10 && !isOver;
 
@@ -84,9 +106,10 @@ const ImageAltInput = ({
       <input
         id={id}
         type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
+        value={local}
+        onChange={(e) => setLocal(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") (e.currentTarget as HTMLInputElement).blur(); }}
         maxLength={ALT_TEXT_MAX_LENGTH}
         placeholder={placeholder}
         aria-describedby={`${id}-counter`}

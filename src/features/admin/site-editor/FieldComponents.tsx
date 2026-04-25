@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import RichTextEditor from "../RichTextEditor";
 import { useBrandColors } from "@/hooks/useBrandSettings";
@@ -202,39 +202,114 @@ export const SectionBox = ({ children, label }: { children: React.ReactNode; lab
   </div>
 );
 
-export const ColorField = ({ label, value, onChange, description, fallback }: { label: string; value: string; onChange: (v: string) => void; description?: string; fallback?: string }) => {
-  const displayValue = value || fallback || "#000000";
+/**
+ * ColorField — admin colour picker.
+ *
+ * Surface logic:
+ *   - Brand swatches first (single-click to apply).
+ *   - A greyed "pencil" circle reveals a HEX text input for custom
+ *     colours that fall outside the brand palette.
+ *   - The HEX input is auto-revealed when the current value isn't in
+ *     the brand palette so admins always see what's set.
+ *   - The native `<input type="color">` (RGB rainbow) has been
+ *     removed — admins should stay on-brand by default.
+ */
+export const ColorField = ({
+  label,
+  value,
+  onChange,
+  description,
+  fallback,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  description?: string;
+  fallback?: string;
+}) => {
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
   const brandColors = useBrandColors();
+
+  const normalize = (hex: string) => (hex || "").trim().toLowerCase();
+  const valueNorm = normalize(value);
+  const isBrandValue = brandColors.some((c) => normalize(c.hex) === valueNorm);
+  const hasCustomValue = !!value && !isBrandValue;
+
+  // HEX input visibility:
+  //   - sticky once revealed in the same session
+  //   - auto-revealed when the saved value is custom
+  const [hexOpen, setHexOpen] = useState(hasCustomValue);
+  useEffect(() => {
+    if (hasCustomValue) setHexOpen(true);
+  }, [hasCustomValue]);
+
   return (
     <div data-inspector-field={slugifyLabel(label)}>
-      <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5 block">{label}</label>
-      {description && <p className="font-body text-[9px] text-muted-foreground/70 mb-1">{description}</p>}
-      <div className="flex gap-1 mb-1.5 flex-wrap">
-        {brandColors.map((c) => (
-          <button key={c.id} type="button" title={c.name} onClick={() => { onChange(c.hex); setLocal(c.hex); }}
-            className="w-5 h-5 rounded-full border hover:scale-110 transition-transform"
-            style={{ backgroundColor: c.hex, borderColor: c.hex === value ? "hsl(var(--primary))" : "hsl(var(--border))", outline: c.hex === value ? "2px solid hsl(var(--primary))" : "none", outlineOffset: "1px" }} />
-        ))}
+      <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5 block">
+        {label}
+      </label>
+      {description && (
+        <p className="font-body text-[9px] text-muted-foreground/70 mb-1">{description}</p>
+      )}
+      <div className="flex gap-1 mb-1.5 flex-wrap items-center">
+        {brandColors.map((c) => {
+          const selected = normalize(c.hex) === valueNorm;
+          return (
+            <button
+              key={c.id}
+              type="button"
+              title={c.name}
+              onClick={() => {
+                onChange(c.hex);
+                setLocal(c.hex);
+                setHexOpen(false);
+              }}
+              className="w-5 h-5 rounded-full border hover:scale-110 transition-transform"
+              style={{
+                backgroundColor: c.hex,
+                borderColor: selected ? "hsl(var(--primary))" : "hsl(var(--border))",
+                outline: selected ? "2px solid hsl(var(--primary))" : "none",
+                outlineOffset: "1px",
+              }}
+            />
+          );
+        })}
+        {/*
+          "Custom colour" affordance — a muted circle with a pencil
+          icon. Toggles the HEX input open so the admin can paste or
+          type any colour outside the brand palette.
+        */}
+        <button
+          type="button"
+          title={hexOpen ? "Hide custom colour" : "Custom colour"}
+          onClick={() => setHexOpen((v) => !v)}
+          className="w-5 h-5 rounded-full border flex items-center justify-center hover:scale-110 transition-transform"
+          style={{
+            backgroundColor: "hsl(var(--muted))",
+            borderColor: hasCustomValue ? "hsl(var(--primary))" : "hsl(var(--border))",
+            outline: hasCustomValue ? "2px solid hsl(var(--primary))" : "none",
+            outlineOffset: "1px",
+            color: "hsl(var(--muted-foreground))",
+          }}
+        >
+          <Pencil size={10} />
+        </button>
       </div>
-      <div className="flex gap-1.5">
-        <input
-          type="color"
-          value={displayValue}
-          onChange={(e) => { onChange(e.target.value); setLocal(e.target.value); }}
-          className="w-10 h-9 rounded border cursor-pointer"
-          style={{ borderColor: "hsl(var(--border))" }}
-        />
+      {hexOpen && (
         <input
           value={local}
           onChange={(e) => setLocal(e.target.value)}
           onBlur={commit}
-          onKeyDown={(e) => { if (e.key === "Enter") commit(); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.currentTarget.blur();
+            }
+          }}
           placeholder={fallback || "#000000"}
-          className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
+          className="w-full px-3 py-2 rounded-lg font-body text-sm border"
           style={INPUT_STYLE}
         />
-      </div>
+      )}
     </div>
   );
 };
