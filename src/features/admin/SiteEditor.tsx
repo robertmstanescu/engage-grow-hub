@@ -67,6 +67,7 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
   );
 };
 
+const SiteEditor = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [activeSection, setActiveSection] = useState<"hero" | "page_rows" | "main_page_seo">("hero");
   const [saving, setSaving] = useState<string | null>(null);
