@@ -133,6 +133,9 @@ const ListFilters = ({
             <ArrowDownAZ size={12} />
           </SortBtn>
         )}
+        {/* Score sort is opt-in: only the CRM lists (Contacts, Leads)
+            have an `ai_score` field, so other lists hide it by default
+            via `hideSortModes`. */}
         {!hideSortModes.includes("score") && (
           <SortBtn
             active={sortMode === "score"}
