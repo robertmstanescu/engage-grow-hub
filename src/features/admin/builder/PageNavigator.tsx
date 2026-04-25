@@ -145,14 +145,11 @@ const PageNavigator = ({
       {/* ── Slot 1+2 ── Page identity card ───────────────────────── */}
       <div
         className="px-4 pt-4 pb-3 border-b space-y-3"
-        style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+        style={{ borderColor: "hsl(var(--border))" }}
       >
-        {/* Slot 1 — Page Title */}
+        {/* Slot 1 — Page Title (US 4.1: stronger label & input contrast) */}
         <div className="space-y-1">
-          <label
-            className="block font-body text-[10px] uppercase tracking-[0.18em]"
-            style={{ color: "hsl(var(--muted-foreground))" }}
-          >
+          <label className="admin-section-label block font-body text-[10px]">
             Page Title
           </label>
           <input
@@ -167,7 +164,7 @@ const PageNavigator = ({
               borderColor: "hsl(var(--border))",
             }}
             onFocus={(e) => {
-              if (!titleReadOnly) e.currentTarget.style.borderColor = "hsl(var(--accent))";
+              if (!titleReadOnly) e.currentTarget.style.borderColor = "hsl(var(--admin-primary, 239 84% 53%))";
             }}
             onBlur={(e) => {
               e.currentTarget.style.borderColor = "hsl(var(--border))";
@@ -177,26 +174,23 @@ const PageNavigator = ({
 
         {/* Slot 2 — Page URL Slug */}
         <div className="space-y-1">
-          <label
-            className="block font-body text-[10px] uppercase tracking-[0.18em]"
-            style={{ color: "hsl(var(--muted-foreground))" }}
-          >
+          <label className="admin-section-label block font-body text-[10px]">
             Page URL
           </label>
           <div
             className="flex items-center gap-1.5 rounded-md px-2 py-1.5 border"
             style={{
-              backgroundColor: slugReadOnly ? "hsl(var(--muted) / 0.4)" : "hsl(var(--background))",
+              backgroundColor: slugReadOnly ? "hsl(var(--muted) / 0.6)" : "hsl(0 0% 100%)",
               borderColor: "hsl(var(--border))",
             }}
           >
             <Link2
               size={12}
-              style={{ color: "hsl(var(--muted-foreground))", flexShrink: 0 }}
+              style={{ color: "hsl(215 19% 35%)", flexShrink: 0 }}
             />
             <span
               className="font-mono text-xs select-none"
-              style={{ color: "hsl(var(--muted-foreground))" }}
+              style={{ color: "hsl(215 19% 35%)" }}
             >
               {slugPrefix}
             </span>
@@ -217,10 +211,7 @@ const PageNavigator = ({
 
       {/* ── Slot 3 ── Sections of the canvas ───────────────────── */}
       <div className="px-3 pt-3 pb-2">
-        <h3
-          className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-2"
-          style={{ color: "hsl(var(--muted-foreground))" }}
-        >
+        <h3 className="admin-section-label font-body text-[10px] mb-2">
           Sections
         </h3>
       </div>
@@ -231,7 +222,7 @@ const PageNavigator = ({
         {sections.length === 0 ? (
           <p
             className="px-3 py-2 font-body text-xs italic"
-            style={{ color: "hsl(var(--muted-foreground))" }}
+            style={{ color: "hsl(215 19% 45%)" }}
           >
             No sections yet — drag an element onto the canvas.
           </p>
@@ -243,28 +234,12 @@ const PageNavigator = ({
                 key={section.id}
                 type="button"
                 onClick={() => goToSection(section.id)}
-                className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left font-body text-xs transition-colors group"
-                style={{
-                  backgroundColor: isActive
-                    ? "hsl(var(--accent) / 0.18)"
-                    : "transparent",
-                  color: isActive
-                    ? "hsl(var(--foreground))"
-                    : "hsl(var(--muted-foreground))",
-                  fontWeight: isActive ? 500 : 400,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive)
-                    e.currentTarget.style.backgroundColor =
-                      "hsl(var(--muted) / 0.5)";
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
-                }}
+                data-active={isActive ? "true" : "false"}
+                className="admin-sidebar-item w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left font-body text-xs"
               >
                 <span
                   className="font-mono text-[10px] tabular-nums"
-                  style={{ color: "hsl(var(--muted-foreground))", minWidth: 18 }}
+                  style={{ color: "inherit", opacity: 0.7, minWidth: 18 }}
                 >
                   {String(section.index + 1).padStart(2, "0")}
                 </span>
@@ -278,12 +253,9 @@ const PageNavigator = ({
       {/* ── Slot 4 ── Elements tray ─────────────────────────────── */}
       <div
         className="flex-1 min-h-0 border-t px-3 py-3 overflow-y-auto"
-        style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+        style={{ borderColor: "hsl(var(--border))" }}
       >
-        <h3
-          className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
-          style={{ color: "hsl(var(--muted-foreground))" }}
-        >
+        <h3 className="admin-section-label font-body text-[10px] mb-3">
           Elements
         </h3>
         <ElementsTray />
