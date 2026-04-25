@@ -891,7 +891,13 @@ const SortableRowItem = ({
                 >
                   {Array.from({ length: colCount }).map((_, i) => {
                     const content = getColContent(i);
-                    const isOccupied = !!content && Object.keys(content).length > 0;
+                    // WHY exclude `__design`: empty cells may still
+                    // carry a `__design` blob from a previous widget
+                    // that was deleted. Counting only "real" widget
+                    // fields keeps the "+ Add Widget" affordance
+                    // visible until actual content is added.
+                    const realKeys = content ? Object.keys(content).filter((k) => k !== "__design") : [];
+                    const isOccupied = realKeys.length > 0;
                     return (
                       <WidgetCell
                         key={i}
@@ -902,6 +908,7 @@ const SortableRowItem = ({
                         isActive={safeActiveCol === i}
                         isOccupied={isOccupied}
                         onActivate={() => setActiveCol(i)}
+                        onInspect={() => onInspectCell(i)}
                       />
                     );
                   })}
