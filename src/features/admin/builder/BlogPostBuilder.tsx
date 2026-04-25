@@ -67,6 +67,9 @@ const BlogPostBuilder = ({ postId }: Props) => {
   const [draftRows, setDraftRows] = useState<PageRow[]>([]);
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
+  // US 2.3 — Page identity edited in the Left Navigator.
+  const [pageTitle, setPageTitle] = useState("");
+  const [pageSlug, setPageSlug] = useState("");
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
@@ -86,6 +89,8 @@ const BlogPostBuilder = ({ postId }: Props) => {
     setDraftRows(existing.length > 0 ? existing : seedRowsFromHtml(rec.content));
     setSeoTitle(rec.meta_title || "");
     setSeoDescription(rec.meta_description || "");
+    setPageTitle(rec.title || "");
+    setPageSlug(rec.slug || "");
   }, [postId]);
 
   useEffect(() => {
