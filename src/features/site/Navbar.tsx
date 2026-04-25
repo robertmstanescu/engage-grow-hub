@@ -178,19 +178,26 @@ const Navbar = () => {
             label-text swap for a visibly "complete" first paint, which
             feels far snappier than a blank column.
           */}
-          {renderedItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              onClick={(e) => handleNavClick(e, item.href)}
-              className="side-nav-label font-body"
-              style={{
-                color: isActive(item.href) ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.35)",
-                fontWeight: isActive(item.href) ? 600 : 400,
-              }}>
-              {item.label}
-            </a>
-          ))}
+          {renderedItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <a
+                key={item.label}
+                href={item.href}
+                onClick={(e) => handleNavClick(e, item.href)}
+                className="side-nav-label font-body"
+                data-active={active}
+                style={{
+                  color: active
+                    ? "hsl(var(--accent))"
+                    : "hsl(var(--foreground) / 0.35)",
+                  fontWeight: active ? 600 : 400,
+                }}
+              >
+                {item.label}
+              </a>
+            );
+          })}
         </div>
 
         {!navLoading && ctaHref ? (
