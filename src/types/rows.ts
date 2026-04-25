@@ -104,8 +104,7 @@ export interface PageRow {
     | "lead_magnet"
     | "testimonial"   // NEW — quotes from clients (carousel)
     | "logo_cloud"    // NEW — "Trusted by" logo strip
-    | "faq"           // NEW — accordion of Q/A pairs
-    | "embed";        // NEW — raw HTML / iframe embed (sanitised, US 4.1)
+    | "faq";          // NEW — accordion of Q/A pairs
   strip_title: string;
   bg_color: string;
   scope?: string;
@@ -136,6 +135,72 @@ export interface LogoCloudLogo {
   url: string;          // public image URL
   alt?: string;         // logo alt text
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+ * WIDGET DESIGN SETTINGS — US 6.1 ("The Inspector")
+ * ─────────────────────────────────────────────────────────────────────
+ * Generic, type-agnostic visual controls every widget inherits via the
+ * `WidgetWrapper`. Stored under the reserved `__design` key on a cell's
+ * content blob so legacy renderers ignore it (they only read their own
+ * known fields) and the engine can apply margin / padding / background
+ * / border-radius UNIFORMLY without each widget re-implementing them.
+ *
+ * WHY this lives in `content.__design` instead of on the `PageRow`:
+ * Per US 6.1 these settings are PER-WIDGET, not per-row. In the legacy
+ * shape a widget == a column's content blob, so co-locating the design
+ * settings there means the data travels with the widget when it's
+ * dragged across cells (see `swap`/`writeCell` in RowsManager). Moving
+ * them to the row would split a widget's data across two locations.
+ *
+ * The double-underscore prefix is a soft reservation: widget content
+ * fields use plain names, and the wrapper is the only consumer of
+ * `__design` — so collisions are practically impossible.
+ * ───────────────────────────────────────────────────────────────────── */
+export interface WidgetDesignSettings {
+  /** Outer margin in px — top/right/bottom/left. */
+  marginTop: number;
+  marginRight: number;
+  marginBottom: number;
+  marginLeft: number;
+  /** Inner padding in px — top/right/bottom/left. */
+  paddingTop: number;
+  paddingRight: number;
+  paddingBottom: number;
+  paddingLeft: number;
+  /** Background colour applied to the widget's wrapper. Empty = transparent. */
+  bgColor: string;
+  /** Border radius in px applied to all four corners. */
+  borderRadius: number;
+}
+
+export const DEFAULT_DESIGN_SETTINGS: WidgetDesignSettings = {
+  marginTop: 0,
+  marginRight: 0,
+  marginBottom: 0,
+  marginLeft: 0,
+  paddingTop: 0,
+  paddingRight: 0,
+  paddingBottom: 0,
+  paddingLeft: 0,
+  bgColor: "",
+  borderRadius: 0,
+};
+
+/**
+ * Read a widget's design settings from a cell `content` blob, merging
+ * over the defaults so callers always receive a complete object even
+ * when the JSON predates US 6.1.
+ *
+ * WHY we merge defensively: corrupted or partial blobs (the QA matrix
+ * in WIDGETS.md explicitly tests for this) would otherwise yield
+ * `undefined` styles and broken layouts.
+ */
+export const readDesignSettings = (
+  content: Record<string, any> | null | undefined,
+): WidgetDesignSettings => ({
+  ...DEFAULT_DESIGN_SETTINGS,
+  ...((content && (content as any).__design) || {}),
+});
 
 export interface ContactField {
   key: string;

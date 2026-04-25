@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles, Image, User, Grid3X3, Columns, Square, Columns2, Columns3, Columns4, Grip, Code2 } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles, Image, User, Grid3X3, Columns, Square, Columns2, Columns3, Columns4, Grip, Settings } from "lucide-react";
 import { toast } from "sonner";
-import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
+import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, DEFAULT_DESIGN_SETTINGS, readDesignSettings, type PageRow, type WidgetDesignSettings } from "@/types/rows";
 import RowAlignmentSettings from "./RowAlignmentSettings";
 import ColumnWidthControl from "./ColumnWidthControl";
 import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea, ColorField } from "./FieldComponents";
@@ -13,7 +13,7 @@ import ImageTextEditor from "./ImageTextEditor";
 import ProfileEditor from "./ProfileEditor";
 import GridEditor from "./GridEditor";
 import ContactAdmin from "@/features/widgets/contact/ContactAdmin";
-import EmbedAdmin from "@/features/widgets/embed/EmbedAdmin";
+import WidgetSettingsDrawer from "./WidgetSettingsDrawer";
 import {
   DndContext,
   closestCenter,
@@ -45,9 +45,6 @@ const ROW_TYPES = [
   { type: "image_text" as const, label: "Image & Text", icon: Image, defaultContent: { eyebrow: "", title: "", description: "", image_url: "", image_position: "right", image_shape: "default", floating_caption: "", caption_position: "bottom-left", color_eyebrow: "", color_title: "", color_description: "", color_caption_bg: "", color_caption_text: "" } },
   { type: "profile" as const, label: "Profile Feature", icon: User, defaultContent: { eyebrow: "", image_url: "", name: "", role: "", credentials: [], body: "", color_eyebrow: "", color_name: "", color_role: "", color_credential_bg: "", color_credential_text: "", color_body: "" } },
   { type: "grid" as const, label: "Grid", icon: Grid3X3, defaultContent: { eyebrow: "", title: "", description: "", items: [], color_eyebrow: "", color_title: "", color_description: "", color_card_border: "", color_card_border_hover: "", color_card_title: "", color_card_description: "", color_stat_number: "", color_stat_label: "" } },
-  // US 4.1 — escape hatch for arbitrary HTML/iframe embeds. Sanitised
-  // by `sanitizeEmbedHtml` before render; see `EmbedFrontend.tsx`.
-  { type: "embed" as const, label: "HTML / Iframe Embed", icon: Code2, defaultContent: { html: "", aspect_ratio: "auto" } },
 ];
 
 /**
@@ -81,6 +78,13 @@ interface Props {
 const RowsManager = ({ rows, onChange }: Props) => {
   const [openRow, setOpenRow] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  /**
+   * The "Inspector" target — `null` when closed, otherwise the cell
+   * whose generic design settings are being edited (US 6.1). One piece
+   * of state covers the entire page so opening a different cell simply
+   * retargets the SAME drawer instead of stacking multiple panels.
+   */
+  const [inspectedCell, setInspectedCell] = useState<{ rowId: string; colIdx: number } | null>(null);
 
   /**
    * Add an EMPTY row with N columns of the chosen layout. The row is
@@ -216,10 +220,6 @@ const RowsManager = ({ rows, onChange }: Props) => {
         return <ProfileEditor content={content} onChange={onContentChange} />;
       case "grid":
         return <GridEditor content={content} onChange={onContentChange} />;
-      case "embed":
-        // EmbedAdmin lives in `src/features/widgets/embed/`. Single
-        // textarea + sanitised live preview (US 4.1).
-        return <EmbedAdmin content={content} onChange={onContentChange} />;
       default:
         return null;
     }
@@ -456,6 +456,7 @@ const RowsManager = ({ rows, onChange }: Props) => {
                 onUpdateColumnContent={(colDataIdx, field, value) => updateColumnContent(row.id, colDataIdx, field, value)}
                 onUpdateColumnWidths={(widths) => updateColumnWidths(row.id, widths)}
                 renderEditorForContent={(content, onContentChange) => renderRowEditorForContent(row, content, onContentChange)}
+                onInspectCell={(colIdx) => setInspectedCell({ rowId: row.id, colIdx })}
               />
             );
           })}
@@ -480,6 +481,51 @@ const RowsManager = ({ rows, onChange }: Props) => {
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      {/*
+       * ─────────────────────────────────────────────────────────────
+       * GLOBAL WIDGET SETTINGS DRAWER (US 6.1 — "The Inspector")
+       * ─────────────────────────────────────────────────────────────
+       * One drawer, retargeted by `inspectedCell`. Reads / writes the
+       * `__design` blob on the targeted cell's content via the same
+       * `updateRowContent` / `updateColumnContent` helpers that the
+       * widget editors use — so saves go through ONE code path and
+       * trigger the existing autosave pipeline unchanged.
+       */}
+      {(() => {
+        const target = inspectedCell;
+        if (!target) return null;
+        const targetRow = rows.find((r) => r.id === target.rowId);
+        if (!targetRow) return null;
+        const cellContent = target.colIdx === 0
+          ? (targetRow.content || {})
+          : (targetRow.columns_data?.[target.colIdx - 1] || {});
+        const design = readDesignSettings(cellContent);
+        const writeDesign = (next: WidgetDesignSettings) => {
+          // WHY a single field write: `updateRowContent` /
+          // `updateColumnContent` already do an immutable merge under
+          // the hood, so we hand them the WHOLE settings object as the
+          // value of the reserved `__design` key. No deep-merge needed.
+          if (target.colIdx === 0) {
+            updateRowContent(target.rowId, "__design", next);
+          } else {
+            updateColumnContent(target.rowId, target.colIdx - 1, "__design", next);
+          }
+        };
+        const colCount = 1 + (targetRow.columns_data?.length || 0);
+        const label = colCount > 1
+          ? `${targetRow.type} · Col ${target.colIdx + 1} of ${colCount} · ${targetRow.strip_title}`
+          : `${targetRow.type} · ${targetRow.strip_title}`;
+        return (
+          <WidgetSettingsDrawer
+            open={true}
+            onOpenChange={(o) => { if (!o) setInspectedCell(null); }}
+            design={design}
+            onChange={writeDesign}
+            widgetLabel={label}
+          />
+        );
+      })()}
     </div>
   );
 };
@@ -513,10 +559,12 @@ interface WidgetCellProps {
   isActive: boolean;
   isOccupied: boolean;
   onActivate: () => void;
+  /** Open the global "Inspector" drawer for this cell (US 6.1). */
+  onInspect: () => void;
 }
 
 const WidgetCell = ({
-  rowId, rowType, colIdx, widthPct, isActive, isOccupied, onActivate,
+  rowId, rowType, colIdx, widthPct, isActive, isOccupied, onActivate, onInspect,
 }: WidgetCellProps) => {
   const widgetId = `widget:${rowId}:${colIdx}`;
   const cellId = `cell:${rowId}:${colIdx}`;
@@ -612,6 +660,24 @@ const WidgetCell = ({
           Col {colIdx + 1} · {Math.round(widthPct)}%
         </div>
       </button>
+      {/*
+       * Inspector trigger (US 6.1). Opens the global "Settings" drawer
+       * for this cell so the admin can edit margin / padding / bg /
+       * radius without polluting the widget's own editor with the same
+       * controls. Stops propagation so the parent edit button's click
+       * doesn't fire alongside (we don't want to switch the active
+       * column tab AND open the drawer at the same time).
+       */}
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onInspect(); }}
+        className="p-1.5 rounded hover:opacity-70 flex-shrink-0"
+        style={{ color: "hsl(var(--muted-foreground))" }}
+        title={`Widget settings (column ${colIdx + 1})`}
+        aria-label={`Open widget settings for column ${colIdx + 1}`}
+      >
+        <Settings size={14} />
+      </button>
     </div>
   );
 };
@@ -631,12 +697,14 @@ interface SortableRowItemProps {
   onUpdateColumnContent: (colDataIndex: number, field: string, value: any) => void;
   onUpdateColumnWidths: (widths: number[]) => void;
   renderEditorForContent: (content: Record<string, any>, onContentChange: (field: string, value: any) => void) => React.ReactNode;
+  /** Open the global "Inspector" drawer for a specific cell (US 6.1). */
+  onInspectCell: (colIdx: number) => void;
 }
 
 const SortableRowItem = ({
   row, TypeIcon, isOpen, onToggle, onRemove, onUpdateRow, onUpdateContent,
   onAddColumn, onRemoveColumn, onUpdateColumnContent, onUpdateColumnWidths,
-  renderEditorForContent,
+  renderEditorForContent, onInspectCell,
 }: SortableRowItemProps) => {
   // WHY prefixed id: the parent <DndContext> distinguishes ROW drags
   // from WIDGET drags by id-prefix ("row:" vs "widget:") so a single
@@ -823,7 +891,13 @@ const SortableRowItem = ({
                 >
                   {Array.from({ length: colCount }).map((_, i) => {
                     const content = getColContent(i);
-                    const isOccupied = !!content && Object.keys(content).length > 0;
+                    // WHY exclude `__design`: empty cells may still
+                    // carry a `__design` blob from a previous widget
+                    // that was deleted. Counting only "real" widget
+                    // fields keeps the "+ Add Widget" affordance
+                    // visible until actual content is added.
+                    const realKeys = content ? Object.keys(content).filter((k) => k !== "__design") : [];
+                    const isOccupied = realKeys.length > 0;
                     return (
                       <WidgetCell
                         key={i}
@@ -834,6 +908,7 @@ const SortableRowItem = ({
                         isActive={safeActiveCol === i}
                         isOccupied={isOccupied}
                         onActivate={() => setActiveCol(i)}
+                        onInspect={() => onInspectCell(i)}
                       />
                     );
                   })}
