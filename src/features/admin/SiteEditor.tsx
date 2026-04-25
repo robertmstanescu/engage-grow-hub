@@ -543,10 +543,11 @@ const SiteEditor = () => {
               style={{ backgroundColor: "hsl(var(--card))" }}
             >
               {/* US 2.3 — replaces the old "Navigator + Elements" stack
-                  with the unified PageNavigator (Title + URL + Sections
-                  + Elements). The homepage's slug is fixed at "/", so
-                  slugEditable={false}. The page title is mirrored to
-                  the SEO meta_title so editors edit it in one place. */}
+                  with the unified PageNavigator (Title + URL + Schedule
+                  + Sections + Elements + Revision history). The
+                  homepage's slug is fixed at "/", so slugEditable=false.
+                  Schedule lives directly under the Page URL slot;
+                  revision history is collapsed under the Elements tray. */}
               <PageNavigator
                 pageTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
                 onPageTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
@@ -554,6 +555,17 @@ const SiteEditor = () => {
                 slugEditable={false}
                 slugPrefix="/"
                 pageRows={pageRows}
+                schedulePanel={<SiteSectionSchedulePanel sectionKey={activeSection} />}
+                revisionPanel={
+                  <RevisionHistoryPanel
+                    entityType="site_content"
+                    entityRef={activeSection}
+                    onRestored={() => {
+                      invalidateSiteContent(activeSection);
+                      reloadSections();
+                    }}
+                  />
+                }
               />
             </aside>
           );
@@ -595,8 +607,9 @@ const SiteEditor = () => {
               </div>
               {/* US 3.1 — strict scroll container. overflow-x-hidden + min-w-0
                   prevents long text inputs from pushing the panel sideways,
-                  and gap-4 between Content / Design / Scheduling stops the
-                  sections from visually crashing into each other. */}
+                  and gap-4 between sections stops them from crashing into
+                  each other. Schedule + Revision history were moved to the
+                  LEFT navigator (under Page URL / Elements). */}
               <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 p-4 flex flex-col gap-4">
                 <InspectorPanel
                   seoMetaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
@@ -606,19 +619,6 @@ const SiteEditor = () => {
                   pageRows={pageRows}
                   onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
                 />
-                <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                  <SiteSectionSchedulePanel sectionKey={activeSection} />
-                </div>
-                <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                  <RevisionHistoryPanel
-                    entityType="site_content"
-                    entityRef={activeSection}
-                    onRestored={() => {
-                      invalidateSiteContent(activeSection);
-                      reloadSections();
-                    }}
-                  />
-                </div>
               </div>
             </aside>
           );

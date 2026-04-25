@@ -37,7 +37,7 @@
  * ──────────────────────────────────────────────────────────────────── */
 
 import { useMemo } from "react";
-import { Link2 } from "lucide-react";
+import { Link2, History, ChevronRight } from "lucide-react";
 import type { PageRow } from "@/types/rows";
 import { getWidget } from "@/lib/WidgetRegistry";
 import { useBuilder } from "./BuilderContext";
@@ -94,6 +94,16 @@ export interface PageNavigatorProps {
 
   /** All rows in the current draft — used to render the section list. */
   pageRows: PageRow[];
+
+  /** Optional scheduling panel rendered directly under the Page URL slot.
+   *  (Moved here from the right sidebar so scheduling sits with page
+   *  identity instead of competing with element-level inputs.) */
+  schedulePanel?: React.ReactNode;
+
+  /** Optional revision-history panel rendered below the Elements tray
+   *  inside a collapsed disclosure — out of sight until the editor wants
+   *  to roll back. */
+  revisionPanel?: React.ReactNode;
 }
 
 const PageNavigator = ({
@@ -104,6 +114,8 @@ const PageNavigator = ({
   slugEditable = true,
   slugPrefix = "/",
   pageRows,
+  schedulePanel,
+  revisionPanel,
 }: PageNavigatorProps) => {
   const { activeNodePath, setActiveElement } = useBuilder();
 
@@ -215,6 +227,18 @@ const PageNavigator = ({
         </div>
       </div>
 
+      {/* ── Slot 2b ── Schedule (publish window) ─────────────────────
+          Lives directly under the Page URL block: scheduling is a
+          PAGE-LEVEL setting, so it belongs with page identity rather
+          than competing with element-level inputs in the right pane. */}
+      {schedulePanel ? (
+        <div
+          className="px-4 py-3 border-b"
+          style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+        >
+          {schedulePanel}
+        </div>
+      ) : null}
       {/* ── Slot 3 ── Sections of the canvas ───────────────────── */}
       <div className="px-3 pt-3 pb-2">
         <h3
@@ -287,6 +311,31 @@ const PageNavigator = ({
           Elements
         </h3>
         <ElementsTray />
+
+        {/* ── Slot 5 ── Revision history (collapsed by default) ─────
+            Demoted from the right sidebar: roll-back is rare, so it
+            sits inside a collapsed disclosure under the Elements tray
+            where it's discoverable but never in the way. */}
+        {revisionPanel ? (
+          <details
+            className="mt-4 pt-3 border-t group"
+            style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+          >
+            <summary
+              className="flex items-center gap-1.5 cursor-pointer list-none font-body text-[10px] uppercase tracking-[0.18em] font-medium select-none"
+              style={{ color: "hsl(var(--muted-foreground))" }}
+            >
+              <ChevronRight
+                size={12}
+                className="transition-transform group-open:rotate-90"
+                aria-hidden
+              />
+              <History size={12} aria-hidden />
+              <span>Revision history</span>
+            </summary>
+            <div className="mt-3">{revisionPanel}</div>
+          </details>
+        ) : null}
       </div>
     </div>
   );
