@@ -50,9 +50,6 @@ import ElementsTray, {
   isTrayDragData,
   type TrayDragData,
 } from "./builder/ElementsTray";
-// US 3.5 — locked Header/Footer placeholders that frame the canvas
-// and route to the Global Elements editor on click.
-import LockedGlobalElement from "./builder/LockedGlobalElement";
 // US 17.2 — drop-target id parsing for tray-sourced drops.
 import { parseDropZoneId } from "./builder/CanvasDropZone";
 // US 17.2 — registry lookup so dropped widgets seed with proper defaults.
@@ -467,14 +464,10 @@ const SiteEditor = () => {
         // PageRows). Inside RowsRenderer, every row + widget is wrapped
         // in <SelectableWrapper> (US 15.2) — which short-circuits to a
         // no-op fragment on the public site (no BuilderProvider there).
-        // US 3.5 — frame the rows with locked Header/Footer placeholders
-        // so editors see the global chrome around their page edits.
         return (
           <CanvasSelectionSurface>
             <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
-              <LockedGlobalElement kind="header" />
               <RowsRenderer rows={pageRows} />
-              <LockedGlobalElement kind="footer" />
             </div>
           </CanvasSelectionSurface>
         );
@@ -661,12 +654,6 @@ const SiteEditor = () => {
                   seoMetaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
                   onSeoTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
                   onSeoDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                  /* US 3.4 — main page has no internal name / slug
-                   * (it's always at "/"). We do still surface the OG
-                   * image alongside SEO meta so editors can manage
-                   * link-preview imagery without leaving the canvas. */
-                  ogImage={(getDraft("main_page_seo") as any)?.og_image || ""}
-                  onOgImageChange={(v) => updateField("main_page_seo", "og_image", v)}
                   heroContent={getDraft("hero")}
                   onHeroFieldChange={(f, v) => updateField("hero", f, v)}
                   pageRows={pageRows}

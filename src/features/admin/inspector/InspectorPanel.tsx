@@ -15,7 +15,6 @@ import { DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/types/rows";
 // is just a NEW HOST for these — the editors themselves are unchanged.
 import HeroEditor from "../site-editor/HeroEditor";
 import SeoFields from "../site-editor/SeoFields";
-import PageSettingsEditor from "./PageSettingsEditor";
 import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
 import ColumnWidthControl from "../site-editor/ColumnWidthControl";
 import { ColorField } from "../site-editor/FieldComponents";
@@ -30,11 +29,6 @@ import ImageTextEditor from "../site-editor/ImageTextEditor";
 import ProfileEditor from "../site-editor/ProfileEditor";
 import GridEditor from "../site-editor/GridEditor";
 import ContactAdmin from "@/features/widgets/contact/ContactAdmin";
-// Catch-all editor for widget types that don't have a dedicated
-// inspector-friendly admin (lead_magnet, text, boxed, testimonial,
-// logo_cloud, faq, etc.). Reuses the legacy form-driven UI so editors
-// keep full edit access from the Inspector.
-import RowContentEditor from "../editors/RowContentEditor";
 
 /* ════════════════════════════════════════════════════════════════════
  * InspectorPanel — US 16.1
@@ -61,17 +55,6 @@ export interface InspectorPanelProps {
   seoMetaDescription: string;
   onSeoTitleChange: (v: string) => void;
   onSeoDescriptionChange: (v: string) => void;
-
-  // Page Settings (US 3.4) — optional fallback fields shown when the
-  // canvas selection is empty. Each is independently optional so the
-  // main-page builder can opt out of slug/page-name (those concepts
-  // don't apply to `site_content`) while CMS pages pass the full set.
-  pageName?: string;
-  onPageNameChange?: (v: string) => void;
-  pageSlug?: string;
-  onPageSlugChange?: (v: string) => void;
-  ogImage?: string;
-  onOgImageChange?: (v: string) => void;
 
   // Hero (special-cased single section) ------------------------------
   heroContent: Record<string, any>;
@@ -111,12 +94,6 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     seoMetaDescription,
     onSeoTitleChange,
     onSeoDescriptionChange,
-    pageName,
-    onPageNameChange,
-    pageSlug,
-    onPageSlugChange,
-    ogImage,
-    onOgImageChange,
     heroContent,
     onHeroFieldChange,
     pageRows,
@@ -149,26 +126,18 @@ const InspectorPanel = (props: InspectorPanelProps) => {
 
   const renderBody = () => {
 
-  /* ─── State 1 — nothing selected → Page Settings (US 3.4) ─────
-   * SEO managers asked for one-click access to Page Name, URL Slug,
-   * SEO meta, and the OG image without having to leave the visual
-   * builder. The empty-canvas Inspector now hosts those exact fields.
-   * The page-name / slug / og-image rows render only when their
-   * setters are wired (see PageSettingsEditor). */
+  /* ─── State 1 — nothing selected → page SEO settings ─────────── */
   if (!activeElement) {
     return (
       <Section title="Page Settings">
-        <PageSettingsEditor
-          pageName={pageName}
-          onPageNameChange={onPageNameChange}
-          pageSlug={pageSlug}
-          onPageSlugChange={onPageSlugChange}
-          seoMetaTitle={seoMetaTitle}
-          seoMetaDescription={seoMetaDescription}
-          onSeoTitleChange={onSeoTitleChange}
-          onSeoDescriptionChange={onSeoDescriptionChange}
-          ogImage={ogImage}
-          onOgImageChange={onOgImageChange}
+        <p className="font-body text-[11px] leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Click an element on the canvas to edit it. Otherwise, these page-wide settings apply.
+        </p>
+        <SeoFields
+          metaTitle={seoMetaTitle}
+          metaDescription={seoMetaDescription}
+          onTitleChange={onSeoTitleChange}
+          onDescriptionChange={onSeoDescriptionChange}
         />
       </Section>
     );
@@ -390,38 +359,15 @@ const InspectorPanel = (props: InspectorPanelProps) => {
             case "grid":
               return <GridEditor content={row.content} onChange={updateRowContent} />;
             default:
-              // Catch-all: route through the existing form-driven row
-              // editor so EVERY widget type (lead_magnet, text, boxed,
-              // testimonial, logo_cloud, faq, ...) keeps full edit
-              // access from the Inspector. The dedicated cases above
-              // remain because their direct editors render more
-              // densely inside the Inspector's narrow column.
               return (
-                <RowContentEditor
-                  row={row}
-                  onContentChange={updateRowContent}
-                  onRowMetaChange={(patch) => updateRow(patch)}
-                />
+                <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  No inspector editor available for widget type "{row.type}". Edit it from the row's form view instead.
+                </p>
               );
           }
         })();
 
     const widgetLabel = def?.label || row.type;
-
-    /* ─── Destructive action — delete this widget ─────────────────
-     * In the current v1 row model, one widget == one row. Deleting
-     * a widget therefore removes its entire row. We mirror the row-
-     * level confirmation flow so the action is never one-click. */
-    const handleDeleteWidget = async () => {
-      const ok = await confirmDestructive({
-        title: "Delete this widget?",
-        description:
-          "Warning: This will permanently remove the widget and its content from the page. Are you sure?",
-        confirmLabel: "Delete widget",
-      });
-      if (!ok) return;
-      onRowsChange(pageRows.filter((r) => r.id !== rowId));
-    };
 
     return (
       <>
@@ -444,25 +390,6 @@ const InspectorPanel = (props: InspectorPanelProps) => {
           onVisibilityChange={(visibility) => writeDesign({ visibility })}
           onCustomCssChange={(customCss) => writeDesign({ customCss })}
         />
-
-        {/* Danger zone — keep destructive actions accessible from the
-         *  Inspector so editors can remove rogue widgets without
-         *  hunting for a separate UI. */}
-        <Section title="Danger zone">
-          <button
-            type="button"
-            onClick={handleDeleteWidget}
-            className="flex items-center gap-2 px-3 py-2 rounded-md border w-full justify-center font-body text-[11px] uppercase tracking-[0.12em] cursor-pointer transition-colors"
-            style={{
-              borderColor: "hsl(var(--destructive) / 0.4)",
-              color: "hsl(var(--destructive))",
-              backgroundColor: "transparent",
-            }}
-          >
-            <Trash2 size={12} />
-            Delete widget
-          </button>
-        </Section>
       </>
     );
   }

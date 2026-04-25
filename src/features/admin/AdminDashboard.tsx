@@ -61,7 +61,7 @@ import {
   GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
   Loader2, Check, Search, History,
 } from "lucide-react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import AdminOverviewDashboard from "./AdminOverviewDashboard";
 // (Sheet/Drawer rollback: properties editor stays as a 3rd column.)
 
@@ -265,36 +265,9 @@ const AdminDashboard = ({ session }: Props) => {
   // EPIC 3 / US 3.1 — admins land on the overview dashboard, not the
   // raw site editor. The previous behaviour ("site" by default) made it
   // far too easy to fat-finger a layout the moment you logged in.
-  // EPIC 3 / US 3.3 — the Site Editor is now URL-addressable:
-  //   /admin/builder            → main page
-  //   /admin/builder/:pageId    → CMS page by id
-  // The :pageId is the source of truth; <cmsPage> state is hydrated
-  // from the URL by the effect below.
   const location = useLocation();
-  const navigate = useNavigate();
-  const { pageId: routePageId } = useParams<{ pageId?: string }>();
-  const isBuilderRoute =
-    location.pathname.startsWith("/admin/site") ||
-    location.pathname.startsWith("/admin/builder");
-  // US 3.5 — the locked Header/Footer overlays in the canvas link
-  // here with `?tab=navigation` or `?tab=settings` so they can deep-
-  // link into the Global Elements editor without bypassing this shell.
-  const queryTab = (() => {
-    const t = new URLSearchParams(location.search).get("tab");
-    if (!t) return null;
-    const allowed: Tab[] = ["overview","site","pages","navigation","blog","contacts","emails","media","brand","tags","settings","team","seo_master","versions"];
-    return (allowed as string[]).includes(t) ? (t as Tab) : null;
-  })();
-  const initialTab: Tab = queryTab ?? (isBuilderRoute ? "site" : "overview");
+  const initialTab: Tab = location.pathname.startsWith("/admin/site") ? "site" : "overview";
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
-  // US 3.5 — keep activeTab in sync with `?tab=` so deep-links from
-  // the locked Header/Footer overlays switch the editor view even when
-  // AdminDashboard is already mounted.
-  useEffect(() => {
-    if (queryTab && queryTab !== activeTab) setActiveTab(queryTab);
-    // intentionally only re-runs when the URL's tab param changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryTab]);
   // Set when the overview dashboard's "Create New Page" CTA is clicked.
   // Hands off to PagesManager which auto-opens its inline create form.
   const [pendingCreatePage, setPendingCreatePage] = useState(false);
@@ -327,43 +300,6 @@ const AdminDashboard = ({ session }: Props) => {
   const [cmsPageRows, setCmsPageRows] = useState<PageRow[]>([]);
   const [cmsPageStatus, setCmsPageStatus] = useState<string>("draft");
   const [cmsPageMeta, setCmsPageMeta] = useState<{ meta_title: string; meta_description: string; ai_summary: string }>({ meta_title: "", meta_description: "", ai_summary: "" });
-
-  /**
-   * EPIC 3 / US 3.3 — Sync `cmsPage` with the URL.
-   *
-   * The URL is the source of truth: deep-linking to
-   * `/admin/builder/<id>` from the Pages table or browser history MUST
-   * load that page's content; navigating back to `/admin/builder` MUST
-   * revert to the main page editor. We hydrate the lightweight
-   * { id, slug, title } ref from `cms_pages` here; the full page rows
-   * and meta are loaded by the existing effect keyed on `cmsPage?.id`.
-   */
-  useEffect(() => {
-    if (!isBuilderRoute) return;
-    if (!routePageId) {
-      if (cmsPage !== null) setCmsPage(null);
-      return;
-    }
-    if (cmsPage?.id === routePageId) return;
-    let cancelled = false;
-    (async () => {
-      const { data, error } = await supabase
-        .from("cms_pages")
-        .select("id, slug, title")
-        .eq("id", routePageId)
-        .maybeSingle();
-      if (cancelled) return;
-      if (error || !data) {
-        // Bad id in URL → bounce back to the main builder so the editor
-        // doesn't stare at a broken/empty canvas.
-        navigate("/admin/builder", { replace: true });
-        return;
-      }
-      setCmsPage({ id: data.id, slug: data.slug, title: data.title });
-    })();
-    return () => { cancelled = true; };
-  }, [routePageId, isBuilderRoute, cmsPage?.id, navigate]);
-
 
   // ── Site content state (main page) ──
   const [sections, setSections] = useState<SectionData[]>([]);
@@ -940,26 +876,11 @@ const AdminDashboard = ({ session }: Props) => {
   };
 
   // ── Edit page handler (from PagesManager) ──
-  // US 3.3 — push the page id onto the URL. The effect above will pick
-  // up the new :pageId param and hydrate `cmsPage`. Doing it through
-  // the router (rather than `setCmsPage` directly) means refresh,
-  // history-back, and shareable links all work for free.
   const handleEditPage = (page: CmsPageRef | null) => {
+    setCmsPage(page);
     setActiveTab("site");
     setSelectedSectionId(null);
-    if (page) {
-      navigate(`/admin/builder/${page.id}`);
-    } else {
-      navigate("/admin/builder");
-    }
   };
-
-  // Helper used by every "Back to Main Page" affordance — keeps URL,
-  // tab, and `cmsPage` state in lock-step (US 3.3).
-  const goToMainPageBuilder = () => {
-    navigate("/admin/builder");
-  };
-
 
   const isSiteTab = activeTab === "site";
   const isMainPage = !cmsPage;
@@ -1041,7 +962,7 @@ const AdminDashboard = ({ session }: Props) => {
         <span className="text-[11px] text-muted-foreground font-body flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap flex items-center justify-center gap-2">
           {cmsPage && (
             <button
-              onClick={goToMainPageBuilder}
+              onClick={() => setCmsPage(null)}
               className="flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] bg-transparent border-none cursor-pointer text-muted-foreground hover:text-foreground"
               title="Back to Main Page"
             >
@@ -1240,12 +1161,7 @@ const AdminDashboard = ({ session }: Props) => {
                     }
                     setActiveTab(item.key as Tab);
                     setSelectedSectionId(null);
-                    // Note: we intentionally do NOT change the URL when
-                    // switching to a non-builder tab. The Admin shell
-                    // hosts every tab, so the address bar can stay on
-                    // /admin/builder/:pageId — the user will return to
-                    // the same page when they re-enter the builder
-                    // (US 3.3).
+                    if (item.key !== "site") setCmsPage(null);
                     if (isAdminMobile) setMobileDrawerOpen(false);
                   };
                   return (
@@ -1314,7 +1230,7 @@ const AdminDashboard = ({ session }: Props) => {
           <div className="h-11 flex items-center justify-between px-4 border-b border-border flex-shrink-0">
             {cmsPage ? (
               <button
-                onClick={goToMainPageBuilder}
+                onClick={() => setCmsPage(null)}
                 className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-muted-foreground font-body text-[10px]"
               >
                 <ArrowLeft size={12} /> Back to Main Page
@@ -1466,25 +1382,7 @@ const AdminDashboard = ({ session }: Props) => {
             // EPIC 14–17 + US 17.x — new three-pane builder shell for
             // both the main page (SiteEditor) and CMS pages (CmsPageBuilder).
             <div className="flex-1 overflow-hidden">
-              {cmsPage ? (
-                <CmsPageBuilder
-                  pageId={cmsPage.id}
-                  /* US 3.4 — when the editor renames the page or
-                   * changes the slug from the Inspector, mirror those
-                   * values into the dashboard's cached ref so the
-                   * topbar label ("Editing: <name>") updates instantly
-                   * without a save. */
-                  onPageInfoChange={({ title, slug }) => {
-                    setCmsPage((prev) =>
-                      prev && prev.id === cmsPage.id
-                        ? { ...prev, title, slug }
-                        : prev,
-                    );
-                  }}
-                />
-              ) : (
-                <SiteEditor />
-              )}
+              {cmsPage ? <CmsPageBuilder pageId={cmsPage.id} /> : <SiteEditor />}
             </div>
           ) : isSiteTab ? (
             <div className="flex-1 bg-card overflow-hidden flex flex-col">

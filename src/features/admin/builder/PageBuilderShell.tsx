@@ -57,9 +57,6 @@ import { generateRowId, DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import InspectorPanel from "../inspector/InspectorPanel";
 import CanvasBreadcrumb from "./CanvasBreadcrumb";
-// US 3.5 — locked Header/Footer placeholders frame the canvas so the
-// admin sees global chrome around the page they are editing.
-import LockedGlobalElement from "./LockedGlobalElement";
 
 /* ------------------------------------------------------------------
  * BuilderDndShell — drop handler that needs `useBuilder()` (auto-select
@@ -220,17 +217,6 @@ export interface PageBuilderShellProps {
   onSeoTitleChange: (v: string) => void;
   onSeoDescriptionChange: (v: string) => void;
 
-  /** US 3.4 — Page Settings shown in the Inspector when nothing on the
-   *  canvas is selected. All optional so adapters that don't need slug /
-   *  internal-name editing (e.g. the blog-post builder, which already
-   *  has its own dedicated editor for those) can opt out. */
-  pageName?: string;
-  onPageNameChange?: (v: string) => void;
-  pageSlug?: string;
-  onPageSlugChange?: (v: string) => void;
-  ogImage?: string;
-  onOgImageChange?: (v: string) => void;
-
   /** Save / publish actions. The shell renders the buttons; the adapter
    * implements the actual DB writes. */
   onSaveDraft: () => Promise<void> | void;
@@ -355,10 +341,7 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                             the surrounding CanvasViewport supplies the
                             floating frame, and full-width hero rows must
                             still bleed edge-to-edge. */}
-                        {/* US 3.5 — global Header/Footer placeholders. */}
-                        <LockedGlobalElement kind="header" />
                         <RowsRenderer rows={props.pageRows} />
-                        <LockedGlobalElement kind="footer" />
                       </CanvasSelectionSurface>
                     </CanvasViewport>
                   </div>
@@ -389,12 +372,6 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                       seoMetaDescription={props.seoMetaDescription}
                       onSeoTitleChange={props.onSeoTitleChange}
                       onSeoDescriptionChange={props.onSeoDescriptionChange}
-                      pageName={props.pageName}
-                      onPageNameChange={props.onPageNameChange}
-                      pageSlug={props.pageSlug}
-                      onPageSlugChange={props.onPageSlugChange}
-                      ogImage={props.ogImage}
-                      onOgImageChange={props.onOgImageChange}
                       heroContent={{}}
                       onHeroFieldChange={() => {}}
                       pageRows={props.pageRows}

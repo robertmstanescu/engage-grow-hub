@@ -163,29 +163,6 @@ const App = () => (
                   </PageBoundary>
                 }
               />
-              {/* US 3.3 — Dynamic Builder Routing.
-                  /admin/builder            → main page (site_content)
-                  /admin/builder/:pageId    → cms_pages row by id        */}
-              <Route
-                path="/admin/builder"
-                element={
-                  <PageBoundary>
-                    <Suspense fallback={<AdminChunkFallback />}>
-                      <Admin />
-                    </Suspense>
-                  </PageBoundary>
-                }
-              />
-              <Route
-                path="/admin/builder/:pageId"
-                element={
-                  <PageBoundary>
-                    <Suspense fallback={<AdminChunkFallback />}>
-                      <Admin />
-                    </Suspense>
-                  </PageBoundary>
-                }
-              />
               <Route
                 path="/admin/profile"
                 element={
