@@ -543,63 +543,19 @@ const SiteEditor = () => {
               className="h-full flex flex-col"
               style={{ backgroundColor: "hsl(var(--card))" }}
             >
-              <div
-                className="px-4 py-3 border-b"
-                style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-              >
-                <h3
-                  className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
-                  style={{ color: "hsl(var(--muted-foreground))" }}
-                >
-                  Navigator
-                </h3>
-              </div>
-              <nav className="flex-shrink-0 overflow-y-auto p-2 space-y-1 max-h-[40%]">
-                {SECTION_NAV.map(({ key, label, Icon }) => {
-                  const active = activeSection === key;
-                  const dirty = isDirty(key);
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setActiveSection(key)}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left font-body text-sm transition-colors"
-                      style={{
-                        backgroundColor: active ? "hsl(var(--accent) / 0.18)" : "transparent",
-                        color: active ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
-                        fontWeight: active ? 500 : 400,
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!active) e.currentTarget.style.backgroundColor = "hsl(var(--muted) / 0.5)";
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!active) e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      <Icon size={15} />
-                      <span className="flex-1 truncate">{label}</span>
-                      {dirty && (
-                        <span
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: "hsl(var(--accent))" }}
-                          aria-label="Unsaved changes"
-                        />
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
-              <div
-                className="flex-1 min-h-0 border-t px-3 py-3 overflow-y-auto"
-                style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-              >
-                <h3
-                  className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
-                  style={{ color: "hsl(var(--muted-foreground))" }}
-                >
-                  Elements
-                </h3>
-                <ElementsTray />
-              </div>
+              {/* US 2.3 — replaces the old "Navigator + Elements" stack
+                  with the unified PageNavigator (Title + URL + Sections
+                  + Elements). The homepage's slug is fixed at "/", so
+                  slugEditable={false}. The page title is mirrored to
+                  the SEO meta_title so editors edit it in one place. */}
+              <PageNavigator
+                pageTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                onPageTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                pageSlug=""
+                slugEditable={false}
+                slugPrefix="/"
+                pageRows={pageRows}
+              />
             </aside>
           );
 
