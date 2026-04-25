@@ -61,7 +61,8 @@ import {
   GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
   Loader2, Check, Search, History,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import AdminOverviewDashboard from "./AdminOverviewDashboard";
 // (Sheet/Drawer rollback: properties editor stays as a 3rd column.)
 
 /**
