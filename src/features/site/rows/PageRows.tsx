@@ -16,7 +16,7 @@ import WidgetWrapper from "@/components/widgets/WidgetWrapper";
 import { useGlobalWidgetMap, type GlobalWidget } from "@/hooks/useGlobalWidgets";
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import CanvasDropZone from "@/features/admin/builder/CanvasDropZone";
-import { useBuilder } from "@/features/admin/builder/BuilderContext";
+import { useBuilder, type NodePath } from "@/features/admin/builder/BuilderContext";
 import CellRenderer from "./CellRenderer";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -112,11 +112,25 @@ const RowRenderer = ({
   rowIndex,
   align,
   globalMap,
+  nested = false,
+  parentRowId,
 }: {
   row: RenderableRow;
   rowIndex: number;
   align: Alignment;
   globalMap: Map<string, GlobalWidget>;
+  /**
+   * `nested = true` means this RowRenderer is being used to paint a
+   * single widget INSIDE a v2/v3 cell. In that case we MUST NOT add
+   * the outer `["row", row.id]` SelectableWrapper, because `row.id`
+   * here is a synthetic widget-id pretending to be a row-id — the
+   * inspector would parse the resulting selection as `row:<widgetId>`
+   * and fail with "selected element no longer exists" (Debug Story 1.1
+   * regression). Instead we wrap with `["row", parentRowId, "widget",
+   * widget.id]` so the path matches what `findWidgetLocation` expects.
+   */
+  nested?: boolean;
+  parentRowId?: string;
 }) => {
   const id = row.scope || slugify(row.strip_title);
   const vAlign: VAlign = row.layout?.verticalAlign || "middle";
@@ -147,6 +161,8 @@ const RowRenderer = ({
             rowIndex={rowIndex}
             align={align}
             globalMap={globalMap}
+            nested
+            parentRowId={row.id}
           />
         );
       });
@@ -247,6 +263,43 @@ const RowRenderer = ({
   // before this story landed (zero visual regression risk).
   const design = readDesignSettings(renderRow.content);
 
+  // ── Selection wrapping ─────────────────────────────────────────
+  // When `nested = true` we're rendering a widget INSIDE a v2/v3 cell,
+  // so:
+  //   • The CellRenderer already provides the row/col/cell selection
+  //     scope; we MUST NOT add a second `["row", row.id]` wrapper here
+  //     because `row.id` is actually the WIDGET id (we built a synthetic
+  //     legacyRow above). That would route clicks to `row:<widgetId>`,
+  //     which the inspector tries to resolve against `pageRows` and
+  //     fails — the user sees "selected element no longer exists".
+  //   • The widget's selection path must use the REAL parent row id so
+  //     `findWidgetLocation` can walk columns→cells→widgets and match
+  //     by widget id.
+  const widgetPath: NodePath = nested && parentRowId
+    ? ["row", parentRowId, "widget", row.id]
+    : ["row", row.id, "widget", row.id];
+
+  const widgetWrapped = (
+    <SelectableWrapper
+      path={widgetPath}
+      label={renderRow.type}
+      variant="widget"
+    >
+      <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
+    </SelectableWrapper>
+  );
+
+  // Top-level rows still need an outer Row wrapper for the row-level
+  // selection chrome (alignment, bg, padding settings live there).
+  // Nested widgets skip it because their parent row already paints one.
+  const wrapped = nested
+    ? widgetWrapped
+    : (
+        <SelectableWrapper path={["row", row.id]} label={`Row · ${row.type}`} variant="row">
+          {widgetWrapped}
+        </SelectableWrapper>
+      );
+
   return (
     <div id={id} style={{ scrollMarginTop: isService ? "0px" : "4rem", isolation: "isolate" }}>
       {missingGlobal ? (
@@ -256,19 +309,7 @@ const RowRenderer = ({
           (Referenced global block was removed)
         </div>
       ) : (
-        // EPIC 1 / US 1.1 — Atomic Canvas: paths are now hierarchical.
-        // outer SelectableWrapper = the ROW; inner = the WIDGET.
-        // Atomic-node wrappers (eyebrow / title / subtitle / image)
-        // live INSIDE each row component and extend these paths further.
-        <SelectableWrapper path={["row", row.id]} label={`Row · ${row.type}`} variant="row">
-          <SelectableWrapper
-            path={["row", row.id, "widget", row.id]}
-            label={renderRow.type}
-            variant="widget"
-          >
-            <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
-          </SelectableWrapper>
-        </SelectableWrapper>
+        wrapped
       )}
     </div>
   );

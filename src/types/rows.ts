@@ -474,6 +474,35 @@ export const buildEmptyCell = (): PageCell => ({
 });
 
 /**
+ * Build an empty v3 row with `columnCount` columns, each containing one
+ * empty cell. Used by the "Layout" cards in the Elements tray so editors
+ * can lay out a structure first and drop widgets into the cells later.
+ */
+export const buildEmptyV3Row = (columnCount: 1 | 2 | 3 | 4 = 1): PageRowV3 => {
+  const presetByCount: Record<number, ColumnLayoutPreset> = {
+    1: "100",
+    2: "50-50",
+    3: "33-33-33",
+    4: "25-25-25-25",
+  };
+  const equalWidth = Math.round(100 / columnCount);
+  const widths = Array.from({ length: columnCount }, () => equalWidth);
+  return {
+    id: generateRowId(),
+    schema_version: 3,
+    strip_title: `${columnCount}-column row`,
+    bg_color: "",
+    layout: { ...DEFAULT_ROW_LAYOUT, column_widths: widths },
+    column_layout: presetByCount[columnCount] || "custom",
+    columns: Array.from({ length: columnCount }, () => ({
+      id: generateRowId(),
+      cell_direction: "vertical" as const,
+      cells: [buildEmptyCell()],
+    })),
+  };
+};
+
+/**
  * Read a cell's layout/style/span, merging over defaults so callers
  * always receive a complete shape (defends against partial JSON, just
  * like `readDesignSettings`).
