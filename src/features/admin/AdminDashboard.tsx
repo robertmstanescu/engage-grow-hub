@@ -115,6 +115,7 @@ import RowContentEditor from "./editors/RowContentEditor";
 import VersionHistory from "./VersionHistory";
 import { confirmDestructive } from "@/components/ConfirmDialog";
 import { countRowWidgets } from "./builder/rowWidgetCount";
+import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 // EPIC 14–17 — new three-pane builder shell. Mounted in place of the
 // legacy structure-rail + properties layout when the admin is editing
 // the MAIN PAGE site content. CMS-page editing still uses the legacy
@@ -465,6 +466,15 @@ const AdminDashboard = ({ session }: Props) => {
     if (currentDraftSnapshot === lastAutoSavedRef.current) return;
     autoSaveDraft();
   }, [currentDraftSnapshot, cmsPage, cmsPageRows.length, sections.length, autoSaveDraft]);
+
+  /* Debug Story 4.2 — guard against losing work on tab close / reload /
+   * browser-back. Native `beforeunload` only honours the warning when
+   * we have a real reason: either the draft differs from the live site
+   * OR an auto-save is currently in flight (the user typed in the last
+   * 500ms and the silent save hasn't completed yet). Both windows count
+   * as "unsaved" from the user's perspective. Lives DOWN HERE because
+   * `autoSaveStatus` is declared after `hasUnsavedChanges`. */
+  useUnloadGuard(hasUnsavedChanges || autoSaveStatus === "saving");
 
   // Load main page data
   useEffect(() => {

@@ -25,6 +25,7 @@ import {
 import PageBuilderShell from "./PageBuilderShell";
 import RevisionHistoryPanel from "./RevisionHistoryPanel";
 import SchedulePublishPanel from "./SchedulePublishPanel";
+import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 
 interface BlogPostRecord {
   id: string;
@@ -108,6 +109,10 @@ const BlogPostBuilder = ({ postId }: Props) => {
   );
 
   const hasChanges = !!record && initialSnapshot !== currentSnapshot;
+
+  // Debug Story 4.2 — block tab close / reload while the local draft
+  // hasn't been pushed to the database yet.
+  useUnloadGuard(hasChanges);
 
   const onSaveDraft = useCallback(async () => {
     if (!record) return;
