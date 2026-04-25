@@ -64,8 +64,16 @@ const ROW_TYPE_LABELS: Record<string, string> = {
   faq: "FAQ",
 };
 
-const titleCase = (s: string) =>
-  s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+/**
+ * Strict-guarded title-cased label. The builder ingests v1/v2/v3 row
+ * shapes and occasionally a malformed row arrives with `type === undefined`
+ * (e.g. a half-initialized widget mid-drag). Returning "" instead of
+ * crashing keeps the breadcrumb stable. See US 1.1.
+ */
+const titleCase = (s: unknown): string => {
+  if (typeof s !== "string" || s.length === 0) return "";
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+};
 
 interface Crumb {
   label: string;
