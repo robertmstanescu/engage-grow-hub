@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { sanitizeHtml } from "@/services/sanitize";
@@ -11,30 +11,88 @@ import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typogr
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
+/* ──────────────────────────────────────────────────────────────────────
+ * parseStatValue
+ * ──────────────────────────────────────────────────────────────────────
+ * Splits a display value like "$2.5k", "150+", "99%", "1,200" into
+ *   { prefix, number, suffix, decimals }
+ * so we can animate just the numeric portion and reconstruct the label
+ * (currency symbol, %, +, k, m, etc.) on every frame. Returns
+ * `number: null` when no numeric portion is found — the caller should
+ * then render the raw value verbatim (no animation).
+ * ──────────────────────────────────────────────────────────────────── */
+const parseStatValue = (raw: string) => {
+  const match = String(raw).match(/^(\D*?)([\d,]+(?:\.\d+)?)(.*)$/);
+  if (!match) return { prefix: "", number: null as number | null, suffix: "", decimals: 0 };
+  const [, prefix, numStr, suffix] = match;
+  const cleaned = numStr.replace(/,/g, "");
+  const decimals = cleaned.includes(".") ? cleaned.split(".")[1].length : 0;
+  const number = parseFloat(cleaned);
+  return { prefix, number: Number.isFinite(number) ? number : null, suffix, decimals };
+};
+
+/* useCountUp — easeOutQuad animation from 0 → target over `duration` ms.
+ * Resets to 0 when `active` flips false so the animation replays each
+ * time the section re-enters the viewport. requestAnimationFrame keeps
+ * it smooth without leaking intervals on unmount. */
+const useCountUp = (target: number | null, active: boolean, duration = 1500) => {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!active || target === null) {
+      if (!active) setValue(0);
+      return;
+    }
+    let raf = 0;
+    let start: number | null = null;
+    const step = (ts: number) => {
+      if (start === null) start = ts;
+      const elapsed = ts - start;
+      const t = Math.min(1, elapsed / duration);
+      const eased = 1 - (1 - t) * (1 - t);
+      setValue(target * eased);
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, active, duration]);
+  return value;
+};
+
+const formatNumber = (n: number, decimals: number) =>
+  decimals > 0
+    ? n.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+    : Math.round(n).toLocaleString();
+
 const StatUnit = memo(({ value, label, colors, isVisible, idx }: {
   value: string; label: string; colors: Record<string, string>;
   isVisible: boolean; idx: number;
-}) => (
-  <div
-    className="flex-1 flex flex-col items-center justify-center py-rhythm-base px-4"
-    style={revealStyle(isVisible, idx + 3)}
-  >
-    <p
-      className="font-display font-black leading-none"
-      style={{ color: colors.statNumber, fontSize: "clamp(2rem, 5vw, 3.5rem)" }}
+}) => {
+  const { prefix, number, suffix, decimals } = parseStatValue(value);
+  const animated = useCountUp(number, isVisible);
+  const display =
+    number === null ? value : `${prefix}${formatNumber(animated, decimals)}${suffix}`;
+  return (
+    <div
+      className="flex-1 flex flex-col items-center justify-center py-rhythm-base px-4"
+      style={revealStyle(isVisible, idx + 3)}
     >
-      {value}
-    </p>
-    {label && (
       <p
-        className="font-body text-[10px] tracking-[0.2em] uppercase mt-3 text-center leading-[1.6] whitespace-pre-line"
-        style={{ color: colors.statLabel }}
+        className="font-display font-black leading-none tabular-nums"
+        style={{ color: colors.statNumber, fontSize: "clamp(2rem, 5vw, 3.5rem)" }}
       >
-        {label}
+        {display}
       </p>
-    )}
-  </div>
-));
+      {label && (
+        <p
+          className="font-body text-[10px] tracking-[0.2em] uppercase mt-3 text-center leading-[1.6] whitespace-pre-line"
+          style={{ color: colors.statLabel }}
+        >
+          {label}
+        </p>
+      )}
+    </div>
+  );
+});
 
 const AchievementCard = memo(({ text, colors, cardBg, isVisible, idx }: {
   text: string; colors: Record<string, string>; cardBg: string;
