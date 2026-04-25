@@ -1315,10 +1315,16 @@ const AdminDashboard = ({ session }: Props) => {
         <div
           className={[
             "flex-1 min-w-0 flex flex-col overflow-hidden",
-            isAdminMobile && isSiteTab && !selectedSectionId ? "hidden" : "",
+            isAdminMobile && isSiteTab && !selectedSectionId && !useNewBuilder ? "hidden" : "",
           ].join(" ")}
         >
-          {isSiteTab ? (
+          {useNewBuilder ? (
+            // EPIC 14–17 — new three-pane builder shell. Fully self-
+            // contained (own toolbar, own structure rail, own inspector).
+            <div className="flex-1 overflow-hidden">
+              <SiteEditor />
+            </div>
+          ) : isSiteTab ? (
             <div className="flex-1 bg-card overflow-hidden flex flex-col">
               {!selectedSectionId ? (
                 <div className="flex-1 flex items-center justify-center">
