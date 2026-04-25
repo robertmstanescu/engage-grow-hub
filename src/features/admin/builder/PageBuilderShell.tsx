@@ -220,13 +220,6 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
             hasChanges={props.hasChanges}
           />
 
-          <ResizablePanelGroup
-            direction="horizontal"
-            className="flex-1 border-x border-b overflow-hidden rounded-b-lg"
-            style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-          >
-            {/* LEFT — Library / Navigator */}
-            <ResizablePanel defaultSize={18} minSize={14} maxSize={28}>
           <div ref={limits.containerRef} className="flex-1 min-h-0 flex">
           <ResizablePanelGroup
             ref={panelGroupRef}
