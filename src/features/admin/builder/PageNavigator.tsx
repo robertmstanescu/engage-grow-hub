@@ -36,7 +36,7 @@
  *   producing broken routes. Adapters validate uniqueness on save.
  * ──────────────────────────────────────────────────────────────────── */
 
-import { useMemo } from "react";
+import { useMemo, type CSSProperties, type ReactNode } from "react";
 import { GripVertical, Link2 } from "lucide-react";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -114,10 +114,10 @@ export interface PageNavigatorProps {
   onRowsChange: (rows: PageRow[]) => void;
 
   /** Native scheduling panel rendered directly below Page URL. */
-  schedulePanel?: React.ReactNode;
+  schedulePanel?: ReactNode;
 
   /** Revision history rendered inside the bottom accordion. */
-  revisionPanel?: React.ReactNode;
+  revisionPanel?: ReactNode;
 }
 
 const SECTION_DRAG_ID_PREFIX = "section-row:";
@@ -151,7 +151,7 @@ const SectionButton = ({ section, isActive, onSelect, onRename }: SectionButtonP
       <button
         type="button"
         className="shrink-0 cursor-grab active:cursor-grabbing rounded p-0.5 opacity-60 transition-opacity group-hover:opacity-100 focus:outline-none focus-visible:ring-2"
-        style={{ color: "inherit", "--tw-ring-color": "hsl(var(--accent))" } as React.CSSProperties}
+        style={{ color: "inherit", "--tw-ring-color": "hsl(var(--accent))" } as CSSProperties}
         aria-label={`Reorder ${section.label}`}
         title="Drag to reorder section"
         onClick={(e) => e.stopPropagation()}
