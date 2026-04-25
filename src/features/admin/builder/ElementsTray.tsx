@@ -74,7 +74,7 @@ export const isLayoutTrayDragData = (
  * Single draggable card
  * ────────────────────────────────────────────────────────────────── */
 interface TrayCardProps {
-  def: WidgetDefinition;
+  def: WidgetDefinition<unknown>;
 }
 
 const TrayCard = ({ def }: TrayCardProps) => {
