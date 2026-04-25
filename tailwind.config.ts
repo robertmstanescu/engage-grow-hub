@@ -113,7 +113,7 @@ export default {
         "rhythm-loose": "48px",
         row: "64px",
         "row-md": "112px",
-        "row-fluid": "clamp(8px, 4vh, 96px)",
+        "row-fluid": "clamp(24px, 4vh, 96px)",
       },
       fontFamily: {
         display: ["Unbounded", "sans-serif"],
