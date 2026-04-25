@@ -263,7 +263,8 @@
     background: hsl(260 25% 12% / 0.15);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid hsl(280 20% 25% / 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
     transform: translateZ(0);
     backface-visibility: hidden;
     /* `isolation: isolate` creates a new stacking context so the
@@ -277,8 +278,8 @@
   }
 
   .glass:hover {
-    border: 1px solid hsl(var(--accent) / 0.5);
-    box-shadow: 0 0 20px -5px hsl(var(--accent) / 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   }
 
   .glass-light {
@@ -325,8 +326,8 @@
 
   .btn-glass:hover {
     box-shadow:
-      0 6px 30px -4px hsl(var(--accent) / 0.45),
-      inset 0 1px 0 hsl(0 0% 100% / 0.2);
+      0 10px 30px -10px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 hsl(0 0% 100% / 0.3);
   }
 
   /* ──────────────────────────────────────────────────────────────────
