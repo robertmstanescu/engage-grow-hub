@@ -227,6 +227,29 @@ function truncate(value: unknown, max: number): string {
   return value.length > max ? value.slice(0, max) : value;
 }
 
+/**
+ * Coerce an arbitrary client-supplied attribution blob into a flat
+ * `Record<string, string>` we can safely store as JSONB. Drops anything
+ * that isn't a string, clips long values, and caps the total number of
+ * keys so a malicious payload can't bloat the analytics table.
+ *
+ * Returns `null` for an empty / invalid blob — we want JSONB sparsity.
+ */
+const ALLOWED_ATTR_KEYS = new Set([
+  "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+  "gclid", "fbclid", "landing_path", "referrer", "first_seen_at",
+]);
+function sanitizeAttribution(raw: unknown): Record<string, string> | null {
+  if (!raw || typeof raw !== "object") return null;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (!ALLOWED_ATTR_KEYS.has(k)) continue;
+    if (typeof v !== "string" || v.trim() === "") continue;
+    out[k] = v.length > 500 ? v.slice(0, 500) : v;
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
