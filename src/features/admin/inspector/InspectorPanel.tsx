@@ -397,9 +397,15 @@ const InspectorPanel = (props: InspectorPanelProps) => {
 
     /* Resolve the per-widget admin editor — registry first, then a
      * legacy switch for widgets that haven't been ported yet. The
-     * resulting node renders inside the Content tab. */
+     * resulting node renders inside the Content tab.
+     *
+     * US 3.2 — every editor below is wrapped in a SurfaceBgProvider so
+     * its nested Field / TextArea / RichField / SectionBox instances
+     * pick up the live cell/row bg colour. We DON'T pass the colour as
+     * a prop because doing so would require touching every editor; the
+     * provider lets us do it once at the boundary. */
     const def = getWidget(widgetType as any);
-    const contentEditor = def?.adminComponent
+    const rawContentEditor = def?.adminComponent
       ? (() => {
           const Admin = def.adminComponent!;
           return <Admin content={widgetContent} onChange={updateWidgetField} />;
@@ -433,6 +439,12 @@ const InspectorPanel = (props: InspectorPanelProps) => {
               );
           }
         })();
+
+    const contentEditor = (
+      <SurfaceBgProvider bgColor={effectiveSurfaceBg}>
+        {rawContentEditor}
+      </SurfaceBgProvider>
+    );
 
     const widgetLabel = def?.label || widgetType;
 
