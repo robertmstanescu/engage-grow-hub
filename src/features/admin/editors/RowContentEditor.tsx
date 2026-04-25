@@ -90,10 +90,11 @@ const CONTENT_CLASS = "pt-3 pb-1 space-y-3";
 
 const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
   const content = row.content;
-  // The row's own background colour drives the RichTextEditor's surface
-  // colour so light-on-light or dark-on-dark text remains legible while
-  // editing — see RichField docstring in FieldComponents for details.
-  const bg = row.bg_color;
+  // Resolve the row's *effective* background — bg_color first, then
+  // custom-gradient first stop, then the row-type default. This is what
+  // RichTextEditor reads to flip its preview surface so the editor body
+  // text always contrasts the rendered row, not the admin app shell.
+  const bg = resolveRowBgColor(row);
 
   /** Always-rendered top-of-form block: Strip Title + universal Subscribe
    *  toggle. Lives ABOVE the accordions because:
