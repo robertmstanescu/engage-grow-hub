@@ -661,7 +661,9 @@ export const migrateSiteContentRows = <T extends { rows?: any[] } | null | undef
   payload: T,
 ): T => {
   if (!payload || !Array.isArray((payload as any).rows)) return payload;
-  const migrated = (payload as any).rows.map((r: any) => migrateRowToV2(r));
+  // v3 = canonical on-read shape (US 1.2). All renderers/editors that
+  // need the cell layer can rely on `isPageRowV3` after this pass.
+  const migrated = (payload as any).rows.map((r: any) => migrateRowToV3(r));
   return { ...(payload as any), rows: migrated } as T;
 };
 
