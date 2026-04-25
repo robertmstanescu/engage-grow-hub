@@ -105,7 +105,7 @@ import BrandSettings from "./BrandSettings";
 import SeoMaster from "./SeoMaster";
 import HeroEditor from "./site-editor/HeroEditor";
 import SeoFields from "./site-editor/SeoFields";
-import { DEFAULT_ROWS, type PageRow, DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import { DEFAULT_ROWS, type PageRow, DEFAULT_ROW_LAYOUT, normalizeRowsToV3 } from "@/types/rows";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
 
