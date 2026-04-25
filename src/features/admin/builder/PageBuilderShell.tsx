@@ -245,7 +245,17 @@ const SNAP_BACK_ANIMATION: DropAnimation = {
 const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => {
   const { setActiveElement } = useBuilder();
   return (
-    <div onClick={() => setActiveElement(null)} className="contents">
+    /*
+     * `data-builder-canvas` lets `src/index.css` neutralise the
+     * default `min-h-screen`/100dvh on each row when rendered inside
+     * the builder. Rows then size to their content so the canvas
+     * isn't a stack of huge empty viewports.
+     */
+    <div
+      data-builder-canvas="true"
+      onClick={() => setActiveElement(null)}
+      className="contents"
+    >
       {children}
     </div>
   );
