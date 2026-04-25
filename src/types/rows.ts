@@ -99,12 +99,13 @@ export interface PageRow {
     | "boxed"
     | "contact"
     | "image_text"
+    | "image"          // EPIC 13 — standalone Image widget with mandatory alt-text
     | "profile"
     | "grid"
     | "lead_magnet"
-    | "testimonial"   // NEW — quotes from clients (carousel)
-    | "logo_cloud"    // NEW — "Trusted by" logo strip
-    | "faq";          // NEW — accordion of Q/A pairs
+    | "testimonial"
+    | "logo_cloud"
+    | "faq";
   strip_title: string;
   bg_color: string;
   scope?: string;
