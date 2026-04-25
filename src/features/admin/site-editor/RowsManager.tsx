@@ -195,7 +195,11 @@ const RowsManager = ({ rows, onChange }: Props) => {
       case "boxed":
         return <BoxedRowFields content={content} onChange={onContentChange} />;
       case "contact":
-        return <ContactRowFields content={content} onChange={onContentChange} />;
+        // ContactAdmin lives in `src/features/widgets/contact/` so the
+        // contact form is a self-contained, registry-driven widget
+        // (US 2.2). The legacy inline `ContactRowFields` further down
+        // this file is kept dormant for now to minimise diff risk.
+        return <ContactAdmin content={content} onChange={onContentChange} />;
       case "image_text":
         return <ImageTextEditor content={content} onChange={onContentChange} />;
       case "profile":
