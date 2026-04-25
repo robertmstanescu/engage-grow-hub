@@ -310,6 +310,24 @@ const SiteEditor = () => {
   };
 
   const publishAll = async () => {
+    // EPIC 13 / US 13.1 — gate publish on accessibility (alt text).
+    // We pull rows from the live draft snapshot — the source of truth
+    // about what is ABOUT to go live.
+    const draftRowsForCheck =
+      ((sections.find((s) => s.section_key === "page_rows")?.draft_content as any)?.rows ||
+        (sections.find((s) => s.section_key === "page_rows")?.content as any)?.rows ||
+        []) as PageRow[];
+    const violations = findMissingAltViolations(draftRowsForCheck);
+    const message = formatAltMissingMessage(violations);
+    if (message) {
+      toast.error(message, {
+        description: violations
+          .map((v) => `• ${v.label} — “${v.stripTitle}”`)
+          .join("\n"),
+      });
+      return;
+    }
+
     setPublishing(true);
     const updates = sections.map((s) => {
       const data = (s.draft_content || s.content) as any;
