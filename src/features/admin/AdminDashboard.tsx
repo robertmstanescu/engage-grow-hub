@@ -262,7 +262,15 @@ const SortableSectionBlock = ({
    ADMIN DASHBOARD
    ═══════════════════════════════════════════════ */
 const AdminDashboard = ({ session }: Props) => {
-  const [activeTab, setActiveTab] = useState<Tab>("site");
+  // EPIC 3 / US 3.1 — admins land on the overview dashboard, not the
+  // raw site editor. The previous behaviour ("site" by default) made it
+  // far too easy to fat-finger a layout the moment you logged in.
+  const location = useLocation();
+  const initialTab: Tab = location.pathname.startsWith("/admin/site") ? "site" : "overview";
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+  // Set when the overview dashboard's "Create New Page" CTA is clicked.
+  // Hands off to PagesManager which auto-opens its inline create form.
+  const [pendingCreatePage, setPendingCreatePage] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const isAdminMobile = useIsAdminMobile();
   // Branding (favicons live here) so the admin topbar can render the
