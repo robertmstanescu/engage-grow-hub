@@ -160,35 +160,17 @@ const SiteEditor = () => {
   };
 
   /* ─── Canvas content for the active section ─────────────────────── */
+  // NOTE: per-section "Save Draft" buttons were removed in US 14.2 — the
+  // toolbar's Save Draft button now saves the currently-active section.
   const renderCanvas = () => {
     if (activeSection === "hero") {
       return (
-        <div className="space-y-4">
-          <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
-          <button
-            onClick={() => saveDraft("hero")}
-            disabled={saving === "hero"}
-            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50"
-            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-          >
-            <Save size={13} /> {saving === "hero" ? "Saving…" : "Save Draft"}
-          </button>
-        </div>
+        <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
       );
     }
     if (activeSection === "page_rows") {
       return (
-        <div className="space-y-4">
-          <RowsManager rows={pageRows} onChange={(rows) => updateFullDraft("page_rows", { rows })} />
-          <button
-            onClick={() => saveDraft("page_rows")}
-            disabled={saving === "page_rows"}
-            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50"
-            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-          >
-            <Save size={13} /> {saving === "page_rows" ? "Saving…" : "Save Draft"}
-          </button>
-        </div>
+        <RowsManager rows={pageRows} onChange={(rows) => updateFullDraft("page_rows", { rows })} />
       );
     }
     // SEO
@@ -203,14 +185,6 @@ const SiteEditor = () => {
           onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
           onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
         />
-        <button
-          onClick={() => saveDraft("main_page_seo")}
-          disabled={saving === "main_page_seo"}
-          className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50"
-          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-        >
-          <Save size={13} /> {saving === "main_page_seo" ? "Saving…" : "Save Draft"}
-        </button>
       </div>
     );
   };
