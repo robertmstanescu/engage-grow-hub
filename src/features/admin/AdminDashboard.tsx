@@ -591,6 +591,29 @@ const AdminDashboard = ({ session }: Props) => {
     if (selectedSectionId === rowId) setSelectedSectionId(null);
   }, [pageRows, updateRows, selectedSectionId]);
 
+  /* Debug Story 4.1 — destructive action guard.
+   * All UI delete-row entry points MUST go through this wrapper so the
+   * user gets a confirmation modal before any work is destroyed. The
+   * count of "configured widgets" lives in `countRowWidgets()` and is
+   * shared with the Inspector's own delete button. */
+  const requestDeleteRow = useCallback(async (rowId: string) => {
+    const row = pageRows.find((r) => r.id === rowId);
+    if (!row) return;
+    const count = countRowWidgets(row);
+    const ok = await confirmDestructive({
+      title: "Delete this row?",
+      description:
+        count > 1
+          ? `Warning: This row contains ${count} widgets. Deleting it will permanently remove them. Are you sure?`
+          : "Warning: Deleting this row will permanently remove it and its content. Are you sure?",
+      confirmLabel: "Delete row",
+      cancelLabel: "Cancel",
+      destructive: true,
+    });
+    if (!ok) return;
+    deleteRow(rowId);
+  }, [pageRows, deleteRow]);
+
   const addColumnToRow = useCallback((rowId: string) => {
     const row = pageRows.find((r) => r.id === rowId);
     if (!row) return;
