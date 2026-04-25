@@ -909,8 +909,17 @@ const AdminDashboard = ({ session }: Props) => {
             <Menu size={18} />
           </button>
         )}
-        <span className="text-[11px] text-muted-foreground font-body flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap">
-          {isSiteTab ? pageLabel : tabLabel}
+        <span className="text-[11px] text-muted-foreground font-body flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap flex items-center justify-center gap-2">
+          {cmsPage && (
+            <button
+              onClick={() => setCmsPage(null)}
+              className="flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] bg-transparent border-none cursor-pointer text-muted-foreground hover:text-foreground"
+              title="Back to Main Page"
+            >
+              <ArrowLeft size={11} /> Main
+            </button>
+          )}
+          <span>{isSiteTab ? pageLabel : tabLabel}</span>
         </span>
         <div className="flex items-center gap-2">
           <button
