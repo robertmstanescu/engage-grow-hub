@@ -374,6 +374,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       setActiveElement,
       commitTextAtPath,
       pageRows,
+      onRowsChange,
     }),
     [
       activeNodePath,
@@ -385,6 +386,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       setActiveElement,
       commitTextAtPath,
       pageRows,
+      onRowsChange,
     ],
   );
 
