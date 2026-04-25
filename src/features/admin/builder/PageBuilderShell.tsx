@@ -161,6 +161,10 @@ export interface PageBuilderShellProps {
 
   /** Optional pre-canvas slot (e.g. main page renders Hero here). */
   preCanvas?: React.ReactNode;
+
+  /** Optional content rendered at the bottom of the inspector pane
+   *  (e.g. revision-history panel for the current entity). */
+  inspectorFooter?: React.ReactNode;
 }
 
 const PageBuilderShell = (props: PageBuilderShellProps) => {
@@ -276,7 +280,7 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     Inspector
                   </h3>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 overflow-y-auto p-4 space-y-6">
                   <InspectorPanel
                     seoMetaTitle={props.seoMetaTitle}
                     seoMetaDescription={props.seoMetaDescription}
@@ -287,6 +291,11 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     pageRows={props.pageRows}
                     onRowsChange={props.onRowsChange}
                   />
+                  {props.inspectorFooter ? (
+                    <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+                      {props.inspectorFooter}
+                    </div>
+                  ) : null}
                 </div>
               </aside>
             </ResizablePanel>
