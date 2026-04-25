@@ -511,166 +511,178 @@ const SiteEditor = () => {
 
       {/* ─── Three-pane resizable shell ──────────────────────────────
           Debug Story 1.1 — pixel-anchored limits via usePanelLimits.
-          Outer div is the measured container; the hook converts pixel
-          caps (left ≤300, right ≤400, center ≥300) into live percent
-          mins/maxes that hold across viewport widths. */}
+          Debug Story 1.2 — when the container is too narrow to satisfy
+          left+center+right minimums (≈740px), fall back to a vertical
+          stacked + scrollable layout instead of jamming impossible
+          percentage constraints into react-resizable-panels. */}
       <div ref={limits.containerRef} className="flex-1 min-h-0 flex">
-      <ResizablePanelGroup
-        ref={panelGroupRef}
-        direction="horizontal"
-        className="flex-1 border-x border-b overflow-hidden rounded-b-lg"
-        style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-      >
-        {/* LEFT — Library / Navigator (max 300px) */}
-        <ResizablePanel
-          defaultSize={limits.leftDefault}
-          minSize={limits.leftMin}
-          maxSize={limits.leftMax}
-        >
-          <aside
-            className="h-full flex flex-col"
-            style={{ backgroundColor: "hsl(var(--card))" }}
-          >
-            <div
-              className="px-4 py-3 border-b"
-              style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+        {(() => {
+          const leftPane = (
+            <aside
+              className="h-full flex flex-col"
+              style={{ backgroundColor: "hsl(var(--card))" }}
             >
-              <h3
-                className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
-                style={{ color: "hsl(var(--muted-foreground))" }}
+              <div
+                className="px-4 py-3 border-b"
+                style={{ borderColor: "hsl(var(--border) / 0.5)" }}
               >
-                Navigator
-              </h3>
-            </div>
-            <nav className="flex-shrink-0 overflow-y-auto p-2 space-y-1 max-h-[40%]">
-              {SECTION_NAV.map(({ key, label, Icon }) => {
-                const active = activeSection === key;
-                const dirty = isDirty(key);
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setActiveSection(key)}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left font-body text-sm transition-colors"
-                    style={{
-                      backgroundColor: active ? "hsl(var(--accent) / 0.18)" : "transparent",
-                      color: active ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
-                      fontWeight: active ? 500 : 400,
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!active) e.currentTarget.style.backgroundColor = "hsl(var(--muted) / 0.5)";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!active) e.currentTarget.style.backgroundColor = "transparent";
-                    }}
-                  >
-                    <Icon size={15} />
-                    <span className="flex-1 truncate">{label}</span>
-                    {dirty && (
-                      <span
-                        className="w-1.5 h-1.5 rounded-full"
-                        style={{ backgroundColor: "hsl(var(--accent))" }}
-                        aria-label="Unsaved changes"
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-
-            {/* US 17.1 — Elements Tray. Sits under the Navigator in the
-                same scroll container so editors can drag any registered
-                widget directly onto the canvas. Drop handling lives in
-                the parent <DndContext> (see handleDragEnd). */}
-            <div
-              className="flex-1 min-h-0 border-t px-3 py-3 overflow-y-auto"
-              style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-            >
-              <h3
-                className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
-                style={{ color: "hsl(var(--muted-foreground))" }}
-              >
-                Elements
-              </h3>
-              <ElementsTray />
-            </div>
-          </aside>
-        </ResizablePanel>
-
-        <ResizableHandle withHandle onDoubleClick={resetLayout} />
-
-        {/* CENTER — Canvas (min 300px guaranteed) */}
-        <ResizablePanel
-          defaultSize={limits.centerDefault}
-          minSize={limits.centerMin}
-        >
-          <CanvasViewport
-            deviceWidth={deviceWidth}
-            viewport={viewport}
-            supportsPreview={supportsPreview}
-            canvasMode={canvasMode}
-            setCanvasMode={setCanvasMode}
-          >
-            {renderCanvas()}
-          </CanvasViewport>
-        </ResizablePanel>
-
-        <ResizableHandle withHandle onDoubleClick={resetLayout} />
-
-        {/* RIGHT — Inspector (max 400px) */}
-        <ResizablePanel
-          defaultSize={limits.rightDefault}
-          minSize={limits.rightMin}
-          maxSize={limits.rightMax}
-        >
-          <aside
-            className="h-full flex flex-col"
-            style={{ backgroundColor: "hsl(var(--card))" }}
-          >
-            <div
-              className="px-4 py-3 border-b"
-              style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-            >
-              <h3
-                className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
-                style={{ color: "hsl(var(--muted-foreground))" }}
-              >
-                Inspector
-              </h3>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-6">
-              {/* US 16.1 — chameleon inspector. Reads activeElement from
-                  the BuilderContext (lifted to the top of SiteEditor) and
-                  renders SEO / row layout / widget admin accordingly. */}
-              <InspectorPanel
-                seoMetaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
-                seoMetaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
-                onSeoTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
-                onSeoDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                heroContent={getDraft("hero")}
-                onHeroFieldChange={(f, v) => updateField("hero", f, v)}
-                pageRows={pageRows}
-                onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
-              />
-              {/* EPIC 10 / US 10.2 — Scheduled Publishing for the active section. */}
-              <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                <SiteSectionSchedulePanel sectionKey={activeSection} />
+                <h3
+                  className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
+                  style={{ color: "hsl(var(--muted-foreground))" }}
+                >
+                  Navigator
+                </h3>
               </div>
-              {/* EPIC 10 — Revision History for the active section. Each
-                  site_content section has its own revision timeline. */}
-              <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                <RevisionHistoryPanel
-                  entityType="site_content"
-                  entityRef={activeSection}
-                  onRestored={() => {
-                    invalidateSiteContent(activeSection);
-                    reloadSections();
-                  }}
+              <nav className="flex-shrink-0 overflow-y-auto p-2 space-y-1 max-h-[40%]">
+                {SECTION_NAV.map(({ key, label, Icon }) => {
+                  const active = activeSection === key;
+                  const dirty = isDirty(key);
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setActiveSection(key)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left font-body text-sm transition-colors"
+                      style={{
+                        backgroundColor: active ? "hsl(var(--accent) / 0.18)" : "transparent",
+                        color: active ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+                        fontWeight: active ? 500 : 400,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!active) e.currentTarget.style.backgroundColor = "hsl(var(--muted) / 0.5)";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!active) e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
+                      <Icon size={15} />
+                      <span className="flex-1 truncate">{label}</span>
+                      {dirty && (
+                        <span
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: "hsl(var(--accent))" }}
+                          aria-label="Unsaved changes"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+              <div
+                className="flex-1 min-h-0 border-t px-3 py-3 overflow-y-auto"
+                style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+              >
+                <h3
+                  className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
+                  style={{ color: "hsl(var(--muted-foreground))" }}
+                >
+                  Elements
+                </h3>
+                <ElementsTray />
+              </div>
+            </aside>
+          );
+
+          const centerPane = (
+            <CanvasViewport
+              deviceWidth={deviceWidth}
+              viewport={viewport}
+              supportsPreview={supportsPreview}
+              canvasMode={canvasMode}
+              setCanvasMode={setCanvasMode}
+            >
+              {renderCanvas()}
+            </CanvasViewport>
+          );
+
+          const rightPane = (
+            <aside
+              className="h-full flex flex-col"
+              style={{ backgroundColor: "hsl(var(--card))" }}
+            >
+              <div
+                className="px-4 py-3 border-b"
+                style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+              >
+                <h3
+                  className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
+                  style={{ color: "hsl(var(--muted-foreground))" }}
+                >
+                  Inspector
+                </h3>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                <InspectorPanel
+                  seoMetaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                  seoMetaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                  onSeoTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                  onSeoDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                  heroContent={getDraft("hero")}
+                  onHeroFieldChange={(f, v) => updateField("hero", f, v)}
+                  pageRows={pageRows}
+                  onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
                 />
+                <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+                  <SiteSectionSchedulePanel sectionKey={activeSection} />
+                </div>
+                <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+                  <RevisionHistoryPanel
+                    entityType="site_content"
+                    entityRef={activeSection}
+                    onRestored={() => {
+                      invalidateSiteContent(activeSection);
+                      reloadSections();
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          </aside>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+            </aside>
+          );
+
+          if (limits.stack) {
+            return (
+              <div
+                className="flex-1 min-h-0 overflow-y-auto border-x border-b rounded-b-lg flex flex-col divide-y"
+                style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+              >
+                <div className="min-h-[260px]">{leftPane}</div>
+                <div className="min-h-[420px]">{centerPane}</div>
+                <div className="min-h-[320px]">{rightPane}</div>
+              </div>
+            );
+          }
+
+          return (
+            <ResizablePanelGroup
+              ref={panelGroupRef}
+              direction="horizontal"
+              className="flex-1 border-x border-b overflow-hidden rounded-b-lg"
+              style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+            >
+              <ResizablePanel
+                defaultSize={limits.leftDefault}
+                minSize={limits.leftMin}
+                maxSize={limits.leftMax}
+              >
+                {leftPane}
+              </ResizablePanel>
+              <ResizableHandle withHandle onDoubleClick={resetLayout} />
+              <ResizablePanel
+                defaultSize={limits.centerDefault}
+                minSize={limits.centerMin}
+              >
+                {centerPane}
+              </ResizablePanel>
+              <ResizableHandle withHandle onDoubleClick={resetLayout} />
+              <ResizablePanel
+                defaultSize={limits.rightDefault}
+                minSize={limits.rightMin}
+                maxSize={limits.rightMax}
+              >
+                {rightPane}
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          );
+        })()}
       </div>
       </div>
 

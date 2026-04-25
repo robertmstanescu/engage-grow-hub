@@ -220,120 +220,147 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
             hasChanges={props.hasChanges}
           />
 
+          {/* Debug Story 1.2 — at very narrow widths the 3-pane budget
+              (left ≥200 + center ≥300 + right ≥240 ≈ 740px) cannot fit.
+              Fall back to a vertical stacked layout that scrolls instead
+              of feeding impossible percentage constraints to the
+              resizable group. */}
           <div ref={limits.containerRef} className="flex-1 min-h-0 flex">
-          <ResizablePanelGroup
-            ref={panelGroupRef}
-            direction="horizontal"
-            className="flex-1 border-x border-b overflow-hidden rounded-b-lg"
-            style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-          >
-            {/* LEFT — Library / Navigator */}
-            <ResizablePanel
-              defaultSize={limits.leftDefault}
-              minSize={limits.leftMin}
-              maxSize={limits.leftMax}
-            >
-              <aside
-                className="h-full flex flex-col"
-                style={{ backgroundColor: "hsl(var(--card))" }}
-              >
-                <div
-                  className="px-4 py-3 border-b"
-                  style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+            {(() => {
+              const leftPane = (
+                <aside
+                  className="h-full flex flex-col"
+                  style={{ backgroundColor: "hsl(var(--card))" }}
                 >
-                  <h3
-                    className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
-                    style={{ color: "hsl(var(--muted-foreground))" }}
-                  >
-                    {props.title}
-                  </h3>
-                </div>
-                <div className="flex-1 min-h-0 px-3 py-3 overflow-y-auto">
-                  <h3
-                    className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
-                    style={{ color: "hsl(var(--muted-foreground))" }}
-                  >
-                    Elements
-                  </h3>
-                  <ElementsTray />
-                </div>
-              </aside>
-            </ResizablePanel>
-
-            <ResizableHandle withHandle onDoubleClick={resetLayout} />
-
-            {/* CENTER — Canvas */}
-            <ResizablePanel
-              defaultSize={limits.centerDefault}
-              minSize={limits.centerMin}
-            >
-              <CanvasViewport
-                deviceWidth={deviceWidth}
-                viewport={viewport}
-                supportsPreview={true}
-                canvasMode="preview"
-                setCanvasMode={() => {}}
-              >
-                <CanvasSelectionSurface>
-                  {props.preCanvas}
                   <div
-                    className="rounded-md overflow-hidden border"
-                    style={{ borderColor: "hsl(var(--border) / 0.4)" }}
+                    className="px-4 py-3 border-b"
+                    style={{ borderColor: "hsl(var(--border) / 0.5)" }}
                   >
-                    <RowsRenderer rows={props.pageRows} />
+                    <h3
+                      className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
+                      style={{ color: "hsl(var(--muted-foreground))" }}
+                    >
+                      {props.title}
+                    </h3>
                   </div>
-                </CanvasSelectionSurface>
-              </CanvasViewport>
-            </ResizablePanel>
+                  <div className="flex-1 min-h-0 px-3 py-3 overflow-y-auto">
+                    <h3
+                      className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
+                      style={{ color: "hsl(var(--muted-foreground))" }}
+                    >
+                      Elements
+                    </h3>
+                    <ElementsTray />
+                  </div>
+                </aside>
+              );
 
-            <ResizableHandle withHandle onDoubleClick={resetLayout} />
+              const centerPane = (
+                <CanvasViewport
+                  deviceWidth={deviceWidth}
+                  viewport={viewport}
+                  supportsPreview={true}
+                  canvasMode="preview"
+                  setCanvasMode={() => {}}
+                >
+                  <CanvasSelectionSurface>
+                    {props.preCanvas}
+                    <div
+                      className="rounded-md overflow-hidden border"
+                      style={{ borderColor: "hsl(var(--border) / 0.4)" }}
+                    >
+                      <RowsRenderer rows={props.pageRows} />
+                    </div>
+                  </CanvasSelectionSurface>
+                </CanvasViewport>
+              );
 
-            {/* RIGHT — Inspector */}
-            <ResizablePanel
-              defaultSize={limits.rightDefault}
-              minSize={limits.rightMin}
-              maxSize={limits.rightMax}
-            >
-              <aside
-                className="h-full flex flex-col"
-                style={{ backgroundColor: "hsl(var(--card))" }}
-              >
-                <div
-                  className="px-4 py-3 border-b"
+              const rightPane = (
+                <aside
+                  className="h-full flex flex-col"
+                  style={{ backgroundColor: "hsl(var(--card))" }}
+                >
+                  <div
+                    className="px-4 py-3 border-b"
+                    style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+                  >
+                    <h3
+                      className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
+                      style={{ color: "hsl(var(--muted-foreground))" }}
+                    >
+                      Inspector
+                    </h3>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                    <InspectorPanel
+                      seoMetaTitle={props.seoMetaTitle}
+                      seoMetaDescription={props.seoMetaDescription}
+                      onSeoTitleChange={props.onSeoTitleChange}
+                      onSeoDescriptionChange={props.onSeoDescriptionChange}
+                      heroContent={{}}
+                      onHeroFieldChange={() => {}}
+                      pageRows={props.pageRows}
+                      onRowsChange={props.onRowsChange}
+                    />
+                    {props.schedulePanel ? (
+                      <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+                        {props.schedulePanel}
+                      </div>
+                    ) : null}
+                    {props.inspectorFooter ? (
+                      <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+                        {props.inspectorFooter}
+                      </div>
+                    ) : null}
+                  </div>
+                </aside>
+              );
+
+              if (limits.stack) {
+                return (
+                  <div
+                    className="flex-1 min-h-0 overflow-y-auto border-x border-b rounded-b-lg flex flex-col divide-y"
+                    style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+                  >
+                    <div className="min-h-[260px]">{leftPane}</div>
+                    <div className="min-h-[420px]">{centerPane}</div>
+                    <div className="min-h-[320px]">{rightPane}</div>
+                  </div>
+                );
+              }
+
+              return (
+                <ResizablePanelGroup
+                  ref={panelGroupRef}
+                  direction="horizontal"
+                  className="flex-1 border-x border-b overflow-hidden rounded-b-lg"
                   style={{ borderColor: "hsl(var(--border) / 0.5)" }}
                 >
-                  <h3
-                    className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
-                    style={{ color: "hsl(var(--muted-foreground))" }}
+                  <ResizablePanel
+                    defaultSize={limits.leftDefault}
+                    minSize={limits.leftMin}
+                    maxSize={limits.leftMax}
                   >
-                    Inspector
-                  </h3>
-                </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                  <InspectorPanel
-                    seoMetaTitle={props.seoMetaTitle}
-                    seoMetaDescription={props.seoMetaDescription}
-                    onSeoTitleChange={props.onSeoTitleChange}
-                    onSeoDescriptionChange={props.onSeoDescriptionChange}
-                    heroContent={{}}
-                    onHeroFieldChange={() => {}}
-                    pageRows={props.pageRows}
-                    onRowsChange={props.onRowsChange}
-                  />
-                  {props.schedulePanel ? (
-                    <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                      {props.schedulePanel}
-                    </div>
-                  ) : null}
-                  {props.inspectorFooter ? (
-                    <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                      {props.inspectorFooter}
-                    </div>
-                  ) : null}
-                </div>
-              </aside>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+                    {leftPane}
+                  </ResizablePanel>
+                  <ResizableHandle withHandle onDoubleClick={resetLayout} />
+                  <ResizablePanel
+                    defaultSize={limits.centerDefault}
+                    minSize={limits.centerMin}
+                  >
+                    {centerPane}
+                  </ResizablePanel>
+                  <ResizableHandle withHandle onDoubleClick={resetLayout} />
+                  <ResizablePanel
+                    defaultSize={limits.rightDefault}
+                    minSize={limits.rightMin}
+                    maxSize={limits.rightMax}
+                  >
+                    {rightPane}
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+              );
+            })()}
           </div>
         </div>
       </BuilderDndShell>
