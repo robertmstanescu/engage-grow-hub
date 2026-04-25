@@ -27,7 +27,6 @@ import { uploadEditorImage } from "@/services/mediaStorage";
 import { runDbAction } from "@/services/db-helpers";
 import { useBrandColors } from "@/hooks/useBrandSettings";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
-import { pickForeground } from "@/lib/pickForeground";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────
@@ -111,15 +110,9 @@ interface RichTextEditorProps {
   bgColor?: string;
 }
 
-/** Pick a readable foreground color for the given background.
- *  Re-exported through the shared `pickForeground` util so every editor
- *  in the admin uses the same luminance threshold. */
-const pickFg = (bg?: string): string => pickForeground(bg);
-
-const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEditorProps) => {
-  // Resolve the editor surface: explicit row bg, or a neutral dark.
-  const surfaceBg = bgColor || "hsl(260 20% 18%)";
-  const surfaceFg = pickFg(bgColor);
+const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps) => {
+  // The editor surface is transparent and inherits parent text color,
+  // so the writing area always matches the rendered area it edits.
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef<Range | null>(null);
@@ -225,13 +218,55 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     [emitChange, focusEditor, restoreSelection, saveSelection]
   );
 
+  /**
+   * applyFontSize — manual span wrapping with cursor repositioning.
+   *
+   * Why not just rely on `normalizeRichTextContainerFontSizes`? Because
+   * after `execCommand("fontSize", "7")` the browser's selection lives
+   * inside a `<font size="7">` node. When we replace that node with a
+   * fresh `<span style="font-size: …">`, the original Range is orphaned
+   * and the toolbar reads the OLD computed size on the next sync.
+   *
+   * Here we:
+   *   1. Force HTML output (`styleWithCSS = false`) so we get `<font>`
+   *      tags we can find deterministically.
+   *   2. Manually swap each `<font size="7">` for a `<span style="…">`.
+   *   3. Reposition the caret at the end of the LAST new span so the
+   *      next `syncToolbarState()` call reads the new size.
+   */
   const applyFontSize = useCallback(
     (fontSize: string) => {
       focusEditor();
       restoreSelection();
-      document.execCommand("styleWithCSS", false, "true");
+      document.execCommand("styleWithCSS", false, "false");
       document.execCommand("fontSize", false, "7");
+
       if (editorRef.current) {
+        const fonts = Array.from(
+          editorRef.current.querySelectorAll('font[size="7"]')
+        ) as HTMLElement[];
+        let lastSpan: HTMLSpanElement | null = null;
+
+        fonts.forEach((font) => {
+          const span = document.createElement("span");
+          span.style.fontSize = fontSize;
+          while (font.firstChild) span.appendChild(font.firstChild);
+          font.parentNode?.replaceChild(span, font);
+          lastSpan = span;
+        });
+
+        // Move the caret into the freshly created span so the toolbar
+        // immediately reflects the active size.
+        if (lastSpan) {
+          const sel = window.getSelection();
+          if (sel) {
+            const range = document.createRange();
+            range.selectNodeContents(lastSpan);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          }
+        }
         normalizeRichTextContainerFontSizes(editorRef.current, fontSize);
       }
       saveSelection();
@@ -542,9 +577,9 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           }}
           onKeyUp={saveSelection}
           onMouseUp={saveSelection}
-          // Editor surface mirrors the live row's bg so light text
-          // (grey/white) stays readable while editing. See pickFg above.
-          style={{ color: surfaceFg, backgroundColor: surfaceBg }}
+          // Transparent surface + inherited color so the editor
+          // always blends with the rendered area, regardless of parent.
+          style={{ color: "inherit", backgroundColor: "transparent" }}
         />
       )}
 
