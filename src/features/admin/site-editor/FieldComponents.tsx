@@ -2,13 +2,44 @@ import { Plus, Trash2 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import RichTextEditor from "../RichTextEditor";
 import { useBrandColors } from "@/hooks/useBrandSettings";
+// US 3.2 — pull the live cell/row background colour from context so
+// inputs adopt that surface and labels get readable contrast.
+import { useSurfaceBg } from "../inspector/SurfaceBgContext";
+import { pickForeground } from "@/lib/pickForeground";
 
-/* Shared style: always legible regardless of site theme */
+/* Shared default style: always legible on the white admin pane. When a
+ * surface bg colour is in scope (US 3.2) `useSurfaceStyle()` overrides
+ * the background + text colour so the editor mirrors the live row. */
 const INPUT_STYLE: React.CSSProperties = {
   borderColor: "hsl(var(--border))",
   backgroundColor: "#FFFFFF",
   color: "#1a1a1a",
 };
+
+/* US 3.2 — derive input + label styles from the ambient surface colour.
+ *   • bg is `null` (no provider, or empty colour) → fall back to the
+ *     opaque white admin surface so inputs stay legible.
+ *   • bg is set → inputs adopt that bg, text uses pickForeground(),
+ *     labels use the same foreground at 80% opacity for hierarchy. */
+const useSurfaceStyle = () => {
+  const bg = useSurfaceBg();
+  if (!bg) {
+    return {
+      input: INPUT_STYLE,
+      label: undefined as React.CSSProperties | undefined,
+    };
+  }
+  const fg = pickForeground(bg);
+  return {
+    input: {
+      borderColor: "hsl(var(--border))",
+      backgroundColor: bg,
+      color: fg,
+    } as React.CSSProperties,
+    label: { color: fg, opacity: 0.8 } as React.CSSProperties,
+  };
+};
+
 
 /**
  * A controlled text input that keeps local state while typing
@@ -67,9 +98,16 @@ export const Field = ({
   hint?: string;
 }) => {
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
+  // US 3.2 — adopt parent cell/row bg if a SurfaceBgProvider is in scope.
+  const surface = useSurfaceStyle();
   return (
     <div data-inspector-field={slugifyLabel(label)}>
-      <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
+      <label
+        className="font-body text-[10px] uppercase tracking-wider mb-1 block"
+        style={surface.label ?? { color: "hsl(var(--muted-foreground))" }}
+      >
+        {label}
+      </label>
       <input
         value={local}
         onChange={(e) => setLocal(e.target.value)}
@@ -77,10 +115,15 @@ export const Field = ({
         onKeyDown={(e) => { if (e.key === "Enter") commit(); }}
         maxLength={maxLength}
         className="w-full px-3 py-2 rounded-lg font-body text-sm border"
-        style={INPUT_STYLE}
+        style={surface.input}
       />
       {hint && (
-        <p className="font-body text-[10px] text-muted-foreground mt-1">{hint}</p>
+        <p
+          className="font-body text-[10px] mt-1"
+          style={surface.label ?? { color: "hsl(var(--muted-foreground))" }}
+        >
+          {hint}
+        </p>
       )}
     </div>
   );
@@ -88,16 +131,23 @@ export const Field = ({
 
 export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; value: string; onChange: (v: string) => void; rows?: number }) => {
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
+  // US 3.2 — surface-aware textarea (Title/Subtitle/Body inputs).
+  const surface = useSurfaceStyle();
   return (
     <div data-inspector-field={slugifyLabel(label)}>
-      <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
+      <label
+        className="font-body text-[10px] uppercase tracking-wider mb-1 block"
+        style={surface.label ?? { color: "hsl(var(--muted-foreground))" }}
+      >
+        {label}
+      </label>
       <textarea
         value={local}
         onChange={(e) => setLocal(e.target.value)}
         onBlur={commit}
         rows={rows}
-        className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none text-black"
-        style={INPUT_STYLE}
+        className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none"
+        style={surface.input}
       />
     </div>
   );
@@ -110,13 +160,29 @@ export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; 
  * surface mirrors the row's "Style State" — that's what makes white /
  * grey text legible on the white admin panel. Callers should pass
  * `row.bg_color` (or the resolved gradient stop) in.
+ *
+ * US 3.2 — if no `bgColor` prop is supplied we fall back to the ambient
+ * SurfaceBg from context, so widget editors that don't explicitly thread
+ * the colour still benefit automatically.
  */
-export const RichField = ({ label, value, onChange, bgColor }: { label: string; value: string; onChange: (v: string) => void; bgColor?: string }) => (
-  <div data-inspector-field={slugifyLabel(label)}>
-    <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
-    <RichTextEditor content={value || ""} onChange={onChange} bgColor={bgColor} />
-  </div>
-);
+export const RichField = ({ label, value, onChange, bgColor }: { label: string; value: string; onChange: (v: string) => void; bgColor?: string }) => {
+  const ambient = useSurfaceBg();
+  const effectiveBg = bgColor ?? ambient ?? undefined;
+  const labelStyle = effectiveBg
+    ? { color: pickForeground(effectiveBg), opacity: 0.8 }
+    : { color: "hsl(var(--muted-foreground))" };
+  return (
+    <div data-inspector-field={slugifyLabel(label)}>
+      <label
+        className="font-body text-[10px] uppercase tracking-wider mb-1 block"
+        style={labelStyle}
+      >
+        {label}
+      </label>
+      <RichTextEditor content={value || ""} onChange={onChange} bgColor={effectiveBg} />
+    </div>
+  );
+};
 
 export const SelectField = ({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { label: string; value: string }[] }) => (
   <div data-inspector-field={slugifyLabel(label)}>
@@ -193,14 +259,29 @@ export const ArrayField = ({ label, items, onChange, placeholder }: { label: str
   );
 };
 
-export const SectionBox = ({ children, label }: { children: React.ReactNode; label?: string }) => (
-  <div
-    className="p-3 rounded-lg border space-y-2"
-    style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.15)" }}>
-    {label && <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground">{label}</span>}
-    {children}
-  </div>
-);
+export const SectionBox = ({ children, label }: { children: React.ReactNode; label?: string }) => {
+  // US 3.2 — when wrapped in a SurfaceBgProvider, tint the box with the
+  // surface colour so nested Title/Subtitle/Body inputs sit in a panel
+  // that mirrors the live row instead of the bright admin pane.
+  const ambient = useSurfaceBg();
+  const fg = ambient ? pickForeground(ambient) : null;
+  const boxStyle: React.CSSProperties = ambient
+    ? { borderColor: "hsl(var(--border) / 0.5)", backgroundColor: ambient }
+    : { borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.15)" };
+  return (
+    <div className="p-3 rounded-lg border space-y-2" style={boxStyle}>
+      {label && (
+        <span
+          className="font-body text-[9px] uppercase tracking-wider"
+          style={fg ? { color: fg, opacity: 0.8 } : { color: "hsl(var(--muted-foreground))" }}
+        >
+          {label}
+        </span>
+      )}
+      {children}
+    </div>
+  );
+};
 
 export const ColorField = ({ label, value, onChange, description, fallback }: { label: string; value: string; onChange: (v: string) => void; description?: string; fallback?: string }) => {
   const displayValue = value || fallback || "#000000";
