@@ -287,6 +287,14 @@ const AdminDashboard = ({ session }: Props) => {
   })();
   const initialTab: Tab = queryTab ?? (isBuilderRoute ? "site" : "overview");
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+  // US 3.5 — keep activeTab in sync with `?tab=` so deep-links from
+  // the locked Header/Footer overlays switch the editor view even when
+  // AdminDashboard is already mounted.
+  useEffect(() => {
+    if (queryTab && queryTab !== activeTab) setActiveTab(queryTab);
+    // intentionally only re-runs when the URL's tab param changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryTab]);
   // Set when the overview dashboard's "Create New Page" CTA is clicked.
   // Hands off to PagesManager which auto-opens its inline create form.
   const [pendingCreatePage, setPendingCreatePage] = useState(false);
