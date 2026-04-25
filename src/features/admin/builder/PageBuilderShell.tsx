@@ -162,7 +162,7 @@ const BuilderDndShell = ({
                   ...cc,
                   widgets: [
                     ...(cc.widgets || []),
-                    { id: newWidgetId, type: data.type, data: { ...(def.defaultData as Record<string, any>) } },
+                    { id: newWidgetId, type: data.type, data: { ...seed } },
                   ],
                 };
               }),
