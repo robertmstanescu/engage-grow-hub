@@ -6,6 +6,7 @@ import { getWidget } from "@/lib/WidgetRegistry";
 import { type PageRow, DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { confirmDestructive } from "@/components/ConfirmDialog";
 import { countRowWidgets } from "../builder/rowWidgetCount";
+import CellSettingsEditor from "./CellSettingsEditor";
 
 // Section editors (re-used from the legacy form-driven UI). The Inspector
 // is just a NEW HOST for these — the editors themselves are unchanged.
