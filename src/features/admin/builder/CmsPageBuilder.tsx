@@ -149,6 +149,14 @@ const CmsPageBuilder = ({ pageId }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      schedulePanel={
+        <SchedulePublishPanel
+          entityType="cms_pages"
+          entityId={record.id}
+          entityLabel={record.title || record.slug}
+          hasUnsavedChanges={hasChanges}
+        />
+      }
       inspectorFooter={
         <RevisionHistoryPanel
           entityType="cms_page"
