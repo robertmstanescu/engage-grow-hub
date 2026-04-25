@@ -115,6 +115,7 @@ Deno.serve(async (req) => {
     company,
     message,
     subscribed_to_marketing,
+    attribution,
   })
 
   if (error) {
