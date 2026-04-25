@@ -11,6 +11,7 @@ import SubtitleEditor from "./SubtitleEditor";
 import ImageTextEditor from "./ImageTextEditor";
 import ProfileEditor from "./ProfileEditor";
 import GridEditor from "./GridEditor";
+import ContactAdmin from "@/features/widgets/contact/ContactAdmin";
 import {
   DndContext,
   closestCenter,
