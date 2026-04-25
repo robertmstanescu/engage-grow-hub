@@ -109,7 +109,80 @@ export interface PageNavigatorProps {
 
   /** All rows in the current draft — used to render the section list. */
   pageRows: PageRow[];
+
+  /** Update page rows when section labels are renamed from the navigator. */
+  onRowsChange: (rows: PageRow[]) => void;
+
+  /** Native scheduling panel rendered directly below Page URL. */
+  schedulePanel?: React.ReactNode;
+
+  /** Revision history rendered inside the bottom accordion. */
+  revisionPanel?: React.ReactNode;
 }
+
+const SECTION_DRAG_ID_PREFIX = "section-row:";
+
+interface SectionButtonProps {
+  section: { id: string; index: number; label: string; fallbackLabel: string };
+  isActive: boolean;
+  onSelect: (rowId: string) => void;
+  onRename: (rowId: string, next: string) => void;
+}
+
+const SectionButton = ({ section, isActive, onSelect, onRename }: SectionButtonProps) => {
+  const sortable = useSortable({
+    id: `${SECTION_DRAG_ID_PREFIX}${section.id}`,
+    data: { source: "section-nav", rowId: section.id } satisfies SectionNavDragData,
+  });
+  const style = {
+    transform: CSS.Transform.toString(sortable.transform),
+    transition: sortable.transition,
+    opacity: sortable.isDragging ? 0.45 : 1,
+  };
+
+  return (
+    <div
+      ref={sortable.setNodeRef}
+      style={style}
+      data-active={isActive ? "true" : "false"}
+      className="admin-sidebar-item group w-full flex items-center gap-2 px-2 py-1.5 rounded-md font-body text-xs"
+      onClick={() => onSelect(section.id)}
+    >
+      <button
+        type="button"
+        className="shrink-0 cursor-grab active:cursor-grabbing rounded p-0.5 opacity-60 transition-opacity group-hover:opacity-100 focus:outline-none focus-visible:ring-2"
+        style={{ color: "inherit", "--tw-ring-color": "hsl(var(--accent))" } as React.CSSProperties}
+        aria-label={`Reorder ${section.label}`}
+        title="Drag to reorder section"
+        onClick={(e) => e.stopPropagation()}
+        {...sortable.attributes}
+        {...sortable.listeners}
+      >
+        <GripVertical size={13} />
+      </button>
+      <span
+        className="font-mono text-[10px] tabular-nums shrink-0"
+        style={{ color: "inherit", opacity: 0.7, minWidth: 18 }}
+      >
+        {String(section.index + 1).padStart(2, "0")}
+      </span>
+      <input
+        type="text"
+        value={section.label}
+        onChange={(e) => onRename(section.id, e.target.value)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect(section.id);
+        }}
+        onFocus={() => onSelect(section.id)}
+        placeholder={section.fallbackLabel}
+        aria-label={`Rename ${section.label}`}
+        className="min-w-0 flex-1 bg-transparent border-0 px-0 py-0.5 font-body text-xs leading-tight focus:outline-none focus-visible:ring-0"
+        style={{ color: "inherit" }}
+      />
+    </div>
+  );
+};
 
 const PageNavigator = ({
   pageTitle,
