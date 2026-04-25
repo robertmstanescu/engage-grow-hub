@@ -97,6 +97,26 @@ const SiteEditor = () => {
   // Default to preview because that's the whole point of US 15.1.
   const [canvasMode, setCanvasMode] = useState<"preview" | "edit">("preview");
 
+  /* ─── US 17.1 — drag-and-drop (Elements Tray → canvas) ──────────
+   * Sensors with a small activation distance prevent accidental
+   * drags when an editor merely clicks a tray card. The active
+   * payload is mirrored into local state so the <DragOverlay> can
+   * render a styled floating preview that follows the cursor. */
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+  );
+  const [activeDrag, setActiveDrag] = useState<TrayDragData | null>(null);
+
+  const handleDragStart = (e: DragStartEvent) => {
+    const data = e.active.data.current;
+    if (isTrayDragData(data)) setActiveDrag(data);
+  };
+  const handleDragEnd = (_e: DragEndEvent) => {
+    // US 17.2 will turn a drop on the canvas into a real new row.
+    // For 17.1 we just clear the preview state.
+    setActiveDrag(null);
+  };
+
   useEffect(() => {
     const fetchAll = async () => {
       const { data } = await supabase
