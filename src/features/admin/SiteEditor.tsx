@@ -13,6 +13,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuilderToolbar";
+import CanvasViewport from "./site-editor/CanvasViewport";
 // US 15.1 — render the SAME components the public site renders, against
 // the in-memory draft content. WYSIWYG, no markup duplication.
 import { HeroView } from "@/features/site/HeroSection";
