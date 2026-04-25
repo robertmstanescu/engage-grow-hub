@@ -12,6 +12,8 @@ import { RowEyebrow, RowTitle, RowSection } from "./typography";
 // EPIC 1 / US 1.1 — atomic-node selection. SelectableWrapper renders
 // as a passthrough fragment on the public site (no BuilderProvider).
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
+// EPIC 1 / US 1.4 — direct-on-canvas text editing.
+import CanvasEditable from "@/features/admin/builder/CanvasEditable";
 
 const hexToHslChannels = (hex: string): string | null => {
   if (!hex || !hex.startsWith("#") || hex.length < 7) return null;
