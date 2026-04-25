@@ -120,7 +120,16 @@ const RowRenderer = ({
           (Referenced global block was removed)
         </div>
       ) : (
-        <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
+        // US 15.2 — outer SelectableWrapper = the ROW; inner = the WIDGET.
+        // Two distinct ids so clicking the widget selects ONLY the widget
+        // (thanks to e.stopPropagation in SelectableWrapper). Clicking
+        // the row's blank space (anywhere not covered by the widget)
+        // selects the row instead.
+        <SelectableWrapper id={`row:${row.id}`} label={`Row · ${row.type}`} variant="row">
+          <SelectableWrapper id={`widget:${row.id}`} label={renderRow.type} variant="widget">
+            <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
+          </SelectableWrapper>
+        </SelectableWrapper>
       )}
     </div>
   );
