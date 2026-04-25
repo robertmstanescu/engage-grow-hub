@@ -227,7 +227,7 @@ const AdminInsights = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <Link to="/admin" className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider" style={{ color: "hsl(260 20% 40%)" }}>
+          <Link to="/admin" className="flex items-center gap-1.5 font-body text-xs text-black uppercase tracking-wider">
             <ArrowLeft size={14} /> Back to Admin
           </Link>
           <button onClick={refreshAll} disabled={loading}
@@ -424,7 +424,7 @@ const AdminInsights = () => {
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h3 className="font-display text-sm font-bold" style={{ color: "hsl(260 20% 10%)" }}>llms.txt manifest</h3>
-              <p className="font-body text-xs mt-0.5" style={{ color: "hsl(260 20% 50%)" }}>The AI-readable index your bots crawl. Auto-updated on every blog publish.</p>
+              <p className="font-body text-xs text-black mt-0.5">The AI-readable index your bots crawl. Auto-updated on every blog publish.</p>
             </div>
             <div className="flex items-center gap-2">
               <a href={`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/llms-txt`} target="_blank" rel="noopener noreferrer"
