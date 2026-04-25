@@ -3,7 +3,10 @@ import {
   DEFAULT_ROW_LAYOUT,
   type PageRow,
   type PageRowV2,
+  type PageRowV3,
+  type PageCell,
   isPageRowV2,
+  isPageRowV3,
   readDesignSettings,
   readGlobalRef,
 } from "@/types/rows";
@@ -11,18 +14,14 @@ import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import { renderWidget } from "@/lib/WidgetRegistry";
 import WidgetWrapper from "@/components/widgets/WidgetWrapper";
 import { useGlobalWidgetMap, type GlobalWidget } from "@/hooks/useGlobalWidgets";
-// US 15.2 — selection chrome for the admin canvas. On the public site
-// the BuilderProvider is absent, so SelectableWrapper renders as a
-// no-op fragment (zero DOM, zero perf cost). See SelectableWrapper.tsx.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
-// US 17.2 — drop targets between rows for tray-sourced widgets.
-// Renders nothing on the public site (no BuilderProvider above the tree).
 import CanvasDropZone from "@/features/admin/builder/CanvasDropZone";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
+import CellRenderer from "./CellRenderer";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-type RenderableRow = PageRow | PageRowV2;
+type RenderableRow = PageRow | PageRowV2 | PageRowV3;
 
 const buildHomepageHeroRow = (content: Record<string, any>): PageRow => ({
   id: "__homepage_hero__",
@@ -102,31 +101,69 @@ const RowRenderer = ({
 
   if (isPageRowV2(row)) {
     const widths = row.layout?.column_widths || row.columns.map(() => Math.round(100 / Math.max(row.columns.length, 1)));
-    const renderedColumns = row.columns.map((column, columnIndex) => (
-      <div key={column.id} className="min-w-0 space-y-6">
-        {column.widgets.map((widget) => {
-          const legacyRow: PageRow = {
-            id: widget.id,
-            type: widget.type as PageRow["type"],
-            strip_title: row.strip_title,
-            bg_color: row.bg_color,
-            scope: row.scope,
-            layout: row.layout,
-            content: widget.data || {},
-          };
-          return (
-            <RowRenderer
-              key={widget.id}
-              row={legacyRow}
-              rowIndex={rowIndex}
-              align={align}
-              globalMap={globalMap}
+
+    /**
+     * Helper — paint the widgets inside a single cell. Each widget is
+     * rendered through the existing RowRenderer (legacy v1 shape) so we
+     * keep one widget pipeline for hero/text/service/contact/etc.
+     */
+    const renderWidgetsForCell = (cell: PageCell, _basePath: string[]) =>
+      cell.widgets.map((widget) => {
+        const legacyRow: PageRow = {
+          id: widget.id,
+          type: widget.type as PageRow["type"],
+          strip_title: row.strip_title,
+          bg_color: row.bg_color,
+          scope: row.scope,
+          layout: row.layout,
+          content: widget.data || {},
+        };
+        return (
+          <RowRenderer
+            key={widget.id}
+            row={legacyRow}
+            rowIndex={rowIndex}
+            align={align}
+            globalMap={globalMap}
+          />
+        );
+      });
+
+    const renderedColumns = row.columns.map((column) => {
+      // v3: columns own cells; v2 fallback: synthesize a single cell
+      // from the column's widgets so the renderer has one code path.
+      const cells: PageCell[] = Array.isArray(column.cells) && column.cells.length > 0
+        ? column.cells
+        : [{
+            id: `${column.id}-cell`,
+            layout: { direction: "vertical", verticalAlign: "top", justify: "stretch", gap: 24, paddingTop: 0, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, minHeight: 0 },
+            style: { bgColor: "", borderRadius: 0, borderColor: "", borderWidth: 0, customClass: "", customCss: "" },
+            span: { col: 1, row: 1 },
+            widgets: column.widgets || [],
+          }];
+      const cellDirection = column.cell_direction || "vertical";
+      return (
+        <div
+          key={column.id}
+          className="min-w-0"
+          style={{
+            display: "flex",
+            flexDirection: cellDirection === "vertical" ? "column" : "row",
+            gap: 24,
+          }}
+        >
+          {cells.map((cell) => (
+            <CellRenderer
+              key={cell.id}
+              rowId={row.id}
+              column={column}
+              cell={cell}
+              renderWidgets={renderWidgetsForCell}
             />
-          );
-        })}
-        {column.widgets.length === 0 && <div className="min-h-24" />}
-      </div>
-    ));
+          ))}
+        </div>
+      );
+    });
 
     return (
       <div id={id} style={{ scrollMarginTop: "4rem", isolation: "isolate" }}>
