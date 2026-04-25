@@ -36,10 +36,13 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  defaultDropAnimationSideEffects,
+  pointerWithin,
   useSensor,
   useSensors,
   type DragStartEvent,
   type DragEndEvent,
+  type DropAnimation,
 } from "@dnd-kit/core";
 import ElementsTray, {
   TrayDragPreview,
@@ -130,7 +133,16 @@ const BuilderDndShell = ({
     const overId = e.over?.id;
     setActiveDrag(null);
 
-    // Bail unless this is a tray-source drag landing on a real target.
+    // Debug Story 2.1 — "Abyss Test". Reject every drop that is not on
+    // a registered CanvasDropZone. parseDropZoneId returns null for:
+    //   • drops on the toolbar / inspector / library (no `over`)
+    //   • drops on the 1px gap between zones (no `over`, thanks to
+    //     `pointerWithin` collision detection below)
+    //   • drops on `cell:*` droppables in the legacy edit-mode RowsManager
+    //   • drops on any future non-canvas droppable
+    // In every case we MUST bail before mutating the rows array OR the
+    // active-element selection. The DragOverlay snaps back to origin via
+    // `dropAnimation` so the editor sees clear "rejected" feedback.
     if (!isTrayDragData(data) || overId == null) return;
     const drop = parseDropZoneId(overId);
     if (!drop) return;
@@ -167,6 +179,11 @@ const BuilderDndShell = ({
   return (
     <DndContext
       sensors={sensors}
+      // pointerWithin only flags an "over" target when the cursor is
+      // actually inside a droppable's bounds — drops on the 1px gap
+      // between two zones therefore leave `over` null and the handler
+      // safely rejects them (Debug Story 2.1).
+      collisionDetection={pointerWithin}
       onDragStart={onDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveDrag(null)}
@@ -174,12 +191,21 @@ const BuilderDndShell = ({
       {children}
       {/* Floating drag preview — rendered into a portal by dnd-kit so it
           escapes the sidebar's overflow:hidden and follows the cursor
-          across the entire viewport. */}
-      <DragOverlay dropAnimation={null}>
+          across the entire viewport. Snap-back animation gives explicit
+          "rejected" feedback when a drop misses every valid target. */}
+      <DragOverlay dropAnimation={SNAP_BACK_ANIMATION}>
         {activeDrag ? <TrayDragPreview data={activeDrag} /> : null}
       </DragOverlay>
     </DndContext>
   );
+};
+
+const SNAP_BACK_ANIMATION: DropAnimation = {
+  duration: 180,
+  easing: "cubic-bezier(0.2, 0, 0, 1)",
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: { active: { opacity: "0.4" } },
+  }),
 };
 
 const SiteEditor = () => {

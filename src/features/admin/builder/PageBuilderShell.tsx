@@ -28,10 +28,13 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  defaultDropAnimationSideEffects,
+  pointerWithin,
   useSensor,
   useSensors,
   type DragStartEvent,
   type DragEndEvent,
+  type DropAnimation,
 } from "@dnd-kit/core";
 import type { ImperativePanelGroupHandle } from "react-resizable-panels";
 import {
@@ -83,9 +86,21 @@ const BuilderDndShell = ({
     const data = e.active.data.current;
     const overId = e.over?.id;
     setActiveDrag(null);
+
+    // Debug Story 2.1 — "Abyss Test". Reject every drop that is not on
+    // a registered CanvasDropZone. parseDropZoneId returns null for:
+    //   • drops on the toolbar / inspector / library (no `over`)
+    //   • drops on the 1px gap between zones (no `over`, thanks to
+    //     `pointerWithin` collision detection below)
+    //   • drops on `cell:*` droppables in the legacy edit-mode RowsManager
+    //   • drops on any future non-canvas droppable
+    // In every case we MUST bail before mutating the rows array OR the
+    // active-element selection. The DragOverlay snaps back to origin via
+    // `dropAnimation` so the editor sees clear "rejected" feedback.
     if (!isTrayDragData(data) || overId == null) return;
     const drop = parseDropZoneId(overId);
     if (!drop) return;
+
     const def = getWidget(data.type);
     if (!def) return;
 
@@ -111,16 +126,32 @@ const BuilderDndShell = ({
   return (
     <DndContext
       sensors={sensors}
+      // `pointerWithin` only flags an "over" when the cursor is actually
+      // inside a droppable's bounds — so a drop on the 1px border between
+      // two zones leaves `over` null and the handler safely rejects it.
+      collisionDetection={pointerWithin}
       onDragStart={onDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveDrag(null)}
     >
       {children}
-      <DragOverlay dropAnimation={null}>
+      {/* Snap-back drop animation — when a tray drag misses every valid
+          drop zone the overlay tweens back to the source element instead
+          of vanishing at the cursor, giving the editor explicit visual
+          confirmation that the drop was rejected. */}
+      <DragOverlay dropAnimation={SNAP_BACK_ANIMATION}>
         {activeDrag ? <TrayDragPreview data={activeDrag} /> : null}
       </DragOverlay>
     </DndContext>
   );
+};
+
+const SNAP_BACK_ANIMATION: DropAnimation = {
+  duration: 180,
+  easing: "cubic-bezier(0.2, 0, 0, 1)",
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: { active: { opacity: "0.4" } },
+  }),
 };
 
 /* ------------------------------------------------------------------
