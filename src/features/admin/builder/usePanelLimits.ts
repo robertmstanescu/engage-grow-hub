@@ -51,11 +51,15 @@ interface Options {
 const DEFAULTS: Required<Options> = {
   leftMaxPx: 300,
   leftMinPx: 200,
-  rightMaxPx: 400,
-  rightMinPx: 240,
+  // Inspector / Element Settings — bumped from 400/240/340 so the form
+  // controls (toolbar, swatches, font selectors) are no longer clipped
+  // on standard 13–16" screens. The right pane can still be resized
+  // smaller via the splitter; these are caps + defaults only.
+  rightMaxPx: 600,
+  rightMinPx: 320,
   centerMinPx: 300,
   leftDefaultPx: 260,
-  rightDefaultPx: 340,
+  rightDefaultPx: 480,
 };
 
 export function usePanelLimits(options: Options = {}): PanelLimits {

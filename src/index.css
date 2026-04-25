@@ -554,6 +554,23 @@
     scroll-snap-stop: unset;
   }
 
+  /*
+   * Builder canvas scope — when rows are rendered inside the admin
+   * Page Builder canvas, we don't want each row to take 100dvh. The
+   * canvas should size itself to the row content so editors aren't
+   * scrolling through huge empty viewports between rows.
+   */
+  [data-builder-canvas="true"] .snap-section,
+  [data-builder-canvas="true"] .service-row {
+    min-height: auto !important;
+    height: auto !important;
+    scroll-snap-align: none !important;
+    scroll-snap-stop: unset !important;
+  }
+  [data-builder-canvas="true"] .snap-section section,
+  [data-builder-canvas="true"] section.snap-section {
+    min-height: auto !important;
+  }
   /* ── Gradient divider (legacy compat) ── */
   .gradient-divider {
     height: 1px;

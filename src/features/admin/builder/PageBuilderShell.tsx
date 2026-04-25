@@ -245,7 +245,17 @@ const SNAP_BACK_ANIMATION: DropAnimation = {
 const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => {
   const { setActiveElement } = useBuilder();
   return (
-    <div onClick={() => setActiveElement(null)} className="contents">
+    /*
+     * `data-builder-canvas` lets `src/index.css` neutralise the
+     * default `min-h-screen`/100dvh on each row when rendered inside
+     * the builder. Rows then size to their content so the canvas
+     * isn't a stack of huge empty viewports.
+     */
+    <div
+      data-builder-canvas="true"
+      onClick={() => setActiveElement(null)}
+      className="contents"
+    >
       {children}
     </div>
   );
@@ -345,7 +355,8 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
         pageRows={props.pageRows}
         onRowsChange={props.onRowsChange}
       >
-        <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
+        {/* Fill the admin content area beneath the 52-px topbar so no grey strip shows below the canvas. */}
+        <div className="flex flex-col h-full min-h-0 flex-1">
           <AdminBuilderToolbar
             viewport={viewport}
             onViewportChange={setViewport}
