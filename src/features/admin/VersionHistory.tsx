@@ -1,25 +1,29 @@
 /**
- * VersionHistory — admin panel listing every published snapshot of
- * every site_content section, with one-click Restore.
+ * VersionHistory — global admin tab listing every published snapshot
+ * across the platform: site_content sections, CMS pages, and blog posts.
  *
- * Restore writes the snapshot back into the section's `draft_content`
- * (not directly into the live `content`). The admin then opens the
- * Site Editor, reviews, and hits Publish — same workflow as any other
- * edit. This makes accidental rollbacks recoverable.
+ * Restore copies the chosen snapshot into the entity's draft; the
+ * editor must then open the relevant page and click Publish to make
+ * the rollback go live. This prevents accidental rollbacks from
+ * surprise-publishing.
  */
-import { useEffect, useState, useCallback } from "react";
-import { History, RotateCcw, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ChevronDown, ChevronRight, History, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  listAllSectionsWithCounts,
-  listVersions,
-  restoreVersion,
-  type SiteContentVersion,
-} from "@/services/siteContentVersions";
+  attachAuthors,
+  listAllEntitiesWithCounts,
+  listRevisions,
+  resolveEntityLabels,
+  restoreRevision,
+  type PageRevisionWithAuthor,
+  type RevisionEntityType,
+} from "@/services/pageRevisions";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 
-interface SectionSummary {
-  section_key: string;
+interface EntitySummary {
+  entity_type: RevisionEntityType;
+  entity_ref: string;
   latest: number;
   count: number;
 }
@@ -33,19 +37,31 @@ const formatDate = (iso: string) =>
     minute: "2-digit",
   });
 
+const ENTITY_LABEL: Record<RevisionEntityType, string> = {
+  site_content: "Site Section",
+  cms_page: "CMS Page",
+  blog_post: "Blog Post",
+};
+
 const VersionHistory = () => {
-  const [sections, setSections] = useState<SectionSummary[]>([]);
+  const [entities, setEntities] = useState<EntitySummary[]>([]);
+  const [labels, setLabels] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
-  const [openSection, setOpenSection] = useState<string | null>(null);
-  const [versionsBySection, setVersionsBySection] = useState<Record<string, SiteContentVersion[]>>({});
-  const [versionsLoading, setVersionsLoading] = useState<string | null>(null);
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const [revisionsByKey, setRevisionsByKey] = useState<
+    Record<string, PageRevisionWithAuthor[]>
+  >({});
+  const [revLoadingKey, setRevLoadingKey] = useState<string | null>(null);
   const [restoring, setRestoring] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await listAllSectionsWithCounts();
+    const { data, error } = await listAllEntitiesWithCounts();
     if (error) toast.error("Could not load version history");
-    setSections(data || []);
+    const list = (data || []) as EntitySummary[];
+    setEntities(list);
+    const lbls = await resolveEntityLabels(list);
+    setLabels(lbls);
     setLoading(false);
   }, []);
 
@@ -53,38 +69,39 @@ const VersionHistory = () => {
     refresh();
   }, [refresh]);
 
-  const toggleSection = async (key: string) => {
-    if (openSection === key) {
-      setOpenSection(null);
+  const toggle = async (e: EntitySummary) => {
+    const key = `${e.entity_type}:${e.entity_ref}`;
+    if (openKey === key) {
+      setOpenKey(null);
       return;
     }
-    setOpenSection(key);
-    if (!versionsBySection[key]) {
-      setVersionsLoading(key);
-      const { data, error } = await listVersions(key);
-      if (error) toast.error(`Could not load versions for ${key}`);
-      setVersionsBySection((p) => ({ ...p, [key]: data || [] }));
-      setVersionsLoading(null);
+    setOpenKey(key);
+    if (!revisionsByKey[key]) {
+      setRevLoadingKey(key);
+      const { data, error } = await listRevisions(e.entity_type, e.entity_ref);
+      if (error) toast.error("Could not load revisions");
+      const withAuthors = await attachAuthors(data || []);
+      setRevisionsByKey((p) => ({ ...p, [key]: withAuthors }));
+      setRevLoadingKey(null);
     }
   };
 
-  const handleRestore = async (sectionKey: string, version: number) => {
+  const handleRestore = async (rev: PageRevisionWithAuthor) => {
     if (
       !confirm(
-        `Restore ${sectionKey} to v${version}?\n\nThis copies the snapshot into the editor draft. Open Site Editor and click Publish to make it live.`,
+        `Restore v${rev.version}?\n\nThis copies the snapshot into the editor draft. Open the relevant editor and click Publish to make it live.`,
       )
     )
       return;
-    const id = `${sectionKey}:${version}`;
-    setRestoring(id);
-    const { error } = await restoreVersion(sectionKey, version);
+    setRestoring(rev.id);
+    const { error } = await restoreRevision(rev.id);
     setRestoring(null);
     if (error) {
-      toast.error(`Restore failed: ${error.message || error}`);
+      toast.error(`Restore failed: ${(error as any).message || error}`);
       return;
     }
-    invalidateSiteContent(sectionKey);
-    toast.success(`v${version} restored to draft. Open Site Editor → Publish to go live.`);
+    if (rev.entity_type === "site_content") invalidateSiteContent(rev.entity_ref);
+    toast.success(`v${rev.version} restored to draft.`);
   };
 
   return (
@@ -92,12 +109,12 @@ const VersionHistory = () => {
       <header className="space-y-2">
         <h2 className="text-2xl font-display flex items-center gap-2 text-primary">
           <History className="h-6 w-6" />
-          Version History
+          Revision History
         </h2>
         <p className="text-sm text-muted-foreground max-w-2xl">
-          Every Publish creates an automatic backup. Pick any past version and Restore it to your
-          editor draft — then review and Publish to go live. v1 is the version that was live the
-          moment this feature was set up.
+          Every Publish creates an automatic snapshot — for site sections, CMS
+          pages, and blog posts. Pick any past version and Restore it to the
+          editor draft, then review and Publish to go live.
         </p>
       </header>
 
@@ -105,82 +122,89 @@ const VersionHistory = () => {
         <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" /> Loading history…
         </div>
-      ) : sections.length === 0 ? (
-        <p className="text-muted-foreground">No versions yet.</p>
+      ) : entities.length === 0 ? (
+        <p className="text-muted-foreground">No revisions yet.</p>
       ) : (
         <div className="space-y-2">
-          {sections.map((s) => {
-            const isOpen = openSection === s.section_key;
-            const versions = versionsBySection[s.section_key] || [];
+          {entities.map((e) => {
+            const key = `${e.entity_type}:${e.entity_ref}`;
+            const isOpen = openKey === key;
+            const revs = revisionsByKey[key] || [];
+            const friendly = labels[key] || e.entity_ref;
             return (
               <div
-                key={s.section_key}
+                key={key}
                 className="rounded-lg border border-border bg-card overflow-hidden"
               >
                 <button
                   type="button"
-                  onClick={() => toggleSection(s.section_key)}
+                  onClick={() => toggle(e)}
                   className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors text-left"
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-2 min-w-0">
                     {isOpen ? (
-                      <ChevronDown className="h-4 w-4 text-secondary" />
+                      <ChevronDown className="h-4 w-4 text-secondary shrink-0" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-secondary" />
+                      <ChevronRight className="h-4 w-4 text-secondary shrink-0" />
                     )}
-                    <span className="font-medium text-secondary">{s.section_key}</span>
+                    <span className="rounded-full border border-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground shrink-0">
+                      {ENTITY_LABEL[e.entity_type]}
+                    </span>
+                    <span className="font-medium text-secondary truncate">
+                      {friendly}
+                    </span>
                   </span>
-                  <span className="text-sm text-muted-foreground">
-                    {s.count} version{s.count === 1 ? "" : "s"} · latest v{s.latest}
+                  <span className="text-sm text-muted-foreground shrink-0">
+                    {e.count} version{e.count === 1 ? "" : "s"} · latest v{e.latest}
                   </span>
                 </button>
 
                 {isOpen && (
                   <div className="border-t border-border bg-background/30">
-                    {versionsLoading === s.section_key ? (
+                    {revLoadingKey === key ? (
                       <div className="px-4 py-3 flex items-center gap-2 text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" /> Loading…
                       </div>
-                    ) : versions.length === 0 ? (
-                      <div className="px-4 py-3 text-muted-foreground text-sm">No snapshots.</div>
+                    ) : revs.length === 0 ? (
+                      <div className="px-4 py-3 text-muted-foreground text-sm">
+                        No snapshots.
+                      </div>
                     ) : (
                       <ul className="divide-y divide-border">
-                        {versions.map((v) => {
-                          const id = `${v.section_key}:${v.version}`;
-                          return (
-                            <li
-                              key={v.id}
-                              className="px-4 py-3 flex items-center justify-between gap-4"
-                            >
-                              <div className="min-w-0">
-                                <div className="font-mono text-sm text-black">
-                                  v{v.version}
-                                  {v.label ? (
-                                    <span className="ml-2 text-xs text-muted-foreground">
-                                      {v.label}
-                                    </span>
-                                  ) : null}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {formatDate(v.created_at)}
-                                </div>
+                        {revs.map((r) => (
+                          <li
+                            key={r.id}
+                            className="px-4 py-3 flex items-center justify-between gap-4"
+                          >
+                            <div className="min-w-0">
+                              <div className="font-mono text-sm text-foreground">
+                                v{r.version}
+                                {r.label ? (
+                                  <span className="ml-2 text-xs text-muted-foreground">
+                                    {r.label}
+                                  </span>
+                                ) : null}
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRestore(v.section_key, v.version)}
-                                disabled={restoring === id}
-                                className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/60 disabled:opacity-50 text-primary"
-                              >
-                                {restoring === id ? (
-                                  <Loader2 className="h-3 w-3 animate-spin" />
-                                ) : (
-                                  <RotateCcw className="h-3 w-3" />
-                                )}
-                                Restore to draft
-                              </button>
-                            </li>
-                          );
-                        })}
+                              <div className="text-xs text-muted-foreground">
+                                {formatDate(r.created_at)}
+                                {r.author_display_name
+                                  ? ` · by ${r.author_display_name}`
+                                  : ""}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRestore(r)}
+                              disabled={restoring === r.id}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/60 disabled:opacity-50 text-primary"
+                            >
+                              {restoring === r.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : null}
+                              Restore to draft
+                            </button>
+                          </li>
+                        ))}
                       </ul>
                     )}
                   </div>

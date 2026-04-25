@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { type PageRow } from "@/types/rows";
 import PageBuilderShell from "./PageBuilderShell";
+import RevisionHistoryPanel from "./RevisionHistoryPanel";
 
 interface CmsPageRecord {
   id: string;
@@ -41,25 +42,26 @@ const CmsPageBuilder = ({ pageId }: Props) => {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
-  useEffect(() => {
-    const load = async () => {
-      const { data, error } = await supabase
-        .from("cms_pages")
-        .select("id, slug, title, status, page_rows, draft_page_rows, meta_title, meta_description")
-        .eq("id", pageId)
-        .maybeSingle();
-      if (error || !data) {
-        toast.error("Failed to load page");
-        return;
-      }
-      const rec = data as unknown as CmsPageRecord;
-      setRecord(rec);
-      setDraftRows((rec.draft_page_rows || rec.page_rows || []) as PageRow[]);
-      setSeoTitle(rec.meta_title || "");
-      setSeoDescription(rec.meta_description || "");
-    };
-    load();
+  const load = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("cms_pages")
+      .select("id, slug, title, status, page_rows, draft_page_rows, meta_title, meta_description")
+      .eq("id", pageId)
+      .maybeSingle();
+    if (error || !data) {
+      toast.error("Failed to load page");
+      return;
+    }
+    const rec = data as unknown as CmsPageRecord;
+    setRecord(rec);
+    setDraftRows((rec.draft_page_rows || rec.page_rows || []) as PageRow[]);
+    setSeoTitle(rec.meta_title || "");
+    setSeoDescription(rec.meta_description || "");
   }, [pageId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const initialSnapshot = useMemo(() => {
     if (!record) return "";
@@ -146,6 +148,13 @@ const CmsPageBuilder = ({ pageId }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      inspectorFooter={
+        <RevisionHistoryPanel
+          entityType="cms_page"
+          entityRef={record.id}
+          onRestored={load}
+        />
+      }
     />
   );
 };

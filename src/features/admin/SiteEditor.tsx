@@ -23,6 +23,7 @@ import { BuilderProvider, useBuilder } from "./builder/BuilderContext";
 import SelectableWrapper from "./builder/SelectableWrapper";
 // US 16.1 — contextual right-pane inspector, dispatched by activeElement.
 import InspectorPanel from "./inspector/InspectorPanel";
+import RevisionHistoryPanel from "./builder/RevisionHistoryPanel";
 // US 17.1 — draggable widget library (left sidebar).
 import {
   DndContext,
@@ -210,22 +211,23 @@ const SiteEditor = () => {
     if (isTrayDragData(data)) setActiveDrag(data);
   };
 
+  const reloadSections = async () => {
+    const { data } = await supabase
+      .from("site_content")
+      .select("section_key, content, draft_content")
+      .in("section_key", ["hero", "page_rows", "main_page_seo"]) as any;
+    if (data) {
+      const mapped = data.map((s: any) => ({
+        section_key: s.section_key,
+        content: s.content,
+        draft_content: s.draft_content || s.content,
+      }));
+      setSections(mapped);
+    }
+  };
+
   useEffect(() => {
-    const fetchAll = async () => {
-      const { data } = await supabase
-        .from("site_content")
-        .select("section_key, content, draft_content")
-        .in("section_key", ["hero", "page_rows", "main_page_seo"]) as any;
-      if (data) {
-        const mapped = data.map((s: any) => ({
-          section_key: s.section_key,
-          content: s.content,
-          draft_content: s.draft_content || s.content,
-        }));
-        setSections(mapped);
-      }
-    };
-    fetchAll();
+    reloadSections();
   }, []);
 
   const getSection = (key: string) => sections.find((s) => s.section_key === key);
@@ -582,7 +584,7 @@ const SiteEditor = () => {
                 Inspector
               </h3>
             </div>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
               {/* US 16.1 — chameleon inspector. Reads activeElement from
                   the BuilderContext (lifted to the top of SiteEditor) and
                   renders SEO / row layout / widget admin accordingly. */}
@@ -596,6 +598,18 @@ const SiteEditor = () => {
                 pageRows={pageRows}
                 onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
               />
+              {/* EPIC 10 — Revision History for the active section. Each
+                  site_content section has its own revision timeline. */}
+              <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+                <RevisionHistoryPanel
+                  entityType="site_content"
+                  entityRef={activeSection}
+                  onRestored={() => {
+                    invalidateSiteContent(activeSection);
+                    reloadSections();
+                  }}
+                />
+              </div>
             </div>
           </aside>
         </ResizablePanel>

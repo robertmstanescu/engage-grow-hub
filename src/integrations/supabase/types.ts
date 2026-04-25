@@ -495,6 +495,39 @@ export type Database = {
           },
         ]
       }
+      page_revisions: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string | null
+          entity_ref: string
+          entity_type: string
+          id: string
+          label: string | null
+          version: number
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          created_by?: string | null
+          entity_ref: string
+          entity_type: string
+          id?: string
+          label?: string | null
+          version: number
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          entity_ref?: string
+          entity_type?: string
+          id?: string
+          label?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -543,36 +576,6 @@ export type Database = {
           id?: string
           section_key?: string
           updated_at?: string
-        }
-        Relationships: []
-      }
-      site_content_versions: {
-        Row: {
-          content: Json
-          created_at: string
-          created_by: string | null
-          id: string
-          label: string | null
-          section_key: string
-          version: number
-        }
-        Insert: {
-          content: Json
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          label?: string | null
-          section_key: string
-          version: number
-        }
-        Update: {
-          content?: Json
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          label?: string | null
-          section_key?: string
-          version?: number
         }
         Relationships: []
       }
@@ -713,8 +716,17 @@ export type Database = {
           read_ct: number
         }[]
       }
-      restore_site_content_version: {
-        Args: { _section_key: string; _version: number }
+      restore_page_revision: {
+        Args: { _revision_id: string }
+        Returns: undefined
+      }
+      snapshot_page_revision: {
+        Args: {
+          _content: Json
+          _entity_ref: string
+          _entity_type: string
+          _label?: string
+        }
         Returns: undefined
       }
       stitch_visitor_to_email: {
