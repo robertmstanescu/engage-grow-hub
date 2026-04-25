@@ -24,6 +24,7 @@
  *   • Anything Hero-related (only the main-page adapter has a Hero)
  */
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   DndContext,
   DragOverlay,
@@ -130,7 +131,17 @@ const BuilderDndShell = ({
     }
 
     const def = getWidget(data.type);
-    if (!def) return;
+    if (!def) {
+      // US 1.2 — never let a drop disappear into the void. If a widget
+      // type is missing from the registry we surface a toast so editors
+      // know WHY their drop didn't materialise (instead of blaming DnD).
+      toast.error(`Unknown widget type: "${data.type}". Drop ignored.`);
+      return;
+    }
+    // Defensive default-data spread (US 1.1). Even if a misregistered
+    // widget slipped through with `defaultData === undefined`, we want
+    // an empty object — never `{ ...undefined }` semantics elsewhere.
+    const seed = (def.defaultData ?? {}) as Record<string, any>;
 
     // ── Cell-drop branch (US 1.2) ────────────────────────────────
     // Drop landed inside an empty cell on a v3 row. We push a new
@@ -151,7 +162,7 @@ const BuilderDndShell = ({
                   ...cc,
                   widgets: [
                     ...(cc.widgets || []),
-                    { id: newWidgetId, type: data.type, data: { ...(def.defaultData as Record<string, any>) } },
+                    { id: newWidgetId, type: data.type, data: { ...seed } },
                   ],
                 };
               }),
@@ -170,7 +181,7 @@ const BuilderDndShell = ({
       type: data.type as PageRow["type"],
       strip_title: data.label || data.type,
       bg_color: "#FFFFFF",
-      content: { ...(def.defaultData as Record<string, any>) },
+      content: { ...seed },
       layout: { ...DEFAULT_ROW_LAYOUT },
     };
 
