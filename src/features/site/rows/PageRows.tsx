@@ -1,18 +1,7 @@
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { type PageRow } from "@/types/rows";
 import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
-import TextRow from "./TextRow";
-import ServiceRow from "./ServiceRow";
-import BoxedRow from "./BoxedRow";
-import ContactRow from "./ContactRow";
-import HeroRow from "./HeroRow";
-import ImageTextRow from "./ImageTextRow";
-import ProfileRow from "./ProfileRow";
-import GridRow from "./GridRow";
-import LeadMagnetRow from "./LeadMagnetRow";
-import TestimonialRow from "./TestimonialRow";
-import LogoCloudRow from "./LogoCloudRow";
-import FaqRow from "./FaqRow";
+import { renderWidget } from "@/lib/WidgetRegistry";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -61,38 +50,20 @@ const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number;
   const id = row.scope || slugify(row.strip_title);
   const isService = row.type === "service";
   const vAlign: VAlign = row.layout?.verticalAlign || "middle";
-  const wrapper = (children: React.ReactNode) => (
-    <div id={id} style={{ scrollMarginTop: isService ? "0px" : "4rem", isolation: "isolate" }}>{children}</div>
-  );
 
-  switch (row.type) {
-    case "hero":
-      return wrapper(<HeroRow row={row} />);
-    case "text":
-      return wrapper(<TextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-    case "service":
-      return wrapper(<ServiceRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-    case "boxed":
-      return wrapper(<BoxedRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-    case "contact":
-      return wrapper(<ContactRow row={row} align={align} vAlign={vAlign} />);
-    case "image_text":
-      return wrapper(<ImageTextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-    case "profile":
-      return wrapper(<ProfileRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-    case "grid":
-      return wrapper(<GridRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-    case "lead_magnet":
-      return wrapper(<LeadMagnetRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-    case "testimonial":
-      return wrapper(<TestimonialRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-    case "logo_cloud":
-      return wrapper(<LogoCloudRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-    case "faq":
-      return wrapper(<FaqRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />);
-    default:
-      return null;
-  }
+  // Engine no longer hardcodes which component renders which row.
+  // The WidgetRegistry resolves `row.type` → render fn at runtime, so
+  // adding a new widget never requires editing this file (OCP).
+  // See `src/widgets/index.tsx` for the bootstrap registrations and
+  // `WIDGETS.md` (repo root) for the 4-step extension guide.
+  const rendered = renderWidget({ row, rowIndex, align, vAlign });
+  if (rendered === null) return null;
+
+  return (
+    <div id={id} style={{ scrollMarginTop: isService ? "0px" : "4rem", isolation: "isolate" }}>
+      {rendered}
+    </div>
+  );
 };
 
 const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
