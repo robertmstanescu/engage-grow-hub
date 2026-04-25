@@ -214,7 +214,7 @@ const SNAP_BACK_ANIMATION: DropAnimation = {
 
 const SiteEditor = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
-  const [activeSection, setActiveSection] = useState<"hero" | "page_rows" | "main_page_seo">("hero");
+  const [activeSection, setActiveSection] = useState<"page_rows" | "main_page_seo">("page_rows");
   const [saving, setSaving] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
   // US 14.2 — viewport simulation. Drives a max-width on the canvas wrapper.
