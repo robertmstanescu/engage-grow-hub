@@ -269,15 +269,8 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
               </AccordionContent>
             </AccordionItem>
 
-            {/* Button Label sits with its URL so the CTA is configured
-                as one unit under Media & Interactive. */}
-            <AccordionItem value="media" className="border-none">
-              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
-              <AccordionContent className={CONTENT_CLASS}>
-                <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
-                <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onContentChange("cta_url", v)} />
-              </AccordionContent>
-            </AccordionItem>
+            {/* Row-level CTA fields removed — see "CTA Button" widget
+                in the Elements tray. Legacy values still render. */}
 
             {/* GROUP 3 — Color overrides specific to this content
                 (NOT the row background — that lives in RowStyleTab). */}
