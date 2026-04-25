@@ -263,6 +263,14 @@
        layer instead of every layer behind it. Drastically reduces
        GPU work and eliminates the saturation "pop" on reveal. */
     isolation: isolate;
+    /* Smooth luminous hover — border + glow ease in/out so the card
+       feels physically lit rather than flicker-swapped. */
+    transition: border-color 300ms ease, box-shadow 300ms ease, background-color 300ms ease;
+  }
+
+  .glass:hover {
+    border: 1px solid hsl(var(--accent) / 0.5);
+    box-shadow: 0 0 20px -5px hsl(var(--accent) / 0.2);
   }
 
   .glass-light {
