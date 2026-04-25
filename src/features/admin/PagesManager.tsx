@@ -84,9 +84,19 @@ interface CmsPageRef {
 
 interface Props {
   onEditPage?: (page: CmsPageRef | null) => void;
+  /**
+   * When true, opens the "Create Page" inline form on first mount. The
+   * Admin Overview Dashboard sets this when the user clicks its
+   * prominent "Create New Page" CTA so the create form is one click —
+   * not two — away from the welcome screen. Resets after consumption
+   * so re-rendering the tab won't re-open the form.
+   */
+  autoOpenCreate?: boolean;
+  /** Called once `autoOpenCreate` has been consumed. */
+  onAutoOpenConsumed?: () => void;
 }
 
-const PagesManager = ({ onEditPage }: Props) => {
+const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props) => {
   const [pages, setPages] = useState<CmsPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingPage, setEditingPage] = useState<CmsPage | null>(null);
