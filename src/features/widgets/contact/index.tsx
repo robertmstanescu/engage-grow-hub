@@ -15,12 +15,15 @@
 
 import { registerWidget } from "@/lib/WidgetRegistry";
 import { DEFAULT_CONTACT_FIELDS } from "@/types/rows";
+import { Mail } from "lucide-react";
 import ContactAdmin from "./ContactAdmin";
 import ContactFrontend from "./ContactFrontend";
 
 registerWidget({
   type: "contact",
   label: "Contact Form",
+  icon: Mail,
+  category: "Marketing",
   defaultData: {
     title_lines: [],
     body: "",
