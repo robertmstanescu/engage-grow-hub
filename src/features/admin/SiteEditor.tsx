@@ -50,6 +50,9 @@ import ElementsTray, {
   isTrayDragData,
   type TrayDragData,
 } from "./builder/ElementsTray";
+// US 3.5 — locked Header/Footer placeholders that frame the canvas
+// and route to the Global Elements editor on click.
+import LockedGlobalElement from "./builder/LockedGlobalElement";
 // US 17.2 — drop-target id parsing for tray-sourced drops.
 import { parseDropZoneId } from "./builder/CanvasDropZone";
 // US 17.2 — registry lookup so dropped widgets seed with proper defaults.
