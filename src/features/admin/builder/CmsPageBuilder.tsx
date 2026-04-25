@@ -85,6 +85,10 @@ const CmsPageBuilder = ({ pageId }: Props) => {
 
   const hasChanges = !!record && initialSnapshot !== currentSnapshot;
 
+  // Debug Story 4.2 — block tab close / reload while the local draft
+  // hasn't been pushed to the database yet.
+  useUnloadGuard(hasChanges);
+
   const onSaveDraft = useCallback(async () => {
     if (!record) return;
     setSaving(true);
