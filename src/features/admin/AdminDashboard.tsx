@@ -467,6 +467,15 @@ const AdminDashboard = ({ session }: Props) => {
     autoSaveDraft();
   }, [currentDraftSnapshot, cmsPage, cmsPageRows.length, sections.length, autoSaveDraft]);
 
+  /* Debug Story 4.2 — guard against losing work on tab close / reload /
+   * browser-back. Native `beforeunload` only honours the warning when
+   * we have a real reason: either the draft differs from the live site
+   * OR an auto-save is currently in flight (the user typed in the last
+   * 500ms and the silent save hasn't completed yet). Both windows count
+   * as "unsaved" from the user's perspective. Lives DOWN HERE because
+   * `autoSaveStatus` is declared after `hasUnsavedChanges`. */
+  useUnloadGuard(hasUnsavedChanges || autoSaveStatus === "saving");
+
   // Load main page data
   useEffect(() => {
     if (cmsPage) return;
