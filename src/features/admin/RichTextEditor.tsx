@@ -454,8 +454,8 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
 
   return (
     <div
-      className="rounded-lg border overflow-hidden"
-      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
+      className="rounded-lg border overflow-hidden bg-transparent"
+      style={{ borderColor: "hsl(var(--border))" }}
     >
       <div
         className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b"
