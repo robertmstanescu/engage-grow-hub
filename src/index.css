@@ -578,6 +578,15 @@
     color: hsl(var(--accent)) !important;
   }
 
+  /* Mobile nav links — same hover/active palette as side nav. */
+  .mobile-nav-link:hover {
+    color: hsl(var(--primary-foreground)) !important;
+  }
+  .mobile-nav-link[data-active="true"],
+  .mobile-nav-link[data-active="true"]:hover {
+    color: hsl(var(--accent)) !important;
+  }
+
   /* ── Navbar scope (for admin pages) ── */
   .scope-navbar {
     --nav-bg: 260 20% 6%;
