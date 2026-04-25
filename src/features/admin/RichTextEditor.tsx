@@ -110,7 +110,7 @@ interface RichTextEditorProps {
   bgColor?: string;
 }
 
-const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps) => {
+const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEditorProps) => {
   // The editor surface is transparent and inherits parent text color,
   // so the writing area always matches the rendered area it edits.
   const editorRef = useRef<HTMLDivElement>(null);
@@ -448,8 +448,8 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
 
   return (
     <div
-      className="rounded-lg border overflow-hidden bg-transparent"
-      style={{ borderColor: "hsl(var(--border))" }}
+      className="rounded-lg border overflow-hidden"
+      style={{ borderColor: "hsl(var(--border))", backgroundColor: bgColor || "transparent" }}
     >
       <div
         className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b"
