@@ -87,7 +87,7 @@ export const designToStyle = (d: WidgetDesignSettings): CSSProperties => {
 export const hasDesignOverrides = (d: WidgetDesignSettings): boolean =>
   d.marginTop !== 0 || d.marginRight !== 0 || d.marginBottom !== 0 || d.marginLeft !== 0 ||
   d.paddingTop !== 0 || d.paddingRight !== 0 || d.paddingBottom !== 0 || d.paddingLeft !== 0 ||
-  d.borderRadius !== 0 || !!d.bgColor;
+  d.borderRadius !== 0 || !!d.bgColor || !!d.customCss?.trim();
 
 /**
  * Translate the responsive `visibility` flags into Tailwind classes.
