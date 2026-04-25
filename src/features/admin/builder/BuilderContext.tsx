@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import type { PageRow } from "@/types/rows";
+import { getWidget } from "@/lib/WidgetRegistry";
+import { generateRowId } from "@/lib/constants/rowDefaults";
 
 /**
  * ════════════════════════════════════════════════════════════════════
@@ -367,6 +369,51 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       const { rows: next, ok } = writeRowsAtPath(rows, path, value);
       if (ok) setter(next);
       return ok;
+    },
+    [],
+  );
+
+  const addWidgetToCell = useCallback<BuilderContextValue["addWidgetToCell"]>(
+    (target, widgetType) => {
+      const rows = rowsRef.current;
+      const setter = onRowsChangeRef.current;
+      if (!rows || !setter) return null;
+      const def = getWidget(widgetType);
+      if (!def) return null;
+      const seed = (def.defaultData ?? {}) as Record<string, any>;
+      const newWidgetId = generateRowId();
+
+      let mutated = false;
+      const next = rows.map((r: any) => {
+        if (r.id !== target.rowId || !Array.isArray(r.columns)) return r;
+        return {
+          ...r,
+          columns: r.columns.map((col: any) => {
+            if (col.id !== target.colId) return col;
+            return {
+              ...col,
+              cells: (col.cells || []).map((cc: any) => {
+                if (cc.id !== target.cellId) return cc;
+                const widgets = Array.isArray(cc.widgets) ? cc.widgets.slice() : [];
+                const insertAt =
+                  target.insertIndex == null || target.insertIndex < 0 || target.insertIndex > widgets.length
+                    ? widgets.length
+                    : target.insertIndex;
+                widgets.splice(insertAt, 0, {
+                  id: newWidgetId,
+                  type: widgetType,
+                  data: { ...seed },
+                });
+                mutated = true;
+                return { ...cc, widgets };
+              }),
+            };
+          }),
+        };
+      });
+      if (!mutated) return null;
+      setter(next);
+      return newWidgetId;
     },
     [],
   );
