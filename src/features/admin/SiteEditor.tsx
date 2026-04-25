@@ -530,6 +530,8 @@ const SiteEditor = () => {
       <AdminBuilderToolbar
         viewport={viewport}
         onViewportChange={setViewport}
+        previewMode={previewMode}
+        onPreviewModeChange={setPreviewMode}
         onSaveDraft={saveAllDrafts}
         saving={saving === "__all__"}
         saveLabel="Save Draft"
