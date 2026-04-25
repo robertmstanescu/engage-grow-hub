@@ -241,19 +241,24 @@ const Navbar = () => {
             transition={{ duration: 0.3 }}
             className="lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-6"
             style={{ backgroundColor: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" }}>
-            {allItems.map((item, i) => (
-              <motion.a
-                key={item.label}
-                href={item.href}
-                onClick={(e) => handleNavClick(e, item.href)}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.06, ease }}
-                className="font-body text-sm uppercase tracking-[0.2em] transition-colors duration-500"
-                style={{ color: isActive(item.href) ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.5)" }}>
-                {item.label}
-              </motion.a>
-            ))}
+            {allItems.map((item, i) => {
+              const active = isActive(item.href);
+              return (
+                <motion.a
+                  key={item.label}
+                  href={item.href}
+                  onClick={(e) => handleNavClick(e, item.href)}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.06, ease }}
+                  data-active={active}
+                  className="mobile-nav-link font-body text-sm uppercase tracking-[0.2em] transition-colors duration-300"
+                  style={{ color: active ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.5)" }}
+                >
+                  {item.label}
+                </motion.a>
+              );
+            })}
             {ctaHref && ctaText ? (
               <motion.a
                 href={ctaHref}
