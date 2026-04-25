@@ -9,6 +9,8 @@ import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 // EPIC 1 / US 1.1 — atomic-node selection on text-row fields.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
+// EPIC 1 / US 1.4 — direct-on-canvas text editing (double-click → contentEditable).
+import CanvasEditable from "@/features/admin/builder/CanvasEditable";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
