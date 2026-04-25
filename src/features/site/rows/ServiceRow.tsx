@@ -9,6 +9,9 @@ import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSection } from "./typography";
+// EPIC 1 / US 1.1 — atomic-node selection. SelectableWrapper renders
+// as a passthrough fragment on the public site (no BuilderProvider).
+import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 
 const hexToHslChannels = (hex: string): string | null => {
   if (!hex || !hex.startsWith("#") || hex.length < 7) return null;
@@ -129,17 +132,39 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
       className="service-row"
     >
       <div ref={ref} className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
-        <RowEyebrow color={pillarLabelColor} style={revealStyle(isVisible, 0)}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
-            {c.eyebrow || c.pillar_number}
-          </EditableText>
-        </RowEyebrow>
+        {/*
+          ATOMIC-NODE WRAPPERS (EPIC 1 / US 1.1)
+          --------------------------------------
+          Each visible text/image element is its OWN selectable node so
+          editors can click straight onto a subtitle and see a tight
+          blue ring just around that text. The path extends the row's
+          path with a `field` segment.
+        */}
+        <SelectableWrapper
+          path={["row", row.id, "widget", row.id, "field", "eyebrow"]}
+          label="Eyebrow"
+          variant="atom"
+          inline
+        >
+          <RowEyebrow color={pillarLabelColor} style={revealStyle(isVisible, 0)}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
+              {c.eyebrow || c.pillar_number}
+            </EditableText>
+          </RowEyebrow>
+        </SelectableWrapper>
 
-        <RowTitle color={pillarTitleColor} style={revealStyle(isVisible, 1)}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
-            {c.title}
-          </EditableText>
-        </RowTitle>
+        <SelectableWrapper
+          path={["row", row.id, "widget", row.id, "field", "title"]}
+          label="Title"
+          variant="atom"
+          inline
+        >
+          <RowTitle color={pillarTitleColor} style={revealStyle(isVisible, 1)}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
+              {c.title}
+            </EditableText>
+          </RowTitle>
+        </SelectableWrapper>
 
         {/*
           VERTICAL AXIS LAW:
@@ -155,21 +180,27 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           block and the body/description. Pulled from tailwind.config.ts so
           this row stays in sync with every other row's vertical rhythm.
         */}
-        <div className="mb-rhythm-base" style={revealStyle(isVisible, 2)}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
-            data-rte-fit=""
-            className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
-            style={{
-              color: pillarDescriptionColor,
-              fontSize: "clamp(0.78rem, 0.85vh + 0.55vw, 1.05rem)",
-              overflow: "visible",
-              height: "auto",
-              maxWidth: 600,
-              marginLeft: align === "right" ? "auto" : align === "center" ? "auto" : 0,
-              marginRight: align === "left" ? "auto" : align === "center" ? "auto" : 0,
-            }}
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
-        </div>
+        <SelectableWrapper
+          path={["row", row.id, "widget", row.id, "field", "description"]}
+          label="Description"
+          variant="atom"
+        >
+          <div className="mb-rhythm-base" style={revealStyle(isVisible, 2)}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
+              data-rte-fit=""
+              className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
+              style={{
+                color: pillarDescriptionColor,
+                fontSize: "clamp(0.78rem, 0.85vh + 0.55vw, 1.05rem)",
+                overflow: "visible",
+                height: "auto",
+                maxWidth: 600,
+                marginLeft: align === "right" ? "auto" : align === "center" ? "auto" : 0,
+                marginRight: align === "left" ? "auto" : align === "center" ? "auto" : 0,
+              }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
+          </div>
+        </SelectableWrapper>
 
         {/* Carousel controls — `mb-rhythm-base` keeps the gap to the card below in sync with the rest of the site. */}
         <div className={`flex items-center ${carouselJustify} gap-3 mb-rhythm-base`} style={revealStyle(isVisible, 3)}>

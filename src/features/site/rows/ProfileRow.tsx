@@ -9,6 +9,8 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { resolveImageAlt } from "@/services/imageAlt";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
+// EPIC 1 / US 1.1 — atomic-node selection.
+import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -47,6 +49,9 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
   // Use column_widths to control the image/text split ratio
   const colWidths = l.column_widths || [35, 65];
   const gridCols = `${colWidths[0]}fr ${colWidths[1]}fr`;
+
+  // EPIC 1 / US 1.1 — base path for atomic-node selection.
+  const basePath: string[] = ["row", row.id, "widget", row.id, "field"];
 
   return (
     <RowSection
@@ -95,18 +100,22 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
             {(c.name || c.role) && (
               <div className="mt-rhythm-base text-center" style={revealStyle(isVisible, 2)}>
                 {c.name && (
-                  <p className="font-display font-bold text-lg leading-[1.6]" style={{ color: nameColor }}>
-                    <EditableText sectionKey="page_rows" fieldPath={`${prefix}.name`} as="span">
-                      {c.name}
-                    </EditableText>
-                  </p>
+                  <SelectableWrapper path={[...basePath, "name"]} label="Name" variant="atom">
+                    <p className="font-display font-bold text-lg leading-[1.6]" style={{ color: nameColor }}>
+                      <EditableText sectionKey="page_rows" fieldPath={`${prefix}.name`} as="span">
+                        {c.name}
+                      </EditableText>
+                    </p>
+                  </SelectableWrapper>
                 )}
                 {c.role && (
-                  <p className="font-body text-xs tracking-wider uppercase mt-1" style={{ color: roleColor }}>
-                    <EditableText sectionKey="page_rows" fieldPath={`${prefix}.role`} as="span">
-                      {c.role}
-                    </EditableText>
-                  </p>
+                  <SelectableWrapper path={[...basePath, "role"]} label="Role" variant="atom">
+                    <p className="font-body text-xs tracking-wider uppercase mt-1" style={{ color: roleColor }}>
+                      <EditableText sectionKey="page_rows" fieldPath={`${prefix}.role`} as="span">
+                        {c.role}
+                      </EditableText>
+                    </p>
+                  </SelectableWrapper>
                 )}
               </div>
             )}
@@ -129,45 +138,53 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
           {/* Right column: Header + RTE body */}
           <div className="flex flex-col justify-start" style={revealStyle(isVisible, 0)}>
             {c.eyebrow && (
-              <RowEyebrow color={eyebrowColor}>
-                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
-                  {c.eyebrow}
-                </EditableText>
-              </RowEyebrow>
+              <SelectableWrapper path={[...basePath, "eyebrow"]} label="Eyebrow" variant="atom" inline>
+                <RowEyebrow color={eyebrowColor}>
+                  <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
+                    {c.eyebrow}
+                  </EditableText>
+                </RowEyebrow>
+              </SelectableWrapper>
             )}
 
             {titleLines.length > 0 && (
-              <RowTitle color={c.color_title}>
-                {titleLines.map((line, i) => (
-                  <span key={i} className="block mb-1 last:mb-0">
-                    <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
-                  </span>
-                ))}
-              </RowTitle>
+              <SelectableWrapper path={[...basePath, "title"]} label="Title" variant="atom" inline>
+                <RowTitle color={c.color_title}>
+                  {titleLines.map((line, i) => (
+                    <span key={i} className="block mb-1 last:mb-0">
+                      <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
+                    </span>
+                  ))}
+                </RowTitle>
+              </SelectableWrapper>
             )}
 
             {c.subtitle && (
-              <RowSubtitle color={c.subtitle_color}>
-                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
-              </RowSubtitle>
+              <SelectableWrapper path={[...basePath, "subtitle"]} label="Subtitle" variant="atom" inline>
+                <RowSubtitle color={c.subtitle_color}>
+                  <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
+                </RowSubtitle>
+              </SelectableWrapper>
             )}
 
             {c.body && (
-              <EditableText
-                sectionKey="page_rows"
-                fieldPath={`${prefix}.body`}
-                html
-                as="div"
-                data-rte-fit=""
-                className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
-                style={{
-                  fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)",
-                  color: c.color_body || "hsl(var(--foreground) / 0.75)",
-                  height: "auto",
-                  overflow: "visible",
-                }}
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
-              />
+              <SelectableWrapper path={[...basePath, "body"]} label="Body" variant="atom">
+                <EditableText
+                  sectionKey="page_rows"
+                  fieldPath={`${prefix}.body`}
+                  html
+                  as="div"
+                  data-rte-fit=""
+                  className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
+                  style={{
+                    fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)",
+                    color: c.color_body || "hsl(var(--foreground) / 0.75)",
+                    height: "auto",
+                    overflow: "visible",
+                  }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
+                />
+              </SelectableWrapper>
             )}
 
             {c.note && (

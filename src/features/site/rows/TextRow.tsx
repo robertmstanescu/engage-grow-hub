@@ -7,6 +7,8 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
+// EPIC 1 / US 1.1 — atomic-node selection on text-row fields.
+import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -46,34 +48,46 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
     );
     const noteColor = c.color_note || (isLight ? "hsl(var(--light-fg) / 0.5)" : "hsl(var(--foreground) / 0.5)");
 
+    // Path base for atomic-node selection. Multi-column rows include the
+    // column index so each column's eyebrow/title/etc are distinct nodes.
+    const basePath: string[] = ["row", row.id, "widget", row.id, "col", String(colIndex)];
+
     return (
       <div key={colIndex} className={isMultiCol ? "" : `${maxW} ${containerPos} ${contentAlign}`}>
         {c.eyebrow && (
-          <RowEyebrow color={c.color_eyebrow || (isLight ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.5)")} style={revealStyle(isVisible, -0.5)}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
-          </RowEyebrow>
+          <SelectableWrapper path={[...basePath, "eyebrow"]} label="Eyebrow" variant="atom" inline>
+            <RowEyebrow color={c.color_eyebrow || (isLight ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.5)")} style={revealStyle(isVisible, -0.5)}>
+              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
+            </RowEyebrow>
+          </SelectableWrapper>
         )}
 
         {titleLines.length > 0 && (
-          <RowTitle color={isLight ? "hsl(var(--primary))" : "hsl(var(--foreground))"} style={revealStyle(isVisible, 0)}>
-            {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
-          </RowTitle>
+          <SelectableWrapper path={[...basePath, "title"]} label="Title" variant="atom" inline>
+            <RowTitle color={isLight ? "hsl(var(--primary))" : "hsl(var(--foreground))"} style={revealStyle(isVisible, 0)}>
+              {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
+            </RowTitle>
+          </SelectableWrapper>
         )}
 
         {c.subtitle && (
-          <RowSubtitle color={c.subtitle_color || "inherit"} style={revealStyle(isVisible, 1)}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
-          </RowSubtitle>
+          <SelectableWrapper path={[...basePath, "subtitle"]} label="Subtitle" variant="atom" inline>
+            <RowSubtitle color={c.subtitle_color || "inherit"} style={revealStyle(isVisible, 1)}>
+              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
+            </RowSubtitle>
+          </SelectableWrapper>
         )}
 
         {c.body && (
-          <div style={revealStyle(isVisible, 2)}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.body`} html as="div"
-              data-rte-fit=""
-              className={`font-body-heading font-medium leading-[1.6] ${isMultiCol ? "" : "max-w-[700px]"} mt-rhythm-tight [&_p]:mb-[5px] [&_p]:mt-[5px] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
-              style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)"), fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)" }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
-          </div>
+          <SelectableWrapper path={[...basePath, "body"]} label="Body" variant="atom">
+            <div style={revealStyle(isVisible, 2)}>
+              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.body`} html as="div"
+                data-rte-fit=""
+                className={`font-body-heading font-medium leading-[1.6] ${isMultiCol ? "" : "max-w-[700px]"} mt-rhythm-tight [&_p]:mb-[5px] [&_p]:mt-[5px] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
+                style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)"), fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)" }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
+            </div>
+          </SelectableWrapper>
         )}
 
         {c.note && (
