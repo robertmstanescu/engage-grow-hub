@@ -27,9 +27,7 @@ import {
 // US 2.1 — HeroEditor is no longer imported at the top: hero is reached
 // only through the widget-fallback map below (HeroRowFields alias).
 import SeoFields from "../site-editor/SeoFields";
-import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
-import ColumnWidthControl from "../site-editor/ColumnWidthControl";
-import { ColorField } from "../site-editor/FieldComponents";
+import RowStyleTab from "../editors/RowStyleTab";
 
 // Widget admin editors (legacy, type-keyed). Where a widget exposes
 // `adminComponent` via the WidgetRegistry, that wins (US 16.1 dev note).
@@ -240,8 +238,6 @@ const InspectorPanel = (props: InspectorPanelProps) => {
 
   /* ─── State 2 — Row selected → layout / spacing / bg colour ──── */
   if (kind === "row") {
-    const layout = { ...DEFAULT_ROW_LAYOUT, ...(row.layout || {}) };
-
     /* ─── Debug Story 4.1 — destructive action guard ─────────────
      * Counts configured widget cells in the row and shows a modal
      * confirmation before mutating `pageRows`. Cancel leaves state
@@ -263,6 +259,16 @@ const InspectorPanel = (props: InspectorPanelProps) => {
       setActiveElement(null);
     };
 
+    /* US 4.x — Re-link the FULL background/style stack into the
+     * Inspector. `RowStyleTab` already wires:
+     *   • Background colour + opacity
+     *   • Background image URL + opacity
+     *   • Row internal alignment
+     *   • Column widths (auto-hidden for single-column rows)
+     *   • GradientEditor (linear/radial/conic/mesh)
+     *   • OverlayEditor (decorative overlays)
+     * All writes flow through `updateRow` so the targeted row in
+     * pageRows is patched in place — siblings are untouched. */
     return (
       <>
         <Section title={`Row · ${row.type}`}>
@@ -271,32 +277,19 @@ const InspectorPanel = (props: InspectorPanelProps) => {
           </p>
         </Section>
 
-        <Section title="Background">
-          <ColorField
-            label="Background Colour"
-            value={row.bg_color || ""}
-            onChange={(v) => updateRow({ bg_color: v })}
-          />
-        </Section>
-
-        <Section title="Alignment">
-          <RowAlignmentSettings
-            layout={layout}
-            onChange={(next) => updateRow({ layout: next })}
-          />
-        </Section>
-
-        {row.columns_data && row.columns_data.length > 1 && (
-          <Section title="Column widths">
-            <ColumnWidthControl
-              columnCount={row.columns_data.length}
-              widths={layout.column_widths}
-              onChange={(widths) =>
-                updateRow({ layout: { ...layout, column_widths: widths } })
-              }
-            />
-          </Section>
-        )}
+        <RowStyleTab
+          row={row}
+          onRowMetaChange={(updates) => updateRow(updates)}
+          onUpdateColumnWidths={(widths) =>
+            updateRow({
+              layout: {
+                ...DEFAULT_ROW_LAYOUT,
+                ...(row.layout || {}),
+                column_widths: widths,
+              },
+            })
+          }
+        />
 
         {/* Destructive action lives at the bottom of the row inspector
          * so the user has to scroll past the safe controls first — and
