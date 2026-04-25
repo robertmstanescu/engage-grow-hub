@@ -330,6 +330,7 @@ Deno.serve(async (req) => {
       user_agent: userAgent.slice(0, 500),
       ip_hash: ipHash,
       source: "client",
+      attribution,
     });
   } catch (insertError) {
     console.error("track-visitor insert failed:", insertError);
