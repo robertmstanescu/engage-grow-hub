@@ -1,45 +1,37 @@
+import { useRef } from "react";
 import Navbar from "@/features/site/Navbar";
 import PageRows from "@/features/site/rows/PageRows";
 import Footer from "@/features/site/Footer";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
+import { useThresholdSnap } from "@/hooks/useThresholdSnap";
 
 /**
  * Index — the public homepage.
  *
- * ## Scroll-snap configuration (the "hard snap" / slide-deck feel)
+ * ## Scroll-snap configuration
  *
- * The `.snap-container` wrapper sets `scroll-snap-type: y mandatory`
- * (defined in src/index.css). Each row inside `<PageRows/>` carries
- * `scroll-snap-align: start` via the `.snap-section` class.
- *
- * Why `mandatory` (slide-deck) instead of `proximity` (soft)?
- *   - The brand wants each row treated as a discrete "slide" — you
- *     either see THIS row or the NEXT row, never half-and-half.
- *   - `mandatory` enforces that lock. Every scroll gesture lands on a
- *     snap point. No mid-content stranding.
- *   - `proximity` only snaps when you happen to land near a row, which
- *     is more ambiguous and less intentional.
- *
- * The trade-off (small wheel ticks jump a full screen) is mitigated by
- * ADAPTIVE PADDING (`py-row-fluid`, see tailwind.config.ts) and
- * AGGRESSIVE FLUID TYPOGRAPHY (clamp with vh+vw, vh-weighted — see
- * typography/RowBody.tsx) so every row's content fits inside one
- * viewport without scrolling, even on a 13" laptop.
+ * The `.snap-container` wrapper is the scroll container. Native CSS
+ * `scroll-snap-type` is disabled so we can implement a precise 51%
+ * threshold rule via {@link useThresholdSnap}: scroll past 51% of the
+ * current row and the page animates to the next row; below that, it
+ * settles back. This gives the slide-deck feel without the violent
+ * mid-scroll yank of `mandatory`.
  */
 const Index = () => {
   const seo = useSiteContent<{ meta_title: string; meta_description: string }>("main_page_seo", { meta_title: "", meta_description: "" });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   usePageMeta({
     title: seo.meta_title || undefined,
     description: seo.meta_description || undefined,
   });
 
+  useThresholdSnap(containerRef);
+
   return (
-    <div className="snap-container lg:pl-16">
+    <div ref={containerRef} className="snap-container lg:pl-16">
       <Navbar />
-      {/* US 2.1 — Hero is now an ordinary widget at page_rows[0]; no
-          isolated heroContent prop or HeroSection injection. */}
       <PageRows footerSlot={<Footer />} />
     </div>
   );

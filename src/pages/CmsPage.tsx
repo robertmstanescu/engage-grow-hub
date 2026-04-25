@@ -1,5 +1,6 @@
 import { useParams, useSearchParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useThresholdSnap } from "@/hooks/useThresholdSnap";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
@@ -70,7 +71,15 @@ const CmsPage = () => {
   const rows: PageRow[] = livePreviewPage?.rows || (isPreview && page?.draft_page_rows ? page.draft_page_rows : (page?.page_rows || []));
 
   return (
-    <div className="snap-container lg:pl-16">
+    <CmsPageBody rows={rows} isPreview={isPreview} />
+  );
+};
+
+const CmsPageBody = ({ rows, isPreview }: { rows: PageRow[]; isPreview: boolean }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  useThresholdSnap(containerRef);
+  return (
+    <div ref={containerRef} className="snap-container lg:pl-16">
       <Navbar />
       {isPreview && (
         <div className="sticky top-0 z-50 px-4 py-2 text-center font-body text-xs uppercase tracking-wider"
