@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Layout, Image as ImageIcon, Search, MousePointer2 } from "lucide-react";
+import { Layout, Image as ImageIcon, Search, MousePointer2, Eye, Pencil } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
@@ -13,6 +13,10 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuilderToolbar";
+// US 15.1 — render the SAME components the public site renders, against
+// the in-memory draft content. WYSIWYG, no markup duplication.
+import { HeroView } from "@/features/site/HeroSection";
+import { RowsRenderer } from "@/features/site/rows/PageRows";
 
 interface SectionData {
   section_key: string;
@@ -48,6 +52,12 @@ const SiteEditor = () => {
   const [publishing, setPublishing] = useState(false);
   // US 14.2 — viewport simulation. Drives a max-width on the canvas wrapper.
   const [viewport, setViewport] = useState<ViewportMode>("desktop");
+  // US 15.1 — Canvas mode: "preview" shows the actual frontend
+  // components rendering live draft state (WYSIWYG); "edit" shows the
+  // existing form-based editors (HeroEditor / RowsManager) so editors
+  // can still drag, drop and configure widgets in the form-driven UI.
+  // Default to preview because that's the whole point of US 15.1.
+  const [canvasMode, setCanvasMode] = useState<"preview" | "edit">("preview");
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -164,18 +174,48 @@ const SiteEditor = () => {
   /* ─── Canvas content for the active section ─────────────────────── */
   // NOTE: per-section "Save Draft" buttons were removed in US 14.2 — the
   // toolbar's Save Draft button now saves the currently-active section.
+  //
+  // US 15.1 — Two render modes:
+  //   • "preview" → live frontend components (HeroView / RowsRenderer)
+  //                 fed the in-memory draft. True WYSIWYG: every edit
+  //                 (still made via the form drawers / inspector) shows
+  //                 up here on the next render.
+  //   • "edit"    → the existing form-driven UI (HeroEditor, RowsManager)
+  //                 with drag-and-drop reordering, add/delete widget
+  //                 controls, etc. Kept available so editors can perform
+  //                 actions that don't have inline-canvas equivalents
+  //                 yet (a later epic will move these inline).
   const renderCanvas = () => {
     if (activeSection === "hero") {
+      if (canvasMode === "preview") {
+        // HeroView is a PURE component (US 15.1). It accepts content as
+        // a prop and is unaware of the admin context.
+        return (
+          <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
+            <HeroView content={getDraft("hero") as any} />
+          </div>
+        );
+      }
       return (
         <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
       );
     }
     if (activeSection === "page_rows") {
+      if (canvasMode === "preview") {
+        // RowsRenderer is the same component the public site uses (via
+        // PageRows). Feeding it the draft `pageRows` array gives an
+        // exact pixel-for-pixel preview of what will publish.
+        return (
+          <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
+            <RowsRenderer rows={pageRows} />
+          </div>
+        );
+      }
       return (
         <RowsManager rows={pageRows} onChange={(rows) => updateFullDraft("page_rows", { rows })} />
       );
     }
-    // SEO
+    // SEO has no visual frontend representation — always show the form.
     return (
       <div className="space-y-4">
         <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -190,6 +230,9 @@ const SiteEditor = () => {
       </div>
     );
   };
+
+  // Preview/Edit toggle is hidden for SEO (no visual rep).
+  const supportsPreview = activeSection === "hero" || activeSection === "page_rows";
 
   // Friendly label for the toolbar Save button (active section)
   const activeSectionLabel =
@@ -293,11 +336,50 @@ const SiteEditor = () => {
                 maxWidth: canvasMaxWidth ? `${canvasMaxWidth}px` : "64rem", // 64rem = max-w-5xl
               }}
             >
+              {/* US 15.1 — Preview / Edit toggle (per-section, hidden for SEO) */}
+              {supportsPreview && (
+                <div className="flex items-center justify-end mb-3">
+                  <div
+                    className="inline-flex items-center rounded-full border p-0.5"
+                    style={{ borderColor: "hsl(var(--border) / 0.6)", backgroundColor: "hsl(var(--card))" }}
+                    role="group"
+                    aria-label="Canvas mode"
+                  >
+                    {([
+                      { key: "preview", label: "Preview", Icon: Eye },
+                      { key: "edit", label: "Edit", Icon: Pencil },
+                    ] as const).map(({ key, label, Icon }) => {
+                      const active = canvasMode === key;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setCanvasMode(key)}
+                          aria-pressed={active}
+                          className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full transition-colors"
+                          style={{
+                            backgroundColor: active ? "hsl(var(--accent))" : "transparent",
+                            color: active ? "hsl(var(--accent-foreground))" : "hsl(var(--muted-foreground))",
+                          }}
+                        >
+                          <Icon size={12} /> {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div
-                className="rounded-lg border p-5 shadow-sm"
+                className="rounded-lg border shadow-sm overflow-hidden"
                 style={{
+                  // WHY no padding when previewing: the live frontend
+                  // components own their own spacing/backgrounds (e.g.
+                  // hero is full-bleed). Padding the wrapper would crop
+                  // their visual edge. Edit mode keeps the comfy padding.
                   backgroundColor: "hsl(var(--card))",
                   borderColor: "hsl(var(--border) / 0.5)",
+                  padding: canvasMode === "preview" && supportsPreview ? 0 : "1.25rem",
                 }}
               >
                 {renderCanvas()}

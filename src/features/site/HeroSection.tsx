@@ -42,21 +42,21 @@ const fallback: HeroContent = {
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
-const HeroSection = () => {
-  /**
-   * Loading-aware read of the "hero" CMS section.
-   *
-   * WHY `useSiteContentWithStatus` INSTEAD OF `useSiteContent`?
-   * The hero is the first thing users see. If we used the plain hook,
-   * the hardcoded `fallback` strings ("Your organisation has vampires.")
-   * would paint for a few hundred milliseconds before the real DB
-   * content arrived — a jarring text-swap. By gating render on
-   * `isLoading`, we paint NOTHING (just the ambient background) until
-   * we either have real content or react-query confirms there is none.
-   * Once cached after the first visit, `isLoading` is false on first
-   * render so repeat visits feel instant.
-   */
-  const { isLoading, content: c } = useSiteContentWithStatus<HeroContent>("hero", fallback);
+/**
+ * HeroView — PURE, presentational hero.
+ *
+ * WHY this split (US 15.1):
+ * The admin canvas needs to render the live hero against the in-memory
+ * DRAFT content (not the database-published content). By extracting a
+ * pure component that accepts `content` as a prop, the admin can render
+ * `<HeroView content={draftHero} />` for true WYSIWYG, while the public
+ * site continues to use the data-fetching wrapper below — unchanged DOM,
+ * unchanged styling, unchanged animations.
+ *
+ * RULE (per US 15.1 Dev Notes): this component must be COMPLETELY
+ * IGNORANT of the admin panel. It only takes `content` and renders HTML.
+ */
+export const HeroView = ({ content: c, isLoading = false }: { content: HeroContent; isLoading?: boolean }) => {
   const isMobile = useIsMobile();
 
   const titleLines: string[] = (c.title_lines || []).map((line: any) => {
@@ -295,4 +295,18 @@ const HeroSection = () => {
   );
 };
 
+/**
+ * HeroSection — public-site data wrapper.
+ *
+ * Reads the published "hero" CMS section and forwards it to <HeroView>.
+ * The split exists so that the admin's three-pane builder can render
+ * <HeroView content={draftHero} /> against unsaved draft state without
+ * duplicating any markup or styling (US 15.1).
+ */
+const HeroSection = () => {
+  const { isLoading, content } = useSiteContentWithStatus<HeroContent>("hero", fallback);
+  return <HeroView content={content} isLoading={isLoading} />;
+};
+
 export default HeroSection;
+
