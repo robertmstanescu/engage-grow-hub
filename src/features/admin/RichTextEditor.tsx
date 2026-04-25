@@ -383,6 +383,20 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     }
   }, [content, htmlMode]);
 
+  // Listen for caret moves anywhere in the document to keep the font /
+  // size dropdowns in sync with the active selection inside this editor.
+  useEffect(() => {
+    const handler = () => {
+      if (!editorRef.current) return;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      if (!editorRef.current.contains(sel.getRangeAt(0).commonAncestorContainer)) return;
+      syncToolbarState();
+    };
+    document.addEventListener("selectionchange", handler);
+    return () => document.removeEventListener("selectionchange", handler);
+  }, [syncToolbarState]);
+
   const ToolbarButton = ({
     onClick, children, title, active,
   }: {
