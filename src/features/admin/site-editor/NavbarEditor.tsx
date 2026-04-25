@@ -1,4 +1,5 @@
 import { Plus, Trash2, GripVertical } from "lucide-react";
+import { DeferredInput } from "./DeferredInput";
 
 interface NavLink {
   label: string;
