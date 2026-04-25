@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { type PageRow } from "@/types/rows";
 import PageBuilderShell from "./PageBuilderShell";
 import RevisionHistoryPanel from "./RevisionHistoryPanel";
+import SchedulePublishPanel from "./SchedulePublishPanel";
 
 interface CmsPageRecord {
   id: string;
@@ -148,6 +149,14 @@ const CmsPageBuilder = ({ pageId }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      schedulePanel={
+        <SchedulePublishPanel
+          entityType="cms_pages"
+          entityId={record.id}
+          entityLabel={record.title || record.slug}
+          hasUnsavedChanges={hasChanges}
+        />
+      }
       inspectorFooter={
         <RevisionHistoryPanel
           entityType="cms_page"

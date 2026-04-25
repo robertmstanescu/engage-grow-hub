@@ -24,6 +24,7 @@ import SelectableWrapper from "./builder/SelectableWrapper";
 // US 16.1 — contextual right-pane inspector, dispatched by activeElement.
 import InspectorPanel from "./inspector/InspectorPanel";
 import RevisionHistoryPanel from "./builder/RevisionHistoryPanel";
+import SiteSectionSchedulePanel from "./builder/SiteSectionSchedulePanel";
 // US 17.1 — draggable widget library (left sidebar).
 import {
   DndContext,
@@ -598,6 +599,10 @@ const SiteEditor = () => {
                 pageRows={pageRows}
                 onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
               />
+              {/* EPIC 10 / US 10.2 — Scheduled Publishing for the active section. */}
+              <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+                <SiteSectionSchedulePanel sectionKey={activeSection} />
+              </div>
               {/* EPIC 10 — Revision History for the active section. Each
                   site_content section has its own revision timeline. */}
               <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>

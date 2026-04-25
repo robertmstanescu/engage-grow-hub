@@ -20,6 +20,7 @@ import {
 } from "@/types/rows";
 import PageBuilderShell from "./PageBuilderShell";
 import RevisionHistoryPanel from "./RevisionHistoryPanel";
+import SchedulePublishPanel from "./SchedulePublishPanel";
 
 interface BlogPostRecord {
   id: string;
@@ -172,6 +173,14 @@ const BlogPostBuilder = ({ postId }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      schedulePanel={
+        <SchedulePublishPanel
+          entityType="blog_posts"
+          entityId={record.id}
+          entityLabel={record.title || record.slug}
+          hasUnsavedChanges={hasChanges}
+        />
+      }
       inspectorFooter={
         <RevisionHistoryPanel
           entityType="blog_post"
