@@ -39,10 +39,6 @@ interface Props {
   onChange: (next: WidgetDesignSettings) => void;
   widgetLabel: string;
 }
-  design: WidgetDesignSettings;
-  onChange: (next: WidgetDesignSettings) => void;
-  widgetLabel: string;
-}
 
 const FIELD_LABEL = "font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block";
 const NUM_INPUT = "w-full px-2 py-1.5 rounded-md font-body text-sm border";
