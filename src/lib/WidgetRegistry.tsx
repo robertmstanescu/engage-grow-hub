@@ -40,6 +40,7 @@
  */
 
 import type { ComponentType, ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
 import type { PageRow } from "@/types/rows";
 
 /**
@@ -77,7 +78,12 @@ export interface WidgetRenderContext {
  *                         display this widget given the standard ctx.
  *                         If omitted, the registry falls back to
  *                         `<frontendComponent row={ctx.row} />`.
- * - `label`             — optional display name for menus.
+ * - `label`             — display name for menus and the Elements Tray.
+ * - `icon`              — Lucide icon shown in the Elements Tray card
+ *                         (US 17.1). Optional — falls back to a generic
+ *                         block glyph when omitted.
+ * - `category`          — optional grouping for the tray ("Layout",
+ *                         "Content", "Media", "Social", …).
  */
 export interface WidgetDefinition<TData = Record<string, any>> {
   type: string;
@@ -89,6 +95,8 @@ export interface WidgetDefinition<TData = Record<string, any>> {
   frontendComponent?: ComponentType<{ row: PageRow }>;
   render?: (ctx: WidgetRenderContext) => ReactNode;
   label?: string;
+  icon?: LucideIcon;
+  category?: string;
 }
 
 /* ──────────────────────────────────────────────────────────────────────
