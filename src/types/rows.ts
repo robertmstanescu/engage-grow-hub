@@ -696,6 +696,22 @@ export const migrateSiteContentRows = <T extends { rows?: any[] } | null | undef
   return { ...(payload as any), rows: migrated } as T;
 };
 
+/**
+ * US 2.2 — Atomic Node Tree normalization.
+ *
+ * Single chokepoint that promotes ANY array of rows (v1 / v2 / v3) into
+ * v3. All renderers downstream MUST call this once at the entry point
+ * so the rest of the rendering engine can drop legacy compatibility
+ * branches and assume 100% PageRowV3 compliance.
+ *
+ * Idempotent + cheap: a v3 row passes through migrateRowToV3 unchanged
+ * with a single instanceof-style check.
+ */
+export const normalizeRowsToV3 = (rows: any[] | null | undefined): PageRowV3[] => {
+  if (!Array.isArray(rows)) return [];
+  return rows.map((r) => migrateRowToV3(r));
+};
+
 /** Get all column contents and their grid widths */
 export const getRowColumns = (row: PageRow) => {
   const contents = [row.content, ...(row.columns_data || [])];
