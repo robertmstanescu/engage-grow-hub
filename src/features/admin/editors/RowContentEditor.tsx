@@ -67,7 +67,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { type PageRow } from "@/types/rows";
+import type { PageRow } from "@/types/rows";
 
 interface Props {
   row: PageRow;

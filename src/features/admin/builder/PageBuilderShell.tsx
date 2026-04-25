@@ -56,7 +56,8 @@ import ElementsTray, {
 } from "./ElementsTray";
 import { parseDropZoneId } from "./CanvasDropZone";
 import { getWidget } from "@/lib/WidgetRegistry";
-import { generateRowId, DEFAULT_ROW_LAYOUT, buildEmptyV3Row, type PageRow } from "@/types/rows";
+import type { PageRow } from "@/types/rows";
+import { generateRowId, DEFAULT_ROW_LAYOUT, buildEmptyV3Row } from "@/lib/constants/rowDefaults";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import InspectorPanel from "../inspector/InspectorPanel";
 import CanvasBreadcrumb from "./CanvasBreadcrumb";

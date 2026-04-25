@@ -14,7 +14,7 @@
  */
 
 import { Plus, Trash2 } from "lucide-react";
-import { DEFAULT_CONTACT_FIELDS } from "@/types/rows";
+import { DEFAULT_CONTACT_FIELDS } from "@/lib/constants/rowDefaults";
 import {
   SectionBox,
   Field,

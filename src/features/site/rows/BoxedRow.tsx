@@ -1,5 +1,5 @@
 import type { PageRow } from "@/types/rows";
-import { DEFAULT_ROW_LAYOUT, getRowColumns, multiColGridStyle } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT, getRowColumns, multiColGridStyle } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
 import SubscribeWidget from "@/features/site/SubscribeWidget";

@@ -25,7 +25,7 @@
  * ───────────────────────────────────────────────────────────────────────── */
 
 import type { PageRow, LogoCloudLogo } from "@/types/rows";
-import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { resolveImageAlt } from "@/services/imageAlt";
 import { sanitizeHtml } from "@/services/sanitize";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";

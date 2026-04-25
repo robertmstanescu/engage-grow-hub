@@ -1,7 +1,7 @@
 import { Settings2 } from "lucide-react";
 import { useState } from "react";
 import type { RowLayout } from "@/types/rows";
-import { DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 
 interface Props {
   layout: RowLayout;

@@ -14,7 +14,7 @@
  */
 
 import { registerWidget } from "@/lib/WidgetRegistry";
-import { DEFAULT_CONTACT_FIELDS } from "@/types/rows";
+import { DEFAULT_CONTACT_FIELDS } from "@/lib/constants/rowDefaults";
 import { Mail } from "lucide-react";
 import ContactAdmin from "./ContactAdmin";
 import ContactFrontend from "./ContactFrontend";

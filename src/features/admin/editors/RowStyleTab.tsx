@@ -54,7 +54,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { DEFAULT_ROW_LAYOUT, type PageRow } from "@/types/rows";
+import type { PageRow } from "@/types/rows";
+import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 
 interface Props {
   row: PageRow;

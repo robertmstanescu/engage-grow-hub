@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Paintbrush, Plus, Trash2 } from "lucide-react";
 import type { GradientConfig, GradientStop, GradientType, RowLayout } from "@/types/rows";
-import { DEFAULT_GRADIENT } from "@/types/rows";
+import { DEFAULT_GRADIENT } from "@/lib/constants/rowDefaults";
 
 interface Props {
   gradient: GradientConfig | undefined;

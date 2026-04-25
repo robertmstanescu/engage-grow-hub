@@ -61,7 +61,7 @@ import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
 import { fetchPublicSiteContentRow } from "@/services/publicSiteContent";
-import { migrateSiteContentRows } from "@/types/rows";
+import { migrateSiteContentRows } from "@/lib/migrations/rowMigrations";
 
 const isPreviewMode = () =>
   typeof window !== "undefined" &&
