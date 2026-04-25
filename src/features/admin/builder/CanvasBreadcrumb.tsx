@@ -105,8 +105,9 @@ const buildCrumbs = (path: NodePath, rows: PageRow[] | undefined): Crumb[] => {
     if (seg === "row" && i + 1 < path.length) {
       const rowId = path[i + 1];
       currentRow = rows?.find((r) => r.id === rowId);
-      const label = currentRow
-        ? ROW_TYPE_LABELS[currentRow.type] || titleCase(currentRow.type)
+      const rowType = typeof currentRow?.type === "string" ? currentRow.type : "";
+      const label = rowType
+        ? ROW_TYPE_LABELS[rowType] || titleCase(rowType) || "Section"
         : "Section";
       crumbs.push({
         label: `Section · ${label}`,
