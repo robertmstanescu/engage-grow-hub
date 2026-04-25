@@ -476,6 +476,138 @@ const RowsManager = ({ rows, onChange }: Props) => {
   );
 };
 
+/* ─────────────────────────────────────────────────────────────────────
+ * WidgetCell — a single droppable cell in the row's column grid.
+ *
+ * Two roles in one component:
+ *   1. DROPPABLE TARGET  — registered via `useDroppable` so the parent
+ *                          DndContext can resolve drops onto the cell
+ *                          itself (critical for EMPTY cells; without
+ *                          this they'd have no `over.id`).
+ *   2. SORTABLE ITEM     — when occupied, the cell ALSO registers as a
+ *                          sortable widget (via `useSortable`) so the
+ *                          user can pick it up and drop it elsewhere.
+ *
+ * Empty cells skip the sortable wrapper and just show the "+ Add Widget"
+ * affordance — there's nothing to pick up, only somewhere to drop into.
+ *
+ * WHY useDroppable on the SAME node when occupied:
+ * `useSortable` already provides droppable semantics for the cell node.
+ * For empty cells we need a separate `useDroppable` (id `cell:...`)
+ * because there is no sortable item to register the area as droppable.
+ * ───────────────────────────────────────────────────────────────────── */
+
+interface WidgetCellProps {
+  rowId: string;
+  rowType: string;
+  colIdx: number;
+  widthPct: number;
+  isActive: boolean;
+  isOccupied: boolean;
+  onActivate: () => void;
+}
+
+const WidgetCell = ({
+  rowId, rowType, colIdx, widthPct, isActive, isOccupied, onActivate,
+}: WidgetCellProps) => {
+  const widgetId = `widget:${rowId}:${colIdx}`;
+  const cellId = `cell:${rowId}:${colIdx}`;
+
+  // Sortable handle ONLY when there's a widget to pick up.
+  const sortable = useSortable({ id: widgetId, disabled: !isOccupied });
+  // Empty cells need an explicit droppable so drops resolve to a target.
+  const dropTarget = useDroppable({ id: cellId, disabled: isOccupied });
+
+  // Pick the right ref/transform pair depending on cell state.
+  const setNodeRef = isOccupied ? sortable.setNodeRef : dropTarget.setNodeRef;
+  const style: React.CSSProperties = isOccupied
+    ? {
+        transform: CSS.Transform.toString(sortable.transform),
+        transition: sortable.transition,
+        opacity: sortable.isDragging ? 0.4 : 1,
+      }
+    : {};
+
+  if (!isOccupied) {
+    return (
+      <button
+        ref={setNodeRef as any}
+        type="button"
+        onClick={onActivate}
+        className="flex flex-col items-center justify-center gap-1 min-h-[88px] rounded-md border-2 border-dashed transition-colors hover:opacity-80"
+        style={{
+          ...style,
+          borderColor: dropTarget.isOver
+            ? "hsl(var(--primary))"
+            : isActive
+              ? "hsl(var(--primary))"
+              : "hsl(var(--primary) / 0.4)",
+          backgroundColor: dropTarget.isOver
+            ? "hsl(var(--primary) / 0.08)"
+            : "hsl(var(--background))",
+          color: "hsl(var(--primary))",
+        }}
+        title={`Column ${colIdx + 1} — Add Widget (drop here)`}
+      >
+        <Plus size={18} />
+        <span className="font-body text-[10px] uppercase tracking-wider">Add Widget</span>
+        <span className="font-body text-[9px] text-muted-foreground">
+          Col {colIdx + 1} · {Math.round(widthPct)}%
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <div
+      ref={setNodeRef as any}
+      style={{
+        ...style,
+        borderColor: isActive ? "hsl(var(--primary))" : "hsl(var(--primary) / 0.4)",
+        backgroundColor: "hsl(var(--background))",
+      }}
+      className="flex items-center gap-2 min-h-[88px] rounded-md border-2 px-2.5 py-2"
+    >
+      {/*
+       * WHY the grip is a separate element (not the whole cell):
+       * dnd-kit listeners on the entire cell would swallow clicks
+       * meant for the "Edit" affordance. Restricting drag activation
+       * to the Grip icon keeps interaction predictable.
+       */}
+      <button
+        type="button"
+        className="cursor-grab active:cursor-grabbing p-1 rounded hover:opacity-70 touch-none flex-shrink-0"
+        style={{ color: "hsl(var(--muted-foreground))" }}
+        {...sortable.attributes}
+        {...sortable.listeners}
+        title="Drag widget"
+        aria-label={`Drag widget in column ${colIdx + 1}`}
+      >
+        <Grip size={14} />
+      </button>
+      <button
+        type="button"
+        onClick={onActivate}
+        className="flex-1 text-left min-w-0"
+        title={`Edit widget in column ${colIdx + 1}`}
+      >
+        <div
+          className="font-body text-[11px] font-medium truncate"
+          style={{ color: "hsl(var(--foreground))" }}
+        >
+          {rowType}
+        </div>
+        <div
+          className="font-body text-[9px] text-muted-foreground"
+          style={{ color: "hsl(var(--muted-foreground))" }}
+        >
+          Col {colIdx + 1} · {Math.round(widthPct)}%
+        </div>
+      </button>
+    </div>
+  );
+};
+
 /* ── Sortable Row Item ── */
 
 interface SortableRowItemProps {
