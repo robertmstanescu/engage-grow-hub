@@ -415,8 +415,22 @@ const RowsManager = ({ rows, onChange }: Props) => {
         </div>
       </div>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={rows.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+      {/*
+       * Single DndContext routes BOTH row sorting AND widget cell-to-cell
+       * moves. Routing happens in `handleDragEnd` by id-prefix.
+       * `closestCenter` works well for both axes; widget moves rely on
+       * the cell droppable being detected when hovering anywhere over it.
+       */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={rows.map((r) => `row:${r.id}`)}
+          strategy={verticalListSortingStrategy}
+        >
           {rows.map((row) => {
             const TypeIcon = ROW_TYPES.find((t) => t.type === row.type)?.icon || Type;
             return (
@@ -438,6 +452,25 @@ const RowsManager = ({ rows, onChange }: Props) => {
             );
           })}
         </SortableContext>
+        {/*
+         * DragOverlay: a translucent ghost following the cursor while
+         * dragging. Important because cells re-mount during cross-row
+         * moves; without an overlay the dragged element can flicker.
+         */}
+        <DragOverlay>
+          {activeDragId ? (
+            <div
+              className="rounded-md border-2 border-dashed px-3 py-2 font-body text-[10px] uppercase tracking-wider shadow-lg"
+              style={{
+                borderColor: "hsl(var(--primary))",
+                backgroundColor: "hsl(var(--background))",
+                color: "hsl(var(--primary))",
+              }}
+            >
+              {activeDragId.startsWith("row:") ? "Moving row…" : "Moving widget…"}
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );
