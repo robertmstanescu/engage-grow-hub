@@ -36,6 +36,21 @@ const useDeferredValue = (externalValue: string, onCommit: (v: string) => void) 
   return { local, setLocal, commit };
 };
 
+/**
+ * US 1.3 — Inspector auto-focus.
+ * Slug a human label ("Stat 1 Value", "Eyebrow", "Title Lines") into a
+ * stable key the canvas-side `useInspectorFocus` hook can target. We
+ * trim trailing digits/words ("Stat 1 Value" → "stat_value") so atomic
+ * leaf names from the canvas (which carry no index info) still match.
+ */
+const slugifyLabel = (label: string): string =>
+  label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+
+
 export const Field = ({
   label,
   value,
