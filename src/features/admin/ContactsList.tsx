@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Linkedin } from "lucide-react";
 import { fetchAllContacts, deleteContact, type ContactRecord } from "@/services/contacts";
-import { runDbAction, runOptimisticAction, handleDatabaseError } from "@/services/db-helpers";
+import { runOptimisticAction, handleDatabaseError } from "@/services/db-helpers";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { toast } from "sonner";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
+import LeadScoreBadge from "./LeadScoreBadge";
 
 const ContactsList = () => {
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
@@ -26,6 +27,9 @@ const ContactsList = () => {
     categoryOf: (c) => (c.subscribed_to_marketing ? "marketing" : "all-others"),
     alphaKey: (c) => c.name.toLowerCase(),
     updatedKey: (c) => c.created_at,
+    // Epic 4 / US 4.3 — power the "Highest Intent" sort. Unscored leads
+    // sink to the bottom (handled inside useListFilters).
+    scoreKey: (c) => c.ai_score,
   });
   const filteredContacts = contactFilters.filteredItems;
 
@@ -87,6 +91,7 @@ const ContactsList = () => {
               state={contactFilters.state}
               searchPlaceholder="Search contacts…"
               formatCategoryLabel={(c) => (c === "marketing" ? "Marketing opt-ins" : "Other")}
+              showScoreSort
             />
           )}
           {filteredContacts.length === 0 ? (
@@ -98,9 +103,26 @@ const ContactsList = () => {
               style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border) / 0.5)" }}>
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>{contact.name}</span>
+                    {/* Epic 4 / US 4.3 — enriched LinkedIn link for rapid manual vetting */}
+                    {contact.linkedin_url && (
+                      <a
+                        href={contact.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="View LinkedIn profile"
+                        aria-label={`View ${contact.name}'s LinkedIn profile`}
+                        className="inline-flex items-center justify-center p-1 rounded hover:opacity-70 transition-opacity"
+                        style={{ color: "hsl(var(--primary))" }}
+                        // Stop propagation so clicking the icon doesn't accidentally trigger any future row-level click handler.
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Linkedin size={13} />
+                      </a>
+                    )}
                     <span className="font-body text-xs text-muted-foreground">{contact.email}</span>
+                    <LeadScoreBadge score={contact.ai_score} />
                     {contact.subscribed_to_marketing && (
                       <span
                         className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full"
