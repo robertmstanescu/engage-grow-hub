@@ -57,6 +57,7 @@ const HeroSection = () => {
    * render so repeat visits feel instant.
    */
   const { isLoading, content: c } = useSiteContentWithStatus<HeroContent>("hero", fallback);
+  const isMobile = useIsMobile();
 
   const titleLines: string[] = (c.title_lines || []).map((line: any) => {
     if (typeof line === "string") return line;
