@@ -2,6 +2,13 @@ import { motion } from "framer-motion";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
+import {
+  buildImageSrcSet,
+  buildPosterUrl,
+  isSupabaseStorageUrl,
+  transformImageUrl,
+  HERO_SRCSET_WIDTHS,
+} from "@/services/mediaOptimization";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -15,6 +22,9 @@ interface HeroContent {
   body: string;
   bg_type?: "none" | "image" | "video";
   bg_url?: string;
+  /** Optional dedicated poster image for video backgrounds. */
+  bg_poster_url?: string;
+  bg_image_alt?: string;
   title_line1?: string;
   title_accent?: string;
   title_line2?: string;
@@ -100,6 +110,14 @@ const HeroSection = () => {
           {/*
             Hero background image — this is almost always the LCP
             (Largest Contentful Paint) element on the homepage.
+            • srcSet/sizes serve the smallest viable rendition for the
+              visitor's viewport. A phone gets ~640px @ ~50KB; a 4K
+              monitor gets 2400px @ ~250KB. The same admin upload
+              powers every device without a manual export step.
+            • Supabase Image Transformations (/render/image/public/)
+              re-encode the original to WebP on the fly, then cache the
+              result at the CDN edge. Non-Supabase URLs (e.g. third-
+              party CDNs) fall back to the raw `src` unchanged.
             • fetchpriority="high" tells the browser to download it
               before non-critical resources, improving Core Web Vitals.
             • decoding="async" keeps decoding off the main thread.
@@ -107,8 +125,14 @@ const HeroSection = () => {
               WANT it to load eagerly. Lazy here would hurt LCP.
           */}
           <img
-            src={c.bg_url}
-            alt=""
+            src={
+              isSupabaseStorageUrl(c.bg_url)
+                ? transformImageUrl(c.bg_url, { width: 1600, quality: 75 })
+                : c.bg_url
+            }
+            srcSet={buildImageSrcSet(c.bg_url) || undefined}
+            sizes={`(max-width: 640px) 100vw, (max-width: 1280px) 100vw, ${HERO_SRCSET_WIDTHS[HERO_SRCSET_WIDTHS.length - 1]}px`}
+            alt={c.bg_image_alt || ""}
             className="w-full h-full object-cover"
             fetchPriority="high"
             decoding="async"
@@ -119,7 +143,31 @@ const HeroSection = () => {
       )}
       {hasBg && c.bg_type === "video" && (
         <div className="absolute inset-0 z-[-1]">
-          <video src={c.bg_url} autoPlay muted loop playsInline className="w-full h-full object-cover" />
+          {/*
+            Hero background video — videos cannot be the LCP element,
+            so we mandate a `poster` attribute. The poster paints
+            instantly (it's a tiny WebP) while the MP4 streams in,
+            avoiding a blank black hero on slow networks. We prefer the
+            admin-supplied `bg_poster_url`; if missing, we synthesise a
+            small WebP from the video URL itself only if it's a
+            Supabase image (videos themselves can't be transcoded by
+            the image-transform endpoint). Falling back to no poster
+            is acceptable but degrades perceived load.
+          */}
+          <video
+            src={c.bg_url}
+            poster={
+              c.bg_poster_url
+                ? buildPosterUrl(c.bg_poster_url)
+                : undefined
+            }
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 bg-black/60" />
         </div>
       )}
