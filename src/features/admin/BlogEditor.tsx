@@ -14,6 +14,7 @@ import { uploadEditorImage } from "@/services/mediaStorage";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
 import LeadMagnetSection from "./LeadMagnetSection";
+import BlogPostBuilder from "./builder/BlogPostBuilder";
 
 const generateSlug = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -308,6 +309,29 @@ const BlogEditor = () => {
             />
           </div>
         </div>
+      </div>
+    );
+  }
+
+  /* ── New builder for existing posts (US 17.x) ── */
+  // Existing posts open in the visual widget builder. New posts still
+  // go through the legacy form below so the admin can set slug, title,
+  // category, cover, etc., before there's a record to attach widgets to.
+  if (editing && !isNew) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>
+            Edit Post · {editing.title}
+          </h2>
+          <button
+            onClick={() => { setEditing(null); setIsNew(false); setPreviewing(false); }}
+            className="font-body text-xs text-muted-foreground hover:opacity-70"
+          >
+            ← Back to posts
+          </button>
+        </div>
+        <BlogPostBuilder postId={editing.id} />
       </div>
     );
   }
