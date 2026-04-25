@@ -112,8 +112,6 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     seoMetaDescription,
     onSeoTitleChange,
     onSeoDescriptionChange,
-    heroContent,
-    onHeroFieldChange,
     pageRows,
     onRowsChange,
   } = props;
