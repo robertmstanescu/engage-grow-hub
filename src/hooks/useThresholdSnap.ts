@@ -65,6 +65,13 @@ export const useThresholdSnap = (
       const currentTopRel = currentRect.top - viewportTop;
       const currentHeight = current.offsetHeight;
 
+      // The LAST section is the gateway to the footer. Once the user
+      // is on it, we stop snapping entirely so the footer remains
+      // freely scrollable. Otherwise the threshold snap would fight
+      // against the user trying to reach footer content below.
+      const isLastSection = currentIdx === sections.length - 1;
+      if (isLastSection) return;
+
       // How far past the top of the current section we've scrolled (px)
       const scrolledIntoCurrent = -currentTopRel;
       const ratio = scrolledIntoCurrent / Math.max(currentHeight, viewportHeight);
