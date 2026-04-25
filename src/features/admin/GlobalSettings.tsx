@@ -12,7 +12,7 @@ interface SectionState {
   draft: Record<string, any>;
 }
 
-const SECTIONS = ["branding", "social_links", "footer", "theme"] as const;
+const SECTIONS = ["social_links", "footer", "theme"] as const;
 
 // No hardcoded brand-specific footer columns. Admins start from a blank
 // slate; the SocialLinksEditor will auto-inject a "Connect" column the
