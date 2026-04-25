@@ -364,6 +364,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       activeElement: pathToLegacyId(activeNodePath),
       setActiveElement,
       commitTextAtPath,
+      pageRows,
     }),
     [
       activeNodePath,
@@ -374,6 +375,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       isPathEditing,
       setActiveElement,
       commitTextAtPath,
+      pageRows,
     ],
   );
 
