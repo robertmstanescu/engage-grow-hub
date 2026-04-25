@@ -92,14 +92,57 @@ const RowRenderer = ({
   align,
   globalMap,
 }: {
-  row: PageRow;
+  row: RenderableRow;
   rowIndex: number;
   align: Alignment;
   globalMap: Map<string, GlobalWidget>;
 }) => {
   const id = row.scope || slugify(row.strip_title);
-  const isService = row.type === "service";
   const vAlign: VAlign = row.layout?.verticalAlign || "middle";
+
+  if (isPageRowV2(row)) {
+    const widths = row.layout?.column_widths || row.columns.map(() => Math.round(100 / Math.max(row.columns.length, 1)));
+    const renderedColumns = row.columns.map((column, columnIndex) => (
+      <div key={column.id} className="min-w-0 space-y-6">
+        {column.widgets.map((widget) => {
+          const legacyRow: PageRow = {
+            id: widget.id,
+            type: widget.type as PageRow["type"],
+            strip_title: row.strip_title,
+            bg_color: row.bg_color,
+            scope: row.scope,
+            layout: row.layout,
+            content: widget.data || {},
+          };
+          return (
+            <RowRenderer
+              key={widget.id}
+              row={legacyRow}
+              rowIndex={rowIndex}
+              align={align}
+              globalMap={globalMap}
+            />
+          );
+        })}
+        {column.widgets.length === 0 && <div className="min-h-24" />}
+      </div>
+    ));
+
+    return (
+      <div id={id} style={{ scrollMarginTop: "4rem", isolation: "isolate" }}>
+        <SelectableWrapper id={`row:${row.id}`} label="Row" variant="row">
+          <div
+            className="grid gap-8"
+            style={{ gridTemplateColumns: widths.map((w) => `${w}fr`).join(" ") }}
+          >
+            {renderedColumns}
+          </div>
+        </SelectableWrapper>
+      </div>
+    );
+  }
+
+  const isService = row.type === "service";
 
   // ── Global Widget reference resolution (US 8.1) ──────────────────
   // If the cell content carries `__global_ref`, we substitute the
