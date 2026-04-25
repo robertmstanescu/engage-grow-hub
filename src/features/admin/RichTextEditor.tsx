@@ -245,23 +245,23 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
         const fonts = Array.from(
           editorRef.current.querySelectorAll('font[size="7"]')
         ) as HTMLElement[];
-        let lastSpan: HTMLSpanElement | null = null;
+        let lastFont: HTMLElement | null = null;
 
         fonts.forEach((font) => {
-          const span = document.createElement("span");
-          span.style.fontSize = fontSize;
-          while (font.firstChild) span.appendChild(font.firstChild);
-          font.parentNode?.replaceChild(span, font);
-          lastSpan = span;
+          // Mutate the existing font tag to preserve the user's cursor selection
+          font.removeAttribute("size");
+          font.style.fontSize = fontSize;
+          // Convert it to a span safely without replacement if possible, or just let the normalizer handle it later
+          lastFont = font;
         });
 
-        // Move the caret into the freshly created span so the toolbar
+        // Move the caret into the freshly mutated node so the toolbar
         // immediately reflects the active size.
-        if (lastSpan) {
+        if (lastFont) {
           const sel = window.getSelection();
           if (sel) {
             const range = document.createRange();
-            range.selectNodeContents(lastSpan);
+            range.selectNodeContents(lastFont);
             range.collapse(false);
             sel.removeAllRanges();
             sel.addRange(range);
