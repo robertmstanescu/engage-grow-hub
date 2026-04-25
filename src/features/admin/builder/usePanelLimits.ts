@@ -1,18 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Debug Story 1.1 — "Unbreakable" panel resizing.
+ * Debug Story 1.1 + 1.2 — "Unbreakable" panel resizing.
  *
  * `react-resizable-panels` only accepts percentage sizes, but our QA contract
  * is expressed in pixels (Left max 300px, Right max 400px, Center min 300px).
  *
  * This hook observes the wrapping PanelGroup container and converts the pixel
  * caps into live percentages so the limits hold no matter how the user resizes
- * the browser. It also exposes a `reset()` helper used by the double-click
- * handler on the resize divider to snap panels back to their default layout.
+ * the browser. It also exposes:
+ *   • `reset()` defaults — for the double-click handler on the resize divider.
+ *   • `stack` — true when the container is too narrow to hold all three panes
+ *     at their minimum widths (Left + Center + Right). When this fires the
+ *     shell must render a vertical stacked/scroll fallback instead of feeding
+ *     impossible percentage constraints to react-resizable-panels (which would
+ *     either over-constrain the layout or throw).
  */
 export interface PanelLimits {
   containerRef: React.RefObject<HTMLDivElement>;
+  /** True when the container is below the minimum 3-pane budget. */
+  stack: boolean;
+  /** Measured container width in CSS pixels (0 until first measurement). */
+  containerWidth: number;
   leftDefault: number;
   leftMin: number;
   leftMax: number;
@@ -68,28 +77,54 @@ export function usePanelLimits(options: Options = {}): PanelLimits {
     return () => ro.disconnect();
   }, []);
 
-  // Until we measure, use safe percentages so SSR/initial paint doesn't blow up.
+  // Minimum pixel budget required to render all three panes side-by-side.
+  // Below this we fall back to a vertical stacked layout (Debug Story 1.2).
+  const stackThreshold = opts.leftMinPx + opts.centerMinPx + opts.rightMinPx;
+
+  // Until we measure, assume a comfortable desktop width so the first paint
+  // doesn't flash a stacked layout.
   const safeWidth = width > 0 ? width : 1200;
+  const stack = width > 0 && width < stackThreshold;
+
   const pct = (px: number) => (px / safeWidth) * 100;
-  const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
+  const clamp = (n: number, lo: number, hi: number) =>
+    Math.max(lo, Math.min(hi, n));
 
   // Hard ceilings driven by pixel caps.
-  const leftMax = clamp(pct(opts.leftMaxPx), 5, 45);
-  const rightMax = clamp(pct(opts.rightMaxPx), 5, 50);
+  const leftMaxRaw = pct(opts.leftMaxPx);
+  const rightMaxRaw = pct(opts.rightMaxPx);
+  const leftMax = clamp(leftMaxRaw, 5, 45);
+  const rightMax = clamp(rightMaxRaw, 5, 50);
 
-  // Floors. The center floor is implied by guaranteeing left+right can never
-  // exceed (100 - centerMinPct), but we also enforce per-panel mins for UX.
-  const leftMin = clamp(pct(opts.leftMinPx), 5, leftMax);
-  const rightMin = clamp(pct(opts.rightMinPx), 5, rightMax);
-  const centerMin = clamp(pct(opts.centerMinPx), 15, 100 - leftMin - rightMin);
+  // Floors. These must remain mutually satisfiable —
+  // leftMin + rightMin + centerMin must NEVER exceed 100, or
+  // react-resizable-panels will warn and the layout will jam.
+  // We compute floors and then deflate proportionally if they overflow.
+  let leftMin = clamp(pct(opts.leftMinPx), 5, leftMax);
+  let rightMin = clamp(pct(opts.rightMinPx), 5, rightMax);
+  let centerMin = Math.max(15, pct(opts.centerMinPx));
+  const totalMin = leftMin + centerMin + rightMin;
+  if (totalMin > 95) {
+    // Deflate proportionally, keeping a 5% safety margin so the user can
+    // still nudge the dividers. (This branch is only hit during the brief
+    // window before we render the stacked fallback in Debug Story 1.2,
+    // but we keep the math safe regardless.)
+    const scale = 95 / totalMin;
+    leftMin *= scale;
+    rightMin *= scale;
+    centerMin *= scale;
+  }
 
-  // Defaults — percentage equivalent of the pixel default, clamped into bounds.
+  // Defaults — percentage equivalent of the pixel default, clamped into
+  // bounds. Center fills whatever's left so the row always sums to 100.
   const leftDefault = clamp(pct(opts.leftDefaultPx), leftMin, leftMax);
   const rightDefault = clamp(pct(opts.rightDefaultPx), rightMin, rightMax);
   const centerDefault = Math.max(centerMin, 100 - leftDefault - rightDefault);
 
   return {
     containerRef,
+    stack,
+    containerWidth: width,
     leftDefault,
     leftMin,
     leftMax,
