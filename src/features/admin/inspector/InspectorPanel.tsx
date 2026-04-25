@@ -10,6 +10,7 @@ import { countRowWidgets } from "../builder/rowWidgetCount";
 import CellSettingsEditor from "./CellSettingsEditor";
 import { type BoxField } from "./BoxModelControl";
 import WidgetInspectorTabs, { pickTabForFocusKey, type InspectorTab } from "./WidgetInspectorTabs";
+import { resolveRowBgColor } from "@/lib/rowForeground";
 import { DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/lib/constants/rowDefaults";
 // Debug Story 1.1 — sibling-safe widget lookup/patch helpers. The
 // inspector cannot just `pageRows.find(r => r.id === widgetId)` because
@@ -345,6 +346,10 @@ const InspectorPanel = (props: InspectorPanelProps) => {
 
     const widgetContent = readWidgetContent(pageRows, loc);
     const widgetType = readWidgetType(pageRows, loc);
+    /* Forward the parent row's resolved background to widget editors so
+     * that nested RichTextEditor surfaces match the live canvas instead
+     * of the white inspector card. */
+    const parentRowBg = resolveRowBgColor(pageRows[loc.rowIdx] as PageRow);
 
     /** Sibling-safe patch: replace ONE field on the targeted widget. */
     const updateWidgetField = (field: string, value: any) => {
@@ -385,7 +390,7 @@ const InspectorPanel = (props: InspectorPanelProps) => {
       : (() => {
           switch (widgetType) {
             case "hero":
-              return <HeroRowFields content={widgetContent} onChange={updateWidgetField} />;
+              return <HeroRowFields content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
             case "service":
               return (
                 <PillarEditor
@@ -393,20 +398,21 @@ const InspectorPanel = (props: InspectorPanelProps) => {
                   servicesContent={{ services: widgetContent.services || [] }}
                   onPillarChange={updateWidgetField}
                   onServicesChange={(svcs) => updateWidgetField("services", svcs)}
+                  bgColor={parentRowBg}
                 />
               );
             case "contact":
               return <ContactAdmin content={widgetContent} onChange={updateWidgetField} />;
             case "image_text":
-              return <ImageTextEditor content={widgetContent} onChange={updateWidgetField} />;
+              return <ImageTextEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
             case "profile":
-              return <ProfileEditor content={widgetContent} onChange={updateWidgetField} />;
+              return <ProfileEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
             case "grid":
-              return <GridEditor content={widgetContent} onChange={updateWidgetField} />;
+              return <GridEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
             case "text":
-              return <TextRowEditor content={widgetContent} onChange={updateWidgetField} />;
+              return <TextRowEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
             case "boxed":
-              return <BoxedRowEditor content={widgetContent} onChange={updateWidgetField} />;
+              return <BoxedRowEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
             case "lead_magnet":
               return <LeadMagnetEditor content={widgetContent} onChange={replaceWidgetContent} />;
             case "logo_cloud":
