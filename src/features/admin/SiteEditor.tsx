@@ -191,44 +191,34 @@ const SiteEditor = () => {
     );
   };
 
+  // Friendly label for the toolbar Save button (active section)
+  const activeSectionLabel =
+    SECTION_NAV.find((s) => s.key === activeSection)?.label ?? "Section";
+
+  // Mobile/tablet canvas constraint (per US 14.2 dev notes — no iframes,
+  // just a max-width swap so the rendered widget tree reflows naturally).
+  const canvasMaxWidth =
+    viewport === "mobile" ? 375 : viewport === "tablet" ? 768 : undefined;
+
   return (
-    <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px] gap-2">
-      {/* ─── Toolbar (above the three panes) ──────────────────────── */}
-      <div className="flex items-center justify-between flex-shrink-0">
-        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>
-          Edit Main Page
-        </h2>
-        <div className="flex items-center gap-2">
-          {hasChanges && (
-            <span
-              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-body text-[11px]"
-              style={{ backgroundColor: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent-foreground))" }}
-            >
-              <FileText size={12} /> Unpublished changes
-            </span>
-          )}
-          <button
-            onClick={openPreview}
-            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
-            style={{ border: "1px solid hsl(var(--border))", color: "hsl(var(--foreground))" }}
-          >
-            <Eye size={13} /> Preview
-          </button>
-          <button
-            onClick={publishAll}
-            disabled={publishing || !hasChanges}
-            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40"
-            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
-          >
-            <Send size={13} /> {publishing ? "Publishing…" : "Publish All"}
-          </button>
-        </div>
-      </div>
+    <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
+      {/* ─── Top toolbar (US 14.2) ────────────────────────────────── */}
+      <AdminBuilderToolbar
+        viewport={viewport}
+        onViewportChange={setViewport}
+        onSaveDraft={() => saveDraft(activeSection)}
+        saving={saving === activeSection}
+        saveLabel={`Save ${activeSectionLabel}`}
+        onPreview={openPreview}
+        onPublish={publishAll}
+        publishing={publishing}
+        hasChanges={hasChanges}
+      />
 
       {/* ─── Three-pane resizable shell ──────────────────────────── */}
       <ResizablePanelGroup
         direction="horizontal"
-        className="flex-1 rounded-lg border overflow-hidden"
+        className="flex-1 border-x border-b overflow-hidden rounded-b-lg"
         style={{ borderColor: "hsl(var(--border) / 0.5)" }}
       >
         {/* LEFT — Library / Navigator (250px default, min 200px) */}
