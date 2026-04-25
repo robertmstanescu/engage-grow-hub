@@ -37,6 +37,11 @@ import ElementsTray, {
   isTrayDragData,
   type TrayDragData,
 } from "./builder/ElementsTray";
+// US 17.2 — drop-target id parsing for tray-sourced drops.
+import { parseDropZoneId } from "./builder/CanvasDropZone";
+// US 17.2 — registry lookup so dropped widgets seed with proper defaults.
+import { getWidget } from "@/lib/WidgetRegistry";
+import { generateRowId, DEFAULT_ROW_LAYOUT } from "@/types/rows";
 
 
 interface SectionData {
@@ -83,6 +88,91 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
   );
 };
 
+/**
+ * BuilderDndShell — owns the `onDragEnd` logic that needs both the
+ * page-rows state AND the selection context (US 17.2). It MUST render
+ * under <BuilderProvider> because it calls `useBuilder()` to auto-
+ * select the freshly-dropped widget. Sensors and the activeDrag
+ * mirror are passed in from <SiteEditor> (they're pure state).
+ */
+interface BuilderDndShellProps {
+  sensors: ReturnType<typeof useSensors>;
+  activeDrag: TrayDragData | null;
+  setActiveDrag: (d: TrayDragData | null) => void;
+  onDragStart: (e: DragStartEvent) => void;
+  pageRows: PageRow[];
+  onRowsChange: (rows: PageRow[]) => void;
+  children: React.ReactNode;
+}
+
+const BuilderDndShell = ({
+  sensors,
+  activeDrag,
+  setActiveDrag,
+  onDragStart,
+  pageRows,
+  onRowsChange,
+  children,
+}: BuilderDndShellProps) => {
+  const { setActiveElement } = useBuilder();
+
+  const handleDragEnd = (e: DragEndEvent) => {
+    const data = e.active.data.current;
+    const overId = e.over?.id;
+    setActiveDrag(null);
+
+    // Bail unless this is a tray-source drag landing on a real target.
+    if (!isTrayDragData(data) || overId == null) return;
+    const drop = parseDropZoneId(overId);
+    if (!drop) return;
+
+    // Look up defaults from the registry — the OCP win: any newly
+    // registered widget automatically becomes droppable, no edits here.
+    const def = getWidget(data.type);
+    if (!def) return;
+
+    const newRow: PageRow = {
+      id: generateRowId(),
+      type: data.type as PageRow["type"],
+      strip_title: data.label || data.type,
+      bg_color: "#FFFFFF",
+      content: { ...(def.defaultData as Record<string, any>) },
+      layout: { ...DEFAULT_ROW_LAYOUT },
+    };
+
+    // Compute insertion index. "before:<rowId>" inserts at that row's
+    // index; "end" appends to the bottom of the page.
+    let insertAt = pageRows.length;
+    if (drop.kind === "before") {
+      const idx = pageRows.findIndex((r) => r.id === drop.rowId);
+      if (idx >= 0) insertAt = idx;
+    }
+    const next = [...pageRows.slice(0, insertAt), newRow, ...pageRows.slice(insertAt)];
+    onRowsChange(next);
+
+    // Auto-select the new widget so the right Inspector instantly
+    // opens its editor (per the AC spec).
+    setActiveElement(`widget:${newRow.id}`);
+  };
+
+  return (
+    <DndContext
+      sensors={sensors}
+      onDragStart={onDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setActiveDrag(null)}
+    >
+      {children}
+      {/* Floating drag preview — rendered into a portal by dnd-kit so it
+          escapes the sidebar's overflow:hidden and follows the cursor
+          across the entire viewport. */}
+      <DragOverlay dropAnimation={null}>
+        {activeDrag ? <TrayDragPreview data={activeDrag} /> : null}
+      </DragOverlay>
+    </DndContext>
+  );
+};
+
 const SiteEditor = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [activeSection, setActiveSection] = useState<"hero" | "page_rows" | "main_page_seo">("hero");
@@ -97,11 +187,18 @@ const SiteEditor = () => {
   // Default to preview because that's the whole point of US 15.1.
   const [canvasMode, setCanvasMode] = useState<"preview" | "edit">("preview");
 
-  /* ─── US 17.1 — drag-and-drop (Elements Tray → canvas) ──────────
+  /* ─── US 17.1 / 17.2 — drag-and-drop (Elements Tray → canvas) ──
    * Sensors with a small activation distance prevent accidental
    * drags when an editor merely clicks a tray card. The active
    * payload is mirrored into local state so the <DragOverlay> can
-   * render a styled floating preview that follows the cursor. */
+   * render a styled floating preview that follows the cursor.
+   *
+   * The actual drop handler lives in <BuilderDndShell> below — it
+   * needs `useBuilder()` (to auto-select the freshly-dropped widget),
+   * which means it must render UNDER <BuilderProvider>. We hoist
+   * sensors + the activeDrag mirror up here because both pieces are
+   * pure state and don't need provider access.
+   */
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
   );
@@ -110,11 +207,6 @@ const SiteEditor = () => {
   const handleDragStart = (e: DragStartEvent) => {
     const data = e.active.data.current;
     if (isTrayDragData(data)) setActiveDrag(data);
-  };
-  const handleDragEnd = (_e: DragEndEvent) => {
-    // US 17.2 will turn a drop on the canvas into a real new row.
-    // For 17.1 we just clear the preview state.
-    setActiveDrag(null);
   };
 
   useEffect(() => {
@@ -341,15 +433,17 @@ const SiteEditor = () => {
 
   return (
     <BuilderProvider>
-      {/* US 17.1 — single DndContext at the top of the builder so that
-          tray drags (left sidebar) and any future canvas-side targets
-          share one drag session. The DragOverlay renders the floating
-          ghost preview that follows the cursor across the whole screen. */}
-      <DndContext
+      {/* US 17.1 / 17.2 — single DndContext at the top of the builder so
+          tray drags (left sidebar) and canvas drop targets share one
+          drag session. The drop handler lives in <BuilderDndShell> so
+          it can call useBuilder() to auto-select the new widget. */}
+      <BuilderDndShell
         sensors={sensors}
+        activeDrag={activeDrag}
+        setActiveDrag={setActiveDrag}
         onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragCancel={() => setActiveDrag(null)}
+        pageRows={pageRows}
+        onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
       >
       <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
       {/* ─── Top toolbar (US 14.2 + US 16.2) ──────────────────────────
@@ -553,13 +647,7 @@ const SiteEditor = () => {
       </ResizablePanelGroup>
       </div>
 
-      {/* Floating drag preview — rendered into a portal by dnd-kit so it
-          escapes the sidebar's overflow:hidden and follows the cursor
-          across the entire viewport. */}
-      <DragOverlay dropAnimation={null}>
-        {activeDrag ? <TrayDragPreview data={activeDrag} /> : null}
-      </DragOverlay>
-      </DndContext>
+      </BuilderDndShell>
     </BuilderProvider>
   );
 };

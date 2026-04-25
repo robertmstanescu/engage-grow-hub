@@ -8,6 +8,9 @@ import { useGlobalWidgetMap, type GlobalWidget } from "@/hooks/useGlobalWidgets"
 // the BuilderProvider is absent, so SelectableWrapper renders as a
 // no-op fragment (zero DOM, zero perf cost). See SelectableWrapper.tsx.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
+// US 17.2 — drop targets between rows for tray-sourced widgets.
+// Renders nothing on the public site (no BuilderProvider above the tree).
+import CanvasDropZone from "@/features/admin/builder/CanvasDropZone";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -188,13 +191,24 @@ export const RowsRenderer = ({
         if (index === lastIndex && footerSlot) {
           return (
             <div key={row.id} className="snap-section">
+              {/* US 17.2 — insertion point BEFORE this row */}
+              <CanvasDropZone position={{ kind: "before", rowId: row.id }} />
               {rendered}
               {footerSlot}
             </div>
           );
         }
-        return rendered;
+        return (
+          <div key={row.id}>
+            {/* US 17.2 — insertion point BEFORE this row */}
+            <CanvasDropZone position={{ kind: "before", rowId: row.id }} />
+            {rendered}
+          </div>
+        );
       })}
+      {/* US 17.2 — final insertion point at the END of the page so
+          editors can always append a fresh widget at the bottom. */}
+      <CanvasDropZone position={{ kind: "end" }} />
       {/* Fallback if no rows */}
       {rows.length === 0 && footerSlot}
     </>
