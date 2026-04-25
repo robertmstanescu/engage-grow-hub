@@ -356,9 +356,156 @@ export interface PageWidget<TType extends string = WidgetType> {
   data: Record<string, any>;
 }
 
+/* ─────────────────────────────────────────────────────────────────────
+ * CELL NODE — User Story 1.2 ("LumApps-style Cell Management")
+ * ─────────────────────────────────────────────────────────────────────
+ * A Cell is a layout container that lives BETWEEN a Column and its
+ * Widgets. It owns its OWN visual chrome (background, border, padding,
+ * radius), its OWN flex/grid layout (vertical or horizontal stack of
+ * widgets, alignment, gap) and an OPTIONAL grid span so a single cell
+ * can span multiple columns or rows.
+ *
+ *   PageRowV3
+ *     └── columns: PageColumn[]            // 1..N columns per row
+ *           └── cells: PageCell[]          // 1..N cells per column
+ *                 └── widgets: PageWidget[] // 0..N widgets per cell
+ *                       └── { type, data } // a single content unit
+ *
+ * Why a discrete Cell?
+ * ────────────────────
+ * Treating the cell as its own node — instead of cramming layout props
+ * onto either the Column or the Widget — means:
+ *   • Columns stay PURE (they only describe the page-grid distribution).
+ *   • Widgets stay PURE (they only describe content).
+ *   • Designers can drop a widget INSIDE a styled box (the cell) without
+ *     polluting either side. This is exactly the LumApps / Webflow
+ *     mental model.
+ *
+ * Empty cells stay valid (`widgets: []`) and the renderer paints a
+ * "+" placeholder so editors can drag/drop a widget into them.
+ * ───────────────────────────────────────────────────────────────────── */
+
+export type CellDirection = "vertical" | "horizontal";
+export type CellVAlign = "top" | "middle" | "bottom" | "stretch";
+export type CellHAlign = "left" | "center" | "right" | "stretch";
+
+export interface PageCellLayout {
+  /** Stack widgets vertically (default) or horizontally inside the cell. */
+  direction: CellDirection;
+  /** Cross-axis alignment of widgets inside the cell. */
+  verticalAlign: CellVAlign;
+  /** Main-axis distribution of widgets inside the cell. */
+  justify: CellHAlign;
+  /** Gap between widgets in px. */
+  gap: number;
+  /** Inner padding in px (top/right/bottom/left). */
+  paddingTop: number;
+  paddingRight: number;
+  paddingBottom: number;
+  paddingLeft: number;
+  /** Optional minimum height in px. 0 = auto. */
+  minHeight: number;
+}
+
+export interface PageCellStyle {
+  /** Background colour. Empty = transparent. */
+  bgColor: string;
+  /** Border radius (px). */
+  borderRadius: number;
+  /** Border colour. Empty = none. */
+  borderColor: string;
+  /** Border width (px). */
+  borderWidth: number;
+  /** Optional custom CSS class appended to the cell wrapper. */
+  customClass: string;
+  /**
+   * Scoped custom CSS (Epic 2). The `&` token is rewritten to
+   * `.cell-scope-<id>` so rules cannot leak outside this cell.
+   * Empty string = no injection.
+   */
+  customCss: string;
+}
+
+export interface PageCellSpan {
+  /** Column-span — how many GRID columns this cell occupies. 1 = none. */
+  col: number;
+  /** Row-span — how many GRID rows this cell occupies. 1 = none. */
+  row: number;
+}
+
+export interface PageCell {
+  id: string;
+  layout: PageCellLayout;
+  style: PageCellStyle;
+  span: PageCellSpan;
+  widgets: PageWidget[];
+}
+
+export const DEFAULT_CELL_LAYOUT: PageCellLayout = {
+  direction: "vertical",
+  verticalAlign: "top",
+  justify: "stretch",
+  gap: 24,
+  paddingTop: 0,
+  paddingRight: 0,
+  paddingBottom: 0,
+  paddingLeft: 0,
+  minHeight: 0,
+};
+
+export const DEFAULT_CELL_STYLE: PageCellStyle = {
+  bgColor: "",
+  borderRadius: 0,
+  borderColor: "",
+  borderWidth: 0,
+  customClass: "",
+  customCss: "",
+};
+
+export const DEFAULT_CELL_SPAN: PageCellSpan = { col: 1, row: 1 };
+
+/** Build an empty cell (no widgets) with all defaults. */
+export const buildEmptyCell = (): PageCell => ({
+  id: generateRowId(),
+  layout: { ...DEFAULT_CELL_LAYOUT },
+  style: { ...DEFAULT_CELL_STYLE },
+  span: { ...DEFAULT_CELL_SPAN },
+  widgets: [],
+});
+
+/**
+ * Read a cell's layout/style/span, merging over defaults so callers
+ * always receive a complete shape (defends against partial JSON, just
+ * like `readDesignSettings`).
+ */
+export const readCellLayout = (cell?: Partial<PageCell> | null): PageCellLayout => ({
+  ...DEFAULT_CELL_LAYOUT,
+  ...(cell?.layout || {}),
+});
+export const readCellStyle = (cell?: Partial<PageCell> | null): PageCellStyle => ({
+  ...DEFAULT_CELL_STYLE,
+  ...(cell?.style || {}),
+});
+export const readCellSpan = (cell?: Partial<PageCell> | null): PageCellSpan => ({
+  ...DEFAULT_CELL_SPAN,
+  ...(cell?.span || {}),
+});
+
 export interface PageColumn {
   id: string;
-  widgets: PageWidget[];
+  /**
+   * v3: columns hold CELLS, not raw widgets. The `cell_direction`
+   * controls whether multiple cells stack vertically or sit side-by-side
+   * horizontally inside the column.
+   */
+  cell_direction?: CellDirection;
+  cells?: PageCell[];
+  /**
+   * v2 BACKWARDS-COMPAT — older columns expose `widgets` directly.
+   * `migrateRowToV3()` turns those into a single cell. Keep the field
+   * optional so historical JSON deserialises without crashing.
+   */
+  widgets?: PageWidget[];
 }
 
 export type ColumnLayoutPreset =
@@ -374,20 +521,37 @@ export type ColumnLayoutPreset =
 
 export interface PageRowV2 {
   id: string;
-  /** Schema version marker so the migration is idempotent. */
+  /** Schema version marker. v2 = columns hold widgets directly. */
   schema_version: 2;
   strip_title: string;
   bg_color: string;
   scope?: string;
   layout?: RowLayout;
-  /** Column distribution preset (or "custom" when widths drive it). */
   column_layout: ColumnLayoutPreset;
   columns: PageColumn[];
 }
 
-/** Type guard — true when a row already uses the v2 nested shape. */
-export const isPageRowV2 = (row: any): row is PageRowV2 =>
-  !!row && row.schema_version === 2 && Array.isArray(row.columns);
+export interface PageRowV3 {
+  id: string;
+  /** Schema version marker. v3 = columns hold cells, cells hold widgets. */
+  schema_version: 3;
+  strip_title: string;
+  bg_color: string;
+  scope?: string;
+  layout?: RowLayout;
+  column_layout: ColumnLayoutPreset;
+  columns: PageColumn[];
+  /** Custom CSS scoped to this row (Epic 2 — US 2.2). */
+  customCss?: string;
+}
+
+/** Type guard — true when a row already uses the v2+ nested shape. */
+export const isPageRowV2 = (row: any): row is PageRowV2 | PageRowV3 =>
+  !!row && (row.schema_version === 2 || row.schema_version === 3) && Array.isArray(row.columns);
+
+/** Type guard — true when a row uses the v3 shape (cells exist). */
+export const isPageRowV3 = (row: any): row is PageRowV3 =>
+  !!row && row.schema_version === 3 && Array.isArray(row.columns);
 
 /** Derive a `ColumnLayoutPreset` token from numeric widths. */
 const widthsToPreset = (widths: number[]): ColumnLayoutPreset => {
@@ -406,11 +570,11 @@ const widthsToPreset = (widths: number[]): ColumnLayoutPreset => {
 };
 
 /**
- * Migrate a legacy `PageRow` to the new nested `PageRowV2` shape.
+ * Migrate a legacy `PageRow` to v2 (columns hold widgets directly).
  * Lossless: the row's `content` (and any `columns_data`) become widgets
  * inside the corresponding columns, preserving the original `type`.
  */
-export const migrateRowToV2 = (row: PageRow | PageRowV2): PageRowV2 => {
+export const migrateRowToV2 = (row: PageRow | PageRowV2 | PageRowV3): PageRowV2 | PageRowV3 => {
   if (isPageRowV2(row)) return row;
 
   const legacy = row as PageRow;
@@ -439,6 +603,53 @@ export const migrateRowToV2 = (row: PageRow | PageRowV2): PageRowV2 => {
     layout: legacy.layout,
     column_layout: widthsToPreset(widths),
     columns,
+  };
+};
+
+/**
+ * Migrate ANY row shape (v1 / v2 / v3) into v3, where columns own cells
+ * and cells own widgets.
+ *
+ * Idempotent: a v3 row passes straight through. v2 rows have each
+ * column's `widgets[]` rewrapped into a single PageCell (preserving
+ * widget ids and order). v1 rows are first promoted to v2, then to v3.
+ */
+export const migrateRowToV3 = (row: PageRow | PageRowV2 | PageRowV3): PageRowV3 => {
+  if (isPageRowV3(row)) return row;
+  const v2 = migrateRowToV2(row) as PageRowV2;
+
+  const columns: PageColumn[] = v2.columns.map((col) => {
+    // If a column already carries `cells`, keep them; otherwise wrap
+    // its widgets into a single default cell.
+    if (Array.isArray((col as any).cells) && (col as any).cells.length > 0) {
+      return {
+        id: col.id,
+        cell_direction: (col as any).cell_direction || "vertical",
+        cells: (col as any).cells,
+      };
+    }
+    return {
+      id: col.id,
+      cell_direction: "vertical",
+      cells: [
+        {
+          ...buildEmptyCell(),
+          widgets: col.widgets || [],
+        },
+      ],
+    };
+  });
+
+  return {
+    id: v2.id,
+    schema_version: 3,
+    strip_title: v2.strip_title,
+    bg_color: v2.bg_color,
+    scope: v2.scope,
+    layout: v2.layout,
+    column_layout: v2.column_layout,
+    columns,
+    customCss: (row as any).customCss,
   };
 };
 
