@@ -77,9 +77,11 @@ const computeAutoAlignments = (rows: RenderableRow[]): Alignment[] => {
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const rowType = isPageRowV2(row) ? row.columns[0]?.widgets[0]?.type : row.type;
+    const rowType = isPageRowV2(row) ? firstWidgetTypeInLayoutRow(row) : row.type;
     const prev = i > 0 ? rows[i - 1] : null;
-    const prevType = prev ? (isPageRowV2(prev) ? prev.columns[0]?.widgets[0]?.type : prev.type) : null;
+    const prevType = prev
+      ? (isPageRowV2(prev) ? firstWidgetTypeInLayoutRow(prev) : prev.type)
+      : null;
     const isPillar = rowType === "service";
     const prevWasPillar = prevType === "service";
 
