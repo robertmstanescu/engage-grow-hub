@@ -29,7 +29,6 @@ import usePageMeta from "@/hooks/usePageMeta";
  */
 const Index = () => {
   const seo = useSiteContent<{ meta_title: string; meta_description: string }>("main_page_seo", { meta_title: "", meta_description: "" });
-  const hero = useSiteContent<Record<string, any>>("hero", {});
 
   usePageMeta({
     title: seo.meta_title || undefined,
@@ -39,7 +38,9 @@ const Index = () => {
   return (
     <div className="snap-container lg:pl-16">
       <Navbar />
-      <PageRows heroContent={hero} footerSlot={<Footer />} />
+      {/* US 2.1 — Hero is now an ordinary widget at page_rows[0]; no
+          isolated heroContent prop or HeroSection injection. */}
+      <PageRows footerSlot={<Footer />} />
     </div>
   );
 };

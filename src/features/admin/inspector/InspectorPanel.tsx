@@ -24,7 +24,8 @@ import {
 
 // Section editors (re-used from the legacy form-driven UI). The Inspector
 // is just a NEW HOST for these — the editors themselves are unchanged.
-import HeroEditor from "../site-editor/HeroEditor";
+// US 2.1 — HeroEditor is no longer imported at the top: hero is reached
+// only through the widget-fallback map below (HeroRowFields alias).
 import SeoFields from "../site-editor/SeoFields";
 import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
 import ColumnWidthControl from "../site-editor/ColumnWidthControl";
@@ -67,9 +68,9 @@ export interface InspectorPanelProps {
   onSeoTitleChange: (v: string) => void;
   onSeoDescriptionChange: (v: string) => void;
 
-  // Hero (special-cased single section) ------------------------------
-  heroContent: Record<string, any>;
-  onHeroFieldChange: (field: string, value: any) => void;
+  // US 2.1 — Hero is no longer a special section; it lives in pageRows
+  // as an ordinary widget at index 0. The widget-editor branch picks it
+  // up via the `case "hero"` row-type fallback.
 
   // Page rows (the visual canvas) ------------------------------------
   pageRows: PageRow[];
@@ -112,8 +113,6 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     seoMetaDescription,
     onSeoTitleChange,
     onSeoDescriptionChange,
-    heroContent,
-    onHeroFieldChange,
     pageRows,
     onRowsChange,
   } = props;
@@ -161,14 +160,10 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     );
   }
 
-  /* ─── Special case — Hero section ─────────────────────────────── */
-  if (activeElement === "hero") {
-    return (
-      <Section title="Hero Section">
-        <HeroEditor content={heroContent} onChange={onHeroFieldChange} />
-      </Section>
-    );
-  }
+  /* US 2.1 — The "hero" special-case branch is gone. Hero is now an
+   * ordinary widget at page_rows[0]; selecting it routes through the
+   * `widget:<id>` branch which calls `<HeroRowFields/>` via the
+   * row-type fallback at the bottom of this component. */
 
   /* ─── State 4 — Cell selected → Cell Settings ─────────────────
    * activeElement looks like `cell:<rowId>:<colId>:<cellId>`. The

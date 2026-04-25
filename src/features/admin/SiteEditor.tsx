@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Layout, Image as ImageIcon, Search, Eye, Pencil } from "lucide-react";
+import { Layout, Search, Eye, Pencil } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
-import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
 import SeoFields from "./site-editor/SeoFields";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
@@ -18,12 +17,10 @@ import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuild
 import CanvasViewport from "./site-editor/CanvasViewport";
 // US 15.1 — render the SAME components the public site renders, against
 // the in-memory draft content. WYSIWYG, no markup duplication.
-import { HeroView } from "@/features/site/HeroSection";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 // US 15.2 — selection state for the visual canvas.
 import { BuilderProvider, useBuilder } from "./builder/BuilderContext";
 import CanvasBreadcrumb from "./builder/CanvasBreadcrumb";
-import SelectableWrapper from "./builder/SelectableWrapper";
 // US 16.1 — contextual right-pane inspector, dispatched by activeElement.
 import InspectorPanel from "./inspector/InspectorPanel";
 import RevisionHistoryPanel from "./builder/RevisionHistoryPanel";
@@ -78,8 +75,11 @@ interface SectionData {
  * the right — mirroring Webflow / Figma. Inner widget editors are unchanged
  * in this story; only the outer shell is rebuilt (US 14.1).
  */
-const SECTION_NAV: { key: "hero" | "page_rows" | "main_page_seo"; label: string; Icon: any }[] = [
-  { key: "hero", label: "Hero Section", Icon: ImageIcon },
+/* US 2.1 — The "hero" entry is gone. Hero is now an ordinary widget
+ * at page_rows[0]; no separate left-rail tab and no separate Supabase
+ * section. The remaining sections are page_rows (the canvas) and
+ * main_page_seo (page-wide metadata). */
+const SECTION_NAV: { key: "page_rows" | "main_page_seo"; label: string; Icon: any }[] = [
   { key: "page_rows", label: "Page Rows", Icon: Layout },
   { key: "main_page_seo", label: "SEO & Metadata", Icon: Search },
 ];
@@ -211,7 +211,7 @@ const SNAP_BACK_ANIMATION: DropAnimation = {
 
 const SiteEditor = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
-  const [activeSection, setActiveSection] = useState<"hero" | "page_rows" | "main_page_seo">("hero");
+  const [activeSection, setActiveSection] = useState<"page_rows" | "main_page_seo">("page_rows");
   const [saving, setSaving] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
   // US 14.2 — viewport simulation. Drives a max-width on the canvas wrapper.
@@ -263,7 +263,7 @@ const SiteEditor = () => {
     const { data } = await supabase
       .from("site_content")
       .select("section_key, content, draft_content")
-      .in("section_key", ["hero", "page_rows", "main_page_seo"]) as any;
+      .in("section_key", ["page_rows", "main_page_seo"]) as any;
     if (data) {
       const mapped = data.map((s: any) => ({
         section_key: s.section_key,
@@ -438,26 +438,9 @@ const SiteEditor = () => {
   //                 actions that don't have inline-canvas equivalents
   //                 yet (a later epic will move these inline).
   const renderCanvas = () => {
-    if (activeSection === "hero") {
-      if (canvasMode === "preview") {
-        // HeroView is a PURE component (US 15.1). Wrapped in
-        // SelectableWrapper (US 15.2) so editors can target it.
-        // The BuilderProvider lives at the top level of SiteEditor
-        // (US 16.1) so the right-pane Inspector shares selection state.
-        return (
-          <CanvasSelectionSurface>
-            <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
-              <SelectableWrapper id="hero" label="Hero" variant="row">
-                <HeroView content={getDraft("hero") as any} />
-              </SelectableWrapper>
-            </div>
-          </CanvasSelectionSurface>
-        );
-      }
-      return (
-        <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
-      );
-    }
+    /* US 2.1 — The dedicated "hero" canvas branch is gone. Hero is
+     * rendered alongside everything else by RowsRenderer because it now
+     * lives at page_rows[0]. */
     if (activeSection === "page_rows") {
       if (canvasMode === "preview") {
         // RowsRenderer is the same component the public site uses (via
@@ -493,7 +476,7 @@ const SiteEditor = () => {
   };
 
   // Preview/Edit toggle is hidden for SEO (no visual rep).
-  const supportsPreview = activeSection === "hero" || activeSection === "page_rows";
+  const supportsPreview = activeSection === "page_rows";
 
   // ─── Viewport simulation (US 14.2, hardened) ────────────────────
   // PROBLEM with the previous max-width-only approach: tailwind's `md:`
@@ -654,8 +637,6 @@ const SiteEditor = () => {
                   seoMetaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
                   onSeoTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
                   onSeoDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                  heroContent={getDraft("hero")}
-                  onHeroFieldChange={(f, v) => updateField("hero", f, v)}
                   pageRows={pageRows}
                   onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
                 />
