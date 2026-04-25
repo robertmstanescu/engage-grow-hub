@@ -9,6 +9,10 @@ import { useBuilder } from "@/features/admin/builder/BuilderContext";
 import { computeAutoAlignments, resolveAlignment } from "@/lib/layoutUtils";
 import RowRenderer from "./RowRenderer";
 
+// Re-export so existing widget renderers (BoxedRow, ServiceRow, …) can
+// keep importing alignment types from this module.
+export type { Alignment, VAlign } from "@/lib/layoutUtils";
+
 /**
  * Pure renderer that paints an array of rows. The caller decides where
  * the rows come from (DB content, admin draft, preview snapshot, …).
