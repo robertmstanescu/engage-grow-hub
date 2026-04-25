@@ -51,15 +51,18 @@ export type VAlign = "top" | "middle" | "bottom";
  * - After a group of pillar rows, resume with the opposite of the pre-pillar alignment.
  * - All other rows alternate left/right.
  */
-const computeAutoAlignments = (rows: PageRow[]): Alignment[] => {
+const computeAutoAlignments = (rows: RenderableRow[]): Alignment[] => {
   const alignments: Alignment[] = [];
   let current: Alignment = "left";
   let prePillar: Alignment | null = null;
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const isPillar = row.type === "service";
-    const prevWasPillar = i > 0 && rows[i - 1].type === "service";
+    const rowType = isPageRowV2(row) ? row.columns[0]?.widgets[0]?.type : row.type;
+    const prev = i > 0 ? rows[i - 1] : null;
+    const prevType = prev ? (isPageRowV2(prev) ? prev.columns[0]?.widgets[0]?.type : prev.type) : null;
+    const isPillar = rowType === "service";
+    const prevWasPillar = prevType === "service";
 
     if (isPillar) {
       // Service rows default to "center" in auto mode
@@ -77,7 +80,7 @@ const computeAutoAlignments = (rows: PageRow[]): Alignment[] => {
   return alignments;
 };
 
-const resolveAlignment = (row: PageRow, autoAlign: Alignment): Alignment => {
+const resolveAlignment = (row: RenderableRow, autoAlign: Alignment): Alignment => {
   const explicit = row.layout?.alignment;
   if (explicit && explicit !== "auto") return explicit;
   return autoAlign;
