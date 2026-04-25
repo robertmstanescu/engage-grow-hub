@@ -130,6 +130,58 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     );
   }
 
+  /* ─── State 4 — Cell selected → Cell Settings ─────────────────
+   * activeElement looks like `cell:<rowId>:<colId>:<cellId>`. The
+   * BuilderContext is the canonical source of this shorthand, so the
+   * parser here is intentionally narrow — anything else falls through
+   * to the row/widget branches below. */
+  if (activeElement.startsWith("cell:")) {
+    const [, cRowId, colId, cellId] = activeElement.split(":");
+    const cellRow = pageRows.find((r) => r.id === cRowId) as any;
+    if (!cellRow || !Array.isArray(cellRow.columns)) {
+      return (
+        <EmptyHint>
+          The selected cell no longer exists. Click anywhere on the canvas to clear the selection.
+        </EmptyHint>
+      );
+    }
+    const column = cellRow.columns.find((c: any) => c.id === colId);
+    const cell = column?.cells?.find((c: any) => c.id === cellId);
+    if (!column || !cell) {
+      return (
+        <EmptyHint>
+          The selected cell was removed. Pick another cell or click empty canvas to clear.
+        </EmptyHint>
+      );
+    }
+
+    const onCellChange = (patch: Partial<typeof cell>) => {
+      onRowsChange(
+        pageRows.map((r: any) => {
+          if (r.id !== cRowId || !Array.isArray(r.columns)) return r;
+          return {
+            ...r,
+            columns: r.columns.map((col: any) => {
+              if (col.id !== colId) return col;
+              return {
+                ...col,
+                cells: (col.cells || []).map((cc: any) =>
+                  cc.id === cellId ? { ...cc, ...patch } : cc,
+                ),
+              };
+            }),
+          };
+        }),
+      );
+    };
+
+    return (
+      <Section title="Cell Settings">
+        <CellSettingsEditor cell={cell} onChange={onCellChange} />
+      </Section>
+    );
+  }
+
   /* ─── Parse the selection id (`row:<id>` or `widget:<id>`) ───── */
   const [kind, rowId] = activeElement.split(":");
   const row = pageRows.find((r) => r.id === rowId);
