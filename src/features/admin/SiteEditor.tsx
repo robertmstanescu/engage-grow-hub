@@ -17,6 +17,9 @@ import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuild
 // the in-memory draft content. WYSIWYG, no markup duplication.
 import { HeroView } from "@/features/site/HeroSection";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
+// US 15.2 — selection state for the visual canvas.
+import { BuilderProvider, useBuilder } from "./builder/BuilderContext";
+import SelectableWrapper from "./builder/SelectableWrapper";
 
 interface SectionData {
   section_key: string;
