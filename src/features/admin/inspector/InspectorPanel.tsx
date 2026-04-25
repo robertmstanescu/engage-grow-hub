@@ -106,6 +106,25 @@ const InspectorPanel = (props: InspectorPanelProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   useInspectorFocus(containerRef);
 
+  /* US 2.5 — controlled tab state for the per-widget inspector. We
+   * auto-switch to the tab that hosts the field US 1.3 wants to focus
+   * (e.g. clicking the green border in the canvas pings borderRadius,
+   * which lives in Design — flip the tab BEFORE the focus hook runs so
+   * it can scroll/flash the input). */
+  const { activeNodePath } = useBuilder();
+  const [widgetTab, setWidgetTab] = useState<InspectorTab>("content");
+  const focusLeaf = useMemo(() => {
+    const tail = activeNodePath?.slice(4) ?? [];
+    if (tail.length === 0) return null;
+    if (tail[0] === "field" && tail.length >= 2) return tail[1];
+    if (tail[0] === "item" && tail.length >= 3) return `item:${tail[1]}:${tail[2]}`;
+    return tail[tail.length - 1] || null;
+  }, [activeNodePath]);
+  useEffect(() => {
+    const target = pickTabForFocusKey(focusLeaf);
+    setWidgetTab(target);
+  }, [focusLeaf, activeElement]);
+
   const renderBody = () => {
 
   /* ─── State 1 — nothing selected → page SEO settings ─────────── */
