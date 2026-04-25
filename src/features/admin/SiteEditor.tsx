@@ -137,6 +137,16 @@ const BuilderDndShell = ({
     const overId = e.over?.id;
     setActiveDrag(null);
 
+    if (isSectionNavDragData(data) && typeof overId === "string" && overId.startsWith("section-row:")) {
+      const overRowId = overId.replace("section-row:", "");
+      if (data.rowId !== overRowId) {
+        const oldIndex = pageRows.findIndex((row) => row.id === data.rowId);
+        const newIndex = pageRows.findIndex((row) => row.id === overRowId);
+        if (oldIndex >= 0 && newIndex >= 0) onRowsChange(arrayMove(pageRows, oldIndex, newIndex));
+      }
+      return;
+    }
+
     // Debug Story 2.1 — "Abyss Test". Reject every drop that is not on
     // a registered CanvasDropZone. parseDropZoneId returns null for:
     //   • drops on the toolbar / inspector / library (no `over`)
