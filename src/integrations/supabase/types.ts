@@ -214,6 +214,7 @@ export type Database = {
       }
       contacts: {
         Row: {
+          attribution: Json | null
           company: string | null
           created_at: string
           email: string
@@ -223,6 +224,7 @@ export type Database = {
           subscribed_to_marketing: boolean
         }
         Insert: {
+          attribution?: Json | null
           company?: string | null
           created_at?: string
           email: string
@@ -232,6 +234,7 @@ export type Database = {
           subscribed_to_marketing?: boolean
         }
         Update: {
+          attribution?: Json | null
           company?: string | null
           created_at?: string
           email?: string
@@ -415,6 +418,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          attribution: Json | null
           company_university: string
           created_at: string
           download_history: string[]
@@ -426,6 +430,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attribution?: Json | null
           company_university: string
           created_at?: string
           download_history?: string[]
@@ -437,6 +442,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attribution?: Json | null
           company_university?: string
           created_at?: string
           download_history?: string[]
@@ -647,6 +653,7 @@ export type Database = {
       }
       unified_analytics_logs: {
         Row: {
+          attribution: Json | null
           browser: string | null
           category: string
           country: string | null
@@ -667,6 +674,7 @@ export type Database = {
           visitor_id: string | null
         }
         Insert: {
+          attribution?: Json | null
           browser?: string | null
           category?: string
           country?: string | null
@@ -687,6 +695,7 @@ export type Database = {
           visitor_id?: string | null
         }
         Update: {
+          attribution?: Json | null
           browser?: string | null
           category?: string
           country?: string | null
