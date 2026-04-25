@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Layout, Image as ImageIcon, Search, Eye, Pencil } from "lucide-react";
@@ -7,11 +7,13 @@ import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
 import SeoFields from "./site-editor/SeoFields";
 import { DEFAULT_ROWS, type PageRow } from "@/types/rows";
+import type { ImperativePanelGroupHandle } from "react-resizable-panels";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { usePanelLimits } from "./builder/usePanelLimits";
 import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuilderToolbar";
 import CanvasViewport from "./site-editor/CanvasViewport";
 // US 15.1 — render the SAME components the public site renders, against
@@ -193,6 +195,17 @@ const SiteEditor = () => {
   // can still drag, drop and configure widgets in the form-driven UI.
   // Default to preview because that's the whole point of US 15.1.
   const [canvasMode, setCanvasMode] = useState<"preview" | "edit">("preview");
+
+  // Debug Story 1.1 — pixel-anchored panel limits + double-click reset.
+  const limits = usePanelLimits();
+  const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
+  const resetLayout = () => {
+    panelGroupRef.current?.setLayout([
+      limits.leftDefault,
+      limits.centerDefault,
+      limits.rightDefault,
+    ]);
+  };
 
   /* ─── US 17.1 / 17.2 — drag-and-drop (Elements Tray → canvas) ──
    * Sensors with a small activation distance prevent accidental
@@ -496,14 +509,24 @@ const SiteEditor = () => {
         hasChanges={hasChanges}
       />
 
-      {/* ─── Three-pane resizable shell ──────────────────────────── */}
+      {/* ─── Three-pane resizable shell ──────────────────────────────
+          Debug Story 1.1 — pixel-anchored limits via usePanelLimits.
+          Outer div is the measured container; the hook converts pixel
+          caps (left ≤300, right ≤400, center ≥300) into live percent
+          mins/maxes that hold across viewport widths. */}
+      <div ref={limits.containerRef} className="flex-1 min-h-0 flex">
       <ResizablePanelGroup
+        ref={panelGroupRef}
         direction="horizontal"
         className="flex-1 border-x border-b overflow-hidden rounded-b-lg"
         style={{ borderColor: "hsl(var(--border) / 0.5)" }}
       >
-        {/* LEFT — Library / Navigator (250px default, min 200px) */}
-        <ResizablePanel defaultSize={18} minSize={14} maxSize={28}>
+        {/* LEFT — Library / Navigator (max 300px) */}
+        <ResizablePanel
+          defaultSize={limits.leftDefault}
+          minSize={limits.leftMin}
+          maxSize={limits.leftMax}
+        >
           <aside
             className="h-full flex flex-col"
             style={{ backgroundColor: "hsl(var(--card))" }}
@@ -573,10 +596,13 @@ const SiteEditor = () => {
           </aside>
         </ResizablePanel>
 
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle onDoubleClick={resetLayout} />
 
-        {/* CENTER — Canvas (flexible, subtle gray bg) */}
-        <ResizablePanel defaultSize={57} minSize={30}>
+        {/* CENTER — Canvas (min 300px guaranteed) */}
+        <ResizablePanel
+          defaultSize={limits.centerDefault}
+          minSize={limits.centerMin}
+        >
           <CanvasViewport
             deviceWidth={deviceWidth}
             viewport={viewport}
@@ -588,10 +614,14 @@ const SiteEditor = () => {
           </CanvasViewport>
         </ResizablePanel>
 
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle onDoubleClick={resetLayout} />
 
-        {/* RIGHT — Inspector (300px default, max 400px) */}
-        <ResizablePanel defaultSize={25} minSize={18} maxSize={32}>
+        {/* RIGHT — Inspector (max 400px) */}
+        <ResizablePanel
+          defaultSize={limits.rightDefault}
+          minSize={limits.rightMin}
+          maxSize={limits.rightMax}
+        >
           <aside
             className="h-full flex flex-col"
             style={{ backgroundColor: "hsl(var(--card))" }}
@@ -641,6 +671,7 @@ const SiteEditor = () => {
           </aside>
         </ResizablePanel>
       </ResizablePanelGroup>
+      </div>
       </div>
 
       </BuilderDndShell>

@@ -23,7 +23,7 @@
  *   • SEO + page-level metadata
  *   • Anything Hero-related (only the main-page adapter has a Hero)
  */
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -33,11 +33,13 @@ import {
   type DragStartEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
+import type { ImperativePanelGroupHandle } from "react-resizable-panels";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { usePanelLimits } from "./usePanelLimits";
 import AdminBuilderToolbar, { type ViewportMode } from "../site-editor/AdminBuilderToolbar";
 import CanvasViewport from "../site-editor/CanvasViewport";
 import { BuilderProvider, useBuilder } from "./BuilderContext";
@@ -181,6 +183,17 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
     if (isTrayDragData(data)) setActiveDrag(data);
   };
 
+  // Debug Story 1.1 — pixel-anchored panel limits.
+  const limits = usePanelLimits();
+  const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
+  const resetLayout = () => {
+    panelGroupRef.current?.setLayout([
+      limits.leftDefault,
+      limits.centerDefault,
+      limits.rightDefault,
+    ]);
+  };
+
   const deviceWidth =
     viewport === "mobile" ? 390 : viewport === "tablet" ? 820 : null;
 
@@ -207,13 +220,19 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
             hasChanges={props.hasChanges}
           />
 
+          <div ref={limits.containerRef} className="flex-1 min-h-0 flex">
           <ResizablePanelGroup
+            ref={panelGroupRef}
             direction="horizontal"
             className="flex-1 border-x border-b overflow-hidden rounded-b-lg"
             style={{ borderColor: "hsl(var(--border) / 0.5)" }}
           >
             {/* LEFT — Library / Navigator */}
-            <ResizablePanel defaultSize={18} minSize={14} maxSize={28}>
+            <ResizablePanel
+              defaultSize={limits.leftDefault}
+              minSize={limits.leftMin}
+              maxSize={limits.leftMax}
+            >
               <aside
                 className="h-full flex flex-col"
                 style={{ backgroundColor: "hsl(var(--card))" }}
@@ -241,10 +260,13 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
               </aside>
             </ResizablePanel>
 
-            <ResizableHandle withHandle />
+            <ResizableHandle withHandle onDoubleClick={resetLayout} />
 
             {/* CENTER — Canvas */}
-            <ResizablePanel defaultSize={57} minSize={30}>
+            <ResizablePanel
+              defaultSize={limits.centerDefault}
+              minSize={limits.centerMin}
+            >
               <CanvasViewport
                 deviceWidth={deviceWidth}
                 viewport={viewport}
@@ -264,10 +286,14 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
               </CanvasViewport>
             </ResizablePanel>
 
-            <ResizableHandle withHandle />
+            <ResizableHandle withHandle onDoubleClick={resetLayout} />
 
             {/* RIGHT — Inspector */}
-            <ResizablePanel defaultSize={25} minSize={18} maxSize={32}>
+            <ResizablePanel
+              defaultSize={limits.rightDefault}
+              minSize={limits.rightMin}
+              maxSize={limits.rightMax}
+            >
               <aside
                 className="h-full flex flex-col"
                 style={{ backgroundColor: "hsl(var(--card))" }}
@@ -308,6 +334,7 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
               </aside>
             </ResizablePanel>
           </ResizablePanelGroup>
+          </div>
         </div>
       </BuilderDndShell>
     </BuilderProvider>
