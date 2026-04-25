@@ -183,6 +183,17 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
     if (isTrayDragData(data)) setActiveDrag(data);
   };
 
+  // Debug Story 1.1 — pixel-anchored panel limits.
+  const limits = usePanelLimits();
+  const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
+  const resetLayout = () => {
+    panelGroupRef.current?.setLayout([
+      limits.leftDefault,
+      limits.centerDefault,
+      limits.rightDefault,
+    ]);
+  };
+
   const deviceWidth =
     viewport === "mobile" ? 390 : viewport === "tablet" ? 820 : null;
 
