@@ -23,6 +23,7 @@
 
 import { useId, type CSSProperties, type ReactNode } from "react";
 import type { WidgetDesignSettings } from "@/types/rows";
+import { parseSpacing } from "@/lib/spacing";
 
 interface Props {
   design: WidgetDesignSettings;
