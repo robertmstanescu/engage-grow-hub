@@ -108,12 +108,12 @@ export default {
        * caller, but new code should reach for `row-fluid`.
        */
       spacing: {
-        "rhythm-tight": "12px",
-        "rhythm-base": "24px",
-        "rhythm-loose": "48px",
-        row: "64px",
-        "row-md": "112px",
-        "row-fluid": "clamp(24px, 4vh, 96px)",
+        "rhythm-tight": "24px",   /* Doubled for architectural baseline */
+        "rhythm-base": "48px",    /* Doubled */
+        "rhythm-loose": "96px",   /* Doubled */
+        row: "120px",             /* Massive static padding */
+        "row-md": "160px",        /* Massive static desktop padding */
+        "row-fluid": "clamp(64px, 12vh, 200px)", /* Extreme adaptive breathing room */
       },
       fontFamily: {
         display: ["Unbounded", "sans-serif"],
