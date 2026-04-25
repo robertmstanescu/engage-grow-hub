@@ -470,6 +470,67 @@ const SortableRowItem = ({
             </div>
           )}
 
+
+          {/*
+           * Empty-layout visual scaffold.
+           *
+           * WHY this exists: when an admin picks a layout from the new
+           * "Add Row" menu, the row arrives with N empty column blobs.
+           * To make the shape OBVIOUS (and prove the layout selector
+           * worked) we render a CSS-grid of dashed cells — one per
+           * column — each carrying a "+ Add Widget" affordance.
+           *
+           * We use plain CSS Grid here (not @dnd-kit) per Dev Notes:
+           * widget DnD is intentionally deferred to a later story.
+           * The cell click is a no-op for now; it just confirms the
+           * UX path. The Add Column / Width controls above already
+           * mutate the underlying columns, so this stays purely
+           * presentational.
+           *
+           * Visibility rule: only when EVERY column is empty (i.e. a
+           * freshly created layout-only row). Once any column carries
+           * content, the regular per-column editor takes over so we
+           * don't shadow legacy rows.
+           */}
+          {(() => {
+            const allEmpty = Array.from({ length: colCount }).every((_, i) => {
+              const c = getColContent(i);
+              return !c || Object.keys(c).length === 0;
+            });
+            if (!allEmpty) return null;
+            const widthsForGrid = columnWidths.slice(0, colCount);
+            return (
+              <div
+                className="grid gap-2 p-3 rounded-lg"
+                style={{
+                  gridTemplateColumns: widthsForGrid.map((w) => `${w}fr`).join(" "),
+                  backgroundColor: "hsl(var(--muted) / 0.2)",
+                }}
+              >
+                {Array.from({ length: colCount }).map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setActiveCol(i)}
+                    className="flex flex-col items-center justify-center gap-1 min-h-[88px] rounded-md border-2 border-dashed transition-colors hover:opacity-80"
+                    style={{
+                      borderColor: safeActiveCol === i ? "hsl(var(--primary))" : "hsl(var(--primary) / 0.4)",
+                      backgroundColor: "hsl(var(--background))",
+                      color: "hsl(var(--primary))",
+                    }}
+                    title={`Column ${i + 1} — Add Widget`}
+                  >
+                    <Plus size={18} />
+                    <span className="font-body text-[10px] uppercase tracking-wider">Add Widget</span>
+                    <span className="font-body text-[9px] text-muted-foreground">
+                      Col {i + 1} · {Math.round(widthsForGrid[i])}%
+                    </span>
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
+
           {/*
            * NOTE: the "Show Subscribe widget" checkbox that previously
            * lived here was moved into `RowContentEditor.tsx` (top of the
