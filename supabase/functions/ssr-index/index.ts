@@ -13,10 +13,20 @@
  *
  * What this function returns
  * ───────────────────────────
- * The HTML of `index.html` with the SSR_* marker pairs replaced by
- * fresh, database-driven values. Crawlers see the latest admin-edited
- * title, description, OG tags, JSON-LD and a `<noscript>` fallback
- * containing a meaningful summary of the page.
+ * The HTML of `index.html` parsed into a real DOM, with <title>,
+ * <meta name="description">, <link rel="canonical">, OG/Twitter tags
+ * and JSON-LD upserted into <head> programmatically. A <noscript>
+ * fallback is appended to <body> for crawlers that don't run JS.
+ *
+ * Why DOM-based injection (not regex/markers)
+ * ───────────────────────────────────────────
+ * The previous implementation relied on exact `<!-- SSR:* -->` HTML
+ * comments in the index.html shell. An auto-formatter (Prettier, Vite
+ * HTML transform, etc.) reflowing whitespace around those markers
+ * would silently break the crawler view. Parsing into a real DOM with
+ * `deno-dom` removes that fragility — head tags are looked up by
+ * selector and replaced/inserted by name, so formatting changes in
+ * the frontend project can no longer break SEO injection.
  *
  * Routing
  * ───────
@@ -25,17 +35,14 @@
  *   /blog/:slug → that blog post
  *   /p/:slug    → that CMS page
  *   anything else → returns the neutral template untouched
- *
- * Why we fetch the static template at runtime instead of bundling it
- * ──────────────────────────────────────────────────────────────────
- * Bundling would require redeploying the function every time the
- * `index.html` shell changes. Fetching the live `index.html` from the
- * deployed origin keeps the SSR output in lock-step with the SPA.
- * If the origin is unreachable we fall back to a minimal template so
- * crawlers never get a 5xx.
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import {
+  DOMParser,
+  Element,
+  HTMLDocument,
+} from "https://deno.land/x/deno_dom@v0.1.49/deno-dom-wasm.ts";
 
 // ── CORS (the function may be hit by previews from various origins) ────
 const corsHeaders = {
@@ -45,20 +52,9 @@ const corsHeaders = {
 
 const CANONICAL_ORIGIN = "https://themagiccoffin.com";
 
-// ── Tiny HTML escape (we never trust DB content with raw HTML in <head>) ──
-const escapeHtml = (input: unknown): string =>
-  String(input ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-
 // Strip HTML tags from rich-text strings so they're safe for meta-tag content.
 const stripHtml = (input: unknown): string =>
   String(input ?? "").replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
-
-const ensureTrailingSlash = (path: string) => (path.endsWith("/") ? path : `${path}/`);
 
 interface SeoPayload {
   title: string;
@@ -69,71 +65,9 @@ interface SeoPayload {
   noscript: string;
 }
 
-/**
- * Replace the neutral default block that immediately follows a single-comment
- * SSR marker (e.g. `<!-- SSR:TITLE -->`) with the rendered `replacement`.
- * The default block is everything up to (but not including) the next HTML
- * tag boundary marker we recognise — `<!--`, `<title`, `<meta`, `<link`,
- * `<script`, `</head`, or `</body`.
- *
- * The marker comment itself is preserved so the served HTML stays
- * self-describing for inspection.
- */
-const replaceMarker = (
-  html: string,
-  marker: string,
-  replacement: string,
-): string => {
-  const safe = marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  // Greedy enough to swallow the default tag (which may itself contain
-  // `>` characters in attribute values), but stops at the next sibling
-  // marker comment or known tag start.
-  const re = new RegExp(
-    `(<!--\\s*${safe}\\s*-->)([\\s\\S]*?)(?=\\n\\s*(?:<!--|<title|<meta|<link|<script|</head|</body))`,
-    "i",
-  );
-  return html.replace(re, (_full, m) => `${m}\n    ${replacement}`);
-};
-
-const buildOgTags = (payload: SeoPayload): string => {
-  const parts: string[] = [];
-  parts.push(`<meta property="og:type" content="website" />`);
-  parts.push(`<meta property="og:title" content="${escapeHtml(payload.title)}" />`);
-  if (payload.description) {
-    parts.push(`<meta property="og:description" content="${escapeHtml(payload.description)}" />`);
-  }
-  parts.push(`<meta property="og:url" content="${escapeHtml(payload.canonical)}" />`);
-  if (payload.ogImage) {
-    parts.push(`<meta property="og:image" content="${escapeHtml(payload.ogImage)}" />`);
-  }
-  parts.push(`<meta name="twitter:card" content="summary_large_image" />`);
-  parts.push(`<meta name="twitter:title" content="${escapeHtml(payload.title)}" />`);
-  if (payload.description) {
-    parts.push(`<meta name="twitter:description" content="${escapeHtml(payload.description)}" />`);
-  }
-  if (payload.ogImage) {
-    parts.push(`<meta name="twitter:image" content="${escapeHtml(payload.ogImage)}" />`);
-  }
-  return parts.join("\n    ");
-};
-
-const buildJsonLd = (payload: SeoPayload): string => {
-  if (!payload.jsonLd) return "";
-  return `<script type="application/ld+json">${JSON.stringify(payload.jsonLd)}</script>`;
-};
-
-const buildNoscript = (payload: SeoPayload): string => {
-  if (!payload.noscript) return "";
-  // <noscript> fallback for the tiny slice of crawlers that don't run JS
-  // (and for users who have JS disabled). Plain text only — no markup.
-  return `<noscript><h1>${escapeHtml(payload.title)}</h1><p>${escapeHtml(payload.noscript)}</p></noscript>`;
-};
-
 /** Fetch the live published index.html. Falls back to a minimal shell. */
 const fetchTemplate = async (req: Request): Promise<string> => {
-  // Use the request origin so this works for both production and preview.
   const reqOrigin = new URL(req.url).origin;
-  // We can't fetch index.html from supabase.co — try the canonical origin first.
   const candidates = [
     "https://themagiccoffin.com/index.html",
     "https://themagiccoffin.lovable.app/index.html",
@@ -144,37 +78,192 @@ const fetchTemplate = async (req: Request): Promise<string> => {
       const res = await fetch(url, { headers: { "Cache-Control": "no-cache" } });
       if (res.ok) {
         const text = await res.text();
-        // Sanity check — must contain at least one of our SSR markers.
-        if (text.includes("SSR:TITLE")) return text;
+        // Sanity check — must look like a real HTML doc with a head.
+        if (/<head[\s>]/i.test(text)) return text;
       }
     } catch {
       // try next candidate
     }
   }
-  // Last-resort minimal template (matches index.html marker layout).
+  // Last-resort minimal shell.
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- SSR:TITLE -->
 <title>The Magic Coffin</title>
-<!-- SSR:DESCRIPTION -->
-<meta name="description" content="" />
-<!-- SSR:CANONICAL -->
-<link rel="canonical" href="https://themagiccoffin.com/" />
-<!-- SSR:OG_TAGS -->
-<!-- SSR:JSONLD -->
 </head>
 <body>
 <div id="root"></div>
-<!-- SSR:NOSCRIPT -->
 </body>
 </html>`;
 };
 
-/** Build SEO payload for the homepage from the `main_page_seo` site_content row. */
+// ── DOM helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Replace (or create) a single element in <head> matched by selector.
+ * The new element inherits the given tag + attributes. Any prior matches
+ * are removed so we never end up with duplicate <title> or canonical tags.
+ */
+const upsertHeadElement = (
+  doc: HTMLDocument,
+  head: Element,
+  selector: string,
+  tagName: string,
+  attrs: Record<string, string>,
+  textContent?: string,
+): void => {
+  for (const existing of Array.from(head.querySelectorAll(selector))) {
+    (existing as Element).remove();
+  }
+  const el = doc.createElement(tagName);
+  for (const [k, v] of Object.entries(attrs)) {
+    el.setAttribute(k, v);
+  }
+  if (textContent !== undefined) {
+    el.textContent = textContent;
+  }
+  head.appendChild(el);
+};
+
+const setTitle = (doc: HTMLDocument, head: Element, title: string) => {
+  upsertHeadElement(doc, head, "title", "title", {}, title);
+};
+
+const setMetaName = (
+  doc: HTMLDocument,
+  head: Element,
+  name: string,
+  content: string,
+) => {
+  // Use attribute selector with quoted value to handle names containing colons (twitter:card).
+  upsertHeadElement(
+    doc,
+    head,
+    `meta[name="${name}"]`,
+    "meta",
+    { name, content },
+  );
+};
+
+const setMetaProperty = (
+  doc: HTMLDocument,
+  head: Element,
+  property: string,
+  content: string,
+) => {
+  upsertHeadElement(
+    doc,
+    head,
+    `meta[property="${property}"]`,
+    "meta",
+    { property, content },
+  );
+};
+
+const setLinkRel = (
+  doc: HTMLDocument,
+  head: Element,
+  rel: string,
+  href: string,
+) => {
+  upsertHeadElement(
+    doc,
+    head,
+    `link[rel="${rel}"]`,
+    "link",
+    { rel, href },
+  );
+};
+
+const setJsonLd = (doc: HTMLDocument, head: Element, jsonLd: object | null) => {
+  // Always strip any prior SSR-injected JSON-LD blocks so we don't stack them.
+  for (const existing of Array.from(
+    head.querySelectorAll('script[type="application/ld+json"][data-ssr="1"]'),
+  )) {
+    (existing as Element).remove();
+  }
+  if (!jsonLd) return;
+  const el = doc.createElement("script");
+  el.setAttribute("type", "application/ld+json");
+  el.setAttribute("data-ssr", "1");
+  el.textContent = JSON.stringify(jsonLd);
+  head.appendChild(el);
+};
+
+const setNoscript = (doc: HTMLDocument, body: Element, payload: SeoPayload) => {
+  // Remove any prior SSR noscript fallback before inserting a fresh one.
+  for (const existing of Array.from(body.querySelectorAll('noscript[data-ssr="1"]'))) {
+    (existing as Element).remove();
+  }
+  if (!payload.noscript) return;
+  const el = doc.createElement("noscript");
+  el.setAttribute("data-ssr", "1");
+  // Build child nodes via the DOM so text content is automatically escaped.
+  const h1 = doc.createElement("h1");
+  h1.textContent = payload.title;
+  const p = doc.createElement("p");
+  p.textContent = payload.noscript;
+  el.appendChild(h1);
+  el.appendChild(p);
+  body.appendChild(el);
+};
+
+/**
+ * Apply the full SEO payload to the parsed document. Idempotent — running
+ * twice with the same payload yields the same DOM.
+ */
+const applySeoToDocument = (doc: HTMLDocument, payload: SeoPayload): void => {
+  const head = doc.querySelector("head") as Element | null;
+  const body = doc.querySelector("body") as Element | null;
+  if (!head) return;
+
+  setTitle(doc, head, payload.title);
+  if (payload.description) {
+    setMetaName(doc, head, "description", payload.description);
+  }
+  setLinkRel(doc, head, "canonical", payload.canonical);
+
+  // Open Graph
+  setMetaProperty(doc, head, "og:type", "website");
+  setMetaProperty(doc, head, "og:title", payload.title);
+  if (payload.description) {
+    setMetaProperty(doc, head, "og:description", payload.description);
+  }
+  setMetaProperty(doc, head, "og:url", payload.canonical);
+  if (payload.ogImage) {
+    setMetaProperty(doc, head, "og:image", payload.ogImage);
+  }
+
+  // Twitter
+  setMetaName(doc, head, "twitter:card", "summary_large_image");
+  setMetaName(doc, head, "twitter:title", payload.title);
+  if (payload.description) {
+    setMetaName(doc, head, "twitter:description", payload.description);
+  }
+  if (payload.ogImage) {
+    setMetaName(doc, head, "twitter:image", payload.ogImage);
+  }
+
+  setJsonLd(doc, head, payload.jsonLd);
+  if (body) setNoscript(doc, body, payload);
+};
+
+/**
+ * Serialize the document back to an HTML string with a doctype prefix
+ * (deno-dom's outerHTML doesn't include the doctype).
+ */
+const serializeDocument = (doc: HTMLDocument): string => {
+  const root = doc.documentElement;
+  const html = root ? root.outerHTML : "";
+  return `<!doctype html>\n${html}`;
+};
+
+// ── SEO builders ────────────────────────────────────────────────────────
+
 const buildHomeSeo = async (
-  supabase: ReturnType<typeof createClient>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
 ): Promise<SeoPayload> => {
   const [{ data: seo }, { data: brand }] = await Promise.all([
     supabase.from("site_content").select("content").eq("section_key", "main_page_seo").maybeSingle(),
@@ -202,9 +291,9 @@ const buildHomeSeo = async (
   };
 };
 
-/** Build SEO payload for a blog post. */
 const buildBlogSeo = async (
-  supabase: ReturnType<typeof createClient>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
   slug: string,
 ): Promise<SeoPayload | null> => {
   const { data } = await supabase
@@ -236,9 +325,9 @@ const buildBlogSeo = async (
   };
 };
 
-/** Build SEO payload for a CMS page. */
 const buildCmsSeo = async (
-  supabase: ReturnType<typeof createClient>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
   slug: string,
 ): Promise<SeoPayload | null> => {
   const { data } = await supabase
@@ -261,17 +350,11 @@ const buildCmsSeo = async (
   };
 };
 
-/**
- * Resolve a path string to its SeoPayload by dispatching on shape.
- * Returns `null` if the path doesn't map to a known content source —
- * the caller will return the neutral template untouched.
- */
 const resolvePath = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   path: string,
 ): Promise<SeoPayload | null> => {
-  // Normalise: strip query/hash, collapse trailing slash for matching.
   const cleanPath = path.split("?")[0].split("#")[0].replace(/\/+$/, "") || "/";
 
   if (cleanPath === "/" || cleanPath === "") {
@@ -281,7 +364,6 @@ const resolvePath = async (
   if (blogMatch) return buildBlogSeo(supabase, blogMatch[1]);
   const cmsMatch = cleanPath.match(/^\/p\/([^/]+)$/);
   if (cmsMatch) return buildCmsSeo(supabase, cmsMatch[1]);
-  // Unknown path → neutral template
   return null;
 };
 
@@ -294,7 +376,6 @@ Deno.serve(async (req: Request) => {
     const url = new URL(req.url);
     const path = url.searchParams.get("path") || "/";
 
-    // Two parallel reads: template + SEO payload (admin client to bypass RLS).
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -306,21 +387,16 @@ Deno.serve(async (req: Request) => {
     ]);
 
     let html = template;
+
     if (payload) {
-      html = replaceMarker(html, "SSR:TITLE", `<title>${escapeHtml(payload.title)}</title>`);
-      html = replaceMarker(
-        html,
-        "SSR:DESCRIPTION",
-        `<meta name="description" content="${escapeHtml(payload.description)}" />`,
-      );
-      html = replaceMarker(
-        html,
-        "SSR:CANONICAL",
-        `<link rel="canonical" href="${escapeHtml(payload.canonical)}" />`,
-      );
-      html = replaceMarker(html, "SSR:OG_TAGS", buildOgTags(payload));
-      html = replaceMarker(html, "SSR:JSONLD", buildJsonLd(payload));
-      html = replaceMarker(html, "SSR:NOSCRIPT", buildNoscript(payload));
+      const doc = new DOMParser().parseFromString(template, "text/html");
+      if (doc) {
+        applySeoToDocument(doc, payload);
+        html = serializeDocument(doc);
+      } else {
+        // Parse failed — fall back to the unmodified template rather than 5xx.
+        console.warn("ssr-index: DOMParser returned null, serving raw template");
+      }
     }
 
     return new Response(html, {
