@@ -311,6 +311,43 @@ const AdminDashboard = ({ session }: Props) => {
   const [cmsPageStatus, setCmsPageStatus] = useState<string>("draft");
   const [cmsPageMeta, setCmsPageMeta] = useState<{ meta_title: string; meta_description: string; ai_summary: string }>({ meta_title: "", meta_description: "", ai_summary: "" });
 
+  /**
+   * EPIC 3 / US 3.3 — Sync `cmsPage` with the URL.
+   *
+   * The URL is the source of truth: deep-linking to
+   * `/admin/builder/<id>` from the Pages table or browser history MUST
+   * load that page's content; navigating back to `/admin/builder` MUST
+   * revert to the main page editor. We hydrate the lightweight
+   * { id, slug, title } ref from `cms_pages` here; the full page rows
+   * and meta are loaded by the existing effect keyed on `cmsPage?.id`.
+   */
+  useEffect(() => {
+    if (!isBuilderRoute) return;
+    if (!routePageId) {
+      if (cmsPage !== null) setCmsPage(null);
+      return;
+    }
+    if (cmsPage?.id === routePageId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("cms_pages")
+        .select("id, slug, title")
+        .eq("id", routePageId)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !data) {
+        // Bad id in URL → bounce back to the main builder so the editor
+        // doesn't stare at a broken/empty canvas.
+        navigate("/admin/builder", { replace: true });
+        return;
+      }
+      setCmsPage({ id: data.id, slug: data.slug, title: data.title });
+    })();
+    return () => { cancelled = true; };
+  }, [routePageId, isBuilderRoute, cmsPage?.id, navigate]);
+
+
   // ── Site content state (main page) ──
   const [sections, setSections] = useState<SectionData[]>([]);
   const [saving, setSaving] = useState(false);
