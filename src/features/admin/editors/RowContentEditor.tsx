@@ -214,16 +214,11 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
               </AccordionContent>
             </AccordionItem>
 
-            {/* GROUP 2 — Anything clickable / linkable.
-                Button Label lives here (next to its URL) so admins
-                configure the entire CTA in one place. */}
-            <AccordionItem value="media" className="border-none">
-              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
-              <AccordionContent className={CONTENT_CLASS}>
-                <Field label="Button Label" value={content.cta_label || ""} onChange={(v) => onContentChange("cta_label", v)} />
-                <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onContentChange("cta_url", v)} />
-              </AccordionContent>
-            </AccordionItem>
+            {/* Row-level CTA fields (cta_label/cta_url) were retired
+                from this editor: a standalone "CTA Button" widget now
+                lives in the Elements tray and can be dropped into any
+                cell. Existing pages keep working — the renderer still
+                reads the legacy fields for backwards compatibility. */}
           </Shell>
         </>
       );
