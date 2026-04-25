@@ -555,3 +555,25 @@
     font-size: 16px !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+ * Inspector auto-focus flash (EPIC 1 / US 1.3).
+ * Briefly outlines the input the editor just clicked on the
+ * canvas so they don't have to hunt through a long property
+ * list. The wrapper element gets `.inspector-flash` for ~1.4s
+ * via `useInspectorFocus`. Uses a soft green ring + fade so it
+ * reads as "look here" without competing with the input chrome.
+ * ───────────────────────────────────────────────────────────── */
+@keyframes inspector-flash-anim {
+  0%   { box-shadow: 0 0 0 0 hsla(142, 71%, 45%, 0.0); background-color: hsla(142, 71%, 45%, 0.0); }
+  15%  { box-shadow: 0 0 0 4px hsla(142, 71%, 45%, 0.45); background-color: hsla(142, 71%, 45%, 0.12); }
+  100% { box-shadow: 0 0 0 0 hsla(142, 71%, 45%, 0.0); background-color: hsla(142, 71%, 45%, 0.0); }
+}
+.inspector-flash {
+  position: relative;
+  border-radius: 0.5rem;
+  animation: inspector-flash-anim 1.4s ease-out forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .inspector-flash { animation-duration: 0.01ms; }
+}

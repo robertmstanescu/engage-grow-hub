@@ -36,6 +36,21 @@ const useDeferredValue = (externalValue: string, onCommit: (v: string) => void) 
   return { local, setLocal, commit };
 };
 
+/**
+ * US 1.3 — Inspector auto-focus.
+ * Slug a human label ("Stat 1 Value", "Eyebrow", "Title Lines") into a
+ * stable key the canvas-side `useInspectorFocus` hook can target. We
+ * trim trailing digits/words ("Stat 1 Value" → "stat_value") so atomic
+ * leaf names from the canvas (which carry no index info) still match.
+ */
+const slugifyLabel = (label: string): string =>
+  label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+
+
 export const Field = ({
   label,
   value,
@@ -53,7 +68,7 @@ export const Field = ({
 }) => {
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
   return (
-    <div>
+    <div data-inspector-field={slugifyLabel(label)}>
       <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
       <input
         value={local}
@@ -74,7 +89,7 @@ export const Field = ({
 export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; value: string; onChange: (v: string) => void; rows?: number }) => {
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
   return (
-    <div>
+    <div data-inspector-field={slugifyLabel(label)}>
       <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
       <textarea
         value={local}
@@ -97,14 +112,14 @@ export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; 
  * `row.bg_color` (or the resolved gradient stop) in.
  */
 export const RichField = ({ label, value, onChange, bgColor }: { label: string; value: string; onChange: (v: string) => void; bgColor?: string }) => (
-  <div>
+  <div data-inspector-field={slugifyLabel(label)}>
     <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
     <RichTextEditor content={value || ""} onChange={onChange} bgColor={bgColor} />
   </div>
 );
 
 export const SelectField = ({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { label: string; value: string }[] }) => (
-  <div>
+  <div data-inspector-field={slugifyLabel(label)}>
     <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
     <select
       value={value || ""}
@@ -137,7 +152,7 @@ export const ArrayField = ({ label, items, onChange, placeholder }: { label: str
   };
 
   return (
-    <div>
+    <div data-inspector-field={slugifyLabel(label)}>
       <div className="flex items-center justify-between mb-1">
         <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">{label}</label>
         <button
@@ -192,7 +207,7 @@ export const ColorField = ({ label, value, onChange, description, fallback }: { 
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
   const brandColors = useBrandColors();
   return (
-    <div>
+    <div data-inspector-field={slugifyLabel(label)}>
       <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5 block">{label}</label>
       {description && <p className="font-body text-[9px] text-muted-foreground/70 mb-1">{description}</p>}
       <div className="flex gap-1 mb-1.5 flex-wrap">

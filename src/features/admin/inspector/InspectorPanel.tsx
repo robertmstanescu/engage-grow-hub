@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import { MousePointer2, Trash2 } from "lucide-react";
 import { useBuilder } from "../builder/BuilderContext";
+import { useInspectorFocus } from "./useInspectorFocus";
 import { getWidget } from "@/lib/WidgetRegistry";
 import { type PageRow, DEFAULT_ROW_LAYOUT } from "@/types/rows";
 import { confirmDestructive } from "@/components/ConfirmDialog";
@@ -93,6 +95,14 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     pageRows,
     onRowsChange,
   } = props;
+
+  /* US 1.3 — auto-scroll the matching input into view + flash it green
+   * whenever `activeNodePath` updates. The hook is a no-op on the public
+   * site and when the path stops at the widget level. */
+  const containerRef = useRef<HTMLDivElement>(null);
+  useInspectorFocus(containerRef);
+
+  const renderBody = () => {
 
   /* ─── State 1 — nothing selected → page SEO settings ─────────── */
   if (!activeElement) {
@@ -276,6 +286,13 @@ const InspectorPanel = (props: InspectorPanelProps) => {
   }
 
   return <EmptyHint>Select an element on the canvas to edit its settings.</EmptyHint>;
+  };
+
+  return (
+    <div ref={containerRef} className="h-full">
+      {renderBody()}
+    </div>
+  );
 };
 
 export default InspectorPanel;
