@@ -112,14 +112,14 @@ export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; 
  * `row.bg_color` (or the resolved gradient stop) in.
  */
 export const RichField = ({ label, value, onChange, bgColor }: { label: string; value: string; onChange: (v: string) => void; bgColor?: string }) => (
-  <div>
+  <div data-inspector-field={slugifyLabel(label)}>
     <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
     <RichTextEditor content={value || ""} onChange={onChange} bgColor={bgColor} />
   </div>
 );
 
 export const SelectField = ({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { label: string; value: string }[] }) => (
-  <div>
+  <div data-inspector-field={slugifyLabel(label)}>
     <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
     <select
       value={value || ""}
