@@ -37,6 +37,7 @@ import {
   type DragEndEvent,
   type DropAnimation,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import type { ImperativePanelGroupHandle } from "react-resizable-panels";
 import {
   ResizableHandle,
@@ -59,7 +60,7 @@ import { generateRowId, DEFAULT_ROW_LAYOUT, buildEmptyV3Row, type PageRow } from
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import InspectorPanel from "../inspector/InspectorPanel";
 import CanvasBreadcrumb from "./CanvasBreadcrumb";
-import PageNavigator from "./PageNavigator";
+import PageNavigator, { isSectionNavDragData } from "./PageNavigator";
 
 /* ------------------------------------------------------------------
  * BuilderDndShell — drop handler that needs `useBuilder()` (auto-select
