@@ -351,6 +351,23 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     const widgetContent = readWidgetContent(pageRows, loc);
     const widgetType = readWidgetType(pageRows, loc);
 
+    /* US 3.2 — resolve the EFFECTIVE surface background by walking up
+     * the DOM tree from most-specific to least: per-widget design bg →
+     * cell.bg_color → column.bg_color → row.bg_color. The first non-
+     * empty value wins. This colour is provided to nested field
+     * components via <SurfaceBgProvider> so Title/Subtitle/Body inputs
+     * adopt the real surface (and labels stay readable via
+     * pickForeground). */
+    const ancestorRow: any = pageRows[loc.rowIdx];
+    const ancestorCol: any = ancestorRow?.columns?.[loc.colIdx];
+    const ancestorCell: any = ancestorCol?.cells?.[loc.cellIdx];
+    const widgetDesignBg =
+      (widgetContent?.__design && (widgetContent.__design as any).bgColor) || "";
+    const effectiveSurfaceBg: string =
+      [widgetDesignBg, ancestorCell?.bg_color, ancestorCol?.bg_color, ancestorRow?.bg_color]
+        .map((v) => (typeof v === "string" ? v.trim() : ""))
+        .find((v) => v.length > 0) || "";
+
     /** Sibling-safe patch: replace ONE field on the targeted widget. */
     const updateWidgetField = (field: string, value: any) => {
       onRowsChange(
