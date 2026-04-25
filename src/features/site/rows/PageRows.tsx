@@ -36,10 +36,30 @@ const buildHomepageHeroRow = (content: Record<string, any>): PageRow => ({
 const hasHeroContent = (content: Record<string, any>) =>
   !!content && Object.values(content).some((value) => Array.isArray(value) ? value.length > 0 : !!value);
 
-const rowContainsHeroWidget = (row: RenderableRow) =>
-  isPageRowV2(row)
-    ? row.columns.some((column) => column.widgets.some((widget) => widget.type === "hero"))
-    : row.type === "hero";
+const rowContainsHeroWidget = (row: RenderableRow) => {
+  if (!isPageRowV2(row)) return row.type === "hero";
+  return row.columns.some((column) => {
+    // v3: walk cells; v2 fallback: walk widgets directly on the column.
+    if (Array.isArray((column as any).cells) && (column as any).cells.length > 0) {
+      return (column as any).cells.some((cell: any) =>
+        Array.isArray(cell.widgets) && cell.widgets.some((w: any) => w.type === "hero"),
+      );
+    }
+    return Array.isArray((column as any).widgets)
+      && (column as any).widgets.some((w: any) => w.type === "hero");
+  });
+};
+
+/** Read the first widget type in a v2/v3 row, walking cells when needed. */
+const firstWidgetTypeInLayoutRow = (row: PageRowV2 | PageRowV3): string | undefined => {
+  const col0: any = row.columns?.[0];
+  if (!col0) return undefined;
+  if (Array.isArray(col0.cells) && col0.cells.length > 0) {
+    const cell0 = col0.cells[0];
+    return cell0?.widgets?.[0]?.type;
+  }
+  return col0.widgets?.[0]?.type;
+};
 
 export type Alignment = "left" | "right" | "center";
 export type VAlign = "top" | "middle" | "bottom";
