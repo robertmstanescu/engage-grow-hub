@@ -28,8 +28,12 @@ export interface ContactRecord {
    * progressive profiling (quizzes, ROI calculators, etc.). Schema is
    * intentionally open; the submit-contact edge function deep-merges
    * incoming `custom_properties` into this object.
+   *
+   * Typed as `unknown` (not `Record<string, unknown>`) because Supabase's
+   * generated `Json` type is a union — consumers should narrow before
+   * reading individual keys.
    */
-  zero_party_data: Record<string, unknown>;
+  zero_party_data: unknown;
 }
 
 export const fetchAllContacts = () =>
