@@ -259,6 +259,24 @@ const ElementsTray = () => {
 
   return (
     <div className="space-y-4">
+      {/* Structure — empty rows that editors lay out FIRST and fill
+          with widgets second. These don't live in the WidgetRegistry
+          on purpose; they're an editor primitive, not a renderable. */}
+      <div>
+        <h4
+          className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-2 px-1"
+          style={{ color: "hsl(var(--muted-foreground))" }}
+        >
+          Structure
+        </h4>
+        <div className="grid grid-cols-2 gap-2">
+          <LayoutCard columnCount={1} label="1 column" Icon={Square} />
+          <LayoutCard columnCount={2} label="2 columns" Icon={Columns2} />
+          <LayoutCard columnCount={3} label="3 columns" Icon={Columns3} />
+          <LayoutCard columnCount={4} label="4 columns" Icon={Columns4} />
+        </div>
+      </div>
+
       {orderedCategories.map((cat) => (
         <div key={cat}>
           <h4
