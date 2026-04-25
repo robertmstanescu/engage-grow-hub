@@ -696,12 +696,14 @@ interface SortableRowItemProps {
   onUpdateColumnContent: (colDataIndex: number, field: string, value: any) => void;
   onUpdateColumnWidths: (widths: number[]) => void;
   renderEditorForContent: (content: Record<string, any>, onContentChange: (field: string, value: any) => void) => React.ReactNode;
+  /** Open the global "Inspector" drawer for a specific cell (US 6.1). */
+  onInspectCell: (colIdx: number) => void;
 }
 
 const SortableRowItem = ({
   row, TypeIcon, isOpen, onToggle, onRemove, onUpdateRow, onUpdateContent,
   onAddColumn, onRemoveColumn, onUpdateColumnContent, onUpdateColumnWidths,
-  renderEditorForContent,
+  renderEditorForContent, onInspectCell,
 }: SortableRowItemProps) => {
   // WHY prefixed id: the parent <DndContext> distinguishes ROW drags
   // from WIDGET drags by id-prefix ("row:" vs "widget:") so a single
