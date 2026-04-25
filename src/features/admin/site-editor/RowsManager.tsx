@@ -1198,13 +1198,13 @@ const ContactRowFields = ({ content, onChange }: { content: Record<string, any>;
               <input
                 value={f.label}
                 onChange={(e) => updateFieldConfig(i, "label", e.target.value)}
-                className="flex-1 px-2 py-1 rounded font-body text-xs border"
+                className="flex-1 px-2 py-1 rounded font-body text-xs border text-black"
                 style={{ borderColor: "hsl(var(--border))", backgroundColor: "transparent" }}
               />
               <select
                 value={f.type}
                 onChange={(e) => updateFieldConfig(i, "type", e.target.value)}
-                className="px-2 py-1 rounded font-body text-[10px] border"
+                className="px-2 py-1 rounded font-body text-[10px] border text-black"
                 style={{ borderColor: "hsl(var(--border))", backgroundColor: "transparent" }}>
                 {FIELD_TYPES.map((ft) => (
                   <option key={ft.value} value={ft.value}>{ft.label}</option>

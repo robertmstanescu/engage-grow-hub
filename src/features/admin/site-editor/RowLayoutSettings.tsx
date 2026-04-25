@@ -133,7 +133,7 @@ const RowLayoutSettings = ({ layout, onChange }: Props) => {
                     value={l.gradientStart || ""}
                     onChange={(e) => update({ gradientStart: e.target.value })}
                     placeholder="Auto"
-                    className="flex-1 px-2 py-1 rounded font-body text-xs border"
+                    className="flex-1 px-2 py-1 rounded font-body text-xs border text-black"
                     style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
                   />
                 </div>
@@ -151,7 +151,7 @@ const RowLayoutSettings = ({ layout, onChange }: Props) => {
                     value={l.gradientEnd || ""}
                     onChange={(e) => update({ gradientEnd: e.target.value })}
                     placeholder="Auto"
-                    className="flex-1 px-2 py-1 rounded font-body text-xs border"
+                    className="flex-1 px-2 py-1 rounded font-body text-xs border text-black"
                     style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
                   />
                 </div>
