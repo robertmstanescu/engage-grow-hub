@@ -257,7 +257,7 @@ export const RowsRenderer = ({
         const rendered = (
           <ErrorBoundary
             key={row.id}
-            label={`row:${row.type}`}
+            label={`row:${isPageRowV2(row) ? "layout" : row.type}`}
             fallback={(error, reset) => <RowFallback error={error} reset={reset} />}
           >
             <RowRenderer
