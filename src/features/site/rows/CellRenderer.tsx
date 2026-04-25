@@ -31,7 +31,7 @@ import { readCellLayout, readCellStyle, readCellSpan } from "@/lib/constants/row
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
 import { buildDropZoneId } from "@/features/admin/builder/CanvasDropZone";
-import AddWidgetButton from "@/features/admin/builder/AddWidgetButton";
+// AddWidgetButton removed — widgets are added via drag-and-drop only.
 import { parseSpacing } from "@/lib/spacing";
 
 /* ─── style helpers ──────────────────────────────────────────────── */
@@ -167,11 +167,7 @@ const CellRenderer = ({ rowId, column, cell, renderWidgets }: CellRendererProps)
   ) : (
     <>
       {renderWidgets(cell, widgetBasePath)}
-      {builderEnabled && (
-        <div className="w-full" style={{ marginTop: 8 }}>
-          <AddWidgetButton onPick={handlePickAtEnd} variant="inline" />
-        </div>
-      )}
+      {/* Inline AddWidgetButton removed — drag a widget from the Elements tray to add. */}
     </>
   );
 
@@ -255,7 +251,9 @@ const EmptyCellPlaceholder = ({ rowId, colId, cellId, onPick }: EmptyCellPlaceho
           </span>
         </span>
       ) : (
-        <AddWidgetButton onPick={onPick} variant="block" />
+        <span className="font-body text-[11px] uppercase tracking-wider">
+          Drag a widget here
+        </span>
       )}
     </div>
   );
