@@ -112,11 +112,25 @@ const RowRenderer = ({
   rowIndex,
   align,
   globalMap,
+  nested = false,
+  parentRowId,
 }: {
   row: RenderableRow;
   rowIndex: number;
   align: Alignment;
   globalMap: Map<string, GlobalWidget>;
+  /**
+   * `nested = true` means this RowRenderer is being used to paint a
+   * single widget INSIDE a v2/v3 cell. In that case we MUST NOT add
+   * the outer `["row", row.id]` SelectableWrapper, because `row.id`
+   * here is a synthetic widget-id pretending to be a row-id — the
+   * inspector would parse the resulting selection as `row:<widgetId>`
+   * and fail with "selected element no longer exists" (Debug Story 1.1
+   * regression). Instead we wrap with `["row", parentRowId, "widget",
+   * widget.id]` so the path matches what `findWidgetLocation` expects.
+   */
+  nested?: boolean;
+  parentRowId?: string;
 }) => {
   const id = row.scope || slugify(row.strip_title);
   const vAlign: VAlign = row.layout?.verticalAlign || "middle";
@@ -147,6 +161,8 @@ const RowRenderer = ({
             rowIndex={rowIndex}
             align={align}
             globalMap={globalMap}
+            nested
+            parentRowId={row.id}
           />
         );
       });
