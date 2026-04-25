@@ -341,6 +341,16 @@ const SiteEditor = () => {
 
   return (
     <BuilderProvider>
+      {/* US 17.1 — single DndContext at the top of the builder so that
+          tray drags (left sidebar) and any future canvas-side targets
+          share one drag session. The DragOverlay renders the floating
+          ghost preview that follows the cursor across the whole screen. */}
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveDrag(null)}
+      >
       <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
       {/* ─── Top toolbar (US 14.2 + US 16.2) ──────────────────────────
           One global Save Draft button (saves every dirty section in a
