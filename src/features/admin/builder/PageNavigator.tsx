@@ -37,9 +37,12 @@
  * ──────────────────────────────────────────────────────────────────── */
 
 import { useMemo } from "react";
-import { Link2 } from "lucide-react";
+import { GripVertical, Link2 } from "lucide-react";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type { PageRow } from "@/types/rows";
 import { getWidget } from "@/lib/WidgetRegistry";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useBuilder } from "./BuilderContext";
 import ElementsTray from "./ElementsTray";
 
@@ -47,11 +50,7 @@ import ElementsTray from "./ElementsTray";
 const prettifyType = (s: string) =>
   s.replace(/[_-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-/** Resolve a clean human label for a row in the canvas. */
-const sectionLabelForRow = (row: any): string => {
-  if (row?.strip_title && String(row.strip_title).trim().length > 0) {
-    return String(row.strip_title);
-  }
+const fallbackLabelForRow = (row: any): string => {
   // v3 — first widget inside the first cell of the first column.
   const firstWidget =
     row?.columns?.[0]?.cells?.[0]?.widgets?.[0] ?? null;
@@ -66,6 +65,22 @@ const sectionLabelForRow = (row: any): string => {
   }
   return "Untitled section";
 };
+
+/** Resolve a clean human label for a row in the canvas. */
+const sectionLabelForRow = (row: any): string => {
+  if (row?.strip_title && String(row.strip_title).trim().length > 0) {
+    return String(row.strip_title);
+  }
+  return fallbackLabelForRow(row);
+};
+
+export type SectionNavDragData = {
+  source: "section-nav";
+  rowId: string;
+};
+
+export const isSectionNavDragData = (d: unknown): d is SectionNavDragData =>
+  !!d && typeof d === "object" && (d as any).source === "section-nav" && typeof (d as any).rowId === "string";
 
 /** Sanitise a slug as the user types. Allows letters/digits/hyphens. */
 const sanitiseSlug = (raw: string) =>
