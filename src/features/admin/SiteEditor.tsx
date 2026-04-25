@@ -48,7 +48,23 @@ const SECTION_NAV: { key: "hero" | "page_rows" | "main_page_seo"; label: string;
   { key: "main_page_seo", label: "SEO & Metadata", Icon: Search },
 ];
 
-const SiteEditor = () => {
+/**
+ * CanvasSelectionSurface — captures clicks on EMPTY canvas area to
+ * clear the active selection (US 15.2). Lives inside <BuilderProvider>
+ * so it can call `setActiveElement(null)` when the user clicks
+ * anywhere outside a SelectableWrapper. Selectable wrappers themselves
+ * call `e.stopPropagation()`, so a click that lands on a row/widget
+ * never reaches this handler.
+ */
+const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => {
+  const { setActiveElement } = useBuilder();
+  return (
+    <div onClick={() => setActiveElement(null)} className="contents">
+      {children}
+    </div>
+  );
+};
+
   const [sections, setSections] = useState<SectionData[]>([]);
   const [activeSection, setActiveSection] = useState<"hero" | "page_rows" | "main_page_seo">("hero");
   const [saving, setSaving] = useState<string | null>(null);
