@@ -59,7 +59,7 @@ const AdminLogin = () => {
     await runDbAction({
       action: () => supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${window.location.origin}/admin` },
+        options: { emailRedirectTo: `${window.location.origin}/admin/dashboard` },
       }),
       setLoading: setIsSendingLink,
       successMessage: "Magic link sent — check your email.",
