@@ -923,6 +923,7 @@ const AdminDashboard = ({ session }: Props) => {
               <SiteEditor /> brings its own AdminBuilderToolbar with Save
               Draft + Publish so we suppress these to avoid duplicates. */}
           {isSiteTab && !useNewBuilder && (
+            <>
               {cmsPage && (
                 <button
                   onClick={toggleCmsPagePublish}
