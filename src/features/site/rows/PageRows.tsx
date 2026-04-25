@@ -230,7 +230,7 @@ export const RowsRenderer = ({
   rows,
   footerSlot,
 }: {
-  rows: PageRow[];
+  rows: RenderableRow[];
   footerSlot?: React.ReactNode;
 }) => {
   const autoAlignments = computeAutoAlignments(rows);
