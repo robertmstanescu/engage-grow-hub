@@ -22,6 +22,7 @@ import { HeroView } from "@/features/site/HeroSection";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 // US 15.2 — selection state for the visual canvas.
 import { BuilderProvider, useBuilder } from "./builder/BuilderContext";
+import CanvasBreadcrumb from "./builder/CanvasBreadcrumb";
 import SelectableWrapper from "./builder/SelectableWrapper";
 // US 16.1 — contextual right-pane inspector, dispatched by activeElement.
 import InspectorPanel from "./inspector/InspectorPanel";
