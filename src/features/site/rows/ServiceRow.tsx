@@ -9,6 +9,9 @@ import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSection } from "./typography";
+// EPIC 1 / US 1.1 — atomic-node selection. SelectableWrapper renders
+// as a passthrough fragment on the public site (no BuilderProvider).
+import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 
 const hexToHslChannels = (hex: string): string | null => {
   if (!hex || !hex.startsWith("#") || hex.length < 7) return null;
