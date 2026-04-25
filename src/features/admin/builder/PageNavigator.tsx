@@ -37,7 +37,7 @@
  * ──────────────────────────────────────────────────────────────────── */
 
 import { useMemo } from "react";
-import { Link2 } from "lucide-react";
+import { Link2, History, ChevronRight } from "lucide-react";
 import type { PageRow } from "@/types/rows";
 import { getWidget } from "@/lib/WidgetRegistry";
 import { useBuilder } from "./BuilderContext";
