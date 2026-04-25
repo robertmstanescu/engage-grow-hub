@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { type PageRow } from "@/types/rows";
 import PageBuilderShell from "./PageBuilderShell";
 import RevisionHistoryPanel from "./RevisionHistoryPanel";
+import SchedulePublishPanel from "./SchedulePublishPanel";
 
 interface CmsPageRecord {
   id: string;
