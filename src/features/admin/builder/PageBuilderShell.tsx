@@ -444,8 +444,10 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                   {/* US 3.1 — strict scroll container. overflow-x-hidden +
                       min-w-0 keeps long inputs from blowing out the panel,
                       and gap-4 between sections (Content / Design /
-                      Scheduling) prevents visual collisions. */}
-                  <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 p-4 flex flex-col gap-4">
+                      Scheduling) prevents visual collisions. The wider
+                      px-6/py-5 padding gives form fields more breathing
+                      room so labels and inputs don't crowd the edges. */}
+                  <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 px-6 py-5 flex flex-col gap-4">
                     <InspectorPanel
                       seoMetaTitle={props.seoMetaTitle}
                       seoMetaDescription={props.seoMetaDescription}
