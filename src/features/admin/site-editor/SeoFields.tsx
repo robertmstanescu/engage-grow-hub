@@ -86,8 +86,14 @@ const SeoFields = ({
   onAiSummaryChange,
 }: Props) => {
   const aeoEnabled = typeof onAiSummaryChange === "function";
-  const aeoValue = aiSummary || "";
-  const aeoLen = aeoValue.length;
+
+  // Local mirrors so per-keystroke typing only re-renders THIS component
+  // — the upstream draft state (and therefore the canvas) only updates
+  // on blur / Enter. The character counters still live-update because
+  // they read `local`, not the deferred external value.
+  const desc = useDeferredText(metaDescription || "", onDescriptionChange);
+  const aeo = useDeferredText(aiSummary || "", onAiSummaryChange || (() => {}));
+  const aeoLen = aeo.local.length;
   // Counter is green ONLY inside the 60-320 window — matches AdminInsights.tsx.
   const aeoInRange = aeoLen >= AEO_MIN && aeoLen <= AEO_MAX;
 
