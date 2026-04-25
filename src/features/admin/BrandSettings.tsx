@@ -192,6 +192,12 @@ const BrandSettings = () => {
         </div>
       </div>
 
+      {/* ── Logos & Favicons (moved from GlobalSettings as part of
+       *  Epic 1: The Unified Brand Hub) ── */}
+      <AccordionSection id="branding" label="Logos & Favicon">
+        <BrandingEditor content={branding} onChange={updateBrandingField} />
+      </AccordionSection>
+
       {/* ── Colour Palette ── */}
       <AccordionSection id="palette" label="Colour Palette">
         <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
