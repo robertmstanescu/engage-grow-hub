@@ -480,6 +480,51 @@ const RowsManager = ({ rows, onChange }: Props) => {
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      {/*
+       * ─────────────────────────────────────────────────────────────
+       * GLOBAL WIDGET SETTINGS DRAWER (US 6.1 — "The Inspector")
+       * ─────────────────────────────────────────────────────────────
+       * One drawer, retargeted by `inspectedCell`. Reads / writes the
+       * `__design` blob on the targeted cell's content via the same
+       * `updateRowContent` / `updateColumnContent` helpers that the
+       * widget editors use — so saves go through ONE code path and
+       * trigger the existing autosave pipeline unchanged.
+       */}
+      {(() => {
+        const target = inspectedCell;
+        if (!target) return null;
+        const targetRow = rows.find((r) => r.id === target.rowId);
+        if (!targetRow) return null;
+        const cellContent = target.colIdx === 0
+          ? (targetRow.content || {})
+          : (targetRow.columns_data?.[target.colIdx - 1] || {});
+        const design = readDesignSettings(cellContent);
+        const writeDesign = (next: WidgetDesignSettings) => {
+          // WHY a single field write: `updateRowContent` /
+          // `updateColumnContent` already do an immutable merge under
+          // the hood, so we hand them the WHOLE settings object as the
+          // value of the reserved `__design` key. No deep-merge needed.
+          if (target.colIdx === 0) {
+            updateRowContent(target.rowId, "__design", next);
+          } else {
+            updateColumnContent(target.rowId, target.colIdx - 1, "__design", next);
+          }
+        };
+        const colCount = 1 + (targetRow.columns_data?.length || 0);
+        const label = colCount > 1
+          ? `${targetRow.type} · Col ${target.colIdx + 1} of ${colCount} · ${targetRow.strip_title}`
+          : `${targetRow.type} · ${targetRow.strip_title}`;
+        return (
+          <WidgetSettingsDrawer
+            open={true}
+            onOpenChange={(o) => { if (!o) setInspectedCell(null); }}
+            design={design}
+            onChange={writeDesign}
+            widgetLabel={label}
+          />
+        );
+      })()}
     </div>
   );
 };
