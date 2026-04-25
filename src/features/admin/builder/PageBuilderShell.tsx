@@ -287,6 +287,11 @@ export interface PageBuilderShellProps {
   publishing: boolean;
   hasChanges: boolean;
 
+  /** Optional publish-lifecycle props — see AdminBuilderToolbarProps. */
+  publishStatus?: "draft" | "published" | string;
+  onUnpublish?: () => Promise<void> | void;
+  unpublishing?: boolean;
+
   /** Optional pre-canvas slot (e.g. main page renders Hero here). */
   preCanvas?: React.ReactNode;
 
@@ -369,6 +374,9 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
             onPublish={() => props.onPublish()}
             publishing={props.publishing}
             hasChanges={props.hasChanges}
+            publishStatus={props.publishStatus}
+            onUnpublish={props.onUnpublish ? () => props.onUnpublish?.() : undefined}
+            unpublishing={props.unpublishing}
           />
 
           {/* Debug Story 1.2 — at very narrow widths the 3-pane budget

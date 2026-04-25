@@ -53,6 +53,7 @@ const CmsPageBuilder = ({ pageId }: Props) => {
   const [pageSlug, setPageSlug] = useState("");
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [unpublishing, setUnpublishing] = useState(false);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -209,6 +210,24 @@ const CmsPageBuilder = ({ pageId }: Props) => {
     setPublishing(false);
   }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, checkSlugAvailable]);
 
+  /** Revert the page back to draft so it disappears from the public
+   *  site. We deliberately do NOT touch page_rows / draft_page_rows so
+   *  the user keeps everything they had — only the visibility flips. */
+  const onUnpublish = useCallback(async () => {
+    if (!record) return;
+    setUnpublishing(true);
+    const { error } = await supabase
+      .from("cms_pages")
+      .update({ status: "draft" } as any)
+      .eq("id", record.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Unpublished — page is no longer visible to the public");
+      setRecord({ ...record, status: "draft" });
+    }
+    setUnpublishing(false);
+  }, [record]);
+
   const onPreview = useCallback(() => {
     if (!record) return;
     // Use the latest in-memory slug — typing a new slug and hitting
@@ -245,6 +264,9 @@ const CmsPageBuilder = ({ pageId }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      publishStatus={record.status}
+      onUnpublish={onUnpublish}
+      unpublishing={unpublishing}
       schedulePanel={
         <SchedulePublishPanel
           entityType="cms_pages"

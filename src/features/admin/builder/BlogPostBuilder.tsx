@@ -69,6 +69,7 @@ const BlogPostBuilder = ({ postId }: Props) => {
   const [pageSlug, setPageSlug] = useState("");
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [unpublishing, setUnpublishing] = useState(false);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -223,6 +224,22 @@ const BlogPostBuilder = ({ postId }: Props) => {
     setPublishing(false);
   }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, checkSlugAvailable]);
 
+  /** Revert post to draft so it leaves /blog without losing content. */
+  const onUnpublish = useCallback(async () => {
+    if (!record) return;
+    setUnpublishing(true);
+    const { error } = await supabase
+      .from("blog_posts")
+      .update({ status: "draft" } as any)
+      .eq("id", record.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Unpublished — post is no longer visible to the public");
+      setRecord({ ...record, status: "draft" });
+    }
+    setUnpublishing(false);
+  }, [record]);
+
   const onPreview = useCallback(() => {
     if (!record) return;
     onSaveDraft().then(() => window.open(`/blog/${pageSlug || record.slug}?preview=1`, "_blank"));
@@ -257,6 +274,9 @@ const BlogPostBuilder = ({ postId }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      publishStatus={record.status}
+      onUnpublish={onUnpublish}
+      unpublishing={unpublishing}
       schedulePanel={
         <SchedulePublishPanel
           entityType="blog_posts"

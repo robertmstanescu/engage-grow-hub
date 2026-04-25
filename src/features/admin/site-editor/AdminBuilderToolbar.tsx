@@ -1,4 +1,4 @@
-import { Monitor, Tablet, Smartphone, Eye, Pencil, Save, Send, FileText, ExternalLink } from "lucide-react";
+import { Monitor, Tablet, Smartphone, Eye, Pencil, Save, Send, FileText, ExternalLink, EyeOff } from "lucide-react";
 
 /**
  * Viewport modes drive the Canvas wrapper width in SiteEditor.
@@ -44,6 +44,20 @@ interface AdminBuilderToolbarProps {
   onPublish: () => void;
   publishing: boolean;
   hasChanges: boolean;
+
+  /**
+   * Optional publish lifecycle controls. When provided we render an
+   * "Unpublish" button next to "Publish" if the entity is currently
+   * `published`. The Publish button is also enabled even with no
+   * unsaved changes when the entity is still a `draft` — so admins
+   * can promote a freshly-loaded draft straight to live.
+   *
+   * Section editors (e.g. Hero, About) don't have a draft/published
+   * lifecycle, so these props are optional.
+   */
+  publishStatus?: "draft" | "published" | string;
+  onUnpublish?: () => void;
+  unpublishing?: boolean;
 }
 
 const VIEWPORTS: { key: ViewportMode; label: string; Icon: typeof Monitor }[] = [
@@ -69,7 +83,20 @@ const AdminBuilderToolbar = ({
   onPublish,
   publishing,
   hasChanges,
+  publishStatus,
+  onUnpublish,
+  unpublishing,
 }: AdminBuilderToolbarProps) => {
+  // The "Publish" button is enabled when:
+  //   • there are unsaved changes (always — clicking it pushes them live), OR
+  //   • the entity is a draft (lets the admin promote a freshly-loaded
+  //     draft straight to live without first making a no-op edit).
+  // For sections without a lifecycle (publishStatus === undefined) we
+  // keep the legacy behaviour: enable only when there are changes.
+  const isDraft = publishStatus === "draft";
+  const publishEnabled = hasChanges || isDraft;
+  const showUnpublish = !!onUnpublish && publishStatus === "published";
+
   // Reusable segment styling so the two pill groups stay visually identical.
   const segmentBtn = (active: boolean): React.CSSProperties => ({
     backgroundColor: active ? "hsl(var(--accent))" : "transparent",
@@ -205,11 +232,34 @@ const AdminBuilderToolbar = ({
           <Save size={12} /> {saving ? "Saving…" : saveLabel}
         </button>
 
+        {/* Unpublish — only when the entity is currently live and the
+            adapter wired an onUnpublish handler. Reverts to "draft" so the
+            page disappears from the public site without losing content. */}
+        {showUnpublish && (
+          <button
+            onClick={onUnpublish}
+            disabled={!!unpublishing}
+            title="Hide this page from the public site (status reverts to draft)"
+            className="admin-btn-secondary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full"
+          >
+            <EyeOff size={12} /> {unpublishing ? "Unpublishing…" : "Unpublish"}
+          </button>
+        )}
+
         {/* US 4.1 — vibrant indigo primary action. Drives the eye and
             abandons the prior flat-grey/gold styling. */}
         <button
           onClick={onPublish}
-          disabled={publishing || !hasChanges}
+          disabled={publishing || !publishEnabled}
+          title={
+            publishing
+              ? "Publishing…"
+              : !publishEnabled
+              ? "No changes to publish"
+              : isDraft && !hasChanges
+              ? "Promote this draft to live"
+              : "Publish your changes"
+          }
           className="admin-btn-primary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-1.5 rounded-full font-semibold"
         >
           <Send size={12} /> {publishing ? "Publishing…" : "Publish All"}
