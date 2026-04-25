@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Layout, Image as ImageIcon, Search, MousePointer2, Eye, Pencil } from "lucide-react";
+import { Layout, Image as ImageIcon, Search, Eye, Pencil } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
