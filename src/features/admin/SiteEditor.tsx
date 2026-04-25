@@ -81,10 +81,9 @@ interface SectionData {
  * at page_rows[0]; no separate left-rail tab and no separate Supabase
  * section. The remaining sections are page_rows (the canvas) and
  * main_page_seo (page-wide metadata). */
-const SECTION_NAV: { key: "page_rows" | "main_page_seo"; label: string; Icon: any }[] = [
-  { key: "page_rows", label: "Page Rows", Icon: Layout },
-  { key: "main_page_seo", label: "SEO & Metadata", Icon: Search },
-];
+// US 2.3 — SECTION_NAV is gone. Sections are now derived from page_rows
+// inside <PageNavigator />. The "main_page_seo" surface lives in the
+// inspector and SEO modal, not in a left-rail tab.
 
 /**
  * CanvasSelectionSurface — captures clicks on EMPTY canvas area to
