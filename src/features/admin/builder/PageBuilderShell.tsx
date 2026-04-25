@@ -383,6 +383,12 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                       seoMetaDescription={props.seoMetaDescription}
                       onSeoTitleChange={props.onSeoTitleChange}
                       onSeoDescriptionChange={props.onSeoDescriptionChange}
+                      pageName={props.pageName}
+                      onPageNameChange={props.onPageNameChange}
+                      pageSlug={props.pageSlug}
+                      onPageSlugChange={props.onPageSlugChange}
+                      ogImage={props.ogImage}
+                      onOgImageChange={props.onOgImageChange}
                       heroContent={{}}
                       onHeroFieldChange={() => {}}
                       pageRows={props.pageRows}
