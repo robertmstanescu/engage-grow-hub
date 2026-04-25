@@ -622,12 +622,11 @@ const WidgetCell = ({
           backgroundColor: dropTarget.isOver
             ? "hsl(var(--primary) / 0.08)"
             : "hsl(var(--background))",
-          color: "hsl(var(--primary))",
+          color: "hsl(var(--muted-foreground))",
         }}
-        title={`Column ${colIdx + 1} — Add Widget (drop here)`}
+        title={`Column ${colIdx + 1} — drop a widget here`}
       >
-        <Plus size={18} />
-        <span className="font-body text-[10px] uppercase tracking-wider">Add Widget</span>
+        <span className="font-body text-[10px] uppercase tracking-wider">Drop widget here</span>
         <span className="font-body text-[9px] text-muted-foreground">
           Col {colIdx + 1} · {Math.round(widthPct)}%
         </span>
