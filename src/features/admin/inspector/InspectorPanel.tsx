@@ -10,9 +10,6 @@ import CellSettingsEditor from "./CellSettingsEditor";
 import { type BoxField } from "./BoxModelControl";
 import WidgetInspectorTabs, { pickTabForFocusKey, type InspectorTab } from "./WidgetInspectorTabs";
 import { DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/types/rows";
-// US 3.2 — provide the live cell/row bg colour to nested field components
-// so Title/Subtitle/Body inputs adopt the same surface as the canvas.
-import { SurfaceBgProvider } from "./SurfaceBgContext";
 // Debug Story 1.1 — sibling-safe widget lookup/patch helpers. The
 // inspector cannot just `pageRows.find(r => r.id === widgetId)` because
 // v2/v3 rows host MANY widgets per row; that lookup either misses the
@@ -82,10 +79,9 @@ export interface InspectorPanelProps {
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="mb-5">
-    <h4
-      className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-2.5"
-      style={{ color: "hsl(var(--muted-foreground))" }}
-    >
+    {/* US 4.1 — admin-section-label gives slate-600 + bold so the header
+        stops vanishing into the white panel surface. */}
+    <h4 className="admin-section-label font-body text-[10px] mb-2.5">
       {title}
     </h4>
     <div className="space-y-3">{children}</div>
@@ -351,23 +347,6 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     const widgetContent = readWidgetContent(pageRows, loc);
     const widgetType = readWidgetType(pageRows, loc);
 
-    /* US 3.2 — resolve the EFFECTIVE surface background by walking up
-     * the DOM tree from most-specific to least: per-widget design bg →
-     * cell.bg_color → column.bg_color → row.bg_color. The first non-
-     * empty value wins. This colour is provided to nested field
-     * components via <SurfaceBgProvider> so Title/Subtitle/Body inputs
-     * adopt the real surface (and labels stay readable via
-     * pickForeground). */
-    const ancestorRow: any = pageRows[loc.rowIdx];
-    const ancestorCol: any = ancestorRow?.columns?.[loc.colIdx];
-    const ancestorCell: any = ancestorCol?.cells?.[loc.cellIdx];
-    const widgetDesignBg =
-      (widgetContent?.__design && (widgetContent.__design as any).bgColor) || "";
-    const effectiveSurfaceBg: string =
-      [widgetDesignBg, ancestorCell?.bg_color, ancestorCol?.bg_color, ancestorRow?.bg_color]
-        .map((v) => (typeof v === "string" ? v.trim() : ""))
-        .find((v) => v.length > 0) || "";
-
     /** Sibling-safe patch: replace ONE field on the targeted widget. */
     const updateWidgetField = (field: string, value: any) => {
       onRowsChange(
@@ -397,15 +376,9 @@ const InspectorPanel = (props: InspectorPanelProps) => {
 
     /* Resolve the per-widget admin editor — registry first, then a
      * legacy switch for widgets that haven't been ported yet. The
-     * resulting node renders inside the Content tab.
-     *
-     * US 3.2 — every editor below is wrapped in a SurfaceBgProvider so
-     * its nested Field / TextArea / RichField / SectionBox instances
-     * pick up the live cell/row bg colour. We DON'T pass the colour as
-     * a prop because doing so would require touching every editor; the
-     * provider lets us do it once at the boundary. */
+     * resulting node renders inside the Content tab. */
     const def = getWidget(widgetType as any);
-    const rawContentEditor = def?.adminComponent
+    const contentEditor = def?.adminComponent
       ? (() => {
           const Admin = def.adminComponent!;
           return <Admin content={widgetContent} onChange={updateWidgetField} />;
@@ -439,12 +412,6 @@ const InspectorPanel = (props: InspectorPanelProps) => {
               );
           }
         })();
-
-    const contentEditor = (
-      <SurfaceBgProvider bgColor={effectiveSurfaceBg}>
-        {rawContentEditor}
-      </SurfaceBgProvider>
-    );
 
     const widgetLabel = def?.label || widgetType;
 

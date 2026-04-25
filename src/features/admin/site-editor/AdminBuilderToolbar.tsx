@@ -189,31 +189,28 @@ const AdminBuilderToolbar = ({
           <ExternalLink size={13} />
         </button>
 
+        {/* US 4.1 — secondary outlined "Save Draft" so the eye lands on
+            the vibrant primary "Publish" CTA next to it. The "unpublished"
+            indicator pill (left side of toolbar) still cues the user that
+            unsaved work exists. */}
         <button
           onClick={onSaveDraft}
           disabled={saving}
           title={hasChanges ? "You have unsaved changes — click to save the draft" : "No changes to save"}
-          className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full hover:opacity-80 transition-all disabled:opacity-50"
+          className="admin-btn-secondary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full"
           style={{
-            backgroundColor: hasChanges ? "hsl(var(--accent) / 0.18)" : "transparent",
-            border: hasChanges
-              ? "1px solid hsl(var(--accent))"
-              : "1px solid hsl(var(--border))",
-            color: hasChanges ? "hsl(var(--accent-foreground))" : "hsl(var(--foreground))",
-            fontWeight: hasChanges ? 600 : 400,
+            fontWeight: hasChanges ? 600 : 500,
           }}
         >
           <Save size={12} /> {saving ? "Saving…" : saveLabel}
         </button>
 
+        {/* US 4.1 — vibrant indigo primary action. Drives the eye and
+            abandons the prior flat-grey/gold styling. */}
         <button
           onClick={onPublish}
           disabled={publishing || !hasChanges}
-          className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40"
-          style={{
-            backgroundColor: "hsl(var(--accent))",
-            color: "hsl(var(--accent-foreground))",
-          }}
+          className="admin-btn-primary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-1.5 rounded-full font-semibold"
         >
           <Send size={12} /> {publishing ? "Publishing…" : "Publish All"}
         </button>

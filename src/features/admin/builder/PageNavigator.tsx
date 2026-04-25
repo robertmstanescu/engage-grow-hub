@@ -36,31 +36,12 @@
  *   producing broken routes. Adapters validate uniqueness on save.
  * ──────────────────────────────────────────────────────────────────── */
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Link2, History, ChevronRight, GripVertical } from "lucide-react";
+import { useMemo } from "react";
+import { Link2 } from "lucide-react";
 import type { PageRow } from "@/types/rows";
 import { getWidget } from "@/lib/WidgetRegistry";
 import { useBuilder } from "./BuilderContext";
 import ElementsTray from "./ElementsTray";
-// Sortable section list (drag to reorder rows from the navigator).
-// We mount a NESTED DndContext so section drags don't collide with the
-// outer tray/canvas drag session — the two contexts wrap disjoint DOM
-// subtrees and pointer activation is local to whichever was started.
-import {
-  DndContext,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  closestCenter,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 
 /** Convert a snake_case widget type to "Snake Case" Title Case. */
 const prettifyType = (s: string) =>
@@ -94,142 +75,6 @@ const sanitiseSlug = (raw: string) =>
     .replace(/[^a-z0-9-]/g, "")
     .replace(/-+/g, "-");
 
-/* ──────────────────────────────────────────────────────────────────
- * SortableSectionItem — one row in the Sections list.
- *
- * Two interactions on top of the existing click-to-jump:
- *
- *   • DOUBLE-CLICK to rename inline. The label becomes a text input
- *     committed on Blur or Enter. We commit to `row.strip_title`,
- *     which is the same field the renderer falls back to for the
- *     section label, so the change is visible immediately.
- *
- *   • DRAG (via the GripVertical handle) to reorder. The drag handle
- *     is the ONLY surface bound to dnd-kit's listeners — clicks on the
- *     label still fire `onClick` so navigation keeps working.
- * ────────────────────────────────────────────────────────────────── */
-interface SortableSectionItemProps {
-  id: string;
-  index: number;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-  onRename: (next: string) => void;
-}
-
-const SortableSectionItem = ({
-  id,
-  index,
-  label,
-  isActive,
-  onClick,
-  onRename,
-}: SortableSectionItemProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id });
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    backgroundColor: isActive ? "hsl(var(--accent) / 0.18)" : "transparent",
-    color: isActive ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
-    fontWeight: isActive ? 500 : 400,
-  };
-
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(label);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Re-sync the local draft if the upstream label changes while we're
-  // NOT editing. When editing, keep the user's in-flight text untouched.
-  useEffect(() => {
-    if (!editing) setDraft(label);
-  }, [label, editing]);
-
-  // Auto-focus + select the input the moment we enter rename mode.
-  useEffect(() => {
-    if (editing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [editing]);
-
-  const commit = () => {
-    setEditing(false);
-    const trimmed = draft.trim();
-    // Only fire an upstream write if something actually changed —
-    // avoids flagging the page as dirty for a no-op double-click.
-    if (trimmed && trimmed !== label) onRename(trimmed);
-    else setDraft(label);
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="group/section flex items-center gap-1 px-2 py-1.5 rounded-md font-body text-xs transition-colors"
-      onMouseEnter={(e) => {
-        if (!isActive) e.currentTarget.style.backgroundColor = "hsl(var(--muted) / 0.5)";
-      }}
-      onMouseLeave={(e) => {
-        if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
-      }}
-    >
-      {/* Drag handle — ONLY this element binds dnd-kit listeners so
-          clicks/double-clicks on the label aren't swallowed by drag. */}
-      <button
-        type="button"
-        {...attributes}
-        {...listeners}
-        aria-label="Reorder section"
-        className="flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/section:opacity-60 hover:opacity-100 transition-opacity touch-none"
-        style={{ color: "hsl(var(--muted-foreground))" }}
-      >
-        <GripVertical size={12} aria-hidden />
-      </button>
-
-      <span
-        className="font-mono text-[10px] tabular-nums"
-        style={{ color: "hsl(var(--muted-foreground))", minWidth: 18 }}
-      >
-        {String(index + 1).padStart(2, "0")}
-      </span>
-
-      {editing ? (
-        <input
-          ref={inputRef}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commit();
-            if (e.key === "Escape") {
-              setDraft(label);
-              setEditing(false);
-            }
-          }}
-          className="flex-1 min-w-0 bg-transparent border-0 px-1 -mx-1 rounded focus:outline-none focus:ring-1"
-          style={{
-            color: "hsl(var(--foreground))",
-            boxShadow: "inset 0 0 0 1px hsl(var(--accent) / 0.4)",
-          }}
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={onClick}
-          onDoubleClick={() => setEditing(true)}
-          className="flex-1 min-w-0 truncate text-left bg-transparent border-0 p-0 cursor-pointer"
-          style={{ color: "inherit" }}
-          title="Click to jump · Double-click to rename"
-        >
-          {label}
-        </button>
-      )}
-    </div>
-  );
-};
-
 export interface PageNavigatorProps {
   /** Editable page title shown at the very top. */
   pageTitle: string;
@@ -249,16 +94,6 @@ export interface PageNavigatorProps {
 
   /** All rows in the current draft — used to render the section list. */
   pageRows: PageRow[];
-
-  /** Optional scheduling panel rendered directly under the Page URL slot.
-   *  (Moved here from the right sidebar so scheduling sits with page
-   *  identity instead of competing with element-level inputs.) */
-  schedulePanel?: React.ReactNode;
-
-  /** Optional revision-history panel rendered below the Elements tray
-   *  inside a collapsed disclosure — out of sight until the editor wants
-   *  to roll back. */
-  revisionPanel?: React.ReactNode;
 }
 
 const PageNavigator = ({
@@ -269,10 +104,8 @@ const PageNavigator = ({
   slugEditable = true,
   slugPrefix = "/",
   pageRows,
-  schedulePanel,
-  revisionPanel,
 }: PageNavigatorProps) => {
-  const { activeNodePath, setActiveElement, onRowsChange } = useBuilder();
+  const { activeNodePath, setActiveElement } = useBuilder();
 
   /** Resolve the active row id from the selection path so we can mark
    *  the corresponding section as active in the navigator. */
@@ -304,39 +137,6 @@ const PageNavigator = ({
     });
   };
 
-  /** Inline rename — writes to `row.strip_title`, which is the first
-   *  field `sectionLabelForRow` consults. Falls through silently when
-   *  the BuilderContext was mounted without `onRowsChange` (read-only). */
-  const handleRename = (rowId: string, nextLabel: string) => {
-    if (!onRowsChange) return;
-    onRowsChange(
-      (pageRows || []).map((r) =>
-        r.id === rowId ? ({ ...r, strip_title: nextLabel } as PageRow) : r,
-      ),
-    );
-  };
-
-  /** Drag-to-reorder — driven by the nested DndContext below. We use
-   *  arrayMove against the row ids so v3 column/cell trees stay intact
-   *  (no per-cell mutation, just a top-level shuffle). */
-  const handleReorder = (event: DragEndEvent) => {
-    if (!onRowsChange) return;
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const fromIdx = (pageRows || []).findIndex((r) => r.id === active.id);
-    const toIdx = (pageRows || []).findIndex((r) => r.id === over.id);
-    if (fromIdx === -1 || toIdx === -1) return;
-    onRowsChange(arrayMove(pageRows || [], fromIdx, toIdx));
-  };
-
-  /** Local sensors for the SECTION sortable. distance:5 prevents a
-   *  click from registering as a drag, so double-click rename still
-   *  works. The outer tray DndContext owns its own sensors and is
-   *  unaffected by anything bound here. */
-  const sectionSensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-  );
-
   const titleReadOnly = !onPageTitleChange;
   const slugReadOnly = !slugEditable || !onPageSlugChange;
 
@@ -345,14 +145,11 @@ const PageNavigator = ({
       {/* ── Slot 1+2 ── Page identity card ───────────────────────── */}
       <div
         className="px-4 pt-4 pb-3 border-b space-y-3"
-        style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+        style={{ borderColor: "hsl(var(--border))" }}
       >
-        {/* Slot 1 — Page Title */}
+        {/* Slot 1 — Page Title (US 4.1: stronger label & input contrast) */}
         <div className="space-y-1">
-          <label
-            className="block font-body text-[10px] uppercase tracking-[0.18em]"
-            style={{ color: "hsl(var(--muted-foreground))" }}
-          >
+          <label className="admin-section-label block font-body text-[10px]">
             Page Title
           </label>
           <input
@@ -367,7 +164,7 @@ const PageNavigator = ({
               borderColor: "hsl(var(--border))",
             }}
             onFocus={(e) => {
-              if (!titleReadOnly) e.currentTarget.style.borderColor = "hsl(var(--accent))";
+              if (!titleReadOnly) e.currentTarget.style.borderColor = "hsl(var(--admin-primary, 239 84% 53%))";
             }}
             onBlur={(e) => {
               e.currentTarget.style.borderColor = "hsl(var(--border))";
@@ -377,26 +174,23 @@ const PageNavigator = ({
 
         {/* Slot 2 — Page URL Slug */}
         <div className="space-y-1">
-          <label
-            className="block font-body text-[10px] uppercase tracking-[0.18em]"
-            style={{ color: "hsl(var(--muted-foreground))" }}
-          >
+          <label className="admin-section-label block font-body text-[10px]">
             Page URL
           </label>
           <div
             className="flex items-center gap-1.5 rounded-md px-2 py-1.5 border"
             style={{
-              backgroundColor: slugReadOnly ? "hsl(var(--muted) / 0.4)" : "hsl(var(--background))",
+              backgroundColor: slugReadOnly ? "hsl(var(--muted) / 0.6)" : "hsl(0 0% 100%)",
               borderColor: "hsl(var(--border))",
             }}
           >
             <Link2
               size={12}
-              style={{ color: "hsl(var(--muted-foreground))", flexShrink: 0 }}
+              style={{ color: "hsl(215 19% 35%)", flexShrink: 0 }}
             />
             <span
               className="font-mono text-xs select-none"
-              style={{ color: "hsl(var(--muted-foreground))" }}
+              style={{ color: "hsl(215 19% 35%)" }}
             >
               {slugPrefix}
             </span>
@@ -415,24 +209,9 @@ const PageNavigator = ({
         </div>
       </div>
 
-      {/* ── Slot 2b ── Schedule (publish window) ─────────────────────
-          Lives directly under the Page URL block: scheduling is a
-          PAGE-LEVEL setting, so it belongs with page identity rather
-          than competing with element-level inputs in the right pane. */}
-      {schedulePanel ? (
-        <div
-          className="px-4 py-3 border-b"
-          style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-        >
-          {schedulePanel}
-        </div>
-      ) : null}
       {/* ── Slot 3 ── Sections of the canvas ───────────────────── */}
       <div className="px-3 pt-3 pb-2">
-        <h3
-          className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-2"
-          style={{ color: "hsl(var(--muted-foreground))" }}
-        >
+        <h3 className="admin-section-label font-body text-[10px] mb-2">
           Sections
         </h3>
       </div>
@@ -443,77 +222,43 @@ const PageNavigator = ({
         {sections.length === 0 ? (
           <p
             className="px-3 py-2 font-body text-xs italic"
-            style={{ color: "hsl(var(--muted-foreground))" }}
+            style={{ color: "hsl(215 19% 45%)" }}
           >
             No sections yet — drag an element onto the canvas.
           </p>
         ) : (
-          /* Nested DndContext — wraps ONLY the section list, so its
-             pointer activation never collides with the outer canvas
-             tray DndContext. closestCenter is the standard collision
-             strategy for vertical lists. */
-          <DndContext
-            sensors={sectionSensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleReorder}
-          >
-            <SortableContext
-              items={sections.map((s) => s.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {sections.map((section) => (
-                <SortableSectionItem
-                  key={section.id}
-                  id={section.id}
-                  index={section.index}
-                  label={section.label}
-                  isActive={section.id === activeRowId}
-                  onClick={() => goToSection(section.id)}
-                  onRename={(next) => handleRename(section.id, next)}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
+          sections.map((section) => {
+            const isActive = section.id === activeRowId;
+            return (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => goToSection(section.id)}
+                data-active={isActive ? "true" : "false"}
+                className="admin-sidebar-item w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left font-body text-xs"
+              >
+                <span
+                  className="font-mono text-[10px] tabular-nums"
+                  style={{ color: "inherit", opacity: 0.7, minWidth: 18 }}
+                >
+                  {String(section.index + 1).padStart(2, "0")}
+                </span>
+                <span className="flex-1 truncate">{section.label}</span>
+              </button>
+            );
+          })
         )}
       </nav>
 
       {/* ── Slot 4 ── Elements tray ─────────────────────────────── */}
       <div
         className="flex-1 min-h-0 border-t px-3 py-3 overflow-y-auto"
-        style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+        style={{ borderColor: "hsl(var(--border))" }}
       >
-        <h3
-          className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
-          style={{ color: "hsl(var(--muted-foreground))" }}
-        >
+        <h3 className="admin-section-label font-body text-[10px] mb-3">
           Elements
         </h3>
         <ElementsTray />
-
-        {/* ── Slot 5 ── Revision history (collapsed by default) ─────
-            Demoted from the right sidebar: roll-back is rare, so it
-            sits inside a collapsed disclosure under the Elements tray
-            where it's discoverable but never in the way. */}
-        {revisionPanel ? (
-          <details
-            className="mt-4 pt-3 border-t group"
-            style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-          >
-            <summary
-              className="flex items-center gap-1.5 cursor-pointer list-none font-body text-[10px] uppercase tracking-[0.18em] font-medium select-none"
-              style={{ color: "hsl(var(--muted-foreground))" }}
-            >
-              <ChevronRight
-                size={12}
-                className="transition-transform group-open:rotate-90"
-                aria-hidden
-              />
-              <History size={12} aria-hidden />
-              <span>Revision history</span>
-            </summary>
-            <div className="mt-3">{revisionPanel}</div>
-          </details>
-        ) : null}
       </div>
     </div>
   );

@@ -367,24 +367,124 @@
     transform: scale(1.02);
   }
 
-  /* ── Admin light theme ── */
+  /* ──────────────────────────────────────────────────────────────────
+     ADMIN LIGHT THEME — EPIC 4 / US 4.1 High-Contrast Audit
+     ──────────────────────────────────────────────────────────────────
+     The admin panel previously felt like a wireframe (grey-on-grey).
+     This rebuild raises the contrast floor so labels, body copy and
+     section titles inside the admin shell read as confidently as a
+     finished SaaS product:
+
+       --foreground             slate-900 (titles, primary text)
+       --muted-foreground       slate-700 (labels, secondary text — was
+                                grey-on-grey at 40%, now 28% lightness
+                                so it always passes WCAG AA on white)
+       --border                 slate-200 (sharper but not harsh)
+
+     PRIMARY ACTION COLOR
+     --------------------
+     `--admin-primary` is a vibrant indigo (Tailwind indigo-600 ≈ 239
+     84% 53%). Used for "Save", "Publish", "Add Element" — anywhere we
+     want the eye drawn to the next thing. Pairs with `--admin-primary
+     -hover` for hover states. The brand gold (--accent) is reserved
+     for content emphasis on the public site; the admin shell uses a
+     neutral-yet-vibrant indigo so it doesn't fight the live preview
+     colors editors are working on. */
   .admin-light {
     --background: 30 20% 96%;
-    --foreground: 260 20% 10%;
+    --foreground: 222 47% 11%; /* slate-900 — sharp body text */
     --card: 0 0% 100%;
-    --card-foreground: 260 20% 10%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 260 20% 10%;
-    --muted: 30 10% 92%;
-    --muted-foreground: 260 10% 40%;
-    --border: 30 10% 85%;
-    --input: 30 10% 85%;
-    --ring: 280 55% 24%;
+    --popover-foreground: 222 47% 11%;
+    --muted: 210 40% 96%; /* slate-100 — clean hover surface */
+    --muted-foreground: 215 25% 28%; /* slate-700 — readable secondary */
+    --border: 214 32% 88%; /* slate-200 — sharper card edges */
+    --input: 214 32% 88%;
+    --ring: 239 84% 53%; /* indigo-600 — focus ring matches CTA */
+
+    /* Sidebars */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 260 20% 10%;
-    --sidebar-accent: 280 20% 94%;
-    --sidebar-accent-foreground: 260 20% 10%;
-    --sidebar-border: 30 10% 88%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-accent: 210 40% 96%; /* slate-100 hover */
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 88%;
+
+    /* Vibrant primary action color (indigo-600) */
+    --admin-primary: 239 84% 53%;
+    --admin-primary-hover: 243 75% 47%; /* indigo-700 */
+    --admin-primary-foreground: 0 0% 100%;
+  }
+
+  /* Reusable primary-action button for the admin shell. Vibrant indigo
+     on a white card; lifts on hover; clear focus ring. */
+  .admin-light .admin-btn-primary,
+  .admin-btn-primary {
+    background-color: hsl(var(--admin-primary, 239 84% 53%));
+    color: hsl(var(--admin-primary-foreground, 0 0% 100%));
+    border: 1px solid hsl(var(--admin-primary, 239 84% 53%));
+    box-shadow: 0 1px 2px 0 hsl(222 47% 11% / 0.08);
+    transition: background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  }
+  .admin-light .admin-btn-primary:hover:not(:disabled),
+  .admin-btn-primary:hover:not(:disabled) {
+    background-color: hsl(var(--admin-primary-hover, 243 75% 47%));
+    border-color: hsl(var(--admin-primary-hover, 243 75% 47%));
+    box-shadow: 0 4px 12px -2px hsl(239 84% 53% / 0.35);
+  }
+  .admin-light .admin-btn-primary:disabled,
+  .admin-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  /* Secondary outlined admin button — for "Save Draft" type actions
+     that should read as strong but not steal focus from the publish
+     primary. Slate border, white surface, clear hover. */
+  .admin-light .admin-btn-secondary,
+  .admin-btn-secondary {
+    background-color: hsl(0 0% 100%);
+    color: hsl(222 47% 11%);
+    border: 1px solid hsl(214 32% 80%);
+    transition: background-color 150ms ease, border-color 150ms ease;
+  }
+  .admin-light .admin-btn-secondary:hover:not(:disabled),
+  .admin-btn-secondary:hover:not(:disabled) {
+    background-color: hsl(210 40% 96%);
+    border-color: hsl(214 32% 65%);
+  }
+  .admin-light .admin-btn-secondary:disabled,
+  .admin-btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Sidebar list item — clear hover (slate-100) and active state.
+     Replaces the inline `hsl(var(--muted) / 0.5)` hover that was nearly
+     invisible on the white sidebar surface. */
+  .admin-sidebar-item {
+    color: hsl(215 25% 27%); /* slate-700 by default */
+    transition: background-color 120ms ease, color 120ms ease;
+  }
+  .admin-sidebar-item:hover {
+    background-color: hsl(210 40% 96%); /* slate-100 */
+    color: hsl(222 47% 11%); /* slate-900 on hover */
+  }
+  .admin-sidebar-item[data-active="true"] {
+    background-color: hsl(239 84% 53% / 0.10);
+    color: hsl(239 84% 35%); /* indigo-700 */
+    font-weight: 500;
+  }
+
+  /* Sidebar/inspector section header — uppercase eyebrow text. Was
+     muted-foreground (40% lightness) which felt washed out; bumped to
+     slate-600 so it reads as deliberate metadata. */
+  .admin-section-label {
+    color: hsl(215 19% 35%); /* slate-600 */
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
   }
 
   /* ── Glow effects ── */

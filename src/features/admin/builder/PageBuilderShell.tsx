@@ -360,9 +360,9 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                   className="h-full flex flex-col"
                   style={{ backgroundColor: "hsl(var(--card))" }}
                 >
-                  {/* US 2.3 — Left Sidebar Navigator: Page Title + URL,
-                      Schedule (page-level setting), canvas section list,
-                      Elements tray, and (collapsed) Revision history. */}
+                  {/* US 2.3 — Left Sidebar Navigator: Page Title + URL
+                      slot at the top, then the canvas section list,
+                      then the Elements tray. */}
                   <PageNavigator
                     pageTitle={props.pageTitle}
                     onPageTitleChange={props.onPageTitleChange}
@@ -371,8 +371,6 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     slugEditable={props.slugEditable}
                     slugPrefix={props.slugPrefix}
                     pageRows={props.pageRows}
-                    schedulePanel={props.schedulePanel}
-                    revisionPanel={props.inspectorFooter}
                   />
                 </aside>
               );
@@ -409,22 +407,18 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                 >
                   <div
                     className="px-4 py-3 border-b"
-                    style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+                    style={{ borderColor: "hsl(var(--border))" }}
                   >
-                    {/* US 3.1 — "Inspector" → "Element Settings" (user-facing). */}
-                    <h3
-                      className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
-                      style={{ color: "hsl(var(--muted-foreground))" }}
-                    >
+                    {/* US 3.1 — "Inspector" → "Element Settings" (user-facing).
+                        US 4.1 — admin-section-label upgrades contrast. */}
+                    <h3 className="admin-section-label font-body text-[10px]">
                       Element Settings
                     </h3>
                   </div>
                   {/* US 3.1 — strict scroll container. overflow-x-hidden +
                       min-w-0 keeps long inputs from blowing out the panel,
-                      and gap-4 between sections prevents visual collisions.
-                      NOTE: Schedule + Revision history were moved to the
-                      LEFT navigator (under Page URL / Elements) so this
-                      pane is now element-scoped only. */}
+                      and gap-4 between sections (Content / Design /
+                      Scheduling) prevents visual collisions. */}
                   <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 p-4 flex flex-col gap-4">
                     <InspectorPanel
                       seoMetaTitle={props.seoMetaTitle}
@@ -434,6 +428,16 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                       pageRows={props.pageRows}
                       onRowsChange={props.onRowsChange}
                     />
+                    {props.schedulePanel ? (
+                      <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+                        {props.schedulePanel}
+                      </div>
+                    ) : null}
+                    {props.inspectorFooter ? (
+                      <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+                        {props.inspectorFooter}
+                      </div>
+                    ) : null}
                   </div>
                 </aside>
               );
