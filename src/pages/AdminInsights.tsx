@@ -227,7 +227,7 @@ const AdminInsights = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <Link to="/admin" className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider" style={{ color: "hsl(260 20% 40%)" }}>
+          <Link to="/admin" className="flex items-center gap-1.5 font-body text-xs text-black uppercase tracking-wider">
             <ArrowLeft size={14} /> Back to Admin
           </Link>
           <button onClick={refreshAll} disabled={loading}
