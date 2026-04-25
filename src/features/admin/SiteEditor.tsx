@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Save, Eye, Send, FileText, Layout, Image as ImageIcon, Search, MousePointer2 } from "lucide-react";
+import { Layout, Image as ImageIcon, Search, MousePointer2 } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import HeroEditor from "./site-editor/HeroEditor";
 import RowsManager from "./site-editor/RowsManager";
@@ -12,6 +12,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import AdminBuilderToolbar, { type ViewportMode } from "./site-editor/AdminBuilderToolbar";
 
 interface SectionData {
   section_key: string;
@@ -45,6 +46,8 @@ const SiteEditor = () => {
   const [activeSection, setActiveSection] = useState<"hero" | "page_rows" | "main_page_seo">("hero");
   const [saving, setSaving] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
+  // US 14.2 — viewport simulation. Drives a max-width on the canvas wrapper.
+  const [viewport, setViewport] = useState<ViewportMode>("desktop");
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -159,35 +162,17 @@ const SiteEditor = () => {
   };
 
   /* ─── Canvas content for the active section ─────────────────────── */
+  // NOTE: per-section "Save Draft" buttons were removed in US 14.2 — the
+  // toolbar's Save Draft button now saves the currently-active section.
   const renderCanvas = () => {
     if (activeSection === "hero") {
       return (
-        <div className="space-y-4">
-          <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
-          <button
-            onClick={() => saveDraft("hero")}
-            disabled={saving === "hero"}
-            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50"
-            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-          >
-            <Save size={13} /> {saving === "hero" ? "Saving…" : "Save Draft"}
-          </button>
-        </div>
+        <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
       );
     }
     if (activeSection === "page_rows") {
       return (
-        <div className="space-y-4">
-          <RowsManager rows={pageRows} onChange={(rows) => updateFullDraft("page_rows", { rows })} />
-          <button
-            onClick={() => saveDraft("page_rows")}
-            disabled={saving === "page_rows"}
-            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50"
-            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-          >
-            <Save size={13} /> {saving === "page_rows" ? "Saving…" : "Save Draft"}
-          </button>
-        </div>
+        <RowsManager rows={pageRows} onChange={(rows) => updateFullDraft("page_rows", { rows })} />
       );
     }
     // SEO
@@ -202,56 +187,38 @@ const SiteEditor = () => {
           onTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
           onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
         />
-        <button
-          onClick={() => saveDraft("main_page_seo")}
-          disabled={saving === "main_page_seo"}
-          className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50"
-          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-        >
-          <Save size={13} /> {saving === "main_page_seo" ? "Saving…" : "Save Draft"}
-        </button>
       </div>
     );
   };
 
+  // Friendly label for the toolbar Save button (active section)
+  const activeSectionLabel =
+    SECTION_NAV.find((s) => s.key === activeSection)?.label ?? "Section";
+
+  // Mobile/tablet canvas constraint (per US 14.2 dev notes — no iframes,
+  // just a max-width swap so the rendered widget tree reflows naturally).
+  const canvasMaxWidth =
+    viewport === "mobile" ? 375 : viewport === "tablet" ? 768 : undefined;
+
   return (
-    <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px] gap-2">
-      {/* ─── Toolbar (above the three panes) ──────────────────────── */}
-      <div className="flex items-center justify-between flex-shrink-0">
-        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>
-          Edit Main Page
-        </h2>
-        <div className="flex items-center gap-2">
-          {hasChanges && (
-            <span
-              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-body text-[11px]"
-              style={{ backgroundColor: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent-foreground))" }}
-            >
-              <FileText size={12} /> Unpublished changes
-            </span>
-          )}
-          <button
-            onClick={openPreview}
-            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
-            style={{ border: "1px solid hsl(var(--border))", color: "hsl(var(--foreground))" }}
-          >
-            <Eye size={13} /> Preview
-          </button>
-          <button
-            onClick={publishAll}
-            disabled={publishing || !hasChanges}
-            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40"
-            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
-          >
-            <Send size={13} /> {publishing ? "Publishing…" : "Publish All"}
-          </button>
-        </div>
-      </div>
+    <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
+      {/* ─── Top toolbar (US 14.2) ────────────────────────────────── */}
+      <AdminBuilderToolbar
+        viewport={viewport}
+        onViewportChange={setViewport}
+        onSaveDraft={() => saveDraft(activeSection)}
+        saving={saving === activeSection}
+        saveLabel={`Save ${activeSectionLabel}`}
+        onPreview={openPreview}
+        onPublish={publishAll}
+        publishing={publishing}
+        hasChanges={hasChanges}
+      />
 
       {/* ─── Three-pane resizable shell ──────────────────────────── */}
       <ResizablePanelGroup
         direction="horizontal"
-        className="flex-1 rounded-lg border overflow-hidden"
+        className="flex-1 border-x border-b overflow-hidden rounded-b-lg"
         style={{ borderColor: "hsl(var(--border) / 0.5)" }}
       >
         {/* LEFT — Library / Navigator (250px default, min 200px) */}
@@ -316,7 +283,16 @@ const SiteEditor = () => {
             className="h-full overflow-y-auto"
             style={{ backgroundColor: "hsl(var(--muted) / 0.35)" }}
           >
-            <div className="max-w-5xl mx-auto p-6">
+            <div
+              className="mx-auto p-6 transition-[max-width] duration-300 ease-out"
+              style={{
+                // WHY: dynamic max-width simulates the viewport without an
+                // iframe — the actual widget tree reflows at its real
+                // Tailwind breakpoints (md / lg) so editors see the true
+                // mobile/tablet stacking behavior.
+                maxWidth: canvasMaxWidth ? `${canvasMaxWidth}px` : "64rem", // 64rem = max-w-5xl
+              }}
+            >
               <div
                 className="rounded-lg border p-5 shadow-sm"
                 style={{
