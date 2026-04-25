@@ -80,7 +80,7 @@ const BlogPost = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen lg:pl-16">
+      <div className="min-h-screen">
         <Navbar />
         <div className="pt-36 pb-20 text-center px-8"><p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Loading...</p></div>
         <Footer />
@@ -90,7 +90,7 @@ const BlogPost = () => {
 
   if (!article) {
     return (
-      <div className="min-h-screen lg:pl-16">
+      <div className="min-h-screen">
         <Navbar />
         <div className="pt-36 pb-20 text-center px-8">
           <h1 className="font-display text-2xl font-bold mb-4" style={{ color: "hsl(var(--foreground))" }}>Article not found</h1>
@@ -102,7 +102,7 @@ const BlogPost = () => {
   }
 
   return (
-    <div className="min-h-screen lg:pl-16">
+    <div className="min-h-screen">
       <Navbar />
       <article>
         {article.cover_image && (

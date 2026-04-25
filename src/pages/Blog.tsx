@@ -51,7 +51,7 @@ const Blog = () => {
   }, []);
 
   return (
-    <div className="min-h-screen lg:pl-16">
+    <div className="min-h-screen">
       <Navbar />
       {pageData.rows_above && pageData.rows_above.length > 0 && (
         <RowsRenderer rows={pageData.rows_above} />
