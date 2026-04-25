@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
+import type { PageRow } from "@/types/rows";
 
 /**
  * ════════════════════════════════════════════════════════════════════
