@@ -390,15 +390,38 @@ const InspectorPanel = (props: InspectorPanelProps) => {
             case "grid":
               return <GridEditor content={row.content} onChange={updateRowContent} />;
             default:
+              // Catch-all: route through the existing form-driven row
+              // editor so EVERY widget type (lead_magnet, text, boxed,
+              // testimonial, logo_cloud, faq, ...) keeps full edit
+              // access from the Inspector. The dedicated cases above
+              // remain because their direct editors render more
+              // densely inside the Inspector's narrow column.
               return (
-                <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  No inspector editor available for widget type "{row.type}". Edit it from the row's form view instead.
-                </p>
+                <RowContentEditor
+                  row={row}
+                  onContentChange={updateRowContent}
+                  onRowMetaChange={(patch) => updateRow(patch)}
+                />
               );
           }
         })();
 
     const widgetLabel = def?.label || row.type;
+
+    /* ─── Destructive action — delete this widget ─────────────────
+     * In the current v1 row model, one widget == one row. Deleting
+     * a widget therefore removes its entire row. We mirror the row-
+     * level confirmation flow so the action is never one-click. */
+    const handleDeleteWidget = async () => {
+      const ok = await confirmDestructive({
+        title: "Delete this widget?",
+        description:
+          "Warning: This will permanently remove the widget and its content from the page. Are you sure?",
+        confirmLabel: "Delete widget",
+      });
+      if (!ok) return;
+      onRowsChange(pageRows.filter((r) => r.id !== rowId));
+    };
 
     return (
       <>
@@ -421,6 +444,25 @@ const InspectorPanel = (props: InspectorPanelProps) => {
           onVisibilityChange={(visibility) => writeDesign({ visibility })}
           onCustomCssChange={(customCss) => writeDesign({ customCss })}
         />
+
+        {/* Danger zone — keep destructive actions accessible from the
+         *  Inspector so editors can remove rogue widgets without
+         *  hunting for a separate UI. */}
+        <Section title="Danger zone">
+          <button
+            type="button"
+            onClick={handleDeleteWidget}
+            className="flex items-center gap-2 px-3 py-2 rounded-md border w-full justify-center font-body text-[11px] uppercase tracking-[0.12em] cursor-pointer transition-colors"
+            style={{
+              borderColor: "hsl(var(--destructive) / 0.4)",
+              color: "hsl(var(--destructive))",
+              backgroundColor: "transparent",
+            }}
+          >
+            <Trash2 size={12} />
+            Delete widget
+          </button>
+        </Section>
       </>
     );
   }
