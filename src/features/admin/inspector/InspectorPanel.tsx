@@ -10,6 +10,17 @@ import CellSettingsEditor from "./CellSettingsEditor";
 import { type BoxField } from "./BoxModelControl";
 import WidgetInspectorTabs, { pickTabForFocusKey, type InspectorTab } from "./WidgetInspectorTabs";
 import { DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/types/rows";
+// Debug Story 1.1 — sibling-safe widget lookup/patch helpers. The
+// inspector cannot just `pageRows.find(r => r.id === widgetId)` because
+// v2/v3 rows host MANY widgets per row; that lookup either misses the
+// click or overwrites the wrong row's content, erasing siblings.
+import {
+  findWidgetLocation,
+  patchWidgetContent,
+  readWidgetContent,
+  readWidgetType,
+  removeWidgetAt,
+} from "./widgetLocator";
 
 // Section editors (re-used from the legacy form-driven UI). The Inspector
 // is just a NEW HOST for these — the editors themselves are unchanged.
