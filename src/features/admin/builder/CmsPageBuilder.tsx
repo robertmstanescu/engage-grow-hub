@@ -23,6 +23,7 @@ import {
 import PageBuilderShell from "./PageBuilderShell";
 import RevisionHistoryPanel from "./RevisionHistoryPanel";
 import SchedulePublishPanel from "./SchedulePublishPanel";
+import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 
 interface CmsPageRecord {
   id: string;
