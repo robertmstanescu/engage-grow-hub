@@ -41,6 +41,11 @@ import FaqRow from "@/features/site/rows/FaqRow";
 // Other widgets will follow the same pattern as they're extracted.
 import "@/features/widgets/contact";
 
+// HTML / Iframe Embed widget — escape hatch for arbitrary 3rd-party
+// snippets (YouTube, Typeform, HubSpot, Calendly…). Sanitised at
+// render time via `sanitizeEmbedHtml`. US 4.1.
+import "@/features/widgets/embed";
+
 /* ──────────────────────────────────────────────────────────────────────
  * Built-in widget registrations.
  *

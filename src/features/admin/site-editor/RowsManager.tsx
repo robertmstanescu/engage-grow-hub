@@ -216,6 +216,10 @@ const RowsManager = ({ rows, onChange }: Props) => {
         return <ProfileEditor content={content} onChange={onContentChange} />;
       case "grid":
         return <GridEditor content={content} onChange={onContentChange} />;
+      case "embed":
+        // EmbedAdmin lives in `src/features/widgets/embed/`. Single
+        // textarea + sanitised live preview (US 4.1).
+        return <EmbedAdmin content={content} onChange={onContentChange} />;
       default:
         return null;
     }
