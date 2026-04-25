@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import type { PageRow } from "@/types/rows";
+import { getWidget } from "@/lib/WidgetRegistry";
+import { generateRowId } from "@/lib/constants/rowDefaults";
 
 /**
  * ════════════════════════════════════════════════════════════════════
@@ -152,6 +154,16 @@ export interface BuilderContextValue {
    */
   commitTextAtPath: (path: NodePath, value: string, html?: boolean) => boolean;
   /**
+   * EPIC widgets — Click-to-add: insert a widget of `widgetType` into
+   * the cell located at (rowId, colId, cellId), at `insertIndex` (defaults
+   * to end). Seeds the new widget's content from the registry's
+   * `defaultData`. Returns the new widget id, or null on failure.
+   */
+  addWidgetToCell: (
+    target: { rowId: string; colId: string; cellId: string; insertIndex?: number },
+    widgetType: string,
+  ) => string | null;
+  /**
    * EPIC 1 / US 1.5 — Breadcrumb Navigation
    * Read-only access to the rows tree so the breadcrumb can resolve
    * human-readable labels (row type, widget kind, item title, etc.)
@@ -172,6 +184,7 @@ const DISABLED: BuilderContextValue = {
   activeElement: null,
   setActiveElement: () => {},
   commitTextAtPath: () => false,
+  addWidgetToCell: () => null,
   pageRows: undefined,
 };
 
@@ -360,6 +373,51 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
     [],
   );
 
+  const addWidgetToCell = useCallback<BuilderContextValue["addWidgetToCell"]>(
+    (target, widgetType) => {
+      const rows = rowsRef.current;
+      const setter = onRowsChangeRef.current;
+      if (!rows || !setter) return null;
+      const def = getWidget(widgetType);
+      if (!def) return null;
+      const seed = (def.defaultData ?? {}) as Record<string, any>;
+      const newWidgetId = generateRowId();
+
+      let mutated = false;
+      const next = rows.map((r: any) => {
+        if (r.id !== target.rowId || !Array.isArray(r.columns)) return r;
+        return {
+          ...r,
+          columns: r.columns.map((col: any) => {
+            if (col.id !== target.colId) return col;
+            return {
+              ...col,
+              cells: (col.cells || []).map((cc: any) => {
+                if (cc.id !== target.cellId) return cc;
+                const widgets = Array.isArray(cc.widgets) ? cc.widgets.slice() : [];
+                const insertAt =
+                  target.insertIndex == null || target.insertIndex < 0 || target.insertIndex > widgets.length
+                    ? widgets.length
+                    : target.insertIndex;
+                widgets.splice(insertAt, 0, {
+                  id: newWidgetId,
+                  type: widgetType,
+                  data: { ...seed },
+                });
+                mutated = true;
+                return { ...cc, widgets };
+              }),
+            };
+          }),
+        };
+      });
+      if (!mutated) return null;
+      setter(next);
+      return newWidgetId;
+    },
+    [],
+  );
+
   const value = useMemo<BuilderContextValue>(
     () => ({
       enabled: true,
@@ -372,6 +430,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       activeElement: pathToLegacyId(activeNodePath),
       setActiveElement,
       commitTextAtPath,
+      addWidgetToCell,
       pageRows,
     }),
     [
@@ -383,6 +442,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       isPathEditing,
       setActiveElement,
       commitTextAtPath,
+      addWidgetToCell,
       pageRows,
     ],
   );

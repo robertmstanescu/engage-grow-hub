@@ -31,6 +31,7 @@ import { readCellLayout, readCellStyle, readCellSpan } from "@/lib/constants/row
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
 import { buildDropZoneId } from "@/features/admin/builder/CanvasDropZone";
+import AddWidgetButton from "@/features/admin/builder/AddWidgetButton";
 import { parseSpacing } from "@/lib/spacing";
 
 /* ─── style helpers ──────────────────────────────────────────────── */
@@ -109,7 +110,7 @@ const CellRenderer = ({ rowId, column, cell, renderWidgets }: CellRendererProps)
   const layout = readCellLayout(cell);
   const style = readCellStyle(cell);
   const span = readCellSpan(cell);
-  const { enabled: builderEnabled } = useBuilder();
+  const { enabled: builderEnabled, addWidgetToCell, setActiveElement } = useBuilder();
 
   const path = ["row", rowId, "col", column.id, "cell", cell.id];
   const widgetBasePath = [...path]; // widget paths extend this base
@@ -141,15 +142,37 @@ const CellRenderer = ({ rowId, column, cell, renderWidgets }: CellRendererProps)
 
   const isEmpty = !cell.widgets || cell.widgets.length === 0;
 
+  // Builder click-to-add: insert a widget into THIS cell at end and
+  // immediately select it so the inspector opens.
+  const handlePickAtEnd = (widgetType: string) => {
+    const newId = addWidgetToCell(
+      { rowId, colId: column.id, cellId: cell.id },
+      widgetType,
+    );
+    if (newId) setActiveElement(`widget:${newId}`);
+  };
+
   // Public site: skip selection chrome AND skip the empty placeholder
   // (visitors should never see "drop a widget here" hints). Empty cells
   // collapse to a zero-height div so the column grid stays intact.
   const inner = isEmpty ? (
     builderEnabled ? (
-      <EmptyCellPlaceholder rowId={rowId} colId={column.id} cellId={cell.id} />
+      <EmptyCellPlaceholder
+        rowId={rowId}
+        colId={column.id}
+        cellId={cell.id}
+        onPick={handlePickAtEnd}
+      />
     ) : null
   ) : (
-    renderWidgets(cell, widgetBasePath)
+    <>
+      {renderWidgets(cell, widgetBasePath)}
+      {builderEnabled && (
+        <div className="w-full" style={{ marginTop: 8 }}>
+          <AddWidgetButton onPick={handlePickAtEnd} variant="inline" />
+        </div>
+      )}
+    </>
   );
 
   return (
@@ -191,9 +214,11 @@ interface EmptyCellPlaceholderProps {
   rowId: string;
   colId: string;
   cellId: string;
+  /** Click-to-pick handler — opens the widget picker popover. */
+  onPick: (widgetType: string) => void;
 }
 
-const EmptyCellPlaceholder = ({ rowId, colId, cellId }: EmptyCellPlaceholderProps) => {
+const EmptyCellPlaceholder = ({ rowId, colId, cellId, onPick }: EmptyCellPlaceholderProps) => {
   const dropId = buildDropZoneId({ kind: "cell", rowId, colId, cellId });
   const { setNodeRef, isOver, active } = useDroppable({ id: dropId });
   const dragging = !!active;
@@ -215,21 +240,23 @@ const EmptyCellPlaceholder = ({ rowId, colId, cellId }: EmptyCellPlaceholderProp
         borderRadius: 6,
         color: "hsl(var(--muted-foreground))",
         fontSize: 12,
-        cursor: dragging ? "copy" : "pointer",
+        cursor: dragging ? "copy" : "default",
         transition: "background-color 120ms ease, border-color 120ms ease",
+        padding: 8,
       }}
     >
-      <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full"
-        style={{ backgroundColor: "hsl(var(--muted) / 0.6)" }}>
-        <span style={{
-          display: "inline-block", width: 16, height: 16, borderRadius: 999,
-          backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))",
-          textAlign: "center", lineHeight: "16px", fontWeight: 700,
-        }}>+</span>
-        <span className="font-body text-[11px] uppercase tracking-wider">
-          {isOver ? "Drop to add" : "Add widget"}
+      {isOver ? (
+        // While dragging from the tray, show only the drop indicator —
+        // the popover trigger would compete with the drop interaction.
+        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full"
+          style={{ backgroundColor: "hsl(var(--accent) / 0.2)" }}>
+          <span className="font-body text-[11px] uppercase tracking-wider">
+            Drop to add
+          </span>
         </span>
-      </span>
+      ) : (
+        <AddWidgetButton onPick={onPick} variant="block" />
+      )}
     </div>
   );
 };
