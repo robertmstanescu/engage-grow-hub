@@ -295,4 +295,18 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
   );
 };
 
+/**
+ * HeroSection — public-site data wrapper.
+ *
+ * Reads the published "hero" CMS section and forwards it to <HeroView>.
+ * The split exists so that the admin's three-pane builder can render
+ * <HeroView content={draftHero} /> against unsaved draft state without
+ * duplicating any markup or styling (US 15.1).
+ */
+const HeroSection = () => {
+  const { isLoading, content } = useSiteContentWithStatus<HeroContent>("hero", fallback);
+  return <HeroView content={content} isLoading={isLoading} />;
+};
+
 export default HeroSection;
+
