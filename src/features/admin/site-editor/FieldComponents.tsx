@@ -207,7 +207,7 @@ export const ColorField = ({ label, value, onChange, description, fallback }: { 
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
   const brandColors = useBrandColors();
   return (
-    <div>
+    <div data-inspector-field={slugifyLabel(label)}>
       <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5 block">{label}</label>
       {description && <p className="font-body text-[9px] text-muted-foreground/70 mb-1">{description}</p>}
       <div className="flex gap-1 mb-1.5 flex-wrap">
