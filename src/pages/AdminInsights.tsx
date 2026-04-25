@@ -432,7 +432,7 @@ const AdminInsights = () => {
                 View llms.txt <ExternalLink size={11} className="inline ml-1" />
               </a>
               <a href={`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/llms-txt?full=1`} target="_blank" rel="noopener noreferrer"
-                className="font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full" style={{ backgroundColor: "hsl(280 55% 24%)", color: "hsl(50 82% 87%)" }}>
+                className="font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full text-muted bg-primary" style={{ backgroundColor: "hsl(280 55% 24%)", color: "hsl(50 82% 87%)" }}>
                 View llms-full.txt <ExternalLink size={11} className="inline ml-1" />
               </a>
             </div>
