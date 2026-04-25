@@ -320,23 +320,29 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
               );
 
               const centerPane = (
-                <CanvasViewport
-                  deviceWidth={deviceWidth}
-                  viewport={viewport}
-                  supportsPreview={true}
-                  canvasMode="preview"
-                  setCanvasMode={() => {}}
-                >
-                  <CanvasSelectionSurface>
-                    {props.preCanvas}
-                    <div
-                      className="rounded-md overflow-hidden border"
-                      style={{ borderColor: "hsl(var(--border) / 0.4)" }}
+                <div className="flex flex-col h-full min-h-0">
+                  <div className="flex-1 min-h-0">
+                    <CanvasViewport
+                      deviceWidth={deviceWidth}
+                      viewport={viewport}
+                      supportsPreview={true}
+                      canvasMode="preview"
+                      setCanvasMode={() => {}}
                     >
-                      <RowsRenderer rows={props.pageRows} />
-                    </div>
-                  </CanvasSelectionSurface>
-                </CanvasViewport>
+                      <CanvasSelectionSurface>
+                        {props.preCanvas}
+                        <div
+                          className="rounded-md overflow-hidden border"
+                          style={{ borderColor: "hsl(var(--border) / 0.4)" }}
+                        >
+                          <RowsRenderer rows={props.pageRows} />
+                        </div>
+                      </CanvasSelectionSurface>
+                    </CanvasViewport>
+                  </div>
+                  {/* EPIC 1 / US 1.5 — interactive DOM breadcrumb */}
+                  <CanvasBreadcrumb />
+                </div>
               );
 
               const rightPane = (
