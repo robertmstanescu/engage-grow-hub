@@ -235,17 +235,39 @@ const RowsManager = ({ rows, onChange }: Props) => {
           </button>
           {showAddMenu && (
             <div
-              className="absolute right-0 top-full mt-1 z-50 rounded-lg border shadow-lg overflow-hidden"
+              className="absolute right-0 top-full mt-1 z-50 rounded-lg border shadow-lg overflow-hidden p-2 w-56"
               style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
-              {ROW_TYPES.map((t) => (
+              <div className="font-body text-[9px] uppercase tracking-wider text-muted-foreground px-1 pb-1.5">
+                Pick a layout
+              </div>
+              {LAYOUT_PRESETS.map((preset) => (
                 <button
-                  key={t.type}
+                  key={preset.id}
                   type="button"
-                  onClick={() => addRow(t.type)}
-                  className="flex items-center gap-2 w-full px-4 py-2.5 text-left hover:opacity-80 transition-opacity font-body text-xs"
+                  onClick={() => addRowWithLayout(preset)}
+                  className="flex items-center gap-3 w-full px-2 py-2 text-left hover:opacity-80 rounded-md transition-opacity font-body text-xs"
                   style={{ color: "hsl(var(--foreground))" }}>
-                  <t.icon size={14} />
-                  {t.label}
+                  {/*
+                    Tiny visual proof of the column distribution so the
+                    admin can SEE the shape they're about to insert,
+                    not just read the ratio.
+                  */}
+                  <div
+                    className="flex gap-0.5 h-5 w-12 flex-shrink-0"
+                    aria-hidden="true">
+                    {preset.widths.map((w, i) => (
+                      <div
+                        key={i}
+                        className="rounded-[2px] border border-dashed"
+                        style={{
+                          flex: w,
+                          borderColor: "hsl(var(--primary) / 0.5)",
+                          backgroundColor: "hsl(var(--primary) / 0.08)",
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span>{preset.label}</span>
                 </button>
               ))}
             </div>
