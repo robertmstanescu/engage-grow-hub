@@ -45,24 +45,43 @@ const WEIGHT_OPTIONS = ["300", "400", "500", "600", "700", "800", "900"];
 const BrandSettings = () => {
   const [brand, setBrand] = useState<BrandSettingsType>(DEFAULT_BRAND);
   const [published, setPublished] = useState<BrandSettingsType>(DEFAULT_BRAND);
+  /* Logos & favicons live in the legacy `branding` section_key so that
+   * downstream consumers (Navbar, Footer, FaviconManager, AdminDashboard)
+   * keep working unchanged. We co-load and co-save them here so the admin
+   * gets a single Brand Hub experience as required by Epic 1. */
+  const [branding, setBranding] = useState<Record<string, any>>({});
+  const [publishedBranding, setPublishedBranding] = useState<Record<string, any>>({});
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [isPublishingChanges, setIsPublishingChanges] = useState(false);
-  const [openSection, setOpenSection] = useState<string | null>("palette");
+  const [openSection, setOpenSection] = useState<string | null>("branding");
   const [contrastFg, setContrastFg] = useState("#FFFFFF");
   const [contrastBg, setContrastBg] = useState("#2A0E33");
 
   useEffect(() => {
-    fetchSection<any>("brand_settings").then(({ data }) => {
-      if (data) {
-        const live = { ...DEFAULT_BRAND, ...data.content, typography: { ...DEFAULT_BRAND.typography, ...(data.content?.typography || {}) } };
-        const draft = data.draft_content
-          ? { ...DEFAULT_BRAND, ...data.draft_content, typography: { ...DEFAULT_BRAND.typography, ...(data.draft_content?.typography || {}) } }
+    /* Pull both sections in one round-trip. brand_settings drives colours
+     * & typography; branding drives logos & favicons. */
+    fetchSections(["brand_settings", "branding"]).then(({ data }) => {
+      const bs = data?.find((r: any) => r.section_key === "brand_settings");
+      const br = data?.find((r: any) => r.section_key === "branding");
+
+      if (bs) {
+        const live = { ...DEFAULT_BRAND, ...bs.content, typography: { ...DEFAULT_BRAND.typography, ...(bs.content?.typography || {}) } };
+        const draft = bs.draft_content
+          ? { ...DEFAULT_BRAND, ...bs.draft_content, typography: { ...DEFAULT_BRAND.typography, ...(bs.draft_content?.typography || {}) } }
           : live;
         setBrand(draft);
         setPublished(live);
       }
+
+      const liveBranding = br?.content || {};
+      const draftBranding = br?.draft_content || liveBranding;
+      setBranding(draftBranding);
+      setPublishedBranding(liveBranding);
     });
   }, []);
+
+  const updateBrandingField = (field: string, value: any) =>
+    setBranding((prev) => ({ ...prev, [field]: value }));
 
   const updateColor = (idx: number, field: keyof BrandColor, value: string) => {
     setBrand((prev) => {
