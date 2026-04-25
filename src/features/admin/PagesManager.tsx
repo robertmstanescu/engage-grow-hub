@@ -660,45 +660,144 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
           )}
           {filteredPages.length === 0 ? (
             <p className="font-body text-sm text-muted-foreground py-6 text-center">No pages match your filters.</p>
-          ) : filteredPages.map((page) => (
+          ) : (
+            /*
+             * EPIC 3 / US 3.2 — Pages Table View.
+             * Columns: Page Name · Slug · Status · Last Edited · Actions.
+             * Actions: Edit in Builder · Duplicate · Delete.
+             *
+             * Implemented as semantic <table> markup so screen readers
+             * and keyboard navigation get column-header context for
+             * free. The header row is sticky inside the scroll
+             * container so admins with hundreds of pages don't lose
+             * their place when scanning.
+             */
             <div
-              key={page.id}
-              className="flex items-center justify-between p-3 rounded-lg border hover:opacity-90 transition-opacity"
-              style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
-              <div className="flex items-center gap-3">
-                <FileText size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
-                <div>
-                  <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>{page.title}</span>
-                  <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/{page.slug}</span>
-                </div>
-                <span className={`font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full ${page.status === "published" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
-                  {page.status}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => {
-                    if (onEditPage) {
-                      onEditPage({ id: page.id, slug: page.slug, title: page.title });
-                    } else {
-                      setEditingPage(page);
-                    }
-                  }}
-                  className="p-2 rounded hover:opacity-70"
-                  style={{ color: "hsl(var(--primary))" }}>
-                  Edit
-                </button>
-                {page.status === "published" && (
-                  <a href={`/p/${page.slug}`} target="_blank" className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
-                    <ExternalLink size={14} />
-                  </a>
-                )}
-                <button onClick={() => deletePage(page.id)} className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
-                  <Trash2 size={14} />
-                </button>
-              </div>
+              className="rounded-lg border overflow-hidden"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
+            >
+              <table className="w-full text-sm">
+                <thead>
+                  <tr
+                    className="font-body text-[10px] uppercase tracking-wider text-left"
+                    style={{
+                      color: "hsl(var(--muted-foreground))",
+                      backgroundColor: "hsl(var(--muted) / 0.4)",
+                      borderBottom: "1px solid hsl(var(--border))",
+                    }}
+                  >
+                    <th className="px-4 py-3 font-medium">Page Name</th>
+                    <th className="px-4 py-3 font-medium">Slug</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Last Edited</th>
+                    <th className="px-4 py-3 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPages.map((page) => {
+                    const lastEdited = page.updated_at || page.created_at;
+                    const lastEditedLabel = lastEdited
+                      ? new Date(lastEdited).toLocaleDateString(undefined, {
+                          year: "numeric", month: "short", day: "numeric",
+                        })
+                      : "—";
+                    const isPublished = page.status === "published";
+                    return (
+                      <tr
+                        key={page.id}
+                        className="hover:bg-muted/30 transition-colors"
+                        style={{ borderTop: "1px solid hsl(var(--border) / 0.5)" }}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <FileText size={14} style={{ color: "hsl(var(--muted-foreground))" }} />
+                            <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>
+                              {page.title}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <code
+                            className="font-mono text-xs px-1.5 py-0.5 rounded"
+                            style={{
+                              backgroundColor: "hsl(var(--muted) / 0.6)",
+                              color: "hsl(var(--muted-foreground))",
+                            }}
+                          >
+                            /{page.slug}
+                          </code>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-block font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                              isPublished
+                                ? "bg-green-100 text-green-700"
+                                : "bg-yellow-100 text-yellow-700"
+                            }`}
+                          >
+                            {page.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+                          {lastEditedLabel}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => {
+                                if (onEditPage) {
+                                  onEditPage({ id: page.id, slug: page.slug, title: page.title });
+                                } else {
+                                  setEditingPage(page);
+                                }
+                              }}
+                              title="Edit in Builder"
+                              className="inline-flex items-center gap-1 font-body text-xs px-3 py-1.5 rounded-full hover:opacity-80 transition-opacity"
+                              style={{
+                                backgroundColor: "hsl(var(--primary))",
+                                color: "hsl(var(--primary-foreground))",
+                              }}
+                            >
+                              <Pencil size={12} />
+                              Edit in Builder
+                            </button>
+                            <button
+                              onClick={() => duplicatePage(page.id)}
+                              title="Duplicate"
+                              className="p-2 rounded hover:bg-muted/60 transition-colors"
+                              style={{ color: "hsl(var(--muted-foreground))" }}
+                            >
+                              <Copy size={14} />
+                            </button>
+                            {isPublished && (
+                              <a
+                                href={`/p/${page.slug}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                title="Open page in new tab"
+                                className="p-2 rounded hover:bg-muted/60 transition-colors"
+                                style={{ color: "hsl(var(--muted-foreground))" }}
+                              >
+                                <ExternalLink size={14} />
+                              </a>
+                            )}
+                            <button
+                              onClick={() => deletePage(page.id)}
+                              title="Delete"
+                              className="p-2 rounded hover:bg-destructive/10 transition-colors"
+                              style={{ color: "hsl(var(--destructive))" }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>
