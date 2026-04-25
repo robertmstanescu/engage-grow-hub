@@ -52,7 +52,10 @@ const RowBody = ({ children, html, color, style, className, ...rest }: Props) =>
   const baseClass = `font-body-heading leading-[1.55] [&_p]:mb-[4px] [&_p]:mt-[4px] ${className ?? ""}`;
   const baseStyle: CSSProperties = {
     fontSize: "clamp(0.78rem, 0.85vh + 0.55vw, 1.05rem)",
-    color: color ?? "hsl(var(--foreground) / 0.75)",
+    // Default to the row's auto-resolved foreground (`--row-fg`,
+    // published by RowSection). Per-row admin colour pickers still
+    // win via the `color` prop.
+    color: color ?? "var(--row-fg, hsl(var(--foreground) / 0.85))",
     ...style,
   };
 

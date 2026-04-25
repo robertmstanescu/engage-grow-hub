@@ -37,7 +37,9 @@ const RowSubtitle = ({ children, color, style, className }: Props) => (
     style={{
       fontFamily: "'Architects Daughter', cursive",
       fontSize: "clamp(0.85rem, 1vh + 0.8vw, 1.2rem)",
-      color: color ?? "inherit",
+      // Inherit the row's auto-resolved foreground unless the admin
+      // set a per-row override. `--row-fg` is published by RowSection.
+      color: color ?? "var(--row-fg, inherit)",
       ...style,
     }}
   >

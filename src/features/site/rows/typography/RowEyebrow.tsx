@@ -49,7 +49,10 @@ const RowEyebrow = ({ children, color, style, className }: Props) => (
     className={`font-body tracking-[0.35em] uppercase block mb-rhythm-tight ${className ?? ""}`}
     style={{
       fontSize: "clamp(9px, 0.4vh + 0.5vw, 11px)",
-      color: color ?? "hsl(var(--muted-foreground))",
+      // Eyebrow defaults to the row's auto-resolved foreground at 70%
+      // alpha — quieter than the title but still on-palette. Per-row
+      // admin overrides win via the `color` prop.
+      color: color ?? "color-mix(in srgb, var(--row-fg, hsl(var(--muted-foreground))) 70%, transparent)",
       ...style,
     }}
   >

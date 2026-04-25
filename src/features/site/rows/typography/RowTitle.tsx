@@ -56,7 +56,9 @@ const RowTitle = ({ children, as = "h2", color, style, className }: Props) => {
       className={`font-display font-black leading-[0.95] tracking-tight mb-rhythm-base ${className ?? ""}`}
       style={{
         fontSize: "clamp(1.2rem, 1.8vh + 1.3vw, 2.6rem)",
-        color: color ?? "hsl(var(--foreground))",
+        // Default to `--row-fg` (set by RowSection from the row's bg
+        // colour). Per-row admin overrides still win via `color`.
+        color: color ?? "var(--row-fg, hsl(var(--foreground)))",
         ...style,
       }}
     >
