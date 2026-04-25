@@ -88,15 +88,22 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
   </div>
 );
 
-const EmptyHint = ({ children }: { children: React.ReactNode }) => (
-  <div
-    className="flex flex-col items-center justify-center text-center h-full min-h-[200px] gap-3"
-    style={{ color: "hsl(var(--muted-foreground))" }}
-  >
-    <MousePointer2 size={26} strokeWidth={1.4} />
-    <p className="font-body text-xs leading-relaxed max-w-[220px]">{children}</p>
-  </div>
+// `forwardRef` silences a dev-only "Function components cannot be given
+// refs" warning that fires when this component is the immediate child
+// of a ref-forwarding parent (ResizablePanel) during HMR introspection.
+const EmptyHint = forwardRef<HTMLDivElement, { children: React.ReactNode }>(
+  ({ children }, ref) => (
+    <div
+      ref={ref}
+      className="flex flex-col items-center justify-center text-center h-full min-h-[200px] gap-3"
+      style={{ color: "hsl(var(--muted-foreground))" }}
+    >
+      <MousePointer2 size={26} strokeWidth={1.4} />
+      <p className="font-body text-xs leading-relaxed max-w-[220px]">{children}</p>
+    </div>
+  ),
 );
+EmptyHint.displayName = "EmptyHint";
 
 const InspectorPanel = (props: InspectorPanelProps) => {
   const { activeElement, setActiveElement, activeNodePath } = useBuilder();
