@@ -28,12 +28,6 @@ import HeroRow from "@/features/site/rows/HeroRow";
 import TextRow from "@/features/site/rows/TextRow";
 import ServiceRow from "@/features/site/rows/ServiceRow";
 import BoxedRow from "@/features/site/rows/BoxedRow";
-// Contact widget self-registers (US 2.2 — first modular widget extracted).
-import "@/features/widgets/contact";
-import TextRow from "@/features/site/rows/TextRow";
-import ServiceRow from "@/features/site/rows/ServiceRow";
-import BoxedRow from "@/features/site/rows/BoxedRow";
-import ContactRow from "@/features/site/rows/ContactRow";
 import ImageTextRow from "@/features/site/rows/ImageTextRow";
 import ProfileRow from "@/features/site/rows/ProfileRow";
 import GridRow from "@/features/site/rows/GridRow";
@@ -41,6 +35,11 @@ import LeadMagnetRow from "@/features/site/rows/LeadMagnetRow";
 import TestimonialRow from "@/features/site/rows/TestimonialRow";
 import LogoCloudRow from "@/features/site/rows/LogoCloudRow";
 import FaqRow from "@/features/site/rows/FaqRow";
+
+// Contact widget — first modular widget extracted under
+// src/features/widgets/contact (US 2.2). It self-registers on import.
+// Other widgets will follow the same pattern as they're extracted.
+import "@/features/widgets/contact";
 
 /* ──────────────────────────────────────────────────────────────────────
  * Built-in widget registrations.
