@@ -116,10 +116,9 @@ interface RichTextEditorProps {
  *  in the admin uses the same luminance threshold. */
 const pickFg = (bg?: string): string => pickForeground(bg);
 
-const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEditorProps) => {
-  // Resolve the editor surface: explicit row bg, or a neutral dark.
-  const surfaceBg = bgColor || "hsl(260 20% 18%)";
-  const surfaceFg = pickFg(bgColor);
+const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps) => {
+  // The editor surface is transparent and inherits parent text color,
+  // so the writing area always matches the rendered area it edits.
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef<Range | null>(null);
