@@ -164,30 +164,16 @@
    * resolve against sibling rows.
    */
   .snap-container {
-    scroll-snap-type: y proximity;
+    /*
+     * Native CSS scroll-snap is disabled in favour of JS-driven
+     * threshold snapping (see useThresholdSnap). Browsers don't expose
+     * a snap-threshold property, so we control the 51% rule manually.
+     */
+    scroll-snap-type: none;
     overflow-y: auto;
     overflow-x: hidden;
     height: 100vh;
     scroll-behavior: smooth;
-  }
-
-  /*
-   * On mobile we soften the snap to `proximity`. Reasons:
-   *  1. Mandatory snap on touch devices can SKIP rows entirely when a
-   *     fling lands between two snap points (the Service row was being
-   *     skipped on phones).
-   *  2. `proximity` only snaps when you're already near a snap point,
-   *     so partial scrolls are honoured and rows can't be jumped over.
-   *  3. Desktop keeps the slide-deck `mandatory` feel; only mobile
-   *     downshifts to a friendlier touch behaviour.
-   */
-  @media (max-width: 767px) {
-    .snap-container {
-      scroll-snap-type: y proximity;
-    }
-    .snap-section {
-      scroll-snap-stop: normal;
-    }
   }
 
   [id] {
