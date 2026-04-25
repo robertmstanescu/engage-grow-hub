@@ -113,6 +113,14 @@ const RowSection = ({
           backgroundColor: getRowBgColor(row, defaultBg),
           isolation: "isolate",
           scrollMarginTop: "0px",
+          /*
+           * `--row-fg` is the readable text colour for this row's
+           * effective background. Title/Subtitle/Body/Eyebrow default
+           * to this var, so swapping the row's bg colour automatically
+           * flips the text to a contrasting tone. Per-row colour
+           * pickers in the admin still override via the `color` prop.
+           */
+          ["--row-fg" as string]: resolveRowForeground(row),
           ...style,
         }}
       >
