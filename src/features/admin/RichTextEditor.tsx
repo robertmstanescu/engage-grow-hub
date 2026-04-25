@@ -522,9 +522,9 @@ const RichTextEditor = ({ content, onChange, placeholder }: RichTextEditorProps)
           }}
           onKeyUp={saveSelection}
           onMouseUp={saveSelection}
-          // Editor surface mirrors the live row's bg so light text
-          // (grey/white) stays readable while editing. See pickFg above.
-          style={{ color: surfaceFg, backgroundColor: surfaceBg }}
+          // Transparent surface + inherited color so the editor
+          // always blends with the rendered area, regardless of parent.
+          style={{ color: "inherit", backgroundColor: "transparent" }}
         />
       )}
 
