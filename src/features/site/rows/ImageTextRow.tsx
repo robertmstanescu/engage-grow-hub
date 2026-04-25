@@ -72,87 +72,102 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
     ? `${imgWidth}fr ${textWidth}fr`
     : `${textWidth}fr ${imgWidth}fr`;
 
+  // EPIC 1 / US 1.1 — atomic-node base path for this row.
+  const basePath: string[] = ["row", row.id, "widget", row.id, "field"];
+
   const imageBlock = (
-    <div className="relative w-full" style={revealStyle(isVisible, imgPos === "left" ? 0 : 3)}>
-      <div
-        className="relative w-full overflow-hidden"
-        style={{
-          aspectRatio: "4/5",
-          borderRadius: shape === "default" ? 4 : 0,
-          clipPath: CLIP_PATHS[shape] || undefined,
-          backfaceVisibility: "hidden",
-          transform: "translateZ(0)",
-        }}
-      >
-        {c.image_url ? (
-          // Below-the-fold images: lazy-load + async decode for fast
-          // first paint. The browser only fetches them when the user
-          // scrolls close, saving bandwidth on bounce visits.
-          <img
-            src={c.image_url}
-            alt={resolveImageAlt(c.image_alt, c.title || row.strip_title, "section image")}
-            className="w-full h-full object-cover"
-            loading="lazy"
-            decoding="async"
-          />
-        ) : (
-          <div className="w-full h-full" style={{ backgroundColor: "hsl(var(--muted))" }} />
-        )}
-      </div>
-      {c.floating_caption && (
+    <SelectableWrapper path={[...basePath, "image"]} label="Image" variant="atom">
+      <div className="relative w-full" style={revealStyle(isVisible, imgPos === "left" ? 0 : 3)}>
         <div
-          className="absolute px-3 py-1.5 rounded-lg font-body text-xs backdrop-blur-md"
+          className="relative w-full overflow-hidden"
           style={{
-            ...CAPTION_STYLE[captionPos],
-            backgroundColor: captionBg,
-            color: captionText,
+            aspectRatio: "4/5",
+            borderRadius: shape === "default" ? 4 : 0,
+            clipPath: CLIP_PATHS[shape] || undefined,
             backfaceVisibility: "hidden",
+            transform: "translateZ(0)",
           }}
         >
-          {c.floating_caption}
+          {c.image_url ? (
+            // Below-the-fold images: lazy-load + async decode for fast
+            // first paint. The browser only fetches them when the user
+            // scrolls close, saving bandwidth on bounce visits.
+            <img
+              src={c.image_url}
+              alt={resolveImageAlt(c.image_alt, c.title || row.strip_title, "section image")}
+              className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <div className="w-full h-full" style={{ backgroundColor: "hsl(var(--muted))" }} />
+          )}
         </div>
-      )}
-    </div>
+        {c.floating_caption && (
+          <div
+            className="absolute px-3 py-1.5 rounded-lg font-body text-xs backdrop-blur-md"
+            style={{
+              ...CAPTION_STYLE[captionPos],
+              backgroundColor: captionBg,
+              color: captionText,
+              backfaceVisibility: "hidden",
+            }}
+          >
+            {c.floating_caption}
+          </div>
+        )}
+      </div>
+    </SelectableWrapper>
   );
 
   const textBlock = (
     <div className="flex flex-col justify-center" style={revealStyle(isVisible, imgPos === "left" ? 2 : 0)}>
       {c.eyebrow && (
-        <RowEyebrow color={c.color_eyebrow}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
-            {c.eyebrow}
-          </EditableText>
-        </RowEyebrow>
+        <SelectableWrapper path={[...basePath, "eyebrow"]} label="Eyebrow" variant="atom" inline>
+          <RowEyebrow color={c.color_eyebrow}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
+              {c.eyebrow}
+            </EditableText>
+          </RowEyebrow>
+        </SelectableWrapper>
       )}
       {titleLines.length > 0 ? (
-        <RowTitle color={c.color_title}>
-          {titleLines.map((line, i) => (
-            <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>
-          ))}
-        </RowTitle>
+        <SelectableWrapper path={[...basePath, "title"]} label="Title" variant="atom" inline>
+          <RowTitle color={c.color_title}>
+            {titleLines.map((line, i) => (
+              <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>
+            ))}
+          </RowTitle>
+        </SelectableWrapper>
       ) : c.title ? (
-        <RowTitle color={c.color_title}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
-            {c.title}
-          </EditableText>
-        </RowTitle>
+        <SelectableWrapper path={[...basePath, "title"]} label="Title" variant="atom" inline>
+          <RowTitle color={c.color_title}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
+              {c.title}
+            </EditableText>
+          </RowTitle>
+        </SelectableWrapper>
       ) : null}
       {c.subtitle && (
-        <RowSubtitle color={c.subtitle_color}>
-          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
-        </RowSubtitle>
+        <SelectableWrapper path={[...basePath, "subtitle"]} label="Subtitle" variant="atom" inline>
+          <RowSubtitle color={c.subtitle_color}>
+            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
+          </RowSubtitle>
+        </SelectableWrapper>
       )}
       {c.description && (
-        <EditableText
-          sectionKey="page_rows"
-          fieldPath={`${prefix}.description`}
-          html
-          as="div"
-          data-rte-fit=""
-          className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
-          style={{ fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)", color: c.color_description || "hsl(var(--foreground) / 0.75)", height: "auto", overflow: "visible" }}
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
-        />
+        <SelectableWrapper path={[...basePath, "description"]} label="Description" variant="atom">
+          <EditableText
+            sectionKey="page_rows"
+            fieldPath={`${prefix}.description`}
+            html
+            as="div"
+            data-rte-fit=""
+            className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
+            style={{ fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)", color: c.color_description || "hsl(var(--foreground) / 0.75)", height: "auto", overflow: "visible" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
+          />
+        </SelectableWrapper>
       )}
       {c.note && (
         <div className="mt-rhythm-base pt-3" style={{ borderTop: `1px solid hsl(var(--foreground) / 0.1)` }}>
