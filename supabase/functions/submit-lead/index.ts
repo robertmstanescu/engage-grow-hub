@@ -48,6 +48,94 @@ function sanitizeAttribution(raw: unknown): Record<string, string> | null {
   return Object.keys(out).length > 0 ? out : null;
 }
 
+/**
+ * Epic 4 / US 4.4 — Zero-Party Data progressive profiling.
+ *
+ * Sanitise an arbitrary `custom_properties` object from the client.
+ * The schema is intentionally open (marketing ships new questions
+ * without a migration) but we still enforce hard caps so a malicious
+ * client can't dump megabytes of junk into our JSONB column.
+ *
+ *   • Top-level: max 50 keys
+ *   • Key:       string, 1–64 chars, alphanumeric / `_-.` only
+ *   • Value:     string | number | boolean | null | string[]
+ *                  - string capped at 1000 chars
+ *                  - array capped at 50 entries, each entry capped at 200 chars
+ *
+ * Anything that doesn't match is silently dropped — the goal is "best
+ * effort capture", not strict validation.
+ */
+const ZPD_KEY_REGEX = /^[A-Za-z0-9_.-]{1,64}$/;
+function sanitizeZeroPartyData(raw: unknown): Record<string, unknown> | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const out: Record<string, unknown> = {};
+  let kept = 0;
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (kept >= 50) break;
+    if (!ZPD_KEY_REGEX.test(k)) continue;
+
+    if (v === null) { out[k] = null; kept++; continue; }
+    if (typeof v === "boolean" || typeof v === "number") {
+      // Reject NaN/Infinity — they round-trip as `null` in JSON and confuse downstream consumers.
+      if (typeof v === "number" && !Number.isFinite(v)) continue;
+      out[k] = v; kept++; continue;
+    }
+    if (typeof v === "string") {
+      out[k] = v.length > 1000 ? v.slice(0, 1000) : v;
+      kept++; continue;
+    }
+    if (Array.isArray(v)) {
+      const arr: string[] = [];
+      for (const item of v) {
+        if (arr.length >= 50) break;
+        if (typeof item !== "string") continue;
+        arr.push(item.length > 200 ? item.slice(0, 200) : item);
+      }
+      out[k] = arr; kept++; continue;
+    }
+    // Objects are ignored at the top level — we don't want unbounded
+    // recursion. Marketing flattens nested fields with dot keys
+    // (e.g. "company.size", "company.industry") which still merge
+    // cleanly via the rules above.
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}
+
+/**
+ * Deep-merge two plain objects. The `incoming` object wins on conflicts
+ * so the latest answer overwrites a stale one ("they changed their
+ * mind"). Arrays are REPLACED rather than concatenated to keep the
+ * "latest answer wins" semantics consistent.
+ *
+ * NOTE: We intentionally do NOT mutate `existing` — Postgres returns
+ * the JSON as a fresh object, but defensive copying makes the helper
+ * safe to reuse if we ever pass shared state in.
+ */
+function deepMergeJson(
+  existing: Record<string, unknown> | null | undefined,
+  incoming: Record<string, unknown> | null | undefined,
+): Record<string, unknown> {
+  const base: Record<string, unknown> = existing && typeof existing === "object" && !Array.isArray(existing)
+    ? { ...existing } : {};
+  if (!incoming || typeof incoming !== "object" || Array.isArray(incoming)) return base;
+
+  for (const [k, v] of Object.entries(incoming)) {
+    const prev = base[k];
+    if (
+      v && typeof v === "object" && !Array.isArray(v) &&
+      prev && typeof prev === "object" && !Array.isArray(prev)
+    ) {
+      base[k] = deepMergeJson(prev as Record<string, unknown>, v as Record<string, unknown>);
+    } else {
+      // Primitives, arrays, and "incoming overrides type mismatch" all
+      // fall through here. Arrays are replaced wholesale (not merged)
+      // so a quiz can correct a previous answer cleanly.
+      base[k] = v;
+    }
+  }
+  return base;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json(405, { error: "Method not allowed" });
