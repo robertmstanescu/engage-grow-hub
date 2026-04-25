@@ -69,7 +69,7 @@ const RowSection = ({
   innerRef,
   vAlign = "middle",
   defaultBg = "hsl(var(--background))",
-  className = "",
+  className = "text-black",
   style,
   grain = true,
   fullHeight = true,
