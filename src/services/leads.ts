@@ -47,6 +47,11 @@ export async function submitLeadAndGetDownload(payload: {
   const { getVisitorId, getConsentStatus } = await import("@/services/analytics");
   const visitorId = getConsentStatus() === "accepted" ? getVisitorId() : null;
 
+  // Marketing attribution — Epic 4 / US 4.1. May be null for direct
+  // traffic; the edge function tolerates that.
+  const { getAttributionForPayload } = await import("@/services/attribution");
+  const attribution = getAttributionForPayload();
+
   const { data, error } = await supabase.functions.invoke("submit-lead", {
     body: {
       full_name: payload.fullName,
@@ -56,6 +61,7 @@ export async function submitLeadAndGetDownload(payload: {
       resource_asset_id: payload.resourceAssetId,
       marketing_consent: payload.marketingConsent,
       visitor_id: visitorId,
+      attribution,
     },
   });
 
