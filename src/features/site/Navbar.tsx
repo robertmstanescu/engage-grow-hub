@@ -156,7 +156,7 @@ const Navbar = () => {
   return (
     <>
       {/* Desktop side navigation — emblem logo */}
-      <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
+      <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-56 flex-col items-start py-6 px-6 gap-6"
         style={{ backgroundColor: "hsl(var(--background) / 0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid hsl(var(--border) / 0.3)" }}>
         <a href="/" className="mb-4">
           {!brandingLoading && logoUrl ? (
