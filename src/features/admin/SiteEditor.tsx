@@ -647,13 +647,7 @@ const SiteEditor = () => {
       </ResizablePanelGroup>
       </div>
 
-      {/* Floating drag preview — rendered into a portal by dnd-kit so it
-          escapes the sidebar's overflow:hidden and follows the cursor
-          across the entire viewport. */}
-      <DragOverlay dropAnimation={null}>
-        {activeDrag ? <TrayDragPreview data={activeDrag} /> : null}
-      </DragOverlay>
-      </DndContext>
+      </BuilderDndShell>
     </BuilderProvider>
   );
 };
