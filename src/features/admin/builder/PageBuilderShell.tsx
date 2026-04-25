@@ -382,6 +382,9 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     slugEditable={props.slugEditable}
                     slugPrefix={props.slugPrefix}
                     pageRows={props.pageRows}
+                    onRowsChange={props.onRowsChange}
+                    schedulePanel={props.schedulePanel}
+                    revisionPanel={props.inspectorFooter}
                   />
                 </aside>
               );
@@ -439,16 +442,6 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                       pageRows={props.pageRows}
                       onRowsChange={props.onRowsChange}
                     />
-                    {props.schedulePanel ? (
-                      <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                        {props.schedulePanel}
-                      </div>
-                    ) : null}
-                    {props.inspectorFooter ? (
-                      <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                        {props.inspectorFooter}
-                      </div>
-                    ) : null}
                   </div>
                 </aside>
               );
