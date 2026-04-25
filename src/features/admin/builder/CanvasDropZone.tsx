@@ -34,19 +34,22 @@ import { useBuilder } from "./BuilderContext";
 export const DROP_ZONE_PREFIX = "canvas-drop:";
 
 /**
- * `position` describes where to insert relative to the page. We only
- * use "before-<rowId>" and "end" for now — that's enough to express
- * any insertion point in a flat row list (insert before any row, or
- * append at the bottom).
+ * `position` describes where to insert relative to the page tree:
+ *   • before <rowId>             — insert as a new row above an existing row
+ *   • end                         — append a new row at the bottom
+ *   • cell <rowId>:<colId>:<cellId> — append a widget INSIDE an empty cell
+ *                                     (US 1.2 — LumApps-style cells)
  */
 export type CanvasDropPosition =
   | { kind: "before"; rowId: string }
-  | { kind: "end" };
+  | { kind: "end" }
+  | { kind: "cell"; rowId: string; colId: string; cellId: string };
 
-export const buildDropZoneId = (pos: CanvasDropPosition): string =>
-  pos.kind === "end"
-    ? `${DROP_ZONE_PREFIX}end`
-    : `${DROP_ZONE_PREFIX}before:${pos.rowId}`;
+export const buildDropZoneId = (pos: CanvasDropPosition): string => {
+  if (pos.kind === "end") return `${DROP_ZONE_PREFIX}end`;
+  if (pos.kind === "before") return `${DROP_ZONE_PREFIX}before:${pos.rowId}`;
+  return `${DROP_ZONE_PREFIX}cell:${pos.rowId}:${pos.colId}:${pos.cellId}`;
+};
 
 /** Inverse of `buildDropZoneId`. Returns `null` for non-canvas drops. */
 export const parseDropZoneId = (id: string | number): CanvasDropPosition | null => {
@@ -54,6 +57,11 @@ export const parseDropZoneId = (id: string | number): CanvasDropPosition | null 
   const rest = id.slice(DROP_ZONE_PREFIX.length);
   if (rest === "end") return { kind: "end" };
   if (rest.startsWith("before:")) return { kind: "before", rowId: rest.slice("before:".length) };
+  if (rest.startsWith("cell:")) {
+    const [rowId, colId, cellId] = rest.slice("cell:".length).split(":");
+    if (rowId && colId && cellId) return { kind: "cell", rowId, colId, cellId };
+    return null;
+  }
   return null;
 };
 
