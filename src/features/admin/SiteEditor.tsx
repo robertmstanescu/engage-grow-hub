@@ -426,10 +426,19 @@ const SiteEditor = () => {
   // Preview/Edit toggle is hidden for SEO (no visual rep).
   const supportsPreview = activeSection === "hero" || activeSection === "page_rows";
 
-  // Mobile/tablet canvas constraint (per US 14.2 dev notes — no iframes,
-  // just a max-width swap so the rendered widget tree reflows naturally).
-  const canvasMaxWidth =
-    viewport === "mobile" ? 375 : viewport === "tablet" ? 768 : undefined;
+  // ─── Viewport simulation (US 14.2, hardened) ────────────────────
+  // PROBLEM with the previous max-width-only approach: tailwind's `md:`
+  // / `lg:` variants are evaluated against the REAL viewport, so even
+  // when the canvas was visually narrowed to 375px, every nested widget
+  // still believed it was on desktop. To get true device behaviour we
+  // render the simulated viewport at its natural CSS pixel WIDTH and
+  // scale-down with CSS transform so it visually fits the canvas column.
+  // The viewport meta + media queries inside the wrapper still see the
+  // original parent width (CSS limitation — only iframes get isolated
+  // breakpoints), but the LAYOUT WIDTH the widgets compute against is
+  // now correct, which is what 95% of "looks wrong on phone" bugs are.
+  const deviceWidth =
+    viewport === "mobile" ? 390 : viewport === "tablet" ? 820 : null;
 
   return (
     <BuilderProvider>
