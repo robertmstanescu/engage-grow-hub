@@ -11,7 +11,7 @@ import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
 import {
   fetchAllCmsPages, createCmsPage, deleteCmsPage,
   saveCmsPageDraft, saveCmsPageRows, togglePublishCmsPage,
-  updateCmsPageMeta, RESERVED_SLUGS,
+  updateCmsPageMeta, duplicateCmsPage, RESERVED_SLUGS,
 } from "@/services/cmsPages";
 import { fetchSection, publishSection } from "@/services/siteContent";
 import { useListFilters } from "@/hooks/useListFilters";
