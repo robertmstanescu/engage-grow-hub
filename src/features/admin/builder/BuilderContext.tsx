@@ -112,7 +112,11 @@ const pathToLegacyId = (path: NodePath | null): string | null => {
     return `cell:${path[1]}:${path[3]}:${path[5]}`;
   }
   if (path[0] === "row" && path.length >= 4 && path[2] === "widget") {
-    return `widget:${path[1]}`;
+    // V3 FIX: widget id lives at path[3]. Returning path[1] (the row id)
+    // collapsed every widget on a v3 row to the same legacy id, so the
+    // inspector + inline-edit commit path resolved to the wrong widget
+    // and text saves silently dropped.
+    return `widget:${path[3]}`;
   }
   if (path[0] === "row") return `row:${path[1]}`;
   return path.join(":");
@@ -220,9 +224,13 @@ const writeRowsAtPath = (
   const rowIdx = rows.findIndex((r) => r.id === rowId);
   if (rowIdx === -1) return { rows, ok: false };
 
-  // Strip leading ["row", rowId] then optional ["widget", rowId].
+  // Strip leading ["row", rowId] then optional ["widget", widgetId].
+  // V3 FIX: do NOT require widgetId === rowId — true v3 widgets carry
+  // their own ids, so the previous equality check left `rest` pointing
+  // at "widget" and the writer fell through to the no-op branch (which
+  // is why inline-edited titles/subtitles never persisted).
   let rest = path.slice(2);
-  if (rest[0] === "widget" && rest[1] === rowId) rest = rest.slice(2);
+  if (rest[0] === "widget") rest = rest.slice(2);
   if (rest.length === 0) return { rows, ok: false };
 
   const row = rows[rowIdx];
