@@ -19,6 +19,7 @@ import {
   type PageRow,
 } from "@/types/rows";
 import PageBuilderShell from "./PageBuilderShell";
+import RevisionHistoryPanel from "./RevisionHistoryPanel";
 
 interface BlogPostRecord {
   id: string;
@@ -63,26 +64,27 @@ const BlogPostBuilder = ({ postId }: Props) => {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
-  useEffect(() => {
-    const load = async () => {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("id, slug, title, status, content, page_rows, draft_page_rows, meta_title, meta_description")
-        .eq("id", postId)
-        .maybeSingle();
-      if (error || !data) {
-        toast.error("Failed to load post");
-        return;
-      }
-      const rec = data as unknown as BlogPostRecord;
-      setRecord(rec);
-      const existing = (rec.draft_page_rows || rec.page_rows || []) as PageRow[];
-      setDraftRows(existing.length > 0 ? existing : seedRowsFromHtml(rec.content));
-      setSeoTitle(rec.meta_title || "");
-      setSeoDescription(rec.meta_description || "");
-    };
-    load();
+  const load = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("id, slug, title, status, content, page_rows, draft_page_rows, meta_title, meta_description")
+      .eq("id", postId)
+      .maybeSingle();
+    if (error || !data) {
+      toast.error("Failed to load post");
+      return;
+    }
+    const rec = data as unknown as BlogPostRecord;
+    setRecord(rec);
+    const existing = (rec.draft_page_rows || rec.page_rows || []) as PageRow[];
+    setDraftRows(existing.length > 0 ? existing : seedRowsFromHtml(rec.content));
+    setSeoTitle(rec.meta_title || "");
+    setSeoDescription(rec.meta_description || "");
   }, [postId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const initialSnapshot = useMemo(() => {
     if (!record) return "";
