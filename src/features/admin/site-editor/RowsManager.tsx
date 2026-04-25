@@ -498,7 +498,10 @@ const SortableRowItem = ({
   onAddColumn, onRemoveColumn, onUpdateColumnContent, onUpdateColumnWidths,
   renderEditorForContent,
 }: SortableRowItemProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
+  // WHY prefixed id: the parent <DndContext> distinguishes ROW drags
+  // from WIDGET drags by id-prefix ("row:" vs "widget:") so a single
+  // context can route both interactions safely.
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `row:${row.id}` });
   const [activeCol, setActiveCol] = useState(0);
 
   const colCount = 1 + (row.columns_data?.length || 0);
