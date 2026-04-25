@@ -24,7 +24,8 @@ import {
 
 // Section editors (re-used from the legacy form-driven UI). The Inspector
 // is just a NEW HOST for these — the editors themselves are unchanged.
-import HeroEditor from "../site-editor/HeroEditor";
+// US 2.1 — HeroEditor is no longer imported at the top: hero is reached
+// only through the widget-fallback map below (HeroRowFields alias).
 import SeoFields from "../site-editor/SeoFields";
 import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
 import ColumnWidthControl from "../site-editor/ColumnWidthControl";
