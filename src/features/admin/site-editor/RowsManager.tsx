@@ -78,6 +78,13 @@ interface Props {
 const RowsManager = ({ rows, onChange }: Props) => {
   const [openRow, setOpenRow] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  /**
+   * The "Inspector" target — `null` when closed, otherwise the cell
+   * whose generic design settings are being edited (US 6.1). One piece
+   * of state covers the entire page so opening a different cell simply
+   * retargets the SAME drawer instead of stacking multiple panels.
+   */
+  const [inspectedCell, setInspectedCell] = useState<{ rowId: string; colIdx: number } | null>(null);
 
   /**
    * Add an EMPTY row with N columns of the chosen layout. The row is
