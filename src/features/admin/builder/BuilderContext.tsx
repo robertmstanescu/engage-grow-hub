@@ -136,6 +136,17 @@ export interface BuilderContextValue {
   activeElement: string | null;
   /** LEGACY — accepts `kind:id` strings, expands to a path. */
   setActiveElement: (id: string | null) => void;
+  /**
+   * EPIC 1 / US 1.4 — Direct Canvas Editing
+   * Commit a text/html value back to the page-rows tree at the given
+   * NodePath. The provider walks the path to update the right field
+   * inside the right row's content / columns_data and calls the
+   * upstream `onRowsChange` callback.
+   *
+   * Returns true on success, false if the path doesn't resolve to a
+   * known field (in which case callers can fall back to the inspector).
+   */
+  commitTextAtPath: (path: NodePath, value: string, html?: boolean) => boolean;
 }
 
 const DISABLED: BuilderContextValue = {
@@ -148,6 +159,7 @@ const DISABLED: BuilderContextValue = {
   isPathEditing: () => false,
   activeElement: null,
   setActiveElement: () => {},
+  commitTextAtPath: () => false,
 };
 
 const BuilderContext = createContext<BuilderContextValue>(DISABLED);
