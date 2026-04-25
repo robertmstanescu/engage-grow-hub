@@ -15,6 +15,7 @@ import { DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/types/rows";
 // is just a NEW HOST for these — the editors themselves are unchanged.
 import HeroEditor from "../site-editor/HeroEditor";
 import SeoFields from "../site-editor/SeoFields";
+import PageSettingsEditor from "./PageSettingsEditor";
 import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
 import ColumnWidthControl from "../site-editor/ColumnWidthControl";
 import { ColorField } from "../site-editor/FieldComponents";
@@ -56,6 +57,17 @@ export interface InspectorPanelProps {
   onSeoTitleChange: (v: string) => void;
   onSeoDescriptionChange: (v: string) => void;
 
+  // Page Settings (US 3.4) — optional fallback fields shown when the
+  // canvas selection is empty. Each is independently optional so the
+  // main-page builder can opt out of slug/page-name (those concepts
+  // don't apply to `site_content`) while CMS pages pass the full set.
+  pageName?: string;
+  onPageNameChange?: (v: string) => void;
+  pageSlug?: string;
+  onPageSlugChange?: (v: string) => void;
+  ogImage?: string;
+  onOgImageChange?: (v: string) => void;
+
   // Hero (special-cased single section) ------------------------------
   heroContent: Record<string, any>;
   onHeroFieldChange: (field: string, value: any) => void;
@@ -94,6 +106,12 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     seoMetaDescription,
     onSeoTitleChange,
     onSeoDescriptionChange,
+    pageName,
+    onPageNameChange,
+    pageSlug,
+    onPageSlugChange,
+    ogImage,
+    onOgImageChange,
     heroContent,
     onHeroFieldChange,
     pageRows,
@@ -126,18 +144,26 @@ const InspectorPanel = (props: InspectorPanelProps) => {
 
   const renderBody = () => {
 
-  /* ─── State 1 — nothing selected → page SEO settings ─────────── */
+  /* ─── State 1 — nothing selected → Page Settings (US 3.4) ─────
+   * SEO managers asked for one-click access to Page Name, URL Slug,
+   * SEO meta, and the OG image without having to leave the visual
+   * builder. The empty-canvas Inspector now hosts those exact fields.
+   * The page-name / slug / og-image rows render only when their
+   * setters are wired (see PageSettingsEditor). */
   if (!activeElement) {
     return (
       <Section title="Page Settings">
-        <p className="font-body text-[11px] leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
-          Click an element on the canvas to edit it. Otherwise, these page-wide settings apply.
-        </p>
-        <SeoFields
-          metaTitle={seoMetaTitle}
-          metaDescription={seoMetaDescription}
-          onTitleChange={onSeoTitleChange}
-          onDescriptionChange={onSeoDescriptionChange}
+        <PageSettingsEditor
+          pageName={pageName}
+          onPageNameChange={onPageNameChange}
+          pageSlug={pageSlug}
+          onPageSlugChange={onPageSlugChange}
+          seoMetaTitle={seoMetaTitle}
+          seoMetaDescription={seoMetaDescription}
+          onSeoTitleChange={onSeoTitleChange}
+          onSeoDescriptionChange={onSeoDescriptionChange}
+          ogImage={ogImage}
+          onOgImageChange={onOgImageChange}
         />
       </Section>
     );

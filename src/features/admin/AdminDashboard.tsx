@@ -1449,7 +1449,25 @@ const AdminDashboard = ({ session }: Props) => {
             // EPIC 14–17 + US 17.x — new three-pane builder shell for
             // both the main page (SiteEditor) and CMS pages (CmsPageBuilder).
             <div className="flex-1 overflow-hidden">
-              {cmsPage ? <CmsPageBuilder pageId={cmsPage.id} /> : <SiteEditor />}
+              {cmsPage ? (
+                <CmsPageBuilder
+                  pageId={cmsPage.id}
+                  /* US 3.4 — when the editor renames the page or
+                   * changes the slug from the Inspector, mirror those
+                   * values into the dashboard's cached ref so the
+                   * topbar label ("Editing: <name>") updates instantly
+                   * without a save. */
+                  onPageInfoChange={({ title, slug }) => {
+                    setCmsPage((prev) =>
+                      prev && prev.id === cmsPage.id
+                        ? { ...prev, title, slug }
+                        : prev,
+                    );
+                  }}
+                />
+              ) : (
+                <SiteEditor />
+              )}
             </div>
           ) : isSiteTab ? (
             <div className="flex-1 bg-card overflow-hidden flex flex-col">
