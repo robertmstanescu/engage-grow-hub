@@ -196,6 +196,17 @@ const SiteEditor = () => {
   // Default to preview because that's the whole point of US 15.1.
   const [canvasMode, setCanvasMode] = useState<"preview" | "edit">("preview");
 
+  // Debug Story 1.1 — pixel-anchored panel limits + double-click reset.
+  const limits = usePanelLimits();
+  const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
+  const resetLayout = () => {
+    panelGroupRef.current?.setLayout([
+      limits.leftDefault,
+      limits.centerDefault,
+      limits.rightDefault,
+    ]);
+  };
+
   /* ─── US 17.1 / 17.2 — drag-and-drop (Elements Tray → canvas) ──
    * Sensors with a small activation distance prevent accidental
    * drags when an editor merely clicks a tray card. The active
