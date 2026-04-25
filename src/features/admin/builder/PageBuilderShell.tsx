@@ -337,12 +337,11 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     >
                       <CanvasSelectionSurface>
                         {props.preCanvas}
-                        <div
-                          className="rounded-md overflow-hidden border"
-                          style={{ borderColor: "hsl(var(--border) / 0.4)" }}
-                        >
-                          <RowsRenderer rows={props.pageRows} />
-                        </div>
+                        {/* EPIC 2 / US 2.2 — no inner border/padding here:
+                            the surrounding CanvasViewport supplies the
+                            floating frame, and full-width hero rows must
+                            still bleed edge-to-edge. */}
+                        <RowsRenderer rows={props.pageRows} />
                       </CanvasSelectionSurface>
                     </CanvasViewport>
                   </div>
