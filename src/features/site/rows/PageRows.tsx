@@ -60,9 +60,16 @@ const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number;
   const rendered = renderWidget({ row, rowIndex, align, vAlign });
   if (rendered === null) return null;
 
+  // Generic visual chrome (margin / padding / bg / radius) lives in a
+  // wrapper instead of every widget — see WidgetWrapper.tsx and US 6.1.
+  // The wrapper short-circuits to `<>{children}</>` when no overrides
+  // are present, so un-customised rows render the EXACT same DOM as
+  // before this story landed (zero visual regression risk).
+  const design = readDesignSettings(row.content);
+
   return (
     <div id={id} style={{ scrollMarginTop: isService ? "0px" : "4rem", isolation: "isolate" }}>
-      {rendered}
+      <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
     </div>
   );
 };
