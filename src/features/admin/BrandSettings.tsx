@@ -109,26 +109,46 @@ const BrandSettings = () => {
     }));
   };
 
+  /* Save / publish operate on BOTH sections atomically from the user's
+   * point of view (one click). We run them sequentially because if the
+   * branding upsert fails we still want the brand_settings error to be
+   * surfaced — runDbAction will throw on the first error. */
   const handleSaveDraft = () =>
     runDbAction({
-      action: () => saveDraftSection("brand_settings", brand),
+      action: async () => {
+        const r1 = await saveDraftSection("brand_settings", brand);
+        if ((r1 as any)?.error) throw (r1 as any).error;
+        const r2 = await saveDraftSection("branding", branding);
+        if ((r2 as any)?.error) throw (r2 as any).error;
+        return { error: null };
+      },
       setLoading: setIsSavingChanges,
       successMessage: "Brand settings draft saved",
     });
 
   const handlePublish = () =>
     runDbAction({
-      action: () => publishSection("brand_settings", brand),
+      action: async () => {
+        const r1 = await publishSection("brand_settings", brand);
+        if ((r1 as any)?.error) throw (r1 as any).error;
+        const r2 = await publishSection("branding", branding);
+        if ((r2 as any)?.error) throw (r2 as any).error;
+        return { error: null };
+      },
       setLoading: setIsPublishingChanges,
       successMessage: "Brand settings published!",
       onSuccess: () => {
         invalidateSiteContent("brand_settings");
+        invalidateSiteContent("branding");
         applyBrandCSSVars(brand);
         setPublished(brand);
+        setPublishedBranding(branding);
       },
     });
 
-  const hasChanges = JSON.stringify(brand) !== JSON.stringify(published);
+  const hasChanges =
+    JSON.stringify(brand) !== JSON.stringify(published) ||
+    JSON.stringify(branding) !== JSON.stringify(publishedBranding);
   const ratio = contrastRatio(contrastFg, contrastBg);
   const passAA = ratio >= 4.5;
   const passAALarge = ratio >= 3;
