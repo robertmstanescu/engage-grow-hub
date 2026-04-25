@@ -10,6 +10,13 @@ import SubscribeWidget from "@/features/site/SubscribeWidget";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
+// US 17.x — blog posts can now be composed with the same widget builder
+// as the main page and CMS pages. When `page_rows` is non-empty, the
+// post body is rendered through RowsRenderer (the public-site widget
+// pipeline). When it's empty, we fall back to the legacy HTML body so
+// existing posts keep working unchanged.
+import { RowsRenderer } from "@/features/site/rows/PageRows";
+import type { PageRow } from "@/types/rows";
 
 interface BlogArticle {
   slug: string; title: string; published_at: string | null; content: string; category: string;
@@ -18,6 +25,8 @@ interface BlogArticle {
   meta_title: string | null; meta_description: string | null;
   og_image: string | null; og_image_alt: string | null; tags: string[] | null;
   lead_magnet_asset_id: string | null; lead_magnet_cover_id: string | null;
+  page_rows: PageRow[] | null;
+  draft_page_rows: PageRow[] | null;
 }
 
 const calculateReadTime = (content: string) => `${Math.max(1, Math.ceil(content.trim().split(/\s+/).length / 200))} min read`;
@@ -52,7 +61,7 @@ const BlogPost = () => {
 
       let query = supabase
         .from("blog_posts")
-        .select("slug, title, published_at, content, category, cover_image, cover_image_alt, author_name, author_image, author_image_alt, meta_title, meta_description, og_image, og_image_alt, tags, lead_magnet_asset_id, lead_magnet_cover_id")
+        .select("slug, title, published_at, content, category, cover_image, cover_image_alt, author_name, author_image, author_image_alt, meta_title, meta_description, og_image, og_image_alt, tags, lead_magnet_asset_id, lead_magnet_cover_id, page_rows, draft_page_rows")
         .eq("slug", slug);
 
       if (!isPreview) query = query.eq("status", "published");
