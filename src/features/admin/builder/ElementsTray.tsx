@@ -246,16 +246,8 @@ const ElementsTray = () => {
     "Other",
   ].filter((c) => grouped[c]?.length);
 
-  if (all.length === 0) {
-    return (
-      <p
-        className="font-body text-[11px] px-1 py-2"
-        style={{ color: "hsl(var(--muted-foreground))" }}
-      >
-        No widgets registered yet.
-      </p>
-    );
-  }
+  // Note: even when no widgets are registered we still render the
+  // Structure cards (empty rows) so editors can scaffold a layout.
 
   return (
     <div className="space-y-4">
