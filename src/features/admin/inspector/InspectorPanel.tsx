@@ -3,16 +3,17 @@ import { MousePointer2, Trash2 } from "lucide-react";
 import { useBuilder } from "../builder/BuilderContext";
 import { useInspectorFocus } from "./useInspectorFocus";
 import { getWidget } from "@/lib/WidgetRegistry";
-import { type PageRow, DEFAULT_ROW_LAYOUT } from "@/types/rows";
+import { type PageRow, DEFAULT_ROW_LAYOUT, DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/types/rows";
 import { confirmDestructive } from "@/components/ConfirmDialog";
 import { countRowWidgets } from "../builder/rowWidgetCount";
 import CellSettingsEditor from "./CellSettingsEditor";
 import { type BoxField } from "./BoxModelControl";
 import WidgetInspectorTabs, { pickTabForFocusKey, type InspectorTab } from "./WidgetInspectorTabs";
-import { DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/types/rows";
+import { pickForeground } from "@/lib/pickForeground";
+
 // Debug Story 1.1 — sibling-safe widget lookup/patch helpers. The
 // inspector cannot just `pageRows.find(r => r.id === widgetId)` because
-// v2/v3 rows host MANY widgets per row; that lookup either misses the
+// v3 rows host MANY widgets per row; that lookup either misses the
 // click or overwrites the wrong row's content, erasing siblings.
 import {
   findWidgetLocation,
@@ -20,21 +21,17 @@ import {
   readWidgetContent,
   readWidgetType,
   removeWidgetAt,
+  type WidgetLocation,
 } from "./widgetLocator";
 
-// Section editors (re-used from the legacy form-driven UI). The Inspector
-// is just a NEW HOST for these — the editors themselves are unchanged.
-// US 2.1 — HeroEditor is no longer imported at the top: hero is reached
-// only through the widget-fallback map below (HeroRowFields alias).
 import SeoFields from "../site-editor/SeoFields";
 import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
 import ColumnWidthControl from "../site-editor/ColumnWidthControl";
 import { ColorField } from "../site-editor/FieldComponents";
 
 // Widget admin editors (legacy, type-keyed). Where a widget exposes
-// `adminComponent` via the WidgetRegistry, that wins (US 16.1 dev note).
-// Otherwise we fall back to this map so older row types still get
-// usable settings until they're migrated to self-registering widgets.
+// `adminComponent` via the WidgetRegistry, that wins. Otherwise we fall
+// back to this map so older row types still get usable settings.
 import HeroRowFields from "../site-editor/HeroEditor";
 import PillarEditor from "../site-editor/PillarEditor";
 import ImageTextEditor from "../site-editor/ImageTextEditor";
@@ -43,54 +40,54 @@ import GridEditor from "../site-editor/GridEditor";
 import ContactAdmin from "@/features/widgets/contact/ContactAdmin";
 
 /* ════════════════════════════════════════════════════════════════════
- * InspectorPanel — US 16.1
+ * InspectorPanel — Element Settings (US 3.1 / US 3.2 / EPIC overhaul)
  * ════════════════════════════════════════════════════════════════════
  *
- * Right-sidebar "chameleon" that swaps its contents based on what the
- * user clicked in the canvas (BuilderContext.activeElement):
+ * Right-sidebar "chameleon" that swaps its contents based on the user's
+ * selection. PATH-DRIVEN: we read `activeNodePath` from BuilderContext
+ * directly instead of stringly parsing the legacy `activeElement` —
+ * that's how the v3 widget id (which lives at path[3], NOT path[1])
+ * survives intact through the inspector.
  *
- *   • null            → page-level SEO fields (default)
- *   • "hero"          → HeroEditor (special-cased section)
- *   • "row:<id>"      → row layout controls (alignment, column widths,
- *                       background colour)
- *   • "widget:<id>"   → that widget's admin editor — resolved through
- *                       the WidgetRegistry (`adminComponent`) first,
- *                       with a legacy type-keyed fallback for rows that
- *                       haven't been migrated yet.
+ *   activeNodePath = null                                    → page SEO
+ *   ['row', rowId]                                           → row settings
+ *   ['row', rowId, 'col', colId, 'cell', cellId, ...]        → cell settings
+ *   ['row', rowId, 'widget', widgetId, ...]                  → widget settings
  *
- * The panel is intentionally STATELESS — all data comes in via props
- * and all writes are forwarded to setters owned by SiteEditor.
- */
+ * SCROLL CONTAINER (US 3.1):
+ *   The whole panel is wrapped in overflow-y-auto / overflow-x-hidden
+ *   with gap-4 between sections so scheduling, design, and content
+ *   never visually crash into each other regardless of widget length.
+ *
+ * CONTEXT-AWARE INPUT BACKGROUND (US 3.2):
+ *   When a widget is selected, we walk row → column → cell → widget to
+ *   find the most specific `bg_color` / `__design.bgColor`. The widget
+ *   CONTENT EDITOR is wrapped in a themed panel using that color so
+ *   editors writing white text on dark backgrounds can actually SEE
+ *   what they're typing. `pickForeground` gives the matching label
+ *   color so the editor remains legible.
+ * ──────────────────────────────────────────────────────────────────── */
+
 export interface InspectorPanelProps {
-  // Page-level data ---------------------------------------------------
   seoMetaTitle: string;
   seoMetaDescription: string;
   onSeoTitleChange: (v: string) => void;
   onSeoDescriptionChange: (v: string) => void;
-
-  // US 2.1 — Hero is no longer a special section; it lives in pageRows
-  // as an ordinary widget at index 0. The widget-editor branch picks it
-  // up via the `case "hero"` row-type fallback.
-
-  // Page rows (the visual canvas) ------------------------------------
   pageRows: PageRow[];
   onRowsChange: (rows: PageRow[]) => void;
 }
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="mb-5">
+  <section className="space-y-2.5">
     {/* US 4.1 — admin-section-label gives slate-600 + bold so the header
         stops vanishing into the white panel surface. */}
-    <h4 className="admin-section-label font-body text-[10px] mb-2.5">
-      {title}
-    </h4>
+    <h4 className="admin-section-label font-body text-[10px]">{title}</h4>
     <div className="space-y-3">{children}</div>
-  </div>
+  </section>
 );
 
 // `forwardRef` silences a dev-only "Function components cannot be given
-// refs" warning that fires when this component is the immediate child
-// of a ref-forwarding parent (ResizablePanel) during HMR introspection.
+// refs" warning when this is the immediate child of ResizablePanel.
 const EmptyHint = forwardRef<HTMLDivElement, { children: React.ReactNode }>(
   ({ children }, ref) => (
     <div
@@ -105,8 +102,42 @@ const EmptyHint = forwardRef<HTMLDivElement, { children: React.ReactNode }>(
 );
 EmptyHint.displayName = "EmptyHint";
 
+/* ──────────────────────────────────────────────────────────────────
+ * resolveSurfaceBg — US 3.2
+ * Walk widget → cell → column → row to find the most specific bg
+ * color the editor will see when that widget renders. Returned as a
+ * css color string OR null when nothing more specific than the panel
+ * default applies (so callers can fall back to the standard white
+ * admin pane styling).
+ * ────────────────────────────────────────────────────────────────── */
+const resolveSurfaceBg = (
+  rows: PageRow[],
+  loc: WidgetLocation,
+  widgetContent: Record<string, any>,
+): string | null => {
+  // Widget self-design wins (editors set their own surface explicitly).
+  const widgetDesignBg = readDesignSettings(widgetContent)?.bgColor;
+  if (widgetDesignBg && widgetDesignBg !== "transparent") return widgetDesignBg;
+
+  const row = rows[loc.rowIdx] as any;
+  const col = row?.columns?.[loc.colIdx];
+  const cell = col?.cells?.[loc.cellIdx];
+
+  const cellBg = cell?.bg_color;
+  if (cellBg && cellBg !== "transparent") return cellBg;
+
+  const colBg = col?.bg_color;
+  if (colBg && colBg !== "transparent") return colBg;
+
+  const rowBg = row?.bg_color;
+  if (rowBg && rowBg !== "transparent" && rowBg !== "#FFFFFF" && rowBg !== "#ffffff") {
+    return rowBg;
+  }
+  return null;
+};
+
 const InspectorPanel = (props: InspectorPanelProps) => {
-  const { activeElement, setActiveElement, activeNodePath } = useBuilder();
+  const { activeNodePath, setActiveElement } = useBuilder();
   const {
     seoMetaTitle,
     seoMetaDescription,
@@ -117,16 +148,12 @@ const InspectorPanel = (props: InspectorPanelProps) => {
   } = props;
 
   /* US 1.3 — auto-scroll the matching input into view + flash it green
-   * whenever `activeNodePath` updates. The hook is a no-op on the public
-   * site and when the path stops at the widget level. */
+   * whenever `activeNodePath` updates. */
   const containerRef = useRef<HTMLDivElement>(null);
   useInspectorFocus(containerRef);
 
   /* US 2.5 — controlled tab state for the per-widget inspector. We
-   * auto-switch to the tab that hosts the field US 1.3 wants to focus
-   * (e.g. clicking the green border in the canvas pings borderRadius,
-   * which lives in Design — flip the tab BEFORE the focus hook runs so
-   * it can scroll/flash the input). */
+   * auto-switch to the tab that hosts the field US 1.3 wants to focus. */
   const [widgetTab, setWidgetTab] = useState<InspectorTab>("content");
   const focusLeaf = useMemo(() => {
     const tail = activeNodePath?.slice(4) ?? [];
@@ -136,353 +163,316 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     return tail[tail.length - 1] || null;
   }, [activeNodePath]);
   useEffect(() => {
-    const target = pickTabForFocusKey(focusLeaf);
-    setWidgetTab(target);
-  }, [focusLeaf, activeElement]);
+    setWidgetTab(pickTabForFocusKey(focusLeaf));
+  }, [focusLeaf, activeNodePath]);
 
   const renderBody = () => {
-
-  /* ─── State 1 — nothing selected → page SEO settings ─────────── */
-  if (!activeElement) {
-    return (
-      <Section title="Page Settings">
-        <p className="font-body text-[11px] leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
-          Click an element on the canvas to edit it. Otherwise, these page-wide settings apply.
-        </p>
-        <SeoFields
-          metaTitle={seoMetaTitle}
-          metaDescription={seoMetaDescription}
-          onTitleChange={onSeoTitleChange}
-          onDescriptionChange={onSeoDescriptionChange}
-        />
-      </Section>
-    );
-  }
-
-  /* US 2.1 — The "hero" special-case branch is gone. Hero is now an
-   * ordinary widget at page_rows[0]; selecting it routes through the
-   * `widget:<id>` branch which calls `<HeroRowFields/>` via the
-   * row-type fallback at the bottom of this component. */
-
-  /* ─── State 4 — Cell selected → Cell Settings ─────────────────
-   * activeElement looks like `cell:<rowId>:<colId>:<cellId>`. The
-   * BuilderContext is the canonical source of this shorthand, so the
-   * parser here is intentionally narrow — anything else falls through
-   * to the row/widget branches below. */
-  if (activeElement.startsWith("cell:")) {
-    const [, cRowId, colId, cellId] = activeElement.split(":");
-    const cellRow = pageRows.find((r) => r.id === cRowId) as any;
-    if (!cellRow || !Array.isArray(cellRow.columns)) {
+    /* ─── State 1 — nothing selected → page SEO settings ───────── */
+    if (!activeNodePath || activeNodePath.length === 0) {
       return (
-        <EmptyHint>
-          The selected cell no longer exists. Click anywhere on the canvas to clear the selection.
-        </EmptyHint>
-      );
-    }
-    const column = cellRow.columns.find((c: any) => c.id === colId);
-    const cell = column?.cells?.find((c: any) => c.id === cellId);
-    if (!column || !cell) {
-      return (
-        <EmptyHint>
-          The selected cell was removed. Pick another cell or click empty canvas to clear.
-        </EmptyHint>
-      );
-    }
-
-    const onCellChange = (patch: Partial<typeof cell>) => {
-      onRowsChange(
-        pageRows.map((r: any) => {
-          if (r.id !== cRowId || !Array.isArray(r.columns)) return r;
-          return {
-            ...r,
-            columns: r.columns.map((col: any) => {
-              if (col.id !== colId) return col;
-              return {
-                ...col,
-                cells: (col.cells || []).map((cc: any) =>
-                  cc.id === cellId ? { ...cc, ...patch } : cc,
-                ),
-              };
-            }),
-          };
-        }),
-      );
-    };
-
-    return (
-      <Section title="Cell Settings">
-        <CellSettingsEditor cell={cell} onChange={onCellChange} />
-      </Section>
-    );
-  }
-
-  /* ─── Parse the selection id (`row:<id>` or `widget:<id>`) ─────
-   *
-   * Debug Story 1.1 — for `widget:<id>` the parsed `rowId` is actually
-   * the WIDGET id, which won't match any row in v2/v3 layouts. So we
-   * only enforce the row-lookup guard for the row branch; the widget
-   * branch resolves its target via `findWidgetLocation`. */
-  const [kind, rowId] = activeElement.split(":");
-  const row = pageRows.find((r) => r.id === rowId);
-
-  if (kind === "row" && !row) {
-    return (
-      <EmptyHint>The selected element no longer exists. Click anywhere on the canvas to clear the selection.</EmptyHint>
-    );
-  }
-
-  // Helpers — patch a single ROW in place (v1 row-only operations).
-  // For widget-level updates we use the sibling-safe widgetLocator
-  // helpers in the widget branch below.
-  const updateRow = (patch: Partial<PageRow>) => {
-    onRowsChange(pageRows.map((r) => (r.id === rowId ? { ...r, ...patch } : r)));
-  };
-
-  /* ─── State 2 — Row selected → layout / spacing / bg colour ──── */
-  if (kind === "row") {
-    const layout = { ...DEFAULT_ROW_LAYOUT, ...(row.layout || {}) };
-
-    /* ─── Debug Story 4.1 — destructive action guard ─────────────
-     * Counts configured widget cells in the row and shows a modal
-     * confirmation before mutating `pageRows`. Cancel leaves state
-     * untouched (the .then handler simply returns). */
-    const handleDeleteRow = async () => {
-      const count = countRowWidgets(row);
-      const ok = await confirmDestructive({
-        title: "Delete this row?",
-        description:
-          count > 1
-            ? `Warning: This row contains ${count} widgets. Deleting it will permanently remove them. Are you sure?`
-            : "Warning: Deleting this row will permanently remove it and its content. Are you sure?",
-        confirmLabel: "Delete row",
-        cancelLabel: "Cancel",
-        destructive: true,
-      });
-      if (!ok) return;
-      onRowsChange(pageRows.filter((r) => r.id !== rowId));
-      setActiveElement(null);
-    };
-
-    return (
-      <>
-        <Section title={`Row · ${row.type}`}>
-          <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-            Layout, spacing and background controls for the entire row.
+        <Section title="Page Settings">
+          <p className="font-body text-[11px] leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
+            Click an element on the canvas to edit it. Otherwise, these page-wide settings apply.
           </p>
-        </Section>
-
-        <Section title="Background">
-          <ColorField
-            label="Background Colour"
-            value={row.bg_color || ""}
-            onChange={(v) => updateRow({ bg_color: v })}
+          <SeoFields
+            metaTitle={seoMetaTitle}
+            metaDescription={seoMetaDescription}
+            onTitleChange={onSeoTitleChange}
+            onDescriptionChange={onSeoDescriptionChange}
           />
         </Section>
+      );
+    }
 
-        <Section title="Alignment">
-          <RowAlignmentSettings
-            layout={layout}
-            onChange={(next) => updateRow({ layout: next })}
+    /* Resolve segment positions in the path so we know which level the
+     * selection terminates at. The path is normalised by BuilderContext;
+     * we never have to guess a shape. */
+    const widgetIdx = activeNodePath.indexOf("widget");
+    const cellIdx = activeNodePath.indexOf("cell");
+    const colIdx = activeNodePath.indexOf("col");
+    const rowIdx = activeNodePath.indexOf("row");
+
+    /* ─── WIDGET LEVEL ───────────────────────────────────────────
+     * Drive selection off the v3 widget id at path[widgetIdx + 1].
+     * BuilderContext guarantees this is the WIDGET id, not the row id,
+     * so `findWidgetLocation` resolves a unique cell/widget pair. */
+    if (widgetIdx !== -1 && activeNodePath.length > widgetIdx + 1) {
+      const widgetId = activeNodePath[widgetIdx + 1];
+      const loc = findWidgetLocation(pageRows, widgetId);
+      if (!loc) {
+        return <EmptyHint>The selected widget no longer exists. Click anywhere on the canvas to clear the selection.</EmptyHint>;
+      }
+
+      const widgetContent = readWidgetContent(pageRows, loc);
+      const widgetType = readWidgetType(pageRows, loc);
+
+      /** Sibling-safe patch: replace ONE field on the targeted widget. */
+      const updateWidgetField = (field: string, value: any) => {
+        onRowsChange(patchWidgetContent(pageRows, loc, (prev) => ({ ...prev, [field]: value })));
+      };
+
+      /* Design settings live under the reserved `__design` key on the
+       * widget content blob and are applied uniformly by `WidgetWrapper`. */
+      const design = readDesignSettings(widgetContent);
+      const writeDesign = (patch: Partial<typeof design>) => {
+        const nextDesign = { ...DEFAULT_DESIGN_SETTINGS, ...design, ...patch };
+        onRowsChange(patchWidgetContent(pageRows, loc, (prev) => ({ ...prev, __design: nextDesign })));
+      };
+      const updateDesignField = (field: BoxField, value: number) =>
+        writeDesign({ [field]: value } as Partial<typeof design>);
+
+      /* Resolve the per-widget admin editor — registry first, then a
+       * legacy switch for widgets that haven't been ported yet. */
+      const def = getWidget(widgetType as any);
+      const rawContentEditor = def?.adminComponent
+        ? (() => {
+            const Admin = def.adminComponent!;
+            return <Admin content={widgetContent} onChange={updateWidgetField} />;
+          })()
+        : (() => {
+            switch (widgetType) {
+              case "hero":
+                return <HeroRowFields content={widgetContent} onChange={updateWidgetField} />;
+              case "service":
+                return (
+                  <PillarEditor
+                    pillarContent={widgetContent}
+                    servicesContent={{ services: widgetContent.services || [] }}
+                    onPillarChange={updateWidgetField}
+                    onServicesChange={(svcs) => updateWidgetField("services", svcs)}
+                  />
+                );
+              case "contact":
+                return <ContactAdmin content={widgetContent} onChange={updateWidgetField} />;
+              case "image_text":
+                return <ImageTextEditor content={widgetContent} onChange={updateWidgetField} />;
+              case "profile":
+                return <ProfileEditor content={widgetContent} onChange={updateWidgetField} />;
+              case "grid":
+                return <GridEditor content={widgetContent} onChange={updateWidgetField} />;
+              default:
+                return (
+                  <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    No inspector editor available for widget type "{widgetType}". Edit it from the row's form view instead.
+                  </p>
+                );
+            }
+          })();
+
+      /* US 3.2 — Context-Aware Backgrounds for Text Inputs.
+       * Wrap the content editor in a panel whose background mirrors the
+       * actual surface the widget sits on. `pickForeground` returns the
+       * matching readable text color so labels and helper copy on top of
+       * a dark surface stay legible. When no special bg applies we leave
+       * the panel transparent so the standard light admin theme wins. */
+      const surfaceBg = resolveSurfaceBg(pageRows, loc, widgetContent);
+      const surfaceFg = surfaceBg ? pickForeground(surfaceBg) : null;
+      const themedContentEditor = surfaceBg ? (
+        <div
+          className="rounded-lg p-3 -mx-1"
+          style={{
+            backgroundColor: surfaceBg,
+            color: surfaceFg ?? undefined,
+            // Soft border so the themed panel feels intentional, not stuck on.
+            boxShadow: "inset 0 0 0 1px hsl(var(--border) / 0.4)",
+          }}
+        >
+          {rawContentEditor}
+        </div>
+      ) : (
+        rawContentEditor
+      );
+
+      const widgetLabel = def?.label || widgetType || "Widget";
+
+      const handleDeleteWidget = async () => {
+        const ok = await confirmDestructive({
+          title: "Delete this widget?",
+          description:
+            "Warning: This will permanently remove the widget and its content from the page. Are you sure?",
+          confirmLabel: "Delete widget",
+        });
+        if (!ok) return;
+        onRowsChange(removeWidgetAt(pageRows, loc));
+        setActiveElement(null);
+      };
+
+      return (
+        <>
+          <header className="space-y-1">
+            <p className="admin-section-label font-body text-[10px]">Element</p>
+            <h3 className="font-display text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+              {widgetLabel}
+            </h3>
+          </header>
+
+          <WidgetInspectorTabs
+            activeTab={widgetTab}
+            onTabChange={setWidgetTab}
+            contentEditor={themedContentEditor}
+            design={design}
+            onDesignFieldChange={updateDesignField}
+            onDesignBgChange={(color) => writeDesign({ bgColor: color })}
+            onDesignRadiusChange={(px) => writeDesign({ borderRadius: px })}
+            onVisibilityChange={(visibility) => writeDesign({ visibility })}
+            onCustomCssChange={(customCss) => writeDesign({ customCss })}
           />
-        </Section>
 
-        {row.columns_data && row.columns_data.length > 1 && (
-          <Section title="Column widths">
-            <ColumnWidthControl
-              columnCount={row.columns_data.length}
-              widths={layout.column_widths}
-              onChange={(widths) =>
-                updateRow({ layout: { ...layout, column_widths: widths } })
-              }
+          {/* Destructive action lives at the bottom so the editor must
+           *  scroll past the safe controls; click ALWAYS routes through
+           *  `confirmDestructive`. */}
+          <Section title="Danger zone">
+            <button
+              type="button"
+              onClick={handleDeleteWidget}
+              className="flex items-center gap-2 px-3 py-2 rounded-md border w-full justify-center font-body text-[11px] uppercase tracking-[0.12em] cursor-pointer transition-colors"
+              style={{
+                borderColor: "hsl(var(--destructive) / 0.4)",
+                color: "hsl(var(--destructive))",
+                backgroundColor: "transparent",
+              }}
+            >
+              <Trash2 size={12} />
+              Delete widget
+            </button>
+          </Section>
+        </>
+      );
+    }
+
+    /* ─── CELL LEVEL ─────────────────────────────────────────────
+     * Path: ['row', rowId, 'col', colId, 'cell', cellId, ...] */
+    if (cellIdx !== -1 && activeNodePath.length > cellIdx + 1) {
+      const rowId = activeNodePath[rowIdx + 1];
+      const colId = colIdx !== -1 ? activeNodePath[colIdx + 1] : null;
+      const cellId = activeNodePath[cellIdx + 1];
+
+      const cellRow = pageRows.find((r) => r.id === rowId) as any;
+      const column = cellRow?.columns?.find((c: any) => c.id === colId);
+      const cell = column?.cells?.find((c: any) => c.id === cellId);
+
+      if (!cell) {
+        return <EmptyHint>The selected cell was removed. Pick another cell or click empty canvas to clear.</EmptyHint>;
+      }
+
+      const onCellChange = (patch: Partial<typeof cell>) => {
+        onRowsChange(
+          pageRows.map((r: any) => {
+            if (r.id !== rowId || !Array.isArray(r.columns)) return r;
+            return {
+              ...r,
+              columns: r.columns.map((col: any) => {
+                if (col.id !== colId) return col;
+                return {
+                  ...col,
+                  cells: (col.cells || []).map((cc: any) =>
+                    cc.id === cellId ? { ...cc, ...patch } : cc,
+                  ),
+                };
+              }),
+            };
+          }),
+        );
+      };
+
+      return (
+        <Section title="Cell Settings">
+          <CellSettingsEditor cell={cell} onChange={onCellChange} />
+        </Section>
+      );
+    }
+
+    /* ─── ROW LEVEL ──────────────────────────────────────────────
+     * Path: ['row', rowId] (no widget/cell segment after it). */
+    if (rowIdx !== -1 && activeNodePath.length > rowIdx + 1) {
+      const rowId = activeNodePath[rowIdx + 1];
+      const row = pageRows.find((r) => r.id === rowId);
+      if (!row) {
+        return <EmptyHint>The selected element no longer exists. Click anywhere on the canvas to clear the selection.</EmptyHint>;
+      }
+
+      const updateRow = (patch: Partial<PageRow>) =>
+        onRowsChange(pageRows.map((r) => (r.id === rowId ? { ...r, ...patch } : r)));
+      const layout = { ...DEFAULT_ROW_LAYOUT, ...(row.layout || {}) };
+
+      const handleDeleteRow = async () => {
+        const count = countRowWidgets(row);
+        const ok = await confirmDestructive({
+          title: "Delete this row?",
+          description:
+            count > 1
+              ? `Warning: This row contains ${count} widgets. Deleting it will permanently remove them. Are you sure?`
+              : "Warning: Deleting this row will permanently remove it and its content. Are you sure?",
+          confirmLabel: "Delete row",
+          cancelLabel: "Cancel",
+          destructive: true,
+        });
+        if (!ok) return;
+        onRowsChange(pageRows.filter((r) => r.id !== rowId));
+        setActiveElement(null);
+      };
+
+      return (
+        <>
+          <Section title={`Row · ${row.type}`}>
+            <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+              Layout, spacing and background controls for the entire row.
+            </p>
+          </Section>
+
+          <Section title="Background">
+            <ColorField
+              label="Background Colour"
+              value={row.bg_color || ""}
+              onChange={(v) => updateRow({ bg_color: v })}
             />
           </Section>
-        )}
 
-        {/* Destructive action lives at the bottom of the row inspector
-         * so the user has to scroll past the safe controls first — and
-         * the click ALWAYS routes through `confirmDestructive`. */}
-        <Section title="Danger zone">
-          <button
-            type="button"
-            onClick={handleDeleteRow}
-            className="flex items-center gap-2 px-3 py-2 rounded-md border w-full justify-center font-body text-[11px] uppercase tracking-[0.12em] cursor-pointer transition-colors"
-            style={{
-              borderColor: "hsl(var(--destructive) / 0.4)",
-              color: "hsl(var(--destructive))",
-              backgroundColor: "transparent",
-            }}
-          >
-            <Trash2 size={12} />
-            Delete row
-          </button>
-        </Section>
-      </>
-    );
-  }
+          <Section title="Alignment">
+            <RowAlignmentSettings layout={layout} onChange={(next) => updateRow({ layout: next })} />
+          </Section>
 
-  /* ─── State 3 — Widget selected → tabbed widget inspector (US 2.5)
-   *
-   * Debug Story 1.1 ("Sibling Erasure Test"):
-   * The id parsed from `widget:<widgetId>` is the WIDGET'S id, NOT the
-   * row's. In v2/v3 rows that hold multiple widgets, looking it up via
-   * `pageRows.find(r => r.id === widgetId)` would either miss entirely
-   * or match an unrelated row and overwrite its content, erasing every
-   * sibling widget. Instead we walk the tree with `findWidgetLocation`
-   * and patch through `patchWidgetContent`, which clones every ancestor
-   * array on the way down — siblings stay byte-identical.
-   * ─────────────────────────────────────────────────────────────── */
-  if (kind === "widget") {
-    // `rowId` here is actually the WIDGET id (legacy variable name kept
-    // to minimise diff). The locator handles v1 / v2 / v3 transparently.
-    const widgetId = rowId;
-    const loc = findWidgetLocation(pageRows, widgetId);
-    if (!loc) {
-      return (
-        <EmptyHint>
-          The selected widget no longer exists. Click anywhere on the canvas to clear the selection.
-        </EmptyHint>
+          {row.columns_data && row.columns_data.length > 1 && (
+            <Section title="Column widths">
+              <ColumnWidthControl
+                columnCount={row.columns_data.length}
+                widths={layout.column_widths}
+                onChange={(widths) => updateRow({ layout: { ...layout, column_widths: widths } })}
+              />
+            </Section>
+          )}
+
+          <Section title="Danger zone">
+            <button
+              type="button"
+              onClick={handleDeleteRow}
+              className="flex items-center gap-2 px-3 py-2 rounded-md border w-full justify-center font-body text-[11px] uppercase tracking-[0.12em] cursor-pointer transition-colors"
+              style={{
+                borderColor: "hsl(var(--destructive) / 0.4)",
+                color: "hsl(var(--destructive))",
+                backgroundColor: "transparent",
+              }}
+            >
+              <Trash2 size={12} />
+              Delete row
+            </button>
+          </Section>
+        </>
       );
     }
 
-    const widgetContent = readWidgetContent(pageRows, loc);
-    const widgetType = readWidgetType(pageRows, loc);
-
-    /** Sibling-safe patch: replace ONE field on the targeted widget. */
-    const updateWidgetField = (field: string, value: any) => {
-      onRowsChange(
-        patchWidgetContent(pageRows, loc, (prev) => ({ ...prev, [field]: value })),
-      );
-    };
-
-    /** Sibling-safe replace: hand the editor the whole content blob. */
-    const replaceWidgetContent = (next: Record<string, any>) => {
-      onRowsChange(patchWidgetContent(pageRows, loc, () => next));
-    };
-
-    /* Design settings live under the reserved `__design` key on the
-     * widget content blob and are applied uniformly by `WidgetWrapper`. */
-    const design = readDesignSettings(widgetContent);
-    const writeDesign = (patch: Partial<typeof design>) => {
-      const nextDesign = { ...DEFAULT_DESIGN_SETTINGS, ...design, ...patch };
-      onRowsChange(
-        patchWidgetContent(pageRows, loc, (prev) => ({
-          ...prev,
-          __design: nextDesign,
-        })),
-      );
-    };
-    const updateDesignField = (field: BoxField, value: number) =>
-      writeDesign({ [field]: value } as Partial<typeof design>);
-
-    /* Resolve the per-widget admin editor — registry first, then a
-     * legacy switch for widgets that haven't been ported yet. The
-     * resulting node renders inside the Content tab. */
-    const def = getWidget(widgetType as any);
-    const contentEditor = def?.adminComponent
-      ? (() => {
-          const Admin = def.adminComponent!;
-          return <Admin content={widgetContent} onChange={updateWidgetField} />;
-        })()
-      : (() => {
-          switch (widgetType) {
-            case "hero":
-              return <HeroRowFields content={widgetContent} onChange={updateWidgetField} />;
-            case "service":
-              return (
-                <PillarEditor
-                  pillarContent={widgetContent}
-                  servicesContent={{ services: widgetContent.services || [] }}
-                  onPillarChange={updateWidgetField}
-                  onServicesChange={(svcs) => updateWidgetField("services", svcs)}
-                />
-              );
-            case "contact":
-              return <ContactAdmin content={widgetContent} onChange={updateWidgetField} />;
-            case "image_text":
-              return <ImageTextEditor content={widgetContent} onChange={updateWidgetField} />;
-            case "profile":
-              return <ProfileEditor content={widgetContent} onChange={updateWidgetField} />;
-            case "grid":
-              return <GridEditor content={widgetContent} onChange={updateWidgetField} />;
-            default:
-              return (
-                <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  No inspector editor available for widget type "{widgetType}". Edit it from the row's form view instead.
-                </p>
-              );
-          }
-        })();
-
-    const widgetLabel = def?.label || widgetType;
-
-    /** Sibling-safe delete: drop ONLY this widget. For v1 rows that
-     *  removes the whole row (one widget == one row); for v2/v3 the row
-     *  stays so its other widgets remain editable. */
-    const handleDeleteWidget = async () => {
-      const ok = await confirmDestructive({
-        title: "Delete this widget?",
-        description:
-          "Warning: This will permanently remove the widget and its content from the page. Are you sure?",
-        confirmLabel: "Delete widget",
-      });
-      if (!ok) return;
-      onRowsChange(removeWidgetAt(pageRows, loc));
-      setActiveElement(null);
-    };
-
-    // Suppress unused-var warning (legacy fallback editor sometimes
-    // wants whole-content replace; kept exported for future editors).
-    void replaceWidgetContent;
-
-    return (
-      <>
-        <div className="mb-4">
-          <h3
-            className="font-body text-[11px] uppercase tracking-[0.18em] font-semibold"
-            style={{ color: "hsl(var(--foreground))" }}
-          >
-            Widget · {widgetLabel}
-          </h3>
-        </div>
-        <WidgetInspectorTabs
-          activeTab={widgetTab}
-          onTabChange={setWidgetTab}
-          contentEditor={contentEditor}
-          design={design}
-          onDesignFieldChange={updateDesignField}
-          onDesignBgChange={(color) => writeDesign({ bgColor: color })}
-          onDesignRadiusChange={(px) => writeDesign({ borderRadius: px })}
-          onVisibilityChange={(visibility) => writeDesign({ visibility })}
-          onCustomCssChange={(customCss) => writeDesign({ customCss })}
-        />
-
-        {/* Danger zone — destructive actions accessible from the
-         *  Inspector so editors can remove rogue widgets without
-         *  hunting for a separate UI. */}
-        <Section title="Danger zone">
-          <button
-            type="button"
-            onClick={handleDeleteWidget}
-            className="flex items-center gap-2 px-3 py-2 rounded-md border w-full justify-center font-body text-[11px] uppercase tracking-[0.12em] cursor-pointer transition-colors"
-            style={{
-              borderColor: "hsl(var(--destructive) / 0.4)",
-              color: "hsl(var(--destructive))",
-              backgroundColor: "transparent",
-            }}
-          >
-            <Trash2 size={12} />
-            Delete widget
-          </button>
-        </Section>
-      </>
-    );
-  }
-
-  return <EmptyHint>Select an element on the canvas to edit its settings.</EmptyHint>;
+    return <EmptyHint>Select an element on the canvas to edit its settings.</EmptyHint>;
   };
 
+  /* US 3.1 — strict scroll container. overflow-y-auto + overflow-x-hidden
+   * keeps long forms (scheduling, design, content) from blowing out the
+   * panel; the gap-4 between top-level sections prevents visual collisions
+   * between the header, tabs, and danger zone. */
   return (
-    <div ref={containerRef} className="h-full">
+    <div
+      ref={containerRef}
+      className="h-full overflow-y-auto overflow-x-hidden flex flex-col gap-4 min-w-0"
+    >
       {renderBody()}
     </div>
   );
