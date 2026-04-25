@@ -210,22 +210,23 @@ const SiteEditor = () => {
     if (isTrayDragData(data)) setActiveDrag(data);
   };
 
+  const reloadSections = async () => {
+    const { data } = await supabase
+      .from("site_content")
+      .select("section_key, content, draft_content")
+      .in("section_key", ["hero", "page_rows", "main_page_seo"]) as any;
+    if (data) {
+      const mapped = data.map((s: any) => ({
+        section_key: s.section_key,
+        content: s.content,
+        draft_content: s.draft_content || s.content,
+      }));
+      setSections(mapped);
+    }
+  };
+
   useEffect(() => {
-    const fetchAll = async () => {
-      const { data } = await supabase
-        .from("site_content")
-        .select("section_key, content, draft_content")
-        .in("section_key", ["hero", "page_rows", "main_page_seo"]) as any;
-      if (data) {
-        const mapped = data.map((s: any) => ({
-          section_key: s.section_key,
-          content: s.content,
-          draft_content: s.draft_content || s.content,
-        }));
-        setSections(mapped);
-      }
-    };
-    fetchAll();
+    reloadSections();
   }, []);
 
   const getSection = (key: string) => sections.find((s) => s.section_key === key);
