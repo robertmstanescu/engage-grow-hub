@@ -88,6 +88,91 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
   );
 };
 
+/**
+ * BuilderDndShell — owns the `onDragEnd` logic that needs both the
+ * page-rows state AND the selection context (US 17.2). It MUST render
+ * under <BuilderProvider> because it calls `useBuilder()` to auto-
+ * select the freshly-dropped widget. Sensors and the activeDrag
+ * mirror are passed in from <SiteEditor> (they're pure state).
+ */
+interface BuilderDndShellProps {
+  sensors: ReturnType<typeof useSensors>;
+  activeDrag: TrayDragData | null;
+  setActiveDrag: (d: TrayDragData | null) => void;
+  onDragStart: (e: DragStartEvent) => void;
+  pageRows: PageRow[];
+  onRowsChange: (rows: PageRow[]) => void;
+  children: React.ReactNode;
+}
+
+const BuilderDndShell = ({
+  sensors,
+  activeDrag,
+  setActiveDrag,
+  onDragStart,
+  pageRows,
+  onRowsChange,
+  children,
+}: BuilderDndShellProps) => {
+  const { setActiveElement } = useBuilder();
+
+  const handleDragEnd = (e: DragEndEvent) => {
+    const data = e.active.data.current;
+    const overId = e.over?.id;
+    setActiveDrag(null);
+
+    // Bail unless this is a tray-source drag landing on a real target.
+    if (!isTrayDragData(data) || overId == null) return;
+    const drop = parseDropZoneId(overId);
+    if (!drop) return;
+
+    // Look up defaults from the registry — the OCP win: any newly
+    // registered widget automatically becomes droppable, no edits here.
+    const def = getWidget(data.type);
+    if (!def) return;
+
+    const newRow: PageRow = {
+      id: generateRowId(),
+      type: data.type as PageRow["type"],
+      strip_title: data.label || data.type,
+      bg_color: "#FFFFFF",
+      content: { ...(def.defaultData as Record<string, any>) },
+      layout: { ...DEFAULT_ROW_LAYOUT },
+    };
+
+    // Compute insertion index. "before:<rowId>" inserts at that row's
+    // index; "end" appends to the bottom of the page.
+    let insertAt = pageRows.length;
+    if (drop.kind === "before") {
+      const idx = pageRows.findIndex((r) => r.id === drop.rowId);
+      if (idx >= 0) insertAt = idx;
+    }
+    const next = [...pageRows.slice(0, insertAt), newRow, ...pageRows.slice(insertAt)];
+    onRowsChange(next);
+
+    // Auto-select the new widget so the right Inspector instantly
+    // opens its editor (per the AC spec).
+    setActiveElement(`widget:${newRow.id}`);
+  };
+
+  return (
+    <DndContext
+      sensors={sensors}
+      onDragStart={onDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setActiveDrag(null)}
+    >
+      {children}
+      {/* Floating drag preview — rendered into a portal by dnd-kit so it
+          escapes the sidebar's overflow:hidden and follows the cursor
+          across the entire viewport. */}
+      <DragOverlay dropAnimation={null}>
+        {activeDrag ? <TrayDragPreview data={activeDrag} /> : null}
+      </DragOverlay>
+    </DndContext>
+  );
+};
+
 const SiteEditor = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [activeSection, setActiveSection] = useState<"hero" | "page_rows" | "main_page_seo">("hero");
