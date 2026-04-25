@@ -259,14 +259,29 @@ export const ArrayField = ({ label, items, onChange, placeholder }: { label: str
   );
 };
 
-export const SectionBox = ({ children, label }: { children: React.ReactNode; label?: string }) => (
-  <div
-    className="p-3 rounded-lg border space-y-2"
-    style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.15)" }}>
-    {label && <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground">{label}</span>}
-    {children}
-  </div>
-);
+export const SectionBox = ({ children, label }: { children: React.ReactNode; label?: string }) => {
+  // US 3.2 — when wrapped in a SurfaceBgProvider, tint the box with the
+  // surface colour so nested Title/Subtitle/Body inputs sit in a panel
+  // that mirrors the live row instead of the bright admin pane.
+  const ambient = useSurfaceBg();
+  const fg = ambient ? pickForeground(ambient) : null;
+  const boxStyle: React.CSSProperties = ambient
+    ? { borderColor: "hsl(var(--border) / 0.5)", backgroundColor: ambient }
+    : { borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.15)" };
+  return (
+    <div className="p-3 rounded-lg border space-y-2" style={boxStyle}>
+      {label && (
+        <span
+          className="font-body text-[9px] uppercase tracking-wider"
+          style={fg ? { color: fg, opacity: 0.8 } : { color: "hsl(var(--muted-foreground))" }}
+        >
+          {label}
+        </span>
+      )}
+      {children}
+    </div>
+  );
+};
 
 export const ColorField = ({ label, value, onChange, description, fallback }: { label: string; value: string; onChange: (v: string) => void; description?: string; fallback?: string }) => {
   const displayValue = value || fallback || "#000000";
