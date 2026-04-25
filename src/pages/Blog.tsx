@@ -99,7 +99,9 @@ const Blog = () => {
         </div>
       </section>
 
-      {(pageData.rows_below || []).map((row, i) => <RowRenderer key={row.id} row={row} rowIndex={i} />)}
+      {pageData.rows_below && pageData.rows_below.length > 0 && (
+        <RowsRenderer rows={pageData.rows_below} />
+      )}
       <Footer />
     </div>
   );
