@@ -1566,7 +1566,22 @@ const AdminDashboard = ({ session }: Props) => {
           ) : (
             <main className="flex-1 overflow-y-auto p-6">
               <div className="max-w-[1000px] mx-auto">
-                {activeTab === "pages" && <PagesManager onEditPage={handleEditPage} />}
+                {activeTab === "overview" && (
+                  <AdminOverviewDashboard
+                    onNavigate={(tab) => setActiveTab(tab as Tab)}
+                    onCreatePage={() => {
+                      setPendingCreatePage(true);
+                      setActiveTab("pages");
+                    }}
+                  />
+                )}
+                {activeTab === "pages" && (
+                  <PagesManager
+                    onEditPage={handleEditPage}
+                    autoOpenCreate={pendingCreatePage}
+                    onAutoOpenConsumed={() => setPendingCreatePage(false)}
+                  />
+                )}
                 {activeTab === "navigation" && <NavigationManager />}
                 {activeTab === "blog" && <BlogEditor />}
                 {activeTab === "contacts" && <ContactsList />}
