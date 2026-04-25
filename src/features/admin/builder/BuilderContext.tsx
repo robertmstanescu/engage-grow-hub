@@ -269,6 +269,15 @@ const writeRowsAtPath = (
     return { rows: nextRows, ok: true };
   }
 
+  // Legacy ServiceRow shape: ["field", leaf] → row.content[leaf].
+  if (rest[0] === "field" && rest.length >= 2) {
+    const leaf = rest[rest.length - 1];
+    const nextContent = setLeafOnObject(row.content || {}, leaf, value);
+    const nextRows = rows.slice();
+    nextRows[rowIdx] = { ...row, content: nextContent };
+    return { rows: nextRows, ok: true };
+  }
+
   // Bare ["<field>"] on the row content.
   if (rest.length === 1) {
     const leaf = rest[0];
