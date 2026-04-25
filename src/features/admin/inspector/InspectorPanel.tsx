@@ -67,9 +67,9 @@ export interface InspectorPanelProps {
   onSeoTitleChange: (v: string) => void;
   onSeoDescriptionChange: (v: string) => void;
 
-  // Hero (special-cased single section) ------------------------------
-  heroContent: Record<string, any>;
-  onHeroFieldChange: (field: string, value: any) => void;
+  // US 2.1 — Hero is no longer a special section; it lives in pageRows
+  // as an ordinary widget at index 0. The widget-editor branch picks it
+  // up via the `case "hero"` row-type fallback.
 
   // Page rows (the visual canvas) ------------------------------------
   pageRows: PageRow[];
