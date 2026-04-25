@@ -227,6 +227,18 @@ const PageNavigator = ({
         </div>
       </div>
 
+      {/* ── Slot 2b ── Schedule (publish window) ─────────────────────
+          Lives directly under the Page URL block: scheduling is a
+          PAGE-LEVEL setting, so it belongs with page identity rather
+          than competing with element-level inputs in the right pane. */}
+      {schedulePanel ? (
+        <div
+          className="px-4 py-3 border-b"
+          style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+        >
+          {schedulePanel}
+        </div>
+      ) : null}
       {/* ── Slot 3 ── Sections of the canvas ───────────────────── */}
       <div className="px-3 pt-3 pb-2">
         <h3
