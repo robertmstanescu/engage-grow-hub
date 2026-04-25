@@ -7,6 +7,7 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import RowBackground from "./RowBackground";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody } from "./typography";
+import { getAttributionForPayload } from "@/services/attribution";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -40,7 +41,15 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
     e.preventDefault();
     setSubmitting(true);
     const { error } = await supabase.functions.invoke("submit-contact", {
-      body: { name: formData.name, email: formData.email, company: formData.company || null, message: formData.message || null, subscribed_to_marketing: formData.subscribed_to_marketing || false },
+      body: {
+        name: formData.name,
+        email: formData.email,
+        company: formData.company || null,
+        message: formData.message || null,
+        subscribed_to_marketing: formData.subscribed_to_marketing || false,
+        // Epic 4 / US 4.1 — first-touch marketing attribution.
+        attribution: getAttributionForPayload(),
+      },
     });
     if (error) { toast.error("Something went wrong."); setSubmitting(false); return; }
     setSubmitted(true); setSubmitting(false); toast.success("Message sent!");

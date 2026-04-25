@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { sanitizeHtml } from "@/services/sanitize";
+import { getAttributionForPayload } from "@/services/attribution";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
@@ -32,7 +33,15 @@ const ContactSection = () => {
     e.preventDefault();
     setSubmitting(true);
     const { error } = await supabase.functions.invoke("submit-contact", {
-      body: { name: formData.name, email: formData.email, company: formData.company || null, message: formData.message || null, subscribed_to_marketing: formData.subscribed_to_marketing },
+      body: {
+        name: formData.name,
+        email: formData.email,
+        company: formData.company || null,
+        message: formData.message || null,
+        subscribed_to_marketing: formData.subscribed_to_marketing,
+        // Epic 4 / US 4.1 — first-touch marketing attribution.
+        attribution: getAttributionForPayload(),
+      },
     });
     if (error) { toast.error("Something went wrong."); setSubmitting(false); return; }
     setSubmitted(true); setSubmitting(false); toast.success("Message sent!");

@@ -227,6 +227,29 @@ function truncate(value: unknown, max: number): string {
   return value.length > max ? value.slice(0, max) : value;
 }
 
+/**
+ * Coerce an arbitrary client-supplied attribution blob into a flat
+ * `Record<string, string>` we can safely store as JSONB. Drops anything
+ * that isn't a string, clips long values, and caps the total number of
+ * keys so a malicious payload can't bloat the analytics table.
+ *
+ * Returns `null` for an empty / invalid blob — we want JSONB sparsity.
+ */
+const ALLOWED_ATTR_KEYS = new Set([
+  "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+  "gclid", "fbclid", "landing_path", "referrer", "first_seen_at",
+]);
+function sanitizeAttribution(raw: unknown): Record<string, string> | null {
+  if (!raw || typeof raw !== "object") return null;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (!ALLOWED_ATTR_KEYS.has(k)) continue;
+    if (typeof v !== "string" || v.trim() === "") continue;
+    out[k] = v.length > 500 ? v.slice(0, 500) : v;
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -246,6 +269,7 @@ Deno.serve(async (req) => {
   let referrer = "";
   let searchEngine: string | null = null;
   let visitorId: string | null = null;
+  let attribution: Record<string, string> | null = null;
 
   try {
     const body = await req.json();
@@ -257,6 +281,11 @@ Deno.serve(async (req) => {
     // visitor_id is the PRIMARY dedup key — see file header. We accept up
     // to 64 chars to fit a UUID v4 (36 chars) plus any future namespace.
     visitorId = body?.visitorId ? truncate(body.visitorId, 64) : null;
+    // Epic 4 / US 4.1 — marketing attribution snapshot from the client.
+    // We accept whatever keys the client sends but coerce values to
+    // strings of bounded length so a malicious 4MB blob can't pollute
+    // the analytics table.
+    attribution = sanitizeAttribution(body?.attribution);
   } catch {
     // Empty body is fine — fall back to defaults.
   }
@@ -301,6 +330,7 @@ Deno.serve(async (req) => {
       user_agent: userAgent.slice(0, 500),
       ip_hash: ipHash,
       source: "client",
+      attribution,
     });
   } catch (insertError) {
     console.error("track-visitor insert failed:", insertError);

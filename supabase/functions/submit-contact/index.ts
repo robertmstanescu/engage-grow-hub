@@ -6,6 +6,22 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
+/** Epic 4 / US 4.1 — sanitise client-supplied marketing attribution. */
+const ALLOWED_ATTR_KEYS = new Set([
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+  'gclid', 'fbclid', 'landing_path', 'referrer', 'first_seen_at',
+])
+function sanitizeAttribution(raw: unknown): Record<string, string> | null {
+  if (!raw || typeof raw !== 'object') return null
+  const out: Record<string, string> = {}
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (!ALLOWED_ATTR_KEYS.has(k)) continue
+    if (typeof v !== 'string' || v.trim() === '') continue
+    out[k] = v.length > 500 ? v.slice(0, 500) : v
+  }
+  return Object.keys(out).length > 0 ? out : null
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -23,6 +39,7 @@ Deno.serve(async (req) => {
 
   // Parse and validate input
   let name: string, email: string, company: string | null, message: string | null, subscribed_to_marketing: boolean
+  let attribution: Record<string, string> | null = null
   try {
     const body = await req.json()
     name = typeof body.name === 'string' ? body.name.trim() : ''
@@ -30,6 +47,8 @@ Deno.serve(async (req) => {
     company = typeof body.company === 'string' && body.company.trim() ? body.company.trim() : null
     message = typeof body.message === 'string' && body.message.trim() ? body.message.trim() : null
     subscribed_to_marketing = body.subscribed_to_marketing === true
+    // Epic 4 / US 4.1 — first-touch marketing attribution from localStorage.
+    attribution = sanitizeAttribution(body.attribution)
   } catch {
     return new Response(
       JSON.stringify({ error: 'Invalid JSON' }),
@@ -96,6 +115,7 @@ Deno.serve(async (req) => {
     company,
     message,
     subscribed_to_marketing,
+    attribution,
   })
 
   if (error) {
