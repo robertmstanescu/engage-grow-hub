@@ -283,7 +283,7 @@ const FooterColumnsEditor = ({ columns, onChange }: { columns: any[]; onChange: 
                   cols[ci] = { ...cols[ci], links };
                   onChange(cols);
                 }}
-                className="flex-1 px-2 py-1 rounded font-body text-xs border"
+                className="flex-1 px-2 py-1 rounded font-body text-xs border text-black"
                 style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }} />
               <input type="text" value={link.href} placeholder="Link"
                 onChange={(e) => {
@@ -293,7 +293,7 @@ const FooterColumnsEditor = ({ columns, onChange }: { columns: any[]; onChange: 
                   cols[ci] = { ...cols[ci], links };
                   onChange(cols);
                 }}
-                className="flex-1 px-2 py-1 rounded font-body text-xs border"
+                className="flex-1 px-2 py-1 rounded font-body text-xs border text-black"
                 style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }} />
               <button onClick={() => {
                 const cols = [...columns];
