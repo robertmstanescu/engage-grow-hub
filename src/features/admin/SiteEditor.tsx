@@ -25,6 +25,10 @@ import SelectableWrapper from "./builder/SelectableWrapper";
 import InspectorPanel from "./inspector/InspectorPanel";
 import RevisionHistoryPanel from "./builder/RevisionHistoryPanel";
 import SiteSectionSchedulePanel from "./builder/SiteSectionSchedulePanel";
+import {
+  findMissingAltViolations,
+  formatAltMissingMessage,
+} from "@/services/contentAccessibility";
 // US 17.1 — draggable widget library (left sidebar).
 import {
   DndContext,
