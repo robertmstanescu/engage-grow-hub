@@ -448,42 +448,32 @@ const PageNavigator = ({
             No sections yet — drag an element onto the canvas.
           </p>
         ) : (
-          sections.map((section) => {
-            const isActive = section.id === activeRowId;
-            return (
-              <button
-                key={section.id}
-                type="button"
-                onClick={() => goToSection(section.id)}
-                className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left font-body text-xs transition-colors group"
-                style={{
-                  backgroundColor: isActive
-                    ? "hsl(var(--accent) / 0.18)"
-                    : "transparent",
-                  color: isActive
-                    ? "hsl(var(--foreground))"
-                    : "hsl(var(--muted-foreground))",
-                  fontWeight: isActive ? 500 : 400,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive)
-                    e.currentTarget.style.backgroundColor =
-                      "hsl(var(--muted) / 0.5)";
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <span
-                  className="font-mono text-[10px] tabular-nums"
-                  style={{ color: "hsl(var(--muted-foreground))", minWidth: 18 }}
-                >
-                  {String(section.index + 1).padStart(2, "0")}
-                </span>
-                <span className="flex-1 truncate">{section.label}</span>
-              </button>
-            );
-          })
+          /* Nested DndContext — wraps ONLY the section list, so its
+             pointer activation never collides with the outer canvas
+             tray DndContext. closestCenter is the standard collision
+             strategy for vertical lists. */
+          <DndContext
+            sensors={sectionSensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleReorder}
+          >
+            <SortableContext
+              items={sections.map((s) => s.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {sections.map((section) => (
+                <SortableSectionItem
+                  key={section.id}
+                  id={section.id}
+                  index={section.index}
+                  label={section.label}
+                  isActive={section.id === activeRowId}
+                  onClick={() => goToSection(section.id)}
+                  onRename={(next) => handleRename(section.id, next)}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         )}
       </nav>
 
