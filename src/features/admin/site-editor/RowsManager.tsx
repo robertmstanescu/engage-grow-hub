@@ -79,13 +79,34 @@ interface Props {
 const RowsManager = ({ rows, onChange }: Props) => {
   const [openRow, setOpenRow] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
-  /**
-   * The "Inspector" target — `null` when closed, otherwise the cell
-   * whose generic design settings are being edited (US 6.1). One piece
-   * of state covers the entire page so opening a different cell simply
-   * retargets the SAME drawer instead of stacking multiple panels.
-   */
+  // Add-Row menu has two tabs: layout presets, or insert a saved Global Block (US 8.1).
+  const [addMenuTab, setAddMenuTab] = useState<"layout" | "global">("layout");
   const [inspectedCell, setInspectedCell] = useState<{ rowId: string; colIdx: number } | null>(null);
+
+  // Global Blocks library — used for both the Add menu's "Global" tab
+  // and to label cells that already reference a global widget.
+  const { blocks: globalBlocks } = useGlobalWidgets();
+
+  /**
+   * Insert a new row whose single cell REFERENCES a Global Block
+   * (US 8.1). The row's `type` is set to the global widget's type so
+   * the legacy renderer dispatches correctly even before the v2
+   * widget engine takes over; the actual data comes from the global
+   * record at render time via `__global_ref`.
+   */
+  const addGlobalBlockRow = (block: { id: string; type: string; name: string }) => {
+    const newRow: PageRow = {
+      id: generateRowId(),
+      type: block.type as PageRow["type"],
+      strip_title: block.name,
+      bg_color: "#FFFFFF",
+      content: { [GLOBAL_REF_KEY]: block.id },
+      layout: { ...DEFAULT_ROW_LAYOUT },
+    };
+    onChange([...rows, newRow]);
+    setOpenRow(newRow.id);
+    setShowAddMenu(false);
+  };
 
   /**
    * Add an EMPTY row with N columns of the chosen layout. The row is
