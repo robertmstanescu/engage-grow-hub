@@ -274,6 +274,9 @@ const BlogPostBuilder = ({ postId }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      publishStatus={record.status}
+      onUnpublish={onUnpublish}
+      unpublishing={unpublishing}
       schedulePanel={
         <SchedulePublishPanel
           entityType="blog_posts"
