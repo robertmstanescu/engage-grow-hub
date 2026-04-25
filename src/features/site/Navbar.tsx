@@ -252,7 +252,7 @@ const Navbar = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
-                className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
+                className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 mt-4"
                 style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
                 {ctaText}
               </motion.a>
