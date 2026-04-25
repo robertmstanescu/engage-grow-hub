@@ -390,7 +390,7 @@ const SiteEditor = () => {
                 Navigator
               </h3>
             </div>
-            <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+            <nav className="flex-shrink-0 overflow-y-auto p-2 space-y-1 max-h-[40%]">
               {SECTION_NAV.map(({ key, label, Icon }) => {
                 const active = activeSection === key;
                 const dirty = isDirty(key);
