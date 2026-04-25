@@ -21,6 +21,7 @@
  * blob under the reserved `__design` key. We never mutate state here.
  */
 
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -29,8 +30,10 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
-import { Smartphone, Monitor } from "lucide-react";
+import { Smartphone, Monitor, BookmarkPlus, Loader2 } from "lucide-react";
 import { DEFAULT_DESIGN_SETTINGS, type WidgetDesignSettings } from "@/types/rows";
+import { useGlobalWidgets } from "@/hooks/useGlobalWidgets";
+import { toast } from "sonner";
 
 interface Props {
   open: boolean;
@@ -38,10 +41,45 @@ interface Props {
   design: WidgetDesignSettings;
   onChange: (next: WidgetDesignSettings) => void;
   widgetLabel: string;
+  /**
+   * Save-as-Global support (US 8.1). When provided, surfaces a button
+   * that snapshots the cell's current widget data into the
+   * `global_widgets` table, then converts the cell into a reference
+   * via `onConvertedToGlobal(globalId)`.
+   *
+   * Optional so legacy call sites keep working without modification.
+   */
+  saveAsGlobal?: {
+    /** The widget type (e.g. "contact", "hero") at this cell. */
+    widgetType: string;
+    /** The widget data blob to snapshot (excluding `__design`/`__global_ref`). */
+    snapshotData: Record<string, any>;
+    /** Suggested name (e.g. row strip title). */
+    suggestedName: string;
+    /** Called with the new global widget id once it's saved. */
+    onConvertedToGlobal: (globalId: string) => void;
+    /** When true, the cell is already a reference — disable the action. */
+    isAlreadyReference?: boolean;
+  };
 }
 
 const FIELD_LABEL = "font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block";
 const NUM_INPUT = "w-full px-2 py-1.5 rounded-md font-body text-sm border";
+
+/**
+ * Strip the engine's reserved keys (`__design`, `__global_ref`) from a
+ * widget's content blob before saving it as a Global Block. The global
+ * record stores the WIDGET'S OWN data only — per-instance chrome lives
+ * on each referencing cell.
+ */
+const stripReservedKeys = (data: Record<string, any>): Record<string, any> => {
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(data || {})) {
+    if (k === "__design" || k === "__global_ref") continue;
+    out[k] = v;
+  }
+  return out;
+};
 
 const NumberField = ({
   label, value, onChange, max = 200,
@@ -70,7 +108,7 @@ const NumberField = ({
 );
 
 const WidgetSettingsDrawer = ({
-  open, onOpenChange, design, onChange, widgetLabel,
+  open, onOpenChange, design, onChange, widgetLabel, saveAsGlobal,
 }: Props) => {
   // WHY a single `update` helper: every control patches one field; the
   // parent receives the full, merged `WidgetDesignSettings` so it can
@@ -79,6 +117,32 @@ const WidgetSettingsDrawer = ({
     onChange({ ...design, [key]: value });
 
   const reset = () => onChange({ ...DEFAULT_DESIGN_SETTINGS });
+
+  // Save-as-Global state (US 8.1). The button is gated behind a small
+  // inline name prompt instead of a full modal — admins are already in
+  // the drawer's focused context, and a name input is the only piece
+  // of metadata required to create a Global Block.
+  const [savingName, setSavingName] = useState<string | null>(null);
+  const { create, isMutating } = useGlobalWidgets();
+
+  const handleConfirmSave = async () => {
+    if (!saveAsGlobal || !savingName?.trim()) return;
+    try {
+      const created = await create({
+        name: savingName.trim(),
+        type: saveAsGlobal.widgetType,
+        // WHY strip `__design` / `__global_ref`: the global record holds
+        // the WIDGET'S OWN data only. Per-instance chrome lives on the
+        // referencing cell so two pages can reuse the same global block
+        // with different margins.
+        data: stripReservedKeys(saveAsGlobal.snapshotData),
+      });
+      saveAsGlobal.onConvertedToGlobal(created.id);
+      setSavingName(null);
+    } catch {
+      // toast already surfaced by the hook
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -95,6 +159,83 @@ const WidgetSettingsDrawer = ({
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
+          {/* ── Save as Global Block (US 8.1) ──────────────────── */}
+          {/*
+           * Snapshots the cell's widget data into the `global_widgets`
+           * table and converts the cell into a reference. After this,
+           * editing the global record updates EVERY page that points
+           * at it (single source of truth).
+           *
+           * WHY this lives at the TOP: the action is rare but
+           * destructive (the cell becomes a reference, local edits
+           * stop having an effect), so admins should see the affordance
+           * BEFORE they tweak per-instance margin settings further.
+           */}
+          {saveAsGlobal && (
+            <section>
+              <h3 className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+                Global Block
+              </h3>
+              {saveAsGlobal.isAlreadyReference ? (
+                <div className="px-3 py-2 rounded-md font-body text-xs" style={{ backgroundColor: "hsl(var(--muted) / 0.3)", color: "hsl(var(--muted-foreground))" }}>
+                  This widget is already a Global Block. Edits sync to every page that references it.
+                </div>
+              ) : savingName === null ? (
+                <button
+                  type="button"
+                  onClick={() => setSavingName(saveAsGlobal.suggestedName || "")}
+                  className="flex items-center gap-2 font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-md hover:opacity-80 w-full justify-center"
+                  style={{
+                    color: "hsl(var(--primary))",
+                    border: "1px solid hsl(var(--primary) / 0.4)",
+                    backgroundColor: "hsl(var(--primary) / 0.06)",
+                  }}
+                >
+                  <BookmarkPlus size={14} /> Save as Global
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <label className={FIELD_LABEL}>Block name</label>
+                  <input
+                    autoFocus
+                    value={savingName}
+                    onChange={(e) => setSavingName(e.target.value)}
+                    placeholder="e.g. Footer Newsletter CTA"
+                    className={NUM_INPUT}
+                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && savingName.trim()) handleConfirmSave();
+                      if (e.key === "Escape") setSavingName(null);
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleConfirmSave}
+                      disabled={!savingName.trim() || isMutating}
+                      className="flex-1 flex items-center justify-center gap-2 font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-md disabled:opacity-50"
+                      style={{ color: "hsl(var(--primary-foreground))", backgroundColor: "hsl(var(--primary))" }}
+                    >
+                      {isMutating ? <Loader2 size={12} className="animate-spin" /> : <BookmarkPlus size={12} />}
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSavingName(null)}
+                      className="font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-md hover:opacity-70"
+                      style={{ color: "hsl(var(--muted-foreground))", border: "1px solid hsl(var(--border))" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  <p className="font-body text-[10px] text-muted-foreground">
+                    Saves a snapshot of this widget. Other pages can then reference it.
+                  </p>
+                </div>
+              )}
+            </section>
+          )}
+
           {/* ── Visibility (US 6.2) ────────────────────────────── */}
           {/*
            * Per-breakpoint show/hide. We surface this at the TOP of
