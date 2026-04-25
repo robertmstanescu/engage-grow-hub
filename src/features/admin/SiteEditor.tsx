@@ -441,26 +441,9 @@ const SiteEditor = () => {
   //                 actions that don't have inline-canvas equivalents
   //                 yet (a later epic will move these inline).
   const renderCanvas = () => {
-    if (activeSection === "hero") {
-      if (canvasMode === "preview") {
-        // HeroView is a PURE component (US 15.1). Wrapped in
-        // SelectableWrapper (US 15.2) so editors can target it.
-        // The BuilderProvider lives at the top level of SiteEditor
-        // (US 16.1) so the right-pane Inspector shares selection state.
-        return (
-          <CanvasSelectionSurface>
-            <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
-              <SelectableWrapper id="hero" label="Hero" variant="row">
-                <HeroView content={getDraft("hero") as any} />
-              </SelectableWrapper>
-            </div>
-          </CanvasSelectionSurface>
-        );
-      }
-      return (
-        <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
-      );
-    }
+    /* US 2.1 — The dedicated "hero" canvas branch is gone. Hero is
+     * rendered alongside everything else by RowsRenderer because it now
+     * lives at page_rows[0]. */
     if (activeSection === "page_rows") {
       if (canvasMode === "preview") {
         // RowsRenderer is the same component the public site uses (via
