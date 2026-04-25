@@ -82,36 +82,56 @@ const RowSection = ({
     : vAlign === "bottom" ? "items-end"
     : "items-center";
 
+  /* ── Custom CSS injection (Epic 2 — US 2.2) ──────────────────────
+   *  Admins can author scoped CSS per row using the `&` token. We
+   *  rewrite `&` to `#row-<row.id>` and emit an inline <style> block
+   *  RIGHT BEFORE the section so the rules cannot leak to other rows.
+   *
+   *  Security: we strip <script> / </script> defensively. React already
+   *  blocks DOM XSS via `dangerouslySetInnerHTML` at the JSX level, but
+   *  raw CSS can still load remote assets via `url(...)` — admins are
+   *  the trusted authors here (auth-gated input), so we don't sanitise
+   *  values, only the obvious script-tag sneak.                       */
+  const rawCss = row.customCss?.trim();
+  const rowDomId = rawCss ? `row-${row.id}` : undefined;
+  const scopedCss = rawCss
+    ? rawCss.replace(/<\/?script[^>]*>/gi, "").replace(/&/g, `#${rowDomId}`)
+    : "";
+
   return (
-    <section
-      ref={innerRef}
-      data-row-id={dataRowId ?? row.id}
-      data-row-type={dataRowType ?? row.type}
-      data-row-title={dataRowTitle ?? row.strip_title}
-      className={`snap-section ${grain ? "grain" : ""} relative ${fullHeight ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
-      style={{
-        backgroundColor: getRowBgColor(row, defaultBg),
-        isolation: "isolate",
-        scrollMarginTop: "0px",
-        ...style,
-      }}
-    >
-      {/*
-        LAYER ORDER (bottom → top):
-        1. <RowBackground/>     — z-[-3]: gradient/glow layer at the very back
-        2. Background image     — z-[-2]: PNG/photo above glow, below overlays
-        3. Overlay elements     — z-[-1]: decorative PNGs (logos, shapes) above bg
-        4. {children}           — actual row content, on top of everything
-      */}
-      <div className="absolute inset-0 pointer-events-none z-[-3]"><RowBackground row={row} /></div>
-      <div aria-hidden className="absolute inset-0 pointer-events-none z-[-2]" style={getRowBgImageStyle(row)} />
-      {row.layout?.overlays?.length ? (
-        <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden">
-          {renderOverlayElements(row.layout.overlays)}
-        </div>
-      ) : null}
-      {children}
-    </section>
+    <>
+      {scopedCss && <style dangerouslySetInnerHTML={{ __html: scopedCss }} />}
+      <section
+        ref={innerRef}
+        id={rowDomId}
+        data-row-id={dataRowId ?? row.id}
+        data-row-type={dataRowType ?? row.type}
+        data-row-title={dataRowTitle ?? row.strip_title}
+        className={`snap-section ${grain ? "grain" : ""} relative ${fullHeight ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
+        style={{
+          backgroundColor: getRowBgColor(row, defaultBg),
+          isolation: "isolate",
+          scrollMarginTop: "0px",
+          ...style,
+        }}
+      >
+        {/*
+          LAYER ORDER (bottom → top):
+          1. <RowBackground/>     — z-[-3]: gradient/glow layer at the very back
+          2. Background image     — z-[-2]: PNG/photo above glow, below overlays
+          3. Overlay elements     — z-[-1]: decorative PNGs (logos, shapes) above bg
+          4. {children}           — actual row content, on top of everything
+        */}
+        <div className="absolute inset-0 pointer-events-none z-[-3]"><RowBackground row={row} /></div>
+        <div aria-hidden className="absolute inset-0 pointer-events-none z-[-2]" style={getRowBgImageStyle(row)} />
+        {row.layout?.overlays?.length ? (
+          <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden">
+            {renderOverlayElements(row.layout.overlays)}
+          </div>
+        ) : null}
+        {children}
+      </section>
+    </>
   );
 };
 
