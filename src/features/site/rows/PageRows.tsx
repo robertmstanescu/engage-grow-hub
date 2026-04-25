@@ -3,7 +3,10 @@ import {
   DEFAULT_ROW_LAYOUT,
   type PageRow,
   type PageRowV2,
+  type PageRowV3,
+  type PageCell,
   isPageRowV2,
+  isPageRowV3,
   readDesignSettings,
   readGlobalRef,
 } from "@/types/rows";
@@ -11,18 +14,14 @@ import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import { renderWidget } from "@/lib/WidgetRegistry";
 import WidgetWrapper from "@/components/widgets/WidgetWrapper";
 import { useGlobalWidgetMap, type GlobalWidget } from "@/hooks/useGlobalWidgets";
-// US 15.2 — selection chrome for the admin canvas. On the public site
-// the BuilderProvider is absent, so SelectableWrapper renders as a
-// no-op fragment (zero DOM, zero perf cost). See SelectableWrapper.tsx.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
-// US 17.2 — drop targets between rows for tray-sourced widgets.
-// Renders nothing on the public site (no BuilderProvider above the tree).
 import CanvasDropZone from "@/features/admin/builder/CanvasDropZone";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
+import CellRenderer from "./CellRenderer";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-type RenderableRow = PageRow | PageRowV2;
+type RenderableRow = PageRow | PageRowV2 | PageRowV3;
 
 const buildHomepageHeroRow = (content: Record<string, any>): PageRow => ({
   id: "__homepage_hero__",
