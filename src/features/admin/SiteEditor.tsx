@@ -609,15 +609,21 @@ const SiteEditor = () => {
           );
 
           const centerPane = (
-            <CanvasViewport
-              deviceWidth={deviceWidth}
-              viewport={viewport}
-              supportsPreview={supportsPreview}
-              canvasMode={canvasMode}
-              setCanvasMode={setCanvasMode}
-            >
-              {renderCanvas()}
-            </CanvasViewport>
+            <div className="flex flex-col h-full min-h-0">
+              <div className="flex-1 min-h-0">
+                <CanvasViewport
+                  deviceWidth={deviceWidth}
+                  viewport={viewport}
+                  supportsPreview={supportsPreview}
+                  canvasMode={canvasMode}
+                  setCanvasMode={setCanvasMode}
+                >
+                  {renderCanvas()}
+                </CanvasViewport>
+              </div>
+              {/* EPIC 1 / US 1.5 — interactive DOM breadcrumb */}
+              <CanvasBreadcrumb />
+            </div>
           );
 
           const rightPane = (
