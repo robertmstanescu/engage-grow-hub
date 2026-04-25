@@ -274,7 +274,8 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
     viewport === "mobile" ? 375 : viewport === "tablet" ? 768 : undefined;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
+    <BuilderProvider>
+      <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
       {/* ─── Top toolbar (US 14.2) ────────────────────────────────── */}
       <AdminBuilderToolbar
         viewport={viewport}
