@@ -196,7 +196,8 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     if (editorRef.current.contains(range.commonAncestorContainer)) {
       selectionRef.current = range.cloneRange();
     }
-  }, []);
+    syncToolbarState();
+  }, [syncToolbarState]);
 
   const restoreSelection = useCallback(() => {
     const selection = window.getSelection();
