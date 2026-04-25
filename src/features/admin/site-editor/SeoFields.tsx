@@ -30,7 +30,39 @@
  * incremental and risk-free.
  * ───────────────────────────────────────────────────────────────────── */
 
+import { useState, useEffect, useRef } from "react";
 import { Field } from "./FieldComponents";
+
+/**
+ * Debug Story 3.2 — useDeferredText
+ * ----------------------------------
+ * Local mirror of `useDeferredValue` from FieldComponents but inlined
+ * here so we can keep the live character counters reactive while still
+ * deferring the upstream commit until blur / Enter. Without this the
+ * Meta Description and AI Summary textareas would push a draft mutation
+ * (and a full canvas re-render) on EVERY keystroke — the exact failure
+ * mode QA reproduces by holding "A" inside a sidebar text field.
+ */
+const useDeferredText = (externalValue: string, onCommit: (v: string) => void) => {
+  const [local, setLocal] = useState(externalValue || "");
+  const committedRef = useRef(externalValue || "");
+
+  useEffect(() => {
+    if (externalValue !== committedRef.current) {
+      setLocal(externalValue || "");
+      committedRef.current = externalValue || "";
+    }
+  }, [externalValue]);
+
+  const commit = () => {
+    if (local !== committedRef.current) {
+      committedRef.current = local;
+      onCommit(local);
+    }
+  };
+
+  return { local, setLocal, commit };
+};
 
 interface Props {
   metaTitle: string;
