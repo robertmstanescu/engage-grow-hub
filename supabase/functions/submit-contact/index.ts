@@ -105,6 +105,8 @@ Deno.serve(async (req) => {
   // Parse and validate input
   let name: string, email: string, company: string | null, message: string | null, subscribed_to_marketing: boolean
   let attribution: Record<string, string> | null = null
+  // Epic 4 / US 4.4 — Zero-Party Data from quizzes / ROI calculators.
+  let customProps: Record<string, unknown> | null = null
   try {
     const body = await req.json()
     name = typeof body.name === 'string' ? body.name.trim() : ''
@@ -114,6 +116,7 @@ Deno.serve(async (req) => {
     subscribed_to_marketing = body.subscribed_to_marketing === true
     // Epic 4 / US 4.1 — first-touch marketing attribution from localStorage.
     attribution = sanitizeAttribution(body.attribution)
+    customProps = sanitizeZeroPartyData(body.custom_properties)
   } catch {
     return new Response(
       JSON.stringify({ error: 'Invalid JSON' }),
@@ -171,6 +174,24 @@ Deno.serve(async (req) => {
     )
   }
 
+  // Epic 4 / US 4.4 — Look up the most-recent prior contact row for this
+  // email so we can carry forward the accumulated zero-party profile.
+  // Unlike `leads` (which upserts by email), `contacts` is append-only,
+  // so each new submission needs to read-then-merge to avoid losing
+  // answers gathered on previous visits.
+  let priorZeroParty: Record<string, unknown> | null = null
+  if (customProps) {
+    const { data: prior } = await supabase
+      .from('contacts')
+      .select('zero_party_data')
+      .eq('email', email)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    priorZeroParty = (prior?.zero_party_data as Record<string, unknown> | null | undefined) ?? null
+  }
+  const mergedZeroParty = deepMergeJson(priorZeroParty, customProps)
+
   // Insert contact
   const id = crypto.randomUUID()
   const { error } = await supabase.from('contacts').insert({
@@ -181,6 +202,9 @@ Deno.serve(async (req) => {
     message,
     subscribed_to_marketing,
     attribution,
+    // Default to {} (matches the column default) when nothing was sent
+    // and there's no prior profile to carry forward.
+    zero_party_data: Object.keys(mergedZeroParty).length > 0 ? mergedZeroParty : {},
   })
 
   if (error) {
