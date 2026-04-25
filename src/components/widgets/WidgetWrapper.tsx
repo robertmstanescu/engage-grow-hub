@@ -21,7 +21,7 @@
  * partial / legacy / corrupted JSON degrades gracefully to "no styling".
  */
 
-import type { CSSProperties, ReactNode } from "react";
+import { useId, type CSSProperties, type ReactNode } from "react";
 import type { WidgetDesignSettings } from "@/types/rows";
 
 interface Props {
@@ -30,6 +30,25 @@ interface Props {
   /** Optional className passthrough for callers that need extra layout hooks. */
   className?: string;
 }
+
+/**
+ * Rewrite the `&` parent-selector token in user-authored CSS to a
+ * per-instance class so the rules cannot bleed onto other widgets.
+ *
+ * Strategy: a single regex pass replacing every standalone `&` with
+ * `.<scope>`. We match `&` only when it's NOT followed by another
+ * identifier character so we don't break unlikely identifiers that
+ * legitimately contain `&` (none in vanilla CSS, but defensive).
+ *
+ * SECURITY NOTE: this is presentation-only. We do NOT sanitise CSS
+ * values — admins are trusted authors here (the field lives behind the
+ * admin auth boundary). If this ever ships to non-admin authors, swap
+ * in a real CSS parser.
+ */
+const scopeCss = (raw: string, scope: string): string => {
+  if (!raw) return "";
+  return raw.replace(/&/g, `.${scope}`);
+};
 
 /**
  * Translate the JSON-friendly `WidgetDesignSettings` into a flat
@@ -68,7 +87,7 @@ export const designToStyle = (d: WidgetDesignSettings): CSSProperties => {
 export const hasDesignOverrides = (d: WidgetDesignSettings): boolean =>
   d.marginTop !== 0 || d.marginRight !== 0 || d.marginBottom !== 0 || d.marginLeft !== 0 ||
   d.paddingTop !== 0 || d.paddingRight !== 0 || d.paddingBottom !== 0 || d.paddingLeft !== 0 ||
-  d.borderRadius !== 0 || !!d.bgColor;
+  d.borderRadius !== 0 || !!d.bgColor || !!d.customCss?.trim();
 
 /**
  * Translate the responsive `visibility` flags into Tailwind classes.
@@ -115,9 +134,26 @@ const WidgetWrapper = ({ design, children, className }: Props) => {
   // responsive `hidden` classes.
   if (!hasStyles && !visClass) return <>{children}</>;
 
-  const composedClass = [className, visClass].filter(Boolean).join(" ") || undefined;
+  /* useId gives us a stable, SSR-safe per-instance id. We strip the
+   * leading colons React uses (`:r1:`) and prefix a readable token so
+   * the resulting class is a valid CSS identifier. */
+  const reactId = useId().replace(/[:]/g, "");
+  const scope = `widget-scope-${reactId}`;
+  const customCss = design.customCss?.trim();
+  const scopedCss = customCss ? scopeCss(customCss, scope) : "";
+
+  const composedClass = [className, visClass, customCss ? scope : null]
+    .filter(Boolean)
+    .join(" ") || undefined;
+
   return (
     <div className={composedClass} style={hasStyles ? designToStyle(design) : undefined}>
+      {scopedCss && (
+        /* Inline <style> tag is fine inside <body> in HTML5 and keeps
+         * the CSS co-located with the widget — no global stylesheet
+         * mutation, no leakage when the widget unmounts. */
+        <style dangerouslySetInnerHTML={{ __html: scopedCss }} />
+      )}
       {children}
     </div>
   );

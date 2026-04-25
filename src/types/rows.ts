@@ -186,6 +186,20 @@ export interface WidgetDesignSettings {
     mobile: boolean;
     desktop: boolean;
   };
+  /**
+   * Custom CSS (Epic 2) — scoped to this widget instance.
+   *
+   * The `&` token is rewritten by `WidgetWrapper` to a per-instance
+   * class so rules cannot leak globally. Example:
+   *   & { background: red; }
+   *   & h1 { font-size: 50px; }
+   * becomes
+   *   .widget-scope-xyz { background: red; }
+   *   .widget-scope-xyz h1 { font-size: 50px; }
+   *
+   * Empty string = no custom CSS, wrapper short-circuits as before.
+   */
+  customCss: string;
 }
 
 export const DEFAULT_DESIGN_SETTINGS: WidgetDesignSettings = {
@@ -200,6 +214,7 @@ export const DEFAULT_DESIGN_SETTINGS: WidgetDesignSettings = {
   bgColor: "",
   borderRadius: 0,
   visibility: { mobile: true, desktop: true },
+  customCss: "",
 };
 
 /**
