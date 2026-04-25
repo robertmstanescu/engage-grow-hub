@@ -311,6 +311,31 @@ const PageNavigator = ({
           Elements
         </h3>
         <ElementsTray />
+
+        {/* ── Slot 5 ── Revision history (collapsed by default) ─────
+            Demoted from the right sidebar: roll-back is rare, so it
+            sits inside a collapsed disclosure under the Elements tray
+            where it's discoverable but never in the way. */}
+        {revisionPanel ? (
+          <details
+            className="mt-4 pt-3 border-t group"
+            style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+          >
+            <summary
+              className="flex items-center gap-1.5 cursor-pointer list-none font-body text-[10px] uppercase tracking-[0.18em] font-medium select-none"
+              style={{ color: "hsl(var(--muted-foreground))" }}
+            >
+              <ChevronRight
+                size={12}
+                className="transition-transform group-open:rotate-90"
+                aria-hidden
+              />
+              <History size={12} aria-hidden />
+              <span>Revision history</span>
+            </summary>
+            <div className="mt-3">{revisionPanel}</div>
+          </details>
+        ) : null}
       </div>
     </div>
   );
