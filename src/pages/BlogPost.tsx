@@ -67,7 +67,7 @@ const BlogPost = () => {
       if (!isPreview) query = query.eq("status", "published");
 
       const { data } = await query.maybeSingle();
-      setArticle((current) => current || (data as BlogArticle | null));
+      setArticle((current) => current || (data as unknown as BlogArticle | null));
       setLoading(false);
 
       return isPreview ? subscribeLivePreview(syncPreview) : undefined;
