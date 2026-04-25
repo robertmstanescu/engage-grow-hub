@@ -1,4 +1,4 @@
-import { Search, X, ArrowDownAZ, Clock, ListOrdered } from "lucide-react";
+import { Search, X, ArrowDownAZ, Clock, ListOrdered, Flame } from "lucide-react";
 import type { ListFiltersState, SortMode } from "@/hooks/useListFilters";
 
 /**
@@ -131,6 +131,15 @@ const ListFilters = ({
         {!hideSortModes.includes("alpha") && (
           <SortBtn active={sortMode === "alpha"} onClick={() => setSortMode("alpha")} title="Alphabetical">
             <ArrowDownAZ size={12} />
+          </SortBtn>
+        )}
+        {!hideSortModes.includes("score") && (
+          <SortBtn
+            active={sortMode === "score"}
+            onClick={() => setSortMode("score")}
+            title="Highest intent / AI score"
+          >
+            <Flame size={12} />
           </SortBtn>
         )}
       </div>
