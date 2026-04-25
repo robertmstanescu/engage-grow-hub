@@ -344,6 +344,33 @@ export type Database = {
         }
         Relationships: []
       }
+      global_widgets: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          name: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: string
+          name: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           company_university: string
