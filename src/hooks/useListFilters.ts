@@ -58,7 +58,7 @@ import { useSearchParams } from "react-router-dom";
  * the same SPA don't collide on the same `?q=` key.
  */
 
-export type SortMode = "manual" | "updated" | "alpha";
+export type SortMode = "manual" | "updated" | "alpha" | "score";
 
 interface UseListFiltersOptions<T> {
   /** Source array (already fetched). Filtering runs in-memory over this. */
@@ -79,6 +79,12 @@ interface UseListFiltersOptions<T> {
   alphaKey?: (item: T) => string;
   /** Field to order by when sortMode === "updated" (Date or ISO string). */
   updatedKey?: (item: T) => string | Date | null | undefined;
+  /**
+   * Field to order by when sortMode === "score" — used by the CRM to
+   * surface highest-intent leads first. Returning `null`/`undefined`
+   * pushes the item to the bottom (unscored).
+   */
+  scoreKey?: (item: T) => number | null | undefined;
   /** Default sort mode. The user requested "manual" globally. */
   defaultSort?: SortMode;
   /**
@@ -124,6 +130,7 @@ export function useListFilters<T>(opts: UseListFiltersOptions<T>): {
     categoryOf,
     alphaKey,
     updatedKey,
+    scoreKey,
     defaultSort = "manual",
     paramPrefix = "",
     debounceMs = 200,
@@ -241,12 +248,21 @@ export function useListFilters<T>(opts: UseListFiltersOptions<T>): {
         const tb = new Date(updatedKey(b) ?? 0).getTime();
         return tb - ta; // newest first
       });
+    } else if (sortMode === "score" && scoreKey) {
+      // Highest intent first. Unscored leads (null/undefined) sink to
+      // the bottom — a -1 sentinel keeps them out of the Hot/Warm zone
+      // without breaking the comparator.
+      filteredItems = [...filteredItems].sort((a, b) => {
+        const sa = scoreKey(a) ?? -1;
+        const sb = scoreKey(b) ?? -1;
+        return sb - sa;
+      });
     }
     // sortMode === "manual" → preserve incoming order (page sequence,
     // user drag order, server default). Do nothing.
 
     return filteredItems;
-  }, [items, activeCategory, activeSearchQuery, sortMode, categoryOf, searchableText, alphaKey, updatedKey]);
+  }, [items, activeCategory, activeSearchQuery, sortMode, categoryOf, searchableText, alphaKey, updatedKey, scoreKey]);
 
   const isFiltering =
     Boolean(activeSearchQuery) || activeCategory !== "all" || sortMode !== defaultSort;

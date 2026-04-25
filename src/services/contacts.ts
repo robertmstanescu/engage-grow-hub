@@ -15,6 +15,14 @@ export interface ContactRecord {
   message: string | null;
   subscribed_to_marketing: boolean;
   created_at: string;
+  /**
+   * Epic 4 / US 4.3 — AI-generated intent score (0–100). NULL means the
+   * enrichment pipeline hasn't graded this lead yet. The UI buckets:
+   *   ≥75 → Hot, 40–74 → Warm, <40 → Cold.
+   */
+  ai_score: number | null;
+  /** Enriched LinkedIn profile URL (populated by the AI agent webhook). */
+  linkedin_url: string | null;
 }
 
 export const fetchAllContacts = () =>

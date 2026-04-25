@@ -1,4 +1,4 @@
-import { Search, X, ArrowDownAZ, Clock, ListOrdered } from "lucide-react";
+import { Search, X, ArrowDownAZ, Clock, ListOrdered, Flame } from "lucide-react";
 import type { ListFiltersState, SortMode } from "@/hooks/useListFilters";
 
 /**
@@ -36,6 +36,12 @@ interface Props {
   formatCategoryLabel?: (raw: string) => string;
   /** Hide individual sort buttons if a sort mode doesn't make sense for this list. */
   hideSortModes?: SortMode[];
+  /**
+   * Opt-in: show the Flame "Highest intent / AI score" sort button.
+   * Off by default because only CRM lists (Contacts, Leads) populate
+   * `ai_score` — every other list would render a useless control.
+   */
+  showScoreSort?: boolean;
 }
 
 const ListFilters = ({
@@ -44,6 +50,7 @@ const ListFilters = ({
   showCategoryFilter = true,
   formatCategoryLabel,
   hideSortModes = [],
+  showScoreSort = false,
 }: Props) => {
   const {
     searchInput, setSearchInput,
@@ -131,6 +138,18 @@ const ListFilters = ({
         {!hideSortModes.includes("alpha") && (
           <SortBtn active={sortMode === "alpha"} onClick={() => setSortMode("alpha")} title="Alphabetical">
             <ArrowDownAZ size={12} />
+          </SortBtn>
+        )}
+        {/* Score sort is opt-in: only the CRM lists (Contacts, Leads)
+            have an `ai_score` field, so other lists keep `showScoreSort`
+            at its default of `false`. */}
+        {showScoreSort && !hideSortModes.includes("score") && (
+          <SortBtn
+            active={sortMode === "score"}
+            onClick={() => setSortMode("score")}
+            title="Highest intent / AI score"
+          >
+            <Flame size={12} />
           </SortBtn>
         )}
       </div>
