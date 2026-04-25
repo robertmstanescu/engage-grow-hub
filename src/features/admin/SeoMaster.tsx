@@ -90,8 +90,39 @@ interface HeadingRow {
   h1s: string[];
   /** Detected H2 string (`subtitle`). */
   h2s: string[];
+  /** AI summary (the "answer-first" snippet AI scrapers extract). */
+  aiSummary: string;
   editPath?: string;
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   AI SUMMARY (Answer-First) AUDIT
+   ─────────────────────────────────────────────────────────────────────
+   AEO best practice: each page should expose a 40–60 word "direct
+   answer" snippet that AI crawlers (GPTBot, PerplexityBot, ClaudeBot)
+   can lift verbatim as a citation. Outside that window, the snippet
+   either gets truncated mid-sentence (too long) or fails to convey
+   enough context to be cited (too short).
+   ───────────────────────────────────────────────────────────────────── */
+
+const AI_SUMMARY_MIN_WORDS = 40;
+const AI_SUMMARY_MAX_WORDS = 60;
+
+type AiSummaryStatus = "missing" | "too_short" | "too_long" | "ok";
+
+const countWords = (text: string): number => {
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+};
+
+const classifyAiSummary = (summary: string): { status: AiSummaryStatus; words: number } => {
+  const words = countWords(summary);
+  if (words === 0) return { status: "missing", words };
+  if (words < AI_SUMMARY_MIN_WORDS) return { status: "too_short", words };
+  if (words > AI_SUMMARY_MAX_WORDS) return { status: "too_long", words };
+  return { status: "ok", words };
+};
 
 /**
  * Global SEO tags shape.
@@ -312,6 +343,7 @@ const HeadingsAudit = () => {
         metaTitle: p.meta_title || "",
         h1s,
         h2s,
+        aiSummary: p.ai_summary || "",
       };
     });
 
@@ -326,6 +358,7 @@ const HeadingsAudit = () => {
       // surfacing those instead of leaving the cells empty.
       h1s: b.title ? [b.title] : [],
       h2s: b.excerpt ? [b.excerpt] : [],
+      aiSummary: b.ai_summary || "",
     }));
 
     setRows([...cmsRows, ...blogRows]);
@@ -415,6 +448,12 @@ const HeadingsAudit = () => {
                   title="Section headings for the rest of the page. Sourced from each non-hero row's title_lines."
                 >
                   Section Headings (H2)
+                </th>
+                <th
+                  className="px-3 py-2 font-medium"
+                  title={`The 'answer-first' snippet AI crawlers (GPTBot, PerplexityBot, ClaudeBot) extract as a citation. Optimal length: ${AI_SUMMARY_MIN_WORDS}–${AI_SUMMARY_MAX_WORDS} words.`}
+                >
+                  AI Summary / Answer
                 </th>
               </tr>
             </thead>
@@ -539,7 +578,62 @@ const HeadingRowItem = ({
           </ul>
         )}
       </td>
+      <td className="px-3 py-3 max-w-[280px]">
+        <AiSummaryCell summary={row.aiSummary} />
+      </td>
     </tr>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────────────────
+   AI SUMMARY CELL
+   ─────────────────────────────────────────────────────────────────────
+   Renders the ai_summary preview with a status pill indicating whether
+   the snippet falls inside the 40–60 word "answer-first" sweet spot
+   AI scrapers prefer for direct citation extraction.
+   ───────────────────────────────────────────────────────────────────── */
+const AiSummaryCell = ({ summary }: { summary: string }) => {
+  const { status, words } = classifyAiSummary(summary);
+
+  if (status === "missing") {
+    return (
+      <span
+        className="inline-flex items-center gap-1 font-body text-xs text-orange-500"
+        title={`Add a ${AI_SUMMARY_MIN_WORDS}–${AI_SUMMARY_MAX_WORDS} word answer-first summary to maximize AI citation probability.`}
+      >
+        <AlertCircle size={12} /> missing
+      </span>
+    );
+  }
+
+  const isWarning = status !== "ok";
+  const warningLabel =
+    status === "too_short"
+      ? `Too short (${words}w) — aim for ${AI_SUMMARY_MIN_WORDS}–${AI_SUMMARY_MAX_WORDS} words.`
+      : status === "too_long"
+        ? `Too long (${words}w) — aim for ${AI_SUMMARY_MIN_WORDS}–${AI_SUMMARY_MAX_WORDS} words.`
+        : "";
+
+  return (
+    <div className="space-y-1">
+      <p className="font-body text-xs text-muted-foreground line-clamp-3" title={summary}>
+        {summary}
+      </p>
+      <div className="flex items-center gap-1.5">
+        {isWarning ? (
+          <span
+            className="inline-flex items-center gap-1 font-body text-[10px] text-orange-500"
+            title={warningLabel}
+          >
+            <AlertCircle size={10} /> {words} words
+          </span>
+        ) : (
+          <span className="font-body text-[10px] text-emerald-500" title="In the optimal AI-citation range.">
+            ✓ {words} words
+          </span>
+        )}
+      </div>
+    </div>
   );
 };
 
