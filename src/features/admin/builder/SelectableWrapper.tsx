@@ -93,6 +93,7 @@ const SelectableWrapper = ({
   const {
     enabled,
     isPathActive,
+    isPathEditing,
     setActiveNodePath,
     setEditingPath,
   } = useBuilder();
@@ -111,6 +112,36 @@ const SelectableWrapper = ({
   if (effectivePath.length === 0) return <>{children}</>;
 
   const isActive = isPathActive(effectivePath);
+  const isEditing = isPathEditing(effectivePath);
+
+  // EDIT-MODE PASSTHROUGH (EPIC 1 / US 1.1)
+  // ───────────────────────────────────────
+  // When this node is in inline-edit mode (double-clicked), we MUST
+  // stop intercepting clicks so the user can put the caret inside the
+  // contentEditable child, select text, etc. We still keep the visual
+  // ring so the editor knows what's being edited, plus a small "exit"
+  // hint via Escape key handled by the inner EditableText.
+  if (isEditing) {
+    const Tag: any = inline ? "span" : "div";
+    return (
+      <Tag
+        data-builder-path={effectivePath.join("/")}
+        data-builder-variant={variant}
+        data-builder-editing="true"
+        className={`relative ${inline ? "inline" : ""} ring-2 ring-blue-600 ring-offset-1 transition-[outline,box-shadow] duration-100`}
+      >
+        {label && (
+          <span
+            className="absolute z-50 -top-5 left-0 px-1.5 py-0.5 rounded-sm text-[10px] font-medium uppercase tracking-wider pointer-events-none whitespace-nowrap"
+            style={{ backgroundColor: "rgb(37 99 235)", color: "white" }}
+          >
+            {label} · editing
+          </span>
+        )}
+        {children}
+      </Tag>
+    );
+  }
 
   const handleClick = (e: MouseEvent<HTMLElement>) => {
     // Strict stopPropagation — selecting an inner node MUST NOT bubble
