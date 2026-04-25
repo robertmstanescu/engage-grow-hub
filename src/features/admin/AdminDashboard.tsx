@@ -61,7 +61,8 @@ import {
   GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
   Loader2, Check, Search, History,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import AdminOverviewDashboard from "./AdminOverviewDashboard";
 // (Sheet/Drawer rollback: properties editor stays as a 3rd column.)
 
 /**
@@ -123,7 +124,7 @@ import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 import SiteEditor from "./SiteEditor";
 import CmsPageBuilder from "./builder/CmsPageBuilder";
 
-type Tab = "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team" | "seo_master" | "versions";
+type Tab = "overview" | "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team" | "seo_master" | "versions";
 type PropertiesSubTab = "content" | "style" | "seo";
 interface Props { session: any; }
 
@@ -152,9 +153,15 @@ const sectionEmoji = (type: string) => SECTION_EMOJI[type] || "📄";
 
 const NAV_GROUPS = [
   {
+    label: "OVERVIEW",
+    items: [
+      { key: "overview" as Tab, icon: LayoutDashboard, label: "Dashboard" },
+    ],
+  },
+  {
     label: "CONTENT",
     items: [
-      { key: "site" as Tab, icon: LayoutDashboard, label: "Site Editor" },
+      { key: "site" as Tab, icon: FileText, label: "Site Editor" },
       { key: "pages" as Tab, icon: FileText, label: "Pages" },
       { key: "navigation" as Tab, icon: Compass, label: "Navigation" },
       { key: "blog" as Tab, icon: BookOpen, label: "Blog Posts" },
@@ -255,7 +262,15 @@ const SortableSectionBlock = ({
    ADMIN DASHBOARD
    ═══════════════════════════════════════════════ */
 const AdminDashboard = ({ session }: Props) => {
-  const [activeTab, setActiveTab] = useState<Tab>("site");
+  // EPIC 3 / US 3.1 — admins land on the overview dashboard, not the
+  // raw site editor. The previous behaviour ("site" by default) made it
+  // far too easy to fat-finger a layout the moment you logged in.
+  const location = useLocation();
+  const initialTab: Tab = location.pathname.startsWith("/admin/site") ? "site" : "overview";
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+  // Set when the overview dashboard's "Create New Page" CTA is clicked.
+  // Hands off to PagesManager which auto-opens its inline create form.
+  const [pendingCreatePage, setPendingCreatePage] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const isAdminMobile = useIsAdminMobile();
   // Branding (favicons live here) so the admin topbar can render the
@@ -1551,7 +1566,22 @@ const AdminDashboard = ({ session }: Props) => {
           ) : (
             <main className="flex-1 overflow-y-auto p-6">
               <div className="max-w-[1000px] mx-auto">
-                {activeTab === "pages" && <PagesManager onEditPage={handleEditPage} />}
+                {activeTab === "overview" && (
+                  <AdminOverviewDashboard
+                    onNavigate={(tab) => setActiveTab(tab as Tab)}
+                    onCreatePage={() => {
+                      setPendingCreatePage(true);
+                      setActiveTab("pages");
+                    }}
+                  />
+                )}
+                {activeTab === "pages" && (
+                  <PagesManager
+                    onEditPage={handleEditPage}
+                    autoOpenCreate={pendingCreatePage}
+                    onAutoOpenConsumed={() => setPendingCreatePage(false)}
+                  />
+                )}
                 {activeTab === "navigation" && <NavigationManager />}
                 {activeTab === "blog" && <BlogEditor />}
                 {activeTab === "contacts" && <ContactsList />}

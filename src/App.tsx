@@ -144,6 +144,26 @@ const App = () => (
                 }
               />
               <Route
+                path="/admin/dashboard"
+                element={
+                  <PageBoundary>
+                    <Suspense fallback={<AdminChunkFallback />}>
+                      <Admin />
+                    </Suspense>
+                  </PageBoundary>
+                }
+              />
+              <Route
+                path="/admin/site"
+                element={
+                  <PageBoundary>
+                    <Suspense fallback={<AdminChunkFallback />}>
+                      <Admin />
+                    </Suspense>
+                  </PageBoundary>
+                }
+              />
+              <Route
                 path="/admin/profile"
                 element={
                   <PageBoundary>

@@ -84,9 +84,19 @@ interface CmsPageRef {
 
 interface Props {
   onEditPage?: (page: CmsPageRef | null) => void;
+  /**
+   * When true, opens the "Create Page" inline form on first mount. The
+   * Admin Overview Dashboard sets this when the user clicks its
+   * prominent "Create New Page" CTA so the create form is one click —
+   * not two — away from the welcome screen. Resets after consumption
+   * so re-rendering the tab won't re-open the form.
+   */
+  autoOpenCreate?: boolean;
+  /** Called once `autoOpenCreate` has been consumed. */
+  onAutoOpenConsumed?: () => void;
 }
 
-const PagesManager = ({ onEditPage }: Props) => {
+const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props) => {
   const [pages, setPages] = useState<CmsPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingPage, setEditingPage] = useState<CmsPage | null>(null);
@@ -102,6 +112,17 @@ const PagesManager = ({ onEditPage }: Props) => {
   const [newTitle, setNewTitle] = useState("");
   const [newSlug, setNewSlug] = useState("");
   const [isCreatingPage, setIsCreatingPage] = useState(false);
+
+  // Honour the dashboard's "Create New Page" CTA — open the inline
+  // form on mount, then signal consumption so the parent can clear
+  // the flag (prevents the form re-opening on every re-render).
+  useEffect(() => {
+    if (autoOpenCreate) {
+      setShowCreate(true);
+      onAutoOpenConsumed?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpenCreate]);
 
   // Search/filter/sort over the CMS pages list. Searches title + slug + status.
   // Type filter dropdown surfaces published/draft. URL params: ?pq, ?ptype, ?psort.
