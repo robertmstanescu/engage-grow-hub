@@ -225,16 +225,11 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     );
   }
 
-  // Helpers — patch a single row in place, preserving the rest.
+  // Helpers — patch a single ROW in place (v1 row-only operations).
+  // For widget-level updates we use the sibling-safe widgetLocator
+  // helpers below.
   const updateRow = (patch: Partial<PageRow>) => {
     onRowsChange(pageRows.map((r) => (r.id === rowId ? { ...r, ...patch } : r)));
-  };
-  const updateRowContent = (field: string, value: any) => {
-    onRowsChange(
-      pageRows.map((r) =>
-        r.id === rowId ? { ...r, content: { ...r.content, [field]: value } } : r,
-      ),
-    );
   };
 
   /* ─── State 2 — Row selected → layout / spacing / bg colour ──── */
@@ -319,21 +314,55 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     );
   }
 
-  /* ─── State 3 — Widget selected → tabbed widget inspector (US 2.5) */
+  /* ─── State 3 — Widget selected → tabbed widget inspector (US 2.5)
+   *
+   * Debug Story 1.1 ("Sibling Erasure Test"):
+   * The id parsed from `widget:<widgetId>` is the WIDGET'S id, NOT the
+   * row's. In v2/v3 rows that hold multiple widgets, looking it up via
+   * `pageRows.find(r => r.id === widgetId)` would either miss entirely
+   * or match an unrelated row and overwrite its content, erasing every
+   * sibling widget. Instead we walk the tree with `findWidgetLocation`
+   * and patch through `patchWidgetContent`, which clones every ancestor
+   * array on the way down — siblings stay byte-identical.
+   * ─────────────────────────────────────────────────────────────── */
   if (kind === "widget") {
+    // `rowId` here is actually the WIDGET id (legacy variable name kept
+    // to minimise diff). The locator handles v1 / v2 / v3 transparently.
+    const widgetId = rowId;
+    const loc = findWidgetLocation(pageRows, widgetId);
+    if (!loc) {
+      return (
+        <EmptyHint>
+          The selected widget no longer exists. Click anywhere on the canvas to clear the selection.
+        </EmptyHint>
+      );
+    }
+
+    const widgetContent = readWidgetContent(pageRows, loc);
+    const widgetType = readWidgetType(pageRows, loc);
+
+    /** Sibling-safe patch: replace ONE field on the targeted widget. */
+    const updateWidgetField = (field: string, value: any) => {
+      onRowsChange(
+        patchWidgetContent(pageRows, loc, (prev) => ({ ...prev, [field]: value })),
+      );
+    };
+
+    /** Sibling-safe replace: hand the editor the whole content blob. */
+    const replaceWidgetContent = (next: Record<string, any>) => {
+      onRowsChange(patchWidgetContent(pageRows, loc, () => next));
+    };
+
     /* Design settings live under the reserved `__design` key on the
-     * widget content blob and are applied uniformly by `WidgetWrapper`.
-     * We expose a single helper to PATCH any subset of the design and
-     * write the merged result back through `onRowsChange`. */
-    const design = readDesignSettings(row.content);
+     * widget content blob and are applied uniformly by `WidgetWrapper`. */
+    const design = readDesignSettings(widgetContent);
     const writeDesign = (patch: Partial<typeof design>) => {
       const nextDesign = { ...DEFAULT_DESIGN_SETTINGS, ...design, ...patch };
       onRowsChange(
-        pageRows.map((r) =>
-          r.id === rowId
-            ? { ...r, content: { ...r.content, __design: nextDesign } }
-            : r,
-        ),
+        patchWidgetContent(pageRows, loc, (prev) => ({
+          ...prev,
+          __design: nextDesign,
+        })),
       );
     };
     const updateDesignField = (field: BoxField, value: number) =>
@@ -342,43 +371,62 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     /* Resolve the per-widget admin editor — registry first, then a
      * legacy switch for widgets that haven't been ported yet. The
      * resulting node renders inside the Content tab. */
-    const def = getWidget(row.type);
+    const def = getWidget(widgetType as any);
     const contentEditor = def?.adminComponent
       ? (() => {
           const Admin = def.adminComponent!;
-          return <Admin content={row.content} onChange={updateRowContent} />;
+          return <Admin content={widgetContent} onChange={updateWidgetField} />;
         })()
       : (() => {
-          switch (row.type) {
+          switch (widgetType) {
             case "hero":
-              return <HeroRowFields content={row.content} onChange={updateRowContent} />;
+              return <HeroRowFields content={widgetContent} onChange={updateWidgetField} />;
             case "service":
               return (
                 <PillarEditor
-                  pillarContent={row.content}
-                  servicesContent={{ services: row.content.services || [] }}
-                  onPillarChange={updateRowContent}
-                  onServicesChange={(svcs) => updateRowContent("services", svcs)}
+                  pillarContent={widgetContent}
+                  servicesContent={{ services: widgetContent.services || [] }}
+                  onPillarChange={updateWidgetField}
+                  onServicesChange={(svcs) => updateWidgetField("services", svcs)}
                 />
               );
             case "contact":
-              return <ContactAdmin content={row.content} onChange={updateRowContent} />;
+              return <ContactAdmin content={widgetContent} onChange={updateWidgetField} />;
             case "image_text":
-              return <ImageTextEditor content={row.content} onChange={updateRowContent} />;
+              return <ImageTextEditor content={widgetContent} onChange={updateWidgetField} />;
             case "profile":
-              return <ProfileEditor content={row.content} onChange={updateRowContent} />;
+              return <ProfileEditor content={widgetContent} onChange={updateWidgetField} />;
             case "grid":
-              return <GridEditor content={row.content} onChange={updateRowContent} />;
+              return <GridEditor content={widgetContent} onChange={updateWidgetField} />;
             default:
               return (
                 <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  No inspector editor available for widget type "{row.type}". Edit it from the row's form view instead.
+                  No inspector editor available for widget type "{widgetType}". Edit it from the row's form view instead.
                 </p>
               );
           }
         })();
 
-    const widgetLabel = def?.label || row.type;
+    const widgetLabel = def?.label || widgetType;
+
+    /** Sibling-safe delete: drop ONLY this widget. For v1 rows that
+     *  removes the whole row (one widget == one row); for v2/v3 the row
+     *  stays so its other widgets remain editable. */
+    const handleDeleteWidget = async () => {
+      const ok = await confirmDestructive({
+        title: "Delete this widget?",
+        description:
+          "Warning: This will permanently remove the widget and its content from the page. Are you sure?",
+        confirmLabel: "Delete widget",
+      });
+      if (!ok) return;
+      onRowsChange(removeWidgetAt(pageRows, loc));
+      setActiveElement(null);
+    };
+
+    // Suppress unused-var warning (legacy fallback editor sometimes
+    // wants whole-content replace; kept exported for future editors).
+    void replaceWidgetContent;
 
     return (
       <>
@@ -401,6 +449,25 @@ const InspectorPanel = (props: InspectorPanelProps) => {
           onVisibilityChange={(visibility) => writeDesign({ visibility })}
           onCustomCssChange={(customCss) => writeDesign({ customCss })}
         />
+
+        {/* Danger zone — destructive actions accessible from the
+         *  Inspector so editors can remove rogue widgets without
+         *  hunting for a separate UI. */}
+        <Section title="Danger zone">
+          <button
+            type="button"
+            onClick={handleDeleteWidget}
+            className="flex items-center gap-2 px-3 py-2 rounded-md border w-full justify-center font-body text-[11px] uppercase tracking-[0.12em] cursor-pointer transition-colors"
+            style={{
+              borderColor: "hsl(var(--destructive) / 0.4)",
+              color: "hsl(var(--destructive))",
+              backgroundColor: "transparent",
+            }}
+          >
+            <Trash2 size={12} />
+            Delete widget
+          </button>
+        </Section>
       </>
     );
   }
