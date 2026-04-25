@@ -421,8 +421,10 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                   </div>
                   {/* US 3.1 — strict scroll container. overflow-x-hidden +
                       min-w-0 keeps long inputs from blowing out the panel,
-                      and gap-4 between sections (Content / Design /
-                      Scheduling) prevents visual collisions. */}
+                      and gap-4 between sections prevents visual collisions.
+                      NOTE: Schedule + Revision history were moved to the
+                      LEFT navigator (under Page URL / Elements) so this
+                      pane is now element-scoped only. */}
                   <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 p-4 flex flex-col gap-4">
                     <InspectorPanel
                       seoMetaTitle={props.seoMetaTitle}
@@ -432,16 +434,6 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                       pageRows={props.pageRows}
                       onRowsChange={props.onRowsChange}
                     />
-                    {props.schedulePanel ? (
-                      <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                        {props.schedulePanel}
-                      </div>
-                    ) : null}
-                    {props.inspectorFooter ? (
-                      <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                        {props.inspectorFooter}
-                      </div>
-                    ) : null}
                   </div>
                 </aside>
               );
