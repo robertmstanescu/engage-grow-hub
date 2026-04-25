@@ -23,6 +23,17 @@ export interface ContactRecord {
   ai_score: number | null;
   /** Enriched LinkedIn profile URL (populated by the AI agent webhook). */
   linkedin_url: string | null;
+  /**
+   * Epic 4 / US 4.4 — Zero-Party Data accumulated across visits via
+   * progressive profiling (quizzes, ROI calculators, etc.). Schema is
+   * intentionally open; the submit-contact edge function deep-merges
+   * incoming `custom_properties` into this object.
+   *
+   * Typed as `unknown` (not `Record<string, unknown>`) because Supabase's
+   * generated `Json` type is a union — consumers should narrow before
+   * reading individual keys.
+   */
+  zero_party_data: unknown;
 }
 
 export const fetchAllContacts = () =>
