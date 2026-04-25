@@ -46,6 +46,8 @@ const SiteEditor = () => {
   const [activeSection, setActiveSection] = useState<"hero" | "page_rows" | "main_page_seo">("hero");
   const [saving, setSaving] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
+  // US 14.2 — viewport simulation. Drives a max-width on the canvas wrapper.
+  const [viewport, setViewport] = useState<ViewportMode>("desktop");
 
   useEffect(() => {
     const fetchAll = async () => {
