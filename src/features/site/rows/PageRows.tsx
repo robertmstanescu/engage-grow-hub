@@ -122,41 +122,33 @@ const RowRenderer = ({
   );
 };
 
-const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
-  /**
-   * Loading-aware read so we don't briefly render the hardcoded
-   * DEFAULT_ROWS layout (a placeholder rows skeleton from
-   * `src/types/rows.ts`) before the admin's real rows arrive from the
-   * database. While `isLoading` is true on a cold first visit we render
-   * NOTHING below the hero — far less jarring than flashing default
-   * content that vanishes a moment later. Once react-query's cache is
-   * warm (any previous visit in this tab session), `isLoading` is false
-   * on the very first render, so navigating between routes still feels
-   * instant.
-   */
-  // No hardcoded DEFAULT_ROWS fallback — passing an empty rows array
-  // means the only thing that can ever paint is what the admin actually
-  // saved. Combined with the `isLoading` guard below, no stale demo
-  // content can flash on a refresh.
-  const { isLoading, content: data } = useSiteContentWithStatus<{ rows: PageRow[] }>(
-    "page_rows",
-    { rows: [] },
-  );
-  const rows = data.rows || [];
+/**
+ * RowsRenderer — PURE renderer that paints an array of rows.
+ *
+ * WHY this exists (US 15.1):
+ * The admin canvas needs to render the LIVE site's row tree against the
+ * in-memory draft state — not the published DB content. By splitting
+ * the data fetch (PageRows) from the actual rendering (RowsRenderer),
+ * the admin can pass `rows={draftRows}` and see WYSIWYG edits update on
+ * every keystroke, while the public site continues to use <PageRows />
+ * unchanged. Same widget tree, same DOM, same animations.
+ *
+ * RULE: this renderer is COMPLETELY IGNORANT of the admin panel. It
+ * only takes `rows` and produces HTML.
+ */
+export const RowsRenderer = ({
+  rows,
+  footerSlot,
+}: {
+  rows: PageRow[];
+  footerSlot?: React.ReactNode;
+}) => {
   const autoAlignments = computeAutoAlignments(rows);
   const lastIndex = rows.length - 1;
 
   // Resolve `__global_ref` references in cell content to live data
-  // from the `global_widgets` table (US 8.1). One shared map for the
-  // entire page — see `useGlobalWidgetMap` for cache strategy.
+  // from the `global_widgets` table (US 8.1).
   const { map: globalMap } = useGlobalWidgetMap();
-
-  // Cold-load guard: don't paint stale defaults. We still render the
-  // footer slot so the page never feels totally empty during the brief
-  // fetch window.
-  if (isLoading) {
-    return <>{footerSlot}</>;
-  }
 
   return (
     <>
@@ -194,6 +186,38 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
       {rows.length === 0 && footerSlot}
     </>
   );
+};
+
+const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
+  /**
+   * Loading-aware read so we don't briefly render the hardcoded
+   * DEFAULT_ROWS layout (a placeholder rows skeleton from
+   * `src/types/rows.ts`) before the admin's real rows arrive from the
+   * database. While `isLoading` is true on a cold first visit we render
+   * NOTHING below the hero — far less jarring than flashing default
+   * content that vanishes a moment later. Once react-query's cache is
+   * warm (any previous visit in this tab session), `isLoading` is false
+   * on the very first render, so navigating between routes still feels
+   * instant.
+   */
+  // No hardcoded DEFAULT_ROWS fallback — passing an empty rows array
+  // means the only thing that can ever paint is what the admin actually
+  // saved. Combined with the `isLoading` guard below, no stale demo
+  // content can flash on a refresh.
+  const { isLoading, content: data } = useSiteContentWithStatus<{ rows: PageRow[] }>(
+    "page_rows",
+    { rows: [] },
+  );
+  const rows = data.rows || [];
+
+  // Cold-load guard: don't paint stale defaults. We still render the
+  // footer slot so the page never feels totally empty during the brief
+  // fetch window.
+  if (isLoading) {
+    return <>{footerSlot}</>;
+  }
+
+  return <RowsRenderer rows={rows} footerSlot={footerSlot} />;
 };
 
 export default PageRows;
