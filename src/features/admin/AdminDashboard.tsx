@@ -1415,7 +1415,7 @@ const AdminDashboard = ({ session }: Props) => {
                         )}
                         {isRow && (
                           <button
-                            onClick={() => deleteRow(selectedRow!.id)}
+                            onClick={() => requestDeleteRow(selectedRow!.id)}
                             className="flex items-center justify-center w-7 h-7 rounded-md cursor-pointer border border-destructive/30 bg-transparent text-destructive"
                             title="Delete Row"
                           >
