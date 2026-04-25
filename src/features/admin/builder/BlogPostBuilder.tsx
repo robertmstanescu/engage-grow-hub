@@ -67,6 +67,9 @@ const BlogPostBuilder = ({ postId }: Props) => {
   const [draftRows, setDraftRows] = useState<PageRow[]>([]);
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
+  // US 2.3 — Page identity edited in the Left Navigator.
+  const [pageTitle, setPageTitle] = useState("");
+  const [pageSlug, setPageSlug] = useState("");
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
@@ -86,6 +89,8 @@ const BlogPostBuilder = ({ postId }: Props) => {
     setDraftRows(existing.length > 0 ? existing : seedRowsFromHtml(rec.content));
     setSeoTitle(rec.meta_title || "");
     setSeoDescription(rec.meta_description || "");
+    setPageTitle(rec.title || "");
+    setPageSlug(rec.slug || "");
   }, [postId]);
 
   useEffect(() => {
@@ -100,12 +105,20 @@ const BlogPostBuilder = ({ postId }: Props) => {
       rows: effective,
       meta_title: record.meta_title || "",
       meta_description: record.meta_description || "",
+      title: record.title || "",
+      slug: record.slug || "",
     });
   }, [record]);
 
   const currentSnapshot = useMemo(
-    () => JSON.stringify({ rows: draftRows, meta_title: seoTitle, meta_description: seoDescription }),
-    [draftRows, seoTitle, seoDescription],
+    () => JSON.stringify({
+      rows: draftRows,
+      meta_title: seoTitle,
+      meta_description: seoDescription,
+      title: pageTitle,
+      slug: pageSlug,
+    }),
+    [draftRows, seoTitle, seoDescription, pageTitle, pageSlug],
   );
 
   const hasChanges = !!record && initialSnapshot !== currentSnapshot;
@@ -114,8 +127,31 @@ const BlogPostBuilder = ({ postId }: Props) => {
   // hasn't been pushed to the database yet.
   useUnloadGuard(hasChanges);
 
+  /** US 2.3 — Slug uniqueness guard for blog posts. */
+  const checkSlugAvailable = useCallback(async (): Promise<boolean> => {
+    if (!record) return false;
+    if ((pageSlug || "") === (record.slug || "")) return true;
+    if (!pageSlug) {
+      toast.error("Post URL cannot be empty");
+      return false;
+    }
+    const { data: clash } = await supabase
+      .from("blog_posts")
+      .select("id")
+      .eq("slug", pageSlug)
+      .neq("id", record.id)
+      .maybeSingle();
+    if (clash) {
+      toast.error(`The URL "/blog/${pageSlug}" is already in use by another post`);
+      return false;
+    }
+    return true;
+  }, [record, pageSlug]);
+
   const onSaveDraft = useCallback(async () => {
     if (!record) return;
+    const slugOk = await checkSlugAvailable();
+    if (!slugOk) return;
     setSaving(true);
     const { error } = await supabase
       .from("blog_posts")
@@ -123,15 +159,24 @@ const BlogPostBuilder = ({ postId }: Props) => {
         draft_page_rows: draftRows as any,
         meta_title: seoTitle,
         meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
       } as any)
       .eq("id", record.id);
     if (error) toast.error(error.message);
     else {
       toast.success("Draft saved");
-      setRecord({ ...record, draft_page_rows: draftRows, meta_title: seoTitle, meta_description: seoDescription });
+      setRecord({
+        ...record,
+        draft_page_rows: draftRows,
+        meta_title: seoTitle,
+        meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
+      });
     }
     setSaving(false);
-  }, [record, draftRows, seoTitle, seoDescription]);
+  }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, checkSlugAvailable]);
 
   const onPublish = useCallback(async () => {
     if (!record) return;
@@ -148,6 +193,9 @@ const BlogPostBuilder = ({ postId }: Props) => {
       return;
     }
 
+    const slugOk = await checkSlugAvailable();
+    if (!slugOk) return;
+
     setPublishing(true);
     const { error } = await supabase
       .from("blog_posts")
@@ -156,21 +204,32 @@ const BlogPostBuilder = ({ postId }: Props) => {
         draft_page_rows: draftRows as any,
         meta_title: seoTitle,
         meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
         status: "published",
       } as any)
       .eq("id", record.id);
     if (error) toast.error(error.message);
     else {
       toast.success("Published");
-      setRecord({ ...record, page_rows: draftRows, draft_page_rows: draftRows, meta_title: seoTitle, meta_description: seoDescription, status: "published" });
+      setRecord({
+        ...record,
+        page_rows: draftRows,
+        draft_page_rows: draftRows,
+        meta_title: seoTitle,
+        meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
+        status: "published",
+      });
     }
     setPublishing(false);
-  }, [record, draftRows, seoTitle, seoDescription]);
+  }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, checkSlugAvailable]);
 
   const onPreview = useCallback(() => {
     if (!record) return;
-    onSaveDraft().then(() => window.open(`/blog/${record.slug}?preview=1`, "_blank"));
-  }, [record, onSaveDraft]);
+    onSaveDraft().then(() => window.open(`/blog/${pageSlug || record.slug}?preview=1`, "_blank"));
+  }, [record, onSaveDraft, pageSlug]);
 
   if (!record) {
     return (
@@ -182,7 +241,13 @@ const BlogPostBuilder = ({ postId }: Props) => {
 
   return (
     <PageBuilderShell
-      title={record.title || record.slug}
+      title={pageTitle || pageSlug || "Untitled post"}
+      pageTitle={pageTitle}
+      onPageTitleChange={setPageTitle}
+      pageSlug={pageSlug}
+      onPageSlugChange={setPageSlug}
+      slugEditable={true}
+      slugPrefix="/blog/"
       pageRows={draftRows}
       onRowsChange={setDraftRows}
       seoMetaTitle={seoTitle}
@@ -199,7 +264,7 @@ const BlogPostBuilder = ({ postId }: Props) => {
         <SchedulePublishPanel
           entityType="blog_posts"
           entityId={record.id}
-          entityLabel={record.title || record.slug}
+          entityLabel={pageTitle || pageSlug}
           hasUnsavedChanges={hasChanges}
         />
       }

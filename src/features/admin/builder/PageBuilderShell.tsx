@@ -59,6 +59,7 @@ import { generateRowId, DEFAULT_ROW_LAYOUT, buildEmptyV3Row, type PageRow } from
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import InspectorPanel from "../inspector/InspectorPanel";
 import CanvasBreadcrumb from "./CanvasBreadcrumb";
+import PageNavigator from "./PageNavigator";
 
 /* ------------------------------------------------------------------
  * BuilderDndShell — drop handler that needs `useBuilder()` (auto-select
@@ -273,6 +274,25 @@ export interface PageBuilderShellProps {
 
   /** Optional scheduling panel rendered above the revision history. */
   schedulePanel?: React.ReactNode;
+
+  /* ── US 2.3 — Left Navigator identity slots ────────────────────
+   * The Left Sidebar Navigator now shows the page's title and URL
+   * front-and-centre. Adapters supply the values + setters; omit a
+   * setter to render the corresponding field as read-only. */
+
+  /** Editable page title shown at the top of the Left Navigator. */
+  pageTitle: string;
+  onPageTitleChange?: (next: string) => void;
+
+  /** Page URL slug shown beneath the title. */
+  pageSlug: string;
+  onPageSlugChange?: (next: string) => void;
+
+  /** Set false to render the slug as a read-only badge (e.g. main page "/"). */
+  slugEditable?: boolean;
+
+  /** Optional URL prefix shown in front of the slug (default "/"). */
+  slugPrefix?: string;
 }
 
 const PageBuilderShell = (props: PageBuilderShellProps) => {
@@ -340,26 +360,18 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                   className="h-full flex flex-col"
                   style={{ backgroundColor: "hsl(var(--card))" }}
                 >
-                  <div
-                    className="px-4 py-3 border-b"
-                    style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-                  >
-                    <h3
-                      className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
-                      style={{ color: "hsl(var(--muted-foreground))" }}
-                    >
-                      {props.title}
-                    </h3>
-                  </div>
-                  <div className="flex-1 min-h-0 px-3 py-3 overflow-y-auto">
-                    <h3
-                      className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
-                      style={{ color: "hsl(var(--muted-foreground))" }}
-                    >
-                      Elements
-                    </h3>
-                    <ElementsTray />
-                  </div>
+                  {/* US 2.3 — Left Sidebar Navigator: Page Title + URL
+                      slot at the top, then the canvas section list,
+                      then the Elements tray. */}
+                  <PageNavigator
+                    pageTitle={props.pageTitle}
+                    onPageTitleChange={props.onPageTitleChange}
+                    pageSlug={props.pageSlug}
+                    onPageSlugChange={props.onPageSlugChange}
+                    slugEditable={props.slugEditable}
+                    slugPrefix={props.slugPrefix}
+                    pageRows={props.pageRows}
+                  />
                 </aside>
               );
 
