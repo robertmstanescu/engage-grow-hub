@@ -166,14 +166,21 @@
   .snap-container {
     /*
      * Native CSS scroll-snap is disabled in favour of JS-driven
-     * threshold snapping (see useThresholdSnap). Browsers don't expose
-     * a snap-threshold property, so we control the 51% rule manually.
+     * momentum snapping (see useMomentumSnap). This lets us run a
+     * direction-aware glide of up to 1.5s, AND keep the footer
+     * accessible below the last row — neither of which CSS snap
+     * can do natively.
      */
     scroll-snap-type: none;
     overflow-y: auto;
     overflow-x: hidden;
     height: 100vh;
-    scroll-behavior: smooth;
+    /*
+     * `scroll-behavior: smooth` is intentionally OFF here because
+     * the snap hook drives its own rAF tween. Letting both run at
+     * once causes a fight between the two animations.
+     */
+    scroll-behavior: auto;
   }
 
   [id] {
@@ -254,9 +261,18 @@
     transition: border-color 300ms ease, box-shadow 300ms ease, background-color 300ms ease;
   }
 
+  /*
+   * Hover glow: replace the previous sharp gold border + tight shadow
+   * with a SOFT, WIDE bloom of brand gold around the card. Border
+   * stays at its base colour so the edge doesn't flash. The bloom is
+   * built from two stacked shadows — a tighter inner halo and a wider
+   * outer atmospheric glow — giving the card a luminous, lit-from-
+   * behind feel rather than a hard outline.
+   */
   .glass:hover {
-    border: 1px solid hsl(var(--accent) / 0.5);
-    box-shadow: 0 0 20px -5px hsl(var(--accent) / 0.2);
+    box-shadow:
+      0 0 40px 4px hsl(var(--accent) / 0.28),
+      0 0 90px 20px hsl(var(--accent) / 0.18);
   }
 
   .glass-light {
@@ -553,8 +569,31 @@
     font-size: 10px;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 500ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition: color 300ms cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
+  }
+  /*
+   * Hover → Intense Cream (--primary-foreground, #F9F0C1).
+   * Active link colour (Eliza gold, #E5C54F) is set inline in the
+   * Navbar component and uses `!important` here so it wins over hover.
+   */
+  .side-nav-label:hover {
+    color: hsl(var(--primary-foreground)) !important;
+  }
+  .side-nav-label[data-active="true"] {
+    color: hsl(var(--accent)) !important;
+  }
+  .side-nav-label[data-active="true"]:hover {
+    color: hsl(var(--accent)) !important;
+  }
+
+  /* Mobile nav links — same hover/active palette as side nav. */
+  .mobile-nav-link:hover {
+    color: hsl(var(--primary-foreground)) !important;
+  }
+  .mobile-nav-link[data-active="true"],
+  .mobile-nav-link[data-active="true"]:hover {
+    color: hsl(var(--accent)) !important;
   }
 
   /* ── Navbar scope (for admin pages) ── */
