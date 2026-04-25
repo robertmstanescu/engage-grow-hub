@@ -85,12 +85,12 @@ export interface WidgetRenderContext {
  * - `category`          — optional grouping for the tray ("Layout",
  *                         "Content", "Media", "Social", …).
  */
-export interface WidgetDefinition<TData = Record<string, any>> {
+export interface WidgetDefinition<TData = Record<string, unknown>> {
   type: string;
   defaultData: TData;
   adminComponent?: ComponentType<{
     content: TData;
-    onChange: (field: string, value: any) => void;
+    onChange: (field: string, value: unknown) => void;
   }>;
   frontendComponent?: ComponentType<{ row: PageRow }>;
   render?: (ctx: WidgetRenderContext) => ReactNode;
@@ -102,10 +102,13 @@ export interface WidgetDefinition<TData = Record<string, any>> {
 /* ──────────────────────────────────────────────────────────────────────
  * Internal store
  * ──────────────────────────────────────────────────────────────────────
- * Plain Map keyed by `type`. Module-scoped, so it behaves like a
- * singleton across the app (Vite/HMR caveats: see note in `clearWidgets`).
+ * Plain Map keyed by `type`. We hold the most general form of the
+ * definition (`unknown` data) because the registry does not know each
+ * widget's bespoke data shape at lookup time. Callers that need the
+ * specific shape parameterize at the widget boundary themselves.
  */
-const widgets = new Map<string, WidgetDefinition>();
+type AnyWidgetDefinition = WidgetDefinition<unknown>;
+const widgets = new Map<string, AnyWidgetDefinition>();
 
 /**
  * Register a widget with the engine.
@@ -113,36 +116,36 @@ const widgets = new Map<string, WidgetDefinition>();
  * Idempotent re-registration is allowed — this matters for Vite HMR,
  * where a widget module may re-evaluate during development. Re-registering
  * REPLACES the previous entry (last write wins).
+ *
+ * Defensive defaulting: if `defaultData` is `null`/`undefined` we log a
+ * warning and refuse to register the widget. Coercing to `{}` would
+ * have lied to the type system about widgets whose `TData` is not
+ * structurally compatible with an empty object, so we fail loudly
+ * instead. Authors get an actionable console message and a missing
+ * widget in the tray rather than silent runtime corruption.
  */
-export const registerWidget = <TData = Record<string, any>>(
-  def: WidgetDefinition<TData>,
-): void => {
+export const registerWidget = <TData,>(def: WidgetDefinition<TData>): void => {
   if (!def?.type) {
-    // Guard against silent footguns: a missing `type` would silently
-    // accept the entry and never be retrievable.
     // eslint-disable-next-line no-console
     console.error("[WidgetRegistry] registerWidget called without a type", def);
     return;
   }
-  // US 1.1/1.2 — coerce a missing `defaultData` to `{}` so downstream
-  // spread-merge code never produces an undefined-data widget. We log a
-  // dev warning so the author notices, but never crash the registry.
   if (def.defaultData == null) {
     // eslint-disable-next-line no-console
-    console.warn(
-      `[WidgetRegistry] Widget "${def.type}" registered without defaultData; coercing to {}.`,
+    console.error(
+      `[WidgetRegistry] Widget "${def.type}" registered without defaultData; refusing to register.`,
     );
-    def = { ...def, defaultData: {} as TData };
+    return;
   }
-  widgets.set(def.type, def as WidgetDefinition);
+  widgets.set(def.type, def as AnyWidgetDefinition);
 };
 
 /** Look up a widget definition by type. Returns `undefined` if missing. */
-export const getWidget = (type: string): WidgetDefinition | undefined =>
+export const getWidget = (type: string): AnyWidgetDefinition | undefined =>
   widgets.get(type);
 
 /** Snapshot of all registered widgets (e.g. for admin "Add Widget" menu). */
-export const listWidgets = (): WidgetDefinition[] => Array.from(widgets.values());
+export const listWidgets = (): AnyWidgetDefinition[] => Array.from(widgets.values());
 
 /** True when a widget for `type` has been registered. */
 export const hasWidget = (type: string): boolean => widgets.has(type);
