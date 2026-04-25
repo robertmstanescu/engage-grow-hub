@@ -155,6 +155,14 @@ export interface BuilderContextValue {
    * provider was mounted without rows (older callers).
    */
   pageRows?: PageRow[];
+  /**
+   * EPIC 4 / US (rename + reorder sections) — direct write back into
+   * the rows tree. Exposed so left-rail tools (PageNavigator) can
+   * commit reorders / renames without prop-drilling the setter through
+   * every layer of the shell. Undefined when the provider was mounted
+   * without `onRowsChange` (read-only mode).
+   */
+  onRowsChange?: (next: PageRow[]) => void;
 }
 
 const DISABLED: BuilderContextValue = {
@@ -169,6 +177,7 @@ const DISABLED: BuilderContextValue = {
   setActiveElement: () => {},
   commitTextAtPath: () => false,
   pageRows: undefined,
+  onRowsChange: undefined,
 };
 
 const BuilderContext = createContext<BuilderContextValue>(DISABLED);
@@ -365,6 +374,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       setActiveElement,
       commitTextAtPath,
       pageRows,
+      onRowsChange,
     }),
     [
       activeNodePath,
@@ -376,6 +386,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       setActiveElement,
       commitTextAtPath,
       pageRows,
+      onRowsChange,
     ],
   );
 
