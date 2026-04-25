@@ -287,6 +287,11 @@ export interface PageBuilderShellProps {
   publishing: boolean;
   hasChanges: boolean;
 
+  /** Optional publish-lifecycle props — see AdminBuilderToolbarProps. */
+  publishStatus?: "draft" | "published" | string;
+  onUnpublish?: () => Promise<void> | void;
+  unpublishing?: boolean;
+
   /** Optional pre-canvas slot (e.g. main page renders Hero here). */
   preCanvas?: React.ReactNode;
 
