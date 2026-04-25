@@ -138,7 +138,7 @@ const RowBackground = ({ row, legacyDefaults }: RowBackgroundProps) => {
   return (
     <div
       aria-hidden
-      className="absolute inset-0 pointer-events-none blur-[100px]"
+      className="absolute inset-0 pointer-events-none"
       style={{
         background: builder(gradStart, gradEnd),
         opacity,
