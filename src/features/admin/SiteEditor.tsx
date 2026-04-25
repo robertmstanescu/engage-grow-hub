@@ -506,7 +506,7 @@ const SiteEditor = () => {
     viewport === "mobile" ? 390 : viewport === "tablet" ? 820 : null;
 
   return (
-    <BuilderProvider>
+    <BuilderProvider pageRows={pageRows} onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}>
       {/* US 17.1 / 17.2 — single DndContext at the top of the builder so
           tray drags (left sidebar) and canvas drop targets share one
           drag session. The drop handler lives in <BuilderDndShell> so

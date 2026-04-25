@@ -12,6 +12,8 @@ import { RowEyebrow, RowTitle, RowSection } from "./typography";
 // EPIC 1 / US 1.1 — atomic-node selection. SelectableWrapper renders
 // as a passthrough fragment on the public site (no BuilderProvider).
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
+// EPIC 1 / US 1.4 — direct-on-canvas text editing.
+import CanvasEditable from "@/features/admin/builder/CanvasEditable";
 
 const hexToHslChannels = (hex: string): string | null => {
   if (!hex || !hex.startsWith("#") || hex.length < 7) return null;
@@ -147,9 +149,15 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           inline
         >
           <RowEyebrow color={pillarLabelColor} style={revealStyle(isVisible, 0)}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
-              {c.eyebrow || c.pillar_number}
-            </EditableText>
+            <CanvasEditable
+              path={["row", row.id, "widget", row.id, "field", "eyebrow"]}
+              value={c.eyebrow || c.pillar_number || ""}
+              as="span"
+            >
+              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
+                {c.eyebrow || c.pillar_number}
+              </EditableText>
+            </CanvasEditable>
           </RowEyebrow>
         </SelectableWrapper>
 
@@ -160,9 +168,15 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           inline
         >
           <RowTitle color={pillarTitleColor} style={revealStyle(isVisible, 1)}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
-              {c.title}
-            </EditableText>
+            <CanvasEditable
+              path={["row", row.id, "widget", row.id, "field", "title"]}
+              value={c.title || ""}
+              as="span"
+            >
+              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
+                {c.title}
+              </EditableText>
+            </CanvasEditable>
           </RowTitle>
         </SelectableWrapper>
 
@@ -186,8 +200,11 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           variant="atom"
         >
           <div className="mb-rhythm-base" style={revealStyle(isVisible, 2)}>
-            <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
-              data-rte-fit=""
+            <CanvasEditable
+              path={["row", row.id, "widget", row.id, "field", "description"]}
+              value={c.description || ""}
+              html
+              as="div"
               className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
               style={{
                 color: pillarDescriptionColor,
@@ -198,7 +215,21 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
                 marginLeft: align === "right" ? "auto" : align === "center" ? "auto" : 0,
                 marginRight: align === "left" ? "auto" : align === "center" ? "auto" : 0,
               }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
+            >
+              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
+                data-rte-fit=""
+                className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
+                style={{
+                  color: pillarDescriptionColor,
+                  fontSize: "clamp(0.78rem, 0.85vh + 0.55vw, 1.05rem)",
+                  overflow: "visible",
+                  height: "auto",
+                  maxWidth: 600,
+                  marginLeft: align === "right" ? "auto" : align === "center" ? "auto" : 0,
+                  marginRight: align === "left" ? "auto" : align === "center" ? "auto" : 0,
+                }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }} />
+            </CanvasEditable>
           </div>
         </SelectableWrapper>
 

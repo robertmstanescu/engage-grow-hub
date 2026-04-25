@@ -262,7 +262,7 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
     viewport === "mobile" ? 390 : viewport === "tablet" ? 820 : null;
 
   return (
-    <BuilderProvider>
+    <BuilderProvider pageRows={props.pageRows} onRowsChange={props.onRowsChange}>
       <BuilderDndShell
         sensors={sensors}
         activeDrag={activeDrag}
