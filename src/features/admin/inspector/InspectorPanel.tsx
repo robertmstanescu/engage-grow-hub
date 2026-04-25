@@ -145,6 +145,28 @@ const InspectorPanel = (props: InspectorPanelProps) => {
   /* ─── State 2 — Row selected → layout / spacing / bg colour ──── */
   if (kind === "row") {
     const layout = { ...DEFAULT_ROW_LAYOUT, ...(row.layout || {}) };
+
+    /* ─── Debug Story 4.1 — destructive action guard ─────────────
+     * Counts configured widget cells in the row and shows a modal
+     * confirmation before mutating `pageRows`. Cancel leaves state
+     * untouched (the .then handler simply returns). */
+    const handleDeleteRow = async () => {
+      const count = countRowWidgets(row);
+      const ok = await confirmDestructive({
+        title: "Delete this row?",
+        description:
+          count > 1
+            ? `Warning: This row contains ${count} widgets. Deleting it will permanently remove them. Are you sure?`
+            : "Warning: Deleting this row will permanently remove it and its content. Are you sure?",
+        confirmLabel: "Delete row",
+        cancelLabel: "Cancel",
+        destructive: true,
+      });
+      if (!ok) return;
+      onRowsChange(pageRows.filter((r) => r.id !== rowId));
+      setActiveElement(null);
+    };
+
     return (
       <>
         <Section title={`Row · ${row.type}`}>
@@ -179,6 +201,25 @@ const InspectorPanel = (props: InspectorPanelProps) => {
             />
           </Section>
         )}
+
+        {/* Destructive action lives at the bottom of the row inspector
+         * so the user has to scroll past the safe controls first — and
+         * the click ALWAYS routes through `confirmDestructive`. */}
+        <Section title="Danger zone">
+          <button
+            type="button"
+            onClick={handleDeleteRow}
+            className="flex items-center gap-2 px-3 py-2 rounded-md border w-full justify-center font-body text-[11px] uppercase tracking-[0.12em] cursor-pointer transition-colors"
+            style={{
+              borderColor: "hsl(var(--destructive) / 0.4)",
+              color: "hsl(var(--destructive))",
+              backgroundColor: "transparent",
+            }}
+          >
+            <Trash2 size={12} />
+            Delete row
+          </button>
+        </Section>
       </>
     );
   }
