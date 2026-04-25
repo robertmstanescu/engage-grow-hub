@@ -25,6 +25,7 @@
  */
 
 import type { ReactNode } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import {
   type PageCell,
   type PageColumn,
@@ -34,6 +35,7 @@ import {
 } from "@/types/rows";
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
+import { buildDropZoneId } from "@/features/admin/builder/CanvasDropZone";
 
 /* ─── style helpers ──────────────────────────────────────────────── */
 
