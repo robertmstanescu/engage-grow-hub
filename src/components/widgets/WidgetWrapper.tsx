@@ -60,19 +60,64 @@ export const designToStyle = (d: WidgetDesignSettings): CSSProperties => {
  * onto the page. Used by the engine to skip the wrapper DIV entirely
  * when there's nothing to apply — preserves the exact pre-US 6.1 DOM
  * for un-customised rows so existing visual regressions are zero.
+ *
+ * NOTE: visibility flags are NOT counted here — they're handled
+ * separately in `visibilityClass()` because hiding a widget requires
+ * a real DOM node to attach the `hidden` / `md:hidden` class to.
  */
 export const hasDesignOverrides = (d: WidgetDesignSettings): boolean =>
   d.marginTop !== 0 || d.marginRight !== 0 || d.marginBottom !== 0 || d.marginLeft !== 0 ||
   d.paddingTop !== 0 || d.paddingRight !== 0 || d.paddingBottom !== 0 || d.paddingLeft !== 0 ||
   d.borderRadius !== 0 || !!d.bgColor;
 
+/**
+ * Translate the responsive `visibility` flags into Tailwind classes.
+ *
+ * Truth table (md = ≥768px = "desktop"):
+ *
+ *   mobile | desktop | classes        | rendered?
+ *   ------ | ------- | -------------- | --------------
+ *    true  |  true   | (none)         | always
+ *    true  |  false  | "md:hidden"    | mobile only
+ *    false |  true   | "hidden md:block" | desktop only
+ *    false |  false  | "hidden"       | never (admin choice — we
+ *                                       still respect it; no auto-fix)
+ *
+ * WHY return a string and not raw booleans: callers compose this with
+ * other classNames (e.g. flex utilities). A string slots into the
+ * existing `cn(...)` pattern with zero ceremony.
+ */
+export const visibilityClass = (d: WidgetDesignSettings): string => {
+  const { mobile, desktop } = d.visibility;
+  if (mobile && desktop) return "";
+  if (mobile && !desktop) return "md:hidden";
+  if (!mobile && desktop) return "hidden md:block";
+  return "hidden";
+};
+
+/**
+ * True when ANY visibility toggle is off. Used by the engine to decide
+ * whether we MUST emit a wrapper DIV (so the responsive class has a
+ * node to live on) even when no other design overrides are set.
+ */
+export const hasVisibilityOverride = (d: WidgetDesignSettings): boolean =>
+  !d.visibility.mobile || !d.visibility.desktop;
+
 const WidgetWrapper = ({ design, children, className }: Props) => {
+  const visClass = visibilityClass(design);
+  const hasStyles = hasDesignOverrides(design);
+
   // Skip the wrapper entirely when there's nothing to apply. This keeps
   // the DOM identical to the pre-US 6.1 baseline for every widget that
   // hasn't opted into design settings — zero visual regression risk.
-  if (!hasDesignOverrides(design)) return <>{children}</>;
+  // We only short-circuit when BOTH there are no styles AND no
+  // visibility overrides, otherwise we'd have nowhere to put the
+  // responsive `hidden` classes.
+  if (!hasStyles && !visClass) return <>{children}</>;
+
+  const composedClass = [className, visClass].filter(Boolean).join(" ") || undefined;
   return (
-    <div className={className} style={designToStyle(design)}>
+    <div className={composedClass} style={hasStyles ? designToStyle(design) : undefined}>
       {children}
     </div>
   );
