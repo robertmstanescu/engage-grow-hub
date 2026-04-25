@@ -138,7 +138,7 @@ const CmsPageBuilder = ({ pageId, onPageInfoChange }: Props) => {
   const validateSlug = useCallback(async (): Promise<string | null> => {
     const trimmed = (pageSlug || "").trim();
     if (!trimmed) return "Slug cannot be empty.";
-    if (RESERVED_SLUGS.has(trimmed)) return `"${trimmed}" is a reserved slug.`;
+    if (RESERVED_SLUGS.includes(trimmed)) return `"${trimmed}" is a reserved slug.`;
     if (!record) return null;
     if (trimmed === record.slug) return null;
     const { data, error } = await supabase
