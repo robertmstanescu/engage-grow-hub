@@ -672,6 +672,7 @@ const SiteEditor = () => {
         </ResizablePanel>
       </ResizablePanelGroup>
       </div>
+      </div>
 
       </BuilderDndShell>
     </BuilderProvider>
