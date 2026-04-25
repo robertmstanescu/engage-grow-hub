@@ -67,6 +67,7 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
   );
 };
 
+const SiteEditor = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [activeSection, setActiveSection] = useState<"hero" | "page_rows" | "main_page_seo">("hero");
   const [saving, setSaving] = useState<string | null>(null);
@@ -136,6 +137,39 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
     }
 
     toast.success("Draft saved");
+    setSaving(null);
+  };
+
+  /**
+   * US 16.2 — Global Save Draft. There is now ONE save action in the
+   * toolbar (no per-widget Save buttons anywhere). It writes draft_content
+   * for EVERY dirty section in a single batch — this is the only path
+   * from in-memory edits to the database. Until clicked, all edits live
+   * purely in local state (refresh = lose changes, by design).
+   */
+  const saveAllDrafts = async () => {
+    const dirty = sections.filter(
+      (s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content),
+    );
+    if (dirty.length === 0) {
+      toast.info("Nothing to save");
+      return;
+    }
+    setSaving("__all__");
+    const updates = dirty.map((s) => {
+      const draft = (s.draft_content || s.content) as any;
+      return supabase.from("site_content").upsert(
+        { section_key: s.section_key, content: s.content, draft_content: draft } as any,
+        { onConflict: "section_key" },
+      );
+    });
+    const results = await Promise.all(updates);
+    const err = results.find((r) => r.error);
+    if (err?.error) {
+      toast.error((err.error as any).message);
+    } else {
+      toast.success(`Draft saved (${dirty.length} ${dirty.length === 1 ? "section" : "sections"})`);
+    }
     setSaving(null);
   };
 
@@ -264,10 +298,6 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
   // Preview/Edit toggle is hidden for SEO (no visual rep).
   const supportsPreview = activeSection === "hero" || activeSection === "page_rows";
 
-  // Friendly label for the toolbar Save button (active section)
-  const activeSectionLabel =
-    SECTION_NAV.find((s) => s.key === activeSection)?.label ?? "Section";
-
   // Mobile/tablet canvas constraint (per US 14.2 dev notes — no iframes,
   // just a max-width swap so the rendered widget tree reflows naturally).
   const canvasMaxWidth =
@@ -276,13 +306,15 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
   return (
     <BuilderProvider>
       <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
-      {/* ─── Top toolbar (US 14.2) ────────────────────────────────── */}
+      {/* ─── Top toolbar (US 14.2 + US 16.2) ──────────────────────────
+          One global Save Draft button (saves every dirty section in a
+          single batch). Accents itself when there are unsaved changes. */}
       <AdminBuilderToolbar
         viewport={viewport}
         onViewportChange={setViewport}
-        onSaveDraft={() => saveDraft(activeSection)}
-        saving={saving === activeSection}
-        saveLabel={`Save ${activeSectionLabel}`}
+        onSaveDraft={saveAllDrafts}
+        saving={saving === "__all__"}
+        saveLabel="Save Draft"
         onPreview={openPreview}
         onPublish={publishAll}
         publishing={publishing}

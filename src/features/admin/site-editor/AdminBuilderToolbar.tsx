@@ -111,10 +111,18 @@ const AdminBuilderToolbar = ({
         <button
           onClick={onSaveDraft}
           disabled={saving}
-          className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full hover:opacity-80 transition-opacity disabled:opacity-50"
+          title={hasChanges ? "You have unsaved changes — click to save the draft" : "No changes to save"}
+          className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full hover:opacity-80 transition-all disabled:opacity-50"
           style={{
-            border: "1px solid hsl(var(--border))",
-            color: "hsl(var(--foreground))",
+            // US 16.2 — accent the Save Draft button when the local
+            // draft state has diverged from the database, so editors are
+            // visually nudged to persist their work.
+            backgroundColor: hasChanges ? "hsl(var(--accent) / 0.18)" : "transparent",
+            border: hasChanges
+              ? "1px solid hsl(var(--accent))"
+              : "1px solid hsl(var(--border))",
+            color: hasChanges ? "hsl(var(--accent-foreground))" : "hsl(var(--foreground))",
+            fontWeight: hasChanges ? 600 : 400,
           }}
         >
           <Save size={12} /> {saving ? "Saving…" : saveLabel}
