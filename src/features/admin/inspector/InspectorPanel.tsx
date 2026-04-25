@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { MousePointer2, Trash2 } from "lucide-react";
 import { useBuilder } from "../builder/BuilderContext";
 import { useInspectorFocus } from "./useInspectorFocus";
