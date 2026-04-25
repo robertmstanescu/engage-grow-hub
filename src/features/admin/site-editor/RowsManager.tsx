@@ -13,6 +13,7 @@ import ImageTextEditor from "./ImageTextEditor";
 import ProfileEditor from "./ProfileEditor";
 import GridEditor from "./GridEditor";
 import ContactAdmin from "@/features/widgets/contact/ContactAdmin";
+import EmbedAdmin from "@/features/widgets/embed/EmbedAdmin";
 import {
   DndContext,
   closestCenter,
@@ -44,6 +45,9 @@ const ROW_TYPES = [
   { type: "image_text" as const, label: "Image & Text", icon: Image, defaultContent: { eyebrow: "", title: "", description: "", image_url: "", image_position: "right", image_shape: "default", floating_caption: "", caption_position: "bottom-left", color_eyebrow: "", color_title: "", color_description: "", color_caption_bg: "", color_caption_text: "" } },
   { type: "profile" as const, label: "Profile Feature", icon: User, defaultContent: { eyebrow: "", image_url: "", name: "", role: "", credentials: [], body: "", color_eyebrow: "", color_name: "", color_role: "", color_credential_bg: "", color_credential_text: "", color_body: "" } },
   { type: "grid" as const, label: "Grid", icon: Grid3X3, defaultContent: { eyebrow: "", title: "", description: "", items: [], color_eyebrow: "", color_title: "", color_description: "", color_card_border: "", color_card_border_hover: "", color_card_title: "", color_card_description: "", color_stat_number: "", color_stat_label: "" } },
+  // US 4.1 — escape hatch for arbitrary HTML/iframe embeds. Sanitised
+  // by `sanitizeEmbedHtml` before render; see `EmbedFrontend.tsx`.
+  { type: "embed" as const, label: "HTML / Iframe Embed", icon: Code2, defaultContent: { html: "", aspect_ratio: "auto" } },
 ];
 
 /**
