@@ -37,6 +37,7 @@ import {
   type DragEndEvent,
   type DropAnimation,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import type { ImperativePanelGroupHandle } from "react-resizable-panels";
 import {
   ResizableHandle,
@@ -59,7 +60,7 @@ import { generateRowId, DEFAULT_ROW_LAYOUT, buildEmptyV3Row, type PageRow } from
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import InspectorPanel from "../inspector/InspectorPanel";
 import CanvasBreadcrumb from "./CanvasBreadcrumb";
-import PageNavigator from "./PageNavigator";
+import PageNavigator, { isSectionNavDragData } from "./PageNavigator";
 
 /* ------------------------------------------------------------------
  * BuilderDndShell — drop handler that needs `useBuilder()` (auto-select
@@ -90,6 +91,16 @@ const BuilderDndShell = ({
     const data = e.active.data.current;
     const overId = e.over?.id;
     setActiveDrag(null);
+
+    if (isSectionNavDragData(data) && typeof overId === "string" && overId.startsWith("section-row:")) {
+      const overRowId = overId.replace("section-row:", "");
+      if (data.rowId !== overRowId) {
+        const oldIndex = pageRows.findIndex((row) => row.id === data.rowId);
+        const newIndex = pageRows.findIndex((row) => row.id === overRowId);
+        if (oldIndex >= 0 && newIndex >= 0) onRowsChange(arrayMove(pageRows, oldIndex, newIndex));
+      }
+      return;
+    }
 
     // Debug Story 2.1 — "Abyss Test". Reject every drop that is not on
     // a registered CanvasDropZone. parseDropZoneId returns null for:
@@ -371,6 +382,7 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     slugEditable={props.slugEditable}
                     slugPrefix={props.slugPrefix}
                     pageRows={props.pageRows}
+                    onRowsChange={props.onRowsChange}
                     schedulePanel={props.schedulePanel}
                     revisionPanel={props.inspectorFooter}
                   />

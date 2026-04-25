@@ -44,11 +44,13 @@ import {
   type DragEndEvent,
   type DropAnimation,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import ElementsTray, {
   TrayDragPreview,
   isTrayDragData,
   type TrayDragData,
 } from "./builder/ElementsTray";
+import { isSectionNavDragData } from "./builder/PageNavigator";
 // US 17.2 — drop-target id parsing for tray-sourced drops.
 import { parseDropZoneId } from "./builder/CanvasDropZone";
 // US 17.2 — registry lookup so dropped widgets seed with proper defaults.
@@ -134,6 +136,16 @@ const BuilderDndShell = ({
     const data = e.active.data.current;
     const overId = e.over?.id;
     setActiveDrag(null);
+
+    if (isSectionNavDragData(data) && typeof overId === "string" && overId.startsWith("section-row:")) {
+      const overRowId = overId.replace("section-row:", "");
+      if (data.rowId !== overRowId) {
+        const oldIndex = pageRows.findIndex((row) => row.id === data.rowId);
+        const newIndex = pageRows.findIndex((row) => row.id === overRowId);
+        if (oldIndex >= 0 && newIndex >= 0) onRowsChange(arrayMove(pageRows, oldIndex, newIndex));
+      }
+      return;
+    }
 
     // Debug Story 2.1 — "Abyss Test". Reject every drop that is not on
     // a registered CanvasDropZone. parseDropZoneId returns null for:
@@ -554,6 +566,18 @@ const SiteEditor = () => {
                 slugEditable={false}
                 slugPrefix="/"
                 pageRows={pageRows}
+                onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
+                schedulePanel={<SiteSectionSchedulePanel sectionKey={activeSection} hasUnsavedChanges={hasChanges} />}
+                revisionPanel={
+                  <RevisionHistoryPanel
+                    entityType="site_content"
+                    entityRef={activeSection}
+                    onRestored={() => {
+                      invalidateSiteContent(activeSection);
+                      reloadSections();
+                    }}
+                  />
+                }
               />
             </aside>
           );
@@ -606,19 +630,6 @@ const SiteEditor = () => {
                   pageRows={pageRows}
                   onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
                 />
-                <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                  <SiteSectionSchedulePanel sectionKey={activeSection} />
-                </div>
-                <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
-                  <RevisionHistoryPanel
-                    entityType="site_content"
-                    entityRef={activeSection}
-                    onRestored={() => {
-                      invalidateSiteContent(activeSection);
-                      reloadSections();
-                    }}
-                  />
-                </div>
               </div>
             </aside>
           );
