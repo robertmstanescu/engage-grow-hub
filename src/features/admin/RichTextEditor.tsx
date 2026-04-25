@@ -418,10 +418,13 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
         <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
 
         <select
-          defaultValue=""
+          value={activeFont}
           onChange={(event) => {
-            if (event.target.value) runCommand("fontName", event.target.value);
-            event.target.value = "";
+            const v = event.target.value;
+            if (v) {
+              setActiveFont(v);
+              runCommand("fontName", v);
+            }
           }}
           className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
           style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "120px" }}
@@ -434,16 +437,19 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
         </select>
 
         <select
-          defaultValue=""
+          value={SIZE_OPTIONS.some((s) => s.value === activeSize) ? activeSize : ""}
           onChange={(event) => {
-            if (event.target.value) applyFontSize(event.target.value);
-            event.target.value = "";
+            const v = event.target.value;
+            if (v) {
+              setActiveSize(v);
+              applyFontSize(v);
+            }
           }}
           className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
           style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "85px" }}
           title="Font Size"
         >
-          <option value="">Size</option>
+          <option value="">{activeSize || "Size"}</option>
           {SIZE_OPTIONS.map((size) => (
             <option key={size.value} value={size.value}>{size.label}</option>
           ))}
