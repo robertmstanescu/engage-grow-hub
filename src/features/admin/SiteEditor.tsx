@@ -174,18 +174,48 @@ const SiteEditor = () => {
   /* ─── Canvas content for the active section ─────────────────────── */
   // NOTE: per-section "Save Draft" buttons were removed in US 14.2 — the
   // toolbar's Save Draft button now saves the currently-active section.
+  //
+  // US 15.1 — Two render modes:
+  //   • "preview" → live frontend components (HeroView / RowsRenderer)
+  //                 fed the in-memory draft. True WYSIWYG: every edit
+  //                 (still made via the form drawers / inspector) shows
+  //                 up here on the next render.
+  //   • "edit"    → the existing form-driven UI (HeroEditor, RowsManager)
+  //                 with drag-and-drop reordering, add/delete widget
+  //                 controls, etc. Kept available so editors can perform
+  //                 actions that don't have inline-canvas equivalents
+  //                 yet (a later epic will move these inline).
   const renderCanvas = () => {
     if (activeSection === "hero") {
+      if (canvasMode === "preview") {
+        // HeroView is a PURE component (US 15.1). It accepts content as
+        // a prop and is unaware of the admin context.
+        return (
+          <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
+            <HeroView content={getDraft("hero") as any} />
+          </div>
+        );
+      }
       return (
         <HeroEditor content={getDraft("hero")} onChange={(f, v) => updateField("hero", f, v)} />
       );
     }
     if (activeSection === "page_rows") {
+      if (canvasMode === "preview") {
+        // RowsRenderer is the same component the public site uses (via
+        // PageRows). Feeding it the draft `pageRows` array gives an
+        // exact pixel-for-pixel preview of what will publish.
+        return (
+          <div className="rounded-md overflow-hidden border" style={{ borderColor: "hsl(var(--border) / 0.4)" }}>
+            <RowsRenderer rows={pageRows} />
+          </div>
+        );
+      }
       return (
         <RowsManager rows={pageRows} onChange={(rows) => updateFullDraft("page_rows", { rows })} />
       );
     }
-    // SEO
+    // SEO has no visual frontend representation — always show the form.
     return (
       <div className="space-y-4">
         <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -200,6 +230,9 @@ const SiteEditor = () => {
       </div>
     );
   };
+
+  // Preview/Edit toggle is hidden for SEO (no visual rep).
+  const supportsPreview = activeSection === "hero" || activeSection === "page_rows";
 
   // Friendly label for the toolbar Save button (active section)
   const activeSectionLabel =
