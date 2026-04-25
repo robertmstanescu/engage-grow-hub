@@ -266,7 +266,7 @@ const SiteEditor = () => {
     const { data } = await supabase
       .from("site_content")
       .select("section_key, content, draft_content")
-      .in("section_key", ["hero", "page_rows", "main_page_seo"]) as any;
+      .in("section_key", ["page_rows", "main_page_seo"]) as any;
     if (data) {
       const mapped = data.map((s: any) => ({
         section_key: s.section_key,
