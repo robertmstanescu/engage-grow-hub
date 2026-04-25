@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Layout, Search, Eye, Pencil } from "lucide-react";
+
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import RowsManager from "./site-editor/RowsManager";
 import SeoFields from "./site-editor/SeoFields";
+// US 2.3 — unified left-rail navigator (Page Title + URL + Sections + Elements).
+import PageNavigator from "./builder/PageNavigator";
 import { DEFAULT_ROWS, type PageRow, normalizeRowsToV3 } from "@/types/rows";
 import type { ImperativePanelGroupHandle } from "react-resizable-panels";
 import {
@@ -79,10 +81,9 @@ interface SectionData {
  * at page_rows[0]; no separate left-rail tab and no separate Supabase
  * section. The remaining sections are page_rows (the canvas) and
  * main_page_seo (page-wide metadata). */
-const SECTION_NAV: { key: "page_rows" | "main_page_seo"; label: string; Icon: any }[] = [
-  { key: "page_rows", label: "Page Rows", Icon: Layout },
-  { key: "main_page_seo", label: "SEO & Metadata", Icon: Search },
-];
+// US 2.3 — SECTION_NAV is gone. Sections are now derived from page_rows
+// inside <PageNavigator />. The "main_page_seo" surface lives in the
+// inspector and SEO modal, not in a left-rail tab.
 
 /**
  * CanvasSelectionSurface — captures clicks on EMPTY canvas area to
@@ -541,63 +542,19 @@ const SiteEditor = () => {
               className="h-full flex flex-col"
               style={{ backgroundColor: "hsl(var(--card))" }}
             >
-              <div
-                className="px-4 py-3 border-b"
-                style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-              >
-                <h3
-                  className="font-body text-[10px] uppercase tracking-[0.18em] font-medium"
-                  style={{ color: "hsl(var(--muted-foreground))" }}
-                >
-                  Navigator
-                </h3>
-              </div>
-              <nav className="flex-shrink-0 overflow-y-auto p-2 space-y-1 max-h-[40%]">
-                {SECTION_NAV.map(({ key, label, Icon }) => {
-                  const active = activeSection === key;
-                  const dirty = isDirty(key);
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setActiveSection(key)}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left font-body text-sm transition-colors"
-                      style={{
-                        backgroundColor: active ? "hsl(var(--accent) / 0.18)" : "transparent",
-                        color: active ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
-                        fontWeight: active ? 500 : 400,
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!active) e.currentTarget.style.backgroundColor = "hsl(var(--muted) / 0.5)";
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!active) e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      <Icon size={15} />
-                      <span className="flex-1 truncate">{label}</span>
-                      {dirty && (
-                        <span
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: "hsl(var(--accent))" }}
-                          aria-label="Unsaved changes"
-                        />
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
-              <div
-                className="flex-1 min-h-0 border-t px-3 py-3 overflow-y-auto"
-                style={{ borderColor: "hsl(var(--border) / 0.5)" }}
-              >
-                <h3
-                  className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-3"
-                  style={{ color: "hsl(var(--muted-foreground))" }}
-                >
-                  Elements
-                </h3>
-                <ElementsTray />
-              </div>
+              {/* US 2.3 — replaces the old "Navigator + Elements" stack
+                  with the unified PageNavigator (Title + URL + Sections
+                  + Elements). The homepage's slug is fixed at "/", so
+                  slugEditable={false}. The page title is mirrored to
+                  the SEO meta_title so editors edit it in one place. */}
+              <PageNavigator
+                pageTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                onPageTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                pageSlug=""
+                slugEditable={false}
+                slugPrefix="/"
+                pageRows={pageRows}
+              />
             </aside>
           );
 
