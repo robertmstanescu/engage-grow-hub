@@ -152,6 +152,16 @@ export interface BuilderContextValue {
    */
   commitTextAtPath: (path: NodePath, value: string, html?: boolean) => boolean;
   /**
+   * EPIC widgets — Click-to-add: insert a widget of `widgetType` into
+   * the cell located at (rowId, colId, cellId), at `insertIndex` (defaults
+   * to end). Seeds the new widget's content from the registry's
+   * `defaultData`. Returns the new widget id, or null on failure.
+   */
+  addWidgetToCell: (
+    target: { rowId: string; colId: string; cellId: string; insertIndex?: number },
+    widgetType: string,
+  ) => string | null;
+  /**
    * EPIC 1 / US 1.5 — Breadcrumb Navigation
    * Read-only access to the rows tree so the breadcrumb can resolve
    * human-readable labels (row type, widget kind, item title, etc.)
@@ -172,6 +182,7 @@ const DISABLED: BuilderContextValue = {
   activeElement: null,
   setActiveElement: () => {},
   commitTextAtPath: () => false,
+  addWidgetToCell: () => null,
   pageRows: undefined,
 };
 
