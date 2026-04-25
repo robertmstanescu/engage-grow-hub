@@ -479,7 +479,7 @@ const SiteEditor = () => {
   };
 
   // Preview/Edit toggle is hidden for SEO (no visual rep).
-  const supportsPreview = activeSection === "hero" || activeSection === "page_rows";
+  const supportsPreview = activeSection === "page_rows";
 
   // ─── Viewport simulation (US 14.2, hardened) ────────────────────
   // PROBLEM with the previous max-width-only approach: tailwind's `md:`
