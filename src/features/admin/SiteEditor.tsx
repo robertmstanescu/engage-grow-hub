@@ -439,26 +439,25 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
               </h3>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
-              {/*
-                Inner inspector content is rendered by individual editors
-                (e.g. WidgetSettingsDrawer launched from RowsManager). This
-                pane shows the empty-state hint until a future story moves
-                that drawer into this slot.
-              */}
-              <div
-                className="flex flex-col items-center justify-center text-center h-full min-h-[280px] gap-3"
-                style={{ color: "hsl(var(--muted-foreground))" }}
-              >
-                <MousePointer2 size={28} strokeWidth={1.4} />
-                <p className="font-body text-xs leading-relaxed max-w-[220px]">
-                  Select a widget on the canvas to see its settings here.
-                </p>
-              </div>
+              {/* US 16.1 — chameleon inspector. Reads activeElement from
+                  the BuilderContext (lifted to the top of SiteEditor) and
+                  renders SEO / row layout / widget admin accordingly. */}
+              <InspectorPanel
+                seoMetaTitle={(getDraft("main_page_seo") as any)?.meta_title || ""}
+                seoMetaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
+                onSeoTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
+                onSeoDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
+                heroContent={getDraft("hero")}
+                onHeroFieldChange={(f, v) => updateField("hero", f, v)}
+                pageRows={pageRows}
+                onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
+              />
             </div>
           </aside>
         </ResizablePanel>
       </ResizablePanelGroup>
-    </div>
+      </div>
+    </BuilderProvider>
   );
 };
 
