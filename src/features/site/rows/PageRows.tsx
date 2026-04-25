@@ -146,6 +146,11 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
   const autoAlignments = computeAutoAlignments(rows);
   const lastIndex = rows.length - 1;
 
+  // Resolve `__global_ref` references in cell content to live data
+  // from the `global_widgets` table (US 8.1). One shared map for the
+  // entire page — see `useGlobalWidgetMap` for cache strategy.
+  const { map: globalMap } = useGlobalWidgetMap();
+
   // Cold-load guard: don't paint stale defaults. We still render the
   // footer slot so the page never feels totally empty during the brief
   // fetch window.
@@ -166,7 +171,12 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
             label={`row:${row.type}`}
             fallback={(error, reset) => <RowFallback error={error} reset={reset} />}
           >
-            <RowRenderer row={row} rowIndex={index} align={resolveAlignment(row, autoAlignments[index])} />
+            <RowRenderer
+              row={row}
+              rowIndex={index}
+              align={resolveAlignment(row, autoAlignments[index])}
+              globalMap={globalMap}
+            />
           </ErrorBoundary>
         );
         // Group the last row with the footer in one snap section
