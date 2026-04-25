@@ -214,9 +214,11 @@ interface EmptyCellPlaceholderProps {
   rowId: string;
   colId: string;
   cellId: string;
+  /** Click-to-pick handler — opens the widget picker popover. */
+  onPick: (widgetType: string) => void;
 }
 
-const EmptyCellPlaceholder = ({ rowId, colId, cellId }: EmptyCellPlaceholderProps) => {
+const EmptyCellPlaceholder = ({ rowId, colId, cellId, onPick }: EmptyCellPlaceholderProps) => {
   const dropId = buildDropZoneId({ kind: "cell", rowId, colId, cellId });
   const { setNodeRef, isOver, active } = useDroppable({ id: dropId });
   const dragging = !!active;
@@ -238,21 +240,23 @@ const EmptyCellPlaceholder = ({ rowId, colId, cellId }: EmptyCellPlaceholderProp
         borderRadius: 6,
         color: "hsl(var(--muted-foreground))",
         fontSize: 12,
-        cursor: dragging ? "copy" : "pointer",
+        cursor: dragging ? "copy" : "default",
         transition: "background-color 120ms ease, border-color 120ms ease",
+        padding: 8,
       }}
     >
-      <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full"
-        style={{ backgroundColor: "hsl(var(--muted) / 0.6)" }}>
-        <span style={{
-          display: "inline-block", width: 16, height: 16, borderRadius: 999,
-          backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))",
-          textAlign: "center", lineHeight: "16px", fontWeight: 700,
-        }}>+</span>
-        <span className="font-body text-[11px] uppercase tracking-wider">
-          {isOver ? "Drop to add" : "Add widget"}
+      {isOver ? (
+        // While dragging from the tray, show only the drop indicator —
+        // the popover trigger would compete with the drop interaction.
+        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full"
+          style={{ backgroundColor: "hsl(var(--accent) / 0.2)" }}>
+          <span className="font-body text-[11px] uppercase tracking-wider">
+            Drop to add
+          </span>
         </span>
-      </span>
+      ) : (
+        <AddWidgetButton onPick={onPick} variant="block" />
+      )}
     </div>
   );
 };
