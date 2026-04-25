@@ -159,8 +159,9 @@ const SeoFields = ({
             Fed to AI assistants (ChatGPT, Claude, Perplexity) via <code>/llms.txt</code>. Aim for {AEO_MIN}–{AEO_MAX} characters.
           </p>
           <textarea
-            value={aeoValue}
-            onChange={(e) => onAiSummaryChange!(e.target.value)}
+            value={aeo.local}
+            onChange={(e) => aeo.setLocal(e.target.value)}
+            onBlur={aeo.commit}
             rows={3}
             placeholder="Describe this page in plain language for AI crawlers."
             className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none text-black"
