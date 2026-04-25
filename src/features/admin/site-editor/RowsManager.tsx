@@ -36,6 +36,8 @@ import {
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { confirmDestructive } from "@/components/ConfirmDialog";
+import { countRowWidgets } from "../builder/rowWidgetCount";
 
 const ROW_TYPES = [
   { type: "hero" as const, label: "Hero", icon: Sparkles, defaultContent: { label: "", title_lines: [], subtitle: "", subtitle_color: "", body: "", body_color: "", title_color: "", label_color: "", bg_type: "none", bg_url: "" } },
@@ -148,7 +150,24 @@ const RowsManager = ({ rows, onChange }: Props) => {
     onChange(rows.map((r) => r.id === id ? { ...r, content: { ...r.content, [field]: value } } : r));
   };
 
-  const removeRow = (id: string) => {
+  const removeRow = async (id: string) => {
+    // Debug Story 4.1 — destructive action guard. Confirm before
+    // throwing away a row's worth of widgets. Cancel is a no-op.
+    const target = rows.find((r) => r.id === id);
+    if (target) {
+      const count = countRowWidgets(target);
+      const ok = await confirmDestructive({
+        title: "Delete this row?",
+        description:
+          count > 1
+            ? `Warning: This row contains ${count} widgets. Deleting it will permanently remove them. Are you sure?`
+            : "Warning: Deleting this row will permanently remove it and its content. Are you sure?",
+        confirmLabel: "Delete row",
+        cancelLabel: "Cancel",
+        destructive: true,
+      });
+      if (!ok) return;
+    }
     onChange(rows.filter((r) => r.id !== id));
     if (openRow === id) setOpenRow(null);
   };
