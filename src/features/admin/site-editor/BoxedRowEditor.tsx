@@ -14,23 +14,25 @@ import BoxedArrayField from "../editors/BoxedArrayField";
 interface Props {
   content: Record<string, any>;
   onChange: (field: string, value: any) => void;
+  bgColor?: string;
 }
 
-const BoxedRowEditor = ({ content, onChange }: Props) => {
+const BoxedRowEditor = ({ content, onChange, bgColor }: Props) => {
   const titleLines = (content.title_lines || []).map((l: any) =>
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`,
   );
 
   return (
     <div className="space-y-3">
-      <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} />
+      <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
       <SubtitleEditor
         subtitle={content.subtitle || ""}
         subtitleColor={content.subtitle_color || ""}
         onSubtitleChange={(v) => onChange("subtitle", v)}
         onColorChange={(v) => onChange("subtitle_color", v)}
+        bgColor={bgColor}
       />
-      <BoxedArrayField content={content} onChange={onChange} />
+      <BoxedArrayField content={content} onChange={onChange} bgColor={bgColor} />
       <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
       <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
       <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onChange("color_card_title", v)} />

@@ -360,7 +360,7 @@ const PageNavigator = ({
       >
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="revision-history" className="border-0">
-            <AccordionTrigger className="py-2 font-body text-[10px] uppercase tracking-[0.18em] font-semibold hover:no-underline">
+            <AccordionTrigger className="admin-section-label py-2 font-body text-[10px] hover:no-underline">
               Revision History
             </AccordionTrigger>
             <AccordionContent className="pt-1 pb-2">
