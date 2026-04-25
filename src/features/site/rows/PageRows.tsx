@@ -48,29 +48,76 @@ const resolveAlignment = (row: PageRow, autoAlign: Alignment): Alignment => {
   return autoAlign;
 };
 
-const RowRenderer = ({ row, rowIndex, align }: { row: PageRow; rowIndex: number; align: Alignment }) => {
+const RowRenderer = ({
+  row,
+  rowIndex,
+  align,
+  globalMap,
+}: {
+  row: PageRow;
+  rowIndex: number;
+  align: Alignment;
+  globalMap: Map<string, GlobalWidget>;
+}) => {
   const id = row.scope || slugify(row.strip_title);
   const isService = row.type === "service";
   const vAlign: VAlign = row.layout?.verticalAlign || "middle";
+
+  // ── Global Widget reference resolution (US 8.1) ──────────────────
+  // If the cell content carries `__global_ref`, we substitute the
+  // GLOBAL widget data for the local content and use the GLOBAL
+  // type for rendering. Per-instance `__design` overrides survive
+  // (see `buildGlobalRefContent` in src/types/rows.ts).
+  //
+  // WHY we resolve here (and not inside each widget):
+  // The renderer is the single point that calls `renderWidget`, so
+  // intercepting here means EVERY widget — present and future —
+  // gains global-block support for free, no per-widget code change.
+  const globalRef = readGlobalRef(row.content);
+  let renderRow = row;
+  let missingGlobal = false;
+  if (globalRef) {
+    const g = globalMap.get(globalRef);
+    if (g) {
+      // Preserve the row container metadata (id, strip_title, layout,
+      // bg_color) but swap the content + type to the global widget's.
+      // Re-attach `__design` so per-instance margin/padding still apply.
+      const localDesign = (row.content as any)?.__design;
+      const mergedContent = localDesign
+        ? { ...g.data, __design: localDesign }
+        : g.data;
+      renderRow = { ...row, type: g.type as PageRow["type"], content: mergedContent };
+    } else {
+      missingGlobal = true;
+    }
+  }
 
   // Engine no longer hardcodes which component renders which row.
   // The WidgetRegistry resolves `row.type` → render fn at runtime, so
   // adding a new widget never requires editing this file (OCP).
   // See `src/widgets/index.tsx` for the bootstrap registrations and
   // `WIDGETS.md` (repo root) for the 4-step extension guide.
-  const rendered = renderWidget({ row, rowIndex, align, vAlign });
-  if (rendered === null) return null;
+  const rendered = missingGlobal ? null : renderWidget({ row: renderRow, rowIndex, align, vAlign });
+  if (rendered === null && !missingGlobal) return null;
 
   // Generic visual chrome (margin / padding / bg / radius) lives in a
   // wrapper instead of every widget — see WidgetWrapper.tsx and US 6.1.
   // The wrapper short-circuits to `<>{children}</>` when no overrides
   // are present, so un-customised rows render the EXACT same DOM as
   // before this story landed (zero visual regression risk).
-  const design = readDesignSettings(row.content);
+  const design = readDesignSettings(renderRow.content);
 
   return (
     <div id={id} style={{ scrollMarginTop: isService ? "0px" : "4rem", isolation: "isolate" }}>
-      <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
+      {missingGlobal ? (
+        // Soft fallback for a deleted global block — keep the page
+        // alive instead of rendering blank or 500-ing.
+        <div className="py-8 text-center font-body text-xs text-muted-foreground">
+          (Referenced global block was removed)
+        </div>
+      ) : (
+        <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
+      )}
     </div>
   );
 };
