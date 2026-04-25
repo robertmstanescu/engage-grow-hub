@@ -122,15 +122,22 @@
 
   h1,
   h2,
-  h3 {
-    font-family: var(--font-header);
+  h3,
+  h4 {
+    font-family: var(--font-header); /* Bricolage */
     text-wrap: balance;
     letter-spacing: -0.02em;
   }
 
   .font-display {
+    font-family: var(--font-title); /* Unbounded */
+    letter-spacing: -0.04em; /* Tighten up giant text */
+  }
+
+  /* Force tiny widely-tracked uppercase labels (e.g. HeroRow eyebrows) to Unbounded */
+  .tracking-\[0\.35em\] {
     font-family: var(--font-title);
-    letter-spacing: -0.04em;
+    font-weight: 700;
   }
   .font-body-heading {
     font-family: var(--font-header);
