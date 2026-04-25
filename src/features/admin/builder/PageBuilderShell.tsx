@@ -23,7 +23,7 @@
  *   • SEO + page-level metadata
  *   • Anything Hero-related (only the main-page adapter has a Hero)
  */
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -33,11 +33,13 @@ import {
   type DragStartEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
+import type { ImperativePanelGroupHandle } from "react-resizable-panels";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { usePanelLimits } from "./usePanelLimits";
 import AdminBuilderToolbar, { type ViewportMode } from "../site-editor/AdminBuilderToolbar";
 import CanvasViewport from "../site-editor/CanvasViewport";
 import { BuilderProvider, useBuilder } from "./BuilderContext";
