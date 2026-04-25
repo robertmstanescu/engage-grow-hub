@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { type PageRow } from "@/types/rows";
 import PageBuilderShell from "./PageBuilderShell";
+import RevisionHistoryPanel from "./RevisionHistoryPanel";
 
 interface CmsPageRecord {
   id: string;
