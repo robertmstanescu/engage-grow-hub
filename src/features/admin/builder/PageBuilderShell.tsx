@@ -103,6 +103,32 @@ const BuilderDndShell = ({
     const drop = parseDropZoneId(overId);
     if (!drop) return;
 
+    // ── Layout-drop branch ───────────────────────────────────────
+    // The "Structure" cards in the tray drop an EMPTY v3 row (with N
+    // columns + one empty cell each) so editors can sketch a page
+    // skeleton first and fill the cells with widgets afterwards.
+    // Layout cards aren't allowed inside cells (they would create a
+    // row inside a cell, which the schema doesn't support) — silently
+    // ignore those drops.
+    if (isLayoutTrayDragData(data)) {
+      if (drop.kind === "cell") return;
+      const emptyRow = buildEmptyV3Row(data.columnCount);
+      let insertAt = pageRows.length;
+      if (drop.kind === "before") {
+        const idx = pageRows.findIndex((r) => r.id === drop.rowId);
+        if (idx >= 0) insertAt = idx;
+      }
+      const next = [
+        ...pageRows.slice(0, insertAt),
+        emptyRow as unknown as PageRow,
+        ...pageRows.slice(insertAt),
+      ];
+      onRowsChange(next);
+      // Select the new row so the inspector shows its layout settings.
+      setActiveElement(`row:${emptyRow.id}`);
+      return;
+    }
+
     const def = getWidget(data.type);
     if (!def) return;
 
