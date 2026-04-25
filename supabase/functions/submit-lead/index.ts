@@ -164,6 +164,8 @@ Deno.serve(async (req) => {
   const visitorId = typeof body.visitor_id === "string" ? body.visitor_id.trim().slice(0, 64) : "";
   // Epic 4 / US 4.1 — first-touch marketing attribution from localStorage.
   const attribution = sanitizeAttribution(body.attribution);
+  // Epic 4 / US 4.4 — Zero-Party Data from quizzes / ROI calculators.
+  const customProps = sanitizeZeroPartyData(body.custom_properties);
 
   if (!fullName || fullName.length > MAX_TEXT) return json(400, { error: "Full name is required (max 200 chars)" });
   if (!companyUniversity || companyUniversity.length > MAX_TEXT) {
@@ -199,7 +201,7 @@ Deno.serve(async (req) => {
   // ── 5. Upsert lead ───────────────────────────────────────────────────
   const { data: existing } = await supabase
     .from("leads")
-    .select("id, download_history")
+    .select("id, download_history, zero_party_data")
     .eq("email", email)
     .maybeSingle();
 
@@ -209,6 +211,15 @@ Deno.serve(async (req) => {
     if (prior.includes(assetTitle)) return prior;
     return [...prior, assetTitle];
   })();
+
+  // Epic 4 / US 4.4 — Deep-merge new answers into the existing JSONB
+  // blob so we accumulate a richer profile across visits. Doing the
+  // merge in JS (vs an `||` SQL operator, which is shallow) keeps
+  // nested objects intact.
+  const mergedZeroParty = deepMergeJson(
+    (existing?.zero_party_data as Record<string, unknown> | null | undefined) ?? null,
+    customProps,
+  );
 
   if (existing) {
     // First-touch attribution wins: only set the column if it's still
@@ -222,6 +233,11 @@ Deno.serve(async (req) => {
       download_history: newHistory,
     };
     if (attribution) updatePayload.attribution = attribution;
+    // Only write zero_party_data if the merge actually produced fields,
+    // otherwise we'd needlessly stamp an empty object on every upsert.
+    if (Object.keys(mergedZeroParty).length > 0) {
+      updatePayload.zero_party_data = mergedZeroParty;
+    }
     const { error: updateError } = await supabase
       .from("leads")
       .update(updatePayload)
@@ -239,6 +255,9 @@ Deno.serve(async (req) => {
       marketing_consent: marketingConsent,
       download_history: newHistory,
       attribution,
+      // Default-empty so the JSONB column never holds NULL on insert
+      // (matches the table default and keeps downstream readers simple).
+      zero_party_data: Object.keys(mergedZeroParty).length > 0 ? mergedZeroParty : {},
     });
     if (insertError) {
       console.error("Lead insert failed", insertError);
