@@ -167,6 +167,13 @@ export const RowsRenderer = ({
   // from the `global_widgets` table (US 8.1).
   const { map: globalMap } = useGlobalWidgetMap();
 
+  // Builder-only: drop zones must NOT alter the public DOM. On the
+  // live site `enabled` is false → we render the original tree exactly
+  // as it was before US 17.2 (no extra wrapper divs, no drop zones).
+  // The previous version of this code wrapped non-last rows in an
+  // extra <div> which broke scroll-snap on the homepage.
+  const { enabled: builderEnabled } = useBuilder();
+
   return (
     <>
       {rows.map((row, index) => {
@@ -188,28 +195,31 @@ export const RowsRenderer = ({
             />
           </ErrorBoundary>
         );
-        // Group the last row with the footer in one snap section
+        // Group the last row with the footer in one snap section.
         if (index === lastIndex && footerSlot) {
           return (
             <div key={row.id} className="snap-section">
-              {/* US 17.2 — insertion point BEFORE this row */}
-              <CanvasDropZone position={{ kind: "before", rowId: row.id }} />
+              {builderEnabled && (
+                <CanvasDropZone position={{ kind: "before", rowId: row.id }} />
+              )}
               {rendered}
               {footerSlot}
             </div>
           );
         }
+        // Public site: render the row directly (no wrapper), preserving
+        // the original DOM and scroll-snap behaviour.
+        if (!builderEnabled) return rendered;
+        // Admin canvas: wrap with a drop zone above each row.
         return (
           <div key={row.id}>
-            {/* US 17.2 — insertion point BEFORE this row */}
             <CanvasDropZone position={{ kind: "before", rowId: row.id }} />
             {rendered}
           </div>
         );
       })}
-      {/* US 17.2 — final insertion point at the END of the page so
-          editors can always append a fresh widget at the bottom. */}
-      <CanvasDropZone position={{ kind: "end" }} />
+      {/* End-of-page drop zone — admin only. */}
+      {builderEnabled && <CanvasDropZone position={{ kind: "end" }} />}
       {/* Fallback if no rows */}
       {rows.length === 0 && footerSlot}
     </>
