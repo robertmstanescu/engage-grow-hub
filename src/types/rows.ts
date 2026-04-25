@@ -230,6 +230,53 @@ export const readDesignSettings = (
   };
 };
 
+/* ─────────────────────────────────────────────────────────────────────
+ * GLOBAL WIDGET REFERENCE — US 8.1 ("Global Blocks")
+ * ─────────────────────────────────────────────────────────────────────
+ * When a cell's content carries `__global_ref: <uuid>`, the frontend
+ * MUST resolve that id against the `global_widgets` table and render
+ * the widget using the GLOBAL data instead of the local content.
+ *
+ * WHY a reserved key on `content` (mirroring `__design` from US 6.1):
+ * Storing the reference inside `content` means it travels with the
+ * widget through every existing pipeline (drag-and-drop swap, page
+ * duplication, JSON snapshot, the v1↔v2 migration). Putting it on the
+ * row itself would couple "is global?" to ALL columns of a row — but
+ * a single row may want one global cell next to a local cell.
+ *
+ * Local data takes a backseat: when `__global_ref` is set we IGNORE
+ * everything else in `content` for rendering purposes, but we KEEP
+ * `__design` (visual chrome lives at the call site, not in the source
+ * of truth). This matches Gutenberg's behaviour: a reusable block can
+ * carry per-instance margin overrides without breaking the link.
+ * ───────────────────────────────────────────────────────────────────── */
+export const GLOBAL_REF_KEY = "__global_ref" as const;
+
+/** Read the global widget id from a cell's content blob, if present. */
+export const readGlobalRef = (
+  content: Record<string, any> | null | undefined,
+): string | null => {
+  if (!content) return null;
+  const v = (content as any)[GLOBAL_REF_KEY];
+  return typeof v === "string" && v.length > 0 ? v : null;
+};
+
+/**
+ * Build a content blob that points at a global widget. The reference
+ * lives alongside `__design` so the per-instance Inspector overrides
+ * survive — see WHY note above.
+ */
+export const buildGlobalRefContent = (
+  globalId: string,
+  preserveDesign?: Record<string, any> | null,
+): Record<string, any> => {
+  const out: Record<string, any> = { [GLOBAL_REF_KEY]: globalId };
+  if (preserveDesign && (preserveDesign as any).__design) {
+    out.__design = (preserveDesign as any).__design;
+  }
+  return out;
+};
+
 export interface ContactField {
   key: string;
   label: string;
