@@ -640,8 +640,6 @@ const SiteEditor = () => {
                   seoMetaDescription={(getDraft("main_page_seo") as any)?.meta_description || ""}
                   onSeoTitleChange={(v) => updateField("main_page_seo", "meta_title", v)}
                   onSeoDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
-                  heroContent={getDraft("hero")}
-                  onHeroFieldChange={(f, v) => updateField("hero", f, v)}
                   pageRows={pageRows}
                   onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
                 />
