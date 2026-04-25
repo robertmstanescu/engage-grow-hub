@@ -42,6 +42,7 @@ import TextRow from "@/features/site/rows/TextRow";
 import ServiceRow from "@/features/site/rows/ServiceRow";
 import BoxedRow from "@/features/site/rows/BoxedRow";
 import ImageTextRow from "@/features/site/rows/ImageTextRow";
+import ImageRow, { ImageRowAdmin, IMAGE_ROW_DEFAULT } from "@/features/site/rows/ImageRow";
 import ProfileRow from "@/features/site/rows/ProfileRow";
 import GridRow from "@/features/site/rows/GridRow";
 import LeadMagnetRow from "@/features/site/rows/LeadMagnetRow";
@@ -124,6 +125,19 @@ registerWidget({
   render: ({ row, rowIndex, align, vAlign }) => (
     <ImageTextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
   ),
+});
+
+// EPIC 13 / US 13.1 — standalone Image widget. Strict alt-text enforcement
+// is provided by `findMissingAltViolations` in services/contentAccessibility.
+registerWidget({
+  type: "image",
+  label: "Image",
+  icon: ImageIcon,
+  category: "Media",
+  defaultData: { ...IMAGE_ROW_DEFAULT },
+  adminComponent: ImageRowAdmin as any,
+  frontendComponent: ImageRow,
+  render: ({ row }) => <ImageRow row={row} />,
 });
 
 registerWidget({

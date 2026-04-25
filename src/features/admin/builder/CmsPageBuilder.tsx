@@ -16,6 +16,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { type PageRow } from "@/types/rows";
+import {
+  findMissingAltViolations,
+  formatAltMissingMessage,
+} from "@/services/contentAccessibility";
 import PageBuilderShell from "./PageBuilderShell";
 import RevisionHistoryPanel from "./RevisionHistoryPanel";
 import SchedulePublishPanel from "./SchedulePublishPanel";
@@ -102,6 +106,19 @@ const CmsPageBuilder = ({ pageId }: Props) => {
 
   const onPublish = useCallback(async () => {
     if (!record) return;
+
+    // EPIC 13 / US 13.1 — block publish on missing alt text.
+    const violations = findMissingAltViolations(draftRows);
+    const message = formatAltMissingMessage(violations);
+    if (message) {
+      toast.error(message, {
+        description: violations
+          .map((v) => `• ${v.label} — “${v.stripTitle}”`)
+          .join("\n"),
+      });
+      return;
+    }
+
     setPublishing(true);
     const { error } = await supabase
       .from("cms_pages")
