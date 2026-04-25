@@ -132,12 +132,81 @@ const TrayCard = ({ def }: TrayCardProps) => {
 };
 
 /* ──────────────────────────────────────────────────────────────────
+ * LayoutCard — draggable card that drops an EMPTY v3 row with N cells.
+ *
+ * These deliberately live OUTSIDE the WidgetRegistry. They don't
+ * register as widgets (which would clutter every page-builder), but
+ * they share the same drag-source contract via a dedicated `kind`
+ * field on the payload.
+ * ────────────────────────────────────────────────────────────────── */
+interface LayoutCardProps {
+  columnCount: 1 | 2 | 3 | 4;
+  label: string;
+  Icon: typeof Square;
+}
+
+const LayoutCard = ({ columnCount, label, Icon }: LayoutCardProps) => {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `${TRAY_LAYOUT_DRAG_ID_PREFIX}${columnCount}`,
+    data: {
+      source: "tray",
+      kind: "layout",
+      type: "layout",
+      label,
+      columnCount,
+    } satisfies TrayDragData,
+  });
+
+  return (
+    <button
+      ref={setNodeRef}
+      type="button"
+      {...listeners}
+      {...attributes}
+      title={`Drag a ${label.toLowerCase()} onto the canvas`}
+      aria-label={`Drag ${label}`}
+      className="group relative flex flex-col items-center justify-center gap-1.5 rounded-lg border p-2.5 transition-all cursor-grab active:cursor-grabbing focus:outline-none focus-visible:ring-2"
+      style={{
+        opacity: isDragging ? 0.35 : 1,
+        backgroundColor: "hsl(var(--card))",
+        borderColor: "hsl(var(--border) / 0.6)",
+        // @ts-expect-error — CSS custom prop for focus ring colour
+        "--tw-ring-color": "hsl(var(--accent))",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "hsl(var(--accent))";
+        e.currentTarget.style.backgroundColor = "hsl(var(--accent) / 0.06)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "hsl(var(--border) / 0.6)";
+        e.currentTarget.style.backgroundColor = "hsl(var(--card))";
+      }}
+    >
+      <Icon size={18} strokeWidth={1.6} style={{ color: "hsl(var(--foreground))" }} />
+      <span
+        className="font-body text-[10px] leading-tight text-center line-clamp-2"
+        style={{ color: "hsl(var(--muted-foreground))" }}
+      >
+        {label}
+      </span>
+    </button>
+  );
+};
+
+/* ──────────────────────────────────────────────────────────────────
  * Floating preview rendered inside <DragOverlay> by SiteEditor.
  * Exported so the parent can mount it without recreating the look.
  * ────────────────────────────────────────────────────────────────── */
 export const TrayDragPreview = ({ data }: { data: TrayDragData }) => {
-  const def = listWidgets().find((w) => w.type === data.type);
-  const Icon = def?.icon ?? Blocks;
+  // Layout drags don't have a registry entry; pick a structure icon.
+  let Icon: typeof Blocks;
+  if ((data as any).kind === "layout") {
+    const cc = (data as any).columnCount as number;
+    Icon = cc === 1 ? Square : cc === 2 ? Columns2 : cc === 3 ? Columns3 : Columns4;
+  } else {
+    const def = listWidgets().find((w) => w.type === data.type);
+    Icon = def?.icon ?? Blocks;
+  }
   return (
     <div
       className="flex items-center gap-2 rounded-lg border px-3 py-2 shadow-lg pointer-events-none"
