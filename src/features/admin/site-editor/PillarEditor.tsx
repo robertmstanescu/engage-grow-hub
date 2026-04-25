@@ -151,7 +151,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
       <SectionBox label="Section Header">
         <Field label="Eyebrow" value={pillarContent.eyebrow || pillarContent.pillar_number || ""} onChange={(v) => onPillarChange("eyebrow", v)} />
         <Field label="Title" value={pillarContent.title || ""} onChange={(v) => onPillarChange("title", v)} />
-        <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} bgColor={bgColor} />
+        <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} bgColor={pillarContent.color_section_bg || bgColor} />
       </SectionBox>
 
       <SectionBox label="Carousel Content Alignment">
