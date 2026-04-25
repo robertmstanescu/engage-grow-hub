@@ -113,6 +113,8 @@ import StyleTab from "./editors/StyleTab";
 import RowStyleTab from "./editors/RowStyleTab";
 import RowContentEditor from "./editors/RowContentEditor";
 import VersionHistory from "./VersionHistory";
+import { confirmDestructive } from "@/components/ConfirmDialog";
+import { countRowWidgets } from "./builder/rowWidgetCount";
 // EPIC 14–17 — new three-pane builder shell. Mounted in place of the
 // legacy structure-rail + properties layout when the admin is editing
 // the MAIN PAGE site content. CMS-page editing still uses the legacy
@@ -588,6 +590,29 @@ const AdminDashboard = ({ session }: Props) => {
     updateRows(pageRows.filter((r) => r.id !== rowId));
     if (selectedSectionId === rowId) setSelectedSectionId(null);
   }, [pageRows, updateRows, selectedSectionId]);
+
+  /* Debug Story 4.1 — destructive action guard.
+   * All UI delete-row entry points MUST go through this wrapper so the
+   * user gets a confirmation modal before any work is destroyed. The
+   * count of "configured widgets" lives in `countRowWidgets()` and is
+   * shared with the Inspector's own delete button. */
+  const requestDeleteRow = useCallback(async (rowId: string) => {
+    const row = pageRows.find((r) => r.id === rowId);
+    if (!row) return;
+    const count = countRowWidgets(row);
+    const ok = await confirmDestructive({
+      title: "Delete this row?",
+      description:
+        count > 1
+          ? `Warning: This row contains ${count} widgets. Deleting it will permanently remove them. Are you sure?`
+          : "Warning: Deleting this row will permanently remove it and its content. Are you sure?",
+      confirmLabel: "Delete row",
+      cancelLabel: "Cancel",
+      destructive: true,
+    });
+    if (!ok) return;
+    deleteRow(rowId);
+  }, [pageRows, deleteRow]);
 
   const addColumnToRow = useCallback((rowId: string) => {
     const row = pageRows.find((r) => r.id === rowId);
@@ -1390,7 +1415,7 @@ const AdminDashboard = ({ session }: Props) => {
                         )}
                         {isRow && (
                           <button
-                            onClick={() => deleteRow(selectedRow!.id)}
+                            onClick={() => requestDeleteRow(selectedRow!.id)}
                             className="flex items-center justify-center w-7 h-7 rounded-md cursor-pointer border border-destructive/30 bg-transparent text-destructive"
                             title="Delete Row"
                           >
