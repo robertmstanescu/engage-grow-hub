@@ -336,11 +336,50 @@ const SiteEditor = () => {
                 maxWidth: canvasMaxWidth ? `${canvasMaxWidth}px` : "64rem", // 64rem = max-w-5xl
               }}
             >
+              {/* US 15.1 — Preview / Edit toggle (per-section, hidden for SEO) */}
+              {supportsPreview && (
+                <div className="flex items-center justify-end mb-3">
+                  <div
+                    className="inline-flex items-center rounded-full border p-0.5"
+                    style={{ borderColor: "hsl(var(--border) / 0.6)", backgroundColor: "hsl(var(--card))" }}
+                    role="group"
+                    aria-label="Canvas mode"
+                  >
+                    {([
+                      { key: "preview", label: "Preview", Icon: Eye },
+                      { key: "edit", label: "Edit", Icon: Pencil },
+                    ] as const).map(({ key, label, Icon }) => {
+                      const active = canvasMode === key;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setCanvasMode(key)}
+                          aria-pressed={active}
+                          className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full transition-colors"
+                          style={{
+                            backgroundColor: active ? "hsl(var(--accent))" : "transparent",
+                            color: active ? "hsl(var(--accent-foreground))" : "hsl(var(--muted-foreground))",
+                          }}
+                        >
+                          <Icon size={12} /> {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div
-                className="rounded-lg border p-5 shadow-sm"
+                className="rounded-lg border shadow-sm overflow-hidden"
                 style={{
+                  // WHY no padding when previewing: the live frontend
+                  // components own their own spacing/backgrounds (e.g.
+                  // hero is full-bleed). Padding the wrapper would crop
+                  // their visual edge. Edit mode keeps the comfy padding.
                   backgroundColor: "hsl(var(--card))",
                   borderColor: "hsl(var(--border) / 0.5)",
+                  padding: canvasMode === "preview" && supportsPreview ? 0 : "1.25rem",
                 }}
               >
                 {renderCanvas()}
