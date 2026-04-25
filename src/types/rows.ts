@@ -154,6 +154,142 @@ export const DEFAULT_CONTACT_FIELDS: ContactField[] = [
 
 export const generateRowId = () => crypto.randomUUID();
 
+/* ─────────────────────────────────────────────────────────────────────
+ * NESTED WIDGET ARCHITECTURE (v2 — schema for User Story 1.1)
+ * ─────────────────────────────────────────────────────────────────────
+ * Why this exists
+ * ────────────────
+ * The legacy `PageRow` couples a single `type` (hero, text, contact…)
+ * to a single content blob. To compose mixed layouts (e.g. an image
+ * next to a contact form) we'd previously have had to invent a new row
+ * type for every combination. Instead we introduce a generic shape:
+ *
+ *   PageRowV2
+ *     └── columns: PageColumn[]            // 1..N columns per row
+ *           └── widgets: PageWidget[]      // 1..N widgets per column
+ *                 └── { type, data }       // a single content unit
+ *
+ * Any existing row "type" maps cleanly onto a PageWidget — the row
+ * itself becomes a pure layout container.
+ *
+ * Layout presets
+ * ──────────────
+ * `layout` is a short string token describing the column distribution
+ * (e.g. "100", "50-50", "33-33-33", "60-40"). The renderer translates
+ * this into a CSS grid template. Custom widths can still be supplied
+ * via `column_widths` for fine-grained control.
+ *
+ * IMPORTANT: This is a forward-looking schema. The existing renderers
+ * still consume the legacy `PageRow` shape. Use `migrateRowToV2()` to
+ * convert on read until renderers are updated in a later story.
+ * ───────────────────────────────────────────────────────────────────── */
+
+export type WidgetType = PageRow["type"];
+
+export interface PageWidget<TType extends string = WidgetType> {
+  id: string;
+  type: TType;
+  data: Record<string, any>;
+}
+
+export interface PageColumn {
+  id: string;
+  widgets: PageWidget[];
+}
+
+export type ColumnLayoutPreset =
+  | "100"
+  | "50-50"
+  | "33-33-33"
+  | "25-25-25-25"
+  | "60-40"
+  | "40-60"
+  | "70-30"
+  | "30-70"
+  | "custom";
+
+export interface PageRowV2 {
+  id: string;
+  /** Schema version marker so the migration is idempotent. */
+  schema_version: 2;
+  strip_title: string;
+  bg_color: string;
+  scope?: string;
+  layout?: RowLayout;
+  /** Column distribution preset (or "custom" when widths drive it). */
+  column_layout: ColumnLayoutPreset;
+  columns: PageColumn[];
+}
+
+/** Type guard — true when a row already uses the v2 nested shape. */
+export const isPageRowV2 = (row: any): row is PageRowV2 =>
+  !!row && row.schema_version === 2 && Array.isArray(row.columns);
+
+/** Derive a `ColumnLayoutPreset` token from numeric widths. */
+const widthsToPreset = (widths: number[]): ColumnLayoutPreset => {
+  const key = widths.map((w) => Math.round(w)).join("-");
+  const known: Record<string, ColumnLayoutPreset> = {
+    "100": "100",
+    "50-50": "50-50",
+    "33-33-33": "33-33-33",
+    "25-25-25-25": "25-25-25-25",
+    "60-40": "60-40",
+    "40-60": "40-60",
+    "70-30": "70-30",
+    "30-70": "30-70",
+  };
+  return known[key] || "custom";
+};
+
+/**
+ * Migrate a legacy `PageRow` to the new nested `PageRowV2` shape.
+ * Lossless: the row's `content` (and any `columns_data`) become widgets
+ * inside the corresponding columns, preserving the original `type`.
+ */
+export const migrateRowToV2 = (row: PageRow | PageRowV2): PageRowV2 => {
+  if (isPageRowV2(row)) return row;
+
+  const legacy = row as PageRow;
+  const contents = [legacy.content || {}, ...(legacy.columns_data || [])];
+  const widths =
+    legacy.layout?.column_widths ||
+    contents.map(() => Math.round(100 / Math.max(contents.length, 1)));
+
+  const columns: PageColumn[] = contents.map((data) => ({
+    id: generateRowId(),
+    widgets: [
+      {
+        id: generateRowId(),
+        type: legacy.type,
+        data: data || {},
+      },
+    ],
+  }));
+
+  return {
+    id: legacy.id,
+    schema_version: 2,
+    strip_title: legacy.strip_title,
+    bg_color: legacy.bg_color,
+    scope: legacy.scope,
+    layout: legacy.layout,
+    column_layout: widthsToPreset(widths),
+    columns,
+  };
+};
+
+/**
+ * Migrate an entire `site_content` payload that contains `{ rows: [...] }`.
+ * Safe to call on already-migrated payloads (idempotent).
+ */
+export const migrateSiteContentRows = <T extends { rows?: any[] } | null | undefined>(
+  payload: T,
+): T => {
+  if (!payload || !Array.isArray((payload as any).rows)) return payload;
+  const migrated = (payload as any).rows.map((r: any) => migrateRowToV2(r));
+  return { ...(payload as any), rows: migrated } as T;
+};
+
 /** Get all column contents and their grid widths */
 export const getRowColumns = (row: PageRow) => {
   const contents = [row.content, ...(row.columns_data || [])];
