@@ -6,6 +6,7 @@ import {
   getStableVisitorId,
   parseUserAgentForAnalytics,
 } from "@/services/analytics";
+import { captureAttribution, getAttributionForPayload } from "@/services/attribution";
 
 /**
  * useAnalyticsBeacon — fires one beacon per route change.
@@ -24,6 +25,12 @@ import {
  * The consent-gated `tmc_visitor_id` cookie remains separate and powers
  * email→visitor stitching for the Path-to-Lead feature.
  *
+ * Marketing attribution (Epic 4 / US 4.1) — captureAttribution() runs
+ * BEFORE the admin-route guard so an inbound paid click that happens to
+ * land on /admin?utm_…=… (e.g. an internal QA link) still seeds
+ * localStorage. The captured blob is then attached to every analytics
+ * beacon so downstream dashboards can attribute revenue to campaigns.
+ *
  * Failure is non-fatal: if the analytics edge function is down, the page
  * still loads. The beacon is wrapped in try/catch and explicitly does
  * NOT block any user-visible work.
@@ -34,6 +41,12 @@ export function useAnalyticsBeacon(): void {
   const lastLoggedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Capture attribution FIRST — must run even on /admin routes so an
+    // inbound campaign URL (?utm_…) is still recorded if it happens to
+    // land there. Idempotent: only writes when there are new params or
+    // nothing was stored yet.
+    captureAttribution();
+
     // Admin routes are noise — the table would explode with our own clicks.
     if (pathname.startsWith("/admin")) return;
     if (lastLoggedRef.current === pathname) return;
@@ -47,6 +60,10 @@ export function useAnalyticsBeacon(): void {
     // Always send the stable visitor id — it's our PRIMARY dedup key on
     // the server. See src/services/analytics.ts for the rationale.
     const visitorId = getStableVisitorId();
+    // Snapshot of whatever we currently know about this visitor's
+    // marketing source. May be null for direct/organic traffic that
+    // arrived before the capture utility existed.
+    const attribution = getAttributionForPayload();
 
     const body = {
       pagePath: pathname,
@@ -55,6 +72,7 @@ export function useAnalyticsBeacon(): void {
       referrer,
       searchEngine: detectSearchEngine(referrer),
       visitorId,
+      attribution,
     };
 
     // Fire-and-forget. We do not await — page interactivity matters more
