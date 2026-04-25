@@ -30,7 +30,7 @@ const GlobalSettings = () => {
   const [data, setData] = useState<Record<string, SectionState>>({});
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [isPublishingChanges, setIsPublishingChanges] = useState(false);
-  const [openSection, setOpenSection] = useState<string | null>("branding");
+  const [openSection, setOpenSection] = useState<string | null>("footer");
 
   useEffect(() => {
     const load = async () => {
