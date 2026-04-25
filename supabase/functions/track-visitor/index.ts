@@ -246,6 +246,7 @@ Deno.serve(async (req) => {
   let referrer = "";
   let searchEngine: string | null = null;
   let visitorId: string | null = null;
+  let attribution: Record<string, string> | null = null;
 
   try {
     const body = await req.json();
@@ -257,6 +258,11 @@ Deno.serve(async (req) => {
     // visitor_id is the PRIMARY dedup key — see file header. We accept up
     // to 64 chars to fit a UUID v4 (36 chars) plus any future namespace.
     visitorId = body?.visitorId ? truncate(body.visitorId, 64) : null;
+    // Epic 4 / US 4.1 — marketing attribution snapshot from the client.
+    // We accept whatever keys the client sends but coerce values to
+    // strings of bounded length so a malicious 4MB blob can't pollute
+    // the analytics table.
+    attribution = sanitizeAttribution(body?.attribution);
   } catch {
     // Empty body is fine — fall back to defaults.
   }
