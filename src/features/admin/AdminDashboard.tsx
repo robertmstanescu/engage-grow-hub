@@ -833,6 +833,12 @@ const AdminDashboard = ({ session }: Props) => {
 
   const isSiteTab = activeTab === "site";
   const isMainPage = !cmsPage;
+  // EPIC 14–17 — when the admin is on the Site tab AND editing the main
+  // page, mount the new <SiteEditor /> builder shell. The new builder owns
+  // its own toolbar/save/publish/structure UI, so we collapse the legacy
+  // rail and hide the legacy topbar buttons in this mode. CMS pages keep
+  // the legacy path until SiteEditor learns to load arbitrary pages.
+  const useNewBuilder = isSiteTab && isMainPage;
   const pageLabel = cmsPage ? cmsPage.title : "Main Page";
   const tabLabel = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.key === activeTab)?.label || "";
 
@@ -849,7 +855,11 @@ const AdminDashboard = ({ session }: Props) => {
   // screen until the user picks a section (then the properties
   // column takes over). On desktop it stays at a fixed 340px so the
   // properties column always sits alongside.
-  const pageStructureWidth = isAdminMobile
+  // When the new builder is active, the rail is fully suppressed
+  // because <SiteEditor /> renders its own Navigator + Elements tray.
+  const pageStructureWidth = useNewBuilder
+    ? 0
+    : isAdminMobile
     ? (isSiteTab && !selectedSectionId ? "100%" : 0)
     : (isSiteTab ? 340 : 0);
 
