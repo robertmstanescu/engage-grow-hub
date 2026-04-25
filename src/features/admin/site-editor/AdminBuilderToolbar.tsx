@@ -232,11 +232,34 @@ const AdminBuilderToolbar = ({
           <Save size={12} /> {saving ? "Saving…" : saveLabel}
         </button>
 
+        {/* Unpublish — only when the entity is currently live and the
+            adapter wired an onUnpublish handler. Reverts to "draft" so the
+            page disappears from the public site without losing content. */}
+        {showUnpublish && (
+          <button
+            onClick={onUnpublish}
+            disabled={!!unpublishing}
+            title="Hide this page from the public site (status reverts to draft)"
+            className="admin-btn-secondary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full"
+          >
+            <EyeOff size={12} /> {unpublishing ? "Unpublishing…" : "Unpublish"}
+          </button>
+        )}
+
         {/* US 4.1 — vibrant indigo primary action. Drives the eye and
             abandons the prior flat-grey/gold styling. */}
         <button
           onClick={onPublish}
-          disabled={publishing || !hasChanges}
+          disabled={publishing || !publishEnabled}
+          title={
+            publishing
+              ? "Publishing…"
+              : !publishEnabled
+              ? "No changes to publish"
+              : isDraft && !hasChanges
+              ? "Promote this draft to live"
+              : "Publish your changes"
+          }
           className="admin-btn-primary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-1.5 rounded-full font-semibold"
         >
           <Send size={12} /> {publishing ? "Publishing…" : "Publish All"}
