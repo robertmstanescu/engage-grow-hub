@@ -93,7 +93,7 @@ const NumberField = ({
 );
 
 const WidgetSettingsDrawer = ({
-  open, onOpenChange, design, onChange, widgetLabel,
+  open, onOpenChange, design, onChange, widgetLabel, saveAsGlobal,
 }: Props) => {
   // WHY a single `update` helper: every control patches one field; the
   // parent receives the full, merged `WidgetDesignSettings` so it can
@@ -102,6 +102,32 @@ const WidgetSettingsDrawer = ({
     onChange({ ...design, [key]: value });
 
   const reset = () => onChange({ ...DEFAULT_DESIGN_SETTINGS });
+
+  // Save-as-Global state (US 8.1). The button is gated behind a small
+  // inline name prompt instead of a full modal — admins are already in
+  // the drawer's focused context, and a name input is the only piece
+  // of metadata required to create a Global Block.
+  const [savingName, setSavingName] = useState<string | null>(null);
+  const { create, isMutating } = useGlobalWidgets();
+
+  const handleConfirmSave = async () => {
+    if (!saveAsGlobal || !savingName?.trim()) return;
+    try {
+      const created = await create({
+        name: savingName.trim(),
+        type: saveAsGlobal.widgetType,
+        // WHY strip `__design` / `__global_ref`: the global record holds
+        // the WIDGET'S OWN data only. Per-instance chrome lives on the
+        // referencing cell so two pages can reuse the same global block
+        // with different margins.
+        data: stripReservedKeys(saveAsGlobal.snapshotData),
+      });
+      saveAsGlobal.onConvertedToGlobal(created.id);
+      setSavingName(null);
+    } catch {
+      // toast already surfaced by the hook
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
