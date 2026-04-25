@@ -25,7 +25,10 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-const CRON_SECRET = Deno.env.get("PUBLISH_SCHEDULED_CRON_SECRET") || SERVICE_ROLE;
+// Single source of truth for the cron shared secret: the `internal_settings`
+// table. The edge function looks it up via service_role on each call (cheap,
+// indexed PK). pg_cron also reads it from the same table when sending
+// X-Cron-Secret. No env var to keep in sync.
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -33,8 +36,8 @@ Deno.serve(async (req) => {
   }
 
   // ── Authn / Authz ────────────────────────────────────────
-  // Three accepted callers:
-  //   (a) pg_cron, which sends a shared secret in X-Cron-Secret
+  // Accepted callers:
+  //   (a) pg_cron — sends shared secret in X-Cron-Secret
   //   (b) admin user manually triggering from the UI (Bearer JWT)
   //   (c) service_role key (server-to-server)
   const auth = req.headers.get("Authorization") || "";
@@ -43,8 +46,14 @@ Deno.serve(async (req) => {
 
   let isAuthorized = false;
 
-  if (cronSecret && cronSecret === CRON_SECRET) {
-    isAuthorized = true;
+  if (cronSecret) {
+    const admin0 = createClient(SUPABASE_URL, SERVICE_ROLE);
+    const { data: row } = await admin0
+      .from("internal_settings")
+      .select("value")
+      .eq("key", "publish_scheduled_cron_secret")
+      .maybeSingle();
+    if (row?.value && row.value === cronSecret) isAuthorized = true;
   }
 
   if (!isAuthorized && token && token === SERVICE_ROLE) {
