@@ -181,7 +181,7 @@ const SchedulePublishPanel = ({
 
       {isScheduled && (
         <div className="rounded-md border border-primary/30 bg-primary/5 p-2 text-[11px] font-body">
-          <div className="flex items-center gap-1.5 font-medium">
+          <div className="flex items-center gap-1.5 font-medium text-black">
             <Clock className="h-3 w-3" />
             Goes live: {new Date(savedPublishAt!).toLocaleString()}
           </div>
@@ -235,9 +235,9 @@ const SchedulePublishPanel = ({
             type="button"
             onClick={onCancel}
             disabled={saving}
-            className="px-2 py-1.5 rounded font-body text-[11px] border inline-flex items-center gap-1"
+            className="px-2 py-1.5 rounded font-body text-[11px] border inline-flex items-center gap-1 text-black"
           >
-            <X className="h-3 w-3" /> Cancel
+            <X className="h-3 w-3 text-black" /> Cancel
           </button>
         )}
       </div>
