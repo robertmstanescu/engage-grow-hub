@@ -222,6 +222,9 @@ const SiteEditor = () => {
   // can still drag, drop and configure widgets in the form-driven UI.
   // Default to preview because that's the whole point of US 15.1.
   const [canvasMode, setCanvasMode] = useState<"preview" | "edit">("preview");
+  // EPIC 2 / US 2.1 — in-place Edit/Preview toggle for the toolbar.
+  // Defaults to "edit" so editors land in the full builder.
+  const [previewMode, setPreviewMode] = useState<"edit" | "preview">("edit");
 
   // Debug Story 1.1 — pixel-anchored panel limits + double-click reset.
   const limits = usePanelLimits();
@@ -527,6 +530,8 @@ const SiteEditor = () => {
       <AdminBuilderToolbar
         viewport={viewport}
         onViewportChange={setViewport}
+        previewMode={previewMode}
+        onPreviewModeChange={setPreviewMode}
         onSaveDraft={saveAllDrafts}
         saving={saving === "__all__"}
         saveLabel="Save Draft"
@@ -670,6 +675,19 @@ const SiteEditor = () => {
               </div>
             </aside>
           );
+
+          // EPIC 2 / US 2.1 — preview mode strips the side panes so the
+          // canvas mimics the live site (toolbar + canvas only).
+          if (previewMode === "preview") {
+            return (
+              <div
+                className="flex-1 min-h-0 border-x border-b rounded-b-lg overflow-hidden"
+                style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+              >
+                {centerPane}
+              </div>
+            );
+          }
 
           if (limits.stack) {
             return (
