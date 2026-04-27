@@ -83,12 +83,14 @@ export const useMomentumSnap = (
 
     const getSections = () =>
       Array.from(
-        container.querySelectorAll<HTMLElement>(".snap-section")
+        container.querySelectorAll<HTMLElement>(
+          '.snap-section[data-snap-enabled="true"]'
+        )
       ).filter((el) =>
         el.offsetParent !== null &&
         // Ignore grouping shells such as “last row + footer”; snap to the
         // actual row inside them so the footer can remain free-scroll below.
-        !el.querySelector(":scope .snap-section")
+        !el.querySelector(':scope .snap-section[data-snap-enabled="true"]')
       );
 
     const getScrollTopFor = (el: HTMLElement, containerRect: DOMRect) =>
