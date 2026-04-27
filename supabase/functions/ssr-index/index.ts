@@ -50,7 +50,37 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const CANONICAL_ORIGIN = "https://themagiccoffin.com";
+/**
+ * Last-resort canonical origin used only when the database is
+ * unreachable AND the request URL doesn't reveal a public origin.
+ * Tenants override this by setting `identity.canonicalOrigin` in the
+ * `brand_settings` site_content row.
+ */
+const FALLBACK_ORIGIN = "https://example.com";
+
+/**
+ * Resolve the canonical origin in priority order:
+ *   1. brand_settings.identity.canonicalOrigin (admin-configured)
+ *   2. legacy brand_settings.canonical_origin (back-compat)
+ *   3. The incoming request's origin if it isn't a Supabase function URL
+ *   4. FALLBACK_ORIGIN
+ */
+const resolveOrigin = (
+  brand: Record<string, any> | null | undefined,
+  req: Request,
+): string => {
+  const identity = (brand?.identity as Record<string, any> | undefined) || {};
+  const fromIdentity = typeof identity.canonicalOrigin === "string" ? identity.canonicalOrigin.trim() : "";
+  if (fromIdentity) return fromIdentity.replace(/\/+$/, "");
+  const legacy = typeof brand?.canonical_origin === "string" ? brand.canonical_origin.trim() : "";
+  if (legacy) return legacy.replace(/\/+$/, "");
+  try {
+    const reqOrigin = new URL(req.url).origin;
+    // Avoid leaking the supabase.co function origin into <link rel=canonical>.
+    if (!/supabase\.co$/i.test(new URL(req.url).hostname)) return reqOrigin;
+  } catch { /* noop */ }
+  return FALLBACK_ORIGIN;
+};
 
 // Strip HTML tags from rich-text strings so they're safe for meta-tag content.
 const stripHtml = (input: unknown): string =>
