@@ -238,141 +238,141 @@ const PageNavigator = ({
 
   return (
     <div className="flex flex-col h-full min-h-0 overflow-y-auto">
-      {/* ── Slot 1+2 ── Page identity card ───────────────────────── */}
-      <div
-        className="px-4 pt-4 pb-3 border-b space-y-3"
-        style={{ borderColor: "hsl(var(--border))" }}
+      <Accordion
+        type="multiple"
+        defaultValue={["page-identity", "schedule", "sections", "elements"]}
+        className="w-full"
       >
-        {/* Slot 1 — Page Title (US 4.1: stronger label & input contrast) */}
-        <div className="space-y-1">
-          <label className="admin-section-label block font-body text-[10px]">
-            Page Title
-          </label>
-          <input
-            type="text"
-            value={pageTitle}
-            readOnly={titleReadOnly}
-            onChange={(e) => onPageTitleChange?.(e.target.value)}
-            placeholder="Untitled page"
-            className="w-full bg-transparent border-0 border-b font-display text-base font-semibold leading-tight focus:outline-none focus:border-b-2 transition-colors px-0 py-1"
-            style={{
-              color: "hsl(var(--foreground))",
-              borderColor: "hsl(var(--border))",
-            }}
-            onFocus={(e) => {
-              if (!titleReadOnly) e.currentTarget.style.borderColor = "hsl(var(--admin-primary, 239 84% 53%))";
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = "hsl(var(--border))";
-            }}
-          />
-        </div>
+        {/* ── Page identity (Title + URL) ───────────────────────── */}
+        <AccordionItem value="page-identity" className="border-b" style={{ borderColor: "hsl(var(--border))" }}>
+          <AccordionTrigger className="admin-section-label px-4 py-2 font-body text-[10px] hover:no-underline">
+            Page Identity
+          </AccordionTrigger>
+          <AccordionContent className="px-4 pb-3 pt-0">
+            <div className="space-y-3">
+              {/* Slot 1 — Page Title */}
+              <div className="space-y-1">
+                <label className="admin-section-label block font-body text-[10px]">
+                  Page Title
+                </label>
+                <input
+                  type="text"
+                  value={pageTitle}
+                  readOnly={titleReadOnly}
+                  onChange={(e) => onPageTitleChange?.(e.target.value)}
+                  placeholder="Untitled page"
+                  className="w-full bg-transparent border-0 border-b font-display text-base font-semibold leading-tight focus:outline-none focus:border-b-2 transition-colors px-0 py-1"
+                  style={{
+                    color: "hsl(var(--foreground))",
+                    borderColor: "hsl(var(--border))",
+                  }}
+                  onFocus={(e) => {
+                    if (!titleReadOnly) e.currentTarget.style.borderColor = "hsl(var(--admin-primary, 239 84% 53%))";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "hsl(var(--border))";
+                  }}
+                />
+              </div>
 
-        {/* Slot 2 — Page URL Slug */}
-        <div className="space-y-1">
-          <label className="admin-section-label block font-body text-[10px]">
-            Page URL
-          </label>
-          <div
-            className="flex items-center gap-1.5 rounded-md px-2 py-1.5 border"
-            style={{
-              backgroundColor: slugReadOnly ? "hsl(var(--muted) / 0.6)" : "hsl(0 0% 100%)",
-              borderColor: "hsl(var(--border))",
-            }}
-          >
-            <Link2
-              size={12}
-              style={{ color: "hsl(215 19% 35%)", flexShrink: 0 }}
-            />
-            <span
-              className="font-mono text-xs select-none"
-              style={{ color: "hsl(215 19% 35%)" }}
-            >
-              {slugPrefix}
-            </span>
-            <input
-              type="text"
-              value={pageSlug}
-              readOnly={slugReadOnly}
-              onChange={(e) =>
-                onPageSlugChange?.(sanitiseSlug(e.target.value))
-              }
-              placeholder={slugReadOnly ? "" : "page-slug"}
-              className="flex-1 min-w-0 bg-transparent border-0 font-mono text-xs focus:outline-none p-0"
-              style={{ color: "hsl(var(--foreground))" }}
-            />
-          </div>
-        </div>
-      </div>
+              {/* Slot 2 — Page URL Slug */}
+              <div className="space-y-1">
+                <label className="admin-section-label block font-body text-[10px]">
+                  Page URL
+                </label>
+                <div
+                  className="flex items-center gap-1.5 rounded-md px-2 py-1.5 border"
+                  style={{
+                    backgroundColor: slugReadOnly ? "hsl(var(--muted) / 0.6)" : "hsl(0 0% 100%)",
+                    borderColor: "hsl(var(--border))",
+                  }}
+                >
+                  <Link2 size={12} style={{ color: "hsl(215 19% 35%)", flexShrink: 0 }} />
+                  <span className="font-mono text-xs select-none" style={{ color: "hsl(215 19% 35%)" }}>
+                    {slugPrefix}
+                  </span>
+                  <input
+                    type="text"
+                    value={pageSlug}
+                    readOnly={slugReadOnly}
+                    onChange={(e) => onPageSlugChange?.(sanitiseSlug(e.target.value))}
+                    placeholder={slugReadOnly ? "" : "page-slug"}
+                    className="flex-1 min-w-0 bg-transparent border-0 font-mono text-xs focus:outline-none p-0"
+                    style={{ color: "hsl(var(--foreground))" }}
+                  />
+                </div>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
 
-      {schedulePanel ? (
-        <div
-          className="px-4 py-3 border-b"
-          style={{ borderColor: "hsl(var(--border))" }}
-        >
-          {schedulePanel}
-        </div>
-      ) : null}
-
-      {/* ── Slot 3 ── Sections of the canvas ───────────────────── */}
-      <div className="px-3 pt-3 pb-2">
-        <h3 className="admin-section-label font-body text-[10px] mb-2">
-          Sections
-        </h3>
-      </div>
-      <nav className="flex-shrink-0 px-2 pb-3 space-y-0.5">
-        {sections.length === 0 ? (
-          <p
-            className="px-3 py-2 font-body text-xs italic"
-            style={{ color: "hsl(215 19% 45%)" }}
-          >
-            No sections yet — drag an element onto the canvas.
-          </p>
-        ) : (
-          <SortableContext items={sections.map((section) => `${SECTION_DRAG_ID_PREFIX}${section.id}`)} strategy={verticalListSortingStrategy}>
-            {sections.map((section) => (
-              <SectionButton
-                key={section.id}
-                section={section}
-                isActive={section.id === activeRowId}
-                onSelect={goToSection}
-                onRename={renameSection}
-              />
-            ))}
-          </SortableContext>
-        )}
-      </nav>
-
-      {/* ── Slot 4 ── Elements tray ─────────────────────────────── */}
-      <div
-        className="flex-1 min-h-0 border-t px-3 py-3 overflow-y-auto"
-        style={{ borderColor: "hsl(var(--border))" }}
-      >
-        <h3 className="admin-section-label font-body text-[10px] mb-3">
-          Elements
-        </h3>
-        <ElementsTray />
-      </div>
-
-      <div
-        className="mt-auto border-t px-3 py-2"
-        style={{ borderColor: "hsl(var(--border))" }}
-      >
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="revision-history" className="border-0">
-            <AccordionTrigger className="admin-section-label py-2 font-body text-[10px] hover:no-underline">
-              Revision History
+        {/* ── Schedule (optional) ───────────────────────────────── */}
+        {schedulePanel ? (
+          <AccordionItem value="schedule" className="border-b" style={{ borderColor: "hsl(var(--border))" }}>
+            <AccordionTrigger className="admin-section-label px-4 py-2 font-body text-[10px] hover:no-underline">
+              Schedule
             </AccordionTrigger>
-            <AccordionContent className="pt-1 pb-2">
-              {revisionPanel || (
-                <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  Revision history is not available for this page.
-                </p>
-              )}
+            <AccordionContent className="px-4 pb-3 pt-0">
+              {schedulePanel}
             </AccordionContent>
           </AccordionItem>
-        </Accordion>
-      </div>
+        ) : null}
+
+        {/* ── Sections of the canvas ────────────────────────────── */}
+        <AccordionItem value="sections" className="border-b" style={{ borderColor: "hsl(var(--border))" }}>
+          <AccordionTrigger className="admin-section-label px-4 py-2 font-body text-[10px] hover:no-underline">
+            Sections
+          </AccordionTrigger>
+          <AccordionContent className="px-2 pb-3 pt-0">
+            <nav className="space-y-0.5">
+              {sections.length === 0 ? (
+                <p
+                  className="px-3 py-2 font-body text-xs italic"
+                  style={{ color: "hsl(215 19% 45%)" }}
+                >
+                  No sections yet — drag an element onto the canvas.
+                </p>
+              ) : (
+                <SortableContext items={sections.map((section) => `${SECTION_DRAG_ID_PREFIX}${section.id}`)} strategy={verticalListSortingStrategy}>
+                  {sections.map((section) => (
+                    <SectionButton
+                      key={section.id}
+                      section={section}
+                      isActive={section.id === activeRowId}
+                      onSelect={goToSection}
+                      onRename={renameSection}
+                    />
+                  ))}
+                </SortableContext>
+              )}
+            </nav>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* ── Elements tray ─────────────────────────────────────── */}
+        <AccordionItem value="elements" className="border-b" style={{ borderColor: "hsl(var(--border))" }}>
+          <AccordionTrigger className="admin-section-label px-4 py-2 font-body text-[10px] hover:no-underline">
+            Elements
+          </AccordionTrigger>
+          <AccordionContent className="px-3 pb-3 pt-0">
+            <ElementsTray />
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* ── Revision History ──────────────────────────────────── */}
+        <AccordionItem value="revision-history" className="border-b-0">
+          <AccordionTrigger className="admin-section-label px-4 py-2 font-body text-[10px] hover:no-underline">
+            Revision History
+          </AccordionTrigger>
+          <AccordionContent className="px-3 pb-3 pt-0">
+            {revisionPanel || (
+              <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+                Revision history is not available for this page.
+              </p>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 };

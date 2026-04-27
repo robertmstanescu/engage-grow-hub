@@ -525,7 +525,7 @@ const SiteEditor = () => {
         pageRows={pageRows}
         onRowsChange={(rows) => updateFullDraft("page_rows", { rows })}
       >
-      <div className="flex flex-col h-[calc(100vh-180px)] min-h-[600px]">
+      <div className="flex flex-col h-full min-h-0">
       {/* ─── Top toolbar (US 14.2 + US 16.2) ──────────────────────────
           One global Save Draft button (saves every dirty section in a
           single batch). Accents itself when there are unsaved changes. */}
