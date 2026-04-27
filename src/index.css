@@ -220,6 +220,7 @@
    */
   .snap-container.page-shell {
     padding-top: 0;
+    margin-top: var(--nav-top-offset, 0px);
   }
 
   /*
