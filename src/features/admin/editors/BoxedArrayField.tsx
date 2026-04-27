@@ -1,40 +1,18 @@
 /**
- * ─────────────────────────────────────────────────────────────────────────
- * BoxedArrayField.tsx
- * ─────────────────────────────────────────────────────────────────────────
- * Manages the `cards[]` array on a Boxed-type page row. Each card has a
- * plain-text title and a rich-text body; the admin may have between 0 and
- * 6 cards per row (the cap matches what the front-end Boxed renderer can
- * fit on a single grid).
+ * BoxedArrayField — manages cards[] on a Boxed-type page row.
  *
- * PROPS
- * ─────
- *   content : Record<string, any>             — row's full content object;
- *                                                cards live at content.cards
- *   onChange: (field, value) => void          — same pattern as every other
- *                                                editor: write back to the
- *                                                row's content slice
- *   bgColor?: string                          — forwarded to RichField so
- *                                                the editor surface tracks
- *                                                the row's chosen colour
- *
- * WHY IT WAS EXTRACTED
- * ────────────────────
- * Originally a small in-file helper inside AdminDashboard.tsx. We lifted
- * it into editors/ because (a) it's purely about boxed-card content, and
- * (b) it isolates the 6-item cap and add/delete logic from the dashboard.
- *
- * STYLES — INLINE → TAILWIND
- * ──────────────────────────
- * Two leftover `style={{ color: "hsl(var(--…))" }}` blocks were converted
- * to `text-muted-foreground`, `text-primary`, `text-destructive`, and the
- * `border-primary/30` border colour utility. Visual output unchanged
- * because these classes resolve to the very same CSS tokens.
- * ─────────────────────────────────────────────────────────────────────────
+ * Each card supports:
+ *   - icon       (IconValue)        optional icon shown above the title
+ *   - title      (text)
+ *   - body       (rich text)
+ *   - link_url   (string)           if set, the whole card becomes a link
+ *   - cta_label  (string)           optional CTA button under the box
+ *   - cta_url    (string)
  */
 
 import { Plus, Trash2 } from "lucide-react";
 import { Field, RichField, SectionBox } from "../site-editor/FieldComponents";
+import { IconPickerField } from "@/features/icons/IconPicker";
 
 interface Props {
   content: Record<string, any>;
@@ -42,16 +20,19 @@ interface Props {
   bgColor?: string;
 }
 
-const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {
-  /** Tolerate older rows that might have no `cards` field at all. */
-  const cards: { title: string; body: string }[] = content.cards || [];
+interface BoxedCard {
+  title: string;
+  body: string;
+  icon?: string;
+  link_url?: string;
+  cta_label?: string;
+  cta_url?: string;
+}
 
-  /**
-   * Update a single card's field. We deliberately spread the existing
-   * card object so untouched fields (e.g. `body` when editing `title`)
-   * don't get clobbered.
-   */
-  const updateCard = (idx: number, field: string, value: string) => {
+const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {
+  const cards: BoxedCard[] = content.cards || [];
+
+  const updateCard = (idx: number, field: keyof BoxedCard, value: string) => {
     const next = [...cards];
     next[idx] = { ...next[idx], [field]: value };
     onChange("cards", next);
@@ -59,8 +40,6 @@ const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {
 
   return (
     <div>
-      {/* Header row: label + add button. The button disables itself once
-          we hit the 6-card cap so the admin can't push past the design. */}
       <div className="flex items-center justify-between mb-1">
         <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">
           Cards (max 6)
@@ -75,7 +54,6 @@ const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {
         </button>
       </div>
 
-      {/* One SectionBox per card. Title + delete on row 1, RichField on row 2. */}
       <div className="space-y-2">
         {cards.map((card, i) => (
           <SectionBox key={i} label={`Card ${i + 1}`}>
@@ -93,7 +71,34 @@ const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {
                   <Trash2 size={13} />
                 </button>
               </div>
+
+              <IconPickerField
+                label="Icon (above title)"
+                value={card.icon}
+                onChange={(v) => updateCard(i, "icon", v)}
+              />
+
               <RichField label="Body" value={card.body} onChange={(v) => updateCard(i, "body", v)} bgColor={bgColor} />
+
+              <Field
+                label="Hyperlink the box (URL or #section-id)"
+                value={card.link_url || ""}
+                onChange={(v) => updateCard(i, "link_url", v)}
+                hint="Make the whole card a link. e.g. /pricing or #our-services"
+              />
+
+              <div className="grid grid-cols-2 gap-2">
+                <Field
+                  label="CTA button label"
+                  value={card.cta_label || ""}
+                  onChange={(v) => updateCard(i, "cta_label", v)}
+                />
+                <Field
+                  label="CTA button URL"
+                  value={card.cta_url || ""}
+                  onChange={(v) => updateCard(i, "cta_url", v)}
+                />
+              </div>
             </div>
           </SectionBox>
         ))}
