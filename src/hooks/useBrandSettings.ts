@@ -14,7 +14,21 @@ export interface TypographyLevel {
   fontWeight: string;
 }
 
+export interface BrandIdentity {
+  /** Display name used as the default <title> suffix and in JSON-LD. */
+  brandName: string;
+  /** Optional one-line tagline (used when no page title is set). */
+  tagline: string;
+  /**
+   * Canonical origin (no trailing slash) used for <link rel="canonical">,
+   * sitemap entries, llms.txt etc. Falls back to the current window
+   * origin when empty.
+   */
+  canonicalOrigin: string;
+}
+
 export interface BrandSettings {
+  identity: BrandIdentity;
   colors: BrandColor[];
   typography: {
     h1: TypographyLevel;
@@ -32,15 +46,24 @@ const DEFAULT_TYPOGRAPHY: BrandSettings["typography"] = {
 };
 
 const DEFAULT_COLORS: BrandColor[] = [
-  { id: "1", name: "Violet", hex: "#4D1B5E" },
-  { id: "2", name: "Gold", hex: "#E5C54F" },
-  { id: "3", name: "Revolver", hex: "#2A0E33" },
-  { id: "4", name: "Isabelline", hex: "#F4F0EC" },
-  { id: "5", name: "Cream", hex: "#F9F0C1" },
-  { id: "6", name: "White", hex: "#FFFFFF" },
+  { id: "1", name: "Primary", hex: "#2A0E33" },
+  { id: "2", name: "Accent", hex: "#E5C54F" },
+  { id: "3", name: "Neutral", hex: "#F4F0EC" },
 ];
 
+/**
+ * Brand identity defaults are intentionally NEUTRAL. They are placeholders
+ * a tenant overrides on first edit; nothing brand-specific should ever
+ * ship in this constant.
+ */
+const DEFAULT_IDENTITY: BrandIdentity = {
+  brandName: "My Site",
+  tagline: "",
+  canonicalOrigin: "",
+};
+
 export const DEFAULT_BRAND: BrandSettings = {
+  identity: DEFAULT_IDENTITY,
   colors: DEFAULT_COLORS,
   typography: DEFAULT_TYPOGRAPHY,
 };
