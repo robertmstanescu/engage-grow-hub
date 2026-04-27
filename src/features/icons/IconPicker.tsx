@@ -38,9 +38,8 @@ const IconPicker = ({ value, onChange }: PickerProps) => {
 
   const lucideResults = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const source = q ? ALL_LUCIDE_NAMES : COMMON_LUCIDE_ICONS;
-    if (!q) return source.slice(0, 200);
-    return source.filter((n) => n.toLowerCase().includes(q)).slice(0, 200);
+    if (!q) return ALL_LUCIDE_NAMES; // show every icon when not searching
+    return ALL_LUCIDE_NAMES.filter((n) => n.toLowerCase().includes(q));
   }, [search]);
 
   const customResults = useMemo(() => {
