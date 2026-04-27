@@ -76,7 +76,7 @@ const LogoCloudRow = ({
           </RowEyebrow>
         )}
         {titleLines.length > 0 && (
-          <RowTitle style={revealStyle(isVisible, 0)}>
+          <RowTitle icon={c.icon} style={revealStyle(isVisible, 0)}>
             {titleLines.map((line, i) => (
               <span
                 key={i}

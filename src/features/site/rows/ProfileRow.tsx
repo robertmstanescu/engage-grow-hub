@@ -149,7 +149,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
 
             {titleLines.length > 0 && (
               <SelectableWrapper path={[...basePath, "title"]} label="Title" variant="atom" inline>
-                <RowTitle color={c.color_title}>
+                <RowTitle icon={c.icon} color={c.color_title}>
                   {titleLines.map((line, i) => (
                     <span key={i} className="block mb-1 last:mb-0">
                       <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />

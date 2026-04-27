@@ -105,7 +105,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
             <RowEyebrow color={c.color_eyebrow || "hsl(var(--primary) / 0.6)"}>{c.eyebrow}</RowEyebrow>
           )}
           {titleLines.length > 0 && (
-            <RowTitle>
+            <RowTitle icon={c.icon}>
               {titleLines.map((line, i) => (
                 <span key={i} style={{ display: "block", color: "hsl(var(--primary))" }}>
                   <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />

@@ -187,13 +187,13 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
           )}
 
           {titleLines.length > 0 ? (
-            <RowTitle color={c.color_title} style={revealStyle(isVisible, 1)}>
+            <RowTitle icon={c.icon} color={c.color_title} style={revealStyle(isVisible, 1)}>
               {titleLines.map((line, i) => (
                 <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>
               ))}
             </RowTitle>
           ) : c.title ? (
-            <RowTitle color={c.color_title} style={revealStyle(isVisible, 1)}>
+            <RowTitle icon={c.icon} color={c.color_title} style={revealStyle(isVisible, 1)}>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
                 {c.title}
               </EditableText>

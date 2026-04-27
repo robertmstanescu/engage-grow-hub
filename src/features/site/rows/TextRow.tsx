@@ -68,7 +68,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
 
         {titleLines.length > 0 && (
           <SelectableWrapper path={[...basePath, "title"]} label="Title" variant="atom" inline>
-            <RowTitle color={isLight ? "hsl(var(--primary))" : "hsl(var(--foreground))"} style={revealStyle(isVisible, 0)}>
+            <RowTitle icon={c.icon} color={isLight ? "hsl(var(--primary))" : "hsl(var(--foreground))"} style={revealStyle(isVisible, 0)}>
               <CanvasEditable
                 path={[...basePath, "title"]}
                 /* When editing, the user types the title as plain text with

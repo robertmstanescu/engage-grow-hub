@@ -167,7 +167,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           variant="atom"
           inline
         >
-          <RowTitle color={pillarTitleColor} style={revealStyle(isVisible, 1)}>
+          <RowTitle icon={c.icon} color={pillarTitleColor} style={revealStyle(isVisible, 1)}>
             <CanvasEditable
               path={["row", row.id, "widget", row.id, "field", "title"]}
               value={c.title || ""}
