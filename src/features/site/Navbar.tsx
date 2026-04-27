@@ -234,8 +234,8 @@ const Navbar = () => {
         ref={railRef}
         className={
           verticalFits
-            ? "hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
-            : "hidden lg:flex fixed top-0 left-0 right-0 z-50 h-14 flex-row items-center px-5 gap-5"
+            ? "hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-10 flex-col items-center py-3 gap-4"
+            : "hidden lg:flex fixed top-0 left-0 right-0 z-50 h-9 flex-row items-center px-3 gap-4"
         }
         style={
           verticalFits
