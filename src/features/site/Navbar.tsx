@@ -158,6 +158,36 @@ const Navbar = () => {
     return normalised === normHref;
   };
 
+  /**
+   * Detect whether the desktop vertical rail's intrinsic content height
+   * exceeds the viewport. If it does, we collapse to a horizontal top
+   * bar (still desktop). Re-measures on resize, item count change, and
+   * after fonts load. Hysteresis prevents flicker at the threshold.
+   */
+  useLayoutEffect(() => {
+    const check = () => {
+      // Only relevant on desktop (lg breakpoint). Below lg the mobile
+      // top bar already handles things.
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      if (!isDesktop) {
+        setVerticalFits(true);
+        return;
+      }
+      const rail = railRef.current;
+      if (!rail) return;
+      // scrollHeight = full content height regardless of overflow.
+      const needed = rail.scrollHeight;
+      const available = window.innerHeight;
+      // 8px hysteresis to avoid toggling at the exact threshold.
+      setVerticalFits((prev) =>
+        prev ? needed <= available : needed + 8 <= available,
+      );
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [renderedItems.length, ctaHref, brandingLoading, navLoading]);
+
   return (
     <>
       {/* Desktop side navigation — emblem logo */}
