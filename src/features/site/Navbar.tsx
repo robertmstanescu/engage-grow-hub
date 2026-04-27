@@ -261,7 +261,7 @@ const Navbar = () => {
             // function component and motion's ref-forwarding would warn,
             // and because the side-nav links rely on a CSS rotate(180deg)
             // that motion's inline transform would clobber.
-            animation: "nav-cascade-emblem 1100ms cubic-bezier(0.16, 1, 0.3, 1) 1800ms both",
+            animation: "nav-cascade-emblem 1100ms cubic-bezier(0.16, 1, 0.3, 1) 2600ms both",
           }}
         >
           {!brandingLoading && logoUrl ? (
@@ -305,7 +305,7 @@ const Navbar = () => {
                 style={{
                   color: active ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.55)",
                   fontWeight: active ? 600 : 400,
-                  animation: `${animName} 900ms cubic-bezier(0.16, 1, 0.3, 1) ${2500 + i * 140}ms both`,
+                  animation: `${animName} 900ms cubic-bezier(0.16, 1, 0.3, 1) ${3300 + i * 150}ms both`,
                 }}
               >
                 {item.label}
@@ -328,7 +328,7 @@ const Navbar = () => {
               backgroundColor: "hsl(var(--accent))",
               color: "hsl(var(--accent-foreground))",
               animation: `nav-cascade-fade 900ms cubic-bezier(0.16, 1, 0.3, 1) ${
-                2500 + renderedItems.length * 140
+                3300 + renderedItems.length * 150
               }ms both`,
             }}
           >
