@@ -134,21 +134,38 @@ export const useMomentumSnap = (
         return;
       }
 
+      // READING-MODE PROTECTION
+      // ------------------------
+      // If the current section contains an OPEN accordion (e.g. the
+      // service-card "What's inside" panel) the user is most likely
+      // reading. A normal flick that would otherwise carry them to the
+      // next row should NOT snap immediately — give them a much larger
+      // commitment threshold and a longer settle window so they can
+      // browse the deliverables without being yanked away.
+      const hasOpenAccordion = !!current.querySelector(
+        '[data-deliverables-open="true"], [data-state="open"]'
+      );
+      const commitThreshold = hasOpenAccordion
+        ? Math.max(directionThresholdPx * 6, viewportH * 0.35)
+        : directionThresholdPx;
+
       // Direction-aware target: if the user was clearly scrolling down
       // and has moved into the current section by a meaningful amount,
       // glide to the NEXT section. Otherwise settle back to current.
       const scrolledIntoCurrent = -currentTopRel; // px past top of current
       const wantsNext =
-        directionRef.current === 1 && scrolledIntoCurrent > directionThresholdPx;
+        directionRef.current === 1 && scrolledIntoCurrent > commitThreshold;
       const wantsPrev =
-        directionRef.current === -1 && scrolledIntoCurrent < -directionThresholdPx;
+        directionRef.current === -1 && scrolledIntoCurrent < -commitThreshold;
 
       let target: HTMLElement;
       if (wantsNext) target = next;
       else if (wantsPrev && currentIdx > 0) target = sections[currentIdx - 1];
       else {
-        // No clear intent — pick whichever boundary is nearer.
-        target = scrolledIntoCurrent > current.offsetHeight / 2 ? next : current;
+        // No clear intent — pick whichever boundary is nearer, but bias
+        // toward "stay" when an accordion is open so reading is uninterrupted.
+        const midpoint = hasOpenAccordion ? current.offsetHeight * 0.75 : current.offsetHeight / 2;
+        target = scrolledIntoCurrent > midpoint ? next : current;
       }
 
       tweenScroll(getScrollTopFor(target, containerRect));
