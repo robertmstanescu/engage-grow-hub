@@ -410,6 +410,42 @@ export type Database = {
         }
         Relationships: []
       }
+      icon_library: {
+        Row: {
+          created_at: string
+          id: string
+          mime_type: string | null
+          name: string
+          public_url: string
+          storage_path: string
+          tags: string[] | null
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mime_type?: string | null
+          name: string
+          public_url: string
+          storage_path: string
+          tags?: string[] | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mime_type?: string | null
+          name?: string
+          public_url?: string
+          storage_path?: string
+          tags?: string[] | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       internal_settings: {
         Row: {
           key: string
