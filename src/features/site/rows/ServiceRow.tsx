@@ -233,32 +233,33 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           </div>
         </SelectableWrapper>
 
-        {/* Carousel controls — `mb-rhythm-base` keeps the gap to the card below in sync with the rest of the site. */}
-        <div className={`flex items-center ${carouselJustify} gap-3 mb-rhythm-base`} style={revealStyle(isVisible, 3)}>
-          <button onClick={prev} className="w-9 h-9 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-4 h-4" /></button>
-          <div className="flex gap-2.5">
-            {services.map((_: any, i: number) => (
-              <button key={i} onClick={() => setCurrent(i)}
-                className="w-2 h-2 rounded-full interactive"
-                style={{ backgroundColor: i === safeCurrent ? dotActive : dotInactive, transform: i === safeCurrent ? "scale(1.5)" : "scale(1)", boxShadow: i === safeCurrent ? `0 0 12px ${dotActive}` : "none" }} />
-            ))}
-          </div>
-          <button onClick={next} className="w-9 h-9 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-4 h-4" /></button>
-        </div>
-
         {/*
-          RESERVED CAROUSEL HEIGHT — pairs with `vAlign="top"` above to
-          eliminate layout jitter. Without a min-height, the wrapper
-          collapses to whatever the currently-visible card needs, so a
-          short card (few deliverables) leaves blank space below and a
-          tall one pushes the whole row downward. Reserving enough room
-          for the tallest card keeps the carousel footprint stable as
-          users click through. `min-h-[60vh]` scales with the viewport
-          so it stays in proportion on every device.
+          Carousel controls live INSIDE the ServiceCard footer (passed via
+          the `carouselControls` prop) so the card itself occupies the
+          full vertical space of the row. This eliminates the previous
+          ~60px strip above the card that was clipping the card content
+          on shorter viewports.
         */}
-        <div className="relative min-h-[520px] md:min-h-[60vh]" style={revealStyle(isVisible, 4)}>
-          <ServiceCard key={safeCurrent} {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} />
-        </div>
+        {(() => {
+          const controls = (
+            <div className={`flex items-center ${carouselJustify} gap-3`}>
+              <button onClick={prev} aria-label="Previous service" className="w-8 h-8 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-3.5 h-3.5" /></button>
+              <div className="flex gap-2">
+                {services.map((_: any, i: number) => (
+                  <button key={i} onClick={() => setCurrent(i)} aria-label={`Go to service ${i + 1}`}
+                    className="w-1.5 h-1.5 rounded-full interactive"
+                    style={{ backgroundColor: i === safeCurrent ? dotActive : dotInactive, transform: i === safeCurrent ? "scale(1.5)" : "scale(1)", boxShadow: i === safeCurrent ? `0 0 12px ${dotActive}` : "none" }} />
+                ))}
+              </div>
+              <button onClick={next} aria-label="Next service" className="w-8 h-8 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-3.5 h-3.5" /></button>
+            </div>
+          );
+          return (
+            <div className="relative min-h-[520px] md:min-h-[68vh]" style={revealStyle(isVisible, 4)}>
+              <ServiceCard key={safeCurrent} {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} carouselControls={controls} />
+            </div>
+          );
+        })()}
 
         {/* Subscribe widget — `mt-rhythm-loose` (48px) marks a major content break between the carousel and the secondary CTA. */}
         {c.show_subscribe && <div className="mt-rhythm-loose" style={revealStyle(isVisible, 5)}><SubscribeWidget align={align} /></div>}

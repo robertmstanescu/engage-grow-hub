@@ -13,7 +13,7 @@ const Deliverables = memo(({ label, items, textAlign }: { label: string; items: 
   const toggle = useCallback(() => setOpen(v => !v), []);
   const alignClass = textAlign === "center" ? "text-center" : textAlign === "right" ? "text-right" : "text-left";
   return (
-    <div className={`border-t px-5 py-3 ${alignClass}`} style={{ borderColor: "hsl(var(--foreground) / 0.08)", backgroundColor: "hsl(var(--background) / 0.3)" }}>
+    <div data-deliverables-open={open ? "true" : "false"} className={`border-t px-5 py-3 ${alignClass}`} style={{ borderColor: "hsl(var(--foreground) / 0.08)", backgroundColor: "hsl(var(--background) / 0.3)" }}>
       <button onClick={toggle} className="flex items-center justify-between w-full text-left">
         <span className="font-body text-[9px] tracking-[0.2em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
         <ChevronDown
@@ -58,9 +58,15 @@ interface ServiceCardProps {
   title: string; subtitle: string; description: string; deliverables: string[];
   deliverablesLabel?: string; price: string; time: string; note?: string; compact?: boolean;
   cardTextAlign?: CardTextAlign;
+  /**
+   * Optional carousel navigation rendered inside the card footer.
+   * When provided, replaces the row-level carousel block so the card
+   * occupies more vertical space without losing prev/next controls.
+   */
+  carouselControls?: React.ReactNode;
 }
 
-const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, description, deliverables, deliverablesLabel = "What's inside", price, time, note, compact, cardTextAlign = "left" }: ServiceCardProps) => {
+const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, description, deliverables, deliverablesLabel = "What's inside", price, time, note, compact, cardTextAlign = "left", carouselControls }: ServiceCardProps) => {
   const { getTagColors } = useTagColors();
   const adminColors = getTagColors(tagType);
   const bgHex = tagBgColor || adminColors.bgColor;
@@ -92,6 +98,17 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
         <a href="#contact" className="font-display text-[11px] font-bold tracking-wide hover:opacity-80 transition-all duration-500" style={{ color: "hsl(var(--pillar-cta-text))" }}>{price} →</a>
         <span className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--pillar-cta-time))" }}>{time}</span>
       </div>
+      {carouselControls && (
+        <div
+          className={`${compact ? "px-4 md:px-5" : "px-5 md:px-6"} py-2.5 flex-shrink-0 border-t`}
+          style={{
+            backgroundColor: "hsl(var(--background) / 0.2)",
+            borderColor: "hsl(var(--foreground) / 0.08)",
+          }}
+        >
+          {carouselControls}
+        </div>
+      )}
       {note && (
         <div className={`${compact ? "mx-4 md:mx-5 my-2" : "mx-5 md:mx-6 my-3"} px-3 py-2 rounded-lg flex-shrink-0 ${alignClass}`} style={{ backgroundColor: "hsl(var(--background) / 0.4)", borderLeft: "2px solid hsl(var(--accent) / 0.3)" }}>
           <p className="font-body text-[11px] italic leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.5)" }}>{note}</p>
