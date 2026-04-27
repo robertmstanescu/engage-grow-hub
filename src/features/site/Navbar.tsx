@@ -349,7 +349,6 @@ const Navbar = () => {
         <a
           href="/"
           className="flex items-center flex-shrink-0"
-          style={{ animation: "nav-cascade-fade 500ms cubic-bezier(0.16, 1, 0.3, 1) 50ms both" }}
         >
           {!brandingLoading && logoUrl ? (
             <ResponsiveLogo
@@ -365,7 +364,6 @@ const Navbar = () => {
           onClick={() => setMobileOpen(!mobileOpen)}
           style={{
             color: "hsl(var(--foreground) / 0.7)",
-            animation: "nav-cascade-fade 500ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both",
           }}
         >
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
