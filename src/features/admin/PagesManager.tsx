@@ -108,7 +108,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   const [error404, setError404] = useState<Error404Content>(ERROR_404_DEFAULTS);
   const [errorBoundary, setErrorBoundary] = useState<ErrorBoundaryContent>(ERROR_BOUNDARY_DEFAULTS);
   const [blogContent, setBlogContent] = useState<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string; meta_title: string; meta_description: string }>({
-    rows_above: [], rows_below: [], header_title: "Insights & Articles", header_subtitle: "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.", meta_title: "", meta_description: "",
+    rows_above: [], rows_below: [], header_title: "Blog", header_subtitle: "Articles, updates and ideas.", meta_title: "", meta_description: "",
   });
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -156,8 +156,8 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
       setBlogContent({
         rows_above: c.rows_above || [],
         rows_below: c.rows_below || [],
-        header_title: c.header_title || "Insights & Articles",
-        header_subtitle: c.header_subtitle || "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.",
+        header_title: c.header_title || "Blog",
+        header_subtitle: c.header_subtitle || "Articles, updates and ideas.",
         meta_title: c.meta_title || "",
         meta_description: c.meta_description || "",
       });

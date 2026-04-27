@@ -55,7 +55,7 @@ const BrandSettings = () => {
   const [isPublishingChanges, setIsPublishingChanges] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>("branding");
   const [contrastFg, setContrastFg] = useState("#FFFFFF");
-  const [contrastBg, setContrastBg] = useState("#2A0E33");
+  const [contrastBg, setContrastBg] = useState("#1a1a1a");
 
   useEffect(() => {
     /* Pull both sections in one round-trip. brand_settings drives colours
@@ -208,7 +208,7 @@ const BrandSettings = () => {
        *  becomes invisible if the admin chooses, e.g., a pale yellow.
        *  ────────────────────────────────────────────────────────── */}
       {(() => {
-        const primaryHex = brand.colors[0]?.hex || "#2A0E33";
+        const primaryHex = brand.colors[0]?.hex || "#1a1a1a";
         const fg =
           contrastRatio(primaryHex, "#FFFFFF") >= contrastRatio(primaryHex, "#1A1A1A")
             ? "#FFFFFF"
@@ -317,6 +317,48 @@ const BrandSettings = () => {
           </div>
         );
       })()}
+
+      {/* ── Brand Identity (name / tagline / canonical origin) ── */}
+      <AccordionSection id="identity" label="Brand Identity">
+        <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
+          These values feed every page's <code>&lt;title&gt;</code>, canonical URL, JSON-LD, sitemap and the <code>llms.txt</code> manifest. Leave the canonical origin blank to use the current domain.
+        </p>
+        <div className="space-y-3">
+          <div>
+            <label className="font-body text-[9px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Brand Name</label>
+            <input
+              value={brand.identity?.brandName || ""}
+              onChange={(e) => setBrand((prev) => ({ ...prev, identity: { ...prev.identity, brandName: e.target.value } }))}
+              placeholder="My Site"
+              className="w-full px-3 py-2 rounded-lg font-body text-sm border"
+              style={INPUT_STYLE}
+            />
+          </div>
+          <div>
+            <label className="font-body text-[9px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Tagline</label>
+            <input
+              value={brand.identity?.tagline || ""}
+              onChange={(e) => setBrand((prev) => ({ ...prev, identity: { ...prev.identity, tagline: e.target.value } }))}
+              placeholder="Optional one-line tagline"
+              className="w-full px-3 py-2 rounded-lg font-body text-sm border"
+              style={INPUT_STYLE}
+            />
+          </div>
+          <div>
+            <label className="font-body text-[9px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Canonical Origin</label>
+            <input
+              value={brand.identity?.canonicalOrigin || ""}
+              onChange={(e) => setBrand((prev) => ({ ...prev, identity: { ...prev.identity, canonicalOrigin: e.target.value } }))}
+              placeholder="https://example.com"
+              className="w-full px-3 py-2 rounded-lg font-body text-sm border font-mono"
+              style={INPUT_STYLE}
+            />
+            <p className="font-body text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+              Used in <code>&lt;link rel="canonical"&gt;</code>, sitemap, JSON-LD. No trailing slash.
+            </p>
+          </div>
+        </div>
+      </AccordionSection>
 
       {/* ── Logos & Favicons (moved from GlobalSettings as part of
        *  Epic 1: The Unified Brand Hub) ── */}

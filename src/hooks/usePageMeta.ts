@@ -1,8 +1,20 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { fetchPublicSiteContentValue } from "@/services/publicSiteContent";
+import { fetchBrandIdentity } from "@/hooks/useBrandSettings";
 
-const CANONICAL_ORIGIN = "https://themagiccoffin.com";
+/**
+ * Resolve the canonical origin for outbound links / meta tags. We
+ * prefer the brand-settings value an admin has configured; if absent
+ * we fall back to the current `window.location.origin` so links still
+ * work in any environment (preview, custom domain, lovable.app).
+ */
+const resolveCanonicalOrigin = (configured: string | undefined): string => {
+  const trimmed = (configured || "").trim().replace(/\/+$/, "");
+  if (trimmed) return trimmed;
+  if (typeof window !== "undefined") return window.location.origin;
+  return "";
+};
 
 const ensureTrailingSlash = (path: string) =>
   path.endsWith("/") ? path : `${path}/`;
@@ -61,7 +73,7 @@ const injectScript = (id: string, attrs: Record<string, string>, body?: string) 
   document.head.appendChild(s);
 };
 
-const injectGlobalScripts = (tags: GlobalTags) => {
+const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
   if (scriptsInjected) return;
   scriptsInjected = true;
 
@@ -106,7 +118,7 @@ const injectGlobalScripts = (tags: GlobalTags) => {
       "@context": "https://schema.org",
       "@type": org.type || "Organization",
       name: org.legal_name,
-      url: CANONICAL_ORIGIN,
+      url: canonicalOrigin,
       ...(Array.isArray(org.social_links) && org.social_links.filter(Boolean).length
         ? { sameAs: org.social_links.filter(Boolean) }
         : {}),
@@ -122,7 +134,7 @@ const injectGlobalScripts = (tags: GlobalTags) => {
   }
 };
 
-const usePageMeta = ({ title, description, ogImage, suffix = "The Magic Coffin for Silly Vampires" }: PageMetaProps) => {
+const usePageMeta = ({ title, description, ogImage, suffix }: PageMetaProps) => {
   const location = useLocation();
 
   useEffect(() => {
@@ -130,16 +142,28 @@ const usePageMeta = ({ title, description, ogImage, suffix = "The Magic Coffin f
 
     let cancelled = false;
 
-    loadGlobalTags().then((tags) => {
+    Promise.all([loadGlobalTags(), fetchBrandIdentity()]).then(([tags, identity]) => {
       if (cancelled) return;
-      injectGlobalScripts(tags);
+      const canonicalOrigin = resolveCanonicalOrigin(identity.canonicalOrigin);
+      injectGlobalScripts(tags, canonicalOrigin);
+
+      // Resolve the title suffix from props → brand identity → bare brand
+      // name. We never fall back to a brand-specific string here.
+      const resolvedSuffix =
+        suffix?.trim() ||
+        (identity.tagline ? `${identity.brandName} — ${identity.tagline}` : identity.brandName) ||
+        "";
 
       const prefix = tags.social_prefix?.trim() || "";
-      const pageTitle = title ? `${title} | ${suffix}` : suffix;
+      const pageTitle = title
+        ? resolvedSuffix
+          ? `${title} | ${resolvedSuffix}`
+          : title
+        : resolvedSuffix;
       const socialTitle = prefix ? `${prefix}${pageTitle}` : pageTitle;
       document.title = pageTitle;
 
-      const canonicalUrl = `${CANONICAL_ORIGIN}${ensureTrailingSlash(location.pathname)}`;
+      const canonicalUrl = `${canonicalOrigin}${ensureTrailingSlash(location.pathname)}`;
 
       const setMeta = (name: string, content: string, property?: boolean) => {
         if (!content) return;
@@ -170,7 +194,6 @@ const usePageMeta = ({ title, description, ogImage, suffix = "The Magic Coffin f
 
     return () => {
       cancelled = true;
-      document.title = suffix;
     };
   }, [title, description, ogImage, suffix, location.pathname]);
 };

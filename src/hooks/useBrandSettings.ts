@@ -14,7 +14,21 @@ export interface TypographyLevel {
   fontWeight: string;
 }
 
+export interface BrandIdentity {
+  /** Display name used as the default <title> suffix and in JSON-LD. */
+  brandName: string;
+  /** Optional one-line tagline (used when no page title is set). */
+  tagline: string;
+  /**
+   * Canonical origin (no trailing slash) used for <link rel="canonical">,
+   * sitemap entries, llms.txt etc. Falls back to the current window
+   * origin when empty.
+   */
+  canonicalOrigin: string;
+}
+
 export interface BrandSettings {
+  identity: BrandIdentity;
   colors: BrandColor[];
   typography: {
     h1: TypographyLevel;
@@ -32,15 +46,24 @@ const DEFAULT_TYPOGRAPHY: BrandSettings["typography"] = {
 };
 
 const DEFAULT_COLORS: BrandColor[] = [
-  { id: "1", name: "Violet", hex: "#4D1B5E" },
-  { id: "2", name: "Gold", hex: "#E5C54F" },
-  { id: "3", name: "Revolver", hex: "#2A0E33" },
-  { id: "4", name: "Isabelline", hex: "#F4F0EC" },
-  { id: "5", name: "Cream", hex: "#F9F0C1" },
-  { id: "6", name: "White", hex: "#FFFFFF" },
+  { id: "1", name: "Primary", hex: "#2A0E33" },
+  { id: "2", name: "Accent", hex: "#E5C54F" },
+  { id: "3", name: "Neutral", hex: "#F4F0EC" },
 ];
 
+/**
+ * Brand identity defaults are intentionally NEUTRAL. They are placeholders
+ * a tenant overrides on first edit; nothing brand-specific should ever
+ * ship in this constant.
+ */
+const DEFAULT_IDENTITY: BrandIdentity = {
+  brandName: "My Site",
+  tagline: "",
+  canonicalOrigin: "",
+};
+
 export const DEFAULT_BRAND: BrandSettings = {
+  identity: DEFAULT_IDENTITY,
   colors: DEFAULT_COLORS,
   typography: DEFAULT_TYPOGRAPHY,
 };
@@ -88,6 +111,7 @@ export const useBrandSettings = (): BrandSettings => {
       fetchPublicSiteContentValue<Partial<BrandSettings>>("brand_settings")
         .then((resolved) => {
           const merged: BrandSettings = {
+            identity: { ...DEFAULT_BRAND.identity, ...(resolved?.identity || {}) },
             colors: resolved?.colors || DEFAULT_BRAND.colors,
             typography: { ...DEFAULT_BRAND.typography, ...resolved?.typography },
           };
@@ -108,4 +132,20 @@ export const useBrandSettings = (): BrandSettings => {
 export const useBrandColors = (): BrandColor[] => {
   const brand = useBrandSettings();
   return brand.colors;
+};
+
+/**
+ * Async one-shot fetch of brand identity (name / tagline / canonical
+ * origin). Used by non-React code paths like the page-meta hook on
+ * its first render — they need the values before the React tree has
+ * had a chance to broadcast them via `useBrandSettings`.
+ */
+export const fetchBrandIdentity = async (): Promise<BrandIdentity> => {
+  if (cachedBrand) return cachedBrand.identity;
+  try {
+    const resolved = await fetchPublicSiteContentValue<Partial<BrandSettings>>("brand_settings");
+    return { ...DEFAULT_BRAND.identity, ...(resolved?.identity || {}) };
+  } catch {
+    return DEFAULT_BRAND.identity;
+  }
 };

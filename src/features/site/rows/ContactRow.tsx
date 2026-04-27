@@ -15,8 +15,8 @@ const defaultFields: ContactField[] = [
   { key: "name", label: "Your name", type: "text", required: true, visible: true },
   { key: "email", label: "Email address", type: "email", required: true, visible: true },
   { key: "company", label: "Company", type: "text", required: false, visible: true },
-  { key: "message", label: "Tell us about your vampire moment", type: "textarea", required: true, visible: true },
-  { key: "marketing", label: "Keep me updated with insights and articles", type: "checkbox", required: false, visible: true },
+  { key: "message", label: "How can we help?", type: "textarea", required: true, visible: true },
+  { key: "marketing", label: "Keep me updated with news and articles", type: "checkbox", required: false, visible: true },
 ];
 
 const CREAM = "#F4F0EC";

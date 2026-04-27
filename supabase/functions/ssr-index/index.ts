@@ -50,7 +50,37 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const CANONICAL_ORIGIN = "https://themagiccoffin.com";
+/**
+ * Last-resort canonical origin used only when the database is
+ * unreachable AND the request URL doesn't reveal a public origin.
+ * Tenants override this by setting `identity.canonicalOrigin` in the
+ * `brand_settings` site_content row.
+ */
+const FALLBACK_ORIGIN = "https://example.com";
+
+/**
+ * Resolve the canonical origin in priority order:
+ *   1. brand_settings.identity.canonicalOrigin (admin-configured)
+ *   2. legacy brand_settings.canonical_origin (back-compat)
+ *   3. The incoming request's origin if it isn't a Supabase function URL
+ *   4. FALLBACK_ORIGIN
+ */
+const resolveOrigin = (
+  brand: Record<string, any> | null | undefined,
+  req: Request,
+): string => {
+  const identity = (brand?.identity as Record<string, any> | undefined) || {};
+  const fromIdentity = typeof identity.canonicalOrigin === "string" ? identity.canonicalOrigin.trim() : "";
+  if (fromIdentity) return fromIdentity.replace(/\/+$/, "");
+  const legacy = typeof brand?.canonical_origin === "string" ? brand.canonical_origin.trim() : "";
+  if (legacy) return legacy.replace(/\/+$/, "");
+  try {
+    const reqOrigin = new URL(req.url).origin;
+    // Avoid leaking the supabase.co function origin into <link rel=canonical>.
+    if (!/supabase\.co$/i.test(new URL(req.url).hostname)) return reqOrigin;
+  } catch { /* noop */ }
+  return FALLBACK_ORIGIN;
+};
 
 // Strip HTML tags from rich-text strings so they're safe for meta-tag content.
 const stripHtml = (input: unknown): string =>
@@ -68,11 +98,9 @@ interface SeoPayload {
 /** Fetch the live published index.html. Falls back to a minimal shell. */
 const fetchTemplate = async (req: Request): Promise<string> => {
   const reqOrigin = new URL(req.url).origin;
-  const candidates = [
-    "https://themagiccoffin.com/index.html",
-    "https://themagiccoffin.lovable.app/index.html",
-    `${reqOrigin}/index.html`,
-  ];
+  // Try the request origin first — works for both custom domains and the
+  // lovable.app preview without hardcoding any tenant-specific host.
+  const candidates = [`${reqOrigin}/index.html`];
   for (const url of candidates) {
     try {
       const res = await fetch(url, { headers: { "Cache-Control": "no-cache" } });
@@ -85,12 +113,13 @@ const fetchTemplate = async (req: Request): Promise<string> => {
       // try next candidate
     }
   }
-  // Last-resort minimal shell.
+  // Last-resort minimal shell. Brand-neutral so we never leak a stale
+  // brand name to a crawler if the live template is unreachable.
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>The Magic Coffin</title>
+<title></title>
 </head>
 <body>
 <div id="root"></div>
@@ -261,30 +290,44 @@ const serializeDocument = (doc: HTMLDocument): string => {
 
 // ── SEO builders ────────────────────────────────────────────────────────
 
+/**
+ * Resolve the brand name in priority order:
+ *   1. brand_settings.identity.brandName (new client schema)
+ *   2. brand_settings.brand_name (legacy schema)
+ *   3. empty string — caller decides the fallback
+ */
+const resolveBrandName = (brand: Record<string, any> | null | undefined): string => {
+  const identity = (brand?.identity as Record<string, any> | undefined) || {};
+  const fromIdentity = typeof identity.brandName === "string" ? identity.brandName.trim() : "";
+  if (fromIdentity) return fromIdentity;
+  const legacy = typeof brand?.brand_name === "string" ? brand.brand_name.trim() : "";
+  return legacy;
+};
+
 const buildHomeSeo = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
+  origin: string,
+  brand: Record<string, any>,
 ): Promise<SeoPayload> => {
-  const [{ data: seo }, { data: brand }] = await Promise.all([
-    supabase.from("site_content").select("content").eq("section_key", "main_page_seo").maybeSingle(),
-    supabase.from("site_content").select("content").eq("section_key", "brand_settings").maybeSingle(),
-  ]);
+  const { data: seo } = await supabase
+    .from("site_content").select("content").eq("section_key", "main_page_seo").maybeSingle();
   const seoContent = (seo?.content as Record<string, any>) || {};
-  const brandContent = (brand?.content as Record<string, any>) || {};
-  const title = seoContent.meta_title || brandContent.brand_name || "The Magic Coffin";
-  const description = seoContent.meta_description || brandContent.brand_mission || "";
-  const ogImage = seoContent.og_image || brandContent.og_image || null;
+  const brandName = resolveBrandName(brand);
+  const title = seoContent.meta_title || brandName || "";
+  const description = seoContent.meta_description || brand.brand_mission || (brand.identity as any)?.tagline || "";
+  const ogImage = seoContent.og_image || brand.og_image || null;
   return {
     title,
     description,
-    canonical: `${CANONICAL_ORIGIN}/`,
+    canonical: `${origin}/`,
     ogImage,
-    jsonLd: brandContent.brand_name
+    jsonLd: brandName
       ? {
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: brandContent.brand_name,
-          url: CANONICAL_ORIGIN,
+          name: brandName,
+          url: origin,
         }
       : null,
     noscript: seoContent.ai_summary || description,
@@ -295,6 +338,8 @@ const buildBlogSeo = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   slug: string,
+  origin: string,
+  brand: Record<string, any>,
 ): Promise<SeoPayload | null> => {
   const { data } = await supabase
     .from("blog_posts")
@@ -304,13 +349,14 @@ const buildBlogSeo = async (
     .maybeSingle();
   if (!data) return null;
   const post = data as Record<string, any>;
-  const title = post.meta_title || post.title || "The Magic Coffin";
+  const brandName = resolveBrandName(brand);
+  const title = post.meta_title || post.title || brandName || "";
   const description = post.meta_description || stripHtml(post.excerpt) || "";
   const ogImage = post.og_image || post.cover_image || null;
   return {
     title,
     description,
-    canonical: `${CANONICAL_ORIGIN}/blog/${slug}/`,
+    canonical: `${origin}/blog/${slug}/`,
     ogImage,
     jsonLd: {
       "@context": "https://schema.org",
@@ -318,7 +364,7 @@ const buildBlogSeo = async (
       headline: post.title,
       description,
       datePublished: post.published_at,
-      mainEntityOfPage: `${CANONICAL_ORIGIN}/blog/${slug}/`,
+      mainEntityOfPage: `${origin}/blog/${slug}/`,
       ...(ogImage ? { image: ogImage } : {}),
     },
     noscript: post.ai_summary || description,
@@ -329,6 +375,8 @@ const buildCmsSeo = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   slug: string,
+  origin: string,
+  brand: Record<string, any>,
 ): Promise<SeoPayload | null> => {
   const { data } = await supabase
     .from("cms_pages")
@@ -338,12 +386,13 @@ const buildCmsSeo = async (
     .maybeSingle();
   if (!data) return null;
   const page = data as Record<string, any>;
-  const title = page.meta_title || page.title || "The Magic Coffin";
+  const brandName = resolveBrandName(brand);
+  const title = page.meta_title || page.title || brandName || "";
   const description = page.meta_description || "";
   return {
     title,
     description,
-    canonical: `${CANONICAL_ORIGIN}/p/${slug}/`,
+    canonical: `${origin}/p/${slug}/`,
     ogImage: null,
     jsonLd: null,
     noscript: page.ai_summary || description,
@@ -354,16 +403,18 @@ const resolvePath = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   path: string,
+  origin: string,
+  brand: Record<string, any>,
 ): Promise<SeoPayload | null> => {
   const cleanPath = path.split("?")[0].split("#")[0].replace(/\/+$/, "") || "/";
 
   if (cleanPath === "/" || cleanPath === "") {
-    return buildHomeSeo(supabase);
+    return buildHomeSeo(supabase, origin, brand);
   }
   const blogMatch = cleanPath.match(/^\/blog\/([^/]+)$/);
-  if (blogMatch) return buildBlogSeo(supabase, blogMatch[1]);
+  if (blogMatch) return buildBlogSeo(supabase, blogMatch[1], origin, brand);
   const cmsMatch = cleanPath.match(/^\/p\/([^/]+)$/);
-  if (cmsMatch) return buildCmsSeo(supabase, cmsMatch[1]);
+  if (cmsMatch) return buildCmsSeo(supabase, cmsMatch[1], origin, brand);
   return null;
 };
 
@@ -381,9 +432,15 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Load brand once so origin + name resolution share the same row.
+    const { data: brandRow } = await supabaseAdmin
+      .from("site_content").select("content").eq("section_key", "brand_settings").maybeSingle();
+    const brand = (brandRow?.content as Record<string, any>) || {};
+    const origin = resolveOrigin(brand, req);
+
     const [template, payload] = await Promise.all([
       fetchTemplate(req),
-      resolvePath(supabaseAdmin, path),
+      resolvePath(supabaseAdmin, path, origin, brand),
     ]);
 
     let html = template;

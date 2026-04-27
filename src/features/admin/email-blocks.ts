@@ -25,13 +25,13 @@ export const createBlock = (type: EmailBlock["type"]): EmailBlock => ({
   type,
   content: type === "text" ? "<p>Write your content here...</p>" : "",
   settings: {
-    backgroundColor: type === "hero" ? "#2A0E33" : "#ffffff",
+    backgroundColor: type === "hero" ? "#1a1a1a" : "#ffffff",
     gradientOpacity: 0.65,
     textColor: type === "hero" ? "#F4F0EC" : "#1B1F24",
-    buttonUrl: "https://themagiccoffin.com",
+    buttonUrl: "",
     buttonText: "Read More",
-    buttonBg: "#4D1B5E",
-    buttonColor: "#F9F0C1",
+    buttonBg: "#1a1a1a",
+    buttonColor: "#FFFFFF",
     alignment: "center",
     padding: "32px 20px",
   },
@@ -75,5 +75,5 @@ export const blocksToHtml = (blocks: EmailBlock[]): string => {
     }
   }).join("\n");
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:0;background:#F4F0EC;font-family:'Inter',Arial,sans-serif;}img{border:0;}a{color:#4D1B5E;}h1,h2,h3{font-family:'Unbounded',sans-serif;}</style></head><body style="margin:0;padding:0;background:#F4F0EC;"><center><table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F4F0EC;"><tr><td align="center" style="padding:20px 0;"><table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">${rows}</table><table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;"><tr><td style="padding:20px;text-align:center;font-family:'Inter',Arial,sans-serif;font-size:11px;color:#999;">The Magic Coffin · Internal Communications & Employee Experience<br/>You received this because you opted in to our mailing list.</td></tr></table></td></tr></table></center></body></html>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:0;background:#F4F0EC;font-family:'Inter',Arial,sans-serif;}img{border:0;}a{color:#4D1B5E;}h1,h2,h3{font-family:'Unbounded',sans-serif;}</style></head><body style="margin:0;padding:0;background:#F4F0EC;"><center><table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F4F0EC;"><tr><td align="center" style="padding:20px 0;"><table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">${rows}</table><table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;"><tr><td style="padding:20px;text-align:center;font-family:'Inter',Arial,sans-serif;font-size:11px;color:#999;">You received this because you opted in to our mailing list.</td></tr></table></td></tr></table></center></body></html>`;
 };
