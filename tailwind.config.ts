@@ -118,6 +118,7 @@ export default {
         // its own vertical rhythm; the row chrome stays minimal so small
         // CTAs (e.g. the Intro subscribe row) don't dominate the viewport.
         "row-fluid": "42px",
+        "row-fluid-lg": "50px",
       },
       fontFamily: {
         display: ["Unbounded", "sans-serif"],
