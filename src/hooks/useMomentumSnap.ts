@@ -82,7 +82,15 @@ export const useMomentumSnap = (
     const getSections = () =>
       Array.from(
         container.querySelectorAll<HTMLElement>(".snap-section")
-      ).filter((el) => el.offsetParent !== null);
+      ).filter((el) =>
+        el.offsetParent !== null &&
+        // Ignore grouping shells such as “last row + footer”; snap to the
+        // actual row inside them so the footer can remain free-scroll below.
+        !el.querySelector(":scope .snap-section")
+      );
+
+    const getScrollTopFor = (el: HTMLElement, containerRect: DOMRect) =>
+      container.scrollTop + (el.getBoundingClientRect().top - containerRect.top);
 
     const settle = () => {
       if (animatingRef.current) return;
@@ -114,18 +122,15 @@ export const useMomentumSnap = (
       // Already aligned — nothing to do.
       if (Math.abs(currentTopRel) < 2) return;
 
-      /*
-       * Tall-row escape hatch: snapping only makes sense when each row
-       * fits inside the scroll viewport. If EITHER the current row or
-       * the row we'd snap to/from is taller than the viewport, disable
-       * snap entirely for this transition — forcing a snap would trap
-       * the user inside an overflowing row or hide the bottom of the
-       * incoming one. Free scrolling lets them read the whole content.
-       */
-      if (
-        current.offsetHeight > viewportH + 1 ||
-        next.offsetHeight > viewportH + 1
-      ) {
+      const currentHeight = current.getBoundingClientRect().height;
+      const currentBottomRel = currentTopRel + currentHeight;
+      const edgeTolerance = Math.max(24, viewportH * 0.06);
+      const insideTallCurrent =
+        currentHeight > viewportH + edgeTolerance &&
+        currentTopRel < -edgeTolerance &&
+        currentBottomRel > viewportH + edgeTolerance;
+
+      if (insideTallCurrent) {
         return;
       }
 
@@ -146,7 +151,7 @@ export const useMomentumSnap = (
         target = scrolledIntoCurrent > current.offsetHeight / 2 ? next : current;
       }
 
-      tweenScroll(target.offsetTop);
+      tweenScroll(getScrollTopFor(target, containerRect));
     };
 
     const onScroll = () => {

@@ -58,7 +58,7 @@ const Footer = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full opacity-8 blur-[120px]"
         style={{ background: "radial-gradient(circle, hsl(280 55% 20%), transparent)" }} />
 
-      <div className="relative z-10 max-w-[1100px] mx-auto px-3 py-16 md:py-20">
+      <div className="relative z-10 max-w-[1100px] mx-auto px-3 pt-16 md:pt-20 pb-2">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">
           {/* Logo column — emblem */}
           <div className="col-span-2 md:col-span-1">
