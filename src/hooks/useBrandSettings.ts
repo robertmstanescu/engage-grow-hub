@@ -111,6 +111,7 @@ export const useBrandSettings = (): BrandSettings => {
       fetchPublicSiteContentValue<Partial<BrandSettings>>("brand_settings")
         .then((resolved) => {
           const merged: BrandSettings = {
+            identity: { ...DEFAULT_BRAND.identity, ...(resolved?.identity || {}) },
             colors: resolved?.colors || DEFAULT_BRAND.colors,
             typography: { ...DEFAULT_BRAND.typography, ...resolved?.typography },
           };
