@@ -110,6 +110,10 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   const bgColorOpacity = row.layout?.bgColorOpacity ?? 100;
   const bgImageOpacity = row.layout?.bgImageOpacity ?? 100;
   const bgImage = row.layout?.bgImage || "";
+  // ── Snap to viewport toggle ────────────────────────────────────────
+  // Default OFF: only the Hero snaps. Admins opt-in for hero-class rows
+  // (e.g. the Vows pledge) where a full-viewport reveal is desired.
+  const snapEnabled = row.layout?.snapEnabled === true;
 
   return (
     <Accordion type="multiple" defaultValue={["design"]} className="space-y-2">
@@ -208,6 +212,54 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                 onChange={(layout) => onRowMetaChange({ layout })}
               />
             )}
+
+            {/* ── Snap to viewport ──
+                When enabled the row stretches to a full viewport and the
+                page softly snaps to its top, just like the Hero. Off by
+                default so most rows free-scroll inside their natural
+                content height (plus the global 18px breathing strip). */}
+            <div>
+              <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                Scroll Snap
+              </label>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={snapEnabled}
+                onClick={() =>
+                  onRowMetaChange({
+                    layout: {
+                      ...(row.layout || DEFAULT_ROW_LAYOUT),
+                      snapEnabled: !snapEnabled,
+                    },
+                  })
+                }
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-left transition-colors ${
+                  snapEnabled
+                    ? "bg-secondary/15 border-secondary/40"
+                    : "bg-muted/30 border-border hover:bg-muted/50"
+                }`}
+              >
+                <span className="font-body text-xs text-foreground">
+                  Snap this row to the viewport
+                </span>
+                <span
+                  className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${
+                    snapEnabled ? "bg-secondary" : "bg-muted-foreground/30"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                      snapEnabled ? "translate-x-[18px]" : "translate-x-0.5"
+                    }`}
+                  />
+                </span>
+              </button>
+              <p className="font-body text-[10px] text-muted-foreground mt-1 leading-snug">
+                Off by default. Turn on for hero-class rows (e.g. Vows) where
+                a full-viewport reveal is desired.
+              </p>
+            </div>
 
             <ColumnWidthControl
               columnCount={widthColCount}

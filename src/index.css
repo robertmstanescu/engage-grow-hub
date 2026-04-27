@@ -233,6 +233,14 @@
    * `min-h-screen` = `100vh` and would re-introduce the cut-off bug.
    */
   .snap-section {
+    /*
+     * Only sections that explicitly opt in to snap should occupy the
+     * full viewport. Free-scroll rows size to their content (plus the
+     * 18px row-fluid padding token) so the page feels like a normal
+     * scrollable document with snap reserved for hero-class moments.
+     */
+  }
+  .snap-section[data-snap-enabled="true"] {
     min-height: calc(100vh - var(--nav-top-offset, 0px));
   }
 }
@@ -576,21 +584,28 @@
    * formula.
    */
   .snap-section {
+    /* Snap behaviour is opt-in. Only sections marked with
+       data-snap-enabled participate in scroll-snap. */
+  }
+  .snap-section[data-snap-enabled="true"] {
     scroll-snap-align: start;
     scroll-snap-stop: always;
   }
 
-  /* Service rows: desktop = full visible viewport (matches snap-container so
-     the JS momentum snap's "tall row" escape hatch never trips), mobile = content-height */
+  /* Service rows: free-scroll by default, content-sized so the row
+     respects the global 18px padding rule. Opt-in to snap via the row
+     style toggle which sets data-snap-enabled on the wrapper section. */
   .service-row {
-    min-height: calc(100vh - var(--nav-top-offset, 0px));
     justify-content: center;
+  }
+  .service-row[data-snap-enabled="true"] {
+    min-height: calc(100vh - var(--nav-top-offset, 0px));
     scroll-snap-align: start;
     scroll-snap-stop: always;
   }
 
   @media (max-width: 1024px) {
-    .service-row {
+    .service-row[data-snap-enabled="true"] {
       min-height: auto;
       justify-content: flex-start;
       scroll-snap-align: none;

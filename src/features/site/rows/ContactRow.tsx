@@ -71,10 +71,16 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   // ContactRow uses a custom <section> wrapper (not RowSection) because it
   // needs the .section-light class which inverts the foreground variable.
   const vAlignJustify = vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center";
+  // Snap behaviour is opt-in per row. When the admin enables it in the
+  // Style tab the section also takes the full viewport height; otherwise
+  // it free-scrolls inside the standard 18px row-fluid breathing strip.
+  const snapEnabled = row.layout?.snapEnabled === true;
+  const snapAttrs = snapEnabled ? { "data-snap-enabled": "true" as const } : {};
+  const heightClass = snapEnabled ? "min-h-screen" : "";
 
   if (submitted) {
     return (
-      <section className={`snap-section section-light relative min-h-screen flex flex-col ${vAlignJustify} py-row md:py-row-md`} style={{ isolation: "isolate" }}>
+      <section {...snapAttrs} className={`snap-section section-light relative ${heightClass} flex flex-col ${vAlignJustify} py-row-fluid`} style={{ isolation: "isolate" }}>
         <RowBackground row={row} />
         <div className={`relative z-10 max-w-[520px] px-6 ${containerPos} ${contentAlign}`}>
           <div style={revealStyle(true, 0)}>
@@ -90,7 +96,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   }
 
   return (
-    <section className={`snap-section section-light relative min-h-screen flex flex-col ${vAlignJustify} py-row md:py-row-md`} style={{ isolation: "isolate" }}>
+    <section {...snapAttrs} className={`snap-section section-light relative ${heightClass} flex flex-col ${vAlignJustify} py-row-fluid`} style={{ isolation: "isolate" }}>
       <RowBackground row={row} />
 
       <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${containerPos} ${contentAlign}`}>

@@ -83,12 +83,14 @@ export const useMomentumSnap = (
 
     const getSections = () =>
       Array.from(
-        container.querySelectorAll<HTMLElement>(".snap-section")
+        container.querySelectorAll<HTMLElement>(
+          '.snap-section[data-snap-enabled="true"]'
+        )
       ).filter((el) =>
         el.offsetParent !== null &&
         // Ignore grouping shells such as “last row + footer”; snap to the
         // actual row inside them so the footer can remain free-scroll below.
-        !el.querySelector(":scope .snap-section")
+        !el.querySelector(':scope .snap-section[data-snap-enabled="true"]')
       );
 
     const getScrollTopFor = (el: HTMLElement, containerRect: DOMRect) =>
@@ -99,78 +101,70 @@ export const useMomentumSnap = (
       if (window.innerWidth < minWidth) return;
 
       const sections = getSections();
-      if (sections.length < 2) return;
+      if (sections.length === 0) return;
 
       const containerRect = container.getBoundingClientRect();
       const viewportTop = containerRect.top;
       const viewportH = container.clientHeight;
 
-      // Identify the section currently dominating the viewport top
-      let currentIdx = 0;
-      for (let i = 0; i < sections.length; i++) {
-        const rect = sections[i].getBoundingClientRect();
-        if (rect.top - viewportTop <= 1) currentIdx = i;
-        else break;
+      // Find the snap-enabled section (if any) that the user is currently
+      // straddling — i.e. its top has scrolled above the viewport top but
+      // its bottom is still below it. If none qualifies, the user is in
+      // free-scroll territory between (or after) snap sections; do nothing.
+      let active: HTMLElement | null = null;
+      for (const sec of sections) {
+        const r = sec.getBoundingClientRect();
+        const topRel = r.top - viewportTop;
+        const bottomRel = topRel + r.height;
+        // Active when the section overlaps the top of the viewport.
+        if (topRel <= 1 && bottomRel > 1) {
+          active = sec;
+          break;
+        }
       }
+      if (!active) return;
 
-      // Footer rule: never snap when the user is on (or past) the last
-      // section — the footer must remain freely scrollable below it.
-      if (currentIdx >= sections.length - 1) return;
+      const activeRect = active.getBoundingClientRect();
+      const topRel = activeRect.top - viewportTop;
+      const height = activeRect.height;
 
-      const current = sections[currentIdx];
-      const next = sections[currentIdx + 1];
-      const currentTopRel = current.getBoundingClientRect().top - viewportTop;
+      // Already aligned with the section top — nothing to do.
+      if (Math.abs(topRel) < 2) return;
 
-      // Already aligned — nothing to do.
-      if (Math.abs(currentTopRel) < 2) return;
-
-      const currentHeight = current.getBoundingClientRect().height;
-      const currentBottomRel = currentTopRel + currentHeight;
-      const edgeTolerance = Math.max(24, viewportH * 0.06);
-      const insideTallCurrent =
-        currentHeight > viewportH + edgeTolerance &&
-        currentTopRel < -edgeTolerance &&
-        currentBottomRel > viewportH + edgeTolerance;
-
-      if (insideTallCurrent) {
-        return;
-      }
-
-      // READING-MODE PROTECTION
-      // ------------------------
-      // If the current section contains an OPEN accordion (e.g. the
-      // service-card "What's inside" panel) the user is most likely
-      // reading. A normal flick that would otherwise carry them to the
-      // next row should NOT snap immediately — give them a much larger
-      // commitment threshold and a longer settle window so they can
-      // browse the deliverables without being yanked away.
-      const hasOpenAccordion = !!current.querySelector(
+      // READING-MODE PROTECTION — if an accordion is open inside the
+      // active snap section, give the reader a much larger commitment
+      // threshold so a small scroll doesn't yank them away.
+      const hasOpenAccordion = !!active.querySelector(
         '[data-deliverables-open="true"], [data-state="open"]'
       );
       const commitThreshold = hasOpenAccordion
         ? Math.max(directionThresholdPx * 6, viewportH * 0.35)
         : directionThresholdPx;
 
-      // Direction-aware target: if the user was clearly scrolling down
-      // and has moved into the current section by a meaningful amount,
-      // glide to the NEXT section. Otherwise settle back to current.
-      const scrolledIntoCurrent = -currentTopRel; // px past top of current
-      const wantsNext =
-        directionRef.current === 1 && scrolledIntoCurrent > commitThreshold;
-      const wantsPrev =
-        directionRef.current === -1 && scrolledIntoCurrent < -commitThreshold;
+      const scrolledIntoActive = -topRel; // px past the top of the section
 
-      let target: HTMLElement;
-      if (wantsNext) target = next;
-      else if (wantsPrev && currentIdx > 0) target = sections[currentIdx - 1];
+      // Two snap targets exist for an active section:
+      //   • Pull UP   → align section top with viewport top
+      //   • Push DOWN → scroll just past the section so free-scroll
+      //                  content below it can take over
+      const pullTop = container.scrollTop + topRel;
+      const pushPast = container.scrollTop + topRel + height;
+
+      const wantsDown =
+        directionRef.current === 1 && scrolledIntoActive > commitThreshold;
+      const wantsUp =
+        directionRef.current === -1 && scrolledIntoActive < -commitThreshold;
+
+      let target: number;
+      if (wantsDown) target = pushPast;
+      else if (wantsUp) target = pullTop;
       else {
-        // No clear intent — pick whichever boundary is nearer, but bias
-        // toward "stay" when an accordion is open so reading is uninterrupted.
-        const midpoint = hasOpenAccordion ? current.offsetHeight * 0.75 : current.offsetHeight / 2;
-        target = scrolledIntoCurrent > midpoint ? next : current;
+        // No clear intent — bias toward "stay" when an accordion is open.
+        const midpoint = hasOpenAccordion ? height * 0.75 : height / 2;
+        target = scrolledIntoActive > midpoint ? pushPast : pullTop;
       }
 
-      tweenScroll(getScrollTopFor(target, containerRect));
+      tweenScroll(target);
     };
 
     const onScroll = () => {
