@@ -1,8 +1,20 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { fetchPublicSiteContentValue } from "@/services/publicSiteContent";
+import { fetchBrandIdentity } from "@/hooks/useBrandSettings";
 
-const CANONICAL_ORIGIN = "https://themagiccoffin.com";
+/**
+ * Resolve the canonical origin for outbound links / meta tags. We
+ * prefer the brand-settings value an admin has configured; if absent
+ * we fall back to the current `window.location.origin` so links still
+ * work in any environment (preview, custom domain, lovable.app).
+ */
+const resolveCanonicalOrigin = (configured: string | undefined): string => {
+  const trimmed = (configured || "").trim().replace(/\/+$/, "");
+  if (trimmed) return trimmed;
+  if (typeof window !== "undefined") return window.location.origin;
+  return "";
+};
 
 const ensureTrailingSlash = (path: string) =>
   path.endsWith("/") ? path : `${path}/`;
