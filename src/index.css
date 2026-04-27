@@ -142,17 +142,17 @@
     /*
      * Default navbar offsets — set by Navbar.tsx at runtime, but seeded
      * here so the very first paint already accounts for the rail/topbar.
-     * Desktop default = vertical left rail (64px). Mobile overrides via
+     * Desktop default = vertical left rail (40px). Mobile overrides via
      * the media query below. JS will refine on mount.
      */
-    --nav-left-offset: 64px;
+    --nav-left-offset: 40px;
     --nav-top-offset: 0px;
   }
 
   @media (max-width: 1023px) {
     html {
       --nav-left-offset: 0px;
-      --nav-top-offset: 56px;
+      --nav-top-offset: 36px;
     }
   }
 
@@ -704,6 +704,52 @@
     --footer-bg: 260 20% 4%;
     --footer-text: 30 20% 80%;
     --footer-text-sub: 30 20% 50%;
+  }
+}
+
+@layer utilities {
+  .public-fluid-type {
+    --fluid-fs-nano: clamp(0.42rem, min(0.75vw, 0.95vh), 0.56rem);
+    --fluid-fs-micro: clamp(0.48rem, min(0.85vw, 1.05vh), 0.63rem);
+    --fluid-fs-xs: clamp(0.56rem, min(1vw, 1.2vh), 0.75rem);
+    --fluid-fs-sm: clamp(0.68rem, min(1.15vw, 1.45vh), 0.88rem);
+    --fluid-fs-base: clamp(0.78rem, min(1.35vw, 1.7vh), 1rem);
+    --fluid-fs-lg: clamp(0.9rem, min(1.6vw, 2vh), 1.13rem);
+    --fluid-fs-xl: clamp(1.05rem, min(2vw, 2.5vh), 1.25rem);
+    --fluid-fs-2xl: clamp(1.2rem, min(2.45vw, 3vh), 1.5rem);
+    --fluid-fs-3xl: clamp(1.35rem, min(3vw, 3.8vh), 1.88rem);
+    --fluid-fs-4xl: clamp(1.55rem, min(3.8vw, 4.8vh), 2.25rem);
+    --fluid-fs-5xl: clamp(1.8rem, min(4.7vw, 5.8vh), 3rem);
+    --fluid-fs-6xl: clamp(2.1rem, min(5.8vw, 7vh), 3.75rem);
+  }
+
+  .public-fluid-type .text-xs,
+  .public-fluid-type [class~="text-[11px]"] { font-size: var(--fluid-fs-xs); }
+  .public-fluid-type .text-sm,
+  .public-fluid-type [class~="text-[12px]"],
+  .public-fluid-type [class~="text-[13px]"] { font-size: var(--fluid-fs-sm); }
+  .public-fluid-type .text-base { font-size: var(--fluid-fs-base); }
+  .public-fluid-type .text-lg { font-size: var(--fluid-fs-lg); }
+  .public-fluid-type .text-xl { font-size: var(--fluid-fs-xl); }
+  .public-fluid-type .text-2xl { font-size: var(--fluid-fs-2xl); }
+  .public-fluid-type .text-3xl { font-size: var(--fluid-fs-3xl); }
+  .public-fluid-type .text-4xl { font-size: var(--fluid-fs-4xl); }
+  .public-fluid-type .text-5xl { font-size: var(--fluid-fs-5xl); }
+  .public-fluid-type .text-6xl { font-size: var(--fluid-fs-6xl); }
+  .public-fluid-type [class~="text-[9px]"] { font-size: var(--fluid-fs-nano); }
+  .public-fluid-type [class~="text-[10px]"] { font-size: var(--fluid-fs-micro); }
+
+  @media (min-width: 768px) {
+    .public-fluid-type [class~="md:text-base"] { font-size: var(--fluid-fs-base); }
+    .public-fluid-type [class~="md:text-lg"] { font-size: var(--fluid-fs-lg); }
+    .public-fluid-type [class~="md:text-xl"] { font-size: var(--fluid-fs-xl); }
+    .public-fluid-type [class~="md:text-2xl"] { font-size: var(--fluid-fs-2xl); }
+    .public-fluid-type [class~="md:text-4xl"] { font-size: var(--fluid-fs-4xl); }
+    .public-fluid-type [class~="md:text-5xl"] { font-size: var(--fluid-fs-5xl); }
+  }
+
+  @media (min-width: 1024px) {
+    .public-fluid-type [class~="lg:text-5xl"] { font-size: var(--fluid-fs-5xl); }
   }
 }
 
