@@ -84,6 +84,13 @@ export interface RowLayout {
   gradient?: GradientConfig;
   overlays?: OverlayElement[];
   carouselTheme?: "auto" | "light" | "dark";
+  /**
+   * When true, this row participates in the homepage scroll-snap. By
+   * default only the Hero snaps; other rows free-scroll inside the
+   * 18px row-fluid breathing strip. Admins can opt rows back in (e.g.
+   * the Vows row) via the Style tab.
+   */
+  snapEnabled?: boolean;
 }
 
 /* ─── Legacy single-type row (v1) ──────────────────────────────────── */
