@@ -131,9 +131,6 @@ export const useMomentumSnap = (
       const topRel = activeRect.top - viewportTop;
       const height = activeRect.height;
 
-      // Already aligned with the section top — nothing to do.
-      if (Math.abs(topRel) < 2) return;
-
       // READING-MODE PROTECTION — if an accordion is open inside the
       // active snap section, give the reader a much larger commitment
       // threshold so a small scroll doesn't yank them away.
@@ -146,12 +143,28 @@ export const useMomentumSnap = (
 
       const scrolledIntoActive = -topRel; // px past the top of the section
 
-      // Two snap targets exist for an active section:
-      //   • Pull UP   → align section top with viewport top
-      //   • Push DOWN → scroll just past the section so free-scroll
+      // Snap targets for an active section:
+      //   • pullTop    → align section top    with viewport top
+      //   • pullBottom → align section bottom with viewport bottom
+      //                  (used when an accordion is open and the section
+      //                  is taller than the viewport — keeps the freshly
+      //                  expanded content fully visible at the bottom)
+      //   • pushPast   → scroll just past the section so free-scroll
       //                  content below it can take over
       const pullTop = container.scrollTop + topRel;
+      const pullBottom = container.scrollTop + topRel + (height - viewportH);
       const pushPast = container.scrollTop + topRel + height;
+
+      // When an accordion is open and the section overflows the viewport,
+      // prefer aligning the section's BOTTOM with the viewport bottom.
+      const preferBottom = hasOpenAccordion && height > viewportH + 2;
+      const upTarget = preferBottom ? pullBottom : pullTop;
+
+      // Already aligned with the chosen target — nothing to do.
+      const alreadyAligned = preferBottom
+        ? Math.abs(topRel + (height - viewportH)) < 2
+        : Math.abs(topRel) < 2;
+      if (alreadyAligned) return;
 
       const wantsDown =
         directionRef.current === 1 && scrolledIntoActive > commitThreshold;
@@ -160,11 +173,11 @@ export const useMomentumSnap = (
 
       let target: number;
       if (wantsDown) target = pushPast;
-      else if (wantsUp) target = pullTop;
+      else if (wantsUp) target = upTarget;
       else {
         // No clear intent — bias toward "stay" when an accordion is open.
         const midpoint = hasOpenAccordion ? height * 0.75 : height / 2;
-        target = scrolledIntoActive > midpoint ? pushPast : pullTop;
+        target = scrolledIntoActive > midpoint ? pushPast : upTarget;
       }
 
       tweenScroll(target);
