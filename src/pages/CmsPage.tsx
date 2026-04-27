@@ -79,7 +79,7 @@ const CmsPageBody = ({ rows, isPreview }: { rows: PageRow[]; isPreview: boolean 
   const containerRef = useRef<HTMLDivElement>(null);
   useMomentumSnap(containerRef);
   return (
-    <div ref={containerRef} className="snap-container lg:pl-16">
+    <div ref={containerRef} className="snap-container page-shell">
       <Navbar />
       {isPreview && (
         <div className="sticky top-0 z-50 px-4 py-2 text-center font-body text-xs uppercase tracking-wider"
