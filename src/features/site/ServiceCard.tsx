@@ -58,9 +58,15 @@ interface ServiceCardProps {
   title: string; subtitle: string; description: string; deliverables: string[];
   deliverablesLabel?: string; price: string; time: string; note?: string; compact?: boolean;
   cardTextAlign?: CardTextAlign;
+  /**
+   * Optional carousel navigation rendered inside the card footer.
+   * When provided, replaces the row-level carousel block so the card
+   * occupies more vertical space without losing prev/next controls.
+   */
+  carouselControls?: React.ReactNode;
 }
 
-const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, description, deliverables, deliverablesLabel = "What's inside", price, time, note, compact, cardTextAlign = "left" }: ServiceCardProps) => {
+const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, description, deliverables, deliverablesLabel = "What's inside", price, time, note, compact, cardTextAlign = "left", carouselControls }: ServiceCardProps) => {
   const { getTagColors } = useTagColors();
   const adminColors = getTagColors(tagType);
   const bgHex = tagBgColor || adminColors.bgColor;
