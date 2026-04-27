@@ -279,6 +279,7 @@ Deno.serve(async (req) => {
 
   let brandName = "Site";
   let brandMission = "";
+  let resolvedOrigin = "";
   let publishedPosts: Array<{
     title: string;
     slug: string;
@@ -322,7 +323,7 @@ Deno.serve(async (req) => {
 
     // Resolve canonical origin (admin-configured → request origin → blank).
     const identityOrigin = typeof identity.canonicalOrigin === "string" ? identity.canonicalOrigin.trim().replace(/\/+$/, "") : "";
-    var resolvedOrigin = identityOrigin;
+    resolvedOrigin = identityOrigin;
     if (!resolvedOrigin) {
       try {
         const reqHost = new URL(req.url).hostname;
@@ -336,7 +337,7 @@ Deno.serve(async (req) => {
   }
 
   // ── Build response body ─────────────────────────────────────────────────
-  const origin = (typeof resolvedOrigin !== "undefined" && resolvedOrigin) || "";
+  const origin = resolvedOrigin || "";
   const body = wantsFull
     ? generateFullLlmManifest(brandName, brandMission, publishedPosts, origin)
     : generateDynamicLlmManifest(
