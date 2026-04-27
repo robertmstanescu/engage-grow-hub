@@ -311,11 +311,23 @@ Deno.serve(async (req) => {
     if (postsResult.data) publishedPosts = postsResult.data;
     if (pagesResult.data) publishedPages = pagesResult.data;
     const brandContent = (brandResult.data?.content as Record<string, unknown> | undefined) || {};
-    if (typeof brandContent.brand_name === "string" && brandContent.brand_name.trim()) {
-      brandName = brandContent.brand_name as string;
-    }
+    const identity = (brandContent.identity as Record<string, unknown> | undefined) || {};
+    const identityName = typeof identity.brandName === "string" ? identity.brandName.trim() : "";
+    const legacyName = typeof brandContent.brand_name === "string" ? brandContent.brand_name.trim() : "";
+    if (identityName) brandName = identityName;
+    else if (legacyName) brandName = legacyName;
     if (typeof brandContent.brand_mission === "string" && brandContent.brand_mission.trim()) {
       brandMission = brandContent.brand_mission as string;
+    }
+
+    // Resolve canonical origin (admin-configured → request origin → blank).
+    const identityOrigin = typeof identity.canonicalOrigin === "string" ? identity.canonicalOrigin.trim().replace(/\/+$/, "") : "";
+    var resolvedOrigin = identityOrigin;
+    if (!resolvedOrigin) {
+      try {
+        const reqHost = new URL(req.url).hostname;
+        if (!/supabase\.co$/i.test(reqHost)) resolvedOrigin = new URL(req.url).origin;
+      } catch { /* noop */ }
     }
   } catch (queryError) {
     // If the database is unreachable we still want to serve a useful file —
@@ -324,7 +336,7 @@ Deno.serve(async (req) => {
   }
 
   // ── Build response body ─────────────────────────────────────────────────
-  const origin = "https://themagiccoffin.com";
+  const origin = (typeof resolvedOrigin !== "undefined" && resolvedOrigin) || "";
   const body = wantsFull
     ? generateFullLlmManifest(brandName, brandMission, publishedPosts, origin)
     : generateDynamicLlmManifest(

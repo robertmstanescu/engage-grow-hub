@@ -432,9 +432,15 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Load brand once so origin + name resolution share the same row.
+    const { data: brandRow } = await supabaseAdmin
+      .from("site_content").select("content").eq("section_key", "brand_settings").maybeSingle();
+    const brand = (brandRow?.content as Record<string, any>) || {};
+    const origin = resolveOrigin(brand, req);
+
     const [template, payload] = await Promise.all([
       fetchTemplate(req),
-      resolvePath(supabaseAdmin, path),
+      resolvePath(supabaseAdmin, path, origin, brand),
     ]);
 
     let html = template;
