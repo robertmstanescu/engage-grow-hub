@@ -13,8 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Trash2, Upload, X, Search } from "lucide-react";
-import * as Lucide from "lucide-react";
+import { Trash2, Upload, X, Search, icons as lucideIcons } from "lucide-react";
 import Icon, { type IconValue, parseIcon } from "./Icon";
 import { COMMON_LUCIDE_ICONS } from "./lucideCatalog";
 import { useIconLibrary, useUploadIcon, useDeleteIcon } from "./useIconLibrary";
@@ -24,9 +23,9 @@ interface PickerProps {
   onChange: (next: IconValue) => void;
 }
 
-const ALL_LUCIDE_NAMES = Object.keys(Lucide).filter(
-  (k) => /^[A-Z]/.test(k) && typeof (Lucide as any)[k] === "object" && (Lucide as any)[k]?.$$typeof,
-);
+// Source of truth = the same map the <Icon /> renderer uses, so every
+// pickable name is guaranteed to render. ~1500 unique icons, no duplicates.
+const ALL_LUCIDE_NAMES = Object.keys(lucideIcons).sort();
 
 const IconPicker = ({ value, onChange }: PickerProps) => {
   const [open, setOpen] = useState(false);
