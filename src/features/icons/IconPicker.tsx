@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2, Upload, X, Search, icons as lucideIcons } from "lucide-react";
 import Icon, { type IconValue, parseIcon } from "./Icon";
-import { COMMON_LUCIDE_ICONS } from "./lucideCatalog";
+
 import { useIconLibrary, useUploadIcon, useDeleteIcon } from "./useIconLibrary";
 
 interface PickerProps {
