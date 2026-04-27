@@ -98,11 +98,9 @@ interface SeoPayload {
 /** Fetch the live published index.html. Falls back to a minimal shell. */
 const fetchTemplate = async (req: Request): Promise<string> => {
   const reqOrigin = new URL(req.url).origin;
-  const candidates = [
-    "https://themagiccoffin.com/index.html",
-    "https://themagiccoffin.lovable.app/index.html",
-    `${reqOrigin}/index.html`,
-  ];
+  // Try the request origin first — works for both custom domains and the
+  // lovable.app preview without hardcoding any tenant-specific host.
+  const candidates = [`${reqOrigin}/index.html`];
   for (const url of candidates) {
     try {
       const res = await fetch(url, { headers: { "Cache-Control": "no-cache" } });
@@ -115,12 +113,13 @@ const fetchTemplate = async (req: Request): Promise<string> => {
       // try next candidate
     }
   }
-  // Last-resort minimal shell.
+  // Last-resort minimal shell. Brand-neutral so we never leak a stale
+  // brand name to a crawler if the live template is unreachable.
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>The Magic Coffin</title>
+<title></title>
 </head>
 <body>
 <div id="root"></div>
