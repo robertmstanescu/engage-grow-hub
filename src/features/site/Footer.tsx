@@ -53,7 +53,7 @@ const Footer = () => {
   const connectColumn = columns.find((c) => c.title.toLowerCase() === "connect");
 
   return (
-    <footer className="grain relative border-t" style={{ backgroundColor: "hsl(260 20% 4%)", borderColor: "hsl(var(--border) / 0.2)" }}>
+    <footer className="grain relative border-t" style={{ backgroundColor: "hsl(260 20% 4%)", borderColor: "hsl(var(--border) / 0.2)", scrollSnapAlign: "end" }}>
       {/* Ambient glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full opacity-8 blur-[120px]"
         style={{ background: "radial-gradient(circle, hsl(280 55% 20%), transparent)" }} />
