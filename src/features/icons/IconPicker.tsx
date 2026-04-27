@@ -1,10 +1,7 @@
 /**
  * IconPicker — popover-based picker that lets admins choose either
- * a Lucide icon (searchable) or a custom uploaded icon. Includes
- * an inline upload form for adding new custom icons.
- *
- * Designed to slot into the admin properties panel as a
- * `<IconPickerField label="Icon" value={...} onChange={...} />`.
+ * a Lucide icon (browseable by category, searchable) or a custom
+ * uploaded icon. Includes inline upload for new custom icons.
  */
 
 import { useMemo, useRef, useState } from "react";
@@ -15,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2, Upload, X, Search, icons as lucideIcons } from "lucide-react";
 import Icon, { type IconValue, parseIcon } from "./Icon";
-
+import { ICON_CATEGORIES } from "./lucideCatalog";
 import { useIconLibrary, useUploadIcon, useDeleteIcon } from "./useIconLibrary";
 
 interface PickerProps {
@@ -23,13 +20,21 @@ interface PickerProps {
   onChange: (next: IconValue) => void;
 }
 
-// Source of truth = the same map the <Icon /> renderer uses, so every
-// pickable name is guaranteed to render. ~1500 unique icons, no duplicates.
+// Source of truth = the same map the <Icon /> renderer uses.
 const ALL_LUCIDE_NAMES = Object.keys(lucideIcons).sort();
+const ALL_LUCIDE_SET = new Set(ALL_LUCIDE_NAMES);
+
+// Filter the curated category lists to only icons that actually exist
+// in this lucide-react version (defends against catalog drift).
+const SAFE_CATEGORIES = ICON_CATEGORIES.map((c) => ({
+  ...c,
+  icons: c.icons.filter((n) => ALL_LUCIDE_SET.has(n)),
+})).filter((c) => c.icons.length > 0);
 
 const IconPicker = ({ value, onChange }: PickerProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string>("all");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: customIcons = [], isLoading } = useIconLibrary();
@@ -38,9 +43,13 @@ const IconPicker = ({ value, onChange }: PickerProps) => {
 
   const lucideResults = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return ALL_LUCIDE_NAMES; // show every icon when not searching
-    return ALL_LUCIDE_NAMES.filter((n) => n.toLowerCase().includes(q));
-  }, [search]);
+    if (q) {
+      return ALL_LUCIDE_NAMES.filter((n) => n.toLowerCase().includes(q));
+    }
+    if (activeCategory === "all") return ALL_LUCIDE_NAMES;
+    const cat = SAFE_CATEGORIES.find((c) => c.id === activeCategory);
+    return cat ? cat.icons : ALL_LUCIDE_NAMES;
+  }, [search, activeCategory]);
 
   const customResults = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -87,46 +96,101 @@ const IconPicker = ({ value, onChange }: PickerProps) => {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[380px] p-3" align="start">
+      <PopoverContent
+        className="w-[560px] p-3"
+        align="start"
+        /* Force light background + dark icon color so icons are always
+           visible regardless of where the popover renders. */
+        style={{ background: "#ffffff", color: "#1a1a1a" }}
+      >
         <Tabs defaultValue="lucide">
           <TabsList className="w-full">
-            <TabsTrigger value="lucide" className="flex-1">Lucide</TabsTrigger>
+            <TabsTrigger value="lucide" className="flex-1">Lucide ({ALL_LUCIDE_NAMES.length})</TabsTrigger>
             <TabsTrigger value="custom" className="flex-1">Custom ({customIcons.length})</TabsTrigger>
           </TabsList>
 
           <div className="relative my-2">
-            <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2" style={{ color: "#888" }} />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search icons…"
+              placeholder="Search 1500+ icons…"
               className="pl-7 h-8 text-sm"
+              style={{ background: "#fff", color: "#1a1a1a", borderColor: "#e5e5e5" }}
             />
           </div>
 
           <TabsContent value="lucide" className="m-0">
-            <ScrollArea className="h-[280px]">
-              <div className="grid grid-cols-8 gap-1 pr-2">
-                {lucideResults.map((name) => (
+            <div className="flex gap-2" style={{ height: 320 }}>
+              {/* Category sidebar */}
+              <ScrollArea className="w-[140px] shrink-0 border-r pr-1" style={{ borderColor: "#eee" }}>
+                <div className="flex flex-col gap-0.5">
                   <button
-                    key={name}
                     type="button"
-                    title={name}
-                    onClick={() => select(`lucide:${name}`)}
-                    className={`aspect-square flex items-center justify-center rounded hover:bg-muted/60 transition-colors ${
-                      value === `lucide:${name}` ? "bg-primary/10 ring-1 ring-primary" : ""
-                    }`}
+                    onClick={() => setActiveCategory("all")}
+                    className="text-left px-2 py-1.5 rounded text-xs hover:bg-black/5 transition-colors"
+                    style={{
+                      background: activeCategory === "all" && !search ? "rgba(0,0,0,0.06)" : "transparent",
+                      color: "#1a1a1a",
+                      fontWeight: activeCategory === "all" && !search ? 600 : 400,
+                    }}
                   >
-                    <Icon value={`lucide:${name}`} size={18} />
+                    All <span style={{ color: "#888" }}>({ALL_LUCIDE_NAMES.length})</span>
                   </button>
-                ))}
-                {lucideResults.length === 0 && (
-                  <p className="col-span-8 text-center text-xs text-muted-foreground py-8">
-                    No icons match “{search}”.
-                  </p>
-                )}
-              </div>
-            </ScrollArea>
+                  {SAFE_CATEGORIES.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => { setActiveCategory(c.id); setSearch(""); }}
+                      className="text-left px-2 py-1.5 rounded text-xs hover:bg-black/5 transition-colors"
+                      style={{
+                        background: activeCategory === c.id && !search ? "rgba(0,0,0,0.06)" : "transparent",
+                        color: "#1a1a1a",
+                        fontWeight: activeCategory === c.id && !search ? 600 : 400,
+                      }}
+                    >
+                      {c.label} <span style={{ color: "#888" }}>({c.icons.length})</span>
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
+
+              {/* Icon grid */}
+              <ScrollArea className="flex-1">
+                <div className="grid grid-cols-8 gap-1 pr-2">
+                  {lucideResults.map((name) => {
+                    const selected = value === `lucide:${name}`;
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        title={name}
+                        onClick={() => select(`lucide:${name}`)}
+                        className="aspect-square flex items-center justify-center rounded transition-colors"
+                        style={{
+                          background: selected ? "rgba(124, 58, 237, 0.12)" : "transparent",
+                          boxShadow: selected ? "inset 0 0 0 1px rgba(124, 58, 237, 0.6)" : "none",
+                          color: "#1a1a1a",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!selected) e.currentTarget.style.background = "rgba(0,0,0,0.05)";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!selected) e.currentTarget.style.background = "transparent";
+                        }}
+                      >
+                        <Icon value={`lucide:${name}`} size={18} color="#1a1a1a" />
+                      </button>
+                    );
+                  })}
+                  {lucideResults.length === 0 && (
+                    <p className="col-span-8 text-center text-xs py-8" style={{ color: "#888" }}>
+                      No icons match “{search}”.
+                    </p>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
           </TabsContent>
 
           <TabsContent value="custom" className="m-0 space-y-2">
@@ -149,11 +213,11 @@ const IconPicker = ({ value, onChange }: PickerProps) => {
               {uploadMut.isPending ? "Uploading…" : "Upload icon (SVG, PNG)"}
             </Button>
 
-            <ScrollArea className="h-[230px]">
+            <ScrollArea className="h-[270px]">
               <div className="grid grid-cols-6 gap-2 pr-2">
-                {isLoading && <p className="col-span-6 text-xs text-muted-foreground py-4 text-center">Loading…</p>}
+                {isLoading && <p className="col-span-6 text-xs py-4 text-center" style={{ color: "#888" }}>Loading…</p>}
                 {!isLoading && customResults.length === 0 && (
-                  <p className="col-span-6 text-xs text-muted-foreground py-4 text-center">
+                  <p className="col-span-6 text-xs py-4 text-center" style={{ color: "#888" }}>
                     No custom icons yet. Upload one above.
                   </p>
                 )}
@@ -165,11 +229,14 @@ const IconPicker = ({ value, onChange }: PickerProps) => {
                         type="button"
                         title={c.name}
                         onClick={() => select(v)}
-                        className={`w-full aspect-square flex items-center justify-center rounded border hover:bg-muted/60 ${
-                          value === v ? "ring-1 ring-primary" : ""
-                        }`}
+                        className="w-full aspect-square flex items-center justify-center rounded border hover:bg-black/5"
+                        style={{
+                          borderColor: "#eee",
+                          boxShadow: value === v ? "inset 0 0 0 1px rgba(124,58,237,0.6)" : "none",
+                          color: "#1a1a1a",
+                        }}
                       >
-                        <Icon value={v} size={22} />
+                        <Icon value={v} size={22} color="#1a1a1a" />
                       </button>
                       <button
                         type="button"
