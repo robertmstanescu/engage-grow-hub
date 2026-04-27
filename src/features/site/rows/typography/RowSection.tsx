@@ -99,6 +99,8 @@ const RowSection = ({
     ? rawCss.replace(/<\/?script[^>]*>/gi, "").replace(/&/g, `#${rowDomId}`)
     : "";
 
+  const snapEnabled = row.layout?.snapEnabled === true;
+
   return (
     <>
       {scopedCss && <style dangerouslySetInnerHTML={{ __html: scopedCss }} />}
@@ -108,7 +110,8 @@ const RowSection = ({
         data-row-id={dataRowId ?? row.id}
         data-row-type={dataRowType ?? row.type}
         data-row-title={dataRowTitle ?? row.strip_title}
-        className={`snap-section ${grain ? "grain" : ""} relative ${fullHeight ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
+        data-snap-enabled={snapEnabled ? "true" : undefined}
+        className={`snap-section ${grain ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
         style={{
           backgroundColor: getRowBgColor(row, defaultBg),
           isolation: "isolate",
