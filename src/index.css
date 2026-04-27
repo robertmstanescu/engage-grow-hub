@@ -642,6 +642,23 @@
     background: linear-gradient(to right, hsl(var(--violet) / 0.3), hsl(var(--valentino) / 0.1));
   }
 
+  /* ── Navbar entrance cascade ──
+     Two variants:
+       • nav-cascade       — opacity + small slide. Safe for elements
+                             that have NO existing CSS transform.
+       • nav-cascade-fade  — opacity only. Use for elements with a
+                             baseline transform (e.g. the side-rail
+                             labels rotated 180deg) so the entrance
+                             animation cannot clobber it. */
+  @keyframes nav-cascade {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes nav-cascade-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
   /* ── Side nav ── */
   .side-nav-label {
     writing-mode: vertical-rl;
