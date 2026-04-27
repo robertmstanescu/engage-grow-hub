@@ -264,7 +264,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1, ease }}
-            className="flex-shrink-0 mt-[1.5vh]">
+            className="flex-shrink-0 mt-[1.2vh]">
             <EditableText
               sectionKey="hero"
               fieldPath="subtitle"
@@ -273,7 +273,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
               style={{
                 fontFamily: "'Architects Daughter', cursive",
                 color: c.subtitle_color || "hsl(var(--hero-body))",
-                fontSize: "clamp(0.9rem, 2vw, 1.25rem)",
+                fontSize: "clamp(0.72rem, min(1.7vw, 2.2vh), 1.15rem)",
               }}>
               {c.subtitle}
             </EditableText>
@@ -290,8 +290,8 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
             fieldPath="body"
             html
             as="div"
-            className="font-body-heading max-w-[480px] leading-relaxed mt-[1.5vh]"
-            style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "clamp(0.8rem, 1.5vw, 1.1rem)" }}
+            className="font-body-heading max-w-[480px] leading-relaxed mt-[1.2vh]"
+            style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "clamp(0.68rem, min(1.25vw, 1.6vh), 1rem)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
           />
         </motion.div>
