@@ -133,7 +133,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
       )}
       {titleLines.length > 0 ? (
         <SelectableWrapper path={[...basePath, "title"]} label="Title" variant="atom" inline>
-          <RowTitle color={c.color_title}>
+          <RowTitle icon={c.icon} color={c.color_title}>
             {titleLines.map((line, i) => (
               <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>
             ))}
@@ -141,7 +141,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
         </SelectableWrapper>
       ) : c.title ? (
         <SelectableWrapper path={[...basePath, "title"]} label="Title" variant="atom" inline>
-          <RowTitle color={c.color_title}>
+          <RowTitle icon={c.icon} color={c.color_title}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.title`} as="span">
               {c.title}
             </EditableText>
