@@ -97,7 +97,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
   return (
     <section
       data-section="hero"
-      className="scope-hero snap-section grain relative flex flex-col justify-end overflow-hidden mesh-hero"
+      className="scope-hero snap-section grain relative flex flex-col justify-end mesh-hero overflow-hidden"
       style={{ height: "calc(100vh - var(--nav-top-offset, 0px))" }}
     >
       {/*
