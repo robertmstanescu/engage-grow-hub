@@ -60,7 +60,7 @@ const CmsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen lg:pl-16 flex items-center justify-center" style={{ backgroundColor: "hsl(var(--background))" }}>
+      <div className="min-h-screen page-shell flex items-center justify-center" style={{ backgroundColor: "hsl(var(--background))" }}>
         <div className="animate-pulse font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Loading…</div>
       </div>
     );
