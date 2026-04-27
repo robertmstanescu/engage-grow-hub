@@ -46,8 +46,9 @@ export const useMomentumSnap = (
     const container = containerRef.current;
     if (!container) return;
 
-    /** Soft ease — cubic-bezier(0.22, 1, 0.36, 1) "easeOutQuint"-ish. */
-    const ease = (t: number) => 1 - Math.pow(1 - t, 4);
+    /** Gentle ease-in-out — slow start, slow end, fluid middle. */
+    const ease = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
     /** rAF-driven scroll tween. Cancellable. */
     const tweenScroll = (to: number) => {
