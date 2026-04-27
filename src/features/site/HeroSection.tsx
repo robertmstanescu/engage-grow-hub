@@ -98,7 +98,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
     <section
       data-section="hero"
       className="scope-hero snap-section grain relative flex flex-col justify-end mesh-hero overflow-hidden"
-      style={{ height: "calc(100vh - var(--nav-top-offset, 0px))" }}
+      style={{ minHeight: "calc(100dvh - var(--nav-top-offset, 0px))" }}
     >
       {/*
         LAYERING ORDER (bottom → top):
@@ -212,7 +212,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
         </div>
       )}
 
-      <div className="relative z-10 w-full max-w-[1100px] px-3 pb-[3vh] pt-[6vh] flex flex-col justify-end min-h-0 flex-1 overflow-y-auto">
+      <div className="relative z-10 w-full max-w-[1100px] px-3 pb-[3vh] pt-[4vh] flex min-h-0 flex-1 flex-col justify-end overflow-y-auto">
         {/*
           Must-fit cluster (eyebrow + title + tagline): the title font
           size is bounded by BOTH vw and vh so it shrinks on short
@@ -224,16 +224,16 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.2, ease }}
-          className="font-body tracking-[0.35em] uppercase mb-[1.5vh] flex-shrink-0"
-          style={{ color: "hsl(var(--hero-label))", fontSize: "clamp(7px, min(1vw, 1.4vh), 11px)" }}>
+          className="font-body tracking-[0.28em] uppercase mb-[1.2vh] flex-shrink-0"
+          style={{ color: "hsl(var(--hero-label))", fontSize: "clamp(0.42rem, min(0.85vw, 1.05vh), 0.68rem)" }}>
           <EditableText sectionKey="hero" fieldPath="label" as="span">
             {c.label}
           </EditableText>
         </motion.p>
 
         <h1
-          className="font-display font-black leading-[0.92] tracking-tight mb-0 max-w-[95%] flex-shrink-0"
-          style={{ color: "hsl(var(--hero-title))", fontSize: "clamp(1.25rem, min(5.5vw, 7.5vh), 5.5rem)" }}>
+          className="font-display font-black leading-[0.9] tracking-tight mb-0 max-w-[95%] flex-shrink-0"
+          style={{ color: "hsl(var(--hero-title))", fontSize: "clamp(1.1rem, min(5vw, 6.4vh), 5.5rem)" }}>
           {titleLines.map((line, i) => (
             <motion.span
               key={i}
@@ -251,8 +251,8 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.4 }}
             transition={{ duration: 1, delay: 0.8, ease }}
-            className="font-body tracking-[0.3em] uppercase mt-[1.5vh] flex-shrink-0"
-            style={{ color: c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(7px, min(1vw, 1.4vh), 11px)" }}>
+            className="font-body tracking-[0.25em] uppercase mt-[1.2vh] flex-shrink-0"
+            style={{ color: c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(0.42rem, min(0.85vw, 1.05vh), 0.68rem)" }}>
             <EditableText sectionKey="hero" fieldPath="tagline" as="span">
               {c.tagline}
             </EditableText>
@@ -264,7 +264,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1, ease }}
-            className="flex-shrink-0 mt-[1.5vh]">
+            className="flex-shrink-0 mt-[1.2vh]">
             <EditableText
               sectionKey="hero"
               fieldPath="subtitle"
@@ -273,7 +273,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
               style={{
                 fontFamily: "'Architects Daughter', cursive",
                 color: c.subtitle_color || "hsl(var(--hero-body))",
-                fontSize: "clamp(0.9rem, 2vw, 1.25rem)",
+                fontSize: "clamp(0.72rem, min(1.7vw, 2.2vh), 1.15rem)",
               }}>
               {c.subtitle}
             </EditableText>
@@ -290,8 +290,8 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
             fieldPath="body"
             html
             as="div"
-            className="font-body-heading max-w-[480px] leading-relaxed mt-[1.5vh]"
-            style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "clamp(0.8rem, 1.5vw, 1.1rem)" }}
+            className="font-body-heading max-w-[480px] leading-relaxed mt-[1.2vh]"
+            style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "clamp(0.68rem, min(1.25vw, 1.6vh), 1rem)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
           />
         </motion.div>

@@ -45,7 +45,7 @@ const NotFound = () => {
 
   return (
     <div
-      className="flex min-h-screen items-center justify-center px-6"
+      className="public-fluid-type flex min-h-screen items-center justify-center px-6"
       style={{ backgroundColor: "hsl(var(--light-bg))", color: "hsl(var(--light-fg))" }}
     >
       <div className="text-center max-w-md">

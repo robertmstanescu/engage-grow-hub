@@ -8,7 +8,9 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
  */
 const PublicLayout = () => (
   <ErrorBoundary label="page">
-    <Outlet />
+    <div className="public-fluid-type">
+      <Outlet />
+    </div>
   </ErrorBoundary>
 );
 

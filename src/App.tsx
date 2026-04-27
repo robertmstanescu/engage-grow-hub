@@ -52,7 +52,9 @@ const App = () => (
             </Routes>
             <AnalyticsBeaconMount />
             <ConditionalToolbar />
-            <CookieConsent />
+            <div className="public-fluid-type">
+              <CookieConsent />
+            </div>
           </BrowserRouter>
         </InlineEditProvider>
       </TooltipProvider>

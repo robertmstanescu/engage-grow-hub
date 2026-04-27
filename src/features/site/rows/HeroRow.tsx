@@ -26,7 +26,7 @@ const HeroRow = ({ row }: Props) => {
 
   return (
     <section
-      className="snap-section grain relative h-[100dvh] flex flex-col justify-end overflow-visible"
+      className="snap-section grain relative flex flex-col justify-end overflow-hidden"
       style={{ isolation: "isolate", backgroundColor: "hsl(260 20% 4%)" }}
     >
       <RowBackground row={row} />
@@ -69,17 +69,17 @@ const HeroRow = ({ row }: Props) => {
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] pointer-events-none"
         style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
 
-      <div ref={ref} className="relative z-10 w-full max-w-[1100px] px-4 sm:px-6 pb-[4vh] pt-[15vh] flex flex-col justify-end overflow-visible">
+      <div ref={ref} className="relative z-10 flex min-h-0 flex-1 w-full max-w-[1100px] flex-col justify-end overflow-y-auto px-4 pb-[3vh] pt-[4vh] sm:px-6">
         {c.label && (
-          <p className="font-body tracking-[0.35em] uppercase mb-[2vh]"
-            style={{ ...revealStyle(isVisible, 0), color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(10px, 2.6vw, 11px)" }}>
+          <p className="font-body tracking-[0.28em] uppercase mb-[1.2vh]"
+            style={{ ...revealStyle(isVisible, 0), color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(0.42rem, min(0.85vw, 1.05vh), 0.68rem)" }}>
             {c.label}
           </p>
         )}
 
         {titleLines.length > 0 && (
-          <h1 className="font-display font-black leading-[0.92] tracking-tight mb-0 w-full overflow-visible"
-            style={{ color: c.title_color || "hsl(var(--hero-title))", fontSize: "clamp(2.75rem, 12vw, 5.5rem)" }}>
+          <h1 className="font-display font-black leading-[0.9] tracking-tight mb-0 w-full overflow-visible"
+            style={{ color: c.title_color || "hsl(var(--hero-title))", fontSize: "clamp(1.1rem, min(5vw, 6.4vh), 5.5rem)" }}>
             {titleLines.map((line, i) => (
               <span key={i} className="block overflow-visible" style={revealStyle(isVisible, i + 1, 0.1)}>
                 <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
@@ -89,22 +89,22 @@ const HeroRow = ({ row }: Props) => {
         )}
 
         {c.tagline && (
-          <p className="font-body tracking-[0.3em] uppercase mt-[2vh]"
-            style={{ ...revealStyle(isVisible, titleLines.length + 1, 0.1), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(10px, 2.6vw, 11px)", opacity: isVisible ? 0.4 : 0 }}>
+          <p className="font-body tracking-[0.25em] uppercase mt-[1.2vh]"
+            style={{ ...revealStyle(isVisible, titleLines.length + 1, 0.1), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(0.42rem, min(0.85vw, 1.05vh), 0.68rem)", opacity: isVisible ? 0.4 : 0 }}>
             {c.tagline}
           </p>
         )}
 
         {c.subtitle && (
-          <p className="leading-tight mt-[1.5vh] max-w-[550px]"
-            style={{ ...revealStyle(isVisible, titleLines.length + 2, 0.1), fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--hero-body))", fontSize: "clamp(1.05rem, 4vw, 1.15rem)" }}>
+          <p className="leading-tight mt-[1.2vh] max-w-[550px]"
+            style={{ ...revealStyle(isVisible, titleLines.length + 2, 0.1), fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--hero-body))", fontSize: "clamp(0.72rem, min(1.7vw, 2.2vh), 1.15rem)" }}>
             {c.subtitle}
           </p>
         )}
 
         {c.body && (
-          <div className="font-body-heading max-w-[480px] leading-relaxed mt-[2vh] [&_p]:mb-[5px] [&_p]:mt-[5px]"
-            style={{ ...revealStyle(isVisible, titleLines.length + 3, 0.1), color: c.body_color || "hsl(var(--hero-body))", fontSize: "clamp(0.95rem, 3.6vw, 1rem)" }}
+          <div className="font-body-heading max-w-[480px] leading-relaxed mt-[1.2vh] [&_p]:mb-[4px] [&_p]:mt-[4px]"
+            style={{ ...revealStyle(isVisible, titleLines.length + 3, 0.1), color: c.body_color || "hsl(var(--hero-body))", fontSize: "clamp(0.68rem, min(1.25vw, 1.6vh), 1rem)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
           />
         )}
