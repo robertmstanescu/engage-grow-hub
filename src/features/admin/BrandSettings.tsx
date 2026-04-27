@@ -55,7 +55,7 @@ const BrandSettings = () => {
   const [isPublishingChanges, setIsPublishingChanges] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>("branding");
   const [contrastFg, setContrastFg] = useState("#FFFFFF");
-  const [contrastBg, setContrastBg] = useState("#2A0E33");
+  const [contrastBg, setContrastBg] = useState("#1a1a1a");
 
   useEffect(() => {
     /* Pull both sections in one round-trip. brand_settings drives colours
