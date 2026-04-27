@@ -242,16 +242,16 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
         */}
         {(() => {
           const controls = (
-            <div className={`flex items-center ${carouselJustify} gap-3`}>
-              <button onClick={prev} aria-label="Previous service" className="w-8 h-8 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-3.5 h-3.5" /></button>
-              <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <button onClick={prev} aria-label="Previous service" className="w-6 h-6 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-3 h-3" /></button>
+              <div className="flex gap-1.5">
                 {services.map((_: any, i: number) => (
                   <button key={i} onClick={() => setCurrent(i)} aria-label={`Go to service ${i + 1}`}
                     className="w-1.5 h-1.5 rounded-full interactive"
-                    style={{ backgroundColor: i === safeCurrent ? dotActive : dotInactive, transform: i === safeCurrent ? "scale(1.5)" : "scale(1)", boxShadow: i === safeCurrent ? `0 0 12px ${dotActive}` : "none" }} />
+                    style={{ backgroundColor: i === safeCurrent ? dotActive : dotInactive, transform: i === safeCurrent ? "scale(1.4)" : "scale(1)", boxShadow: i === safeCurrent ? `0 0 10px ${dotActive}` : "none" }} />
                 ))}
               </div>
-              <button onClick={next} aria-label="Next service" className="w-8 h-8 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-3.5 h-3.5" /></button>
+              <button onClick={next} aria-label="Next service" className="w-6 h-6 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-3 h-3" /></button>
             </div>
           );
           return (
