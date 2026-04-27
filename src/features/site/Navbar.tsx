@@ -192,6 +192,39 @@ const Navbar = () => {
     return () => window.removeEventListener("resize", check);
   }, [renderedItems.length]);
 
+  /**
+   * Publish the navbar's current footprint as CSS custom properties on
+   * <html>, so page wrappers can offset content using a single source of
+   * truth instead of hardcoded `lg:pl-16` / `pt-14` classes.
+   *
+   *   --nav-left-offset → horizontal space the left-rail nav occupies
+   *   --nav-top-offset  → vertical space the top-bar nav occupies
+   *
+   * Three modes:
+   *   1. Mobile (<lg)         → top bar (56px) → top offset only
+   *   2. Desktop, vertical    → left rail (64px) → left offset only
+   *   3. Desktop, horizontal  → top bar (56px)  → top offset only
+   */
+  useLayoutEffect(() => {
+    const apply = () => {
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      const root = document.documentElement;
+      if (!isDesktop) {
+        root.style.setProperty("--nav-left-offset", "0px");
+        root.style.setProperty("--nav-top-offset", "56px");
+      } else if (verticalFits) {
+        root.style.setProperty("--nav-left-offset", "64px");
+        root.style.setProperty("--nav-top-offset", "0px");
+      } else {
+        root.style.setProperty("--nav-left-offset", "0px");
+        root.style.setProperty("--nav-top-offset", "56px");
+      }
+    };
+    apply();
+    window.addEventListener("resize", apply);
+    return () => window.removeEventListener("resize", apply);
+  }, [verticalFits]);
+
   return (
     <>
       {/*
