@@ -179,15 +179,16 @@
    */
   .snap-container {
     /*
-     * Native CSS proximity scroll-snap. Unlike `mandatory`, this lets
-     * the browser snap to nearby rows without trapping the user inside
-     * tall sections (e.g. open accordions, long FAQ rows).
+     * Native CSS snap is OFF — we use a JS rAF tween (useMomentumSnap)
+     * so the glide is slow, fluid, and instantly cancellable when the
+     * user touches the wheel/trackpad/touchscreen. CSS `smooth` is also
+     * off so the two animation systems don't fight.
      */
-    scroll-snap-type: y proximity;
+    scroll-snap-type: none;
     overflow-y: auto;
     overflow-x: hidden;
     height: calc(100vh - var(--nav-top-offset, 0px));
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
 
   [id] {

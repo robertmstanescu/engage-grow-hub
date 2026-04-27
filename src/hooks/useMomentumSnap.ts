@@ -27,10 +27,12 @@ export const useMomentumSnap = (
     directionThresholdPx?: number;
   }
 ) => {
-  const duration = Math.min(options?.duration ?? 1100, 1500);
+  // Slower, more fluid default. Capped higher so the glide can really
+  // breathe — the user can always interrupt with a wheel/touch gesture.
+  const duration = Math.min(options?.duration ?? 1600, 2200);
   // Slightly longer idle window — gives readers time to pause on a
   // section without being immediately re-snapped after a small adjustment.
-  const idleMs = options?.idleMs ?? 240;
+  const idleMs = options?.idleMs ?? 280;
   const minWidth = options?.minWidth ?? 768;
   const directionThresholdPx = options?.directionThresholdPx ?? 24;
 
@@ -44,8 +46,9 @@ export const useMomentumSnap = (
     const container = containerRef.current;
     if (!container) return;
 
-    /** Soft ease — cubic-bezier(0.22, 1, 0.36, 1) "easeOutQuint"-ish. */
-    const ease = (t: number) => 1 - Math.pow(1 - t, 4);
+    /** Gentle ease-in-out — slow start, slow end, fluid middle. */
+    const ease = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
     /** rAF-driven scroll tween. Cancellable. */
     const tweenScroll = (to: number) => {

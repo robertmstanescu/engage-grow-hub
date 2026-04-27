@@ -4,7 +4,7 @@ import PageRows from "@/features/site/rows/PageRows";
 import Footer from "@/features/site/Footer";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
-
+import { useMomentumSnap } from "@/hooks/useMomentumSnap";
 
 /**
  * Index — the public homepage.
@@ -27,6 +27,7 @@ const Index = () => {
     description: seo.meta_description || undefined,
   });
 
+  useMomentumSnap(containerRef);
 
 
   return (
