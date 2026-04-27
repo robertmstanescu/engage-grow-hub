@@ -113,7 +113,12 @@ export default {
         "rhythm-loose": "48px",
         row: "64px",
         "row-md": "112px",
-        "row-fluid": "clamp(8px, 4vh, 96px)",
+        // Per global design rule: every row gets a tight 18px breathing
+        // strip top and bottom. The decorative content inside each row
+        // owns its own vertical rhythm; the row chrome stays minimal so
+        // small CTAs (e.g. the Intro subscribe row) don't dominate the
+        // viewport.
+        "row-fluid": "18px",
       },
       fontFamily: {
         display: ["Unbounded", "sans-serif"],
