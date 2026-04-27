@@ -110,6 +110,10 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   const bgColorOpacity = row.layout?.bgColorOpacity ?? 100;
   const bgImageOpacity = row.layout?.bgImageOpacity ?? 100;
   const bgImage = row.layout?.bgImage || "";
+  // ── Snap to viewport toggle ────────────────────────────────────────
+  // Default OFF: only the Hero snaps. Admins opt-in for hero-class rows
+  // (e.g. the Vows pledge) where a full-viewport reveal is desired.
+  const snapEnabled = row.layout?.snapEnabled === true;
 
   return (
     <Accordion type="multiple" defaultValue={["design"]} className="space-y-2">
