@@ -70,25 +70,72 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         )}
 
         <div className={`grid ${getGridCols(cards.length)} gap-6 ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
-          {cards.slice(0, 6).map((card, i) => (
-            <div key={i}
-              className="glass rounded-xl p-7 text-left"
-              style={{
-                ...revealStyle(isVisible, i + 2),
-                // `.glass` already provides the Apple-Vibrancy background,
-                // blur, saturation, border, and GPU-layer promotion — we
-                // only layer the boxed-row-specific shadow here.
-                boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
-              }}>
-              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
-                className="font-body-heading font-bold mb-3 text-lg leading-[1.6] text-[#e4c44e]" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))" }}>{card.title}</EditableText>
-              <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
-                data-rte-fit=""
-                className="font-body text-xs leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: c.color_card_body || "hsl(var(--vows-card-body))", overflow: "visible", height: "auto" }}
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
-            </div>
-          ))}
+          {cards.slice(0, 6).map((card: any, i: number) => {
+            const titleColor = c.color_card_title || "hsl(var(--vows-card-title))";
+            const bodyColor = c.color_card_body || "hsl(var(--vows-card-body))";
+            const cardLink: string | undefined = card.link_url?.trim() || undefined;
+            const cardCtaUrl: string | undefined = card.cta_url?.trim() || undefined;
+            const cardCtaLabel: string | undefined = card.cta_label?.trim() || undefined;
+
+            const innerCard = (
+              <>
+                {card.icon && (
+                  <div className="mb-3" style={{ color: titleColor }}>
+                    <Icon value={card.icon} size={28} />
+                  </div>
+                )}
+                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
+                  className="font-body-heading font-bold mb-3 text-lg leading-[1.6] text-[#e4c44e]" style={{ color: titleColor }}>{card.title}</EditableText>
+                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
+                  data-rte-fit=""
+                  className="font-body text-xs leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: bodyColor, overflow: "visible", height: "auto" }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
+
+                {cardCtaUrl && cardCtaLabel && (
+                  <div className="mt-rhythm-base">
+                    <a
+                      href={cardCtaUrl}
+                      target={isExternal(cardCtaUrl) ? "_blank" : undefined}
+                      rel={isExternal(cardCtaUrl) ? "noopener noreferrer" : undefined}
+                      onClick={(e) => { if (cardLink) e.stopPropagation(); }}
+                      className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-5 py-2.5 rounded-full inline-block"
+                      style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
+                      {cardCtaLabel}
+                    </a>
+                  </div>
+                )}
+              </>
+            );
+
+            const cardClass = `glass rounded-xl p-7 text-left ${cardLink ? "block transition-transform hover:-translate-y-0.5 hover:shadow-2xl cursor-pointer" : ""}`;
+            const cardStyle = {
+              ...revealStyle(isVisible, i + 2),
+              boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
+            } as React.CSSProperties;
+
+            if (cardLink) {
+              return (
+                <a
+                  key={i}
+                  href={cardLink}
+                  target={isExternal(cardLink) ? "_blank" : undefined}
+                  rel={isExternal(cardLink) ? "noopener noreferrer" : undefined}
+                  className={cardClass}
+                  style={{ ...cardStyle, textDecoration: "none" }}
+                >
+                  {innerCard}
+                </a>
+              );
+            }
+
+            return (
+              <div key={i} className={cardClass} style={cardStyle}>
+                {innerCard}
+              </div>
+            );
+          })}
         </div>
+
 
         {c.note && (
           <div className="mt-rhythm-base pt-3" style={{ ...revealStyle(isVisible, cards.length + 2), borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
