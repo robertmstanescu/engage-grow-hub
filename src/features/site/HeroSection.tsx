@@ -254,48 +254,54 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.4 }}
             transition={{ duration: 1, delay: 0.8, ease }}
-            className="font-body tracking-[0.3em] uppercase mt-[2vh]"
-            style={{ color: c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)" }}>
+            className="font-body tracking-[0.3em] uppercase mt-[1.5vh] flex-shrink-0"
+            style={{ color: c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(7px, min(1vw, 1.4vh), 11px)" }}>
             <EditableText sectionKey="hero" fieldPath="tagline" as="span">
               {c.tagline}
             </EditableText>
           </motion.p>
         )}
 
-        {c.subtitle && (
+        {/*
+          Body cluster — independently scrollable so long copy never
+          forces the eyebrow/title/tagline off-screen on short viewports.
+        */}
+        <div className="min-h-0 flex-1 overflow-y-auto mt-[1.5vh]">
+          {c.subtitle && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1, ease }}>
+              <EditableText
+                sectionKey="hero"
+                fieldPath="subtitle"
+                as="p"
+                className="leading-tight max-w-[550px]"
+                style={{
+                  fontFamily: "'Architects Daughter', cursive",
+                  color: c.subtitle_color || "hsl(var(--hero-body))",
+                  fontSize: "clamp(0.9rem, 2vw, 1.25rem)",
+                }}>
+                {c.subtitle}
+              </EditableText>
+            </motion.div>
+          )}
+
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1, ease }}>
+            transition={{ duration: 0.8, delay: 1.1, ease }}>
             <EditableText
               sectionKey="hero"
-              fieldPath="subtitle"
-              as="p"
-              className="leading-tight mt-[1.5vh] max-w-[550px]"
-              style={{
-                fontFamily: "'Architects Daughter', cursive",
-                color: c.subtitle_color || "hsl(var(--hero-body))",
-                fontSize: "clamp(0.9rem, 2vw, 1.25rem)",
-              }}>
-              {c.subtitle}
-            </EditableText>
+              fieldPath="body"
+              html
+              as="div"
+              className="font-body-heading max-w-[480px] leading-relaxed mt-[1.5vh]"
+              style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "clamp(0.8rem, 1.5vw, 1.1rem)" }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
+            />
           </motion.div>
-        )}
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.1, ease }}>
-          <EditableText
-            sectionKey="hero"
-            fieldPath="body"
-            html
-            as="div"
-            className="font-body-heading max-w-[480px] leading-relaxed mt-[2vh]"
-            style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "clamp(0.8rem, 1.5vw, 1.1rem)" }}
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
-          />
-        </motion.div>
+        </div>
       </div>
     </section>
   );
