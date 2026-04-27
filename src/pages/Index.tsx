@@ -30,7 +30,7 @@ const Index = () => {
   useMomentumSnap(containerRef);
 
   return (
-    <div ref={containerRef} className="snap-container lg:pl-16">
+    <div ref={containerRef} className="snap-container page-shell">
       <Navbar />
       <PageRows footerSlot={<Footer />} />
     </div>
