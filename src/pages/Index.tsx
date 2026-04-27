@@ -5,6 +5,7 @@ import Footer from "@/features/site/Footer";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
 import { useMomentumSnap } from "@/hooks/useMomentumSnap";
+import { useSmoothAnchors } from "@/hooks/useSmoothAnchors";
 
 /**
  * Index — the public homepage.
