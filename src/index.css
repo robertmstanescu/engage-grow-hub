@@ -580,9 +580,10 @@
     scroll-snap-stop: always;
   }
 
-  /* Service rows: desktop = 100dvh centered, mobile = content-height */
+  /* Service rows: desktop = full visible viewport (matches snap-container so
+     the JS momentum snap's "tall row" escape hatch never trips), mobile = content-height */
   .service-row {
-    min-height: 100dvh;
+    min-height: calc(100vh - var(--nav-top-offset, 0px));
     justify-content: center;
     scroll-snap-align: start;
     scroll-snap-stop: always;
@@ -709,12 +710,20 @@
 
 @layer utilities {
   .public-fluid-type {
-    --fluid-fs-nano: clamp(0.42rem, min(0.75vw, 0.95vh), 0.56rem);
-    --fluid-fs-micro: clamp(0.48rem, min(0.85vw, 1.05vh), 0.63rem);
-    --fluid-fs-xs: clamp(0.56rem, min(1vw, 1.2vh), 0.75rem);
-    --fluid-fs-sm: clamp(0.68rem, min(1.15vw, 1.45vh), 0.88rem);
-    --fluid-fs-base: clamp(0.78rem, min(1.35vw, 1.7vh), 1rem);
-    --fluid-fs-lg: clamp(0.9rem, min(1.6vw, 2vh), 1.13rem);
+    /*
+     * LEGIBILITY FLOORS — Small UI text (chips, eyebrows, captions,
+     * card body) must remain readable on short viewports. We keep the
+     * smallest tokens at near-fixed sizes (no aggressive vh scaling)
+     * and only let `text-base` and up flow with the viewport. Anything
+     * below 10px is unreadable on a 5K display, so the *_floors_* are
+     * deliberately conservative.
+     */
+    --fluid-fs-nano: 0.6rem;     /* ~9.6px — tiny chips, was text-[9px] */
+    --fluid-fs-micro: 0.65rem;   /* ~10.4px — was text-[10px] */
+    --fluid-fs-xs: 0.72rem;      /* ~11.5px — was text-xs / text-[11px] */
+    --fluid-fs-sm: 0.8rem;       /* ~12.8px — was text-sm / text-[12-13px] */
+    --fluid-fs-base: clamp(0.85rem, min(1.35vw, 1.7vh), 1rem);
+    --fluid-fs-lg: clamp(0.95rem, min(1.6vw, 2vh), 1.13rem);
     --fluid-fs-xl: clamp(1.05rem, min(2vw, 2.5vh), 1.25rem);
     --fluid-fs-2xl: clamp(1.2rem, min(2.45vw, 3vh), 1.5rem);
     --fluid-fs-3xl: clamp(1.35rem, min(3vw, 3.8vh), 1.88rem);
@@ -723,6 +732,11 @@
     --fluid-fs-6xl: clamp(2.1rem, min(5.8vw, 7vh), 3.75rem);
   }
 
+  /*
+   * Small text classes use FIXED legibility floors above (no scaling).
+   * This guarantees service-card chips, deliverables labels, prices,
+   * etc. stay readable on every viewport. Larger headings still flow.
+   */
   .public-fluid-type .text-xs,
   .public-fluid-type [class~="text-[11px]"] { font-size: var(--fluid-fs-xs); }
   .public-fluid-type .text-sm,
