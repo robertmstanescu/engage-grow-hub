@@ -28,7 +28,9 @@ export const useMomentumSnap = (
   }
 ) => {
   const duration = Math.min(options?.duration ?? 1100, 1500);
-  const idleMs = options?.idleMs ?? 160;
+  // Slightly longer idle window — gives readers time to pause on a
+  // section without being immediately re-snapped after a small adjustment.
+  const idleMs = options?.idleMs ?? 240;
   const minWidth = options?.minWidth ?? 768;
   const directionThresholdPx = options?.directionThresholdPx ?? 24;
 
