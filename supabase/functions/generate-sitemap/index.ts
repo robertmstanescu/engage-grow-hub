@@ -70,10 +70,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// The canonical, public origin we want Google to index. All <loc> entries
-// are emitted with this prefix so they survive whatever proxy / Worker
-// path the request actually entered through.
-const CANONICAL_ORIGIN = "https://themagiccoffin.com";
+// The canonical, public origin we want Google to index. This is now
+// resolved per-request from `brand_settings.identity.canonicalOrigin`,
+// falling back to the request origin and then to this neutral default.
+const FALLBACK_ORIGIN = "https://example.com";
 
 /**
  * Escape characters that have special meaning inside XML element text.
@@ -124,6 +124,21 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
+  // Resolve canonical origin: admin-configured → request origin → fallback.
+  let canonicalOrigin = FALLBACK_ORIGIN;
+  try {
+    const { data: brandRow } = await supabaseAdmin
+      .from("site_content").select("content").eq("section_key", "brand_settings").maybeSingle();
+    const brand = (brandRow?.content as Record<string, any>) || {};
+    const identityOrigin = typeof brand?.identity?.canonicalOrigin === "string"
+      ? brand.identity.canonicalOrigin.trim().replace(/\/+$/, "") : "";
+    if (identityOrigin) canonicalOrigin = identityOrigin;
+    else {
+      const reqHost = new URL(req.url).hostname;
+      if (!/supabase\.co$/i.test(reqHost)) canonicalOrigin = new URL(req.url).origin;
+    }
+  } catch { /* keep fallback */ }
+
   // Fetched in parallel — both queries are independent and small enough
   // that issuing them serially would only add latency.
   let cmsPages: Array<{ slug: string; updated_at: string | null }> = [];
@@ -152,14 +167,14 @@ Deno.serve(async (req) => {
   // ── Assemble the XML body ─────────────────────────────────────────────
   // Static, always-present URLs first; dynamic rows after.
   const urlEntries: string[] = [
-    buildUrlEntry(`${CANONICAL_ORIGIN}/`, { changefreq: "weekly", priority: "1.0" }),
-    buildUrlEntry(`${CANONICAL_ORIGIN}/blog/`, { changefreq: "weekly", priority: "0.8" }),
+    buildUrlEntry(`${canonicalOrigin}/`, { changefreq: "weekly", priority: "1.0" }),
+    buildUrlEntry(`${canonicalOrigin}/blog/`, { changefreq: "weekly", priority: "0.8" }),
   ];
 
   for (const page of cmsPages) {
     if (!page.slug) continue;
     urlEntries.push(
-      buildUrlEntry(`${CANONICAL_ORIGIN}/p/${page.slug}/`, {
+      buildUrlEntry(`${canonicalOrigin}/p/${page.slug}/`, {
         lastmod: page.updated_at,
         changefreq: "monthly",
         priority: "0.7",
@@ -170,7 +185,7 @@ Deno.serve(async (req) => {
   for (const post of blogPosts) {
     if (!post.slug) continue;
     urlEntries.push(
-      buildUrlEntry(`${CANONICAL_ORIGIN}/blog/${post.slug}/`, {
+      buildUrlEntry(`${canonicalOrigin}/blog/${post.slug}/`, {
         // Prefer `published_at` over `updated_at` for blog lastmod —
         // editorial tweaks shouldn't make Google refetch every post.
         lastmod: post.published_at || post.updated_at,
