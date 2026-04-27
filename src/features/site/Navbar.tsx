@@ -208,13 +208,13 @@ const Navbar = () => {
       const root = document.documentElement;
       if (!isDesktop) {
         root.style.setProperty("--nav-left-offset", "0px");
-        root.style.setProperty("--nav-top-offset", "56px");
+        root.style.setProperty("--nav-top-offset", "36px");
       } else if (verticalFits) {
-        root.style.setProperty("--nav-left-offset", "64px");
+        root.style.setProperty("--nav-left-offset", "40px");
         root.style.setProperty("--nav-top-offset", "0px");
       } else {
         root.style.setProperty("--nav-left-offset", "0px");
-        root.style.setProperty("--nav-top-offset", "56px");
+        root.style.setProperty("--nav-top-offset", "36px");
       }
     };
     apply();
