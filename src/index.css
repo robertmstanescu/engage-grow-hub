@@ -179,22 +179,15 @@
    */
   .snap-container {
     /*
-     * Native CSS scroll-snap is disabled in favour of JS-driven
-     * momentum snapping (see useMomentumSnap). This lets us run a
-     * direction-aware glide of up to 1.5s, AND keep the footer
-     * accessible below the last row — neither of which CSS snap
-     * can do natively.
+     * Native CSS proximity scroll-snap. Unlike `mandatory`, this lets
+     * the browser snap to nearby rows without trapping the user inside
+     * tall sections (e.g. open accordions, long FAQ rows).
      */
-    scroll-snap-type: none;
+    scroll-snap-type: y proximity;
     overflow-y: auto;
     overflow-x: hidden;
     height: calc(100vh - var(--nav-top-offset, 0px));
-    /*
-     * `scroll-behavior: smooth` is intentionally OFF here because
-     * the snap hook drives its own rAF tween. Letting both run at
-     * once causes a fight between the two animations.
-     */
-    scroll-behavior: auto;
+    scroll-behavior: smooth;
   }
 
   [id] {
