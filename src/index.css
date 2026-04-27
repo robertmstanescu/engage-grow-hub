@@ -212,6 +212,17 @@
   }
 
   /*
+   * When .page-shell is the SAME element as .snap-container, the
+   * container's `height: calc(100vh - --nav-top-offset)` already reserves
+   * space for the top bar. Adding padding-top on top of that would shrink
+   * the inner area by another 56px and create a black gap at the bottom.
+   * Drop the padding-top in that combined case — height calc handles it.
+   */
+  .snap-container.page-shell {
+    padding-top: 0;
+  }
+
+  /*
    * Snap sections must size against the SCROLL CONTAINER height, not the
    * raw viewport, so the navbar's reserved space at the top doesn't
    * push content off-screen. `.snap-container` already uses calc() with
