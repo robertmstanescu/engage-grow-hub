@@ -93,6 +93,7 @@ export const useMomentumSnap = (
 
       const containerRect = container.getBoundingClientRect();
       const viewportTop = containerRect.top;
+      const viewportH = container.clientHeight;
 
       // Identify the section currently dominating the viewport top
       let currentIdx = 0;
@@ -112,6 +113,22 @@ export const useMomentumSnap = (
 
       // Already aligned — nothing to do.
       if (Math.abs(currentTopRel) < 2) return;
+
+      /*
+       * Tall-row escape hatch: if the CURRENT row is taller than the
+       * scroll container (e.g. window resized small, content overflows
+       * one viewport), the user MUST be able to scroll freely inside
+       * the row to read it. Forcing a snap back to its top would trap
+       * them. We only re-engage snapping once they've scrolled past the
+       * row's bottom into the next one.
+       */
+      if (current.offsetHeight > viewportH + 1) {
+        const scrolledIntoCurrent = -currentTopRel; // px past current's top
+        const stillInsideCurrent =
+          scrolledIntoCurrent >= 0 &&
+          scrolledIntoCurrent + viewportH < current.offsetHeight - 1;
+        if (stillInsideCurrent) return;
+      }
 
       // Direction-aware target: if the user was clearly scrolling down
       // and has moved into the current section by a meaningful amount,
