@@ -76,11 +76,23 @@ export function useAnalyticsBeacon(): void {
     };
 
     // Fire-and-forget. We do not await — page interactivity matters more
-    // than the beacon's latency. Errors are caught so they cannot throw
-    // out of the React effect.
-    supabase.functions.invoke("track-visitor", { body }).catch((beaconError) => {
-      // Telemetry failure is logged at warn level but never surfaced.
-      console.warn("Analytics beacon failed:", beaconError);
-    });
+    // than the beacon's latency. Analytics is strictly non-critical:
+    // transient 5xx (edge runtime cold starts, brief outages) must NEVER
+    // surface as console errors or unhandled rejections, otherwise the
+    // dev overlay flags them as runtime errors and breaks the preview.
+    // We swallow ALL failures silently — the next route change will
+    // try again, and missing a beacon has zero user-facing impact.
+    try {
+      const result = supabase.functions.invoke("track-visitor", { body });
+      // Some SDK versions return a thenable that rejects; guard both.
+      if (result && typeof (result as Promise<unknown>).then === "function") {
+        (result as Promise<unknown>).then(
+          () => {},
+          () => {},
+        );
+      }
+    } catch {
+      // Synchronous throw (extremely rare) — also silent.
+    }
   }, [pathname]);
 }
