@@ -86,7 +86,18 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
         boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), 0 0 60px -20px hsl(280 55% 30% / 0.15), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
       }}>
       <div className={`${compact ? "p-4 md:p-5 flex-shrink-0" : "p-5 md:p-6"} ${alignClass}`}>
-        <span className={`${cardTextAlign === "center" ? "mx-auto" : cardTextAlign === "right" ? "ml-auto" : ""} inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full mb-3 font-medium`} style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
+        {/*
+          Tag row — when carousel controls are provided, render them on
+          the same line as the tag, anchored to the top-right corner.
+          The tag keeps its own alignment behaviour; the controls are
+          pushed to the right via `ml-auto`.
+        */}
+        <div className="flex items-center gap-3 mb-3">
+          <span className={`inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full font-medium`} style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
+          {carouselControls && (
+            <div className="ml-auto">{carouselControls}</div>
+          )}
+        </div>
         <h4 className={`font-display font-bold leading-tight mb-2 ${compact ? "text-sm md:text-base" : "text-base md:text-lg"}`} style={{ color: "hsl(var(--pillar-card-title))" }}>{title}</h4>
         <p className="font-body-heading text-xs font-medium mb-3" style={{ color: "hsl(var(--pillar-subtitle))" }}>{subtitle}</p>
         <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--pillar-card-description))", overflow: "visible", height: "auto", WebkitLineClamp: "unset", display: "block" }}>{description}</p>
@@ -98,17 +109,6 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
         <a href="#contact" className="font-display text-[11px] font-bold tracking-wide hover:opacity-80 transition-all duration-500" style={{ color: "hsl(var(--pillar-cta-text))" }}>{price} →</a>
         <span className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--pillar-cta-time))" }}>{time}</span>
       </div>
-      {carouselControls && (
-        <div
-          className={`${compact ? "px-4 md:px-5" : "px-5 md:px-6"} py-2.5 flex-shrink-0 border-t`}
-          style={{
-            backgroundColor: "hsl(var(--background) / 0.2)",
-            borderColor: "hsl(var(--foreground) / 0.08)",
-          }}
-        >
-          {carouselControls}
-        </div>
-      )}
       {note && (
         <div className={`${compact ? "mx-4 md:mx-5 my-2" : "mx-5 md:mx-6 my-3"} px-3 py-2 rounded-lg flex-shrink-0 ${alignClass}`} style={{ backgroundColor: "hsl(var(--background) / 0.4)", borderLeft: "2px solid hsl(var(--accent) / 0.3)" }}>
           <p className="font-body text-[11px] italic leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.5)" }}>{note}</p>
