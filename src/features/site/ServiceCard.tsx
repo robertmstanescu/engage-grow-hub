@@ -13,7 +13,7 @@ const Deliverables = memo(({ label, items, textAlign }: { label: string; items: 
   const toggle = useCallback(() => setOpen(v => !v), []);
   const alignClass = textAlign === "center" ? "text-center" : textAlign === "right" ? "text-right" : "text-left";
   return (
-    <div className={`border-t px-5 py-3 ${alignClass}`} style={{ borderColor: "hsl(var(--foreground) / 0.08)", backgroundColor: "hsl(var(--background) / 0.3)" }}>
+    <div data-deliverables-open={open ? "true" : "false"} className={`border-t px-5 py-3 ${alignClass}`} style={{ borderColor: "hsl(var(--foreground) / 0.08)", backgroundColor: "hsl(var(--background) / 0.3)" }}>
       <button onClick={toggle} className="flex items-center justify-between w-full text-left">
         <span className="font-body text-[9px] tracking-[0.2em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
         <ChevronDown
