@@ -62,6 +62,7 @@ import HeroRowFieldsInline from "./HeroRowFieldsInline";
 import BoxedArrayField from "./BoxedArrayField";
 import SubscribeToggle from "./SubscribeToggle";
 import { TestimonialEditor, LogoCloudEditor, FaqEditor } from "./NewRowEditors";
+import { IconPickerField } from "@/features/icons/IconPicker";
 import {
   Accordion,
   AccordionContent,
@@ -111,6 +112,12 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
         label="Strip Title"
         value={row.strip_title}
         onChange={(v) => onRowMetaChange({ strip_title: v })}
+      />
+      <IconPickerField
+        label="Title Icon (above heading)"
+        value={content.icon || ""}
+        onChange={(v) => onContentChange("icon", v)}
+        hint="Optional. Renders above the row's title."
       />
       <SubscribeToggle
         value={!!content.show_subscribe}
