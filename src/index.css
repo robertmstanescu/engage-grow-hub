@@ -582,7 +582,7 @@
   }
   .snap-section[data-snap-enabled="true"] {
     scroll-snap-align: start;
-    scroll-snap-stop: always;
+    scroll-snap-stop: normal;
   }
 
   /* Service rows: free-scroll by default, content-sized so the row
