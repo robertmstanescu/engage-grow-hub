@@ -346,12 +346,10 @@ const Navbar = () => {
           borderBottom: "1px solid hsl(var(--border) / 0.2)",
         }}
       >
-        <motion.a
+        <a
           href="/"
           className="flex items-center flex-shrink-0"
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05, ease }}
+          style={{ animation: "nav-cascade-fade 500ms cubic-bezier(0.16, 1, 0.3, 1) 50ms both" }}
         >
           {!brandingLoading && logoUrl ? (
             <ResponsiveLogo
@@ -362,16 +360,16 @@ const Navbar = () => {
               height={28}
             />
           ) : null}
-        </motion.a>
-        <motion.button
+        </a>
+        <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          style={{ color: "hsl(var(--foreground) / 0.7)" }}
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15, ease }}
+          style={{
+            color: "hsl(var(--foreground) / 0.7)",
+            animation: "nav-cascade-fade 500ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both",
+          }}
         >
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-        </motion.button>
+        </button>
       </nav>
 
       {/* Mobile menu overlay */}
