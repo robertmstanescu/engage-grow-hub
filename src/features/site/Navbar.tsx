@@ -261,7 +261,7 @@ const Navbar = () => {
             // function component and motion's ref-forwarding would warn,
             // and because the side-nav links rely on a CSS rotate(180deg)
             // that motion's inline transform would clobber.
-            animation: "nav-cascade 600ms cubic-bezier(0.16, 1, 0.3, 1) 50ms both",
+            animation: "nav-cascade-emblem 1100ms cubic-bezier(0.16, 1, 0.3, 1) 2600ms both",
           }}
         >
           {!brandingLoading && logoUrl ? (
@@ -305,7 +305,7 @@ const Navbar = () => {
                 style={{
                   color: active ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.55)",
                   fontWeight: active ? 600 : 400,
-                  animation: `${animName} 500ms cubic-bezier(0.16, 1, 0.3, 1) ${150 + i * 70}ms both`,
+                  animation: `${animName} 900ms cubic-bezier(0.16, 1, 0.3, 1) ${3300 + i * 150}ms both`,
                 }}
               >
                 {item.label}
@@ -327,8 +327,8 @@ const Navbar = () => {
             style={{
               backgroundColor: "hsl(var(--accent))",
               color: "hsl(var(--accent-foreground))",
-              animation: `nav-cascade-fade 500ms cubic-bezier(0.16, 1, 0.3, 1) ${
-                200 + renderedItems.length * 70
+              animation: `nav-cascade-fade 900ms cubic-bezier(0.16, 1, 0.3, 1) ${
+                3300 + renderedItems.length * 150
               }ms both`,
             }}
           >
@@ -349,7 +349,6 @@ const Navbar = () => {
         <a
           href="/"
           className="flex items-center flex-shrink-0"
-          style={{ animation: "nav-cascade-fade 500ms cubic-bezier(0.16, 1, 0.3, 1) 50ms both" }}
         >
           {!brandingLoading && logoUrl ? (
             <ResponsiveLogo
@@ -365,7 +364,6 @@ const Navbar = () => {
           onClick={() => setMobileOpen(!mobileOpen)}
           style={{
             color: "hsl(var(--foreground) / 0.7)",
-            animation: "nav-cascade-fade 500ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both",
           }}
         >
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}

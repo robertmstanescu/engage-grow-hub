@@ -1,4 +1,5 @@
 import { sanitizeHtml } from "@/services/sanitize";
+import type { CSSProperties } from "react";
 import type { PageRow } from "@/types/rows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import RowBackground from "./RowBackground";
@@ -23,6 +24,10 @@ const HeroRow = ({ row }: Props) => {
   const hasBg = bgType !== "none" && bgUrl;
 
   const { ref, isVisible } = useScrollReveal({ threshold: 0.15 });
+  const reveal = (staggerIndex: number, baseDelay = 0): CSSProperties => ({
+    ...revealStyle(isVisible, staggerIndex, baseDelay),
+    animationDelay: `calc(300ms + ${staggerIndex} * 220ms)`,
+  });
 
   return (
     <section
@@ -72,8 +77,8 @@ const HeroRow = ({ row }: Props) => {
 
       <div ref={ref} className="relative z-10 flex min-h-0 flex-1 w-full max-w-[1400px] flex-col justify-end overflow-y-auto px-4 pb-[4vh] pt-[6vh] sm:px-8">
         {c.label && (
-          <p className="font-body tracking-[0.32em] uppercase mb-[1.5vh]"
-            style={{ ...revealStyle(isVisible, 0), color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)" }}>
+          <p className="font-body tracking-[0.32em] uppercase mb-[1.5vh] hero-cascade-item"
+            style={{ ...reveal(0), color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)" }}>
             {c.label}
           </p>
         )}
@@ -82,7 +87,7 @@ const HeroRow = ({ row }: Props) => {
           <h1 className="font-display font-black leading-[0.88] tracking-tight mb-0 w-full overflow-visible"
             style={{ color: c.title_color || "hsl(var(--hero-title))", fontSize: "clamp(2rem, min(11vw, 16vh), 10rem)" }}>
             {titleLines.map((line, i) => (
-              <span key={i} className="block overflow-visible" style={revealStyle(isVisible, i + 1, 0.1)}>
+              <span key={i} className="block overflow-visible hero-cascade-item" style={reveal(i + 1, 0.1)}>
                 <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
               </span>
             ))}
@@ -90,28 +95,28 @@ const HeroRow = ({ row }: Props) => {
         )}
 
         {c.tagline && (
-          <p className="font-body tracking-[0.28em] uppercase mt-[1.8vh]"
-            style={{ ...revealStyle(isVisible, titleLines.length + 1, 0.1), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)", opacity: isVisible ? 0.4 : 0 }}>
+          <p className="font-body tracking-[0.28em] uppercase mt-[1.8vh] hero-cascade-item"
+            style={{ ...reveal(titleLines.length + 1, 0.1), ...(isVisible ? { "--hero-cascade-opacity": "0.4" } as CSSProperties : {}), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)", opacity: isVisible ? 0.4 : 0 }}>
             {c.tagline}
           </p>
         )}
 
         {c.subtitle && (
-          <p className="leading-tight mt-[1.5vh] max-w-[600px]"
-            style={{ ...revealStyle(isVisible, titleLines.length + 2, 0.1), fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--hero-body))", fontSize: "clamp(0.85rem, min(2vw, 2.6vh), 1.4rem)" }}>
+          <p className="leading-tight mt-[1.5vh] max-w-[600px] hero-cascade-item"
+            style={{ ...reveal(titleLines.length + 2, 0.1), fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--hero-body))", fontSize: "clamp(0.85rem, min(2vw, 2.6vh), 1.4rem)" }}>
             {c.subtitle}
           </p>
         )}
 
         {c.body && (
-          <div className="font-body-heading max-w-[520px] leading-relaxed mt-[1.5vh] [&_p]:mb-[4px] [&_p]:mt-[4px]"
-            style={{ ...revealStyle(isVisible, titleLines.length + 3, 0.1), color: c.body_color || "hsl(var(--hero-body))", fontSize: "clamp(0.78rem, min(1.4vw, 1.8vh), 1.05rem)" }}
+          <div className="font-body-heading max-w-[520px] leading-relaxed mt-[1.5vh] [&_p]:mb-[4px] [&_p]:mt-[4px] hero-cascade-item"
+            style={{ ...reveal(titleLines.length + 3, 0.1), color: c.body_color || "hsl(var(--hero-body))", fontSize: "clamp(0.78rem, min(1.4vw, 1.8vh), 1.05rem)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
           />
         )}
 
         {c.cta_url && c.cta_label && (
-          <div className="mt-[2vh]" style={revealStyle(isVisible, titleLines.length + 4, 0.1)}>
+          <div className="mt-[2vh] hero-cascade-item" style={reveal(titleLines.length + 4, 0.1)}>
             <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
               className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
               style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>

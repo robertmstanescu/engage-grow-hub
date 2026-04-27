@@ -100,7 +100,17 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
   );
   const rows = data.rows || [];
 
-  if (isLoading) return <>{footerSlot}</>;
+  if (isLoading) {
+    return (
+      <div
+        data-section="hero"
+        data-snap-enabled="true"
+        aria-busy="true"
+        className="scope-hero snap-section grain relative mesh-hero"
+        style={{ minHeight: "calc(100vh - var(--nav-top-offset, 0px))" }}
+      />
+    );
+  }
   return <RowsRenderer rows={rows} footerSlot={footerSlot} />;
 };
 
