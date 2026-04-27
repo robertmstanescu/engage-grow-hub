@@ -133,3 +133,19 @@ export const useBrandColors = (): BrandColor[] => {
   const brand = useBrandSettings();
   return brand.colors;
 };
+
+/**
+ * Async one-shot fetch of brand identity (name / tagline / canonical
+ * origin). Used by non-React code paths like the page-meta hook on
+ * its first render — they need the values before the React tree has
+ * had a chance to broadcast them via `useBrandSettings`.
+ */
+export const fetchBrandIdentity = async (): Promise<BrandIdentity> => {
+  if (cachedBrand) return cachedBrand.identity;
+  try {
+    const resolved = await fetchPublicSiteContentValue<Partial<BrandSettings>>("brand_settings");
+    return { ...DEFAULT_BRAND.identity, ...(resolved?.identity || {}) };
+  } catch {
+    return DEFAULT_BRAND.identity;
+  }
+};
