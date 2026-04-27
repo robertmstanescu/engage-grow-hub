@@ -4,6 +4,7 @@ import type { PageRow } from "@/types/rows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import RowBackground from "./RowBackground";
 import { resolveImageAlt } from "@/services/imageAlt";
+import Icon from "@/features/icons/Icon";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -76,6 +77,12 @@ const HeroRow = ({ row }: Props) => {
         style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
 
       <div ref={ref} className="relative z-10 flex min-h-0 flex-1 w-full max-w-[1400px] flex-col justify-end overflow-y-auto px-4 pb-[4vh] pt-[6vh] sm:px-8">
+        {c.icon && (
+          <div className="mb-[1.5vh] hero-cascade-item" style={{ ...reveal(0), color: c.title_color || "hsl(var(--hero-title))" }}>
+            <Icon value={c.icon} size={48} />
+          </div>
+        )}
+
         {c.label && (
           <p className="font-body tracking-[0.32em] uppercase mb-[1.5vh] hero-cascade-item"
             style={{ ...reveal(0), color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)" }}>
