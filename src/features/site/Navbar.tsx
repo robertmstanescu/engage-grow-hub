@@ -159,34 +159,38 @@ const Navbar = () => {
   };
 
   /**
-   * Detect whether the desktop vertical rail's intrinsic content height
-   * exceeds the viewport. If it does, we collapse to a horizontal top
-   * bar (still desktop). Re-measures on resize, item count change, and
-   * after fonts load. Hysteresis prevents flicker at the threshold.
+   * Decide whether the desktop vertical rail can fit in the viewport.
+   * We compute needed height from item count rather than measuring the
+   * DOM — once we've switched to horizontal the rail's actual height
+   * shrinks, so a DOM-based measurement would flip us back into vertical
+   * and oscillate.
+   *
+   * Per-item budget in the vertical rail (labels are rotated 90° so
+   * their visual height ≈ label width — ~150px covers realistic labels):
+   *   item ≈ 150px, gap ≈ 20px, fixed chrome ≈ 128px (logo + CTA + padding).
    */
   useLayoutEffect(() => {
+    const ITEM_HEIGHT = 150;
+    const ITEM_GAP = 20;
+    const CHROME = 128;
     const check = () => {
-      // Only relevant on desktop (lg breakpoint). Below lg the mobile
-      // top bar already handles things.
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
       if (!isDesktop) {
         setVerticalFits(true);
         return;
       }
-      const rail = railRef.current;
-      if (!rail) return;
-      // scrollHeight = full content height regardless of overflow.
-      const needed = rail.scrollHeight;
-      const available = window.innerHeight;
-      // 8px hysteresis to avoid toggling at the exact threshold.
-      setVerticalFits((prev) =>
-        prev ? needed <= available : needed + 8 <= available,
-      );
+      const count = renderedItems.length;
+      if (count === 0) {
+        setVerticalFits(true);
+        return;
+      }
+      const needed = CHROME + count * ITEM_HEIGHT + Math.max(0, count - 1) * ITEM_GAP;
+      setVerticalFits(needed <= window.innerHeight);
     };
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
-  }, [renderedItems.length, ctaHref, brandingLoading, navLoading]);
+  }, [renderedItems.length]);
 
   return (
     <>
