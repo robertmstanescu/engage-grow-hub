@@ -262,7 +262,7 @@ const Navbar = () => {
           className={
             verticalFits
               ? "flex-1 flex flex-col items-center justify-center gap-5"
-              : "flex-1 flex flex-row items-center justify-center gap-6"
+              : "flex-1 flex-row gap-6 flex items-center justify-start"
           }
         >
           {renderedItems.map((item) => {
