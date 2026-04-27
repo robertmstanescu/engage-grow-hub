@@ -662,6 +662,23 @@
     color: hsl(var(--accent)) !important;
   }
 
+  /* Top nav links (desktop horizontal fallback) — same palette. */
+  .top-nav-label {
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .top-nav-label:hover {
+    color: hsl(var(--primary-foreground)) !important;
+  }
+  .top-nav-label[data-active="true"],
+  .top-nav-label[data-active="true"]:hover {
+    color: hsl(var(--accent)) !important;
+  }
+
   /* ── Navbar scope (for admin pages) ── */
   .scope-navbar {
     --nav-bg: 260 20% 6%;

@@ -282,7 +282,7 @@ const Navbar = () => {
                 className={
                   verticalFits
                     ? "side-nav-label font-body"
-                    : "font-body text-xs uppercase tracking-[0.18em] whitespace-nowrap transition-colors"
+                    : "top-nav-label font-body"
                 }
                 data-active={active}
                 style={{
