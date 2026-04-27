@@ -88,13 +88,18 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
       <section
         data-section="hero"
         aria-busy="true"
-        className="scope-hero snap-section grain relative h-screen mesh-hero"
+        className="scope-hero snap-section grain relative mesh-hero"
+        style={{ height: "calc(100vh - var(--nav-top-offset, 0px))" }}
       />
     );
   }
 
   return (
-    <section data-section="hero" className="scope-hero snap-section grain relative h-screen flex flex-col justify-end overflow-hidden mesh-hero">
+    <section
+      data-section="hero"
+      className="scope-hero snap-section grain relative flex flex-col justify-end overflow-hidden mesh-hero"
+      style={{ height: "calc(100vh - var(--nav-top-offset, 0px))" }}
+    >
       {/*
         LAYERING ORDER (bottom → top):
         1. Ambient glow (z-[-2])      — decorative gradients sit at the very back
