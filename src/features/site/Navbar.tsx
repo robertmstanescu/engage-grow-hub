@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -69,6 +69,11 @@ const Navbar = () => {
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  // When the desktop vertical rail can't fit all items in the viewport
+  // height, we collapse to a horizontal top bar (still desktop, just
+  // rotated). Measured from the actual rendered rail.
+  const [verticalFits, setVerticalFits] = useState(true);
+  const railRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -153,31 +158,80 @@ const Navbar = () => {
     return normalised === normHref;
   };
 
+  /**
+   * Decide whether the desktop vertical rail can fit in the viewport.
+   * We compute needed height from item count rather than measuring the
+   * DOM — once we've switched to horizontal the rail's actual height
+   * shrinks, so a DOM-based measurement would flip us back into vertical
+   * and oscillate.
+   *
+   * Per-item budget in the vertical rail (labels are rotated 90° so
+   * their visual height ≈ label width — ~150px covers realistic labels):
+   *   item ≈ 150px, gap ≈ 20px, fixed chrome ≈ 128px (logo + CTA + padding).
+   */
+  useLayoutEffect(() => {
+    const ITEM_HEIGHT = 150;
+    const ITEM_GAP = 20;
+    const CHROME = 128;
+    const check = () => {
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      if (!isDesktop) {
+        setVerticalFits(true);
+        return;
+      }
+      const count = renderedItems.length;
+      if (count === 0) {
+        setVerticalFits(true);
+        return;
+      }
+      const needed = CHROME + count * ITEM_HEIGHT + Math.max(0, count - 1) * ITEM_GAP;
+      setVerticalFits(needed <= window.innerHeight);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [renderedItems.length]);
+
   return (
     <>
-      {/* Desktop side navigation — emblem logo */}
-      <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
-        style={{ backgroundColor: "hsl(var(--background) / 0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid hsl(var(--border) / 0.3)" }}>
-        <a href="/" className="mb-4">
+      {/*
+        Desktop navigation. Default = vertical left rail.
+        When the rail's content height exceeds the viewport (short
+        windows, lots of links, zoomed-in browsers), we collapse to a
+        horizontal top bar that always fits.
+      */}
+      <nav
+        ref={railRef}
+        className={
+          verticalFits
+            ? "hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
+            : "hidden lg:flex fixed top-0 left-0 right-0 z-50 h-14 flex-row items-center px-5 gap-5"
+        }
+        style={
+          verticalFits
+            ? { backgroundColor: "hsl(var(--background) / 0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid hsl(var(--border) / 0.3)" }
+            : { backgroundColor: "hsl(var(--background) / 0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(var(--border) / 0.2)" }
+        }
+      >
+        <a href="/" className={verticalFits ? "mb-4" : "flex items-center flex-shrink-0"}>
           {!brandingLoading && logoUrl ? (
             <ResponsiveLogo
               emblemUrl={emblemUrl}
               logoUrl={logoUrl}
-              imgClassName="w-8 h-8 object-contain brightness-200"
-              width={32}
-              height={32}
+              imgClassName={verticalFits ? "w-8 h-8 object-contain brightness-200" : "h-7 object-contain brightness-200"}
+              width={verticalFits ? 32 : undefined}
+              height={verticalFits ? 32 : 28}
             />
           ) : null}
         </a>
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-5">
-          {/*
-            Render fallback links immediately while `navLoading` is true so
-            the rail never appears empty. Once the real config arrives,
-            React swaps in the admin-customised labels. This trades a small
-            label-text swap for a visibly "complete" first paint, which
-            feels far snappier than a blank column.
-          */}
+        <div
+          className={
+            verticalFits
+              ? "flex-1 flex flex-col items-center justify-center gap-5"
+              : "flex-1 flex flex-row items-center justify-center gap-6"
+          }
+        >
           {renderedItems.map((item) => {
             const active = isActive(item.href);
             return (
@@ -185,12 +239,12 @@ const Navbar = () => {
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
-                className="side-nav-label font-body"
+                className={verticalFits ? "side-nav-label font-body" : "font-body text-xs uppercase tracking-[0.18em] whitespace-nowrap transition-colors"}
                 data-active={active}
                 style={{
                   color: active
                     ? "hsl(var(--accent))"
-                    : "hsl(var(--foreground) / 0.35)",
+                    : "hsl(var(--foreground) / 0.55)",
                   fontWeight: active ? 600 : 400,
                 }}
               >
@@ -205,9 +259,13 @@ const Navbar = () => {
             href={ctaHref}
             onClick={(e) => handleNavClick(e, ctaHref)}
             title={ctaText}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500 hover:scale-110"
+            className={
+              verticalFits
+                ? "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500 hover:scale-110"
+                : "px-4 h-8 rounded-full flex items-center justify-center text-[10px] font-bold uppercase tracking-[0.14em] transition-all duration-300 hover:opacity-90 whitespace-nowrap"
+            }
             style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-            →
+            {verticalFits ? "→" : ctaText || "→"}
           </a>
         ) : null}
       </nav>
