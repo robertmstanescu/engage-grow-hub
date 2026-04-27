@@ -139,6 +139,21 @@
 
   html {
     scroll-behavior: smooth;
+    /*
+     * Default navbar offsets — set by Navbar.tsx at runtime, but seeded
+     * here so the very first paint already accounts for the rail/topbar.
+     * Desktop default = vertical left rail (64px). Mobile overrides via
+     * the media query below. JS will refine on mount.
+     */
+    --nav-left-offset: 64px;
+    --nav-top-offset: 0px;
+  }
+
+  @media (max-width: 1023px) {
+    html {
+      --nav-left-offset: 0px;
+      --nav-top-offset: 56px;
+    }
   }
 
   /*
@@ -159,9 +174,8 @@
    * fits inside one viewport so the hard snap never lands you mid-
    * content. See tailwind.config.ts → `spacing.row-fluid`.
    *
-   * `height: 100vh` + `overflow-y: auto` makes THIS element the
-   * scroll container instead of the body, so snap points only
-   * resolve against sibling rows.
+   * Height = viewport minus whatever the navbar reserves at the top
+   * (set via the `--nav-top-offset` CSS var by Navbar.tsx).
    */
   .snap-container {
     /*
@@ -174,7 +188,7 @@
     scroll-snap-type: none;
     overflow-y: auto;
     overflow-x: hidden;
-    height: 100vh;
+    height: calc(100vh - var(--nav-top-offset, 0px));
     /*
      * `scroll-behavior: smooth` is intentionally OFF here because
      * the snap hook drives its own rAF tween. Letting both run at
