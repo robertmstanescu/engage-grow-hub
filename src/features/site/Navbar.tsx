@@ -167,9 +167,9 @@ const Navbar = () => {
    *   item ≈ 150px, gap ≈ 20px, fixed chrome ≈ 128px (logo + CTA + padding).
    */
   useLayoutEffect(() => {
-    const ITEM_HEIGHT = 150;
-    const ITEM_GAP = 20;
-    const CHROME = 128;
+    const ITEM_HEIGHT = 120;
+    const ITEM_GAP = 16;
+    const CHROME = 80;
     const check = () => {
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
       if (!isDesktop) {
