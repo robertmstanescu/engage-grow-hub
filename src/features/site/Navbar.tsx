@@ -251,12 +251,18 @@ const Navbar = () => {
               }
         }
       >
-        <motion.a
+        <a
           href="/"
           className={verticalFits ? "mb-2" : "flex items-center flex-shrink-0"}
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.05, ease }}
+          style={{
+            // Cascade entrance — runs once on mount via the global
+            // `nav-cascade` keyframe (see index.css). We can't use
+            // framer-motion here because <ResponsiveLogo/> is a plain
+            // function component and motion's ref-forwarding would warn,
+            // and because the side-nav links rely on a CSS rotate(180deg)
+            // that motion's inline transform would clobber.
+            animation: "nav-cascade 600ms cubic-bezier(0.16, 1, 0.3, 1) 50ms both",
+          }}
         >
           {!brandingLoading && logoUrl ? (
             <ResponsiveLogo
@@ -269,7 +275,7 @@ const Navbar = () => {
               height={verticalFits ? 24 : 20}
             />
           ) : null}
-        </motion.a>
+        </a>
 
         <div
           className={
@@ -280,17 +286,16 @@ const Navbar = () => {
         >
           {renderedItems.map((item, i) => {
             const active = isActive(item.href);
-            // Cascade entrance — each link follows the logo with a small
-            // staggered delay so the navbar assembles itself on first paint.
-            const slideAxis = verticalFits ? { x: -10 } : { y: -8 };
+            // CSS-driven cascade. Vertical (rail) labels carry an
+            // intrinsic rotate(180deg) so we use a non-transform fade
+            // keyframe (`nav-cascade-fade`) for them; horizontal labels
+            // get the slide-in keyframe (`nav-cascade`).
+            const animName = verticalFits ? "nav-cascade-fade" : "nav-cascade";
             return (
-              <motion.a
+              <a
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
-                initial={{ opacity: 0, ...slideAxis }}
-                animate={{ opacity: 1, x: 0, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.15 + i * 0.07, ease }}
                 className={
                   verticalFits
                     ? "side-nav-label font-body"
@@ -300,35 +305,35 @@ const Navbar = () => {
                 style={{
                   color: active ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.55)",
                   fontWeight: active ? 600 : 400,
+                  animation: `${animName} 500ms cubic-bezier(0.16, 1, 0.3, 1) ${150 + i * 70}ms both`,
                 }}
               >
                 {item.label}
-              </motion.a>
+              </a>
             );
           })}
         </div>
 
         {!navLoading && ctaHref ? (
-          <motion.a
+          <a
             href={ctaHref}
             onClick={(e) => handleNavClick(e, ctaHref)}
             title={ctaText}
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              duration: 0.5,
-              delay: 0.2 + renderedItems.length * 0.07,
-              ease,
-            }}
             className={
               verticalFits
                 ? "w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold transition-all duration-500 hover:scale-110"
                 : "px-3 h-6 rounded-full flex items-center justify-center text-[9px] font-bold uppercase tracking-[0.14em] transition-all duration-300 hover:opacity-90 whitespace-nowrap"
             }
-            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
+            style={{
+              backgroundColor: "hsl(var(--accent))",
+              color: "hsl(var(--accent-foreground))",
+              animation: `nav-cascade-fade 500ms cubic-bezier(0.16, 1, 0.3, 1) ${
+                200 + renderedItems.length * 70
+              }ms both`,
+            }}
           >
             {verticalFits ? "→" : ctaText || "→"}
-          </motion.a>
+          </a>
         ) : null}
       </nav>
 
