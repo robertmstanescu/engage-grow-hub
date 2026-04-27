@@ -5,6 +5,7 @@ import Footer from "@/features/site/Footer";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
 import { useMomentumSnap } from "@/hooks/useMomentumSnap";
+import { useSmoothAnchors } from "@/hooks/useSmoothAnchors";
 
 /**
  * Index — the public homepage.
@@ -28,7 +29,10 @@ const Index = () => {
   });
 
   useMomentumSnap(containerRef);
-
+  // Slow, fluid glide for in-page anchor link clicks (Navbar items,
+  // service-card "→" CTAs, footer links). Cancellable mid-flight by
+  // any user wheel/touch gesture so it never traps the reader.
+  useSmoothAnchors(containerRef);
 
   return (
     <div ref={containerRef} className="snap-container page-shell">

@@ -131,19 +131,21 @@ const Navbar = () => {
   }, [handleScroll]);
 
   const handleNavClick = (e: React.MouseEvent<HTMLElement>, href: string) => {
-    e.preventDefault();
     setMobileOpen(false);
     if (href.startsWith("#")) {
-      const id = href.slice(1);
-      if (location.pathname === "/") {
-        setTimeout(() => {
-          const el = document.getElementById(id);
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-        }, 50);
-      } else {
+      // Same-page hash links are handled by `useSmoothAnchors` mounted
+      // on the homepage scroll container — it intercepts the click and
+      // tweens the scroll over ~1.4s for a fluid glide. We must NOT
+      // preventDefault here, otherwise that handler bails out.
+      if (location.pathname !== "/") {
+        e.preventDefault();
         window.location.href = "/" + href;
       }
-    } else if (href.startsWith("/")) {
+      // else: fall through — useSmoothAnchors handles the scroll.
+      return;
+    }
+    if (href.startsWith("/")) {
+      e.preventDefault();
       navigate(href);
     }
   };
