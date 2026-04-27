@@ -251,16 +251,16 @@ const Navbar = () => {
               }
         }
       >
-        <a href="/" className={verticalFits ? "mb-4" : "flex items-center flex-shrink-0"}>
+        <a href="/" className={verticalFits ? "mb-2" : "flex items-center flex-shrink-0"}>
           {!brandingLoading && logoUrl ? (
             <ResponsiveLogo
               emblemUrl={emblemUrl}
               logoUrl={logoUrl}
               imgClassName={
-                verticalFits ? "w-8 h-8 object-contain brightness-200" : "h-7 object-contain brightness-200"
+                verticalFits ? "w-6 h-6 object-contain brightness-200" : "h-5 object-contain brightness-200"
               }
-              width={verticalFits ? 32 : undefined}
-              height={verticalFits ? 32 : 28}
+              width={verticalFits ? 24 : undefined}
+              height={verticalFits ? 24 : 20}
             />
           ) : null}
         </a>
