@@ -1,4 +1,5 @@
 import { sanitizeHtml } from "@/services/sanitize";
+import type { CSSProperties } from "react";
 import type { PageRow } from "@/types/rows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import RowBackground from "./RowBackground";
@@ -23,7 +24,7 @@ const HeroRow = ({ row }: Props) => {
   const hasBg = bgType !== "none" && bgUrl;
 
   const { ref, isVisible } = useScrollReveal({ threshold: 0.15 });
-  const reveal = (staggerIndex: number, baseDelay = 0) => ({
+  const reveal = (staggerIndex: number, baseDelay = 0): CSSProperties => ({
     ...revealStyle(isVisible, staggerIndex, baseDelay),
     animationDelay: `calc(300ms + ${staggerIndex} * 220ms)`,
   });
@@ -95,7 +96,7 @@ const HeroRow = ({ row }: Props) => {
 
         {c.tagline && (
           <p className="font-body tracking-[0.28em] uppercase mt-[1.8vh] hero-cascade-item"
-            style={{ ...reveal(titleLines.length + 1, 0.1), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)", opacity: isVisible ? 0.4 : 0 }}>
+            style={{ ...reveal(titleLines.length + 1, 0.1), ...(isVisible ? { "--hero-cascade-opacity": "0.4" } as CSSProperties : {}), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)", opacity: isVisible ? 0.4 : 0 }}>
             {c.tagline}
           </p>
         )}
