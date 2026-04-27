@@ -167,9 +167,9 @@ const Navbar = () => {
    *   item ≈ 150px, gap ≈ 20px, fixed chrome ≈ 128px (logo + CTA + padding).
    */
   useLayoutEffect(() => {
-    const ITEM_HEIGHT = 150;
-    const ITEM_GAP = 20;
-    const CHROME = 128;
+    const ITEM_HEIGHT = 120;
+    const ITEM_GAP = 16;
+    const CHROME = 80;
     const check = () => {
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
       if (!isDesktop) {
@@ -208,13 +208,13 @@ const Navbar = () => {
       const root = document.documentElement;
       if (!isDesktop) {
         root.style.setProperty("--nav-left-offset", "0px");
-        root.style.setProperty("--nav-top-offset", "56px");
+        root.style.setProperty("--nav-top-offset", "36px");
       } else if (verticalFits) {
-        root.style.setProperty("--nav-left-offset", "64px");
+        root.style.setProperty("--nav-left-offset", "40px");
         root.style.setProperty("--nav-top-offset", "0px");
       } else {
         root.style.setProperty("--nav-left-offset", "0px");
-        root.style.setProperty("--nav-top-offset", "56px");
+        root.style.setProperty("--nav-top-offset", "36px");
       }
     };
     apply();
@@ -234,8 +234,8 @@ const Navbar = () => {
         ref={railRef}
         className={
           verticalFits
-            ? "hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-16 flex-col items-center py-6 gap-6"
-            : "hidden lg:flex fixed top-0 left-0 right-0 z-50 h-14 flex-row items-center px-5 gap-5"
+            ? "hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-10 flex-col items-center py-3 gap-4"
+            : "hidden lg:flex fixed top-0 left-0 right-0 z-50 h-9 flex-row items-center px-3 gap-4"
         }
         style={
           verticalFits
@@ -251,16 +251,16 @@ const Navbar = () => {
               }
         }
       >
-        <a href="/" className={verticalFits ? "mb-4" : "flex items-center flex-shrink-0"}>
+        <a href="/" className={verticalFits ? "mb-2" : "flex items-center flex-shrink-0"}>
           {!brandingLoading && logoUrl ? (
             <ResponsiveLogo
               emblemUrl={emblemUrl}
               logoUrl={logoUrl}
               imgClassName={
-                verticalFits ? "w-8 h-8 object-contain brightness-200" : "h-7 object-contain brightness-200"
+                verticalFits ? "w-6 h-6 object-contain brightness-200" : "h-5 object-contain brightness-200"
               }
-              width={verticalFits ? 32 : undefined}
-              height={verticalFits ? 32 : 28}
+              width={verticalFits ? 24 : undefined}
+              height={verticalFits ? 24 : 20}
             />
           ) : null}
         </a>
@@ -303,8 +303,8 @@ const Navbar = () => {
             title={ctaText}
             className={
               verticalFits
-                ? "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500 hover:scale-110"
-                : "px-4 h-8 rounded-full flex items-center justify-center text-[10px] font-bold uppercase tracking-[0.14em] transition-all duration-300 hover:opacity-90 whitespace-nowrap"
+                ? "w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold transition-all duration-500 hover:scale-110"
+                : "px-3 h-6 rounded-full flex items-center justify-center text-[9px] font-bold uppercase tracking-[0.14em] transition-all duration-300 hover:opacity-90 whitespace-nowrap"
             }
             style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
           >
