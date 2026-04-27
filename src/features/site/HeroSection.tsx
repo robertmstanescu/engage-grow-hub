@@ -207,21 +207,27 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
         </div>
       )}
 
-      <div className="relative z-10 w-full max-w-[1100px] px-3 pb-[4vh] pt-[15vh] flex flex-col justify-end">
+      <div className="relative z-10 w-full max-w-[1100px] px-3 pb-[4vh] pt-[10vh] flex flex-col justify-end min-h-0 flex-1 overflow-hidden">
+        {/*
+          Eyebrow + Title + Tagline form a "must-fit" cluster: they shrink
+          via clamp() that uses both vw AND vh so they always fit on
+          short/narrow viewports. The body block below gets its own
+          scroll container so long copy never pushes the title off-screen.
+        */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.2, ease }}
-          className="font-body tracking-[0.35em] uppercase mb-[2vh]"
-          style={{ color: "hsl(var(--hero-label))", fontSize: "clamp(8px, 1vw, 11px)" }}>
+          className="font-body tracking-[0.35em] uppercase mb-[1.5vh] flex-shrink-0"
+          style={{ color: "hsl(var(--hero-label))", fontSize: "clamp(7px, min(1vw, 1.4vh), 11px)" }}>
           <EditableText sectionKey="hero" fieldPath="label" as="span">
             {c.label}
           </EditableText>
         </motion.p>
 
         <h1
-          className="font-display font-black leading-[0.92] tracking-tight mb-0 max-w-[95%]"
-          style={{ color: "hsl(var(--hero-title))", fontSize: "clamp(2rem, 6.5vw, 6rem)" }}>
+          className="font-display font-black leading-[0.92] tracking-tight mb-0 max-w-[95%] flex-shrink-0"
+          style={{ color: "hsl(var(--hero-title))", fontSize: "clamp(1.5rem, min(6.5vw, 11vh), 6rem)" }}>
           {titleLines.map((line, i) => (
             <motion.span
               key={i}
@@ -229,7 +235,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3 + i * 0.12, ease }}
               className="block">
-              <span className="text-5xl md:text-8xl" dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
+              <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
             </motion.span>
           ))}
         </h1>
