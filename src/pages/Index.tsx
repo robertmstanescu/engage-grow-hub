@@ -29,7 +29,10 @@ const Index = () => {
   });
 
   useMomentumSnap(containerRef);
-
+  // Slow, fluid glide for in-page anchor link clicks (Navbar items,
+  // service-card "→" CTAs, footer links). Cancellable mid-flight by
+  // any user wheel/touch gesture so it never traps the reader.
+  useSmoothAnchors(containerRef);
 
   return (
     <div ref={containerRef} className="snap-container page-shell">
