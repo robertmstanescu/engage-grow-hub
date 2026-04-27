@@ -26,14 +26,7 @@ type ResponsiveLogoProps = {
   width?: number;
   height?: number;
 };
-const ResponsiveLogo = ({
-  emblemUrl,
-  logoUrl,
-  className,
-  imgClassName,
-  width,
-  height,
-}: ResponsiveLogoProps) => (
+const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, height }: ResponsiveLogoProps) => (
   <picture className={className}>
     <source media="(min-width: 1024px)" srcSet={emblemUrl} />
     <img
@@ -51,8 +44,10 @@ const ResponsiveLogo = ({
 );
 
 const Navbar = () => {
-  const { isLoading: brandingLoading, content: branding } =
-    useSiteContentWithStatus<Record<string, any>>("branding", {});
+  const { isLoading: brandingLoading, content: branding } = useSiteContentWithStatus<Record<string, any>>(
+    "branding",
+    {},
+  );
   /**
    * Navbar links MUST come from the DB before we render link labels —
    * otherwise users would briefly see hardcoded fallback labels
@@ -62,8 +57,7 @@ const Navbar = () => {
    * Branding/logo can stay on the plain hook because the fallback logo
    * path is identical to the DB default for fresh projects.
    */
-  const { isLoading: navLoading, content: navConfig } =
-    useSiteContentWithStatus<Record<string, any>>("navbar", {});
+  const { isLoading: navLoading, content: navConfig } = useSiteContentWithStatus<Record<string, any>>("navbar", {});
   const logoUrl = branding.logo_url || "";
   const emblemUrl = branding.emblem_logo_url || logoUrl;
   const isMobile = useIsMobile();
@@ -113,7 +107,7 @@ const Navbar = () => {
 
   useEffect(() => {
     // Listen on the snap-container (scroll container) if available, else window
-    const scrollContainer = document.querySelector('.snap-container') || window;
+    const scrollContainer = document.querySelector(".snap-container") || window;
     /*
       requestAnimationFrame throttle — high-refresh-rate phones (90Hz/120Hz)
       can fire `scroll` events 100+ times per second. Recomputing the active
@@ -142,7 +136,10 @@ const Navbar = () => {
     if (href.startsWith("#")) {
       const id = href.slice(1);
       if (location.pathname === "/") {
-        setTimeout(() => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: "smooth" }); }, 50);
+        setTimeout(() => {
+          const el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: "smooth" });
+        }, 50);
       } else {
         window.location.href = "/" + href;
       }
@@ -242,8 +239,16 @@ const Navbar = () => {
         }
         style={
           verticalFits
-            ? { backgroundColor: "hsl(var(--background) / 0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid hsl(var(--border) / 0.3)" }
-            : { backgroundColor: "hsl(var(--background) / 0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(var(--border) / 0.2)" }
+            ? {
+                backgroundColor: "hsl(var(--background) / 0.8)",
+                backdropFilter: "blur(12px)",
+                borderRight: "1px solid hsl(var(--border) / 0.3)",
+              }
+            : {
+                backgroundColor: "hsl(var(--background) / 0.9)",
+                backdropFilter: "blur(12px)",
+                borderBottom: "1px solid hsl(var(--border) / 0.2)",
+              }
         }
       >
         <a href="/" className={verticalFits ? "mb-4" : "flex items-center flex-shrink-0"}>
@@ -251,7 +256,9 @@ const Navbar = () => {
             <ResponsiveLogo
               emblemUrl={emblemUrl}
               logoUrl={logoUrl}
-              imgClassName={verticalFits ? "w-8 h-8 object-contain brightness-200" : "h-7 object-contain brightness-200"}
+              imgClassName={
+                verticalFits ? "w-8 h-8 object-contain brightness-200" : "h-7 object-contain brightness-200"
+              }
               width={verticalFits ? 32 : undefined}
               height={verticalFits ? 32 : 28}
             />
@@ -272,12 +279,14 @@ const Navbar = () => {
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
-                className={verticalFits ? "side-nav-label font-body" : "font-body text-xs uppercase tracking-[0.18em] whitespace-nowrap transition-colors"}
+                className={
+                  verticalFits
+                    ? "side-nav-label font-body"
+                    : "font-body text-xs uppercase tracking-[0.18em] whitespace-nowrap transition-colors"
+                }
                 data-active={active}
                 style={{
-                  color: active
-                    ? "hsl(var(--accent))"
-                    : "hsl(var(--foreground) / 0.55)",
+                  color: active ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.55)",
                   fontWeight: active ? 600 : 400,
                 }}
               >
@@ -297,15 +306,22 @@ const Navbar = () => {
                 ? "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500 hover:scale-110"
                 : "px-4 h-8 rounded-full flex items-center justify-center text-[10px] font-bold uppercase tracking-[0.14em] transition-all duration-300 hover:opacity-90 whitespace-nowrap"
             }
-            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+            style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
+          >
             {verticalFits ? "→" : ctaText || "→"}
           </a>
         ) : null}
       </nav>
 
       {/* Mobile/tablet top bar — full/long logo */}
-      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-5"
-        style={{ backgroundColor: "hsl(var(--background) / 0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid hsl(var(--border) / 0.2)" }}>
+      <nav
+        className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-5"
+        style={{
+          backgroundColor: "hsl(var(--background) / 0.9)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid hsl(var(--border) / 0.2)",
+        }}
+      >
         <a href="/" className="flex items-center flex-shrink-0">
           {!brandingLoading && logoUrl ? (
             <ResponsiveLogo
@@ -331,7 +347,8 @@ const Navbar = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-6"
-            style={{ backgroundColor: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" }}>
+            style={{ backgroundColor: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" }}
+          >
             {allItems.map((item, i) => {
               const active = isActive(item.href);
               return (
@@ -357,8 +374,9 @@ const Navbar = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
-                className="font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
-                style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+                className="font-display text-[9px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
+                style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
+              >
                 {ctaText}
               </motion.a>
             ) : null}
