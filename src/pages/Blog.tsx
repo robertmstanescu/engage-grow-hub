@@ -27,8 +27,8 @@ const Blog = () => {
 
   const pageData = useSiteContent<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string; meta_title: string; meta_description: string }>("blog_page", {
     rows_above: [], rows_below: [],
-    header_title: "Insights & Articles",
-    header_subtitle: "Sharp thinking on internal communications, employee experience, and the culture vampires lurking in your organisation.",
+    header_title: "Blog",
+    header_subtitle: "Articles, updates and ideas.",
     meta_title: "", meta_description: "",
   });
 
