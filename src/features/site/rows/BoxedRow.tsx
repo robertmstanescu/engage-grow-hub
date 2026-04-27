@@ -107,7 +107,13 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               </>
             );
 
-            const cardClass = `glass rounded-xl p-7 text-left ${cardLink ? "block transition-transform hover:-translate-y-0.5 hover:shadow-2xl cursor-pointer" : ""}`;
+            // Hover lift uses an explicit, gentle transition curve and a
+            // 3D translate so the card's GPU layer (created by `.glass`'s
+            // `translateZ(0)`) is preserved across the animation. The old
+            // `transition-transform hover:-translate-y-0.5` combo dropped
+            // the Z translate on hover, which forced a re-rasterisation
+            // and made the inner SVG icon appear to "shake" mid-tween.
+            const cardClass = `glass rounded-xl p-7 text-left boxed-lift ${cardLink ? "block hover:shadow-2xl cursor-pointer" : ""}`;
             const cardStyle = {
               ...revealStyle(isVisible, i + 2),
               boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
