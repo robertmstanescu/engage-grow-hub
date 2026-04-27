@@ -208,7 +208,7 @@ const BrandSettings = () => {
        *  becomes invisible if the admin chooses, e.g., a pale yellow.
        *  ────────────────────────────────────────────────────────── */}
       {(() => {
-        const primaryHex = brand.colors[0]?.hex || "#2A0E33";
+        const primaryHex = brand.colors[0]?.hex || "#1a1a1a";
         const fg =
           contrastRatio(primaryHex, "#FFFFFF") >= contrastRatio(primaryHex, "#1A1A1A")
             ? "#FFFFFF"
