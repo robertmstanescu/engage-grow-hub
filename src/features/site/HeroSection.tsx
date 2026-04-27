@@ -88,13 +88,18 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
       <section
         data-section="hero"
         aria-busy="true"
-        className="scope-hero snap-section grain relative h-screen mesh-hero"
+        className="scope-hero snap-section grain relative mesh-hero"
+        style={{ height: "calc(100vh - var(--nav-top-offset, 0px))" }}
       />
     );
   }
 
   return (
-    <section data-section="hero" className="scope-hero snap-section grain relative h-screen flex flex-col justify-end overflow-hidden mesh-hero">
+    <section
+      data-section="hero"
+      className="scope-hero snap-section grain relative flex flex-col justify-end mesh-hero overflow-hidden"
+      style={{ height: "calc(100vh - var(--nav-top-offset, 0px))" }}
+    >
       {/*
         LAYERING ORDER (bottom → top):
         1. Ambient glow (z-[-2])      — decorative gradients sit at the very back
@@ -207,12 +212,13 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
         </div>
       )}
 
-      <div className="relative z-10 w-full max-w-[1100px] px-3 pb-[4vh] pt-[10vh] flex flex-col justify-end min-h-0 flex-1 overflow-hidden">
+      <div className="relative z-10 w-full max-w-[1100px] px-3 pb-[3vh] pt-[6vh] flex flex-col justify-end min-h-0 flex-1 overflow-y-auto">
         {/*
-          Eyebrow + Title + Tagline form a "must-fit" cluster: they shrink
-          via clamp() that uses both vw AND vh so they always fit on
-          short/narrow viewports. The body block below gets its own
-          scroll container so long copy never pushes the title off-screen.
+          Must-fit cluster (eyebrow + title + tagline): the title font
+          size is bounded by BOTH vw and vh so it shrinks on short
+          viewports. The whole content area scrolls if the body still
+          overflows after sizing — this guarantees the user can always
+          reach the eyebrow/title at the top by scrolling up.
         */}
         <motion.p
           initial={{ opacity: 0 }}
@@ -227,7 +233,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
 
         <h1
           className="font-display font-black leading-[0.92] tracking-tight mb-0 max-w-[95%] flex-shrink-0"
-          style={{ color: "hsl(var(--hero-title))", fontSize: "clamp(1.5rem, min(6.5vw, 11vh), 6rem)" }}>
+          style={{ color: "hsl(var(--hero-title))", fontSize: "clamp(1.25rem, min(5.5vw, 7.5vh), 5.5rem)" }}>
           {titleLines.map((line, i) => (
             <motion.span
               key={i}
@@ -241,15 +247,6 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
         </h1>
 
         {c.tagline && (
-          /*
-           * SEO HIERARCHY (intentional choice):
-           * The tagline is rendered as a stylized <p>, NOT an <h2>.
-           * Reason: every page must have exactly one H1 (the hero
-           * `title_lines`) followed by H2 section headings from the
-           * downstream rows. Demoting this to <p> keeps the heading
-           * outline clean for search engines and screen readers while
-           * preserving the visual styling.
-           */
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.4 }}
@@ -262,46 +259,42 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
           </motion.p>
         )}
 
-        {/*
-          Body cluster — independently scrollable so long copy never
-          forces the eyebrow/title/tagline off-screen on short viewports.
-        */}
-        <div className="min-h-0 flex-1 overflow-y-auto mt-[1.5vh]">
-          {c.subtitle && (
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1, ease }}>
-              <EditableText
-                sectionKey="hero"
-                fieldPath="subtitle"
-                as="p"
-                className="leading-tight max-w-[550px]"
-                style={{
-                  fontFamily: "'Architects Daughter', cursive",
-                  color: c.subtitle_color || "hsl(var(--hero-body))",
-                  fontSize: "clamp(0.9rem, 2vw, 1.25rem)",
-                }}>
-                {c.subtitle}
-              </EditableText>
-            </motion.div>
-          )}
-
+        {c.subtitle && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.1, ease }}>
+            transition={{ duration: 0.8, delay: 1, ease }}
+            className="flex-shrink-0 mt-[1.5vh]">
             <EditableText
               sectionKey="hero"
-              fieldPath="body"
-              html
-              as="div"
-              className="font-body-heading max-w-[480px] leading-relaxed mt-[1.5vh]"
-              style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "clamp(0.8rem, 1.5vw, 1.1rem)" }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
-            />
+              fieldPath="subtitle"
+              as="p"
+              className="leading-tight max-w-[550px]"
+              style={{
+                fontFamily: "'Architects Daughter', cursive",
+                color: c.subtitle_color || "hsl(var(--hero-body))",
+                fontSize: "clamp(0.9rem, 2vw, 1.25rem)",
+              }}>
+              {c.subtitle}
+            </EditableText>
           </motion.div>
-        </div>
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.1, ease }}
+          className="flex-shrink-0">
+          <EditableText
+            sectionKey="hero"
+            fieldPath="body"
+            html
+            as="div"
+            className="font-body-heading max-w-[480px] leading-relaxed mt-[1.5vh]"
+            style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "clamp(0.8rem, 1.5vw, 1.1rem)" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
+          />
+        </motion.div>
       </div>
     </section>
   );
