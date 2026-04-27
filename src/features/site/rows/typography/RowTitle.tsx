@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import Icon from "@/features/icons/Icon";
 
 interface Props {
   children: ReactNode;
@@ -10,61 +11,42 @@ interface Props {
   style?: CSSProperties;
   /** Optional extra className. */
   className?: string;
+  /** Optional icon shown above the title (lucide:Name | custom:URL). */
+  icon?: string;
+  /** Icon size in px (default 32). */
+  iconSize?: number;
 }
 
 /**
  * <RowTitle/> — the main heading inside a CMS row (NOT the Hero page-opener).
  *
- * ## The "tiered" decision
- *
- * The user chose a TIERED typography strategy:
- *   - HeroRow keeps its oversized fluid `clamp(1.6rem, 5vw, 5.5rem)` title.
- *     It is the page-opener and needs presence.
- *   - Every OTHER row (Boxed, Service, Profile, Grid, ImageText, Text,
- *     Contact) uses this `<RowTitle/>` with one shared scale.
- *
- * Without this tier, every row would either look like a hero (visual noise)
- * or every row would look identical (no hierarchy). Tiered = both readable
- * and scannable.
- *
- * ## Design choices (the "why")
- *
- * - **`font-display` (Unbounded, weight 900)**: matches the brand identity
- *   established in the hero. Black weight makes the title feel like a
- *   statement, not a paragraph header.
- *
- * - **`leading-[0.95]`**: tight leading on display fonts is intentional —
- *   loose leading on a bold display face makes it look weak and floaty.
- *   At 0.95 the lines almost-but-don't-quite touch.
- *
- * - **Fluid `clamp(1.2rem, 1.8vh + 1.3vw, 2.6rem)`**: scales by BOTH the
- *   viewport height and width, weighted toward `vh` so on a short
- *   laptop screen the title shrinks aggressively — keeping the whole
- *   row inside one viewport without overflow. See RowBody.tsx for the
- *   full clamp/vh+vw rationale.
- *
- * - **`tracking-tight`**: large display type at default tracking looks
- *   too airy. Tightening pulls letters together for a cohesive shape.
- *
- * - **`mb-rhythm-base` (24px)**: standard gap to the next element. See
- *   tailwind.config.ts → `spacing.rhythm-base`.
+ * Now supports an optional `icon` rendered above the title, sized
+ * generously (32px) so it reads as a brand mark rather than a glyph.
+ * Icon inherits the title colour for visual cohesion.
  */
-const RowTitle = ({ children, as = "h2", color, style, className }: Props) => {
+const RowTitle = ({ children, as = "h2", color, style, className, icon, iconSize = 32 }: Props) => {
   const Tag = as;
+  const resolvedColor = color ?? "var(--row-fg, hsl(var(--foreground)))";
   return (
-    <Tag
-      className={`font-display font-black leading-[0.95] tracking-tight mb-rhythm-base ${className ?? ""}`}
-      style={{
-        fontSize: "clamp(1.2rem, 1.8vh + 1.3vw, 2.6rem)",
-        // Default to `--row-fg` (set by RowSection from the row's bg
-        // colour). Per-row admin overrides still win via `color`.
-        color: color ?? "var(--row-fg, hsl(var(--foreground)))",
-        ...style,
-      }}
-    >
-      {children}
-    </Tag>
+    <>
+      {icon && (
+        <div className="mb-rhythm-tight" style={{ color: resolvedColor, ...style }}>
+          <Icon value={icon} size={iconSize} />
+        </div>
+      )}
+      <Tag
+        className={`font-display font-black leading-[0.95] tracking-tight mb-rhythm-base ${className ?? ""}`}
+        style={{
+          fontSize: "clamp(1.2rem, 1.8vh + 1.3vw, 2.6rem)",
+          color: resolvedColor,
+          ...style,
+        }}
+      >
+        {children}
+      </Tag>
+    </>
   );
 };
 
 export default RowTitle;
+
