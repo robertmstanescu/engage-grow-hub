@@ -251,7 +251,13 @@ const Navbar = () => {
               }
         }
       >
-        <a href="/" className={verticalFits ? "mb-2" : "flex items-center flex-shrink-0"}>
+        <motion.a
+          href="/"
+          className={verticalFits ? "mb-2" : "flex items-center flex-shrink-0"}
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.05, ease }}
+        >
           {!brandingLoading && logoUrl ? (
             <ResponsiveLogo
               emblemUrl={emblemUrl}
@@ -263,7 +269,7 @@ const Navbar = () => {
               height={verticalFits ? 24 : 20}
             />
           ) : null}
-        </a>
+        </motion.a>
 
         <div
           className={
@@ -272,13 +278,19 @@ const Navbar = () => {
               : "flex-1 flex-row gap-6 flex items-center justify-start"
           }
         >
-          {renderedItems.map((item) => {
+          {renderedItems.map((item, i) => {
             const active = isActive(item.href);
+            // Cascade entrance — each link follows the logo with a small
+            // staggered delay so the navbar assembles itself on first paint.
+            const slideAxis = verticalFits ? { x: -10 } : { y: -8 };
             return (
-              <a
+              <motion.a
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
+                initial={{ opacity: 0, ...slideAxis }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.15 + i * 0.07, ease }}
                 className={
                   verticalFits
                     ? "side-nav-label font-body"
@@ -291,16 +303,23 @@ const Navbar = () => {
                 }}
               >
                 {item.label}
-              </a>
+              </motion.a>
             );
           })}
         </div>
 
         {!navLoading && ctaHref ? (
-          <a
+          <motion.a
             href={ctaHref}
             onClick={(e) => handleNavClick(e, ctaHref)}
             title={ctaText}
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.2 + renderedItems.length * 0.07,
+              ease,
+            }}
             className={
               verticalFits
                 ? "w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold transition-all duration-500 hover:scale-110"
@@ -309,7 +328,7 @@ const Navbar = () => {
             style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
           >
             {verticalFits ? "→" : ctaText || "→"}
-          </a>
+          </motion.a>
         ) : null}
       </nav>
 
