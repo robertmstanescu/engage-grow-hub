@@ -69,6 +69,11 @@ const Navbar = () => {
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  // When the desktop vertical rail can't fit all items in the viewport
+  // height, we collapse to a horizontal top bar (still desktop, just
+  // rotated). Measured from the actual rendered rail.
+  const [verticalFits, setVerticalFits] = useState(true);
+  const railRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
