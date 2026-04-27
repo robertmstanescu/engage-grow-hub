@@ -7,6 +7,13 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
+import Icon from "@/features/icons/Icon";
+
+/**
+ * Smart link helper — internal anchors / paths stay in-tab, external
+ * URLs open in a new tab with safe rel.
+ */
+const isExternal = (url: string) => /^https?:\/\//i.test(url);
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
