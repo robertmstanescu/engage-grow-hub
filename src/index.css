@@ -200,6 +200,29 @@
   [id] {
     scroll-margin-top: 5rem;
   }
+
+  /*
+   * Page wrapper that respects the navbar's runtime footprint. Replaces
+   * the hardcoded `lg:pl-16` / `pt-14` patterns so wrappers automatically
+   * collapse left padding when the rail switches to a horizontal top bar.
+   */
+  .page-shell {
+    padding-left: var(--nav-left-offset, 0px);
+    padding-top: var(--nav-top-offset, 0px);
+  }
+
+  /*
+   * Snap sections must size against the SCROLL CONTAINER height, not the
+   * raw viewport, so the navbar's reserved space at the top doesn't
+   * push content off-screen. `.snap-container` already uses calc() with
+   * --nav-top-offset, so 100% here resolves to the same number.
+   *
+   * `min-h-screen` on .snap-section is overridden because Tailwind's
+   * `min-h-screen` = `100vh` and would re-introduce the cut-off bug.
+   */
+  .snap-section {
+    min-height: calc(100vh - var(--nav-top-offset, 0px));
+  }
 }
 
 @layer components {
