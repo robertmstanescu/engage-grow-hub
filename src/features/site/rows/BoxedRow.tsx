@@ -58,7 +58,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         )}
 
         {titleLines.length > 0 && (
-          <RowTitle color={c.color_title || "hsl(var(--vows-title))"} style={revealStyle(isVisible, 0)}>
+          <RowTitle icon={c.icon} color={c.color_title || "hsl(var(--vows-title))"} style={revealStyle(isVisible, 0)}>
             {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
           </RowTitle>
         )}
