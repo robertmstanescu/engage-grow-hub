@@ -65,7 +65,7 @@ const Footer = () => {
             {/* Footer logo: below the fold by definition — lazy-load it. */}
             {!brandingLoading && emblemUrl ? (
               <img
-                alt="Logo"
+                alt="The Magic Coffin logo"
                 className="w-8 h-8 object-contain brightness-200 mb-4"
                 src={emblemUrl}
                 width={32}
