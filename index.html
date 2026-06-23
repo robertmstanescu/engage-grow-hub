@@ -41,6 +41,16 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
+    <!-- Font preconnect + parallel stylesheet load. Loading the Google
+         Fonts CSS via <link> here (instead of @import inside index.css)
+         lets the browser fetch it in parallel with the main bundle,
+         improving LCP. The same family list is also @imported in
+         src/index.css as a defensive fallback. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Unbounded:wght@700;900&family=Bricolage+Grotesque:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" />
+
+
     <!--
       ────────────────────────────────────────────────────────────────
       SSR MARKERS — DO NOT REMOVE
