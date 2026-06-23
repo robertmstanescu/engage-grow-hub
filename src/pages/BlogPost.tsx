@@ -47,6 +47,29 @@ const BlogPost = () => {
 
   usePageMeta({ title: pageTitle, description: pageDesc, ogImage: pageImage });
 
+  // Inject Article JSON-LD for rich results (headline, datePublished, author, image).
+  useEffect(() => {
+    if (!article || typeof document === "undefined") return;
+    const id = "mc-jsonld-article";
+    document.getElementById(id)?.remove();
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: article.title,
+      ...(article.published_at ? { datePublished: article.published_at } : {}),
+      ...(article.author_name ? { author: { "@type": "Person", name: article.author_name } } : {}),
+      ...(pageImage ? { image: pageImage } : {}),
+      ...(pageDesc ? { description: pageDesc } : {}),
+      mainEntityOfPage: `${window.location.origin}/blog/${article.slug}/`,
+    };
+    const s = document.createElement("script");
+    s.id = id;
+    s.type = "application/ld+json";
+    s.text = JSON.stringify(jsonLd);
+    document.head.appendChild(s);
+    return () => { document.getElementById(id)?.remove(); };
+  }, [article, pageImage, pageDesc]);
+
   useEffect(() => {
     const fetchArticle = async () => {
       if (!slug) { setLoading(false); return; }

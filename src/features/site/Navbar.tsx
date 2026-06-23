@@ -31,7 +31,7 @@ const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, he
     <source media="(min-width: 1024px)" srcSet={emblemUrl} />
     <img
       src={logoUrl}
-      alt="Logo"
+      alt="The Magic Coffin logo"
       className={imgClassName}
       width={width}
       height={height}
@@ -364,6 +364,8 @@ const Navbar = () => {
         </a>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileOpen}
           style={{
             color: "hsl(var(--foreground) / 0.7)",
           }}
