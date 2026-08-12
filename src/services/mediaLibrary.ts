@@ -87,8 +87,20 @@ export const fetchAllAssets = () =>
     .select("*")
     .order("created_at", { ascending: false });
 
-export const fetchAssetById = (id: string) =>
-  supabase.from("media_assets").select("*").eq("id", id).maybeSingle();
+/**
+ * Fetch a single asset by id.
+ *
+ * Public visitors cannot list `media_assets` (enumeration is admin-only),
+ * so this goes through the `get_public_media_asset` RPC which returns a
+ * narrow, id-keyed row. Admins get the same shape, which is all any
+ * consumer of this helper needs.
+ */
+export const fetchAssetById = async (id: string) => {
+  const { data, error } = await supabase.rpc("get_public_media_asset" as any, { _id: id });
+  const row = Array.isArray(data) ? data[0] ?? null : (data as any) ?? null;
+  return { data: row as MediaAsset | null, error };
+};
+
 
 export const updateAssetMetadata = (
   id: string,

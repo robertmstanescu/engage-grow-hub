@@ -16,5 +16,5 @@ CREATE POLICY "Service role manages internal settings"
 
 INSERT INTO public.internal_settings (key, value)
 VALUES ('publish_scheduled_cron_secret',
-        'ceacb2752a5ea76c497e8adf4fa5badb5d395796ff061a8b13ed845bef9e973d')
+        encode(gen_random_bytes(32), 'hex'))
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
