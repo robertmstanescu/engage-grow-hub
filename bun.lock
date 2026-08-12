@@ -117,9 +117,7 @@
     },
   },
   "overrides": {
-    "linkify-it": "^6.1.0",
     "lodash": "4.17.23",
-    "markdown-it": "^15.0.0",
     "ws": "^8.21.3",
   },
   "packages": {
