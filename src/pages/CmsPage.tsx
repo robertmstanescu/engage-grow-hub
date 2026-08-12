@@ -51,12 +51,20 @@ const CmsPage = () => {
   useEffect(() => {
     if (!slug || SYSTEM_ROUTES.includes(slug)) { setNotFound(true); setLoading(false); return; }
     const load = async () => {
-      const { data, error } = await supabase.from("cms_pages").select("*").eq("slug", slug).maybeSingle();
-      if (!data || error) setNotFound(true); else setPage(data);
+      // `draft_page_rows` is only readable by signed-in admins (anon column
+      // access is revoked), so we only ask for it in preview mode.
+      const columns = [
+        "id", "slug", "title", "template_type", "page_rows", "status",
+        "meta_title", "meta_description", "og_image", "ai_summary",
+        "created_at", "updated_at",
+      ].concat(isPreview ? ["draft_page_rows"] : []).join(", ");
+      const { data, error } = await supabase.from("cms_pages").select(columns).eq("slug", slug).maybeSingle();
+      if (!data || error) setNotFound(true); else setPage(data as any);
       setLoading(false);
     };
     load();
-  }, [slug]);
+  }, [slug, isPreview]);
+
 
   if (loading) {
     return (
