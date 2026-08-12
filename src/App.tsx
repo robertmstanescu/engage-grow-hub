@@ -22,6 +22,8 @@ import NotFound from "./pages/NotFound";
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminProfile = lazy(() => import("./pages/AdminProfile"));
 const AdminInsights = lazy(() => import("./pages/AdminInsights"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+
 
 const App = () => (
   <ErrorBoundary label="app">
