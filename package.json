@@ -127,5 +127,9 @@
     "ws": "^8.21.3",
     "linkify-it": "^6.1.0",
     "markdown-it": "^15.0.0"
+  },
+  "resolutions": {
+    "linkify-it": "^6.1.0",
+    "markdown-it": "^15.0.0"
   }
 }
