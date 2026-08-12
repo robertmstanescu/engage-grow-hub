@@ -118,6 +118,10 @@
     @apply bg-background text-foreground;
     font-family: var(--font-body);
     line-height: 1.7;
+    /* Never let the browser fake a missing weight/italic — all weights
+       are now loaded as variable ranges, so synthesis would only ever
+       distort the assigned brand fonts. */
+    font-synthesis: none;
   }
 
   h1,
