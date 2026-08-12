@@ -791,6 +791,19 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_public_media_asset: {
+        Args: { _id: string }
+        Returns: {
+          alt_text: string
+          bucket: string
+          description: string
+          id: string
+          mime_type: string
+          size_bytes: number
+          storage_path: string
+          title: string
+        }[]
+      }
       get_site_content_public_rows: {
         Args: never
         Returns: {
