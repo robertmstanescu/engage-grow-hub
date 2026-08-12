@@ -49,7 +49,9 @@ const App = () => (
                 <Route path="/admin/ai-insights" element={<AdminInsights />} />
                 <Route path="/admin/insights" element={<AdminInsights />} />
               </Route>
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
               <Route path="*" element={<NotFound />} />
             </Routes>
             <AnalyticsBeaconMount />

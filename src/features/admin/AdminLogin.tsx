@@ -39,12 +39,19 @@ import { toast } from "sonner";
 import { Mail } from "lucide-react";
 
 const AdminLogin = () => {
+  // Preserve a same-origin `next` path (used by the OAuth consent screen) so
+  // sign-in returns the user to where they started instead of the dashboard.
+  const nextParam = new URLSearchParams(window.location.search).get("next");
+  const safeNext = nextParam && /^\/[^/\\]/.test(nextParam) ? nextParam : null;
+  const returnTo = `${window.location.origin}${safeNext ?? "/admin/dashboard"}`;
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSendingLink, setIsSendingLink] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [showPasswordFallback, setShowPasswordFallback] = useState(false);
   const [titleClicks, setTitleClicks] = useState(0);
+
 
   /**
    * Send a magic link. Supabase emails the user a one-time login URL
