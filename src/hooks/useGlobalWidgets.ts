@@ -83,12 +83,13 @@ export const useGlobalWidgets = () => {
 
   const updateMutation = useMutation({
     mutationFn: async (input: { id: string; name?: string; data?: Record<string, any> }) => {
-      const patch: Record<string, any> = {};
+      const patch: { name?: string; data?: any } = {};
       if (input.name !== undefined) patch.name = input.name;
       if (input.data !== undefined) patch.data = input.data;
       const { data, error } = await supabase
         .from("global_widgets")
         .update(patch)
+
         .eq("id", input.id)
         .select()
         .single();
