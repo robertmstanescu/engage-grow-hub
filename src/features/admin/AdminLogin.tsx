@@ -66,7 +66,7 @@ const AdminLogin = () => {
     await runDbAction({
       action: () => supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${window.location.origin}/admin/dashboard` },
+        options: { emailRedirectTo: returnTo },
       }),
       setLoading: setIsSendingLink,
       successMessage: "Magic link sent — check your email.",
@@ -77,7 +77,7 @@ const AdminLogin = () => {
   /** Google / Apple SSO via Lovable Cloud's managed OAuth. */
   const handleSso = async (provider: "google" | "apple") => {
     const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: `${window.location.origin}/admin/dashboard`,
+      redirect_uri: returnTo,
     });
     if (result.error) toast.error("SSO sign-in failed");
   };
@@ -90,8 +90,10 @@ const AdminLogin = () => {
       setLoading: setIsAuthenticating,
       errorMessage: "Invalid credentials",
       successMessage: null,
+      onSuccess: safeNext ? () => { window.location.href = safeNext; } : undefined,
     });
   };
+
 
   // Easter-egg toggle: shift+click the title 5x to reveal password.
   const handleTitleClick = (e: React.MouseEvent) => {
