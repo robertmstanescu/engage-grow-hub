@@ -121,7 +121,7 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
         data-section="hero"
         data-snap-enabled="true"
         aria-busy="true"
-        className="scope-hero snap-section grain relative mesh-hero"
+        className="scope-hero snap-section grain relative"
         style={{ minHeight: "calc(100vh - var(--nav-top-offset, 0px))" }}
       />
     );
