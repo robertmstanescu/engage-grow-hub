@@ -93,7 +93,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         <div className={`relative z-10 max-w-[520px] row-container ${containerPos} ${contentAlign}`}>
           <div style={revealStyle(true, 0)}>
             <RowTitle color="hsl(var(--primary))">{successHeading}</RowTitle>
-            <RowBody color="hsl(var(--light-fg) / 0.7)" className="mb-rhythm-base">{successBody}</RowBody>
+            <RowBody className="mb-rhythm-base">{successBody}</RowBody>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
               className="btn-ink"
 >{successButton}</button>
