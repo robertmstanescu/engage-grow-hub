@@ -141,6 +141,12 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     return tail[tail.length - 1] || null;
   }, [activeNodePath]);
   useEffect(() => {
+    // Selecting a whole ROW has no widget content to show, so land the
+    // user straight on Style — that's the only thing a row exposes.
+    if (activeElement?.startsWith("row:")) {
+      setWidgetTab("style");
+      return;
+    }
     const target = pickTabForFocusKey(focusLeaf);
     setWidgetTab(target);
   }, [focusLeaf, activeElement]);
@@ -278,25 +284,48 @@ const InspectorPanel = (props: InspectorPanelProps) => {
      * pageRows is patched in place — siblings are untouched. */
     return (
       <>
-        <Section title={`Row · ${row.type}`}>
-          <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-            Layout, spacing and background controls for the entire row.
-          </p>
-        </Section>
+        <div className="mb-4">
+          <h3
+            className="font-body text-[11px] uppercase tracking-[0.18em] font-semibold"
+            style={{ color: "hsl(var(--foreground))" }}
+          >
+            Section · {row.strip_title || row.type}
+          </h3>
+        </div>
 
-        <RowStyleTab
-          row={row}
-          onRowMetaChange={(updates) => updateRow(updates)}
-          onUpdateColumnWidths={(widths) =>
-            updateRow({
-              layout: {
-                ...DEFAULT_ROW_LAYOUT,
-                ...(row.layout || {}),
-                column_widths: widths,
-              },
-            })
+        <WidgetInspectorTabs
+          activeTab={widgetTab === "content" ? "content" : "style"}
+          onTabChange={setWidgetTab}
+          showWidgetTabs={false}
+          contentEditor={
+            <p className="font-body text-[11px] leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
+              Click a widget inside this section on the canvas to edit its
+              content. The Style tab always applies to the whole section.
+            </p>
           }
+          styleEditor={
+            <RowStyleTab
+              row={row}
+              onRowMetaChange={(updates) => updateRow(updates)}
+              onUpdateColumnWidths={(widths) =>
+                updateRow({
+                  layout: {
+                    ...DEFAULT_ROW_LAYOUT,
+                    ...(row.layout || {}),
+                    column_widths: widths,
+                  },
+                })
+              }
+            />
+          }
+          design={DEFAULT_DESIGN_SETTINGS}
+          onDesignFieldChange={() => {}}
+          onDesignBgChange={() => {}}
+          onDesignRadiusChange={() => {}}
+          onVisibilityChange={() => {}}
+          onCustomCssChange={() => {}}
         />
+
 
         {/* Destructive action lives at the bottom of the row inspector
          * so the user has to scroll past the safe controls first — and
@@ -463,6 +492,39 @@ const InspectorPanel = (props: InspectorPanelProps) => {
           activeTab={widgetTab}
           onTabChange={setWidgetTab}
           contentEditor={contentEditor}
+          /* Style ALWAYS edits the section that hosts this widget, so
+           * bands / edges / separators are reachable from any click. */
+          styleEditor={(() => {
+            const parentRow = pageRows[loc.rowIdx] as PageRow;
+            if (!parentRow) return null;
+            const patchParentRow = (patch: Partial<PageRow>) =>
+              onRowsChange(pageRows.map((r, i) => (i === loc.rowIdx ? { ...r, ...patch } : r)));
+            return (
+              <>
+                <p
+                  className="font-body text-[11px] mb-3 leading-relaxed"
+                  style={{ color: "hsl(var(--muted-foreground))" }}
+                >
+                  Styling section: <strong style={{ color: "hsl(var(--foreground))" }}>
+                    {parentRow.strip_title || parentRow.type}
+                  </strong> — these settings apply to the whole section, not just this widget.
+                </p>
+                <RowStyleTab
+                  row={parentRow}
+                  onRowMetaChange={patchParentRow}
+                  onUpdateColumnWidths={(widths) =>
+                    patchParentRow({
+                      layout: {
+                        ...DEFAULT_ROW_LAYOUT,
+                        ...(parentRow.layout || {}),
+                        column_widths: widths,
+                      },
+                    })
+                  }
+                />
+              </>
+            );
+          })()}
           design={design}
           onDesignFieldChange={updateDesignField}
           onDesignBgChange={(color) => writeDesign({ bgColor: color })}
