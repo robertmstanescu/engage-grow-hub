@@ -708,7 +708,20 @@
     --admin-primary: 239 84% 53%;
     --admin-primary-hover: 243 75% 47%; /* indigo-700 */
     --admin-primary-foreground: 0 0% 100%;
+
+    /* ACCENT REMAP — the admin historically painted its accents with
+       the public `--secondary` token. On the light site that token is a
+       pale violet SURFACE (285 38% 94%), so active nav items, section
+       titles, chevrons and badges rendered near-white on near-white.
+       Inside the admin shell `--secondary` is remapped to the readable
+       indigo used for primary actions, which fixes every existing
+       `text-secondary` / `bg-secondary/10` / `border-secondary` usage
+       at once. Public rows never render inside `.admin-light`, so the
+       site palette is untouched. */
+    --secondary: 239 60% 40%; /* indigo-700-ish, legible as TEXT */
+    --secondary-foreground: 0 0% 100%;
   }
+
 
   /* Reusable primary-action button for the admin shell. Vibrant indigo
      on a white card; lifts on hover; clear focus ring. */
