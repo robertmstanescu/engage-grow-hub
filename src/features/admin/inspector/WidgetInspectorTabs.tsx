@@ -31,7 +31,7 @@ import BoxModelControl, { type BoxField } from "./BoxModelControl";
 import type { WidgetDesignSettings } from "@/types/rows";
 import { ColorField } from "../site-editor/FieldComponents";
 
-export type InspectorTab = "content" | "design" | "advanced";
+export type InspectorTab = "content" | "style" | "design" | "advanced";
 
 /** Keys that live in the Design panel. Used by the parent to auto-switch
  *  the active tab when a focus event targets one of these inputs. */
@@ -47,6 +47,14 @@ const ADVANCED_KEYS = new Set<string>([
   "customCss", "customClass",
 ]);
 
+/** Row/section-level keys — these live in the Style panel, which always
+ *  edits the SECTION that contains the current selection. */
+const STYLE_KEYS = new Set<string>([
+  "bandTone", "shapeTop", "shapeBottom", "dividerTop",
+  "bgImage", "bgColorOpacity", "bgImageOpacity", "gradient",
+  "column_widths", "snapEnabled",
+]);
+
 /**
  * Decide which tab a given inspector-focus-key belongs to. Anything
  * not explicitly tagged falls through to Content (the widget's own
@@ -57,6 +65,7 @@ export const pickTabForFocusKey = (key: string | null): InspectorTab => {
   // The focus key may be `item:<id>:<leaf>` — the actual leaf is the
   // last segment, so strip the prefix for the lookup.
   const leaf = key.includes(":") ? key.split(":").pop() || key : key;
+  if (STYLE_KEYS.has(leaf)) return "style";
   if (DESIGN_KEYS.has(leaf)) return "design";
   if (ADVANCED_KEYS.has(leaf)) return "advanced";
   return "content";
@@ -70,6 +79,11 @@ interface Props {
   /** Body of the Content tab — the widget's own admin editor. */
   contentEditor: ReactNode;
 
+  /** Body of the Style tab — ALWAYS the section (row) that contains the
+   *  current selection, so section bands / edges / separators are one
+   *  click away no matter what the user clicked on the canvas. */
+  styleEditor: ReactNode;
+
   /** Design-tab data (spacing + chrome). */
   design: WidgetDesignSettings;
   onDesignFieldChange: (field: BoxField, value: number) => void;
@@ -79,6 +93,10 @@ interface Props {
   /** Advanced-tab data. */
   onVisibilityChange: (next: { mobile: boolean; desktop: boolean }) => void;
   onCustomCssChange: (css: string) => void;
+
+  /** When false, the widget-only tabs (Design / Advanced) are hidden —
+   *  used when a whole ROW is selected and there is no widget context. */
+  showWidgetTabs?: boolean;
 }
 
 const PANEL_LABEL =
@@ -93,12 +111,14 @@ const WidgetInspectorTabs = ({
   activeTab,
   onTabChange,
   contentEditor,
+  styleEditor,
   design,
   onDesignFieldChange,
   onDesignBgChange,
   onDesignRadiusChange,
   onVisibilityChange,
   onCustomCssChange,
+  showWidgetTabs = true,
 }: Props) => {
   return (
     <Tabs
@@ -106,11 +126,18 @@ const WidgetInspectorTabs = ({
       onValueChange={(v) => onTabChange(v as InspectorTab)}
       className="w-full"
     >
-      <TabsList className="grid grid-cols-3 w-full">
+      <TabsList className={`grid w-full ${showWidgetTabs ? "grid-cols-4" : "grid-cols-2"}`}>
         <TabsTrigger value="content">Content</TabsTrigger>
-        <TabsTrigger value="design">Design</TabsTrigger>
-        <TabsTrigger value="advanced">Advanced</TabsTrigger>
+        <TabsTrigger value="style">Style</TabsTrigger>
+        {showWidgetTabs && <TabsTrigger value="design">Design</TabsTrigger>}
+        {showWidgetTabs && <TabsTrigger value="advanced">Advanced</TabsTrigger>}
       </TabsList>
+
+      {/* ── STYLE tab (section-level) ───────────────────────────── */}
+      <TabsContent value="style" forceMount className="data-[state=inactive]:hidden mt-4">
+        {styleEditor}
+      </TabsContent>
+
 
       {/* ── CONTENT tab ─────────────────────────────────────────── */}
       <TabsContent value="content" forceMount className="data-[state=inactive]:hidden mt-4">
