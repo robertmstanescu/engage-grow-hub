@@ -201,14 +201,57 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   // (e.g. the Vows pledge) where a full-viewport reveal is desired.
   const snapEnabled = row.layout?.snapEnabled === true;
 
+  const layout = row.layout || DEFAULT_ROW_LAYOUT;
+  const patchLayout = (patch: Record<string, unknown>) =>
+    onRowMetaChange({ layout: { ...layout, ...patch } });
+
   return (
-    <Accordion type="multiple" defaultValue={["design"]} className="space-y-2">
-      <AccordionItem value="design" className="border-none">
-        <AccordionTrigger className={TRIGGER_CLASS}>
-          Design &amp; Background
-        </AccordionTrigger>
+    /* Two everyday groups (Surface, Edges) + everything else collapsed
+       under Advanced, so the panel stops overwhelming non-technical
+       editors who only ever change the band and the edge shape. */
+    <Accordion type="multiple" defaultValue={["surface"]} className="space-y-2">
+      {/* ═══ SURFACE ═══ */}
+      <AccordionItem value="surface" className="border-none">
+        <AccordionTrigger className={TRIGGER_CLASS}>Surface</AccordionTrigger>
         <AccordionContent className={CONTENT_CLASS}>
           <div className="flex flex-col gap-4">
+            {/* ── Section band ── */}
+            <div>
+              <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                Section band
+              </label>
+              <div className="grid grid-cols-5 gap-1">
+                {([
+                  ["mesh", "Mesh"],
+                  ["auto", "Auto"],
+                  ["white", "White"],
+                  ["tint", "Tint"],
+                  ["deep", "Deep"],
+                ] as const).map(([value, label]) => {
+                  const active = ((row.layout as { bandTone?: string } | undefined)?.bandTone || "mesh") === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => patchLayout({ bandTone: value })}
+                      className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+                        active
+                          ? "bg-secondary/15 border-secondary/40 text-foreground"
+                          : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="font-body text-[10px] text-muted-foreground mt-1 leading-snug">
+                Mesh (default) is transparent — the page-wide mesh gradient
+                shows through. Auto alternates white / tint down the page.
+                Deep is the plum ink band for emphasis moments.
+              </p>
+            </div>
+
             {/* ── Background Colour + opacity ── */}
             <div>
               <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
@@ -237,11 +280,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                   min={0}
                   max={100}
                   value={bgColorOpacity}
-                  onChange={(e) =>
-                    onRowMetaChange({
-                      layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgColorOpacity: Number(e.target.value) },
-                    })
-                  }
+                  onChange={(e) => patchLayout({ bgColorOpacity: Number(e.target.value) })}
                   className="flex-1"
                   style={{ accentColor: "hsl(var(--secondary))" }}
                 />
@@ -250,6 +289,76 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                 </span>
               </div>
             </div>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* ═══ EDGES ═══ */}
+      <AccordionItem value="edges" className="border-none">
+        <AccordionTrigger className={TRIGGER_CLASS}>Edges &amp; separators</AccordionTrigger>
+        <AccordionContent className={CONTENT_CLASS}>
+          <div className="flex flex-col gap-3">
+            <div>
+              <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                Top separator line
+              </label>
+              <div className="grid grid-cols-3 gap-1">
+                {([
+                  ["none", "None"],
+                  ["full", "Full width"],
+                  ["content", "Content width"],
+                ] as const).map(([value, label]) => {
+                  const active = (row.layout?.dividerTop || "none") === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => patchLayout({ dividerTop: value })}
+                      className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+                        active
+                          ? "bg-secondary/15 border-secondary/40 text-foreground"
+                          : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <ShapePicker
+              label="Shape — top edge"
+              value={row.layout?.shapeTop}
+              onChange={(shapeTop) => patchLayout({ shapeTop })}
+            />
+            <ShapePicker
+              label="Shape — bottom edge"
+              value={row.layout?.shapeBottom}
+              onChange={(shapeBottom) => patchLayout({ shapeBottom })}
+            />
+            <p className="font-body text-[10px] text-muted-foreground leading-snug">
+              Shapes are filled with the neighbouring section's colour, so
+              the row above bleeds down into this one (top edge) and the row
+              below bleeds up (bottom edge). Works on every band, including
+              the transparent mesh.
+            </p>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* ═══ ADVANCED ═══ */}
+      <AccordionItem value="advanced" className="border-none">
+        <AccordionTrigger className={TRIGGER_CLASS}>Advanced</AccordionTrigger>
+        <AccordionContent className={CONTENT_CLASS}>
+          <div className="flex flex-col gap-4">
+            {/* Hero rows manage their own internal alignment elsewhere. */}
+            {row.type !== "hero" && (
+              <RowAlignmentSettings
+                layout={layout}
+                onChange={(l) => onRowMetaChange({ layout: l })}
+              />
+            )}
 
             {/* ── Background Image + opacity ── */}
             <div>
@@ -258,11 +367,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               </label>
               <input
                 value={bgImage}
-                onChange={(e) =>
-                  onRowMetaChange({
-                    layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgImage: e.target.value },
-                  })
-                }
+                onChange={(e) => patchLayout({ bgImage: e.target.value })}
                 placeholder="https://..."
                 className="w-full px-3 py-2 rounded-lg font-body text-sm border border-border bg-background text-foreground"
               />
@@ -276,11 +381,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                     min={0}
                     max={100}
                     value={bgImageOpacity}
-                    onChange={(e) =>
-                      onRowMetaChange({
-                        layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), bgImageOpacity: Number(e.target.value) },
-                      })
-                    }
+                    onChange={(e) => patchLayout({ bgImageOpacity: Number(e.target.value) })}
                     className="flex-1"
                     style={{ accentColor: "hsl(var(--secondary))" }}
                   />
@@ -291,131 +392,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               )}
             </div>
 
-            {/* Hero rows manage their own internal alignment elsewhere. */}
-            {row.type !== "hero" && (
-              <RowAlignmentSettings
-                layout={row.layout || DEFAULT_ROW_LAYOUT}
-                onChange={(layout) => onRowMetaChange({ layout })}
-              />
-            )}
-
-            {/* ── Section band ──
-                Three site-wide tones keep the page reading as calm
-                alternating bands instead of ad-hoc per-row colours. */}
-            <div>
-              <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
-                Section band
-              </label>
-              <div className="grid grid-cols-5 gap-1">
-                {([
-                  ["mesh", "Mesh"],
-                  ["auto", "Auto"],
-                  ["white", "White"],
-                  ["tint", "Tint"],
-                  ["deep", "Deep"],
-                ] as const).map(([value, label]) => {
-                  const active = ((row.layout as { bandTone?: string } | undefined)?.bandTone || "mesh") === value;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() =>
-                        onRowMetaChange({
-                          layout: {
-                            ...(row.layout || DEFAULT_ROW_LAYOUT),
-                            bandTone: value,
-                          },
-                        })
-                      }
-                      className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
-                        active
-                          ? "bg-secondary/15 border-secondary/40 text-foreground"
-                          : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="font-body text-[10px] text-muted-foreground mt-1 leading-snug">
-                Mesh (default) is transparent — the page-wide mesh gradient
-                shows through. Auto alternates white / tint down the page.
-                Deep is the plum ink band for emphasis moments.
-              </p>
-            </div>
-
-            {/* ── Edges & separators ──
-                Everything that draws the boundary between this row and
-                its neighbours: a hairline rule on the top edge, plus the
-                decorative curved / angled shapes. Grouped so admins stop
-                hunting for "where do I add a separator?". */}
-            <div className="rounded-xl border border-border p-3 space-y-3 bg-muted/10">
-              <p className="font-body text-[10px] uppercase tracking-[0.14em] text-foreground font-semibold">
-                Edges &amp; separators
-              </p>
-
-              <div>
-                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
-                  Top separator line
-                </label>
-                <div className="grid grid-cols-3 gap-1">
-                  {([
-                    ["none", "None"],
-                    ["full", "Full width"],
-                    ["content", "Content width"],
-                  ] as const).map(([value, label]) => {
-                    const active = (row.layout?.dividerTop || "none") === value;
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() =>
-                          onRowMetaChange({
-                            layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), dividerTop: value },
-                          })
-                        }
-                        className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
-                          active
-                            ? "bg-secondary/15 border-secondary/40 text-foreground"
-                            : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <ShapePicker
-                label="Shape — top edge"
-                value={row.layout?.shapeTop}
-                onChange={(shapeTop) =>
-                  onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), shapeTop } })
-                }
-              />
-              <ShapePicker
-                label="Shape — bottom edge"
-                value={row.layout?.shapeBottom}
-                onChange={(shapeBottom) =>
-                  onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), shapeBottom } })
-                }
-              />
-              <p className="font-body text-[10px] text-muted-foreground leading-snug">
-                Shapes need a surface to cut into — set the section band to
-                White, Tint or Deep (or give the row a background colour)
-                for them to show.
-              </p>
-            </div>
-
-
-            {/* ── Snap to viewport ──
-                When enabled the row stretches to a full viewport and the
-                page softly snaps to its top, just like the Hero. Off by
-                default so most rows free-scroll inside their natural
-                content height (plus the global 18px breathing strip). */}
-
+            {/* ── Snap to viewport ── */}
             <div>
               <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
                 Scroll Snap
@@ -424,14 +401,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                 type="button"
                 role="switch"
                 aria-checked={snapEnabled}
-                onClick={() =>
-                  onRowMetaChange({
-                    layout: {
-                      ...(row.layout || DEFAULT_ROW_LAYOUT),
-                      snapEnabled: !snapEnabled,
-                    },
-                  })
-                }
+                onClick={() => patchLayout({ snapEnabled: !snapEnabled })}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-left transition-colors ${
                   snapEnabled
                     ? "bg-secondary/15 border-secondary/40"
@@ -478,22 +448,17 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                 const sorted = [...stops].sort((a, b) => a.position - b.position);
                 const firstColor = sorted[0]?.color;
                 const lastColor = sorted[sorted.length - 1]?.color;
-                onRowMetaChange({
-                  layout: {
-                    ...(row.layout || DEFAULT_ROW_LAYOUT),
-                    gradient,
-                    ...(firstColor ? { gradientStart: firstColor } : {}),
-                    ...(lastColor ? { gradientEnd: lastColor } : {}),
-                  },
+                patchLayout({
+                  gradient,
+                  ...(firstColor ? { gradientStart: firstColor } : {}),
+                  ...(lastColor ? { gradientEnd: lastColor } : {}),
                 });
               }}
             />
 
             <OverlayEditor
               overlays={currentOverlays}
-              onChange={(overlays) =>
-                onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), overlays } })
-              }
+              onChange={(overlays) => patchLayout({ overlays })}
             />
           </div>
         </AccordionContent>
@@ -501,5 +466,6 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
     </Accordion>
   );
 };
+
 
 export default RowStyleTab;
