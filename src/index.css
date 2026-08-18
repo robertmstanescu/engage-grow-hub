@@ -494,8 +494,9 @@
     font-weight: 600;
     font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
     line-height: 1;
+    /* Base fill — without it the pill only appeared on hover. */
+    background-color: hsl(var(--foreground));
     color: hsl(var(--btn-ink-fg));
-    color: hsl(45 60% 96%);
     border: 1px solid transparent;
     transition: background-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
   }
