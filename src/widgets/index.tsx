@@ -35,6 +35,10 @@ import {
   Quote,
   GalleryHorizontalEnd,
   HelpCircle,
+  BarChart3,
+  ListOrdered,
+  MessageSquareQuote,
+  Megaphone,
 } from "lucide-react";
 
 import HeroRow from "@/features/site/rows/HeroRow";
@@ -49,6 +53,10 @@ import LeadMagnetRow from "@/features/site/rows/LeadMagnetRow";
 import TestimonialRow from "@/features/site/rows/TestimonialRow";
 import LogoCloudRow from "@/features/site/rows/LogoCloudRow";
 import FaqRow from "@/features/site/rows/FaqRow";
+import ProofBandRow from "@/features/site/rows/ProofBandRow";
+import ProcessStepsRow from "@/features/site/rows/ProcessStepsRow";
+import QuoteBandRow from "@/features/site/rows/QuoteBandRow";
+import CtaBandRow from "@/features/site/rows/CtaBandRow";
 
 // Modular widgets — each self-registers on import. Keep this list
 // alphabetical so it's obvious whether a given widget is wired up.
@@ -204,6 +212,77 @@ registerWidget({
   defaultData: { items: [] },
   render: ({ row, rowIndex, align, vAlign }) => (
     <FaqRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
+  ),
+});
+
+/* ── Consulting-grade rows ─────────────────────────────────────────────
+ * Proof band, numbered process strip, single quote band and closing CTA.
+ * Each is a plain v3 widget: schema in types/rows.ts, editor in
+ * NewRowEditors.tsx, renderer in features/site/rows.
+ * ──────────────────────────────────────────────────────────────────── */
+registerWidget({
+  type: "proof_band",
+  label: "Proof Band",
+  icon: BarChart3,
+  category: "Social",
+  defaultData: {
+    eyebrow: "",
+    title_lines: [],
+    items: [
+      { value: "", label: "" },
+      { value: "", label: "" },
+      { value: "", label: "" },
+    ],
+  },
+  render: ({ row, rowIndex, align, vAlign }) => (
+    <ProofBandRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
+  ),
+});
+
+registerWidget({
+  type: "process_steps",
+  label: "How We Work",
+  icon: ListOrdered,
+  category: "Content",
+  defaultData: {
+    eyebrow: "How we work",
+    title_lines: [],
+    steps: [
+      { title: "", description: "<p></p>" },
+      { title: "", description: "<p></p>" },
+      { title: "", description: "<p></p>" },
+    ],
+  },
+  render: ({ row, rowIndex, align, vAlign }) => (
+    <ProcessStepsRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
+  ),
+});
+
+registerWidget({
+  type: "quote_band",
+  label: "Quote Band",
+  icon: MessageSquareQuote,
+  category: "Social",
+  defaultData: { quote: "<p></p>", name: "", role: "" },
+  render: ({ row, rowIndex, align, vAlign }) => (
+    <QuoteBandRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
+  ),
+});
+
+registerWidget({
+  type: "cta_band",
+  label: "CTA Band",
+  icon: Megaphone,
+  category: "Marketing",
+  defaultData: {
+    title_lines: [],
+    button_text: "Book a free consultation",
+    button_url: "#contact",
+    link_text: "",
+    link_url: "",
+  },
+  render: ({ row, rowIndex, align, vAlign }) => (
+    <CtaBandRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
   ),
 });
 
