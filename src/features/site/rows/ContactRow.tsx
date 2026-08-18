@@ -133,30 +133,23 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
               <div className="space-y-4">
                 {leftFields.map((field, fi) => (
                   <div key={field.key} style={revealStyle(isVisible, fi + 2)}>
-                    <label className={LABEL_CLASS} style={{ color: CREAM }}>{field.label}</label>
+                    <label className={LABEL_CLASS}>{field.label}</label>
                     <input type={field.type} required={field.required} value={formData[field.key] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                      className={INPUT_CLASS}
-                      style={{ color: CREAM }}
-                      onFocus={(e) => e.currentTarget.style.borderColor = "hsl(var(--accent))"}
-                      onBlur={(e) => e.currentTarget.style.borderColor = ""} />
+                      className={INPUT_CLASS} />
                   </div>
                 ))}
               </div>
 
               {textareaField && (
                 <div className="flex flex-col" style={revealStyle(isVisible, leftFields.length + 2)}>
-                  <label className={LABEL_CLASS} style={{ color: CREAM }}>{textareaField.label}</label>
+                  <label className={LABEL_CLASS}>{textareaField.label}</label>
                   <textarea required={textareaField.required} rows={5} value={formData[textareaField.key] || ""}
                     onChange={(e) => setFormData({ ...formData, [textareaField.key]: e.target.value })}
-                    className={`${INPUT_CLASS} resize-none flex-1`}
-                    style={{ color: CREAM }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = "hsl(var(--accent))"}
-                    onBlur={(e) => e.currentTarget.style.borderColor = ""} />
+                    className={`${INPUT_CLASS} resize-none flex-1`} />
                 </div>
               )}
             </div>
-
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-8 pt-6 border-t border-border" style={revealStyle(isVisible, leftFields.length + 3)}>
               <div className="space-y-1.5">
@@ -164,8 +157,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                   <label key={field.key} className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={formData.subscribed_to_marketing || false}
                       onChange={(e) => setFormData({ ...formData, subscribed_to_marketing: e.target.checked })}
-                      className="rounded" style={{ accentColor: "hsl(var(--accent))" }} />
-                    <span className="font-body text-xs text-muted-foreground">{field.label}</span>
+                      className="rounded accent-foreground" />
+                    <span className="text-card-body text-muted-foreground">{field.label}</span>
                   </label>
                 ))}
               </div>
