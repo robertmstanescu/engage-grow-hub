@@ -415,14 +415,68 @@
     color: inherit;
   }
 
-  /* Auto band: alternate white / tint down the page so a default page
-     already reads as calm bands with zero admin configuration. */
+  /* Auto band: alternate white / tint down the page. Opt-in now — the
+     page default is the mesh below. */
   section[data-band="auto"] {
     background-color: hsl(var(--band-white));
   }
   section[data-band="auto"]:nth-of-type(even) {
     background-color: hsl(var(--band-tint));
   }
+
+  /* ── Page mesh band (the default) ──
+     Fully transparent section so the fixed page mesh shows through.
+     Text colour comes from the canvas foreground. */
+  [data-band="mesh"] {
+    background-color: transparent;
+    color: hsl(var(--foreground));
+  }
+
+  /* The fixed mesh layer itself. pointer-events:none + z-index:-1 keep
+     it out of hit-testing and below every section, and `fixed` keeps it
+     continuous (and cheap) while the page scrolls. */
+  .page-mesh-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--gradient-mesh-page);
+  }
+
+  /* ── Section shapes ──
+     Decorative top/bottom edges. The SVG is filled with the SECTION's
+     own surface colour so the shape reads as the section rising into
+     (or falling away from) its neighbour. */
+  .section-shape {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    pointer-events: none;
+    display: block;
+    z-index: 0;
+  }
+  .section-shape[data-edge="top"] {
+    top: 0;
+    transform: translateY(-99%);
+  }
+  .section-shape[data-edge="bottom"] {
+    bottom: 0;
+    transform: translateY(99%) scaleY(-1);
+  }
+  .section-shape[data-flip="true"] {
+    transform: translateY(-99%) scaleX(-1);
+  }
+  .section-shape[data-edge="bottom"][data-flip="true"] {
+    transform: translateY(99%) scaleY(-1) scaleX(-1);
+  }
+  /* Dramatic curves eat vertical space on phones — flatten them. */
+  @media (max-width: 767px) {
+    .section-shape {
+      height: 28px !important;
+    }
+  }
+
 
 
   /* ──────────────────────────────────────────────────────────────────
