@@ -157,9 +157,21 @@ const upsertHeadElement = (
   head.appendChild(el);
 };
 
-const setTitle = (doc: HTMLDocument, head: Element, title: string) => {
-  upsertHeadElement(doc, head, "title", "title", {}, title);
+/** Search engines truncate titles past ~60 characters. */
+const TITLE_MAX = 60;
+
+const clampTitle = (value: string): string => {
+  const trimmed = (value || "").trim();
+  if (trimmed.length <= TITLE_MAX) return trimmed;
+  const cut = trimmed.slice(0, TITLE_MAX - 1);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > TITLE_MAX * 0.6 ? cut.slice(0, space) : cut).trimEnd()}…`;
 };
+
+const setTitle = (doc: HTMLDocument, head: Element, title: string) => {
+  upsertHeadElement(doc, head, "title", "title", {}, clampTitle(title));
+};
+
 
 const setMetaName = (
   doc: HTMLDocument,
