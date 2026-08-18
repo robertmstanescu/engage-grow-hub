@@ -247,9 +247,9 @@ const AdminInsights = () => {
         </div>
 
         {/* ── Filter bar ── */}
-        <div className="rounded-xl border bg-white p-3 flex flex-wrap items-center gap-2" style={{ borderColor: "hsl(260 20% 88%)" }}>
+        <div className="rounded-xl border bg-card p-3 flex flex-wrap items-center gap-2" style={{ borderColor: "hsl(var(--border))" }}>
           {/* Date range */}
-          <div className="flex items-center gap-1 rounded-md border overflow-hidden" style={{ borderColor: "hsl(260 20% 88%)" }}>
+          <div className="flex items-center gap-1 rounded-md border overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
             {DATE_RANGE_OPTIONS.map((opt) => (
               <button key={opt.key} onClick={() => setDateRangeKey(opt.key)}
                 className="px-3 py-1.5 font-body text-xs transition-colors"
@@ -260,7 +260,7 @@ const AdminInsights = () => {
             ))}
           </div>
           {/* Traffic type */}
-          <div className="flex items-center gap-1 rounded-md border overflow-hidden" style={{ borderColor: "hsl(260 20% 88%)" }}>
+          <div className="flex items-center gap-1 rounded-md border overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
             {(["all", "human", "bot"] as TrafficTypeFilter[]).map((t) => (
               <button key={t} onClick={() => setTrafficType(t)}
                 className="px-3 py-1.5 font-body text-xs capitalize transition-colors"
@@ -273,7 +273,7 @@ const AdminInsights = () => {
           {/* Category */}
           <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value as typeof categoryFilter)}
             className="px-3 py-1.5 rounded-md border font-body text-xs"
-            style={{ borderColor: "hsl(260 20% 88%)", backgroundColor: "white", color: "hsl(260 20% 25%)" }}>
+            style={{ borderColor: "hsl(var(--border))", backgroundColor: "white", color: "hsl(260 20% 25%)" }}>
             <option value="all">All content</option>
             <option value="blog">Blogs only</option>
             <option value="page">Pages only</option>
@@ -282,7 +282,7 @@ const AdminInsights = () => {
           {allCountries.length > 0 && (
             <select value={countryFilter} onChange={(e) => setCountryFilter(e.target.value)}
               className="px-3 py-1.5 rounded-md border font-body text-xs"
-              style={{ borderColor: "hsl(260 20% 88%)", backgroundColor: "white", color: "hsl(260 20% 25%)" }}>
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "white", color: "hsl(260 20% 25%)" }}>
               <option value="all">All countries</option>
               {allCountries.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -420,7 +420,7 @@ const AdminInsights = () => {
         </div>
 
         {/* llms.txt link card */}
-        <div className="rounded-xl border bg-white p-4" style={{ borderColor: "hsl(260 20% 88%)" }}>
+        <div className="rounded-xl border bg-card p-4" style={{ borderColor: "hsl(var(--border))" }}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h3 className="font-display text-sm font-bold" style={{ color: "hsl(260 20% 10%)" }}>llms.txt manifest</h3>
@@ -451,7 +451,7 @@ const AdminInsights = () => {
 
 // ── Tiny sub-components, kept inline because they're page-specific ─────
 const StatCard = ({ icon, label, value, hint, accentHsl }: { icon: React.ReactNode; label: string; value: string; hint: string; accentHsl: string }) => (
-  <div className="rounded-xl border p-4 sm:p-5 bg-white" style={{ borderColor: "hsl(260 20% 88%)" }}>
+  <div className="rounded-xl border p-4 sm:p-5 bg-card" style={{ borderColor: "hsl(var(--border))" }}>
     <div className="flex items-center gap-2 mb-2">
       <span className="inline-flex items-center justify-center w-7 h-7 rounded-full" style={{ backgroundColor: `hsl(${accentHsl} / 0.1)`, color: `hsl(${accentHsl})` }}>{icon}</span>
       <span className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(260 20% 45%)" }}>{label}</span>
@@ -462,7 +462,7 @@ const StatCard = ({ icon, label, value, hint, accentHsl }: { icon: React.ReactNo
 );
 
 const Panel = ({ title, loading, children }: { title: string; loading: boolean; children: React.ReactNode }) => (
-  <div className="rounded-xl border bg-white p-4 sm:p-5" style={{ borderColor: "hsl(260 20% 88%)" }}>
+  <div className="rounded-xl border bg-card p-4 sm:p-5" style={{ borderColor: "hsl(var(--border))" }}>
     <h2 className="font-display text-base font-bold mb-3" style={{ color: "hsl(260 20% 10%)" }}>{title}</h2>
     {loading ? <ListSkeleton rows={4} rowHeight="h-8" /> : children}
   </div>

@@ -14,8 +14,11 @@ const BrandingEditor = ({ content, onChange }: Props) => {
   const [uploading, setUploading] = useState<string | null>(null);
   const logoRef = useRef<HTMLInputElement>(null);
   const emblemRef = useRef<HTMLInputElement>(null);
+  const logoDarkRef = useRef<HTMLInputElement>(null);
+  const emblemDarkRef = useRef<HTMLInputElement>(null);
   const faviconLightRef = useRef<HTMLInputElement>(null);
   const faviconDarkRef = useRef<HTMLInputElement>(null);
+
 
   /**
    * Upload a branding asset to storage and persist its public URL on the
@@ -138,7 +141,27 @@ const BrandingEditor = ({ content, onChange }: Props) => {
             hint="Small icon-only logo for the desktop side nav and footer. If not set, the full logo is used."
           />
         </div>
+        <div className="mt-3">
+          <ImageUploadBox
+            label="Dark Full Logo (for light backgrounds)"
+            field="logo_dark_url"
+            inputRef={logoDarkRef}
+            icon={Image}
+            hint="Dark version used across the light theme. If empty, the light logo is automatically darkened with a filter."
+          />
+        </div>
+        <div className="mt-3">
+          <ImageUploadBox
+            label="Dark Emblem (for light backgrounds)"
+            field="emblem_dark_url"
+            inputRef={emblemDarkRef}
+            icon={Image}
+            hint="Dark icon-only mark for the navbar and footer. Falls back to an automatic filter when empty."
+          />
+        </div>
       </SectionBox>
+
+
 
       <SectionBox label="Favicon">
         <ImageUploadBox

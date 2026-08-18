@@ -61,12 +61,12 @@ const AdminToolbar = () => {
         alignItems: "center",
         justifyContent: "center",
         // Dark purple/charcoal theme + glassy blur so it reads on any bg.
-        backgroundColor: "hsl(280 57% 13% / 0.78)",
+        backgroundColor: "hsl(var(--card) / 0.92)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        border: "1px solid hsl(50 82% 87% / 0.18)",
-        color: "hsl(50 82% 87%)",
-        boxShadow: "0 8px 24px -8px hsl(280 57% 8% / 0.5)",
+        border: "1px solid hsl(var(--border))",
+        color: "hsl(var(--foreground))",
+        boxShadow: "var(--shadow-soft)",
         cursor: "pointer",
         transition: "transform 0.15s ease",
       }}

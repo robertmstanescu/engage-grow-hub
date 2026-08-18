@@ -57,7 +57,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
     <RowSection
       row={row}
       vAlign={vAlign}
-      defaultBg="hsl(260 20% 6%)"
+      defaultBg="hsl(var(--background))"
       innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
     >
       <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos}`}>
@@ -73,7 +73,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                 padding: 4,
                 background: "linear-gradient(135deg, hsl(280 55% 35% / 0.4), hsl(46 75% 60% / 0.15))",
                 boxShadow:
-                  "0 0 40px -10px hsl(280 55% 30% / 0.4), 0 0 80px -20px hsl(280 55% 40% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.1)",
+                  "var(--shadow-card)",
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
                 backfaceVisibility: "hidden",

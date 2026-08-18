@@ -25,14 +25,17 @@ type ResponsiveLogoProps = {
   imgClassName?: string;
   width?: number;
   height?: number;
+  /** Apply the CSS darkening filter (used when no dark asset is uploaded). */
+  darken?: boolean;
 };
-const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, height }: ResponsiveLogoProps) => (
+
+const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, height, darken }: ResponsiveLogoProps) => (
   <picture className={className}>
     <source media="(min-width: 1024px)" srcSet={emblemUrl} />
     <img
       src={logoUrl}
       alt="The Magic Coffin logo"
-      className={imgClassName}
+      className={`${imgClassName ?? ""}${darken ? " logo-darken" : ""}`}
       width={width}
       height={height}
       // @ts-expect-error – React types lag behind the standard attribute name.
@@ -42,6 +45,7 @@ const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, he
     />
   </picture>
 );
+
 
 const Navbar = () => {
   const { isLoading: brandingLoading, content: branding } = useSiteContentWithStatus<Record<string, any>>(
@@ -58,8 +62,20 @@ const Navbar = () => {
    * path is identical to the DB default for fresh projects.
    */
   const { isLoading: navLoading, content: navConfig } = useSiteContentWithStatus<Record<string, any>>("navbar", {});
-  const logoUrl = branding.logo_url || "";
-  const emblemUrl = branding.emblem_logo_url || logoUrl;
+  /*
+   * Light theme → we need the DARK logo assets. Prefer the dedicated dark
+   * uploads from Brand settings; when they are missing we fall back to the
+   * light asset plus the `.logo-darken` CSS filter so the mark is never
+   * pale-on-pale.
+   */
+  const lightLogo = branding.logo_url || "";
+  const lightEmblem = branding.emblem_logo_url || lightLogo;
+  const darkLogo = branding.logo_dark_url || "";
+  const darkEmblem = branding.emblem_dark_url || darkLogo;
+  const logoUrl = darkLogo || lightLogo;
+  const emblemUrl = darkEmblem || (darkLogo ? darkLogo : lightEmblem);
+  const needsDarken = !darkLogo && !darkEmblem;
+
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
@@ -182,32 +198,32 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Desktop navigation — floating rounded pill bar */}
+      {/* Desktop navigation — wide floating pill bar (~90% of viewport) */}
       <nav
         ref={railRef}
-        className="hidden lg:flex fixed top-5 left-1/2 -translate-x-1/2 z-50 items-center gap-8 rounded-full pl-6 pr-2 py-2 max-w-[min(1200px,calc(100%-64px))]"
+        className="hidden lg:grid fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-[1680px] grid-cols-[auto_1fr_auto] items-center gap-6 rounded-full pl-7 pr-3 py-2.5"
         style={{
-          backgroundColor: "hsl(var(--card) / 0.85)",
+          backgroundColor: "hsl(var(--card) / 0.88)",
           backdropFilter: "blur(16px) saturate(140%)",
           WebkitBackdropFilter: "blur(16px) saturate(140%)",
           border: "1px solid hsl(var(--border))",
           boxShadow: "var(--shadow-soft)",
         }}
       >
-        <a
-          href="/"
-          className="flex items-center flex-shrink-0"
-          style={{
-            animation: "nav-cascade-emblem 1100ms cubic-bezier(0.16, 1, 0.3, 1) 2600ms both",
-          }}
-        >
+        <a href="/" className="flex items-center flex-shrink-0">
           {!brandingLoading && logoUrl ? (
-            <ResponsiveLogo emblemUrl={emblemUrl} logoUrl={logoUrl} imgClassName="h-7 object-contain" height={28} />
+            <ResponsiveLogo
+              emblemUrl={emblemUrl}
+              logoUrl={logoUrl}
+              imgClassName="h-8 object-contain"
+              height={32}
+              darken={needsDarken}
+            />
           ) : null}
         </a>
 
-        <div className="flex-1 flex flex-row items-center justify-center gap-7">
-          {renderedItems.map((item, i) => {
+        <div className="flex flex-row items-center justify-center gap-9 min-w-0">
+          {renderedItems.map((item) => {
             const active = isActive(item.href);
             return (
               <a
@@ -217,9 +233,8 @@ const Navbar = () => {
                 className="top-nav-label font-body"
                 data-active={active}
                 style={{
-                  color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.7)",
+                  color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
                   fontWeight: active ? 600 : 450,
-                  animation: `nav-cascade 900ms cubic-bezier(0.16, 1, 0.3, 1) ${3300 + i * 150}ms both`,
                 }}
               >
                 {item.label}
@@ -233,18 +248,17 @@ const Navbar = () => {
             href={ctaHref}
             onClick={(e) => handleNavClick(e, ctaHref)}
             title={ctaText}
-            className="px-5 h-9 rounded-full flex items-center justify-center text-xs font-semibold tracking-[0.02em] transition-all duration-300 hover:opacity-90 whitespace-nowrap"
+            className="px-6 h-10 rounded-full flex items-center justify-center text-xs font-semibold tracking-[0.02em] transition-colors duration-200 whitespace-nowrap"
             style={{
               backgroundColor: "hsl(var(--nav-cta-bg, 280 57% 16%))",
               color: "hsl(var(--nav-cta-text, 45 60% 96%))",
-              animation: `nav-cascade-fade 900ms cubic-bezier(0.16, 1, 0.3, 1) ${
-                3300 + renderedItems.length * 150
-              }ms both`,
             }}
           >
             {ctaText || "→"}
           </a>
-        ) : null}
+        ) : (
+          <span />
+        )}
       </nav>
 
       {/* Mobile/tablet top bar — full/long logo */}
@@ -267,9 +281,11 @@ const Navbar = () => {
               className="flex items-center"
               imgClassName="h-7 object-contain"
               height={28}
+              darken={needsDarken}
             />
           ) : null}
         </a>
+
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -294,37 +310,35 @@ const Navbar = () => {
             className="lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-6"
             style={{ backgroundColor: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" }}
           >
-            {allItems.map((item, i) => {
+            {allItems.map((item) => {
               const active = isActive(item.href);
               return (
-                <motion.a
+                <a
                   key={item.label}
                   href={item.href}
                   onClick={(e) => handleNavClick(e, item.href)}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.06, ease }}
                   data-active={active}
-                  className="mobile-nav-link font-body text-sm uppercase tracking-[0.2em] transition-colors duration-300"
-                  style={{ color: active ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.5)" }}
+                  className="mobile-nav-link font-body text-sm uppercase tracking-[0.2em] transition-colors duration-200"
+                  style={{ color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.65)" }}
                 >
                   {item.label}
-                </motion.a>
+                </a>
               );
             })}
             {ctaHref && ctaText ? (
-              <motion.a
+              <a
                 href={ctaHref}
                 onClick={(e) => handleNavClick(e, ctaHref)}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
                 className="font-display text-[9px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
-                style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
+                style={{
+                  backgroundColor: "hsl(var(--nav-cta-bg, 280 57% 16%))",
+                  color: "hsl(var(--nav-cta-text, 45 60% 96%))",
+                }}
               >
                 {ctaText}
-              </motion.a>
+              </a>
             ) : null}
+
           </motion.div>
         )}
       </AnimatePresence>

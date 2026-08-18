@@ -70,7 +70,7 @@
     --sidebar-border: 285 22% 89%;
     --sidebar-ring: 280 55% 24%;
 
-    --font-title: "Unbounded", sans-serif;
+    --font-title: "Bricolage Grotesque", sans-serif;
     --font-header: "Bricolage Grotesque", sans-serif;
     --font-body: "Inter", sans-serif;
 
@@ -694,38 +694,29 @@
     background: linear-gradient(to right, hsl(var(--violet) / 0.3), hsl(var(--valentino) / 0.1));
   }
 
-  /* ── Navbar entrance cascade ──
-     Two variants:
-       • nav-cascade       — opacity + small slide. Safe for elements
-                             that have NO existing CSS transform.
-       • nav-cascade-fade  — opacity only. Use for elements with a
-                             baseline transform (e.g. the side-rail
-                             labels rotated 180deg) so the entrance
-                             animation cannot clobber it. */
-  @keyframes nav-cascade {
-    from { opacity: 0; transform: translateY(-8px); }
+  /* ── Motion: one quiet entrance ──
+     The site deliberately ships a single entrance gesture (a soft
+     fade-and-rise on the hero block) plus 200ms hover transitions.
+     No cascades, no staggered reveals. */
+  @keyframes quiet-rise {
+    from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  @keyframes nav-cascade-emblem {
-    from { opacity: 0; transform: scale(0.88); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-  @keyframes nav-cascade-fade {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+
+  .hero-enter {
+    animation: quiet-rise 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  @keyframes hero-cascade-soft {
-    from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
-    to   { opacity: var(--hero-cascade-opacity, 1); transform: translateY(0); filter: blur(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-enter { animation: none; }
   }
 
-  @media (min-width: 1024px) {
-    .hero-cascade-item {
-      opacity: 0;
-      animation: hero-cascade-soft 1400ms cubic-bezier(0.16, 1, 0.3, 1) both;
-    }
+  /* Fallback used when no dark logo asset is uploaded: invert the light
+     mark so it reads on the light theme surfaces. */
+  .logo-darken {
+    filter: brightness(0) saturate(100%) invert(11%) sepia(38%) saturate(2200%) hue-rotate(268deg) brightness(92%) contrast(96%);
   }
+
 
   /* ── Side nav ── */
   .side-nav-label {

@@ -39,7 +39,7 @@ const VowsSection = () => {
   return (
     <section id="vows" data-section="vows" className="snap-section grain relative py-32 md:py-40" style={{ backgroundColor: "hsl(var(--vows-bg))", isolation: "isolate", paddingTop: "24px", paddingBottom: "24px" }}>
       <div className="absolute inset-0 opacity-60" style={{
-        background: "radial-gradient(ellipse 80% 60% at 10% 90%, hsl(280 55% 18% / 0.6), transparent), radial-gradient(ellipse 60% 50% at 80% 20%, hsl(286 42% 20% / 0.4), transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)"
+        background: "radial-gradient(ellipse 80% 60% at 10% 90%, hsl(280 40% 96% / 0.8), transparent), radial-gradient(ellipse 60% 50% at 80% 20%, hsl(45 55% 96% / 0.7), transparent)"
       }} />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px]"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
@@ -70,11 +70,11 @@ const VowsSection = () => {
               className="rounded-xl p-7 text-left"
               style={{
                 ...revealStyle(isVisible, i + 1),
-                backgroundColor: "hsl(260 25% 12% / 0.5)",
+                backgroundColor: "hsl(var(--card))",
                 backdropFilter: "blur(24px)",
                 WebkitBackdropFilter: "blur(24px)",
-                border: "1px solid hsl(280 20% 25% / 0.35)",
-                boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4)",
+                border: "1px solid hsl(var(--border))",
+                boxShadow: "var(--shadow-card)",
               }}>
               <p className="font-body-heading font-bold mb-3" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))", fontSize: "clamp(0.85rem, 0.4vh + 0.45vw, 1rem)" }}>{vow.title}</p>
               {/*
