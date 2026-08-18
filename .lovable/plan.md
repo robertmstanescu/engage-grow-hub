@@ -39,7 +39,7 @@ Structure borrowed from Lativ, restraint borrowed from South Pole / Sequoia.
 - Tertiary/ghost: cream pill with hairline ink outline, used on deep bands.
 - One shared button component/variant set so the CTA widget, contact submit, hero CTAs, service cards and navbar all match.
 
-## 4. Services as a first-class entity
+## 5. Services as a first-class entity
 
 Services stop being loose row content and become their own thing in the admin.
 
