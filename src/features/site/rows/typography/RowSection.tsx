@@ -196,15 +196,18 @@ const RowSection = ({
             )}
           </div>
         ) : null}
-        {shapeSurface && shapeTop ? (
-          <SectionShape edge="top" config={shapeTop} color={shapeSurface} />
+        {shapeTop ? (
+          <SectionShape edge="top" config={shapeTop} color={prevSurface} />
         ) : null}
-        {shapeSurface && shapeBottom ? (
-          <SectionShape edge="bottom" config={shapeBottom} color={shapeSurface} />
+        {shapeBottom ? (
+          <SectionShape edge="bottom" config={shapeBottom} color={nextSurface} />
         ) : null}
-        {!explicitBand && (
+        {/* Decorative glow is for painted rows only — a mesh row must stay
+            fully transparent so the page-wide gradient reads as one surface. */}
+        {!explicitBand && !(meshBand && !hasOwnPaint) && (
           <div className="absolute inset-0 pointer-events-none z-[-3]"><RowBackground row={row} /></div>
         )}
+
         <div aria-hidden className="absolute inset-0 pointer-events-none z-[-2]" style={getRowBgImageStyle(row)} />
         {row.layout?.overlays?.length ? (
           <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden">
