@@ -940,6 +940,18 @@
 
   /* Fallback used when no dark logo asset is uploaded: invert the light
      mark so it reads on the light theme surfaces. */
+  /* Footer is a dark revolver band: force every token the footer uses to
+     the white end of the scale so all text, links and icons read light. */
+  .footer-dark {
+    --foreground: 0 0% 100%;
+    --border: 0 0% 100%;
+    color: hsl(0 0% 100%);
+  }
+  .footer-dark .hover\:text-foreground:hover { color: hsl(0 0% 100%); }
+
+  /* Whiten a dark logo asset when no light variant is uploaded. */
+  .logo-whiten { filter: brightness(0) invert(1); }
+
   .logo-darken {
     filter: brightness(0) saturate(100%) invert(11%) sepia(38%) saturate(2200%) hue-rotate(268deg) brightness(92%) contrast(96%);
   }
