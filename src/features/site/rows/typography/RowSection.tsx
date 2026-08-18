@@ -1,10 +1,26 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import type { PageRow } from "@/types/rows";
 import { getRowBgColor } from "../rowBackground";
 import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEditor";
 import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
-import SectionShape from "../SectionShape";
+import SectionShape, { shapeHeightPx } from "../SectionShape";
+
+/** Tracks the same breakpoint index.css uses to flatten shapes. */
+const useFlatShapes = () => {
+  const [flat, setFlat] = useState(
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 767px)").matches : false
+  );
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 767px)");
+    const onChange = () => setFlat(mql.matches);
+    mql.addEventListener("change", onChange);
+    setFlat(mql.matches);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return flat;
+};
+
 
 
 interface Props {
@@ -123,6 +139,16 @@ const RowSection = ({
    * including the footer — otherwise the overhang gets covered. */
   const hasShape = Boolean(shapeTop || shapeBottom);
 
+  /* ── Optical centring ──
+   *  A cap paints OUTSIDE the section, so a row with only a bottom edge
+   *  has more coloured surface below the content than above it. Add the
+   *  opposite padding by the shape's own height so the content sits in
+   *  the middle of the total painted mass. Two shapes cancel out. */
+  const flatShapes = useFlatShapes();
+  const topShapeH = shapeHeightPx(shapeTop, flatShapes);
+  const bottomShapeH = shapeHeightPx(shapeBottom, flatShapes);
+  const basePad = "clamp(72px, 8vw, 128px)";
+
   /* Hairline separator on the top edge — independent of shapes so a row
    * can have a plain rule without taking on a decorative curve. */
   const dividerTop = row.layout?.dividerTop || "none";
@@ -142,6 +168,8 @@ const RowSection = ({
         style={{
           backgroundColor: surfaceColor,
           zIndex: hasShape ? 2 : undefined,
+          ...(bottomShapeH ? { paddingTop: `calc(${basePad} + ${bottomShapeH}px)` } : null),
+          ...(topShapeH ? { paddingBottom: `calc(${basePad} + ${topShapeH}px)` } : null),
 
           scrollMarginTop: "0px",
           /*
@@ -155,6 +183,7 @@ const RowSection = ({
           ...style,
         }}
       >
+
         {/*
           LAYER ORDER (bottom → top):
           1. The section's own flat `backgroundColor` (or nothing, so the

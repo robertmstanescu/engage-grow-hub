@@ -105,6 +105,30 @@ const SectionShape = ({ edge, config, color }: Props) => {
   );
 };
 
+/** Rounded cap heights (px) per size. */
+const ROUNDED_PX: Record<SectionShapeSize, number> = {
+  subtle: 24,
+  medium: 48,
+  dramatic: 80,
+};
+
+/**
+ * Painted height (px) of a configured edge shape. Mobile flattens SVG
+ * shapes to 28px and rounded caps to 24px (see index.css), so the
+ * compensation padding must use the same numbers.
+ */
+export const shapeHeightPx = (
+  config: SectionShapeConfig | undefined,
+  isMobile = false
+): number => {
+  const kind = config?.kind ?? "none";
+  if (!kind || kind === "none") return 0;
+  const size = config?.size ?? "medium";
+  if (kind === "rounded") return isMobile ? 24 : ROUNDED_PX[size];
+  if (!PATHS[kind]) return 0;
+  return isMobile ? 28 : SIZE_PX[size];
+};
+
 /**
  * Border radius (px) applied to the section itself for the
  * "rounded card" shape — the section lifts as a big rounded rectangle
@@ -112,7 +136,8 @@ const SectionShape = ({ edge, config, color }: Props) => {
  */
 export const roundedRadius = (config?: SectionShapeConfig): number => {
   if (config?.kind !== "rounded") return 0;
-  return { subtle: 24, medium: 48, dramatic: 80 }[config.size ?? "medium"];
+  return ROUNDED_PX[config.size ?? "medium"];
 };
 
 export default SectionShape;
+
