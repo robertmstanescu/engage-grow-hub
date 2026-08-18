@@ -120,50 +120,39 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         <div
-          className="rounded-2xl p-5 md:p-7 relative overflow-hidden"
-          style={{
-            ...revealStyle(isVisible, 1),
-            backgroundColor: "hsl(280 55% 24% / 0.9)",
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-            border: "1px solid hsl(280 55% 35% / 0.4)",
-            boxShadow: "0 16px 48px -12px hsl(280 55% 15% / 0.5), 0 0 60px -20px hsl(280 55% 30% / 0.2)",
-          }}>
-          <div className="absolute inset-0 opacity-30 pointer-events-none" style={{
-            background: "linear-gradient(135deg, hsl(280 55% 40% / 0.4) 0%, transparent 50%, hsl(280 55% 30% / 0.2) 100%)",
-          }} />
-          <div className="absolute top-0 left-0 right-0 h-px pointer-events-none" style={{ background: "linear-gradient(to right, transparent, hsl(280 55% 60% / 0.3), transparent)" }} />
+          className="bg-card border border-border shadow-sm rounded-2xl p-6 md:p-8"
+          style={revealStyle(isVisible, 1)}>
 
-          <form onSubmit={handleSubmit} className="relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 {leftFields.map((field, fi) => (
                   <div key={field.key} style={revealStyle(isVisible, fi + 2)}>
-                    <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-left text-white">{field.label}</label>
+                    <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-left" style={{ color: CREAM }}>{field.label}</label>
                     <input type={field.type} required={field.required} value={formData[field.key] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                      className="w-full bg-transparent pb-2 font-body text-xs outline-none interactive text-left"
-                      style={{ borderBottom: `1px solid ${CREAM}30`, color: CREAM }}
-                      onFocus={(e) => e.currentTarget.style.borderBottomColor = "hsl(var(--accent))"}
-                      onBlur={(e) => e.currentTarget.style.borderBottomColor = `${CREAM}30`} />
+                      className="w-full bg-transparent border border-border rounded-lg px-3.5 py-2.5 font-body text-xs outline-none interactive text-left transition-colors"
+                      style={{ color: CREAM }}
+                      onFocus={(e) => e.currentTarget.style.borderColor = "hsl(var(--accent))"}
+                      onBlur={(e) => e.currentTarget.style.borderColor = ""} />
                   </div>
                 ))}
               </div>
 
               {textareaField && (
                 <div className="flex flex-col" style={revealStyle(isVisible, leftFields.length + 2)}>
-                  <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-white text-left">{textareaField.label}</label>
+                  <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-left" style={{ color: CREAM }}>{textareaField.label}</label>
                   <textarea required={textareaField.required} rows={5} value={formData[textareaField.key] || ""}
                     onChange={(e) => setFormData({ ...formData, [textareaField.key]: e.target.value })}
-                    className="w-full bg-transparent pb-2 font-body text-xs outline-none interactive resize-none flex-1 text-left"
-                    style={{ borderBottom: `1px solid ${CREAM}30`, color: CREAM }}
-                    onFocus={(e) => e.currentTarget.style.borderBottomColor = "hsl(var(--accent))"}
-                    onBlur={(e) => e.currentTarget.style.borderBottomColor = `${CREAM}30`} />
+                    className="w-full bg-transparent border border-border rounded-lg px-3.5 py-2.5 font-body text-xs outline-none interactive resize-none flex-1 text-left transition-colors"
+                    style={{ color: CREAM }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = "hsl(var(--accent))"}
+                    onBlur={(e) => e.currentTarget.style.borderColor = ""} />
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-rhythm-base pt-4" style={{ ...revealStyle(isVisible, leftFields.length + 3), borderTop: `1px solid ${CREAM}15` }}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-8 pt-6 border-t border-border" style={revealStyle(isVisible, leftFields.length + 3)}>
               <div className="space-y-1.5">
                 {checkboxFields.map((field) => (
                   <label key={field.key} className="flex items-center gap-2 cursor-pointer">
@@ -175,7 +164,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                 ))}
               </div>
               <button type="submit" disabled={submitting}
-                className="btn-glass interactive-strong font-display text-[10px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full disabled:opacity-50">
+                className="btn-glass interactive-strong font-display text-[10px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full disabled:opacity-50 sm:ml-auto">
                 {submitting ? "Sending…" : buttonText}
               </button>
             </div>

@@ -99,13 +99,10 @@ const AchievementCard = memo(({ text, colors, cardBg, isVisible, idx }: {
   isVisible: boolean; idx: number;
 }) => (
   <div
-    className="rounded-xl px-5 py-4 flex items-start gap-3 interactive"
+    className="rounded-xl border border-border shadow-sm p-6 flex items-start gap-3 interactive"
     style={{
       ...revealStyle(isVisible, idx + 6),
       backgroundColor: cardBg,
-      backdropFilter: "blur(24px)",
-      WebkitBackdropFilter: "blur(24px)",
-      border: `1px solid ${colors.border}`,
     }}
   >
     <span
@@ -222,13 +219,8 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
 
         {effectiveStats.length > 0 && (
           <div
-            className="rounded-xl flex flex-col sm:flex-row mb-rhythm-loose overflow-hidden"
-            style={{
-              backgroundColor: cardBg,
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
-              border: `1px solid ${colors.border}`,
-            }}
+            className="rounded-xl border border-border shadow-sm flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border mb-rhythm-loose overflow-hidden"
+            style={{ backgroundColor: cardBg }}
           >
             {effectiveStats.map((s: { value: string; label: string }, i: number) => (
               <StatUnit key={i} value={s.value} label={s.label} colors={colors} isVisible={isVisible} idx={i} />
@@ -237,7 +229,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
         )}
 
         {effectiveAchievements.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-rhythm-base">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-stretch">
             {effectiveAchievements.map((text: string, i: number) => (
               <AchievementCard key={i} text={text} colors={colors} cardBg={cardBg} isVisible={isVisible} idx={i} />
             ))}

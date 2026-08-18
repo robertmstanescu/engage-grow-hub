@@ -34,9 +34,9 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
   const getGridCols = (count: number) => {
     if (count <= 1) return "grid-cols-1";
     if (count === 2) return "grid-cols-1 md:grid-cols-2";
-    if (count === 3) return "grid-cols-1 md:grid-cols-3";
+    if (count === 3) return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
     if (count === 4) return "grid-cols-1 md:grid-cols-2 lg:grid-cols-4";
-    return "grid-cols-1 md:grid-cols-3";
+    return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
   };
 
   const renderColumnContent = (c: Record<string, any>, colIndex: number) => {
@@ -69,7 +69,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
           </RowSubtitle>
         )}
 
-        <div className={`grid ${getGridCols(cards.length)} gap-6 ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
+        <div className={`grid ${getGridCols(cards.length)} gap-6 lg:gap-8 items-stretch ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
           {cards.slice(0, 6).map((card: any, i: number) => {
             const titleColor = c.color_card_title || "hsl(var(--vows-card-title))";
             const bodyColor = c.color_card_body || "hsl(var(--vows-card-body))";
@@ -107,17 +107,11 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               </>
             );
 
-            // Hover lift uses an explicit, gentle transition curve and a
-            // 3D translate so the card's GPU layer (created by `.glass`'s
-            // `translateZ(0)`) is preserved across the animation. The old
-            // `transition-transform hover:-translate-y-0.5` combo dropped
-            // the Z translate on hover, which forced a re-rasterisation
-            // and made the inner SVG icon appear to "shake" mid-tween.
-            const cardClass = `glass rounded-xl p-7 text-left boxed-lift ${cardLink ? "block hover:shadow-2xl cursor-pointer" : ""}`;
-            const cardStyle = {
-              ...revealStyle(isVisible, i + 2),
-              boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
-            } as React.CSSProperties;
+            // Clean, structured card enclosure: solid card surface, crisp
+            // 1px border, uniform padding and a subtle shadow. `boxed-lift`
+            // keeps the GPU-friendly hover transform (no icon shake).
+            const cardClass = `bg-card border border-border rounded-xl shadow-sm p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
+            const cardStyle = { ...revealStyle(isVisible, i + 2) } as React.CSSProperties;
 
             if (cardLink) {
               return (

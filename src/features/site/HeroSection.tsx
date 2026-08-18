@@ -104,15 +104,12 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
     >
       {/*
         LAYERING ORDER (bottom → top):
-        1. Ambient glow (z-[-2])      — decorative gradients sit at the very back
-        2. Background image (z-[-1])  — uploaded PNG/video sits ABOVE the glow
-                                        so it is never washed out by the blur
-        3. Content (z-10)             — text & CTAs always win
+        1. Background image / video (z-[-1])
+        2. Content (z-10) — text & CTAs always win
+        Ambient blurred gradient blobs were removed for a crisp,
+        structured layout (Lativ-style).
       */}
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] z-[-2]"
-        style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
-      <div className="absolute top-1/4 right-0 w-[400px] h-[400px] rounded-full opacity-10 blur-[100px] z-[-2]"
-        style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
+
 
       {hasBg && c.bg_type === "image" && (
         <div className="absolute inset-0 z-[-1]">
@@ -214,92 +211,90 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
         </div>
       )}
 
-      <div className="relative z-10 w-full max-w-[1400px] px-4 sm:px-8 pb-[4vh] pt-[6vh] flex min-h-0 flex-1 flex-col justify-end overflow-y-auto">
+      <div className="relative z-10 w-full max-w-[1200px] mx-auto px-6 sm:px-8 pb-16 pt-24 flex min-h-0 flex-1 flex-col justify-end overflow-y-auto">
         {/*
-          IMPACT MODE — the title is the centerpiece. We let it consume
-          a huge slice of the viewport (up to ~16vh / 11vw) while the
-          eyebrow and tagline stay small and elegant around it. The
-          clamp() upper bound (10rem) only kicks in on enormous monitors;
-          on standard displays the vh/vw min() drives the size so the
-          headline always feels poster-sized. Auto-shrink is preserved
-          via the same min(vw, vh) trick — on short viewports it scales
-          down to fit alongside the eyebrow + tagline.
+          Structured hero block — a single vertical rhythm stack for the
+          eyebrow, headline, tagline, subtitle and body. Spacing is crisp
+          and consistent instead of vh-driven, keeping the layout clean at
+          every breakpoint while the headline stays poster-sized.
         */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.2, ease }}
-          className="font-body tracking-[0.32em] uppercase mb-[1.5vh] flex-shrink-0"
-          style={{ color: "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)" }}>
-          <EditableText sectionKey="hero" fieldPath="label" as="span">
-            {c.label}
-          </EditableText>
-        </motion.p>
-
-        <h1
-          className="font-display font-black leading-[0.88] tracking-tight mb-0 max-w-[95%] flex-shrink-0"
-          style={{ color: "hsl(var(--hero-title))", fontSize: "clamp(2rem, min(11vw, 16vh), 10rem)" }}>
-          {titleLines.map((line, i) => (
-            <motion.span
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 + i * 0.12, ease }}
-              className="block">
-              <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
-            </motion.span>
-          ))}
-        </h1>
-
-        {c.tagline && (
+        <div className="flex flex-col gap-5">
           <motion.p
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
-            transition={{ duration: 1, delay: 0.8, ease }}
-            className="font-body tracking-[0.28em] uppercase mt-[1.8vh] flex-shrink-0"
-            style={{ color: c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)" }}>
-            <EditableText sectionKey="hero" fieldPath="tagline" as="span">
-              {c.tagline}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.2, ease }}
+            className="font-body tracking-[0.32em] uppercase flex-shrink-0"
+            style={{ color: "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)" }}>
+            <EditableText sectionKey="hero" fieldPath="label" as="span">
+              {c.label}
             </EditableText>
           </motion.p>
-        )}
 
-        {c.subtitle && (
+          <h1
+            className="font-display font-black leading-[0.9] tracking-tight flex-shrink-0"
+            style={{ color: "hsl(var(--hero-title))", fontSize: "clamp(2rem, min(10vw, 15vh), 9rem)" }}>
+            {titleLines.map((line, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.3 + i * 0.12, ease }}
+                className="block">
+                <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
+              </motion.span>
+            ))}
+          </h1>
+
+          {c.tagline && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+              transition={{ duration: 1, delay: 0.8, ease }}
+              className="font-body tracking-[0.28em] uppercase flex-shrink-0"
+              style={{ color: c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)" }}>
+              <EditableText sectionKey="hero" fieldPath="tagline" as="span">
+                {c.tagline}
+              </EditableText>
+            </motion.p>
+          )}
+
+          {c.subtitle && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1, ease }}
+              className="flex-shrink-0">
+              <EditableText
+                sectionKey="hero"
+                fieldPath="subtitle"
+                as="p"
+                className="leading-tight max-w-[600px]"
+                style={{
+                  fontFamily: "'Architects Daughter', cursive",
+                  color: c.subtitle_color || "hsl(var(--hero-body))",
+                  fontSize: "clamp(0.85rem, min(2vw, 2.6vh), 1.4rem)",
+                }}>
+                {c.subtitle}
+              </EditableText>
+            </motion.div>
+          )}
+
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1, ease }}
-            className="flex-shrink-0 mt-[1.5vh]">
+            transition={{ duration: 0.8, delay: 1.1, ease }}
+            className="flex-shrink-0">
             <EditableText
               sectionKey="hero"
-              fieldPath="subtitle"
-              as="p"
-              className="leading-tight max-w-[600px]"
-              style={{
-                fontFamily: "'Architects Daughter', cursive",
-                color: c.subtitle_color || "hsl(var(--hero-body))",
-                fontSize: "clamp(0.85rem, min(2vw, 2.6vh), 1.4rem)",
-              }}>
-              {c.subtitle}
-            </EditableText>
+              fieldPath="body"
+              html
+              as="div"
+              className="font-body-heading max-w-[560px] leading-relaxed"
+              style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "clamp(0.78rem, min(1.4vw, 1.8vh), 1.05rem)" }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
+            />
           </motion.div>
-        )}
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.1, ease }}
-          className="flex-shrink-0">
-          <EditableText
-            sectionKey="hero"
-            fieldPath="body"
-            html
-            as="div"
-            className="font-body-heading max-w-[520px] leading-relaxed mt-[1.5vh]"
-            style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "clamp(0.78rem, min(1.4vw, 1.8vh), 1.05rem)" }}
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
-          />
-        </motion.div>
+        </div>
       </div>
     </section>
   );
