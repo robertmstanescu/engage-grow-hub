@@ -97,6 +97,10 @@ interface Props {
   /** When false, the widget-only tabs (Design / Advanced) are hidden —
    *  used when a whole ROW is selected and there is no widget context. */
   showWidgetTabs?: boolean;
+
+  /** Optional slug/anchor editor rendered at the top of Advanced. */
+  slugEditor?: ReactNode;
+
 }
 
 const PANEL_LABEL =
