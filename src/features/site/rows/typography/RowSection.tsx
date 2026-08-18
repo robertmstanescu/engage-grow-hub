@@ -6,6 +6,8 @@ import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEdito
 import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
 import SectionShape, { roundedRadius } from "../SectionShape";
+import { useRowNeighbors } from "../RowNeighborContext";
+
 
 interface Props {
   row: PageRow;
