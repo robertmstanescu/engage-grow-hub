@@ -65,7 +65,9 @@ export const RowsRenderer = ({
   const meshCSS = useMemo(() => buildPageMeshCSS(resolvePageMesh(v3Rows as any)), [v3Rows]);
   useEffect(() => {
     document.documentElement.style.setProperty("--gradient-mesh-page", meshCSS);
-    return () => document.documentElement.style.removeProperty("--gradient-mesh-page");
+    return () => {
+      document.documentElement.style.removeProperty("--gradient-mesh-page");
+    };
   }, [meshCSS]);
 
   return (
