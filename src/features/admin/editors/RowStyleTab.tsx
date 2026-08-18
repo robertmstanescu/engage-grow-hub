@@ -213,11 +213,56 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               />
             )}
 
+            {/* ── Section band ──
+                Three site-wide tones keep the page reading as calm
+                alternating bands instead of ad-hoc per-row colours. */}
+            <div>
+              <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                Section band
+              </label>
+              <div className="grid grid-cols-4 gap-1">
+                {([
+                  ["auto", "Auto"],
+                  ["white", "White"],
+                  ["tint", "Tint"],
+                  ["deep", "Deep"],
+                ] as const).map(([value, label]) => {
+                  const active = ((row.layout as { bandTone?: string } | undefined)?.bandTone || "auto") === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() =>
+                        onRowMetaChange({
+                          layout: {
+                            ...(row.layout || DEFAULT_ROW_LAYOUT),
+                            bandTone: value,
+                          },
+                        })
+                      }
+                      className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+                        active
+                          ? "bg-secondary/15 border-secondary/40 text-foreground"
+                          : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="font-body text-[10px] text-muted-foreground mt-1 leading-snug">
+                Auto alternates white / tint down the page. Deep is the plum
+                ink band for emphasis moments.
+              </p>
+            </div>
+
             {/* ── Snap to viewport ──
                 When enabled the row stretches to a full viewport and the
                 page softly snaps to its top, just like the Hero. Off by
                 default so most rows free-scroll inside their natural
                 content height (plus the global 18px breathing strip). */}
+
             <div>
               <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
                 Scroll Snap
