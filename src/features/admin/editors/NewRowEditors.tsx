@@ -34,7 +34,7 @@ import ImagePickerField from "../ImagePickerField";
 import TitleLinesEditor from "./TitleLinesEditor";
 import SubtitleEditor from "../site-editor/SubtitleEditor";
 import { Plus, Trash2 } from "lucide-react";
-import type { TestimonialItem, FaqItem, LogoCloudLogo } from "@/types/rows";
+import type { TestimonialItem, FaqItem, LogoCloudLogo, ProofItem, ProcessStep } from "@/types/rows";
 
 /* ────────────────────────────────────────────────────────────────────
  * Reusable "Brand Header" block. Renders the standard set of fields
@@ -242,3 +242,138 @@ export const FaqEditor = ({
     </div>
   );
 };
+
+/* ──────────────────────────────── Proof band editor ───────────────── */
+export const ProofBandEditor = ({
+  content,
+  onChange,
+  bgColor,
+}: {
+  content: Record<string, any>;
+  onChange: (field: string, value: any) => void;
+  bgColor?: string;
+}) => {
+  const items: ProofItem[] = Array.isArray(content.items) ? content.items : [];
+  return (
+    <div className="space-y-3">
+      <BrandHeaderFields content={content} onChange={onChange} bgColor={bgColor} />
+      <ArrayCardList<ProofItem>
+        label="Proof points (3–4 works best)"
+        items={items}
+        onChange={(next) => onChange("items", next)}
+        newItem={() => ({ value: "", label: "", logo: "", logo_alt: "" })}
+        addLabel="Add proof point"
+        renderItem={(item, _i, update) => (
+          <>
+            <Field
+              label="Stat / value"
+              value={item.value || ""}
+              onChange={(v) => update({ ...item, value: v })}
+            />
+            <Field
+              label="Supporting label"
+              value={item.label || ""}
+              onChange={(v) => update({ ...item, label: v })}
+            />
+            <ImagePickerField
+              label="Client logo (optional — replaces the stat)"
+              value={item.logo || ""}
+              onChange={(v) => update({ ...item, logo: v })}
+              altValue={item.logo_alt || ""}
+              onAltChange={(v) => update({ ...item, logo_alt: v })}
+            />
+          </>
+        )}
+      />
+    </div>
+  );
+};
+
+/* ─────────────────────────── "How we work" steps editor ───────────── */
+export const ProcessStepsEditor = ({
+  content,
+  onChange,
+  bgColor,
+}: {
+  content: Record<string, any>;
+  onChange: (field: string, value: any) => void;
+  bgColor?: string;
+}) => {
+  const steps: ProcessStep[] = Array.isArray(content.steps) ? content.steps : [];
+  return (
+    <div className="space-y-3">
+      <BrandHeaderFields content={content} onChange={onChange} bgColor={bgColor} />
+      <ArrayCardList<ProcessStep>
+        label="Steps (numbers are automatic)"
+        items={steps}
+        onChange={(next) => onChange("steps", next)}
+        newItem={() => ({ title: "", description: "<p></p>" })}
+        addLabel="Add step"
+        renderItem={(item, _i, update) => (
+          <>
+            <Field label="Step title" value={item.title || ""} onChange={(v) => update({ ...item, title: v })} />
+            <RichField
+              label="What happens"
+              value={item.description || ""}
+              onChange={(v) => update({ ...item, description: v })}
+              bgColor={bgColor}
+            />
+          </>
+        )}
+      />
+    </div>
+  );
+};
+
+/* ─────────────────────────────── Quote band editor ────────────────── */
+export const QuoteBandEditor = ({
+  content,
+  onChange,
+  bgColor,
+}: {
+  content: Record<string, any>;
+  onChange: (field: string, value: any) => void;
+  bgColor?: string;
+}) => (
+  <div className="space-y-3">
+    <SectionBox label="Quote">
+      <Field label="Eyebrow (optional)" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
+      <RichField
+        label="Quote"
+        value={content.quote || ""}
+        onChange={(v) => onChange("quote", v)}
+        bgColor={bgColor}
+      />
+      <Field label="Client name" value={content.name || ""} onChange={(v) => onChange("name", v)} />
+      <Field label="Role / Company" value={content.role || ""} onChange={(v) => onChange("role", v)} />
+      <ImagePickerField
+        label="Portrait (optional)"
+        value={content.avatar || ""}
+        onChange={(v) => onChange("avatar", v)}
+        altValue={content.avatar_alt || ""}
+        onAltChange={(v) => onChange("avatar_alt", v)}
+      />
+    </SectionBox>
+  </div>
+);
+
+/* ───────────────────────────────── CTA band editor ────────────────── */
+export const CtaBandEditor = ({
+  content,
+  onChange,
+  bgColor,
+}: {
+  content: Record<string, any>;
+  onChange: (field: string, value: any) => void;
+  bgColor?: string;
+}) => (
+  <div className="space-y-3">
+    <BrandHeaderFields content={content} onChange={onChange} bgColor={bgColor} />
+    <SectionBox label="Actions">
+      <Field label="Button label" value={content.button_text || ""} onChange={(v) => onChange("button_text", v)} />
+      <Field label="Button link" value={content.button_url || ""} onChange={(v) => onChange("button_url", v)} />
+      <Field label="Text link label (optional)" value={content.link_text || ""} onChange={(v) => onChange("link_text", v)} />
+      <Field label="Text link URL" value={content.link_url || ""} onChange={(v) => onChange("link_url", v)} />
+    </SectionBox>
+  </div>
+);

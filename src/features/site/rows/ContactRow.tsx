@@ -21,6 +21,14 @@ const defaultFields: ContactField[] = [
 
 const CREAM = "hsl(var(--foreground))";
 
+/* Form typography matches the rest of the site: labels use the same
+ * eyebrow scale as <RowEyebrow/> and inputs the same body scale as
+ * <RowBody/>, instead of the old 9px/12px one-off sizes. */
+const LABEL_CLASS =
+  "block font-body text-[11px] uppercase tracking-[0.18em] mb-2 text-left";
+const INPUT_CLASS =
+  "w-full bg-transparent border border-border rounded-lg px-4 py-3 font-body text-sm outline-none interactive text-left transition-colors";
+
 const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
   const titleLines: string[] = (c.title_lines || []).map((l: any) =>
@@ -85,7 +93,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         <div className={`relative z-10 max-w-[520px] row-container ${containerPos} ${contentAlign}`}>
           <div style={revealStyle(true, 0)}>
             <RowTitle color="hsl(var(--primary))">{successHeading}</RowTitle>
-            <RowBody color="hsl(var(--light-fg) / 0.7)" className="mb-rhythm-base">{successBody}</RowBody>
+            <RowBody className="mb-rhythm-base">{successBody}</RowBody>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
               className="btn-ink"
 >{successButton}</button>
@@ -99,24 +107,24 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
     <section {...snapAttrs} className={`snap-section section-light relative ${heightClass} flex flex-col ${vAlignJustify} py-row-fluid`} style={{ isolation: "isolate" }}>
       <RowBackground row={row} />
 
-      <div ref={ref} className={`relative z-10 max-w-[900px] row-container ${containerPos} ${contentAlign}`}>
+      <div ref={ref} className={`relative z-10 max-w-[1280px] row-container ${containerPos} ${contentAlign}`}>
         <div className="mb-rhythm-loose text-left" style={revealStyle(isVisible, 0)}>
           {c.eyebrow && (
-            <RowEyebrow color={c.color_eyebrow || "hsl(var(--primary) / 0.6)"}>{c.eyebrow}</RowEyebrow>
+            <RowEyebrow color={c.color_eyebrow || ""}>{c.eyebrow}</RowEyebrow>
           )}
           {titleLines.length > 0 && (
             <RowTitle icon={c.icon}>
               {titleLines.map((line, i) => (
-                <span key={i} style={{ display: "block", color: "hsl(var(--primary))" }}>
+                <span key={i} style={{ display: "block" }}>
                   <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
                 </span>
               ))}
             </RowTitle>
           )}
           {c.subtitle && (
-            <RowSubtitle color={c.subtitle_color || "hsl(var(--primary) / 0.7)"}>{c.subtitle}</RowSubtitle>
+            <RowSubtitle color={c.subtitle_color || ""}>{c.subtitle}</RowSubtitle>
           )}
-          {c.body && <RowBody html={sanitizeHtml(c.body)} color="hsl(var(--light-fg) / 0.7)" data-rte-fit="" />}
+          {c.body && <RowBody html={sanitizeHtml(c.body)} data-rte-fit="" />}
         </div>
 
         <div
@@ -128,10 +136,10 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
               <div className="space-y-4">
                 {leftFields.map((field, fi) => (
                   <div key={field.key} style={revealStyle(isVisible, fi + 2)}>
-                    <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-left" style={{ color: CREAM }}>{field.label}</label>
+                    <label className={LABEL_CLASS} style={{ color: CREAM }}>{field.label}</label>
                     <input type={field.type} required={field.required} value={formData[field.key] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                      className="w-full bg-transparent border border-border rounded-lg px-3.5 py-2.5 font-body text-xs outline-none interactive text-left transition-colors"
+                      className={INPUT_CLASS}
                       style={{ color: CREAM }}
                       onFocus={(e) => e.currentTarget.style.borderColor = "hsl(var(--accent))"}
                       onBlur={(e) => e.currentTarget.style.borderColor = ""} />
@@ -141,16 +149,17 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
 
               {textareaField && (
                 <div className="flex flex-col" style={revealStyle(isVisible, leftFields.length + 2)}>
-                  <label className="block font-body text-[9px] uppercase tracking-[0.25em] mb-1.5 text-left" style={{ color: CREAM }}>{textareaField.label}</label>
+                  <label className={LABEL_CLASS} style={{ color: CREAM }}>{textareaField.label}</label>
                   <textarea required={textareaField.required} rows={5} value={formData[textareaField.key] || ""}
                     onChange={(e) => setFormData({ ...formData, [textareaField.key]: e.target.value })}
-                    className="w-full bg-transparent border border-border rounded-lg px-3.5 py-2.5 font-body text-xs outline-none interactive resize-none flex-1 text-left transition-colors"
+                    className={`${INPUT_CLASS} resize-none flex-1`}
                     style={{ color: CREAM }}
                     onFocus={(e) => e.currentTarget.style.borderColor = "hsl(var(--accent))"}
                     onBlur={(e) => e.currentTarget.style.borderColor = ""} />
                 </div>
               )}
             </div>
+
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-8 pt-6 border-t border-border" style={revealStyle(isVisible, leftFields.length + 3)}>
               <div className="space-y-1.5">
@@ -159,7 +168,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                     <input type="checkbox" checked={formData.subscribed_to_marketing || false}
                       onChange={(e) => setFormData({ ...formData, subscribed_to_marketing: e.target.checked })}
                       className="rounded" style={{ accentColor: "hsl(var(--accent))" }} />
-                    <span className="font-body text-[10px]" style={{ color: "hsl(var(--foreground) / 0.6)" }}>{field.label}</span>
+                    <span className="font-body text-xs text-muted-foreground">{field.label}</span>
                   </label>
                 ))}
               </div>
@@ -172,8 +181,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         {c.note && (
-          <div className="mt-rhythm-base pt-3 text-left" style={{ borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
-            <p className="font-body text-xs italic leading-[1.6]" style={{ color: "hsl(var(--light-fg) / 0.5)" }}>{c.note}</p>
+          <div className="mt-rhythm-base pt-3 text-left border-t border-border">
+            <p className="font-body text-sm italic leading-[1.6] text-muted-foreground measure">{c.note}</p>
           </div>
         )}
       </div>

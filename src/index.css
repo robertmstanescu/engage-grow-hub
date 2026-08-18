@@ -494,8 +494,9 @@
     font-weight: 600;
     font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
     line-height: 1;
+    /* Base fill — without it the pill only appeared on hover. */
+    background-color: hsl(var(--foreground));
     color: hsl(var(--btn-ink-fg));
-    color: hsl(45 60% 96%);
     border: 1px solid transparent;
     transition: background-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
   }
@@ -552,6 +553,42 @@
   .btn-arrow:hover::after {
     right: 0;
   }
+
+  /* Tertiary action: arrow text link. Keeps the button vocabulary at two
+     (ink pill + ghost pill) while still giving a third affordance. */
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
+    color: inherit;
+    transition: gap 200ms ease, opacity 200ms ease;
+  }
+  .link-arrow > .link-arrow-glyph {
+    transition: transform 200ms ease;
+  }
+  .link-arrow:hover {
+    gap: 0.65rem;
+    opacity: 0.85;
+  }
+  .link-arrow:hover > .link-arrow-glyph {
+    transform: translateX(2px);
+  }
+
+  /* Editorial measure — body copy stops around 65 characters so lines
+     break near the middle of a wide page instead of running edge to edge. */
+  .measure {
+    max-width: 65ch;
+  }
+  .text-center > .measure,
+  .measure.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+
 
 
 

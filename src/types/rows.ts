@@ -149,7 +149,11 @@ export interface PageRow {
     | "lead_magnet"
     | "testimonial"
     | "logo_cloud"
-    | "faq";
+    | "faq"
+    | "proof_band"
+    | "process_steps"
+    | "quote_band"
+    | "cta_band";
   strip_title: string;
   bg_color: string;
   scope?: string;
@@ -188,6 +192,28 @@ export interface LogoCloudLogo {
   url: string;
   alt?: string;
 }
+
+/* ── Consulting-grade row shapes ──────────────────────────────────── */
+
+/** One outcome stat (or client logo) in a Proof Band. */
+export interface ProofItem {
+  /** Big number / short claim, e.g. "38%" or "12 weeks". */
+  value: string;
+  /** Supporting line, e.g. "average lift in message recall". */
+  label: string;
+  /** Optional client logo shown instead of the value. */
+  logo?: string;
+  logo_alt?: string;
+}
+
+/** One numbered step in a "How we work" strip. */
+export interface ProcessStep {
+  title: string;
+  /** Sanitised HTML (rich text). */
+  description: string;
+}
+
+
 
 /* ─── Per-widget design overrides ──────────────────────────────────── */
 

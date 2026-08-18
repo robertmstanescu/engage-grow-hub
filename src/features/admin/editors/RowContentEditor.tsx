@@ -61,7 +61,7 @@ import TitleLinesEditor from "./TitleLinesEditor";
 import HeroRowFieldsInline from "./HeroRowFieldsInline";
 import BoxedArrayField from "./BoxedArrayField";
 import SubscribeToggle from "./SubscribeToggle";
-import { TestimonialEditor, LogoCloudEditor, FaqEditor } from "./NewRowEditors";
+import { TestimonialEditor, LogoCloudEditor, FaqEditor, ProofBandEditor, ProcessStepsEditor, QuoteBandEditor, CtaBandEditor } from "./NewRowEditors";
 import { IconPickerField } from "@/features/icons/IconPicker";
 import {
   Accordion,
@@ -447,6 +447,68 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
           </Shell>
         </>
       );
+
+    /* ── Consulting-grade rows ─────────────────────────────────────── */
+    case "proof_band":
+      return (
+        <>
+          {commonMeta}
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ProofBandEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
+        </>
+      );
+
+    case "process_steps":
+      return (
+        <>
+          {commonMeta}
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ProcessStepsEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
+        </>
+      );
+
+    case "quote_band":
+      return (
+        <>
+          {commonMeta}
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <QuoteBandEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
+        </>
+      );
+
+    case "cta_band":
+      return (
+        <>
+          {commonMeta}
+          <Shell>
+            <AccordionItem value="text" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <CtaBandEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+          </Shell>
+        </>
+      );
+
 
     default:
       return commonMeta;
