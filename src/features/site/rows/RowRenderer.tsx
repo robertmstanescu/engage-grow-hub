@@ -23,11 +23,22 @@ interface RowRendererProps {
   rowIndex: number;
   align: Alignment;
   globalMap: Map<string, GlobalWidget>;
+  /** Surface colour of the row above / below (fills the edge shapes). */
+  prevSurface?: string;
+  nextSurface?: string;
 }
 
-const RowRenderer = ({ row, rowIndex, align, globalMap }: RowRendererProps) => {
+const RowRenderer = ({
+  row,
+  rowIndex,
+  align,
+  globalMap,
+  prevSurface = MESH_SHAPE_FILL,
+  nextSurface = MESH_SHAPE_FILL,
+}: RowRendererProps) => {
   const id = row.scope || slugify(row.strip_title);
   const vAlign: VAlign = row.layout?.verticalAlign || "middle";
+
 
   const widths =
     row.layout?.column_widths ||
