@@ -184,28 +184,42 @@ const Navbar = () => {
    * <html>, so page wrappers can offset content using a single source of
    * truth instead of hardcoded padding classes.
    */
+  /**
+   * The navbar is now a floating island rendered OVER the page (Lativ
+   * reference): content scrolls underneath it, so no vertical space is
+   * reserved. The offsets stay published as 0 so existing
+   * `calc(100vh - var(--nav-top-offset))` rules resolve to full height.
+   */
   useLayoutEffect(() => {
-    const apply = () => {
-      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
-      const root = document.documentElement;
-      root.style.setProperty("--nav-left-offset", "0px");
-      root.style.setProperty("--nav-top-offset", isDesktop ? "88px" : "56px");
-    };
-    apply();
-    window.addEventListener("resize", apply);
-    return () => window.removeEventListener("resize", apply);
+    const root = document.documentElement;
+    root.style.setProperty("--nav-left-offset", "0px");
+    root.style.setProperty("--nav-top-offset", "0px");
+  }, []);
+
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const target = (document.querySelector(".snap-container") as HTMLElement | null) || window;
+    const read = () =>
+      setScrolled((target === window ? window.scrollY : (target as HTMLElement).scrollTop) > 12);
+    read();
+    target.addEventListener("scroll", read, { passive: true });
+    return () => target.removeEventListener("scroll", read);
   }, []);
 
   return (
     <>
-      {/* Desktop navigation — wide floating pill bar (~90% of viewport) */}
+      {/* Desktop navigation — wide floating island the page scrolls under */}
       <nav
         ref={railRef}
-        className="hidden lg:grid fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-[1680px] grid-cols-[auto_1fr_auto] items-center gap-6 rounded-full pl-7 pr-3 py-2.5"
+        className="hidden lg:grid fixed left-1/2 -translate-x-1/2 z-50 w-[96vw] max-w-[1780px] grid-cols-[auto_1fr_auto] items-center gap-6 pl-7 pr-3 transition-all duration-300"
         style={{
-          backgroundColor: "hsl(var(--card) / 0.88)",
-          backdropFilter: "blur(16px) saturate(140%)",
-          WebkitBackdropFilter: "blur(16px) saturate(140%)",
+          top: scrolled ? "10px" : "16px",
+          paddingTop: scrolled ? "8px" : "12px",
+          paddingBottom: scrolled ? "8px" : "12px",
+          borderRadius: "calc(var(--radius) * 1.6)",
+          backgroundColor: `hsl(var(--card) / ${scrolled ? 0.97 : 0.92})`,
+          backdropFilter: "blur(18px) saturate(140%)",
+          WebkitBackdropFilter: "blur(18px) saturate(140%)",
           border: "1px solid hsl(var(--border))",
           boxShadow: "var(--shadow-soft)",
         }}
