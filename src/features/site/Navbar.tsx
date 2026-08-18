@@ -310,37 +310,35 @@ const Navbar = () => {
             className="lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-6"
             style={{ backgroundColor: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" }}
           >
-            {allItems.map((item, i) => {
+            {allItems.map((item) => {
               const active = isActive(item.href);
               return (
-                <motion.a
+                <a
                   key={item.label}
                   href={item.href}
                   onClick={(e) => handleNavClick(e, item.href)}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.06, ease }}
                   data-active={active}
-                  className="mobile-nav-link font-body text-sm uppercase tracking-[0.2em] transition-colors duration-300"
-                  style={{ color: active ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.5)" }}
+                  className="mobile-nav-link font-body text-sm uppercase tracking-[0.2em] transition-colors duration-200"
+                  style={{ color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.65)" }}
                 >
                   {item.label}
-                </motion.a>
+                </a>
               );
             })}
             {ctaHref && ctaText ? (
-              <motion.a
+              <a
                 href={ctaHref}
                 onClick={(e) => handleNavClick(e, ctaHref)}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: allItems.length * 0.06, ease }}
                 className="font-display text-[9px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
-                style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
+                style={{
+                  backgroundColor: "hsl(var(--nav-cta-bg, 280 57% 16%))",
+                  color: "hsl(var(--nav-cta-text, 45 60% 96%))",
+                }}
               >
                 {ctaText}
-              </motion.a>
+              </a>
             ) : null}
+
           </motion.div>
         )}
       </AnimatePresence>
