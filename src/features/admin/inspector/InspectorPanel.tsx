@@ -492,6 +492,39 @@ const InspectorPanel = (props: InspectorPanelProps) => {
           activeTab={widgetTab}
           onTabChange={setWidgetTab}
           contentEditor={contentEditor}
+          /* Style ALWAYS edits the section that hosts this widget, so
+           * bands / edges / separators are reachable from any click. */
+          styleEditor={(() => {
+            const parentRow = pageRows[loc.rowIdx] as PageRow;
+            if (!parentRow) return null;
+            const patchParentRow = (patch: Partial<PageRow>) =>
+              onRowsChange(pageRows.map((r, i) => (i === loc.rowIdx ? { ...r, ...patch } : r)));
+            return (
+              <>
+                <p
+                  className="font-body text-[11px] mb-3 leading-relaxed"
+                  style={{ color: "hsl(var(--muted-foreground))" }}
+                >
+                  Styling section: <strong style={{ color: "hsl(var(--foreground))" }}>
+                    {parentRow.strip_title || parentRow.type}
+                  </strong> — these settings apply to the whole section, not just this widget.
+                </p>
+                <RowStyleTab
+                  row={parentRow}
+                  onRowMetaChange={patchParentRow}
+                  onUpdateColumnWidths={(widths) =>
+                    patchParentRow({
+                      layout: {
+                        ...DEFAULT_ROW_LAYOUT,
+                        ...(parentRow.layout || {}),
+                        column_widths: widths,
+                      },
+                    })
+                  }
+                />
+              </>
+            );
+          })()}
           design={design}
           onDesignFieldChange={updateDesignField}
           onDesignBgChange={(color) => writeDesign({ bgColor: color })}
