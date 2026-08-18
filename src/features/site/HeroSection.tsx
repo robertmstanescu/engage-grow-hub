@@ -104,15 +104,12 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
     >
       {/*
         LAYERING ORDER (bottom → top):
-        1. Ambient glow (z-[-2])      — decorative gradients sit at the very back
-        2. Background image (z-[-1])  — uploaded PNG/video sits ABOVE the glow
-                                        so it is never washed out by the blur
-        3. Content (z-10)             — text & CTAs always win
+        1. Background image / video (z-[-1])
+        2. Content (z-10) — text & CTAs always win
+        Ambient blurred gradient blobs were removed for a crisp,
+        structured layout (Lativ-style).
       */}
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] z-[-2]"
-        style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
-      <div className="absolute top-1/4 right-0 w-[400px] h-[400px] rounded-full opacity-10 blur-[100px] z-[-2]"
-        style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
+
 
       {hasBg && c.bg_type === "image" && (
         <div className="absolute inset-0 z-[-1]">
