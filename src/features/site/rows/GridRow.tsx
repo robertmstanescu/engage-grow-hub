@@ -99,7 +99,7 @@ const AchievementCard = memo(({ text, colors, cardBg, isVisible, idx }: {
   isVisible: boolean; idx: number;
 }) => (
   <div
-    className="rounded-xl border border-border shadow-sm p-6 flex items-start gap-3 interactive"
+    className="surface-card p-6 flex items-start gap-3 interactive"
     style={{
       ...revealStyle(isVisible, idx + 6),
       backgroundColor: cardBg,
@@ -131,12 +131,12 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
   const autoFitRef = useAutoFitText();
 
   const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
-  const cardBg = c.color_card_bg || "hsl(260 25% 12% / 0.5)";
+  const cardBg = c.color_card_bg || "hsl(var(--card))";
 
   const colors = {
-    border: c.color_card_border || "hsl(280 20% 25% / 0.35)",
+    border: c.color_card_border || "hsl(var(--border))",
     borderHover: c.color_card_border_hover || "hsl(var(--accent))",
-    cardTitle: c.color_card_title || "#FFFFFF",
+    cardTitle: c.color_card_title || "hsl(var(--foreground))",
     cardDesc: c.color_card_description || "hsl(var(--foreground) / 0.6)",
     statNumber: c.color_stat_number || "hsl(var(--accent))",
     statLabel: c.color_stat_label || "hsl(var(--foreground) / 0.5)",
@@ -170,7 +170,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
     <RowSection
       row={row}
       vAlign={vAlign}
-      defaultBg="hsl(260 20% 6%)"
+      defaultBg="hsl(var(--background))"
       innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
     >
       <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos} ${contentAlign}`}>
@@ -219,7 +219,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
 
         {effectiveStats.length > 0 && (
           <div
-            className="rounded-xl border border-border shadow-sm flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border mb-rhythm-loose overflow-hidden"
+            className="surface-card flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border mb-rhythm-loose overflow-hidden"
             style={{ backgroundColor: cardBg }}
           >
             {effectiveStats.map((s: { value: string; label: string }, i: number) => (

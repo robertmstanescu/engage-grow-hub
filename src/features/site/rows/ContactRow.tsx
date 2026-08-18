@@ -19,7 +19,7 @@ const defaultFields: ContactField[] = [
   { key: "marketing", label: "Keep me updated with news and articles", type: "checkbox", required: false, visible: true },
 ];
 
-const CREAM = "#F4F0EC";
+const CREAM = "hsl(var(--foreground))";
 
 const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
@@ -120,7 +120,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         <div
-          className="bg-card border border-border shadow-sm rounded-2xl p-6 md:p-8"
+          className="surface-card p-6 md:p-8"
           style={revealStyle(isVisible, 1)}>
 
           <form onSubmit={handleSubmit}>
@@ -159,7 +159,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                     <input type="checkbox" checked={formData.subscribed_to_marketing || false}
                       onChange={(e) => setFormData({ ...formData, subscribed_to_marketing: e.target.checked })}
                       className="rounded" style={{ accentColor: "hsl(var(--accent))" }} />
-                    <span className="font-body text-[10px]" style={{ color: `${CREAM}99` }}>{field.label}</span>
+                    <span className="font-body text-[10px]" style={{ color: "hsl(var(--foreground) / 0.6)" }}>{field.label}</span>
                   </label>
                 ))}
               </div>

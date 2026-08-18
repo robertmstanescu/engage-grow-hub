@@ -85,7 +85,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
                   </div>
                 )}
                 <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
-                  className="font-body-heading font-bold mb-3 text-lg leading-[1.6] text-[#e4c44e]" style={{ color: titleColor }}>{card.title}</EditableText>
+                  className="font-body-heading font-bold mb-3 text-lg leading-[1.6]" style={{ color: titleColor }}>{card.title}</EditableText>
                 <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
                   data-rte-fit=""
                   className="font-body text-xs leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: bodyColor, overflow: "visible", height: "auto" }}
@@ -110,7 +110,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
             // Clean, structured card enclosure: solid card surface, crisp
             // 1px border, uniform padding and a subtle shadow. `boxed-lift`
             // keeps the GPU-friendly hover transform (no icon shake).
-            const cardClass = `bg-card border border-border rounded-xl shadow-sm p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
+            const cardClass = `surface-card p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
             const cardStyle = { ...revealStyle(isVisible, i + 2) } as React.CSSProperties;
 
             if (cardLink) {
