@@ -78,7 +78,7 @@ Other things worth borrowing from those sites, applied throughout: one action pe
 - **Navigation**: admin sections regrouped as Content (Pages, Blog, Services, Media), Audience (Contacts, Leads, Campaigns), and Settings (Brand, Navigation, SEO, Team).
 
 
-## 7. SEO for the new pages
+## 8. SEO for the new pages
 
 The site already has the right machinery: a crawler-facing `ssr-index` edge function that injects title, description, canonical, OG/Twitter and JSON-LD per route, a dynamic `generate-sitemap` function reading published `cms_pages` and `blog_posts`, an `llms-txt` function, and the `usePageMeta` hook for browsers. Right now none of it knows about `/services`, so the new pages have to be wired into each piece:
 
