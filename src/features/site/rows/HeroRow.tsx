@@ -1,7 +1,6 @@
 import { sanitizeHtml } from "@/services/sanitize";
-import type { CSSProperties } from "react";
+
 import type { PageRow } from "@/types/rows";
-import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import RowBackground from "./RowBackground";
 import { resolveImageAlt } from "@/services/imageAlt";
 import Icon from "@/features/icons/Icon";
