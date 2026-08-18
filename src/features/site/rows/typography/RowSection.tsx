@@ -181,6 +181,14 @@ const RowSection = ({
           3. Overlay elements     — z-[-1]: decorative PNGs (logos, shapes) above bg
           4. {children}           — actual row content, on top of everything
         */}
+        {dividerTop !== "none" ? (
+          <div
+            aria-hidden
+            className={`absolute top-0 z-[1] pointer-events-none border-t border-border ${
+              dividerTop === "content" ? "left-0 right-0 mx-auto max-w-[1280px] row-container" : "inset-x-0"
+            }`}
+          />
+        ) : null}
         {shapeSurface && shapeTop ? (
           <SectionShape edge="top" config={shapeTop} color={shapeSurface} />
         ) : null}
