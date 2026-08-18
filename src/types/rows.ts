@@ -92,12 +92,38 @@ export interface RowLayout {
    */
   snapEnabled?: boolean;
   /**
-   * Section tone. "auto" alternates white / tint by document order;
-   * explicit tones override legacy per-row colours and decorative
-   * gradients so the page reads as calm, deliberate bands.
+   * Section tone. "mesh" (the default) is transparent so the fixed page
+   * mesh shows through; "auto" alternates white / tint by document
+   * order; explicit tones override legacy per-row colours and
+   * decorative gradients so the page reads as calm, deliberate bands.
    */
-  bandTone?: "auto" | "white" | "tint" | "deep";
+  bandTone?: "mesh" | "auto" | "white" | "tint" | "deep";
+  /** Decorative shape on the row's top edge. */
+  shapeTop?: SectionShapeConfig;
+  /** Decorative shape on the row's bottom edge. */
+  shapeBottom?: SectionShapeConfig;
 }
+
+/* ─── Section shapes ───────────────────────────────────────────────── */
+
+export type SectionShapeKind =
+  | "none"
+  | "rounded"
+  | "wave"
+  | "arch"
+  | "angled"
+  | "taper"
+  | "notch";
+
+export type SectionShapeSize = "subtle" | "medium" | "dramatic";
+
+export interface SectionShapeConfig {
+  kind: SectionShapeKind;
+  size?: SectionShapeSize;
+  /** Mirror the shape horizontally (e.g. angled leaning the other way). */
+  flip?: boolean;
+}
+
 
 /* ─── Legacy single-type row (v1) ──────────────────────────────────── */
 
