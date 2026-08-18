@@ -255,7 +255,12 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
             </div>
           );
           return (
-            <div className="relative min-h-[520px] md:min-h-[68vh]" style={revealStyle(isVisible, 4)}>
+            {/* Content-driven height: a viewport-relative floor left a
+                huge dead band under the card on tall screens. A fixed
+                min-height keeps the carousel from jumping between cards
+                of slightly different lengths without padding the band. */}
+            <div className="relative min-h-[420px] md:min-h-[460px]" style={revealStyle(isVisible, 4)}>
+
               <ServiceCard key={safeCurrent} {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} carouselControls={controls} />
             </div>
           );
