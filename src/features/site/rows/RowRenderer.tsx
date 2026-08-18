@@ -14,8 +14,6 @@ import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import CellRenderer from "./CellRenderer";
 import WidgetNode from "./WidgetNode";
 import type { Alignment, VAlign } from "@/lib/layoutUtils";
-import { MESH_SHAPE_FILL } from "./rowSurface";
-import { RowNeighborProvider } from "./RowNeighborContext";
 
 
 const slugify = (s: string) =>
@@ -26,9 +24,6 @@ interface RowRendererProps {
   rowIndex: number;
   align: Alignment;
   globalMap: Map<string, GlobalWidget>;
-  /** Surface colour of the row above / below (fills the edge shapes). */
-  prevSurface?: string;
-  nextSurface?: string;
 }
 
 const RowRenderer = ({
@@ -36,8 +31,6 @@ const RowRenderer = ({
   rowIndex,
   align,
   globalMap,
-  prevSurface = MESH_SHAPE_FILL,
-  nextSurface = MESH_SHAPE_FILL,
 }: RowRendererProps) => {
   const id = row.scope || slugify(row.strip_title);
   const vAlign: VAlign = row.layout?.verticalAlign || "middle";
@@ -84,8 +77,7 @@ const RowRenderer = ({
   });
 
   return (
-    <RowNeighborProvider value={{ prevSurface, nextSurface }}>
-      <div
+    <div
         id={id}
         data-section-row-id={row.id}
         className="scroll-mt-16 isolate"
@@ -99,7 +91,6 @@ const RowRenderer = ({
           </div>
         </SelectableWrapper>
       </div>
-    </RowNeighborProvider>
 
   );
 };
