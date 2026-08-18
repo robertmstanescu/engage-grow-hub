@@ -40,8 +40,7 @@ interface Props {
  *   className="snap-section grain relative min-h-screen flex
  *              ${vAlign === 'top' ? 'items-start' : ...} justify-center"
  *   style={{ backgroundColor: getRowBgColor(row, ...), isolation: ...,
- *            padding: '24px 0', ...getRowBgImageStyle(row) }}
- *   <RowBackground row={row} />
+ *            padding: '24px 0' }}
  *
  * Seven copies. Seven chances to drift. One source of truth here.
  *
