@@ -69,7 +69,7 @@ All four added to the builder with light/tint/deep band support:
 
 Other things worth borrowing from those sites, applied throughout: one action per section, arrow-link affordances instead of extra buttons, hairline rules as the main separator, generous vertical rhythm, and a strict two-heading type scale.
 
-## 6. Admin: full restyle + information architecture rework
+## 7. Admin: full restyle + information architecture rework
 
 - **Visual**: the same off-white canvas, ink text, hairline borders, large-radius panels and new button variants as the site. Every input, select, tab and modal uses shared field components — no more one-off hexes or mismatched controls.
 - **Shell**: three panes — slim left page/row tree, wide canvas, right inspector — with a top command bar carrying page title, save state, preview and publish.
