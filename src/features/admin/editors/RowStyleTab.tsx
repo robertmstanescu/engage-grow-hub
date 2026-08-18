@@ -56,6 +56,7 @@ import {
 } from "@/components/ui/accordion";
 import type { PageRow, SectionShapeConfig, SectionShapeKind, SectionShapeSize } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
+import { DEFAULT_PAGE_MESH, buildPageMeshCSS } from "@/features/site/pageMesh";
 
 interface Props {
   row: PageRow;
