@@ -164,11 +164,8 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website" }
         "";
 
       const prefix = tags.social_prefix?.trim() || "";
-      const pageTitle = title
-        ? resolvedSuffix
-          ? `${title} | ${resolvedSuffix}`
-          : title
-        : resolvedSuffix;
+      const pageTitle = buildTitle(title, resolvedSuffix, identity.brandName);
+
       const socialTitle = prefix ? `${prefix}${pageTitle}` : pageTitle;
       document.title = pageTitle;
 
