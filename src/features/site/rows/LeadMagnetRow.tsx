@@ -27,7 +27,7 @@ const LeadMagnetRow = ({ row, align = "center" }: Props) => {
   if (!resourceAssetId) {
     return (
       <section
-        className="py-16 px-6"
+        className="py-16 row-container"
         style={{ backgroundColor: row.bg_color || "transparent" }}
       >
         <div
@@ -59,7 +59,7 @@ const LeadMagnetRow = ({ row, align = "center" }: Props) => {
         marginBottom: parseSpacing(layout.marginBottom),
       }}
     >
-      <div className="max-w-[1100px] mx-auto">
+      <div className="max-w-[1280px] mx-auto">
         <ResourceWidget
           resourceAssetId={resourceAssetId}
           coverAssetId={c.cover_asset_id || null}

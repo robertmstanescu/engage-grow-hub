@@ -45,8 +45,14 @@ const Footer = () => {
     useSiteContentWithStatus<FooterContent>("footer", {});
   const { isLoading: brandingLoading, content: branding } =
     useSiteContentWithStatus<Record<string, any>>("branding", {});
-  // Footer uses emblem logo (small icon) on all sizes
-  const emblemUrl = branding.emblem_logo_url || branding.logo_url || "";
+  /* Footer uses the emblem (small icon). The footer band is light, so
+     prefer the dark emblem; if the brand only ships the light asset we
+     apply the same `.logo-darken` filter the navbar uses rather than
+     rendering a white mark on cream. */
+  const lightEmblem = branding.emblem_logo_url || branding.logo_url || "";
+  const darkEmblem = branding.emblem_dark_url || branding.logo_dark_url || "";
+  const emblemUrl = darkEmblem || lightEmblem;
+  const needsDarken = !darkEmblem;
 
   const columns = !footerLoading && Array.isArray(footer.columns) ? footer.columns : [];
   const activeLinks = socialLoading ? [] : PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
@@ -58,7 +64,7 @@ const Footer = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full opacity-8 blur-[120px]"
         style={{ background: "radial-gradient(circle, hsl(46 70% 82%), transparent)" }} />
 
-      <div className="relative z-10 max-w-[1100px] mx-auto px-3 pt-16 md:pt-20 pb-2">
+      <div className="relative z-10 max-w-[1280px] mx-auto row-container pt-16 md:pt-20 pb-2">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">
           {/* Logo column — emblem */}
           <div className="col-span-2 md:col-span-1">
@@ -66,7 +72,7 @@ const Footer = () => {
             {!brandingLoading && emblemUrl ? (
               <img
                 alt="The Magic Coffin logo"
-                className="w-8 h-8 object-contain mb-4"
+                className={`w-8 h-8 object-contain mb-4${needsDarken ? " logo-darken" : ""}`}
                 src={emblemUrl}
                 width={32}
                 height={32}

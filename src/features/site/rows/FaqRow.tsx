@@ -63,7 +63,7 @@ const FaqRow = ({
 
   return (
     <RowSection row={row}>
-      <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} px-4 md:px-8`}>
+      <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
         {c.eyebrow && (
           <RowEyebrow color={c.color_eyebrow || "hsl(var(--secondary))"} style={revealStyle(isVisible, -0.5)}>
             {c.eyebrow}

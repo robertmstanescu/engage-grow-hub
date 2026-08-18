@@ -20,7 +20,7 @@ const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const { contents, widths, isMultiCol } = getRowColumns(row);
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
-  const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
+  const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
   const contentAlign = align === "center" ? "text-center"
     : align === "right" ? "text-right"
     : "text-left";
@@ -102,7 +102,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
                       target={isExternal(cardCtaUrl) ? "_blank" : undefined}
                       rel={isExternal(cardCtaUrl) ? "noopener noreferrer" : undefined}
                       onClick={(e) => { if (cardLink) e.stopPropagation(); }}
-                      className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-5 py-2.5 rounded-full inline-block"
+                      className="btn-ink"
 >
                       {cardCtaLabel}
                     </a>
@@ -150,7 +150,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         {c.cta_url && c.cta_label && (
           <div className="mt-rhythm-base" style={revealStyle(isVisible, cards.length + 3)}>
             <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
-              className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
+              className="btn-ink"
 >
               {c.cta_label}
             </a>
@@ -171,7 +171,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10 blur-[150px] pointer-events-none"
         style={{ background: "radial-gradient(circle, hsl(46 75% 60%), transparent)" }} />
 
-      <div ref={ref} className={`relative z-10 px-6 ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1200px]"} ${containerPos}` : `${maxW} ${containerPos} ${contentAlign}`}`}>
+      <div ref={ref} className={`relative z-10 row-container ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1280px]"} ${containerPos}` : `${maxW} ${containerPos} ${contentAlign}`}`}>
         {isMultiCol ? (
           <div style={multiColGridStyle(widths)} className="items-start">
             {contents.map((c, i) => renderColumnContent(c, i))}

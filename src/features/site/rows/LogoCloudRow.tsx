@@ -50,7 +50,7 @@ const LogoCloudRow = ({
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`,
   );
   const hasHeader = !!c.eyebrow || titleLines.length > 0 || !!c.subtitle || !!c.body;
-  const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
+  const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
   const justify =
     align === "left" ? "justify-start" : align === "right" ? "justify-end" : "justify-center";
   const textAlign =
@@ -63,7 +63,7 @@ const LogoCloudRow = ({
     <RowSection row={row}>
       <div
         ref={ref as any}
-        className={`${maxW} mx-auto px-4 md:px-8 ${textAlign}`}
+        className={`${maxW} mx-auto row-container ${textAlign}`}
       >
         {/* ── Standard Brand Header block — see NewRowEditors.tsx for the
          *  matching admin fields. Renders any combination of eyebrow,

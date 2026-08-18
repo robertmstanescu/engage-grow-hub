@@ -82,12 +82,12 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
     return (
       <section {...snapAttrs} className={`snap-section section-light relative ${heightClass} flex flex-col ${vAlignJustify} py-row-fluid`} style={{ isolation: "isolate" }}>
         <RowBackground row={row} />
-        <div className={`relative z-10 max-w-[520px] px-6 ${containerPos} ${contentAlign}`}>
+        <div className={`relative z-10 max-w-[520px] row-container ${containerPos} ${contentAlign}`}>
           <div style={revealStyle(true, 0)}>
             <RowTitle color="hsl(var(--primary))">{successHeading}</RowTitle>
             <RowBody color="hsl(var(--light-fg) / 0.7)" className="mb-rhythm-base">{successBody}</RowBody>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
-              className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full"
+              className="btn-ink"
 >{successButton}</button>
           </div>
         </div>
@@ -99,7 +99,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
     <section {...snapAttrs} className={`snap-section section-light relative ${heightClass} flex flex-col ${vAlignJustify} py-row-fluid`} style={{ isolation: "isolate" }}>
       <RowBackground row={row} />
 
-      <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${containerPos} ${contentAlign}`}>
+      <div ref={ref} className={`relative z-10 max-w-[900px] row-container ${containerPos} ${contentAlign}`}>
         <div className="mb-rhythm-loose text-left" style={revealStyle(isVisible, 0)}>
           {c.eyebrow && (
             <RowEyebrow color={c.color_eyebrow || "hsl(var(--primary) / 0.6)"}>{c.eyebrow}</RowEyebrow>
@@ -164,7 +164,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                 ))}
               </div>
               <button type="submit" disabled={submitting}
-                className="btn-glass interactive-strong font-display text-[10px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full disabled:opacity-50 sm:ml-auto">
+                className="btn-ink disabled:opacity-50 sm:ml-auto">
                 {submitting ? "Sending…" : buttonText}
               </button>
             </div>

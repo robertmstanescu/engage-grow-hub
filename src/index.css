@@ -12,7 +12,7 @@
        re-toned for a soft, airy light canvas. HSL channel format only.
        ────────────────────────────────────────────────────────────── */
     --background: 32 30% 97%; /* warm isabelline canvas */
-    --foreground: 282 40% 13%; /* deep plum ink */
+    --foreground: 282 45% 10%; /* deep plum ink (contrast level 3) */
     --card: 0 0% 100%;
     --card-foreground: 282 40% 13%;
     --popover: 0 0% 100%;
@@ -22,14 +22,14 @@
     --secondary: 285 38% 94%; /* pale violet surface */
     --secondary-foreground: 280 55% 24%;
     --muted: 288 24% 95%;
-    --muted-foreground: 281 16% 40%;
+    --muted-foreground: 281 18% 32%;
     --accent: 46 75% 58%; /* #E5C54F */
     --accent-foreground: 280 57% 13%;
     --accent-ink: 40 68% 30%; /* legible gold-on-light text */
     --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
-    --border: 285 22% 89%;
-    --input: 285 22% 89%;
+    --border: 285 20% 84%;
+    --input: 285 20% 84%;
     --ring: 280 55% 24%;
     --radius: 1.5rem;
 
@@ -908,6 +908,23 @@
 }
 
 @layer utilities {
+  /* ──────────────────────────────────────────────────────────────────
+     SHARED PAGE CONTAINER
+     One gutter rule for every row: 24px on phones growing to 96px on
+     wide screens, content capped and centred. Rows no longer carry
+     their own px-* values, so nothing touches the viewport edge.
+     ────────────────────────────────────────────────────────────────── */
+  .row-container {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: clamp(24px, 5vw, 96px);
+  }
+
+  /* Header block rhythm: headings get real air above their content. */
+  .row-header {
+    margin-bottom: clamp(32px, 3.5vw, 64px);
+  }
+
   .public-fluid-type {
     /*
      * LEGIBILITY FLOORS — Small UI text (chips, eyebrows, captions,
@@ -917,18 +934,22 @@
      * below 10px is unreadable on a 5K display, so the *_floors_* are
      * deliberately conservative.
      */
-    --fluid-fs-nano: 0.6rem;     /* ~9.6px — tiny chips, was text-[9px] */
-    --fluid-fs-micro: 0.65rem;   /* ~10.4px — was text-[10px] */
-    --fluid-fs-xs: 0.72rem;      /* ~11.5px — was text-xs / text-[11px] */
-    --fluid-fs-sm: 0.8rem;       /* ~12.8px — was text-sm / text-[12-13px] */
-    --fluid-fs-base: clamp(0.85rem, min(1.35vw, 1.7vh), 1rem);
-    --fluid-fs-lg: clamp(0.95rem, min(1.6vw, 2vh), 1.13rem);
-    --fluid-fs-xl: clamp(1.05rem, min(2vw, 2.5vh), 1.25rem);
-    --fluid-fs-2xl: clamp(1.2rem, min(2.45vw, 3vh), 1.5rem);
-    --fluid-fs-3xl: clamp(1.35rem, min(3vw, 3.8vh), 1.88rem);
-    --fluid-fs-4xl: clamp(1.55rem, min(3.8vw, 4.8vh), 2.25rem);
-    --fluid-fs-5xl: clamp(1.8rem, min(4.7vw, 5.8vh), 3rem);
-    --fluid-fs-6xl: clamp(2.1rem, min(5.8vw, 7vh), 3.75rem);
+    /* ONE PIXEL LADDER. No rem, no vh terms — viewport-height terms are
+       what made type jump between screens. Everything below `base` is
+       fixed for legibility; `base` and up flow with viewport width
+       between a pixel floor and a pixel ceiling. */
+    --fluid-fs-nano: 11px;
+    --fluid-fs-micro: 12px;
+    --fluid-fs-xs: 13px;
+    --fluid-fs-sm: 15px;
+    --fluid-fs-base: clamp(16px, 1.1vw, 18px);
+    --fluid-fs-lg: clamp(18px, 1.3vw, 20px);
+    --fluid-fs-xl: clamp(20px, 1.6vw, 24px);
+    --fluid-fs-2xl: clamp(24px, 2vw, 30px);
+    --fluid-fs-3xl: clamp(28px, 2.6vw, 38px);
+    --fluid-fs-4xl: clamp(34px, 3.4vw, 50px);
+    --fluid-fs-5xl: clamp(42px, 4.4vw, 66px);
+    --fluid-fs-6xl: clamp(50px, 5.6vw, 84px);
   }
 
   /*
@@ -941,7 +962,7 @@
   .public-fluid-type .text-sm,
   .public-fluid-type [class~="text-[12px]"],
   .public-fluid-type [class~="text-[13px]"] { font-size: var(--fluid-fs-sm); }
-  .public-fluid-type .text-base { font-size: var(--fluid-fs-base); }
+  .public-fluid-type .text-base { font-size: var(--fluid-fs-base); line-height: 1.65; }
   .public-fluid-type .text-lg { font-size: var(--fluid-fs-lg); }
   .public-fluid-type .text-xl { font-size: var(--fluid-fs-xl); }
   .public-fluid-type .text-2xl { font-size: var(--fluid-fs-2xl); }

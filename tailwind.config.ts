@@ -117,8 +117,13 @@ export default {
         // top and bottom. The decorative content inside each row owns
         // its own vertical rhythm; the row chrome stays minimal so small
         // CTAs (e.g. the Intro subscribe row) don't dominate the viewport.
-        "row-fluid": "42px",
-        "row-fluid-lg": "50px",
+        // Bands breathe: 72px on small screens up to 128px on wide ones.
+        "row-fluid": "clamp(72px, 8vw, 128px)",
+        "row-fluid-lg": "clamp(88px, 10vw, 160px)",
+        // Compact variant for utility strips (logo clouds, notices).
+        "row-compact": "clamp(40px, 4vw, 64px)",
+        // Horizontal page gutter, shared by every row container.
+        gutter: "clamp(24px, 5vw, 96px)",
       },
       fontFamily: {
         display: ["Bricolage Grotesque", "sans-serif"],

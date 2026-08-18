@@ -102,7 +102,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
 
   const rowTextAlign = align === "right" ? "text-right" : align === "left" ? "text-left" : "text-center";
   // Use only `auto` margins for horizontal placement. The parent
-  // `<RowSection>` already supplies symmetric `px-6` gutters, so adding
+  // `<RowSection>` already supplies symmetric `row-container` gutters, so adding
   // an extra `ml-6`/`mr-6` here would push the content 24px further from
   // one edge than the other — visible on mobile as an uneven side gap
   // between alternating service pillars (left-aligned vs right-aligned).
@@ -133,7 +133,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
       style={colorOverrides as React.CSSProperties}
       className="service-row"
     >
-      <div ref={ref} className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} px-6 ${rowTextAlign}`}>
+      <div ref={ref} className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} row-container ${rowTextAlign}`}>
         {/*
           ATOMIC-NODE WRAPPERS (EPIC 1 / US 1.1)
           --------------------------------------

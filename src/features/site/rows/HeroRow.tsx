@@ -73,23 +73,23 @@ const HeroRow = ({ row }: Props) => {
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] pointer-events-none"
         style={{ background: "radial-gradient(circle, hsl(285 45% 88%), transparent)" }} />
 
-      <div className="hero-enter relative z-10 flex min-h-0 flex-1 w-full max-w-[1400px] flex-col justify-center overflow-y-auto px-4 py-[6vh] sm:px-8">
+      <div className="hero-enter relative z-10 flex min-h-0 flex-1 w-full max-w-[1400px] flex-col justify-center overflow-y-auto row-container py-[clamp(48px,7vh,96px)]">
         {c.icon && (
-          <div className="mb-[1.5vh]" style={{ color: c.title_color || "hsl(var(--hero-title))" }}>
+          <div className="mb-[clamp(12px,1.5vh,24px)]" style={{ color: c.title_color || "hsl(var(--hero-title))" }}>
             <Icon value={c.icon} size={48} />
           </div>
         )}
 
         {c.label && (
-          <p className="font-body tracking-[0.32em] uppercase mb-[1.5vh]"
-            style={{ color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)" }}>
+          <p className="font-body tracking-[0.32em] uppercase mb-[clamp(12px,1.5vh,24px)]"
+            style={{ color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(11px, 0.9vw, 14px)" }}>
             {c.label}
           </p>
         )}
 
         {titleLines.length > 0 && (
-          <h1 className="font-display font-black leading-[0.88] tracking-tight mb-0 w-full overflow-visible"
-            style={{ color: c.title_color || "hsl(var(--hero-title))", fontSize: "clamp(2rem, min(11vw, 16vh), 10rem)" }}>
+          <h1 className="font-display font-black leading-[0.98] tracking-tight mb-0 w-full overflow-visible"
+            style={{ color: c.title_color || "hsl(var(--hero-title))", fontSize: "clamp(40px, 8.4vw, 132px)" }}>
             {titleLines.map((line, i) => (
               <span key={i} className="block overflow-visible">
                 <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
@@ -99,30 +99,30 @@ const HeroRow = ({ row }: Props) => {
         )}
 
         {c.tagline && (
-          <p className="font-body tracking-[0.28em] uppercase mt-[1.8vh]"
-            style={{ color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)", opacity: 0.75 }}>
+          <p className="font-body tracking-[0.28em] uppercase mt-[clamp(14px,1.8vh,28px)]"
+            style={{ color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(11px, 0.9vw, 14px)", opacity: 0.75 }}>
             {c.tagline}
           </p>
         )}
 
         {c.subtitle && (
-          <p className="leading-tight mt-[1.5vh] max-w-[600px]"
-            style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--hero-body))", fontSize: "clamp(0.85rem, min(2vw, 2.6vh), 1.4rem)" }}>
+          <p className="leading-tight mt-[clamp(12px,1.5vh,24px)] max-w-[640px]"
+            style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--hero-body))", fontSize: "clamp(16px, 1.6vw, 24px)" }}>
             {c.subtitle}
           </p>
         )}
 
         {c.body && (
-          <div className="font-body-heading max-w-[520px] leading-relaxed mt-[1.5vh] [&_p]:mb-[4px] [&_p]:mt-[4px]"
-            style={{ color: c.body_color || "hsl(var(--hero-body))", fontSize: "clamp(0.78rem, min(1.4vw, 1.8vh), 1.05rem)" }}
+          <div className="font-body-heading max-w-[620px] leading-relaxed mt-[clamp(12px,1.5vh,24px)] [&_p]:mb-[4px] [&_p]:mt-[4px]"
+            style={{ color: c.body_color || "hsl(var(--hero-body))", fontSize: "clamp(15px, 1.15vw, 19px)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
           />
         )}
 
         {c.cta_url && c.cta_label && (
-          <div className="mt-[2vh]">
+          <div className="mt-[clamp(20px,2.4vh,36px)]">
             <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
-              className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
+              className="btn-ink"
 >
               {c.cta_label}
             </a>

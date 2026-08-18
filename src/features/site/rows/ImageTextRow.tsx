@@ -45,7 +45,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
-  const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
+  const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText();
 
@@ -177,7 +177,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
       {c.cta_url && c.cta_label && (
         <div className="mt-rhythm-base">
           <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
-            className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
+            className="btn-ink"
 >
             {c.cta_label}
           </a>
@@ -193,7 +193,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
       innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
     >
       <div
-        className={`relative z-10 ${maxW} w-full px-6 ${containerPos}`}
+        className={`relative z-10 ${maxW} w-full row-container ${containerPos}`}
         style={{
           display: "grid",
           gridTemplateColumns: `1fr`,
@@ -221,7 +221,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
         </div>
       </div>
       {c.show_subscribe && (
-        <div className="relative z-10 mt-rhythm-loose px-6" style={revealStyle(isVisible, 5)}>
+        <div className="relative z-10 mt-rhythm-loose row-container" style={revealStyle(isVisible, 5)}>
           <SubscribeWidget align={align} />
         </div>
       )}
