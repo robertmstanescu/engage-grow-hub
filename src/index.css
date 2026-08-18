@@ -599,23 +599,22 @@
     text-transform: uppercase;
   }
 
-  /* ── Glow effects ── */
+  /* ── Glow effects (soft light shadows) ── */
   .glow-accent {
-    box-shadow:
-      0 0 40px -10px hsl(46 75% 60% / 0.15),
-      0 0 80px -20px hsl(280 55% 24% / 0.2);
+    box-shadow: var(--shadow-card);
   }
 
   .glow-subtle {
-    box-shadow: 0 0 60px -20px hsl(280 55% 30% / 0.15);
+    box-shadow: var(--shadow-soft);
   }
 
   /* ── Light section ── */
   .section-light {
-    --foreground: 260 20% 10%;
+    --foreground: 282 40% 13%;
     background-color: hsl(var(--light-bg));
     color: hsl(var(--light-fg));
   }
+
 
   /*
    * ── Scroll snap sections ──
