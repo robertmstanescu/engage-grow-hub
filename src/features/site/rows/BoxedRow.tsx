@@ -34,9 +34,9 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
   const getGridCols = (count: number) => {
     if (count <= 1) return "grid-cols-1";
     if (count === 2) return "grid-cols-1 md:grid-cols-2";
-    if (count === 3) return "grid-cols-1 md:grid-cols-3";
+    if (count === 3) return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
     if (count === 4) return "grid-cols-1 md:grid-cols-2 lg:grid-cols-4";
-    return "grid-cols-1 md:grid-cols-3";
+    return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
   };
 
   const renderColumnContent = (c: Record<string, any>, colIndex: number) => {
@@ -69,7 +69,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
           </RowSubtitle>
         )}
 
-        <div className={`grid ${getGridCols(cards.length)} gap-6 ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
+        <div className={`grid ${getGridCols(cards.length)} gap-6 lg:gap-8 items-stretch ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
           {cards.slice(0, 6).map((card: any, i: number) => {
             const titleColor = c.color_card_title || "hsl(var(--vows-card-title))";
             const bodyColor = c.color_card_body || "hsl(var(--vows-card-body))";

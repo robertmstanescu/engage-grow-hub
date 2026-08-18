@@ -99,13 +99,10 @@ const AchievementCard = memo(({ text, colors, cardBg, isVisible, idx }: {
   isVisible: boolean; idx: number;
 }) => (
   <div
-    className="rounded-xl px-5 py-4 flex items-start gap-3 interactive"
+    className="rounded-xl border border-border shadow-sm p-6 flex items-start gap-3 interactive"
     style={{
       ...revealStyle(isVisible, idx + 6),
       backgroundColor: cardBg,
-      backdropFilter: "blur(24px)",
-      WebkitBackdropFilter: "blur(24px)",
-      border: `1px solid ${colors.border}`,
     }}
   >
     <span
