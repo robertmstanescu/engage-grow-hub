@@ -14,8 +14,11 @@ const BrandingEditor = ({ content, onChange }: Props) => {
   const [uploading, setUploading] = useState<string | null>(null);
   const logoRef = useRef<HTMLInputElement>(null);
   const emblemRef = useRef<HTMLInputElement>(null);
+  const logoDarkRef = useRef<HTMLInputElement>(null);
+  const emblemDarkRef = useRef<HTMLInputElement>(null);
   const faviconLightRef = useRef<HTMLInputElement>(null);
   const faviconDarkRef = useRef<HTMLInputElement>(null);
+
 
   /**
    * Upload a branding asset to storage and persist its public URL on the
