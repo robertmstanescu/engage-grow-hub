@@ -57,7 +57,7 @@ const Blog = () => {
         <RowsRenderer rows={pageData.rows_above} promoteHeading={false} />
       )}
 
-      <section className="grain relative pt-36 pb-16 text-center mesh-hero">
+      <section className="grain relative pt-36 pb-16 text-center">
         <div className="relative z-10 max-w-[800px] mx-auto px-8">
           <h1 className="font-display text-3xl md:text-5xl font-black leading-tight mb-5" style={{ color: "hsl(var(--foreground))" }}>
             {pageData.header_title || "Insights & Articles"}

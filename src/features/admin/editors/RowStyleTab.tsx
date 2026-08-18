@@ -46,7 +46,7 @@
 
 import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
 import ColumnWidthControl from "../site-editor/ColumnWidthControl";
-import GradientEditor from "../site-editor/GradientEditor";
+
 import OverlayEditor from "../site-editor/OverlayEditor";
 import {
   Accordion,
@@ -56,6 +56,7 @@ import {
 } from "@/components/ui/accordion";
 import type { PageRow, SectionShapeConfig, SectionShapeKind, SectionShapeSize } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
+import { DEFAULT_PAGE_MESH, buildPageMeshCSS } from "@/features/site/pageMesh";
 
 interface Props {
   row: PageRow;
@@ -63,21 +64,6 @@ interface Props {
   onUpdateColumnWidths: (widths: number[]) => void;
 }
 
-/**
- * Per-row-type defaults for the gradient editor. We pre-populate the
- * widget with values that match the actual front-end render, so what the
- * admin sees in the editor === what's currently painting on the page.
- */
-const ROW_DEFAULTS: Record<string, { start: string; end: string }> = {
-  hero: { start: "hsl(280 40% 96% / 0.9)", end: "hsl(45 55% 96% / 0.6)" },
-  text: { start: "hsl(280 30% 97% / 0.7)", end: "hsl(45 50% 97% / 0.4)" },
-  service: { start: "hsl(280 32% 96%)", end: "hsl(45 52% 96%)" },
-  boxed: { start: "hsl(280 30% 97% / 0.8)", end: "hsl(45 50% 97% / 0.5)" },
-  contact: { start: "hsl(280 35% 96% / 0.6)", end: "transparent" },
-  image_text: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
-  profile: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
-  grid: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
-};
 
 /* Quick colours for the row background. "None" leaves the row
    transparent so the single page-wide mesh gradient shows through. */
@@ -195,17 +181,16 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   const columnWidths =
     row.layout?.column_widths || Array(widthColCount).fill(Math.round(100 / widthColCount));
 
-  // ── Gradient & overlay defaults ────────────────────────────────────
-  const currentGradient = row.layout?.gradient;
-  const rowDefaults = ROW_DEFAULTS[row.type] || { start: "#4D1B5E", end: "#5A2370" };
-  const legacyStart = row.layout?.gradientStart || rowDefaults.start;
-  const legacyEnd = row.layout?.gradientEnd || rowDefaults.end;
   const currentOverlays = row.layout?.overlays || [];
 
-  // ── Background opacity / image ─────────────────────────────────────
+  // ── Background opacity ─────────────────────────────────────────────
   const bgColorOpacity = row.layout?.bgColorOpacity ?? 100;
-  const bgImageOpacity = row.layout?.bgImageOpacity ?? 100;
-  const bgImage = row.layout?.bgImage || "";
+
+  // ── Page mesh (hero rows only) ─────────────────────────────────────
+  // The hero owns the single gradient painted behind the entire page.
+  const isHero = row.type === "hero";
+  const mesh = { ...DEFAULT_PAGE_MESH, ...(row.layout?.mesh || {}) };
+  const meshColors = (mesh.colors?.length === 4 ? mesh.colors : DEFAULT_PAGE_MESH.colors) as string[];
   // ── Snap to viewport toggle ────────────────────────────────────────
   // Default OFF: only the Hero snaps. Admins opt-in for hero-class rows
   // (e.g. the Vows pledge) where a full-viewport reveal is desired.
@@ -295,9 +280,65 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                 </span>
               </div>
             </div>
+
+            {/* ── Page background (hero rows only) ──
+                The hero owns the ONE gradient behind the whole page.
+                Every other row sits transparent on top of it. */}
+            {isHero && (
+              <div className="pt-1 border-t border-border">
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 mt-3 block text-muted-foreground">
+                  Page background (whole page)
+                </label>
+                <div
+                  className="h-14 rounded-lg border border-border mb-2"
+                  style={{ background: buildPageMeshCSS(mesh) }}
+                />
+                <div className="grid grid-cols-4 gap-1.5">
+                  {meshColors.map((c, i) => (
+                    <input
+                      key={i}
+                      type="color"
+                      value={c}
+                      aria-label={`Page background colour ${i + 1}`}
+                      onChange={(e) => {
+                        const next = [...meshColors];
+                        next[i] = e.target.value;
+                        patchLayout({ mesh: { ...mesh, colors: next } });
+                      }}
+                      className="w-full h-9 rounded border border-border cursor-pointer"
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
+                    Intensity
+                  </span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={mesh.strength}
+                    onChange={(e) => patchLayout({ mesh: { ...mesh, strength: Number(e.target.value) } })}
+                    className="flex-1"
+                    style={{ accentColor: "hsl(var(--secondary))" }}
+                  />
+                  <span className="font-body text-[10px] text-foreground min-w-[32px] text-right">
+                    {mesh.strength}%
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => patchLayout({ mesh: DEFAULT_PAGE_MESH })}
+                  className="mt-2 font-body text-[10px] underline text-muted-foreground hover:text-foreground"
+                >
+                  Reset to brand default
+                </button>
+              </div>
+            )}
           </div>
         </AccordionContent>
       </AccordionItem>
+
 
       {/* ═══ EDGES ═══ */}
       <AccordionItem value="edges" className="border-none">
@@ -371,37 +412,6 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               />
             )}
 
-            {/* ── Background Image + opacity ── */}
-            <div>
-              <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
-                Background Image URL
-              </label>
-              <input
-                value={bgImage}
-                onChange={(e) => patchLayout({ bgImage: e.target.value })}
-                placeholder="https://..."
-                className="w-full px-3 py-2 rounded-lg font-body text-sm border border-border bg-background text-foreground"
-              />
-              {bgImage && (
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
-                    Opacity
-                  </span>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={bgImageOpacity}
-                    onChange={(e) => patchLayout({ bgImageOpacity: Number(e.target.value) })}
-                    className="flex-1"
-                    style={{ accentColor: "hsl(var(--secondary))" }}
-                  />
-                  <span className="font-body text-[10px] text-foreground min-w-[32px] text-right">
-                    {bgImageOpacity}%
-                  </span>
-                </div>
-              )}
-            </div>
 
             {/* ── Snap to viewport ── */}
             <div>
@@ -445,26 +455,6 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               widths={columnWidths}
               onChange={onUpdateColumnWidths}
               disabled={!showWidthControl}
-            />
-
-            <GradientEditor
-              gradient={currentGradient}
-              legacyStart={legacyStart}
-              legacyEnd={legacyEnd}
-              onChange={(gradient) => {
-                // Sync legacy gradientStart/End from the new gradient stops so
-                // that even when the "Custom Gradient" toggle is off, the
-                // decorative legacy glow blobs use the admin's chosen colours.
-                const stops = gradient?.stops ?? [];
-                const sorted = [...stops].sort((a, b) => a.position - b.position);
-                const firstColor = sorted[0]?.color;
-                const lastColor = sorted[sorted.length - 1]?.color;
-                patchLayout({
-                  gradient,
-                  ...(firstColor ? { gradientStart: firstColor } : {}),
-                  ...(lastColor ? { gradientEnd: lastColor } : {}),
-                });
-              }}
             />
 
             <OverlayEditor

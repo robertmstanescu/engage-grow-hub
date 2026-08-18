@@ -1,7 +1,9 @@
 import { sanitizeHtml } from "@/services/sanitize";
 
 import type { PageRow } from "@/types/rows";
-import RowBackground from "./RowBackground";
+import { getRowBgColor } from "./rowBackground";
+
+
 import { resolveImageAlt } from "@/services/imageAlt";
 import Icon from "@/features/icons/Icon";
 import { hasText } from "./PrimaryHeadingContext";
@@ -34,9 +36,11 @@ const HeroRow = ({ row }: Props) => {
     <section
       className="snap-section grain relative flex flex-col justify-center overflow-hidden"
       data-snap-enabled="true"
-      style={{ isolation: "isolate", backgroundColor: "hsl(var(--background))", minHeight: "calc(100dvh - var(--nav-top-offset, 0px))" }}
+      /* Transparent by default so the page mesh (whose colours this very
+         row owns, see Style ▸ Page background) reads as one surface. */
+      style={{ isolation: "isolate", backgroundColor: getRowBgColor(row), minHeight: "calc(100dvh - var(--nav-top-offset, 0px))" }}
     >
-      <RowBackground row={row} />
+      
 
       {hasBg && bgType === "image" && (
         <div className="absolute inset-0 z-0">
@@ -73,8 +77,6 @@ const HeroRow = ({ row }: Props) => {
         </div>
       )}
 
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] pointer-events-none"
-        style={{ background: "radial-gradient(circle, hsl(285 45% 88%), transparent)" }} />
 
       <div className="hero-enter relative z-10 flex min-h-0 flex-1 w-full max-w-[1400px] flex-col justify-center overflow-y-auto row-container py-[clamp(48px,7vh,96px)]">
         {c.icon && (

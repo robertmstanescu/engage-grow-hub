@@ -72,7 +72,7 @@ const CtaBandRow = ({
 
           <div className={`flex flex-wrap items-center gap-5 ${actionsAlign} shrink-0`} style={revealStyle(isVisible, 0.4)}>
             {buttonText && (
-              <a href={c.button_url || "#contact"} className="btn-ink">
+              <a href={c.button_url || "/#contact"} className="btn-ink">
                 {buttonText}
               </a>
             )}

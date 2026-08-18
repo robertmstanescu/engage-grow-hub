@@ -89,7 +89,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
         data-section="hero"
         data-snap-enabled="true"
         aria-busy="true"
-        className="scope-hero snap-section grain relative mesh-hero"
+        className="scope-hero snap-section grain relative"
         style={{ height: "calc(100vh - var(--nav-top-offset, 0px))" }}
       />
     );
@@ -99,7 +99,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
     <section
       data-section="hero"
       data-snap-enabled="true"
-      className="scope-hero snap-section grain relative flex flex-col justify-center mesh-hero overflow-hidden"
+      className="scope-hero snap-section grain relative flex flex-col justify-center overflow-hidden"
       style={{ minHeight: "calc(100dvh - var(--nav-top-offset, 0px))" }}
     >
       {/*

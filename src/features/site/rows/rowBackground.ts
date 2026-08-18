@@ -1,6 +1,16 @@
-import type { PageRow, RowLayout } from "@/types/rows";
-import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
-import { buildGradientCSS } from "@/features/admin/site-editor/GradientEditor";
+import type { PageRow } from "@/types/rows";
+
+/**
+ * rowBackground — the ONE thing a row can paint: a flat colour.
+ *
+ * The site has a single background: the fixed page mesh (see
+ * `.page-mesh-layer` in index.css), whose colours are owned by the Hero
+ * row. Every other row is transparent unless an admin picks a plain
+ * colour for it in the Style tab. There are deliberately no per-row
+ * gradients, glows or background images any more — they stacked extra
+ * tints on top of the page mesh and made the design impossible to
+ * reason about from the admin panel.
+ */
 
 /** Convert hex (#RRGGBB or #RGB) → rgba() with given 0-100 opacity. Pass-through for non-hex. */
 export const applyColorOpacity = (color: string | undefined, opacity = 100): string | undefined => {
@@ -21,71 +31,8 @@ export const applyColorOpacity = (color: string | undefined, opacity = 100): str
   return color;
 };
 
-/**
- * Returns the decorative background CSS for a row.
- * - If a custom `layout.gradient` is enabled → returns that gradient (replaces legacy decoration).
- * - Otherwise → returns the row-type-specific legacy radial-gradient string built from
- *   `layout.gradientStart` / `layout.gradientEnd` (with sensible defaults per row type).
- *
- * The caller renders this on the absolute-inset overlay <div>.
- */
-export const getRowBackgroundCSS = (
-  row: PageRow,
-  legacyBuilder: (gradStart: string, gradEnd: string) => string,
-  defaults: { start: string; end: string },
-): string => {
-  const l: RowLayout = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
-  if (l.gradient?.enabled && l.gradient.stops?.length >= 2) {
-    return buildGradientCSS(l.gradient);
-  }
-  const gradStart = l.gradientStart || defaults.start;
-  const gradEnd = l.gradientEnd || defaults.end;
-  return legacyBuilder(gradStart, gradEnd);
-};
-
 /** Effective bg color with opacity applied (for `backgroundColor` style). */
 export const getRowBgColor = (row: PageRow, fallback?: string): string | undefined => {
   const opacity = row.layout?.bgColorOpacity ?? 100;
   return applyColorOpacity(row.bg_color || fallback, opacity);
 };
-
-/** Inline style for the row's background image (returns {} if no image). */
-export const getRowBgImageStyle = (row: PageRow): React.CSSProperties => {
-  const url = row.layout?.bgImage;
-  if (!url) return {};
-  const opacity = row.layout?.bgImageOpacity ?? 100;
-  // Apply opacity by overlaying a same-color veil; simplest: use `image-set` is overkill. Use inline image as background with rgba mask.
-  // Most reliable cross-browser: composite a linear-gradient white→white with controlled alpha over the image.
-  if (opacity >= 100) {
-    return { backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center" };
-  }
-  // TRANSPARENT PNG SUPPORT: previously we composited a black veil
-  // (`rgba(0,0,0,${veilAlpha})`) over the image to simulate opacity.
-  // That mask filled in transparent regions of PNGs with solid black,
-  // hiding the row's brand colours underneath. Using a fully transparent
-  // gradient lets the row's base background "breathe" through any
-  // transparent pixels in the uploaded image.
-  return {
-    backgroundImage: `linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0)), url(${url})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundBlendMode: "normal",
-    opacity: opacity / 100,
-  };
-};
-
-/**
- * Resolve the legacy gradient defaults a row uses, so the GradientEditor
- * can pre-populate its stops with what's actually rendering on the page.
- */
-export const ROW_GRADIENT_DEFAULTS: Record<string, { start: string; end: string }> = {
-  hero: { start: "hsl(280 40% 96% / 0.9)", end: "hsl(45 55% 96% / 0.6)" },
-  text: { start: "hsl(280 30% 97% / 0.7)", end: "hsl(45 50% 97% / 0.4)" },
-  service: { start: "hsl(280 32% 96%)", end: "hsl(45 52% 96%)" },
-  boxed: { start: "hsl(280 30% 97% / 0.8)", end: "hsl(45 50% 97% / 0.5)" },
-  contact: { start: "hsl(280 35% 96% / 0.6)", end: "transparent" },
-  image_text: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
-  profile: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
-  grid: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
-};
-

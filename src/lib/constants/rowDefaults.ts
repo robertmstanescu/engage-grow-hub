@@ -10,22 +10,8 @@
  * from services, hooks and migration code without pulling UI in.
  */
 
-import type { ContactField, GradientConfig, PageCell, PageCellLayout, PageCellSpan, PageCellStyle, PageRow, PageRowV3, RowLayout, WidgetDesignSettings, ColumnLayoutPreset } from "@/types/rows";
+import type { ContactField, PageCell, PageCellLayout, PageCellSpan, PageCellStyle, PageRow, PageRowV3, RowLayout, WidgetDesignSettings, ColumnLayoutPreset } from "@/types/rows";
 
-/* ─── Gradient ─────────────────────────────────────────────────────── */
-
-/** Disabled-by-default linear gradient used as the seed for new rows. */
-export const DEFAULT_GRADIENT: GradientConfig = {
-  type: "linear",
-  angle: 135,
-  radialShape: "ellipse",
-  radialPosition: "center",
-  stops: [
-    { color: "#4D1B5E", position: 0 },
-    { color: "#5A2370", position: 100 },
-  ],
-  enabled: false,
-};
 
 /* ─── Row layout ───────────────────────────────────────────────────── */
 

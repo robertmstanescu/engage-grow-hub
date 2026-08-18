@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { buildPageMeshCSS, resolvePageMesh } from "@/features/site/pageMesh";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import type { PageRow, PageRowV3 } from "@/types/rows";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
@@ -56,6 +57,18 @@ export const RowsRenderer = ({
     () => (promoteHeading ? resolvePromotedHeadingId(v3Rows as any) : null),
     [v3Rows, promoteHeading],
   );
+
+  /* THE page background. The hero row owns the single mesh gradient that
+     is painted behind the whole page (`.page-mesh-layer`); we push it to
+     the document root so it survives across rows, the footer and any
+     fixed chrome. Pages without a hero fall back to the brand default. */
+  const meshCSS = useMemo(() => buildPageMeshCSS(resolvePageMesh(v3Rows as any)), [v3Rows]);
+  useEffect(() => {
+    document.documentElement.style.setProperty("--gradient-mesh-page", meshCSS);
+    return () => {
+      document.documentElement.style.removeProperty("--gradient-mesh-page");
+    };
+  }, [meshCSS]);
 
   return (
     <PromotedWidgetProvider value={promotedWidgetId}>
@@ -121,7 +134,7 @@ const PageRows = ({ footerSlot }: { footerSlot?: React.ReactNode }) => {
         data-section="hero"
         data-snap-enabled="true"
         aria-busy="true"
-        className="scope-hero snap-section grain relative mesh-hero"
+        className="scope-hero snap-section grain relative"
         style={{ minHeight: "calc(100vh - var(--nav-top-offset, 0px))" }}
       />
     );
