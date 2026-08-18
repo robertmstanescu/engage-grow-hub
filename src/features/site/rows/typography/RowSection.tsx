@@ -1,10 +1,26 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import type { PageRow } from "@/types/rows";
 import { getRowBgColor } from "../rowBackground";
 import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEditor";
 import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
-import SectionShape from "../SectionShape";
+import SectionShape, { shapeHeightPx } from "../SectionShape";
+
+/** Tracks the same breakpoint index.css uses to flatten shapes. */
+const useFlatShapes = () => {
+  const [flat, setFlat] = useState(
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 767px)").matches : false
+  );
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 767px)");
+    const onChange = () => setFlat(mql.matches);
+    mql.addEventListener("change", onChange);
+    setFlat(mql.matches);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return flat;
+};
+
 
 
 interface Props {
