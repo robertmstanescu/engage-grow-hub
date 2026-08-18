@@ -22,6 +22,7 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import usePageMeta from "@/hooks/usePageMeta";
 
 interface Error404Content {
   headline: string;
@@ -38,6 +39,11 @@ const FALLBACK: Error404Content = {
 const NotFound = () => {
   const location = useLocation();
   const content = useSiteContent<Error404Content>("error_404", FALLBACK);
+
+  usePageMeta({
+    title: "Page Not Found",
+    description: content.subhead || FALLBACK.subhead,
+  });
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
