@@ -26,13 +26,13 @@ type ResponsiveLogoProps = {
   width?: number;
   height?: number;
 };
-const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, height }: ResponsiveLogoProps) => (
+const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, height, darken }: ResponsiveLogoProps) => (
   <picture className={className}>
     <source media="(min-width: 1024px)" srcSet={emblemUrl} />
     <img
       src={logoUrl}
       alt="The Magic Coffin logo"
-      className={imgClassName}
+      className={`${imgClassName ?? ""}${darken ? " logo-darken" : ""}`}
       width={width}
       height={height}
       // @ts-expect-error – React types lag behind the standard attribute name.
@@ -42,6 +42,7 @@ const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, he
     />
   </picture>
 );
+
 
 const Navbar = () => {
   const { isLoading: brandingLoading, content: branding } = useSiteContentWithStatus<Record<string, any>>(
