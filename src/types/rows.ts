@@ -97,7 +97,6 @@ export interface RowLayout {
    * order; explicit tones override legacy per-row colours and
    * decorative gradients so the page reads as calm, deliberate bands.
    */
-  bandTone?: "mesh" | "auto" | "white" | "tint" | "deep";
   /** Decorative shape on the row's top edge. */
   shapeTop?: SectionShapeConfig;
   /** Decorative shape on the row's bottom edge. */
