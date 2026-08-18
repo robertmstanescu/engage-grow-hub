@@ -95,12 +95,15 @@ const WidgetNode = ({
     : "";
 
   return (
-    <SelectableWrapper path={widgetPath} label={renderRow.type} variant="widget">
-      <div id={slug || undefined} className={slug ? "scroll-mt-16" : undefined}>
-        <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
-      </div>
-    </SelectableWrapper>
+    <CurrentWidgetProvider value={widget.id}>
+      <SelectableWrapper path={widgetPath} label={renderRow.type} variant="widget">
+        <div id={slug || undefined} className={slug ? "scroll-mt-16" : undefined}>
+          <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
+        </div>
+      </SelectableWrapper>
+    </CurrentWidgetProvider>
   );
+
 
 };
 
