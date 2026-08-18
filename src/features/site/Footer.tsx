@@ -1,6 +1,8 @@
 import { Instagram, Linkedin, Twitter, Facebook, Youtube } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
+import SectionShape from "@/features/site/rows/SectionShape";
+import type { SectionShapeConfig } from "@/types/rows";
 
 
 const PLATFORMS = [
@@ -34,6 +36,8 @@ interface FooterContent {
   copyright?: string;
   tagline?: string;
   columns?: FooterColumn[];
+  /** Optional decorative top edge — the dark footer spills UP over the row above. */
+  shapeTop?: SectionShapeConfig;
 }
 
 const Footer = () => {
@@ -73,6 +77,9 @@ const Footer = () => {
 
   return (
     <footer className="footer-dark relative border-t" style={{ backgroundColor: "hsl(var(--revolver))", borderColor: "hsl(0 0% 100% / 0.14)", scrollSnapAlign: "end" }}>
+      {footer.shapeTop ? (
+        <SectionShape edge="top" config={footer.shapeTop} color="hsl(var(--revolver))" />
+      ) : null}
 
       <div className="relative z-10 max-w-[1280px] mx-auto row-container pt-16 md:pt-20 pb-2">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">

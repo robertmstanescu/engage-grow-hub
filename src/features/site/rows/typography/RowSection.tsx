@@ -4,7 +4,7 @@ import { getRowBgColor } from "../rowBackground";
 import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEditor";
 import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
-import SectionShape, { roundedRadius } from "../SectionShape";
+import SectionShape from "../SectionShape";
 
 
 interface Props {
@@ -119,8 +119,10 @@ const RowSection = ({
    *  no surface to extend, so it renders no shape. */
   const shapeTop = hasOwnPaint ? row.layout?.shapeTop : undefined;
   const shapeBottom = hasOwnPaint ? row.layout?.shapeBottom : undefined;
-  const topRadius = roundedRadius(shapeTop);
-  const bottomRadius = roundedRadius(shapeBottom);
+  /* A row that spills an edge must always paint ABOVE its neighbours —
+   * including the footer — otherwise the overhang gets covered. */
+  const hasShape = Boolean(shapeTop || shapeBottom);
+
   /* Hairline separator on the top edge — independent of shapes so a row
    * can have a plain rule without taking on a decorative curve. */
   const dividerTop = row.layout?.dividerTop || "none";
@@ -139,11 +141,8 @@ const RowSection = ({
         className={`snap-section ${grain && !hasOwnPaint ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
         style={{
           backgroundColor: surfaceColor,
-          borderTopLeftRadius: topRadius || undefined,
-          borderTopRightRadius: topRadius || undefined,
-          borderBottomLeftRadius: bottomRadius || undefined,
-          borderBottomRightRadius: bottomRadius || undefined,
-          zIndex: shapeBottom ? 1 : undefined,
+          zIndex: hasShape ? 2 : undefined,
+
           scrollMarginTop: "0px",
           /*
            * `--row-fg` is the readable text colour for this row's

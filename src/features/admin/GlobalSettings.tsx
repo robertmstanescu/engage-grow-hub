@@ -3,6 +3,7 @@ import { Save, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import SocialLinksEditor from "./site-editor/SocialLinksEditor";
 import { Field, ColorField } from "./site-editor/FieldComponents";
+import { ShapePicker } from "./editors/RowStyleTab";
 import { fetchSections, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
 import { SpinnerButton } from "@/components/ui/spinner-button";
@@ -153,6 +154,12 @@ const GlobalSettings = () => {
           label="Tagline"
           value={getDraft("footer").tagline || ""}
           onChange={(v) => updateField("footer", "tagline", v)}
+        />
+
+        <ShapePicker
+          label="Shape — top edge (spills over the row above)"
+          value={getDraft("footer").shapeTop}
+          onChange={(shapeTop) => updateField("footer", "shapeTop", shapeTop)}
         />
 
         <FooterColumnsEditor
