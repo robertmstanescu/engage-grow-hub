@@ -149,7 +149,11 @@ export interface PageRow {
     | "lead_magnet"
     | "testimonial"
     | "logo_cloud"
-    | "faq";
+    | "faq"
+    | "proof_band"
+    | "process_steps"
+    | "quote_band"
+    | "cta_band";
   strip_title: string;
   bg_color: string;
   scope?: string;
