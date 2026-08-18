@@ -81,6 +81,14 @@ const FALLBACK_ORIGIN = "https://example.com";
  * concatenating them into <loc> tags or we risk producing invalid XML
  * (and Google will reject the entire sitemap).
  */
+/**
+ * Public URL path for a CMS page slug.
+ * Namespaced slugs (`services/...`) and the services index are served from
+ * the root of the site by dedicated routes; everything else lives at `/p/`.
+ */
+const cmsPagePath = (slug: string): string =>
+  slug === "services" || slug.startsWith("services/") ? `/${slug}/` : `/p/${slug}/`;
+
 function escapeXml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -174,7 +182,7 @@ Deno.serve(async (req) => {
   for (const page of cmsPages) {
     if (!page.slug) continue;
     urlEntries.push(
-      buildUrlEntry(`${canonicalOrigin}/p/${page.slug}/`, {
+      buildUrlEntry(`${canonicalOrigin}${cmsPagePath(page.slug)}`, {
         lastmod: page.updated_at,
         changefreq: "monthly",
         priority: "0.7",
