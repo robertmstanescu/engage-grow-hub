@@ -133,7 +133,7 @@ const CookieConsent = () => {
           className="rounded-xl backdrop-blur-md overflow-hidden"
           style={{
             backgroundColor: "hsl(var(--card) / 0.98)",
-            border: "1px solid hsl(var(--muted-foreground))",
+            border: "1px solid hsl(var(--border))",
             boxShadow: "var(--shadow-card)",
             color: "hsl(var(--foreground))",
           }}
@@ -141,7 +141,7 @@ const CookieConsent = () => {
           {/* Header bar with title + close button */}
           <div
             className="flex items-center justify-between px-4 py-3"
-            style={{ borderBottom: "1px solid hsl(var(--muted-foreground))" }}
+            style={{ borderBottom: "1px solid hsl(var(--border))" }}
           >
             <div className="flex items-center gap-2">
               <span
@@ -215,7 +215,7 @@ const CookieConsent = () => {
                   className="rounded-lg p-3"
                   style={{
                     backgroundColor: "hsl(var(--muted))",
-                    border: "1px solid hsl(var(--muted-foreground))",
+                    border: "1px solid hsl(var(--border))",
                   }}
                 >
                   <div className="flex items-baseline justify-between gap-2 mb-1">
@@ -246,7 +246,7 @@ const CookieConsent = () => {
               current state so the consequence of clicking is obvious. */}
           <div
             className="px-4 py-3 flex items-center gap-2"
-            style={{ borderTop: "1px solid hsl(var(--muted-foreground))" }}
+            style={{ borderTop: "1px solid hsl(var(--border))" }}
           >
             {isAccepted ? (
               <button
@@ -254,7 +254,7 @@ const CookieConsent = () => {
                 onClick={() => recordChoice("rejected", false)}
                 className="flex-1 font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-full transition-colors"
                 style={{
-                  border: "1px solid hsl(var(--muted-foreground))",
+                  border: "1px solid hsl(var(--border))",
                   color: "hsl(var(--foreground))",
                 }}
               >
@@ -298,7 +298,7 @@ const CookieConsent = () => {
         className="rounded-xl p-4 backdrop-blur-md"
         style={{
           backgroundColor: "hsl(var(--card) / 0.98)",
-          border: "1px solid hsl(var(--muted-foreground))",
+          border: "1px solid hsl(var(--border))",
           boxShadow: "var(--shadow-card)",
           color: "hsl(var(--foreground))",
         }}
@@ -357,7 +357,7 @@ const CookieConsent = () => {
                   onClick={() => recordChoice("rejected")}
                   className="flex-1 font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-full transition-colors"
                   style={{
-                    border: "1px solid hsl(var(--muted-foreground))",
+                    border: "1px solid hsl(var(--border))",
                     color: "hsl(var(--foreground))",
                   }}
                 >
