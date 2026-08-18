@@ -92,6 +92,25 @@ The site already has the right machinery: a crawler-facing `ssr-index` edge func
 
 After the build I'll run an SEO review so anything the scanner still flags gets picked up.
 
+## 9. Navbar: floating glass island
+
+- The pill loses its opaque white fill. It becomes a translucent floating island: content behind it (the hero wordmark, images, bands) stays visible through a light frosted wash — low-opacity background tint plus blur and a hairline border, with a soft shadow so it reads as lifted above the page.
+- It stays legible over both light bands and the deep plum band: the wash and text colour adapt to what's underneath, so links never disappear.
+- Layout inside the pill is fixed so nothing crowds: logo left, links centred with even spacing, primary CTA right, settings/admin control outside or at the far right.
+- On scroll the island stays put and tightens slightly (a touch less height, a touch more opacity) rather than changing colour scheme.
+
+## 10. Responsive behaviour across all breakpoints
+
+Every change above is specified per breakpoint, not just desktop.
+
+- **Navbar**: full pill with centred links on desktop; on tablet the links condense and the CTA shrinks; on mobile the island becomes a compact bar with logo + CTA + menu button, and the menu opens as a full-width translucent sheet with Services nested inside.
+- **Hero**: title scales fluidly and stays within the viewport on small screens; subtitle and CTAs stack, with the primary CTA full-width on mobile.
+- **Rows**: multi-column grids (service cards, stats, process steps, case studies, editorial splits) collapse to single column on mobile and two columns on tablet; the 60/40 split stacks image above text.
+- **Service pages**: deliverables grid, process strip and FAQ all reflow to stacked layouts; sticky CTA behaves as a bottom bar on mobile only if it doesn't obstruct content.
+- **Spacing/type**: band padding and heading sizes come from fluid clamp values, so nothing needs per-breakpoint hardcoding; small text keeps a legibility floor.
+- **Footer and cookie card**: stack cleanly, legal text stays at the bottom.
+- Verification pass at 390px, 768px, 1024px and 1440px on the homepage, a service page and the admin, with screenshots, before I call it done.
+
 ## Technical notes
 
 
