@@ -7,22 +7,22 @@ type CardTextAlign = "left" | "center" | "right";
 /**
  * GPU-friendly accordion using CSS grid-template-rows (0fr ↔ 1fr).
  * No height animation, no layout reflow — pure compositor-layer transition.
+ * Structured "Lativ" framing: a clean divider rule above the toggle and
+ * evenly spaced list items, no glass wash or drop shadows.
  */
 const Deliverables = memo(({ label, items, textAlign }: { label: string; items: string[]; textAlign?: CardTextAlign }) => {
   const [open, setOpen] = useState(false);
   const toggle = useCallback(() => setOpen(v => !v), []);
   const alignClass = textAlign === "center" ? "text-center" : textAlign === "right" ? "text-right" : "text-left";
   return (
-    <div data-deliverables-open={open ? "true" : "false"} className={`border-t px-5 py-3 ${alignClass}`} style={{ borderColor: "hsl(var(--foreground) / 0.08)", backgroundColor: "hsl(var(--background) / 0.3)" }}>
-      <button onClick={toggle} className="flex items-center justify-between w-full text-left">
+    <div data-deliverables-open={open ? "true" : "false"} className={`border-t border-border px-6 py-4 ${alignClass}`}>
+      <button onClick={toggle} aria-expanded={open} className="flex items-center justify-between w-full text-left">
         <span className="font-body text-[9px] tracking-[0.2em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
         <ChevronDown
-          className="w-3.5 h-3.5 shrink-0"
+          className="w-4 h-4 shrink-0 transition-transform duration-300 ease-out"
           style={{
-            color: "hsl(var(--foreground) / 0.25)",
+            color: "hsl(var(--foreground) / 0.4)",
             transform: open ? "rotate(180deg)" : "rotate(0deg)",
-            transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-            willChange: "transform",
           }}
         />
       </button>
@@ -33,14 +33,13 @@ const Deliverables = memo(({ label, items, textAlign }: { label: string; items: 
           gridTemplateRows: open ? "1fr" : "0fr",
           opacity: open ? 1 : 0,
           transition: "grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease",
-          willChange: "grid-template-rows, opacity",
         }}
       >
         <div style={{ overflow: "hidden", minHeight: 0 }}>
-          <ul className="space-y-1.5 pt-3">
+          <ul className="divide-y divide-border pt-3">
             {items.map((item, i) => (
-              <li key={i} className="font-body text-xs leading-snug pl-4 relative" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
-                <span className="absolute left-0 text-[10px]" style={{ color: "hsl(var(--accent) / 0.4)" }}>—</span>
+              <li key={i} className="font-body text-xs leading-relaxed py-2 pl-4 relative" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+                <span className="absolute left-0 top-2 text-[10px]" style={{ color: "hsl(var(--accent) / 0.6)" }}>—</span>
                 {item}
               </li>
             ))}
@@ -51,17 +50,13 @@ const Deliverables = memo(({ label, items, textAlign }: { label: string; items: 
   );
 });
 
-const ease = [0.16, 1, 0.3, 1] as const;
-
 interface ServiceCardProps {
   tag: string; tagType: "fixed" | "retainer" | string; tagBgColor?: string; tagTextColor?: string;
   title: string; subtitle: string; description: string; deliverables: string[];
   deliverablesLabel?: string; price: string; time: string; note?: string; compact?: boolean;
   cardTextAlign?: CardTextAlign;
   /**
-   * Optional carousel navigation rendered inside the card footer.
-   * When provided, replaces the row-level carousel block so the card
-   * occupies more vertical space without losing prev/next controls.
+   * Optional carousel navigation rendered inside the card header row.
    */
   carouselControls?: React.ReactNode;
 }
@@ -75,25 +70,10 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
   const alignClass = cardTextAlign === "center" ? "text-center" : cardTextAlign === "right" ? "text-right" : "text-left";
 
   return (
-    <div
-      className={`glass rounded-xl overflow-hidden ${compact ? "flex flex-col" : ""} [&_h4]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)] [&_p]:[text-shadow:0_1px_2px_hsl(0_0%_0%_/_0.2)]`}
-      style={{
-        // Visual extras layered ON TOP of the shared `.glass` utility:
-        // shadow + inner highlight specific to the service card. We render
-        // the card at full opacity from the very first paint so the
-        // saturated tag colour and glass surface appear instantly — no
-        // fade-in delay (matches the Vow cards which also paint instantly).
-        boxShadow: "0 8px 40px -10px hsl(280 55% 15% / 0.4), 0 0 60px -20px hsl(280 55% 30% / 0.15), inset 0 1px 1px hsl(0 0% 100% / 0.1)",
-      }}>
-      <div className={`${compact ? "p-4 md:p-5 flex-shrink-0" : "p-5 md:p-6"} ${alignClass}`}>
-        {/*
-          Tag row — when carousel controls are provided, render them on
-          the same line as the tag, anchored to the top-right corner.
-          The tag keeps its own alignment behaviour; the controls are
-          pushed to the right via `ml-auto`.
-        */}
-        <div className="flex items-center gap-3 mb-3">
-          <span className={`inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full font-medium`} style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
+    <div className={`bg-card border border-border rounded-xl shadow-sm overflow-hidden ${compact ? "flex flex-col" : ""}`}>
+      <div className={`${compact ? "p-6 flex-shrink-0" : "p-6 md:p-8"} ${alignClass}`}>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
           {carouselControls && (
             <div className="ml-auto">{carouselControls}</div>
           )}
@@ -102,16 +82,26 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
         <p className="font-body-heading text-xs font-medium mb-3" style={{ color: "hsl(var(--pillar-subtitle))" }}>{subtitle}</p>
         <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--pillar-card-description))", overflow: "visible", height: "auto", WebkitLineClamp: "unset", display: "block" }}>{description}</p>
       </div>
+
       <div className={compact ? "flex-1 min-h-0 overflow-visible" : ""}>
         <Deliverables label={deliverablesLabel} items={deliverables} textAlign={cardTextAlign} />
       </div>
-      <div className={`${compact ? "px-4 md:px-5" : "px-5 md:px-6"} py-3 flex justify-between items-center flex-wrap gap-2 flex-shrink-0`} style={{ backgroundColor: "hsl(var(--background) / 0.1)" }}>
-        <a href="#contact" className="font-display text-[11px] font-bold tracking-wide hover:opacity-80 transition-all duration-500" style={{ color: "hsl(var(--pillar-cta-text))" }}>{price} →</a>
+
+      {/* Structured CTA row */}
+      <div className="border-t border-border px-6 py-4 flex items-center justify-between gap-4 flex-wrap flex-shrink-0">
+        <a
+          href="#contact"
+          className="font-display text-[10px] uppercase tracking-[0.1em] font-bold px-4 py-2 rounded-full inline-block transition-opacity duration-300 hover:opacity-90"
+          style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}
+        >
+          {price}
+        </a>
         <span className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--pillar-cta-time))" }}>{time}</span>
       </div>
+
       {note && (
-        <div className={`${compact ? "mx-4 md:mx-5 my-2" : "mx-5 md:mx-6 my-3"} px-3 py-2 rounded-lg flex-shrink-0 ${alignClass}`} style={{ backgroundColor: "hsl(var(--background) / 0.4)", borderLeft: "2px solid hsl(var(--accent) / 0.3)" }}>
-          <p className="font-body text-[11px] italic leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.5)" }}>{note}</p>
+        <div className="border-t border-border px-6 py-4 flex-shrink-0">
+          <p className={`font-body text-[11px] italic leading-relaxed ${alignClass}`} style={{ color: "hsl(var(--foreground) / 0.55)" }}>{note}</p>
         </div>
       )}
     </div>
