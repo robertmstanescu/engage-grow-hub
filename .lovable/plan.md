@@ -58,7 +58,7 @@ Services stop being loose row content and become their own thing in the admin.
 - Homepage service cards and the card CTA link straight to the page ("Learn more" arrow link beside the price CTA).
 - Navbar gains a **Services** dropdown listing published services; mobile nests them under a Services group.
 
-## 5. New row types (Sequoia / South Pole patterns)
+## 6. New row types (Sequoia / South Pole patterns)
 
 All four added to the builder with light/tint/deep band support:
 
