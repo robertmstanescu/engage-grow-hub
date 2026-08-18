@@ -45,7 +45,7 @@ const BlogPost = () => {
   const pageDesc = article ? (article.meta_description || article.content.replace(/<[^>]*>/g, " ").slice(0, 160)) : undefined;
   const pageImage = article?.og_image || article?.cover_image || undefined;
 
-  usePageMeta({ title: pageTitle, description: pageDesc, ogImage: pageImage });
+  usePageMeta({ title: pageTitle, description: pageDesc, ogImage: pageImage, ogType: "article" });
 
   // Inject Article JSON-LD for rich results (headline, datePublished, author, image).
   useEffect(() => {
