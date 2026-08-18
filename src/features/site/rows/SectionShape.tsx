@@ -54,11 +54,39 @@ interface Props {
 
 const SectionShape = ({ edge, config, color }: Props) => {
   const kind = config?.kind ?? "none";
-  if (!kind || kind === "none" || kind === "rounded") return null;
+  if (!kind || kind === "none") return null;
 
   const size = config?.size ?? "medium";
+
+  /* ── Rounded ──
+   *  Not an SVG: a solid cap painted in the row's colour, sitting fully
+   *  OUTSIDE the section (above for a top edge, below for a bottom one)
+   *  with its outer corners rounded. The row therefore climbs over its
+   *  neighbour instead of having its own corners cut away (which used to
+   *  let the page mesh show through at the seam). */
+  if (kind === "rounded") {
+    const radius = { subtle: 24, medium: 48, dramatic: 80 }[size];
+    return (
+      <div
+        aria-hidden
+        className="section-shape"
+        data-edge={edge}
+        data-kind="rounded"
+        style={{
+          height: radius,
+          backgroundColor: color,
+          borderTopLeftRadius: edge === "top" ? radius : undefined,
+          borderTopRightRadius: edge === "top" ? radius : undefined,
+          borderBottomLeftRadius: edge === "bottom" ? radius : undefined,
+          borderBottomRightRadius: edge === "bottom" ? radius : undefined,
+        }}
+      />
+    );
+  }
+
   const path = PATHS[kind];
   if (!path) return null;
+
 
   return (
     <svg
