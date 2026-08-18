@@ -79,7 +79,24 @@ export const resolvePromotedHeadingId = (rows: RowLike[]): string | null => {
       if (lines.some((line) => hasText(line))) return null; // Hero owns the h1
       continue;
     }
-    if (hasText(data.title) || hasText(data.heading)) return widget.id;
+    const lines = Array.isArray(data.title_lines) ? data.title_lines : [];
+    if (hasText(data.title) || hasText(data.heading) || lines.some((line) => hasText(line))) {
+      return widget.id;
+    }
   }
   return null;
+};
+
+/**
+ * True when the rows will paint a real heading (Hero <h1> or a widget
+ * that can be promoted). Pages whose rows are body-copy only (e.g. a
+ * privacy policy) use this to render their own page-title <h1>.
+ */
+export const rowsProvideHeading = (rows: RowLike[]): boolean => {
+  const widgets = flattenWidgets(rows);
+  return widgets.some((widget) => {
+    const data = (widget.data || {}) as Record<string, unknown>;
+    const lines = Array.isArray(data.title_lines) ? data.title_lines : [];
+    return hasText(data.title) || hasText(data.heading) || lines.some((line) => hasText(line));
+  });
 };
