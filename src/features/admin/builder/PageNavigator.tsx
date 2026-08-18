@@ -283,7 +283,7 @@ const PageNavigator = ({
                 <div
                   className="flex items-center gap-1.5 rounded-md px-2 py-1.5 border"
                   style={{
-                    backgroundColor: slugReadOnly ? "hsl(var(--muted) / 0.6)" : "hsl(0 0% 100%)",
+                    backgroundColor: slugReadOnly ? "hsl(var(--muted) / 0.6)" : "hsl(var(--background))",
                     borderColor: "hsl(var(--border))",
                   }}
                 >

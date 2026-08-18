@@ -139,7 +139,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                   value={row.bg_color || ""}
                   onChange={(e) => onRowMetaChange({ bg_color: e.target.value })}
                   placeholder="#FFFFFF"
-                  className="flex-1 px-3 py-2 rounded-lg font-body text-sm border border-border bg-white text-[#1a1a1a]"
+                  className="flex-1 px-3 py-2 rounded-lg font-body text-sm border border-border bg-background text-foreground"
                 />
               </div>
               <div className="flex items-center gap-1.5 mt-1.5">
@@ -178,7 +178,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                   })
                 }
                 placeholder="https://..."
-                className="w-full px-3 py-2 rounded-lg font-body text-sm border border-border bg-white text-[#1a1a1a]"
+                className="w-full px-3 py-2 rounded-lg font-body text-sm border border-border bg-background text-foreground"
               />
               {bgImage && (
                 <div className="flex items-center gap-1.5 mt-1.5">
@@ -249,7 +249,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                   }`}
                 >
                   <span
-                    className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                    className={`absolute top-0.5 h-4 w-4 rounded-full bg-card shadow transition-transform ${
                       snapEnabled ? "translate-x-[18px]" : "translate-x-0.5"
                     }`}
                   />
