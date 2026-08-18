@@ -21,6 +21,14 @@ const defaultFields: ContactField[] = [
 
 const CREAM = "hsl(var(--foreground))";
 
+/* Form typography matches the rest of the site: labels use the same
+ * eyebrow scale as <RowEyebrow/> and inputs the same body scale as
+ * <RowBody/>, instead of the old 9px/12px one-off sizes. */
+const LABEL_CLASS =
+  "block font-body text-[11px] uppercase tracking-[0.18em] mb-2 text-left";
+const INPUT_CLASS =
+  "w-full bg-transparent border border-border rounded-lg px-4 py-3 font-body text-sm outline-none interactive text-left transition-colors";
+
 const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
   const titleLines: string[] = (c.title_lines || []).map((l: any) =>
