@@ -125,6 +125,14 @@
     --contact-success-fg: 280 57% 13%;
     --contact-success-btn-bg: 280 57% 16%;
     --contact-success-btn-text: 45 70% 92%;
+
+    /* ── Band system (alternating section tones) ── */
+    --band-white: 0 0% 100%;
+    --band-white-fg: 282 40% 13%;
+    --band-tint: 288 34% 96%;
+    --band-tint-fg: 282 40% 13%;
+    --band-deep: 280 57% 14%;
+    --band-deep-fg: 45 60% 96%;
   }
 
 }
