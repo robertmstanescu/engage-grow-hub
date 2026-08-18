@@ -133,6 +133,10 @@
     --band-tint-fg: 282 40% 13%;
     --band-deep: 280 57% 14%;
     --band-deep-fg: 45 60% 96%;
+    /* Fill used for edge shapes when the neighbouring row is on the
+       transparent mesh band — a soft tint that reads as the page mesh. */
+    --mesh-shape-fill: 288 34% 96%;
+
 
     /* ── Page mesh (default page-level background) ──
        One fixed, continuous mesh painted behind the whole site: soft
