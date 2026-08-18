@@ -541,6 +541,16 @@ const InspectorPanel = (props: InspectorPanelProps) => {
           onDesignRadiusChange={(px) => writeDesign({ borderRadius: px })}
           onVisibilityChange={(visibility) => writeDesign({ visibility })}
           onCustomCssChange={(customCss) => writeDesign({ customCss })}
+          slugEditor={
+            <SlugField
+              label="Widget slug"
+              value={(widgetContent as any)?.__slug || ""}
+              placeholder={widgetType}
+              onChange={(slug) => updateWidgetField("__slug", slug)}
+              hint="Renders as this widget's id so you can deep-link to it."
+            />
+          }
+
         />
 
         {/* Danger zone — destructive actions accessible from the
