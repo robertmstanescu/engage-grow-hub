@@ -34,6 +34,10 @@ export const RowsRenderer = ({
   const v3Rows = useMemo(() => normalizeRowsToV3(rows), [rows]);
   const autoAlignments = computeAutoAlignments(v3Rows);
   const lastIndex = v3Rows.length - 1;
+  /* Surface colour per row — used so each row's edge shapes can be
+     filled with the NEIGHBOUR's colour (the "bleed down" effect). */
+  const surfaces = useMemo(() => v3Rows.map((r) => resolveRowSurface(r as any)), [v3Rows]);
+
 
   // `__global_ref` resolution map (sourced from the global_widgets table).
   const { map: globalMap } = useGlobalWidgetMap();
