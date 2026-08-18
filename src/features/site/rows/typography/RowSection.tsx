@@ -139,6 +139,9 @@ const RowSection = ({
   const shapeBottom = shapeSurface ? row.layout?.shapeBottom : undefined;
   const topRadius = roundedRadius(shapeTop);
   const bottomRadius = roundedRadius(shapeBottom);
+  /* Hairline separator on the top edge — independent of shapes so a row
+   * can have a plain rule without taking on a decorative curve. */
+  const dividerTop = row.layout?.dividerTop || "none";
 
   return (
     <>
