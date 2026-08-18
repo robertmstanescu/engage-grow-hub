@@ -9,6 +9,7 @@ import { useBuilder } from "@/features/admin/builder/BuilderContext";
 import { computeAutoAlignments, resolveAlignment } from "@/lib/layoutUtils";
 import RowRenderer from "./RowRenderer";
 import { resolveRowSurface, MESH_SHAPE_FILL } from "./rowSurface";
+import { PromotedWidgetProvider, resolvePromotedHeadingId } from "./PrimaryHeadingContext";
 
 
 // Re-export so existing widget renderers (BoxedRow, ServiceRow, …) can
@@ -27,9 +28,13 @@ export type { Alignment, VAlign } from "@/lib/layoutUtils";
 export const RowsRenderer = ({
   rows,
   footerSlot,
+  /* Pages that already print their own <h1> (Blog index, article
+     pages) opt out so we never emit a second one. */
+  promoteHeading = true,
 }: {
   rows: Array<PageRow | PageRowV3 | any>;
   footerSlot?: React.ReactNode;
+  promoteHeading?: boolean;
 }) => {
   // Memoize on `rows` identity so we don't re-walk the tree on every
   // parent re-render. Idempotent for already-v3 input.
@@ -49,8 +54,15 @@ export const RowsRenderer = ({
   // tree exactly as before — no extra wrappers, no drop targets.
   const { enabled: builderEnabled } = useBuilder();
 
+  /* Exactly one <h1> per page: if no Hero supplies a real title, the
+     first titled widget is promoted (see PrimaryHeadingContext). */
+  const promotedWidgetId = useMemo(
+    () => (promoteHeading ? resolvePromotedHeadingId(v3Rows as any) : null),
+    [v3Rows, promoteHeading],
+  );
+
   return (
-    <>
+    <PromotedWidgetProvider value={promotedWidgetId}>
       {v3Rows.map((row, index) => {
         // Per-row ErrorBoundary: a bad row collapses to a fallback;
         // the rest of the page keeps rendering naturally.
@@ -101,7 +113,7 @@ export const RowsRenderer = ({
       })}
       {builderEnabled && <CanvasDropZone position={{ kind: "end" }} />}
       {v3Rows.length === 0 && footerSlot}
-    </>
+    </PromotedWidgetProvider>
   );
 };
 

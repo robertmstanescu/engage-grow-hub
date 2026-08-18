@@ -173,7 +173,7 @@ const BlogPost = () => {
             // haven't been migrated.
             const rows = (isPreview && article.draft_page_rows) || article.page_rows || [];
             if (rows.length > 0) {
-              return <RowsRenderer rows={rows as PageRow[]} />;
+              return <RowsRenderer rows={rows as PageRow[]} promoteHeading={false} />;
             }
             return (
               <div

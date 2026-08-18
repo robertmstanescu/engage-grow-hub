@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import Icon from "@/features/icons/Icon";
+import { useIsPrimaryHeading } from "../PrimaryHeadingContext";
 
 interface Props {
   children: ReactNode;
@@ -24,8 +25,12 @@ interface Props {
  * generously (32px) so it reads as a brand mark rather than a glyph.
  * Icon inherits the title colour for visual cohesion.
  */
-const RowTitle = ({ children, as = "h2", color, style, className, icon, iconSize = 32 }: Props) => {
-  const Tag = as;
+const RowTitle = ({ children, as, color, style, className, icon, iconSize = 32 }: Props) => {
+  /* When no level is forced, default to <h2> — unless this widget was
+     picked as the page's primary heading (a page with no Hero), in
+     which case it renders the single <h1>. */
+  const isPrimary = useIsPrimaryHeading();
+  const Tag = as ?? (isPrimary ? "h1" : "h2");
   const resolvedColor = color ?? "var(--row-fg, hsl(var(--foreground)))";
   return (
     <>

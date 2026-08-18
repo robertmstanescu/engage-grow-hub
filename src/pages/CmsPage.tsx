@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
+import { rowsProvideHeading } from "@/features/site/rows/PrimaryHeadingContext";
+import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import type { PageRow } from "@/types/rows";
 import NotFound from "./NotFound";
 import usePageMeta from "@/hooks/usePageMeta";
@@ -83,13 +85,21 @@ const CmsPage = ({ prefix = "" }: { prefix?: string }) => {
 
   const rows: PageRow[] = livePreviewPage?.rows || (isPreview && page?.draft_page_rows ? page.draft_page_rows : (page?.page_rows || []));
 
+  const pageTitle: string = page?.title || livePreviewPage?.meta_title || "";
+
   return (
-    <CmsPageBody rows={rows} isPreview={isPreview} />
+    <CmsPageBody rows={rows} isPreview={isPreview} pageTitle={pageTitle} />
   );
 };
 
-const CmsPageBody = ({ rows, isPreview }: { rows: PageRow[]; isPreview: boolean }) => {
+const CmsPageBody = ({ rows, isPreview, pageTitle }: { rows: PageRow[]; isPreview: boolean; pageTitle: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  /* Content-only pages (a privacy policy is the classic case) carry no
+     titled widget, so nothing can be promoted to <h1>. Print the page
+     title as a visually-hidden heading so the document is never
+     headless for crawlers and screen readers. */
+  const needsFallbackHeading =
+    Boolean(pageTitle) && !rowsProvideHeading(normalizeRowsToV3(rows) as any);
   return (
     <div ref={containerRef} className="snap-container page-shell">
       <Navbar />
@@ -99,6 +109,7 @@ const CmsPageBody = ({ rows, isPreview }: { rows: PageRow[]; isPreview: boolean 
           Draft Preview — This page is not published yet
         </div>
       )}
+      {needsFallbackHeading && <h1 className="sr-only">{pageTitle}</h1>}
       <div>
         {rows.length === 0 ? (
           <>

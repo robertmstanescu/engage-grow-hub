@@ -54,7 +54,7 @@ const Blog = () => {
     <div className="min-h-screen page-shell">
       <Navbar />
       {pageData.rows_above && pageData.rows_above.length > 0 && (
-        <RowsRenderer rows={pageData.rows_above} />
+        <RowsRenderer rows={pageData.rows_above} promoteHeading={false} />
       )}
 
       <section className="grain relative pt-36 pb-16 text-center mesh-hero">
@@ -100,7 +100,7 @@ const Blog = () => {
       </section>
 
       {pageData.rows_below && pageData.rows_below.length > 0 && (
-        <RowsRenderer rows={pageData.rows_below} />
+        <RowsRenderer rows={pageData.rows_below} promoteHeading={false} />
       )}
       <Footer />
     </div>
