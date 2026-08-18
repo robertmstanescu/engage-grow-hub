@@ -392,12 +392,20 @@ const buildCmsSeo = async (
   return {
     title,
     description,
-    canonical: `${origin}/p/${slug}/`,
+    canonical: `${origin}${cmsPagePath(slug)}`,
     ogImage: null,
     jsonLd: null,
     noscript: page.ai_summary || description,
   };
 };
+
+/**
+ * Public URL path for a CMS page slug.
+ * Namespaced slugs (`services/...`) and the services index are served from
+ * the root of the site by dedicated routes; everything else lives at `/p/`.
+ */
+const cmsPagePath = (slug: string): string =>
+  slug === "services" || slug.startsWith("services/") ? `/${slug}/` : `/p/${slug}/`;
 
 const resolvePath = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -415,6 +423,10 @@ const resolvePath = async (
   if (blogMatch) return buildBlogSeo(supabase, blogMatch[1], origin, brand);
   const cmsMatch = cleanPath.match(/^\/p\/([^/]+)$/);
   if (cmsMatch) return buildCmsSeo(supabase, cmsMatch[1], origin, brand);
+  // Service pages are stored as CMS pages under a `services/` slug prefix
+  // and served from the root, e.g. /services/internal-communications/.
+  const serviceMatch = cleanPath.match(/^\/(services(?:\/[^/]+)?)$/);
+  if (serviceMatch) return buildCmsSeo(supabase, serviceMatch[1], origin, brand);
   return null;
 };
 

@@ -36,6 +36,14 @@ const htmlToMarkdown = new NodeHtmlMarkdown({
 });
 
 // ── CORS headers for cross-origin previews ───────────────────────────────
+/**
+ * Public URL path for a CMS page slug.
+ * Namespaced slugs (`services/...`) and the services index are served from
+ * the root of the site by dedicated routes; everything else lives at `/p/`.
+ */
+const cmsPagePath = (slug: string): string =>
+  slug === "services" || slug.startsWith("services/") ? `/${slug}/` : `/p/${slug}/`;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -159,7 +167,7 @@ function generateDynamicLlmManifest(
     lines.push("");
     for (const page of publishedPages) {
       const summary = page.ai_summary || "";
-      lines.push(`- [${page.title}](${origin}/p/${page.slug})${summary ? ` — ${summary}` : ""}`);
+      lines.push(`- [${page.title}](${origin}${cmsPagePath(page.slug)})${summary ? ` — ${summary}` : ""}`);
     }
     lines.push("");
   }
