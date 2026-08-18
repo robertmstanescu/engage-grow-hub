@@ -396,6 +396,16 @@
     color: inherit;
   }
 
+  /* Auto band: alternate white / tint down the page so a default page
+     already reads as calm bands with zero admin configuration. */
+  section[data-band="auto"] {
+    background-color: hsl(var(--band-white));
+  }
+  section[data-band="auto"]:nth-of-type(even) {
+    background-color: hsl(var(--band-tint));
+  }
+
+
   /* ──────────────────────────────────────────────────────────────────
      BUTTONS — ink pill / arrow link / ghost pill
      ────────────────────────────────────────────────────────────────── */
