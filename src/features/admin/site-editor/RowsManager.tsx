@@ -792,28 +792,11 @@ const SortableRowItem = ({
 
       {isOpen && (
         <div className="px-3 pb-3 space-y-3 border-t" style={{ borderColor: "hsl(var(--border) / 0.3)" }}>
+          {/* Background colour deliberately lives ONLY in Style ▸ Surface. */}
           <div className="grid grid-cols-2 gap-2 pt-2">
             <Field label="Strip Title" value={row.strip_title} onChange={(v) => onUpdateRow({ strip_title: v })} />
-            <div>
-              <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Background Color</label>
-              <div className="flex gap-1.5">
-                <input
-                  type="color"
-                  value={row.bg_color || "#FFFFFF"}
-                  onChange={(e) => onUpdateRow({ bg_color: e.target.value })}
-                  className="w-10 h-9 rounded border cursor-pointer"
-                  style={{ borderColor: "hsl(var(--border))" }}
-                />
-                <input
-                  value={row.bg_color || ""}
-                  onChange={(e) => onUpdateRow({ bg_color: e.target.value })}
-                  placeholder="#FFFFFF"
-                  className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
-                  style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
-                />
-              </div>
-            </div>
           </div>
+
           <div className="flex flex-wrap items-start gap-2">
             {row.type !== "hero" && (
               <RowAlignmentSettings
