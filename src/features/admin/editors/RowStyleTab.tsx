@@ -46,7 +46,7 @@
 
 import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
 import ColumnWidthControl from "../site-editor/ColumnWidthControl";
-import GradientEditor from "../site-editor/GradientEditor";
+
 import OverlayEditor from "../site-editor/OverlayEditor";
 import {
   Accordion,
@@ -63,21 +63,6 @@ interface Props {
   onUpdateColumnWidths: (widths: number[]) => void;
 }
 
-/**
- * Per-row-type defaults for the gradient editor. We pre-populate the
- * widget with values that match the actual front-end render, so what the
- * admin sees in the editor === what's currently painting on the page.
- */
-const ROW_DEFAULTS: Record<string, { start: string; end: string }> = {
-  hero: { start: "hsl(280 40% 96% / 0.9)", end: "hsl(45 55% 96% / 0.6)" },
-  text: { start: "hsl(280 30% 97% / 0.7)", end: "hsl(45 50% 97% / 0.4)" },
-  service: { start: "hsl(280 32% 96%)", end: "hsl(45 52% 96%)" },
-  boxed: { start: "hsl(280 30% 97% / 0.8)", end: "hsl(45 50% 97% / 0.5)" },
-  contact: { start: "hsl(280 35% 96% / 0.6)", end: "transparent" },
-  image_text: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
-  profile: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
-  grid: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
-};
 
 /* Quick colours for the row background. "None" leaves the row
    transparent so the single page-wide mesh gradient shows through. */
@@ -371,37 +356,6 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               />
             )}
 
-            {/* ── Background Image + opacity ── */}
-            <div>
-              <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
-                Background Image URL
-              </label>
-              <input
-                value={bgImage}
-                onChange={(e) => patchLayout({ bgImage: e.target.value })}
-                placeholder="https://..."
-                className="w-full px-3 py-2 rounded-lg font-body text-sm border border-border bg-background text-foreground"
-              />
-              {bgImage && (
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
-                    Opacity
-                  </span>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={bgImageOpacity}
-                    onChange={(e) => patchLayout({ bgImageOpacity: Number(e.target.value) })}
-                    className="flex-1"
-                    style={{ accentColor: "hsl(var(--secondary))" }}
-                  />
-                  <span className="font-body text-[10px] text-foreground min-w-[32px] text-right">
-                    {bgImageOpacity}%
-                  </span>
-                </div>
-              )}
-            </div>
 
             {/* ── Snap to viewport ── */}
             <div>
@@ -445,26 +399,6 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               widths={columnWidths}
               onChange={onUpdateColumnWidths}
               disabled={!showWidthControl}
-            />
-
-            <GradientEditor
-              gradient={currentGradient}
-              legacyStart={legacyStart}
-              legacyEnd={legacyEnd}
-              onChange={(gradient) => {
-                // Sync legacy gradientStart/End from the new gradient stops so
-                // that even when the "Custom Gradient" toggle is off, the
-                // decorative legacy glow blobs use the admin's chosen colours.
-                const stops = gradient?.stops ?? [];
-                const sorted = [...stops].sort((a, b) => a.position - b.position);
-                const firstColor = sorted[0]?.color;
-                const lastColor = sorted[sorted.length - 1]?.color;
-                patchLayout({
-                  gradient,
-                  ...(firstColor ? { gradientStart: firstColor } : {}),
-                  ...(lastColor ? { gradientEnd: lastColor } : {}),
-                });
-              }}
             />
 
             <OverlayEditor

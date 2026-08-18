@@ -12,7 +12,21 @@
  *   • Migrations between versions → `@/lib/migrations/rowMigrations`
  */
 
-/* ─── Gradient ─────────────────────────────────────────────────────── */
+/* ─── Page mesh ─────────────────────────────────────────────────────
+ * The site has ONE background: a fixed mesh gradient painted behind
+ * every page. Its four colour blobs and overall intensity are owned by
+ * the page's Hero row (Style ▸ Page background), so an admin tunes the
+ * whole page's atmosphere in one place. Rows are transparent unless
+ * they carry a plain `bg_color`.                                     */
+
+export interface PageMeshConfig {
+  /** Four blob colours, clockwise from top-left. Hex values. */
+  colors: [string, string, string, string];
+  /** Overall intensity, 0–100. */
+  strength: number;
+}
+
+/* ─── Gradient (legacy shape, kept for stored data compatibility) ──── */
 
 export type GradientType = "linear" | "radial" | "conic" | "mesh";
 
@@ -72,17 +86,17 @@ export interface RowLayout {
   paddingBottom: number;
   marginTop: number;
   marginBottom: number;
-  bgImage?: string;
-  /** 0–100, applied to `bgImage` only. */
-  bgImageOpacity?: number;
   /** 0–100, applied to `row.bg_color`. */
   bgColorOpacity?: number;
   alignment?: "auto" | "left" | "center" | "right";
   verticalAlign?: "top" | "middle" | "bottom";
-  gradientStart?: string;
-  gradientEnd?: string;
-  gradient?: GradientConfig;
   overlays?: OverlayElement[];
+  /**
+   * Page-wide mesh gradient. Only read from the page's HERO row: the
+   * hero owns the single fixed gradient painted behind the whole page
+   * (see `.page-mesh-layer`). Other rows ignore it.
+   */
+  mesh?: PageMeshConfig;
   carouselTheme?: "auto" | "light" | "dark";
   /**
    * When true, this row participates in the homepage scroll-snap. By

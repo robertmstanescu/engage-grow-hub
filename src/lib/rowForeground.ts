@@ -1,28 +1,14 @@
 import type { PageRow } from "@/types/rows";
 import { pickForeground } from "@/lib/pickForeground";
-import { ROW_GRADIENT_DEFAULTS } from "@/features/site/rows/rowBackground";
 
 /**
  * resolveRowBgColor
  *
- * Picks the most representative background colour for a row, in order:
- *   1. Explicit `row.bg_color` (admin-set in the Style tab).
- *   2. First stop of a custom gradient if `layout.gradient.enabled`.
- *   3. `layout.gradientStart` legacy field.
- *   4. The row-type default `start` colour from ROW_GRADIENT_DEFAULTS.
- *
- * This is what we feed to `pickForeground` so titles/bodies pick a
- * readable colour automatically.
+ * A row has exactly one possible background: the plain `bg_color` an
+ * admin picked in the Style tab. When it has none it is transparent and
+ * the page mesh shows through, so there is nothing to resolve.
  */
-export const resolveRowBgColor = (row: PageRow): string | undefined => {
-  if (row.bg_color) return row.bg_color;
-  const gradient = row.layout?.gradient;
-  if (gradient?.enabled && gradient.stops && gradient.stops.length > 0) {
-    return gradient.stops[0]?.color;
-  }
-  if (row.layout?.gradientStart) return row.layout.gradientStart;
-  return ROW_GRADIENT_DEFAULTS[row.type]?.start;
-};
+export const resolveRowBgColor = (row: PageRow): string | undefined => row.bg_color || undefined;
 
 /**
  * resolveRowForeground

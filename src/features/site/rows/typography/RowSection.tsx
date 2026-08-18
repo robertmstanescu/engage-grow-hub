@@ -1,7 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { PageRow } from "@/types/rows";
-import { getRowBgColor, getRowBgImageStyle } from "../rowBackground";
-import RowBackground from "../RowBackground";
+import { getRowBgColor } from "../rowBackground";
 import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEditor";
 import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
@@ -105,10 +104,11 @@ const RowSection = ({
 
   /* ── Surface ────────────────────────────────────────────────────
    *  There is exactly ONE background on the site: the fixed page mesh
-   *  (see .page-mesh-layer in index.css). A row paints nothing unless
-   *  an admin picks a colour / gradient / image for it, in which case
-   *  that colour wins and the text flips to a readable tone.        */
-  const hasOwnPaint = Boolean(row.bg_color || row.layout?.bgImage || row.layout?.gradient?.enabled);
+   *  (see .page-mesh-layer in index.css), whose colours come from the
+   *  Hero row. A row paints nothing unless an admin picks a plain
+   *  colour for it, in which case that colour wins and the text flips
+   *  to a readable tone.                                            */
+  const hasOwnPaint = Boolean(row.bg_color);
   const surfaceColor = getRowBgColor(row);
   const bandFg = hasOwnPaint ? resolveRowForeground(row) : "hsl(var(--foreground))";
 
@@ -159,10 +159,12 @@ const RowSection = ({
       >
         {/*
           LAYER ORDER (bottom → top):
-          1. <RowBackground/>     — z-[-3]: gradient/glow layer at the very back
-          2. Background image     — z-[-2]: PNG/photo above glow, below overlays
-          3. Overlay elements     — z-[-1]: decorative PNGs (logos, shapes) above bg
-          4. {children}           — actual row content, on top of everything
+          1. The section's own flat `backgroundColor` (or nothing, so the
+             single fixed page mesh shows through)
+          2. Overlay elements     — z-[-1]: decorative PNGs (logos, shapes)
+          3. {children}           — actual row content, on top of everything
+          There is deliberately NO per-row gradient / glow / image layer:
+          one plain colour per row is the whole contract.
         */}
         {dividerTop !== "none" ? (
           <div aria-hidden className="absolute inset-x-0 top-0 z-[1] pointer-events-none">
@@ -181,13 +183,6 @@ const RowSection = ({
         {shapeBottom ? (
           <SectionShape edge="bottom" config={shapeBottom} color={surfaceColor || "transparent"} />
         ) : null}
-        {/* Decorative glow is for painted rows only — a mesh row must stay
-            fully transparent so the page-wide gradient reads as one surface. */}
-        {hasOwnPaint && (
-          <div className="absolute inset-0 pointer-events-none z-[-3]"><RowBackground row={row} /></div>
-        )}
-
-        <div aria-hidden className="absolute inset-0 pointer-events-none z-[-2]" style={getRowBgImageStyle(row)} />
         {row.layout?.overlays?.length ? (
           <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden">
             {renderOverlayElements(row.layout.overlays)}
