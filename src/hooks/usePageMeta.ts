@@ -19,6 +19,33 @@ const resolveCanonicalOrigin = (configured: string | undefined): string => {
 const ensureTrailingSlash = (path: string) =>
   path.endsWith("/") ? path : `${path}/`;
 
+/** Search engines truncate titles past ~60 characters. */
+const TITLE_MAX = 60;
+
+/** Trim to `max` chars on a word boundary, adding an ellipsis when cut. */
+const clampTitle = (value: string, max = TITLE_MAX): string => {
+  if (value.length <= max) return value;
+  const cut = value.slice(0, max - 1);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > max * 0.6 ? cut.slice(0, space) : cut).trimEnd()}…`;
+};
+
+/**
+ * Compose `title | suffix` while staying inside the 60-char SEO budget.
+ * Falls back progressively: full suffix → bare brand name → title alone.
+ */
+const buildTitle = (title: string | undefined, suffix: string, brandName: string): string => {
+  const page = (title || "").trim();
+  if (!page) return clampTitle(suffix);
+  const candidates = [suffix, brandName.trim()].filter(Boolean);
+  for (const tail of candidates) {
+    const combined = `${page} | ${tail}`;
+    if (combined.length <= TITLE_MAX) return combined;
+  }
+  return clampTitle(page);
+};
+
+
 interface PageMetaProps {
   title?: string;
   description?: string;
