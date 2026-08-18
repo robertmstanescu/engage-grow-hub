@@ -254,12 +254,13 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
               <button onClick={next} aria-label="Next service" className="w-6 h-6 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronRight className="w-3 h-3" /></button>
             </div>
           );
+          // Content-driven height: a viewport-relative floor left a huge
+          // dead band under the card on tall screens. A fixed min-height
+          // keeps the carousel from jumping between cards of slightly
+          // different lengths without padding out the section.
           return (
-            {/* Content-driven height: a viewport-relative floor left a
-                huge dead band under the card on tall screens. A fixed
-                min-height keeps the carousel from jumping between cards
-                of slightly different lengths without padding the band. */}
             <div className="relative min-h-[420px] md:min-h-[460px]" style={revealStyle(isVisible, 4)}>
+
 
               <ServiceCard key={safeCurrent} {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} carouselControls={controls} />
             </div>
