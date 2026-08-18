@@ -68,7 +68,7 @@ const TestimonialRow = ({
   const titleLines: string[] = (c.title_lines || []).map((li: any) =>
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`,
   );
-  const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
+  const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
   const contentAlign =
     align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left";
   const containerPos =

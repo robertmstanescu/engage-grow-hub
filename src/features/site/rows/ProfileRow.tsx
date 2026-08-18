@@ -25,7 +25,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
   const c = row.content;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
-  const maxW = l.fullWidth ? "max-w-none" : "max-w-[1100px]";
+  const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText(0.75);
 

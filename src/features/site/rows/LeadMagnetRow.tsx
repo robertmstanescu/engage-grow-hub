@@ -59,7 +59,7 @@ const LeadMagnetRow = ({ row, align = "center" }: Props) => {
         marginBottom: parseSpacing(layout.marginBottom),
       }}
     >
-      <div className="max-w-[1100px] mx-auto">
+      <div className="max-w-[1280px] mx-auto">
         <ResourceWidget
           resourceAssetId={resourceAssetId}
           coverAssetId={c.cover_asset_id || null}
