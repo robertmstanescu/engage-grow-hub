@@ -133,7 +133,26 @@
     --band-tint-fg: 282 40% 13%;
     --band-deep: 280 57% 14%;
     --band-deep-fg: 45 60% 96%;
+
+    /* ── Page mesh (default page-level background) ──
+       One fixed, continuous mesh painted behind the whole site: soft
+       plum + gold blooms on the isabelline canvas. Rows are transparent
+       by default so the mesh reads as ONE surface while you scroll,
+       instead of restarting per section.
+       `--mesh-strength` (0–1) is the global intensity dial exposed in
+       Brand Settings (subtle 0.45 / medium 0.7 / strong 1). */
+    --mesh-strength: 0.7;
+    --gradient-mesh-page:
+      radial-gradient(ellipse 70% 55% at 12% 4%, hsl(286 52% 88% / var(--mesh-strength)), transparent 68%),
+      radial-gradient(ellipse 60% 48% at 92% 14%, hsl(45 78% 87% / var(--mesh-strength)), transparent 68%),
+      radial-gradient(ellipse 65% 50% at 78% 62%, hsl(280 45% 90% / var(--mesh-strength)), transparent 70%),
+      radial-gradient(ellipse 80% 45% at 22% 88%, hsl(46 70% 90% / var(--mesh-strength)), transparent 72%),
+      hsl(var(--background));
+
+    /* Ink pill label — pure white so CTAs never read muted. */
+    --btn-ink-fg: 0 0% 100%;
   }
+
 
 }
 
