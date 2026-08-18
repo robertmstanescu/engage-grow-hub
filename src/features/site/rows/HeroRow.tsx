@@ -34,7 +34,7 @@ const HeroRow = ({ row }: Props) => {
     <section
       className="snap-section grain relative flex flex-col justify-end overflow-hidden"
       data-snap-enabled="true"
-      style={{ isolation: "isolate", backgroundColor: "hsl(260 20% 4%)", minHeight: "calc(100dvh - var(--nav-top-offset, 0px))" }}
+      style={{ isolation: "isolate", backgroundColor: "hsl(var(--background))", minHeight: "calc(100dvh - var(--nav-top-offset, 0px))" }}
     >
       <RowBackground row={row} />
 

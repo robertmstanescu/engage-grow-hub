@@ -9,7 +9,7 @@ import { getAttributionForPayload } from "@/services/attribution";
 const ease = [0.16, 1, 0.3, 1] as const;
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
-const CREAM = "#F4F0EC";
+const CREAM = "hsl(var(--foreground))";
 
 interface ContactContent {
   title_line1?: string;
@@ -50,7 +50,7 @@ const ContactSection = () => {
   if (submitted) {
     return (
       <section id="contact" data-section="contact" className="snap-section section-light relative py-32 md:py-40">
-        <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
+        <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(285 40% 92% / 0.7), transparent)" }} />
         <div className="relative z-10 max-w-[520px] mr-auto ml-0 px-3 text-left">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease }}>
             <h3 className="font-display text-3xl md:text-4xl font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))" }}>Message received.</h3>
@@ -79,7 +79,7 @@ const ContactSection = () => {
 
   return (
     <section id="contact" data-section="contact" className="snap-section section-light relative py-32 md:py-40">
-      <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(280 55% 24% / 0.3), transparent)" }} />
+      <div className="absolute inset-0 opacity-30 blur-[100px]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, hsl(285 40% 92% / 0.7), transparent)" }} />
 
       <div className="relative z-10 max-w-[900px] mr-auto ml-0 px-3 text-left">
         <div className="mb-14">
@@ -93,17 +93,17 @@ const ContactSection = () => {
         <div
           className="rounded-2xl p-8 md:p-10 relative overflow-hidden"
           style={{
-            backgroundColor: "hsl(280 55% 24% / 0.9)",
+            backgroundColor: "hsl(var(--card))",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
-            border: "1px solid hsl(280 55% 35% / 0.4)",
-            boxShadow: "0 20px 60px -15px hsl(280 55% 15% / 0.5), 0 0 80px -20px hsl(280 55% 30% / 0.2)",
+            border: "1px solid hsl(var(--border))",
+            boxShadow: "var(--shadow-card)",
           }}>
           {/* Inner glass gradient */}
           <div className="absolute inset-0 opacity-30 pointer-events-none" style={{
-            background: "linear-gradient(135deg, hsl(280 55% 40% / 0.4) 0%, transparent 50%, hsl(280 55% 30% / 0.2) 100%)",
+            background: "linear-gradient(135deg, hsl(285 40% 96% / 0.9) 0%, transparent 55%, hsl(46 70% 92% / 0.5) 100%)",
           }} />
-          <div className="absolute top-0 left-0 right-0 h-px pointer-events-none" style={{ background: "linear-gradient(to right, transparent, hsl(280 55% 60% / 0.3), transparent)" }} />
+          <div className="absolute top-0 left-0 right-0 h-px pointer-events-none" style={{ background: "linear-gradient(to right, transparent, hsl(280 40% 80% / 0.6), transparent)" }} />
 
           <form onSubmit={handleSubmit} className="relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

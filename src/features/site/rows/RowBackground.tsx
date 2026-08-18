@@ -10,14 +10,14 @@ import { buildGradientCSS } from "@/features/admin/site-editor/GradientEditor";
  * with so existing pages keep looking the same.
  */
 export const ROW_GRADIENT_DEFAULTS: Record<string, { start: string; end: string }> = {
-  hero:       { start: "hsl(280 55% 20% / 0.8)",  end: "hsl(286 42% 25% / 0.5)" },
-  text:       { start: "hsl(280 55% 18% / 0.5)",  end: "hsl(286 42% 20% / 0.3)" },
-  service:    { start: "hsl(286 42% 30%)",        end: "hsl(280 55% 25%)"       },
-  boxed:      { start: "hsl(280 55% 18% / 0.6)",  end: "hsl(286 42% 20% / 0.4)" },
-  contact:    { start: "hsl(280 55% 24% / 0.3)",  end: "transparent"            },
-  image_text: { start: "hsl(280 55% 20% / 0.5)",  end: "hsl(286 42% 25% / 0.3)" },
-  profile:    { start: "hsl(280 55% 20% / 0.5)",  end: "hsl(286 42% 25% / 0.3)" },
-  grid:       { start: "hsl(280 55% 20% / 0.5)",  end: "hsl(286 42% 25% / 0.3)" },
+  hero:       { start: "hsl(285 45% 88% / 0.75)", end: "hsl(46 75% 78% / 0.45)" },
+  text:       { start: "hsl(285 40% 92% / 0.6)",  end: "hsl(46 70% 86% / 0.35)" },
+  service:    { start: "hsl(285 40% 92%)",        end: "hsl(32 45% 94%)"        },
+  boxed:      { start: "hsl(285 40% 92% / 0.7)",  end: "hsl(46 70% 88% / 0.4)"  },
+  contact:    { start: "hsl(285 40% 92% / 0.5)",  end: "transparent"            },
+  image_text: { start: "hsl(285 40% 92% / 0.6)",  end: "hsl(46 70% 88% / 0.35)" },
+  profile:    { start: "hsl(285 40% 92% / 0.6)",  end: "hsl(46 70% 88% / 0.35)" },
+  grid:       { start: "hsl(285 40% 92% / 0.6)",  end: "hsl(46 70% 88% / 0.35)" },
 };
 
 /**
@@ -32,7 +32,7 @@ type LegacyBuilder = (gradStart: string, gradEnd: string) => string;
 
 const LEGACY_BUILDERS: Record<string, LegacyBuilder> = {
   hero: (gs, ge) =>
-    `radial-gradient(ellipse 100% 80% at 20% 100%, ${gs}, transparent), radial-gradient(ellipse 80% 60% at 90% 10%, ${ge}, transparent), radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 60% / 0.06), transparent), hsl(260 20% 4%)`,
+    `radial-gradient(ellipse 100% 80% at 20% 100%, ${gs}, transparent), radial-gradient(ellipse 80% 60% at 90% 10%, ${ge}, transparent), radial-gradient(ellipse 40% 30% at 60% 70%, hsl(46 75% 70% / 0.2), transparent), hsl(var(--background))`,
   text: (gs, ge) =>
     `radial-gradient(ellipse 80% 60% at 30% 70%, ${gs}, transparent), radial-gradient(ellipse 60% 40% at 70% 30%, ${ge}, transparent)`,
   service: (gs, ge) =>
@@ -40,7 +40,7 @@ const LEGACY_BUILDERS: Record<string, LegacyBuilder> = {
     // but for completeness we expose a combined CSS string here too.
     `radial-gradient(circle at 100% 0%, ${gs}, transparent 60%), radial-gradient(circle at 0% 100%, ${ge}, transparent 60%)`,
   boxed: (gs, ge) =>
-    `radial-gradient(ellipse 80% 60% at 10% 90%, ${gs}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge}, transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 60% / 0.04), transparent)`,
+    `radial-gradient(ellipse 80% 60% at 10% 90%, ${gs}, transparent), radial-gradient(ellipse 60% 50% at 80% 20%, ${ge}, transparent), radial-gradient(ellipse 50% 40% at 50% 50%, hsl(46 75% 70% / 0.15), transparent)`,
   contact: (gs, ge) =>
     `radial-gradient(ellipse 80% 60% at 50% 50%, ${gs}, ${ge})`,
   image_text: (gs, ge) =>

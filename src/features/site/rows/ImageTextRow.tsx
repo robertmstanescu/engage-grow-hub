@@ -53,8 +53,8 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
   const shape = c.image_shape || "default";
   const captionPos = c.caption_position || "bottom-left";
 
-  const captionBg = c.color_caption_bg || "hsl(260 25% 12% / 0.75)";
-  const captionText = c.color_caption_text || "#FFFFFF";
+  const captionBg = c.color_caption_bg || "hsl(var(--card) / 0.9)";
+  const captionText = c.color_caption_text || "hsl(var(--foreground))";
   const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
 
   const containerPos = align === "center" ? "mx-auto"
