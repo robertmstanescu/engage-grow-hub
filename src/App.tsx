@@ -38,6 +38,7 @@ const App = () => (
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/unsubscribe" element={<Unsubscribe />} />
+                <Route path="/services/:slug" element={<CmsPage prefix="services/" />} />
                 <Route path="/p/:slug" element={<CmsPage />} />
                 <Route path="/:slug" element={<CmsPage />} />
               </Route>

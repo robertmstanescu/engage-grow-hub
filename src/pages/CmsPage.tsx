@@ -21,8 +21,14 @@ import { readLivePreviewState, subscribeLivePreview } from "@/services/livePrevi
 
 const SYSTEM_ROUTES = ["blog", "admin", "unsubscribe", "api", "auth", "login", "signup", "p"];
 
-const CmsPage = () => {
-  const { slug } = useParams<{ slug: string }>();
+/**
+ * `prefix` lets a nested route (e.g. `/services/:slug`) resolve against a
+ * namespaced CMS slug such as `services/internal-communications`, while
+ * the flat `/:slug` route keeps working unchanged.
+ */
+const CmsPage = ({ prefix = "" }: { prefix?: string }) => {
+  const params = useParams<{ slug: string }>();
+  const slug = params.slug ? `${prefix}${params.slug}` : undefined;
   const [searchParams] = useSearchParams();
   const isPreview = searchParams.get("preview") === "draft";
   const [page, setPage] = useState<any>(null);
