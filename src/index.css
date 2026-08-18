@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Unbounded:wght@200..900&family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Inter:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Inter:wght@100..900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -125,6 +125,14 @@
     --contact-success-fg: 280 57% 13%;
     --contact-success-btn-bg: 280 57% 16%;
     --contact-success-btn-text: 45 70% 92%;
+
+    /* ── Band system (alternating section tones) ── */
+    --band-white: 0 0% 100%;
+    --band-white-fg: 282 40% 13%;
+    --band-tint: 288 34% 96%;
+    --band-tint-fg: 282 40% 13%;
+    --band-deep: 280 57% 14%;
+    --band-deep-fg: 45 60% 96%;
   }
 
 }
@@ -166,21 +174,13 @@
   html {
     scroll-behavior: smooth;
     /*
-     * Default navbar offsets — set by Navbar.tsx at runtime, but seeded
-     * here so the very first paint already accounts for the rail/topbar.
-     * Desktop default = vertical left rail (40px). Mobile overrides via
-     * the media query below. JS will refine on mount.
+     * The navbar is a floating island rendered OVER the page — content
+     * scrolls underneath it, so no space is reserved at the top or left.
      */
-    --nav-left-offset: 40px;
+    --nav-left-offset: 0px;
     --nav-top-offset: 0px;
   }
 
-  @media (max-width: 1023px) {
-    html {
-      --nav-left-offset: 0px;
-      --nav-top-offset: 36px;
-    }
-  }
 
   /*
    * ──────────────────────────────────────────────────────────────────
@@ -372,6 +372,115 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
   }
+
+  /* ──────────────────────────────────────────────────────────────────
+     BANDS — white / tint / deep. Foreground always derived from band.
+     ────────────────────────────────────────────────────────────────── */
+  [data-band="white"] {
+    background-color: hsl(var(--band-white));
+    color: hsl(var(--band-white-fg));
+  }
+  [data-band="tint"] {
+    background-color: hsl(var(--band-tint));
+    color: hsl(var(--band-tint-fg));
+  }
+  [data-band="deep"] {
+    background-color: hsl(var(--band-deep));
+    color: hsl(var(--band-deep-fg));
+  }
+  [data-band="deep"] h1,
+  [data-band="deep"] h2,
+  [data-band="deep"] h3,
+  [data-band="deep"] p,
+  [data-band="deep"] li {
+    color: inherit;
+  }
+
+  /* Auto band: alternate white / tint down the page so a default page
+     already reads as calm bands with zero admin configuration. */
+  section[data-band="auto"] {
+    background-color: hsl(var(--band-white));
+  }
+  section[data-band="auto"]:nth-of-type(even) {
+    background-color: hsl(var(--band-tint));
+  }
+
+
+  /* ──────────────────────────────────────────────────────────────────
+     BUTTONS — ink pill / arrow link / ghost pill
+     ────────────────────────────────────────────────────────────────── */
+  .btn-ink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1.5rem;
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
+    line-height: 1;
+    background-color: hsl(var(--foreground));
+    color: hsl(45 60% 96%);
+    border: 1px solid transparent;
+    transition: background-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  }
+  .btn-ink:hover {
+    background-color: hsl(var(--primary));
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-card);
+  }
+
+  .btn-ghost-ink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
+    background-color: hsl(45 60% 96%);
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    transition: background-color 200ms ease, transform 200ms ease;
+  }
+  .btn-ghost-ink:hover {
+    transform: translateY(-1px);
+    background-color: hsl(0 0% 100%);
+  }
+
+  .btn-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+    font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
+    color: inherit;
+    position: relative;
+    padding-bottom: 2px;
+    transition: gap 200ms ease;
+  }
+  .btn-arrow::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 100%;
+    bottom: 0;
+    height: 1px;
+    background: currentColor;
+    transition: right 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-arrow:hover {
+    gap: 0.65rem;
+  }
+  .btn-arrow:hover::after {
+    right: 0;
+  }
+
+
 
 
   /* ──────────────────────────────────────────────────────────────────

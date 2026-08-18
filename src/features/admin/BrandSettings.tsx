@@ -34,7 +34,7 @@ const contrastRatio = (hex1: string, hex2: string) => {
 const INPUT_STYLE: React.CSSProperties = { backgroundColor: "#FFFFFF", color: "#1a1a1a", borderColor: "hsl(var(--border))" };
 
 const FONT_OPTIONS = [
-  { label: "Unbounded", value: "'Unbounded', sans-serif" },
+  
   { label: "Bricolage Grotesque", value: "'Bricolage Grotesque', sans-serif" },
   { label: "Inter", value: "'Inter', sans-serif" },
   { label: "Architects Daughter", value: "'Architects Daughter', cursive" },

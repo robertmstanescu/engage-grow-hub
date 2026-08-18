@@ -91,6 +91,12 @@ export interface RowLayout {
    * the Vows row) via the Style tab.
    */
   snapEnabled?: boolean;
+  /**
+   * Section tone. "auto" alternates white / tint by document order;
+   * explicit tones override legacy per-row colours and decorative
+   * gradients so the page reads as calm, deliberate bands.
+   */
+  bandTone?: "auto" | "white" | "tint" | "deep";
 }
 
 /* ─── Legacy single-type row (v1) ──────────────────────────────────── */

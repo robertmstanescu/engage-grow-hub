@@ -121,7 +121,7 @@ export default {
         "row-fluid-lg": "50px",
       },
       fontFamily: {
-        display: ["Unbounded", "sans-serif"],
+        display: ["Bricolage Grotesque", "sans-serif"],
         "body-heading": ["Bricolage Grotesque", "sans-serif"],
         body: ["Inter", "sans-serif"],
       },

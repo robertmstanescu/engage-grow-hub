@@ -59,7 +59,7 @@ import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 
 const FONT_OPTIONS = [
   { label: "Inter", value: "Inter, sans-serif" },
-  { label: "Unbounded", value: "Unbounded, sans-serif" },
+  
   { label: "Architects Daughter", value: "'Architects Daughter', cursive" },
   { label: "Bricolage Grotesque", value: "'Bricolage Grotesque', sans-serif" },
 ];
