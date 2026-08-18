@@ -9,7 +9,19 @@ Three workstreams: finish the type/colour system properly, restyle buttons, and 
 - Any stored brand/CMS values still pointing at Unbounded get migrated to Bricolage Grotesque so saved content follows.
 - Tighten the display scale: two heading sizes plus one body size, negative tracking on large headings, as in Lativ and Sequoia.
 
-## 2. Colour — alternating bands, brand hues, crisp base
+## 2. Reset all custom styling
+
+Everything hand-tuned over time gets wiped so the new system is the only source of truth.
+
+- Custom mesh and multi-stop gradients saved on rows in the CMS are cleared; rows fall back to the new band system.
+- Per-row colour overrides (section bg, card bg, title, subtitle, description, deliverables, meta, CTA, dots, note, divider colours) are cleared unless deliberately re-set afterwards.
+- Leftover per-row padding, snapping flags, overlay settings and custom classes reset to the new global defaults.
+- Hardcoded hexes and rgb values still living in components are removed; tokens only.
+- Old glass/blur washes, drop shadows and animation leftovers go, replaced by the single hairline + soft shadow treatment.
+- A revision snapshot is taken before the reset so nothing is irrecoverable.
+
+## 3. Colour — alternating bands, brand hues, crisp base
+
 
 Structure borrowed from Lativ, restraint borrowed from South Pole / Sequoia.
 
@@ -20,14 +32,14 @@ Structure borrowed from Lativ, restraint borrowed from South Pole / Sequoia.
 - Every text colour is derived from the band it sits on, so nothing renders pale-on-pale again. Foreground on deep bands flips automatically.
 - Remaining hardcoded colours in row components, widgets, footer, contact and admin get swept out; tokens only.
 
-## 3. Buttons
+## 4. Buttons
 
 - Primary: fully rounded ink pill, cream label, 200ms hover lift and slight darkening.
 - Secondary: text link with an arrow and an underline that draws on hover (Sequoia-style).
 - Tertiary/ghost: cream pill with hairline ink outline, used on deep bands.
 - One shared button component/variant set so the CTA widget, contact submit, hero CTAs, service cards and navbar all match.
 
-## 4. Services as a first-class entity
+## 5. Services as a first-class entity
 
 Services stop being loose row content and become their own thing in the admin.
 
@@ -46,7 +58,7 @@ Services stop being loose row content and become their own thing in the admin.
 - Homepage service cards and the card CTA link straight to the page ("Learn more" arrow link beside the price CTA).
 - Navbar gains a **Services** dropdown listing published services; mobile nests them under a Services group.
 
-## 5. New row types (Sequoia / South Pole patterns)
+## 6. New row types (Sequoia / South Pole patterns)
 
 All four added to the builder with light/tint/deep band support:
 
@@ -57,7 +69,7 @@ All four added to the builder with light/tint/deep band support:
 
 Other things worth borrowing from those sites, applied throughout: one action per section, arrow-link affordances instead of extra buttons, hairline rules as the main separator, generous vertical rhythm, and a strict two-heading type scale.
 
-## 6. Admin: full restyle + information architecture rework
+## 7. Admin: full restyle + information architecture rework
 
 - **Visual**: the same off-white canvas, ink text, hairline borders, large-radius panels and new button variants as the site. Every input, select, tab and modal uses shared field components — no more one-off hexes or mismatched controls.
 - **Shell**: three panes — slim left page/row tree, wide canvas, right inspector — with a top command bar carrying page title, save state, preview and publish.
@@ -66,7 +78,7 @@ Other things worth borrowing from those sites, applied throughout: one action pe
 - **Navigation**: admin sections regrouped as Content (Pages, Blog, Services, Media), Audience (Contacts, Leads, Campaigns), and Settings (Brand, Navigation, SEO, Team).
 
 
-## 7. SEO for the new pages
+## 8. SEO for the new pages
 
 The site already has the right machinery: a crawler-facing `ssr-index` edge function that injects title, description, canonical, OG/Twitter and JSON-LD per route, a dynamic `generate-sitemap` function reading published `cms_pages` and `blog_posts`, an `llms-txt` function, and the `usePageMeta` hook for browsers. Right now none of it knows about `/services`, so the new pages have to be wired into each piece:
 
