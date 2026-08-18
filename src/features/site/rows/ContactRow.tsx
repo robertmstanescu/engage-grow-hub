@@ -105,7 +105,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
       <RowBackground row={row} />
 
       <div ref={ref} className={`relative z-10 max-w-[1280px] row-container ${containerPos} ${contentAlign}`}>
-        <div className="mb-rhythm-loose text-left" style={revealStyle(isVisible, 0)}>
+        <div className={`mb-rhythm-base ${contentAlign}`} style={revealStyle(isVisible, 0)}>
           {c.eyebrow && (
             <RowEyebrow color={c.color_eyebrow || ""}>{c.eyebrow}</RowEyebrow>
           )}
@@ -125,7 +125,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         <div
-          className="surface-card p-6 md:p-8"
+          className="surface-card p-8 md:p-10"
           style={revealStyle(isVisible, 1)}>
 
           <form onSubmit={handleSubmit}>
