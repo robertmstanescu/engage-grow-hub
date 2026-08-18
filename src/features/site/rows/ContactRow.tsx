@@ -168,7 +168,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                     <input type="checkbox" checked={formData.subscribed_to_marketing || false}
                       onChange={(e) => setFormData({ ...formData, subscribed_to_marketing: e.target.checked })}
                       className="rounded" style={{ accentColor: "hsl(var(--accent))" }} />
-                    <span className="font-body text-[10px]" style={{ color: "hsl(var(--foreground) / 0.6)" }}>{field.label}</span>
+                    <span className="font-body text-xs text-muted-foreground">{field.label}</span>
                   </label>
                 ))}
               </div>
