@@ -1146,20 +1146,28 @@
      jumps between viewports. */
   .text-card-label {
     font-family: var(--font-body);
-    font-size: clamp(10px, 0.3vh + 0.55vw, 12px);
+    font-size: var(--fs-card-label);
     text-transform: uppercase;
     letter-spacing: 0.18em;
     line-height: 1.3;
   }
   .text-card-body {
     font-family: var(--font-body);
-    font-size: clamp(12px, 0.35vh + 0.6vw, 14px);
+    font-size: var(--fs-card-body);
     line-height: 1.65;
   }
   .text-card-input {
     font-family: var(--font-body);
-    font-size: clamp(13px, 0.4vh + 0.7vw, 15px);
+    font-size: var(--fs-card-input);
     line-height: 1.55;
+  }
+  /* Size-only helpers — for spots that already own their tracking /
+     transform and just need to stop hardcoding a pixel size. */
+  .text-micro {
+    font-size: var(--fs-card-label);
+  }
+  .text-mini {
+    font-size: var(--fs-card-body);
   }
 }
 
