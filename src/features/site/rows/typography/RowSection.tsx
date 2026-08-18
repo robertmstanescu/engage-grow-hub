@@ -6,7 +6,6 @@ import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEdito
 import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
 import SectionShape, { roundedRadius } from "../SectionShape";
-import { useRowNeighbors } from "../RowNeighborContext";
 
 
 interface Props {
@@ -104,39 +103,23 @@ const RowSection = ({
 
   const snapEnabled = row.layout?.snapEnabled === true;
 
-  /* ── Band system ────────────────────────────────────────────────
-   *  Sections belong to one of three tones: white, tint (soft plum
-   *  wash) or deep (plum ink). "auto" lets the stylesheet alternate
-   *  white/tint by document order so a page reads as calm bands
-   *  without the admin having to set anything. An explicit tone wins
-   *  over legacy per-row colours and decorative gradients — those are
-   *  what made the old page look muddy. */
-  /*  DEFAULT = "mesh": the row paints nothing and the fixed page mesh
-   *  (see .page-mesh-layer in index.css) shows through, so the whole
-   *  site reads as one continuous surface. A row only gets its own
-   *  background when an admin deliberately picks one — band tone,
-   *  bg_color, gradient or bg image — and those still win. */
-  const band = (row.layout as { bandTone?: string } | undefined)?.bandTone || "mesh";
-  const explicitBand = band === "white" || band === "tint" || band === "deep";
-  /* A row on the mesh band still honours an explicitly chosen colour /
-   * gradient / image; it only skips the opaque canvas fallback. */
-  const meshBand = band === "mesh";
+  /* ── Surface ────────────────────────────────────────────────────
+   *  There is exactly ONE background on the site: the fixed page mesh
+   *  (see .page-mesh-layer in index.css). A row paints nothing unless
+   *  an admin picks a colour / gradient / image for it, in which case
+   *  that colour wins and the text flips to a readable tone.        */
   const hasOwnPaint = Boolean(row.bg_color || row.layout?.bgImage || row.layout?.gradient?.enabled);
-  const bandFg =
-    band === "deep" ? "hsl(var(--band-deep-fg))"
-    : explicitBand ? "hsl(var(--band-white-fg))"
-    : meshBand && !hasOwnPaint ? "hsl(var(--foreground))"
-    : resolveRowForeground(row);
+  const surfaceColor = getRowBgColor(row);
+  const bandFg = hasOwnPaint ? resolveRowForeground(row) : "hsl(var(--foreground))";
 
   /* ── Section shapes ──
    *  Decorative curved / angled edges, off by default. The shape is
-   *  filled with the NEIGHBOURING row's surface colour, so the row above
-   *  appears to bleed down into this one (and the row below to bleed up).
-   *  That means shapes work on every band — including transparent mesh
-   *  rows, which resolve to a soft mesh tint. */
-  const { prevSurface, nextSurface } = useRowNeighbors();
-  const shapeTop = row.layout?.shapeTop;
-  const shapeBottom = row.layout?.shapeBottom;
+   *  painted in THIS row's own colour and sits OUTSIDE the section, so
+   *  the row's surface bleeds up over the section above (top edge) or
+   *  down over the section below (bottom edge). A transparent row has
+   *  no surface to extend, so it renders no shape. */
+  const shapeTop = hasOwnPaint ? row.layout?.shapeTop : undefined;
+  const shapeBottom = hasOwnPaint ? row.layout?.shapeBottom : undefined;
   const topRadius = roundedRadius(shapeTop);
   const bottomRadius = roundedRadius(shapeBottom);
   /* Hairline separator on the top edge — independent of shapes so a row
@@ -153,19 +136,15 @@ const RowSection = ({
         data-row-id={dataRowId ?? row.id}
         data-row-type={dataRowType ?? row.type}
         data-row-title={dataRowTitle ?? row.strip_title}
-        data-band={band}
         data-snap-enabled={snapEnabled ? "true" : undefined}
-        className={`snap-section ${grain && !explicitBand ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
+        className={`snap-section ${grain && !hasOwnPaint ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
         style={{
-          backgroundColor:
-            explicitBand ? undefined
-            : meshBand ? getRowBgColor(row)
-            : getRowBgColor(row, defaultBg),
+          backgroundColor: surfaceColor,
           borderTopLeftRadius: topRadius || undefined,
           borderTopRightRadius: topRadius || undefined,
           borderBottomLeftRadius: bottomRadius || undefined,
           borderBottomRightRadius: bottomRadius || undefined,
-          isolation: "isolate",
+          zIndex: shapeBottom ? 1 : undefined,
           scrollMarginTop: "0px",
           /*
            * `--row-fg` is the readable text colour for this row's
@@ -197,14 +176,14 @@ const RowSection = ({
           </div>
         ) : null}
         {shapeTop ? (
-          <SectionShape edge="top" config={shapeTop} color={prevSurface} />
+          <SectionShape edge="top" config={shapeTop} color={surfaceColor || "transparent"} />
         ) : null}
         {shapeBottom ? (
-          <SectionShape edge="bottom" config={shapeBottom} color={nextSurface} />
+          <SectionShape edge="bottom" config={shapeBottom} color={surfaceColor || "transparent"} />
         ) : null}
         {/* Decorative glow is for painted rows only — a mesh row must stay
             fully transparent so the page-wide gradient reads as one surface. */}
-        {!explicitBand && !(meshBand && !hasOwnPaint) && (
+        {hasOwnPaint && (
           <div className="absolute inset-0 pointer-events-none z-[-3]"><RowBackground row={row} /></div>
         )}
 
