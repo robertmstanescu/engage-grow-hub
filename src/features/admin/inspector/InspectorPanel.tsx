@@ -284,14 +284,22 @@ const InspectorPanel = (props: InspectorPanelProps) => {
      * pageRows is patched in place — siblings are untouched. */
     return (
       <>
-        <div className="mb-4">
+        <div className="mb-4 space-y-3">
           <h3
             className="font-body text-[11px] uppercase tracking-[0.18em] font-semibold"
             style={{ color: "hsl(var(--foreground))" }}
           >
             Section · {row.strip_title || row.type}
           </h3>
+          {/* Every item in the admin gets a slug — the row's is also the
+              in-page anchor the nav and footer links point at. */}
+          <SlugField
+            value={row.scope || ""}
+            placeholder={slugify(row.strip_title || "")}
+            onChange={(scope) => updateRow({ scope } as Partial<PageRow>)}
+          />
         </div>
+
 
         <WidgetInspectorTabs
           activeTab={widgetTab === "content" ? "content" : "style"}
