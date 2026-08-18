@@ -102,7 +102,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
                       target={isExternal(cardCtaUrl) ? "_blank" : undefined}
                       rel={isExternal(cardCtaUrl) ? "noopener noreferrer" : undefined}
                       onClick={(e) => { if (cardLink) e.stopPropagation(); }}
-                      className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-5 py-2.5 rounded-full inline-block"
+                      className="btn-ink"
 >
                       {cardCtaLabel}
                     </a>
@@ -150,7 +150,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         {c.cta_url && c.cta_label && (
           <div className="mt-rhythm-base" style={revealStyle(isVisible, cards.length + 3)}>
             <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
-              className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
+              className="btn-ink"
 >
               {c.cta_label}
             </a>

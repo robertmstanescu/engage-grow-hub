@@ -87,7 +87,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
             <RowTitle color="hsl(var(--primary))">{successHeading}</RowTitle>
             <RowBody color="hsl(var(--light-fg) / 0.7)" className="mb-rhythm-base">{successBody}</RowBody>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
-              className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full"
+              className="btn-ink"
 >{successButton}</button>
           </div>
         </div>
@@ -164,7 +164,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                 ))}
               </div>
               <button type="submit" disabled={submitting}
-                className="btn-glass interactive-strong font-display text-[10px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full disabled:opacity-50 sm:ml-auto">
+                className="btn-ink disabled:opacity-50 sm:ml-auto">
                 {submitting ? "Sending…" : buttonText}
               </button>
             </div>

@@ -122,7 +122,7 @@ const HeroRow = ({ row }: Props) => {
         {c.cta_url && c.cta_label && (
           <div className="mt-[2vh]">
             <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
-              className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
+              className="btn-ink"
 >
               {c.cta_label}
             </a>
