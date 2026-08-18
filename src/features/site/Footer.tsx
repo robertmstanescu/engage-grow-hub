@@ -1,5 +1,7 @@
 import { Instagram, Linkedin, Twitter, Facebook, Youtube } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
+
 
 const PLATFORMS = [
   { key: "linkedin", icon: Linkedin, label: "LinkedIn" },
