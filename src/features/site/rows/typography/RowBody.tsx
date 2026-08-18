@@ -49,7 +49,10 @@ interface Props {
  * laptops, so we prioritise vertical scaling over horizontal.
  */
 const RowBody = ({ children, html, color, style, className, ...rest }: Props) => {
-  const baseClass = `font-body-heading leading-[1.55] [&_p]:mb-[4px] [&_p]:mt-[4px] ${className ?? ""}`;
+  // `.measure` caps the line length at ~65 characters so paragraphs break
+  // around the middle of a wide page instead of running edge to edge.
+  // Rows that genuinely need full-bleed copy can pass `max-w-none`.
+  const baseClass = `font-body-heading leading-[1.55] measure [&_p]:mb-[4px] [&_p]:mt-[4px] ${className ?? ""}`;
   const baseStyle: CSSProperties = {
     fontSize: "clamp(0.78rem, 0.85vh + 0.55vw, 1.05rem)",
     // Default to the row's auto-resolved foreground (`--row-fg`,
