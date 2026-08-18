@@ -141,11 +141,8 @@ const RowSection = ({
         className={`snap-section ${grain && !hasOwnPaint ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
         style={{
           backgroundColor: surfaceColor,
-          borderTopLeftRadius: topRadius || undefined,
-          borderTopRightRadius: topRadius || undefined,
-          borderBottomLeftRadius: bottomRadius || undefined,
-          borderBottomRightRadius: bottomRadius || undefined,
-          zIndex: shapeBottom ? 1 : undefined,
+          zIndex: hasShape ? 2 : undefined,
+
           scrollMarginTop: "0px",
           /*
            * `--row-fg` is the readable text colour for this row's
