@@ -87,6 +87,92 @@ const TRIGGER_CLASS =
 
 const CONTENT_CLASS = "pt-3 pb-1";
 
+/* ─── Section shape picker ────────────────────────────────────────────
+ * Shapes the row's top or bottom edge. "None" is the default; sizes are
+ * subtle / medium / dramatic (all flatten on mobile). `flip` mirrors the
+ * shape horizontally, which matters most for the angled cut.           */
+const SHAPE_KINDS: [SectionShapeKind, string][] = [
+  ["none", "None"],
+  ["rounded", "Rounded"],
+  ["wave", "Wave"],
+  ["arch", "Arch"],
+  ["angled", "Angled"],
+  ["taper", "Taper"],
+  ["notch", "Notch"],
+];
+
+const SHAPE_SIZES: [SectionShapeSize, string][] = [
+  ["subtle", "Subtle"],
+  ["medium", "Medium"],
+  ["dramatic", "Dramatic"],
+];
+
+const ShapePicker = ({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value?: SectionShapeConfig;
+  onChange: (v: SectionShapeConfig | undefined) => void;
+}) => {
+  const kind = value?.kind ?? "none";
+  const size = value?.size ?? "medium";
+  return (
+    <div>
+      <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+        {label}
+      </label>
+      <div className="grid grid-cols-4 gap-1">
+        {SHAPE_KINDS.map(([k, l]) => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => onChange(k === "none" ? undefined : { ...value, kind: k, size })}
+            className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+              kind === k
+                ? "bg-secondary/15 border-secondary/40 text-foreground"
+                : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+            }`}
+          >
+            {l}
+          </button>
+        ))}
+      </div>
+      {kind !== "none" && (
+        <div className="flex items-center gap-1 mt-1.5">
+          {SHAPE_SIZES.map(([sz, l]) => (
+            <button
+              key={sz}
+              type="button"
+              onClick={() => onChange({ kind, size: sz, flip: value?.flip })}
+              className={`flex-1 font-body text-[10px] py-1.5 rounded-lg border transition-colors ${
+                size === sz
+                  ? "bg-secondary/15 border-secondary/40 text-foreground"
+                  : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+              }`}
+            >
+              {l}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => onChange({ kind, size, flip: !value?.flip })}
+            className={`font-body text-[10px] px-2.5 py-1.5 rounded-lg border transition-colors ${
+              value?.flip
+                ? "bg-secondary/15 border-secondary/40 text-foreground"
+                : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+            }`}
+          >
+            Flip
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
 const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   // ── Column count derivation ────────────────────────────────────────
   // image_text & profile rows have an INHERENT 2-zone split (image + text)
