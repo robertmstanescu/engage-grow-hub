@@ -120,11 +120,11 @@
     --contact-input-focus: 280 55% 24%;
     --contact-input-text: 282 40% 13%;
     --contact-btn-bg: 280 57% 16%;
-    --contact-btn-text: 45 60% 96%;
+    --contact-btn-text: 0 0% 100%;
     --contact-success-bg: 46 80% 82%;
     --contact-success-fg: 280 57% 13%;
     --contact-success-btn-bg: 280 57% 16%;
-    --contact-success-btn-text: 45 70% 92%;
+    --contact-success-btn-text: 0 0% 100%;
 
     /* ── Band system (alternating section tones) ── */
     --band-white: 0 0% 100%;
@@ -494,7 +494,7 @@
     font-weight: 600;
     font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
     line-height: 1;
-    background-color: hsl(var(--foreground));
+    color: hsl(var(--btn-ink-fg));
     color: hsl(45 60% 96%);
     border: 1px solid transparent;
     transition: background-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
@@ -959,7 +959,7 @@
     --nav-dropdown-bg: 0 0% 100%;
     --nav-dropdown-hover: 288 30% 95%;
     --nav-cta-bg: 280 57% 16%;
-    --nav-cta-text: 45 60% 96%;
+    --nav-cta-text: 0 0% 100%;
     --nav-border: 285 22% 89%;
   }
 
