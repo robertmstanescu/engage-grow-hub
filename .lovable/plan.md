@@ -32,7 +32,7 @@ Structure borrowed from Lativ, restraint borrowed from South Pole / Sequoia.
 - Every text colour is derived from the band it sits on, so nothing renders pale-on-pale again. Foreground on deep bands flips automatically.
 - Remaining hardcoded colours in row components, widgets, footer, contact and admin get swept out; tokens only.
 
-## 3. Buttons
+## 4. Buttons
 
 - Primary: fully rounded ink pill, cream label, 200ms hover lift and slight darkening.
 - Secondary: text link with an arrow and an underline that draws on hover (Sequoia-style).
