@@ -10,7 +10,7 @@ const PublicLayout = () => (
   <ErrorBoundary label="page">
     {/*
       PAGE MESH — one fixed, continuous gradient behind the entire site.
-      Rows are transparent by default (bandTone "mesh"), so the page
+      Rows are transparent by default, so the page
       reads as a single surface instead of stacked blocks. Fixed +
       pointer-events-none keeps it cheap and out of hit-testing.
     */}

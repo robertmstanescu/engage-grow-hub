@@ -79,6 +79,16 @@ const ROW_DEFAULTS: Record<string, { start: string; end: string }> = {
   grid: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
 };
 
+/* Quick colours for the row background. "None" leaves the row
+   transparent so the single page-wide mesh gradient shows through. */
+const BG_PRESETS: { value: string; label: string; swatch: string }[] = [
+  { value: "", label: "None", swatch: "linear-gradient(135deg,#F6EFF7,#FBF6EA)" },
+  { value: "#FFFFFF", label: "White", swatch: "#FFFFFF" },
+  { value: "#F4ECF6", label: "Plum", swatch: "#F4ECF6" },
+  { value: "#2B0E33", label: "Ink", swatch: "#2B0E33" },
+  { value: "#FAF5E9", label: "Cream", swatch: "#FAF5E9" },
+];
+
 // Mirrors the trigger style used in RowContentEditor for visual parity
 // across the Properties panel. Update both files together if redesigning.
 const TRIGGER_CLASS =
@@ -215,41 +225,37 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
         <AccordionTrigger className={TRIGGER_CLASS}>Surface</AccordionTrigger>
         <AccordionContent className={CONTENT_CLASS}>
           <div className="flex flex-col gap-4">
-            {/* ── Section band ── */}
+            {/* ── Row background ──
+                One page-wide mesh sits behind everything. A row is
+                transparent by default; picking a colour paints it. */}
             <div>
               <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
-                Section band
+                Row background
               </label>
               <div className="grid grid-cols-5 gap-1">
-                {([
-                  ["mesh", "Mesh"],
-                  ["auto", "Auto"],
-                  ["white", "White"],
-                  ["tint", "Tint"],
-                  ["deep", "Deep"],
-                ] as const).map(([value, label]) => {
-                  const active = ((row.layout as { bandTone?: string } | undefined)?.bandTone || "mesh") === value;
+                {BG_PRESETS.map(({ value, label, swatch }) => {
+                  const active = (row.bg_color || "") === value;
                   return (
                     <button
-                      key={value}
+                      key={label}
                       type="button"
-                      onClick={() => patchLayout({ bandTone: value })}
-                      className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+                      onClick={() => onRowMetaChange({ bg_color: value })}
+                      title={label}
+                      className={`flex flex-col items-center gap-1 py-1.5 rounded-lg border transition-colors ${
                         active
                           ? "bg-secondary/15 border-secondary/40 text-foreground"
                           : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
                       }`}
                     >
-                      {label}
+                      <span
+                        className="w-5 h-5 rounded-full border border-border"
+                        style={{ background: swatch }}
+                      />
+                      <span className="font-body text-[9px] leading-none">{label}</span>
                     </button>
                   );
                 })}
               </div>
-              <p className="font-body text-[10px] text-muted-foreground mt-1 leading-snug">
-                Mesh (default) is transparent — the page-wide mesh gradient
-                shows through. Auto alternates white / tint down the page.
-                Deep is the plum ink band for emphasis moments.
-              </p>
             </div>
 
             {/* ── Background Colour + opacity ── */}
@@ -327,6 +333,12 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               </div>
             </div>
 
+            {!row.bg_color ? (
+              <p className="font-body text-[10px] text-muted-foreground leading-snug">
+                Pick a row colour under Surface to use a shaped edge — a
+                transparent row has no surface to spill over its neighbour.
+              </p>
+            ) : null}
             <ShapePicker
               label="Shape — top edge"
               value={row.layout?.shapeTop}
@@ -338,10 +350,9 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               onChange={(shapeBottom) => patchLayout({ shapeBottom })}
             />
             <p className="font-body text-[10px] text-muted-foreground leading-snug">
-              Shapes are filled with the neighbouring section's colour, so
-              the row above bleeds down into this one (top edge) and the row
-              below bleeds up (bottom edge). Works on every band, including
-              the transparent mesh.
+              The shape is painted in this row's own colour and sits over the
+              neighbouring section — the top edge spills up over the row
+              above, the bottom edge down over the row below.
             </p>
           </div>
         </AccordionContent>

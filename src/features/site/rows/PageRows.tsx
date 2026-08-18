@@ -8,7 +8,6 @@ import CanvasDropZone from "@/features/admin/builder/CanvasDropZone";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
 import { computeAutoAlignments, resolveAlignment } from "@/lib/layoutUtils";
 import RowRenderer from "./RowRenderer";
-import { resolveRowSurface, MESH_SHAPE_FILL } from "./rowSurface";
 import { PromotedWidgetProvider, resolvePromotedHeadingId } from "./PrimaryHeadingContext";
 
 
@@ -41,9 +40,6 @@ export const RowsRenderer = ({
   const v3Rows = useMemo(() => normalizeRowsToV3(rows), [rows]);
   const autoAlignments = computeAutoAlignments(v3Rows);
   const lastIndex = v3Rows.length - 1;
-  /* Surface colour per row — used so each row's edge shapes can be
-     filled with the NEIGHBOUR's colour (the "bleed down" effect). */
-  const surfaces = useMemo(() => v3Rows.map((r) => resolveRowSurface(r as any)), [v3Rows]);
 
 
   // `__global_ref` resolution map (sourced from the global_widgets table).
@@ -77,14 +73,6 @@ export const RowsRenderer = ({
               rowIndex={index}
               align={resolveAlignment(row, autoAlignments[index])}
               globalMap={globalMap}
-              prevSurface={index > 0 ? surfaces[index - 1] : MESH_SHAPE_FILL}
-              nextSurface={
-                index < lastIndex
-                  ? surfaces[index + 1]
-                  : footerSlot
-                    ? "hsl(var(--secondary))"
-                    : MESH_SHAPE_FILL
-              }
             />
           </ErrorBoundary>
         );

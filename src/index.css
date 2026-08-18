@@ -135,7 +135,6 @@
     --band-deep-fg: 45 60% 96%;
     /* Fill used for edge shapes when the neighbouring row is on the
        transparent mesh band — a soft tint that reads as the page mesh. */
-    --mesh-shape-fill: 288 34% 96%;
 
 
     /* ── Page mesh (default page-level background) ──
@@ -426,46 +425,6 @@
     box-shadow: var(--shadow-card);
   }
 
-  /* ──────────────────────────────────────────────────────────────────
-     BANDS — white / tint / deep. Foreground always derived from band.
-     ────────────────────────────────────────────────────────────────── */
-  [data-band="white"] {
-    background-color: hsl(var(--band-white));
-    color: hsl(var(--band-white-fg));
-  }
-  [data-band="tint"] {
-    background-color: hsl(var(--band-tint));
-    color: hsl(var(--band-tint-fg));
-  }
-  [data-band="deep"] {
-    background-color: hsl(var(--band-deep));
-    color: hsl(var(--band-deep-fg));
-  }
-  [data-band="deep"] h1,
-  [data-band="deep"] h2,
-  [data-band="deep"] h3,
-  [data-band="deep"] p,
-  [data-band="deep"] li {
-    color: inherit;
-  }
-
-  /* Auto band: alternate white / tint down the page. Opt-in now — the
-     page default is the mesh below. */
-  section[data-band="auto"] {
-    background-color: hsl(var(--band-white));
-  }
-  section[data-band="auto"]:nth-of-type(even) {
-    background-color: hsl(var(--band-tint));
-  }
-
-  /* ── Page mesh band (the default) ──
-     Fully transparent section so the fixed page mesh shows through.
-     Text colour comes from the canvas foreground. */
-  [data-band="mesh"] {
-    background-color: transparent;
-    color: hsl(var(--foreground));
-  }
-
   /* The fixed mesh layer itself. pointer-events:none + z-index:-1 keep
      it out of hit-testing and below every section, and `fixed` keeps it
      continuous (and cheap) while the page scrolls. */
@@ -478,10 +437,9 @@
   }
 
   /* ── Section shapes ──
-     Decorative top/bottom edges. The SVG sits INSIDE the section and is
-     filled with the NEIGHBOUR's surface colour, so the row above appears
-     to bleed down into this one (top edge) and the row below to bleed up
-     (bottom edge) — one continuous page, shaped at the seam. */
+     Decorative top/bottom edges, painted in the ROW's own colour and
+     positioned outside the section so they overlap the neighbouring
+     section — the row appears to spill over the seam. */
   .section-shape {
     position: absolute;
     left: 0;
@@ -489,23 +447,27 @@
     width: 100%;
     pointer-events: none;
     display: block;
-    z-index: 0;
+    /* Sits above the neighbouring section so the row's colour reads as
+       one surface spilling over the seam. */
+    z-index: 2;
   }
+  /* Top edge: rendered ABOVE the section, filled mass flush against it,
+     curve cutting into the section above. */
   .section-shape[data-edge="top"] {
-    top: 0;
-    /* Flip vertically so the filled mass sits at the TOP (the neighbour
-       bleeding down) with the curve cutting into this section. */
-    transform: scaleY(-1);
-  }
-  .section-shape[data-edge="bottom"] {
-    bottom: 0;
+    bottom: 100%;
     transform: none;
   }
+  /* Bottom edge: rendered BELOW the section, flipped so the filled mass
+     stays flush with the section. */
+  .section-shape[data-edge="bottom"] {
+    top: 100%;
+    transform: scaleY(-1);
+  }
   .section-shape[data-edge="top"][data-flip="true"] {
-    transform: scaleY(-1) scaleX(-1);
+    transform: scaleX(-1);
   }
   .section-shape[data-edge="bottom"][data-flip="true"] {
-    transform: scaleX(-1);
+    transform: scaleY(-1) scaleX(-1);
   }
 
   /* Dramatic curves eat vertical space on phones — flatten them. */

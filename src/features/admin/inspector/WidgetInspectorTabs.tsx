@@ -50,7 +50,7 @@ const ADVANCED_KEYS = new Set<string>([
 /** Row/section-level keys — these live in the Style panel, which always
  *  edits the SECTION that contains the current selection. */
 const STYLE_KEYS = new Set<string>([
-  "bandTone", "shapeTop", "shapeBottom", "dividerTop",
+  "shapeTop", "shapeBottom", "dividerTop",
   "bgImage", "bgColorOpacity", "bgImageOpacity", "gradient",
   "column_widths", "snapEnabled",
 ]);
