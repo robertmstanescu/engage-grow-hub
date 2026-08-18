@@ -198,32 +198,32 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Desktop navigation — floating rounded pill bar */}
+      {/* Desktop navigation — wide floating pill bar (~90% of viewport) */}
       <nav
         ref={railRef}
-        className="hidden lg:flex fixed top-5 left-1/2 -translate-x-1/2 z-50 items-center gap-8 rounded-full pl-6 pr-2 py-2 max-w-[min(1200px,calc(100%-64px))]"
+        className="hidden lg:grid fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-[1680px] grid-cols-[auto_1fr_auto] items-center gap-6 rounded-full pl-7 pr-3 py-2.5"
         style={{
-          backgroundColor: "hsl(var(--card) / 0.85)",
+          backgroundColor: "hsl(var(--card) / 0.88)",
           backdropFilter: "blur(16px) saturate(140%)",
           WebkitBackdropFilter: "blur(16px) saturate(140%)",
           border: "1px solid hsl(var(--border))",
           boxShadow: "var(--shadow-soft)",
         }}
       >
-        <a
-          href="/"
-          className="flex items-center flex-shrink-0"
-          style={{
-            animation: "nav-cascade-emblem 1100ms cubic-bezier(0.16, 1, 0.3, 1) 2600ms both",
-          }}
-        >
+        <a href="/" className="flex items-center flex-shrink-0">
           {!brandingLoading && logoUrl ? (
-            <ResponsiveLogo emblemUrl={emblemUrl} logoUrl={logoUrl} imgClassName="h-7 object-contain" height={28} />
+            <ResponsiveLogo
+              emblemUrl={emblemUrl}
+              logoUrl={logoUrl}
+              imgClassName="h-8 object-contain"
+              height={32}
+              darken={needsDarken}
+            />
           ) : null}
         </a>
 
-        <div className="flex-1 flex flex-row items-center justify-center gap-7">
-          {renderedItems.map((item, i) => {
+        <div className="flex flex-row items-center justify-center gap-9 min-w-0">
+          {renderedItems.map((item) => {
             const active = isActive(item.href);
             return (
               <a
@@ -233,9 +233,8 @@ const Navbar = () => {
                 className="top-nav-label font-body"
                 data-active={active}
                 style={{
-                  color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.7)",
+                  color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
                   fontWeight: active ? 600 : 450,
-                  animation: `nav-cascade 900ms cubic-bezier(0.16, 1, 0.3, 1) ${3300 + i * 150}ms both`,
                 }}
               >
                 {item.label}
@@ -249,18 +248,17 @@ const Navbar = () => {
             href={ctaHref}
             onClick={(e) => handleNavClick(e, ctaHref)}
             title={ctaText}
-            className="px-5 h-9 rounded-full flex items-center justify-center text-xs font-semibold tracking-[0.02em] transition-all duration-300 hover:opacity-90 whitespace-nowrap"
+            className="px-6 h-10 rounded-full flex items-center justify-center text-xs font-semibold tracking-[0.02em] transition-colors duration-200 whitespace-nowrap"
             style={{
               backgroundColor: "hsl(var(--nav-cta-bg, 280 57% 16%))",
               color: "hsl(var(--nav-cta-text, 45 60% 96%))",
-              animation: `nav-cascade-fade 900ms cubic-bezier(0.16, 1, 0.3, 1) ${
-                3300 + renderedItems.length * 150
-              }ms both`,
             }}
           >
             {ctaText || "→"}
           </a>
-        ) : null}
+        ) : (
+          <span />
+        )}
       </nav>
 
       {/* Mobile/tablet top bar — full/long logo */}
@@ -283,9 +281,11 @@ const Navbar = () => {
               className="flex items-center"
               imgClassName="h-7 object-contain"
               height={28}
+              darken={needsDarken}
             />
           ) : null}
         </a>
+
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
