@@ -284,25 +284,48 @@ const InspectorPanel = (props: InspectorPanelProps) => {
      * pageRows is patched in place — siblings are untouched. */
     return (
       <>
-        <Section title={`Row · ${row.type}`}>
-          <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-            Layout, spacing and background controls for the entire row.
-          </p>
-        </Section>
+        <div className="mb-4">
+          <h3
+            className="font-body text-[11px] uppercase tracking-[0.18em] font-semibold"
+            style={{ color: "hsl(var(--foreground))" }}
+          >
+            Section · {row.strip_title || row.type}
+          </h3>
+        </div>
 
-        <RowStyleTab
-          row={row}
-          onRowMetaChange={(updates) => updateRow(updates)}
-          onUpdateColumnWidths={(widths) =>
-            updateRow({
-              layout: {
-                ...DEFAULT_ROW_LAYOUT,
-                ...(row.layout || {}),
-                column_widths: widths,
-              },
-            })
+        <WidgetInspectorTabs
+          activeTab={widgetTab === "content" ? "content" : "style"}
+          onTabChange={setWidgetTab}
+          showWidgetTabs={false}
+          contentEditor={
+            <p className="font-body text-[11px] leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
+              Click a widget inside this section on the canvas to edit its
+              content. The Style tab always applies to the whole section.
+            </p>
           }
+          styleEditor={
+            <RowStyleTab
+              row={row}
+              onRowMetaChange={(updates) => updateRow(updates)}
+              onUpdateColumnWidths={(widths) =>
+                updateRow({
+                  layout: {
+                    ...DEFAULT_ROW_LAYOUT,
+                    ...(row.layout || {}),
+                    column_widths: widths,
+                  },
+                })
+              }
+            />
+          }
+          design={DEFAULT_DESIGN_SETTINGS}
+          onDesignFieldChange={() => {}}
+          onDesignBgChange={() => {}}
+          onDesignRadiusChange={() => {}}
+          onVisibilityChange={() => {}}
+          onCustomCssChange={() => {}}
         />
+
 
         {/* Destructive action lives at the bottom of the row inspector
          * so the user has to scroll past the safe controls first — and
