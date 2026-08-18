@@ -185,12 +185,15 @@ const RowSection = ({
           4. {children}           — actual row content, on top of everything
         */}
         {dividerTop !== "none" ? (
-          <div
-            aria-hidden
-            className={`absolute top-0 z-[1] pointer-events-none border-t border-border ${
-              dividerTop === "content" ? "left-0 right-0 mx-auto max-w-[1280px] row-container" : "inset-x-0"
-            }`}
-          />
+          <div aria-hidden className="absolute inset-x-0 top-0 z-[1] pointer-events-none">
+            {dividerTop === "content" ? (
+              <div className="row-container mx-auto max-w-[1280px]">
+                <div className="border-t border-border" />
+              </div>
+            ) : (
+              <div className="border-t border-border" />
+            )}
+          </div>
         ) : null}
         {shapeSurface && shapeTop ? (
           <SectionShape edge="top" config={shapeTop} color={shapeSurface} />
