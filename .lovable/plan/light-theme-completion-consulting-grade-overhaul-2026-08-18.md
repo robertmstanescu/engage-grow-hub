@@ -11,6 +11,7 @@ Everything currently readable only because it sits on a dark background gets re-
 - Admin: retone the dashboard shell, sidebar, inspector, toolbar and modal overlays to the light palette. Replace hardcoded hexes in Tags manager and email block editor defaults with tokens; keep the colour-picker swatches (those are user data).
 - Icons: default icon colour becomes the plum ink, gold reserved for accents. Applies to nav, cards, footer, admin.
 - Rows still carrying dark custom gradients saved in the editor get their stored stops migrated to light equivalents so no section stays dark by accident.
+- You may remove Unbounded as a font.
 
 ## 2. Logo
 
