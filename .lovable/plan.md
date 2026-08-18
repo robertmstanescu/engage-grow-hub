@@ -9,7 +9,19 @@ Three workstreams: finish the type/colour system properly, restyle buttons, and 
 - Any stored brand/CMS values still pointing at Unbounded get migrated to Bricolage Grotesque so saved content follows.
 - Tighten the display scale: two heading sizes plus one body size, negative tracking on large headings, as in Lativ and Sequoia.
 
-## 2. Colour — alternating bands, brand hues, crisp base
+## 2. Reset all custom styling
+
+Everything hand-tuned over time gets wiped so the new system is the only source of truth.
+
+- Custom mesh and multi-stop gradients saved on rows in the CMS are cleared; rows fall back to the new band system.
+- Per-row colour overrides (section bg, card bg, title, subtitle, description, deliverables, meta, CTA, dots, note, divider colours) are cleared unless deliberately re-set afterwards.
+- Leftover per-row padding, snapping flags, overlay settings and custom classes reset to the new global defaults.
+- Hardcoded hexes and rgb values still living in components are removed; tokens only.
+- Old glass/blur washes, drop shadows and animation leftovers go, replaced by the single hairline + soft shadow treatment.
+- A revision snapshot is taken before the reset so nothing is irrecoverable.
+
+## 3. Colour — alternating bands, brand hues, crisp base
+
 
 Structure borrowed from Lativ, restraint borrowed from South Pole / Sequoia.
 
