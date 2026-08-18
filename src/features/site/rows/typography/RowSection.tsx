@@ -119,8 +119,10 @@ const RowSection = ({
    *  no surface to extend, so it renders no shape. */
   const shapeTop = hasOwnPaint ? row.layout?.shapeTop : undefined;
   const shapeBottom = hasOwnPaint ? row.layout?.shapeBottom : undefined;
-  const topRadius = roundedRadius(shapeTop);
-  const bottomRadius = roundedRadius(shapeBottom);
+  /* A row that spills an edge must always paint ABOVE its neighbours —
+   * including the footer — otherwise the overhang gets covered. */
+  const hasShape = Boolean(shapeTop || shapeBottom);
+
   /* Hairline separator on the top edge — independent of shapes so a row
    * can have a plain rule without taking on a decorative curve. */
   const dividerTop = row.layout?.dividerTop || "none";
