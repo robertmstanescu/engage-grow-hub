@@ -74,7 +74,7 @@ const IconPicker = ({ value, onChange }: PickerProps) => {
         <button
           type="button"
           className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-background text-left w-full hover:opacity-80"
-          style={{ borderColor: "hsl(var(--border))", color: "#1a1a1a" }}
+          style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
         >
           <span className="w-6 h-6 flex items-center justify-center rounded bg-muted/40">
             {value ? <Icon value={value} size={18} /> : <span className="text-xs text-muted-foreground">∅</span>}
@@ -131,7 +131,7 @@ const IconPicker = ({ value, onChange }: PickerProps) => {
                     className="text-left px-2 py-1.5 rounded text-xs hover:bg-muted transition-colors"
                     style={{
                       background: activeCategory === "all" && !search ? "rgba(0,0,0,0.06)" : "transparent",
-                      color: "#1a1a1a",
+                      color: "hsl(var(--foreground))",
                       fontWeight: activeCategory === "all" && !search ? 600 : 400,
                     }}
                   >
@@ -145,7 +145,7 @@ const IconPicker = ({ value, onChange }: PickerProps) => {
                       className="text-left px-2 py-1.5 rounded text-xs hover:bg-muted transition-colors"
                       style={{
                         background: activeCategory === c.id && !search ? "rgba(0,0,0,0.06)" : "transparent",
-                        color: "#1a1a1a",
+                        color: "hsl(var(--foreground))",
                         fontWeight: activeCategory === c.id && !search ? 600 : 400,
                       }}
                     >
@@ -170,7 +170,7 @@ const IconPicker = ({ value, onChange }: PickerProps) => {
                         style={{
                           background: selected ? "rgba(124, 58, 237, 0.12)" : "transparent",
                           boxShadow: selected ? "inset 0 0 0 1px rgba(124, 58, 237, 0.6)" : "none",
-                          color: "#1a1a1a",
+                          color: "hsl(var(--foreground))",
                         }}
                         onMouseEnter={(e) => {
                           if (!selected) e.currentTarget.style.background = "rgba(0,0,0,0.05)";
@@ -179,7 +179,7 @@ const IconPicker = ({ value, onChange }: PickerProps) => {
                           if (!selected) e.currentTarget.style.background = "transparent";
                         }}
                       >
-                        <Icon value={`lucide:${name}`} size={18} color="#1a1a1a" />
+                        <Icon value={`lucide:${name}`} size={18} color="hsl(var(--foreground))" />
                       </button>
                     );
                   })}
@@ -233,10 +233,10 @@ const IconPicker = ({ value, onChange }: PickerProps) => {
                         style={{
                           borderColor: "#eee",
                           boxShadow: value === v ? "inset 0 0 0 1px rgba(124,58,237,0.6)" : "none",
-                          color: "#1a1a1a",
+                          color: "hsl(var(--foreground))",
                         }}
                       >
-                        <Icon value={v} size={22} color="#1a1a1a" />
+                        <Icon value={v} size={22} color="hsl(var(--foreground))" />
                       </button>
                       <button
                         type="button"
