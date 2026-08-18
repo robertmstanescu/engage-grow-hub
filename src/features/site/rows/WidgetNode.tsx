@@ -27,6 +27,7 @@ import type { GlobalWidget } from "@/hooks/useGlobalWidgets";
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import { type NodePath } from "@/features/admin/builder/BuilderContext";
 import type { Alignment, VAlign } from "@/lib/layoutUtils";
+import { CurrentWidgetProvider } from "./PrimaryHeadingContext";
 
 interface WidgetNodeProps {
   widget: PageWidget;
