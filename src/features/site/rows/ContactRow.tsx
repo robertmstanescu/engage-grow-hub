@@ -19,15 +19,12 @@ const defaultFields: ContactField[] = [
   { key: "marketing", label: "Keep me updated with news and articles", type: "checkbox", required: false, visible: true },
 ];
 
-const CREAM = "hsl(var(--foreground))";
-
-/* Form typography matches the rest of the site: labels use the same
- * eyebrow scale as <RowEyebrow/> and inputs the same body scale as
- * <RowBody/>, instead of the old 9px/12px one-off sizes. */
+/* Form typography uses the shared card-scale utilities so the contact
+ * row reads like the service/boxed cards instead of a one-off form. */
 const LABEL_CLASS =
-  "block font-body text-[11px] uppercase tracking-[0.18em] mb-2 text-left";
+  "block text-card-label text-foreground mb-2 text-left";
 const INPUT_CLASS =
-  "w-full bg-transparent border border-border rounded-lg px-4 py-3 font-body text-sm outline-none interactive text-left transition-colors";
+  "w-full bg-transparent border border-border rounded-lg px-4 py-3 text-card-input text-foreground outline-none interactive text-left transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
 
 const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
@@ -108,7 +105,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
       <RowBackground row={row} />
 
       <div ref={ref} className={`relative z-10 max-w-[1280px] row-container ${containerPos} ${contentAlign}`}>
-        <div className="mb-rhythm-loose text-left" style={revealStyle(isVisible, 0)}>
+        <div className={`mb-rhythm-base ${contentAlign}`} style={revealStyle(isVisible, 0)}>
           {c.eyebrow && (
             <RowEyebrow color={c.color_eyebrow || ""}>{c.eyebrow}</RowEyebrow>
           )}
@@ -128,7 +125,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         <div
-          className="surface-card p-6 md:p-8"
+          className="surface-card p-8 md:p-10"
           style={revealStyle(isVisible, 1)}>
 
           <form onSubmit={handleSubmit}>
@@ -136,30 +133,23 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
               <div className="space-y-4">
                 {leftFields.map((field, fi) => (
                   <div key={field.key} style={revealStyle(isVisible, fi + 2)}>
-                    <label className={LABEL_CLASS} style={{ color: CREAM }}>{field.label}</label>
+                    <label className={LABEL_CLASS}>{field.label}</label>
                     <input type={field.type} required={field.required} value={formData[field.key] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                      className={INPUT_CLASS}
-                      style={{ color: CREAM }}
-                      onFocus={(e) => e.currentTarget.style.borderColor = "hsl(var(--accent))"}
-                      onBlur={(e) => e.currentTarget.style.borderColor = ""} />
+                      className={INPUT_CLASS} />
                   </div>
                 ))}
               </div>
 
               {textareaField && (
                 <div className="flex flex-col" style={revealStyle(isVisible, leftFields.length + 2)}>
-                  <label className={LABEL_CLASS} style={{ color: CREAM }}>{textareaField.label}</label>
+                  <label className={LABEL_CLASS}>{textareaField.label}</label>
                   <textarea required={textareaField.required} rows={5} value={formData[textareaField.key] || ""}
                     onChange={(e) => setFormData({ ...formData, [textareaField.key]: e.target.value })}
-                    className={`${INPUT_CLASS} resize-none flex-1`}
-                    style={{ color: CREAM }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = "hsl(var(--accent))"}
-                    onBlur={(e) => e.currentTarget.style.borderColor = ""} />
+                    className={`${INPUT_CLASS} resize-none flex-1`} />
                 </div>
               )}
             </div>
-
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-8 pt-6 border-t border-border" style={revealStyle(isVisible, leftFields.length + 3)}>
               <div className="space-y-1.5">
@@ -167,8 +157,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                   <label key={field.key} className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={formData.subscribed_to_marketing || false}
                       onChange={(e) => setFormData({ ...formData, subscribed_to_marketing: e.target.checked })}
-                      className="rounded" style={{ accentColor: "hsl(var(--accent))" }} />
-                    <span className="font-body text-xs text-muted-foreground">{field.label}</span>
+                      className="rounded accent-foreground" />
+                    <span className="text-card-body text-muted-foreground">{field.label}</span>
                   </label>
                 ))}
               </div>
@@ -181,8 +171,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         {c.note && (
-          <div className="mt-rhythm-base pt-3 text-left border-t border-border">
-            <p className="font-body text-sm italic leading-[1.6] text-muted-foreground measure">{c.note}</p>
+          <div className={`mt-rhythm-base pt-3 border-t border-border ${contentAlign}`}>
+            <p className="text-card-body italic text-muted-foreground measure">{c.note}</p>
           </div>
         )}
       </div>

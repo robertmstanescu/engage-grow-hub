@@ -1108,6 +1108,29 @@
   @media (min-width: 1024px) {
     .public-fluid-type [class~="lg:text-5xl"] { font-size: var(--fluid-fs-5xl); }
   }
+
+  /* ── Card-scale typography ──
+     Shared compact scale used by service cards, boxed cards, and the
+     contact form. Keeps secondary text readable but visually subordinate
+     to headings. Ranges are intentionally tight (2px) so type never
+     jumps between viewports. */
+  .text-card-label {
+    font-family: var(--font-body);
+    font-size: clamp(10px, 0.3vh + 0.55vw, 12px);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    line-height: 1.3;
+  }
+  .text-card-body {
+    font-family: var(--font-body);
+    font-size: clamp(12px, 0.35vh + 0.6vw, 14px);
+    line-height: 1.65;
+  }
+  .text-card-input {
+    font-family: var(--font-body);
+    font-size: clamp(13px, 0.4vh + 0.7vw, 15px);
+    line-height: 1.55;
+  }
 }
 
 /* Rich-text paragraph spacing – 10px before & after every <p> */
