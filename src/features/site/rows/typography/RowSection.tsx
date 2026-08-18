@@ -5,6 +5,7 @@ import RowBackground from "../RowBackground";
 import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEditor";
 import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
+import SectionShape, { roundedRadius } from "../SectionShape";
 
 interface Props {
   row: PageRow;
@@ -108,12 +109,36 @@ const RowSection = ({
    *  without the admin having to set anything. An explicit tone wins
    *  over legacy per-row colours and decorative gradients — those are
    *  what made the old page look muddy. */
-  const band = (row.layout as { bandTone?: string } | undefined)?.bandTone || "auto";
+  /*  DEFAULT = "mesh": the row paints nothing and the fixed page mesh
+   *  (see .page-mesh-layer in index.css) shows through, so the whole
+   *  site reads as one continuous surface. A row only gets its own
+   *  background when an admin deliberately picks one — band tone,
+   *  bg_color, gradient or bg image — and those still win. */
+  const band = (row.layout as { bandTone?: string } | undefined)?.bandTone || "mesh";
   const explicitBand = band === "white" || band === "tint" || band === "deep";
+  /* A row on the mesh band still honours an explicitly chosen colour /
+   * gradient / image; it only skips the opaque canvas fallback. */
+  const meshBand = band === "mesh";
+  const hasOwnPaint = Boolean(row.bg_color || row.layout?.bgImage || row.layout?.gradient?.enabled);
   const bandFg =
     band === "deep" ? "hsl(var(--band-deep-fg))"
     : explicitBand ? "hsl(var(--band-white-fg))"
+    : meshBand && !hasOwnPaint ? "hsl(var(--foreground))"
     : resolveRowForeground(row);
+
+  /* ── Section shapes ──
+   *  Decorative curved / angled edges, off by default. They're only
+   *  meaningful when the section actually has a surface to shape, so
+   *  transparent mesh rows skip them. */
+  const shapeSurface =
+    band === "deep" ? "hsl(var(--band-deep))"
+    : band === "tint" ? "hsl(var(--band-tint))"
+    : band === "white" ? "hsl(var(--band-white))"
+    : getRowBgColor(row) || (meshBand ? undefined : defaultBg);
+  const shapeTop = shapeSurface ? row.layout?.shapeTop : undefined;
+  const shapeBottom = shapeSurface ? row.layout?.shapeBottom : undefined;
+  const topRadius = roundedRadius(shapeTop);
+  const bottomRadius = roundedRadius(shapeBottom);
 
   return (
     <>
@@ -128,7 +153,14 @@ const RowSection = ({
         data-snap-enabled={snapEnabled ? "true" : undefined}
         className={`snap-section ${grain && !explicitBand ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
         style={{
-          backgroundColor: explicitBand ? undefined : getRowBgColor(row, defaultBg),
+          backgroundColor:
+            explicitBand ? undefined
+            : meshBand ? getRowBgColor(row)
+            : getRowBgColor(row, defaultBg),
+          borderTopLeftRadius: topRadius || undefined,
+          borderTopRightRadius: topRadius || undefined,
+          borderBottomLeftRadius: bottomRadius || undefined,
+          borderBottomRightRadius: bottomRadius || undefined,
           isolation: "isolate",
           scrollMarginTop: "0px",
           /*
@@ -149,6 +181,12 @@ const RowSection = ({
           3. Overlay elements     — z-[-1]: decorative PNGs (logos, shapes) above bg
           4. {children}           — actual row content, on top of everything
         */}
+        {shapeSurface && shapeTop ? (
+          <SectionShape edge="top" config={shapeTop} color={shapeSurface} />
+        ) : null}
+        {shapeSurface && shapeBottom ? (
+          <SectionShape edge="bottom" config={shapeBottom} color={shapeSurface} />
+        ) : null}
         {!explicitBand && (
           <div className="absolute inset-0 pointer-events-none z-[-3]"><RowBackground row={row} /></div>
         )}
