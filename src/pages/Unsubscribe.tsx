@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import usePageMeta from "@/hooks/usePageMeta";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const Unsubscribe = () => {
+  usePageMeta({
+    title: "Unsubscribe",
+    description: "Manage your email preferences and unsubscribe from all marketing emails.",
+  });
+
   const [status, setStatus] = useState<"loading" | "valid" | "already" | "invalid" | "done" | "error">("loading");
   const [processing, setProcessing] = useState(false);
 
