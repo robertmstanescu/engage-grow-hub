@@ -275,13 +275,16 @@ const Navbar = () => {
         )}
       </nav>
 
-      {/* Mobile/tablet top bar — full/long logo */}
+      {/* Mobile/tablet — compact floating island, content passes under */}
       <nav
-        className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-5"
+        className="lg:hidden fixed top-2 left-2 right-2 z-50 h-14 flex items-center justify-between px-4"
         style={{
-          backgroundColor: "hsl(var(--background) / 0.9)",
-          backdropFilter: "blur(12px)",
-          borderBottom: "1px solid hsl(var(--border))",
+          borderRadius: "calc(var(--radius) * 1.4)",
+          backgroundColor: "hsl(var(--card) / 0.94)",
+          backdropFilter: "blur(16px) saturate(140%)",
+          WebkitBackdropFilter: "blur(16px) saturate(140%)",
+          border: "1px solid hsl(var(--border))",
+          boxShadow: "var(--shadow-soft)",
         }}
       >
         <a
