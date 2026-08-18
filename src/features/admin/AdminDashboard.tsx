@@ -1193,8 +1193,9 @@ const AdminDashboard = ({ session }: Props) => {
                         // collapses to transparent when inactive so layout
                         // doesn't shift.
                         active
-                          ? "bg-secondary/[0.07] text-secondary border-l-2 border-secondary"
-                          : "bg-transparent text-muted-foreground border-l-2 border-transparent hover:bg-foreground/[0.04]",
+                          ? "bg-secondary/15 text-secondary font-semibold border-l-2 border-secondary"
+                          : "bg-transparent text-foreground/70 border-l-2 border-transparent hover:bg-foreground/[0.06] hover:text-foreground",
+
                       ].join(" ")}
                     >
                       <item.icon size={16} className="flex-shrink-0" />
