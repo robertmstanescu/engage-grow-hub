@@ -4,6 +4,7 @@ import type { PageRow } from "@/types/rows";
 import RowBackground from "./RowBackground";
 import { resolveImageAlt } from "@/services/imageAlt";
 import Icon from "@/features/icons/Icon";
+import { hasText } from "./PrimaryHeadingContext";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -13,7 +14,9 @@ interface Props {
 
 const HeroRow = ({ row }: Props) => {
   const c = row.content;
-  const titleLines: string[] = (c.title_lines || []).map((line: any) =>
+  /* Drop blank / markup-only lines so an empty Hero never emits an
+     empty <h1> (an empty heading is worse for SEO than none). */
+  const titleLines: string[] = (c.title_lines || []).filter((line: any) => hasText(String(line ?? ""))).map((line: any) =>
     typeof line === "string"
       ? (line.startsWith("<") ? line : `<span class="block">${line}</span>`)
       : `<span class="block">${line}</span>`
