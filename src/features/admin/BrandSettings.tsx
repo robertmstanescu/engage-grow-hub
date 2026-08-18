@@ -360,6 +360,36 @@ const BrandSettings = () => {
         </div>
       </AccordionSection>
 
+      {/* ── Page background (mesh intensity) ──
+       *  The site paints ONE fixed mesh gradient behind every page; rows
+       *  are transparent unless a band tone is chosen per row. This slider
+       *  is the only global control over how present that mesh feels. */}
+      <AccordionSection id="mesh" label="Page Background">
+        <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
+          A single mesh gradient sits behind the whole site. Rows show it through by default — pick a per-row band in the Style tab to override.
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {(["subtle", "medium", "strong"] as const).map((level) => {
+            const active = (brand.meshStrength || "medium") === level;
+            return (
+              <button
+                key={level}
+                type="button"
+                onClick={() => setBrand((prev) => ({ ...prev, meshStrength: level }))}
+                className={`font-body text-xs capitalize py-2 rounded-lg border transition-colors ${
+                  active
+                    ? "bg-secondary/15 border-secondary/40 text-foreground"
+                    : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                }`}
+              >
+                {level}
+              </button>
+            );
+          })}
+        </div>
+      </AccordionSection>
+
+
       {/* ── Logos & Favicons (moved from GlobalSettings as part of
        *  Epic 1: The Unified Brand Hub) ── */}
       <AccordionSection id="branding" label="Logos & Favicon">
