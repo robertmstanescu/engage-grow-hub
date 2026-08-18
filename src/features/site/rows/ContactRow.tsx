@@ -171,8 +171,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         {c.note && (
-          <div className="mt-rhythm-base pt-3 text-left border-t border-border">
-            <p className="font-body text-sm italic leading-[1.6] text-muted-foreground measure">{c.note}</p>
+          <div className={`mt-rhythm-base pt-3 border-t border-border ${contentAlign}`}>
+            <p className="text-card-body italic text-muted-foreground measure">{c.note}</p>
           </div>
         )}
       </div>
