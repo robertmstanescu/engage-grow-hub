@@ -78,7 +78,7 @@ const StatUnit = memo(({ value, label, colors, isVisible, idx }: {
     >
       <p
         className="font-display font-black leading-none tabular-nums"
-        style={{ color: colors.statNumber, fontSize: "clamp(2rem, 5vw, 3.5rem)" }}
+        style={{ color: colors.statNumber, fontSize: "var(--fs-stat)" }}
       >
         {display}
       </p>
@@ -211,7 +211,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
               as="div"
               data-rte-fit=""
               className={`font-body-heading leading-[1.6] max-w-[600px] [&_p]:mb-[5px] [&_p]:mt-[5px] ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
-              style={{ ...revealStyle(isVisible, 2), fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)", color: c.color_description || "hsl(var(--foreground) / 0.75)" }}
+              style={{ ...revealStyle(isVisible, 2), fontSize: "var(--fs-body)", color: c.color_description || "hsl(var(--foreground) / 0.75)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }}
             />
           )}

@@ -25,7 +25,7 @@ interface Props {
  * - **`leading-tight` (1.25)**: script fonts have tall ascenders/descenders;
  *   relaxed leading creates ugly gaps. Tight leading keeps lines close.
  *
- * - **Fluid `clamp(0.85rem, 1vh + 0.8vw, 1.2rem)`**: blends viewport
+ * - **Fluid `var(--fs-subtitle)`**: blends viewport
  *   height and width so the subtitle shrinks on short screens too. See
  *   RowBody.tsx for the full clamp/vh+vw explanation.
  *
@@ -36,7 +36,7 @@ const RowSubtitle = ({ children, color, style, className }: Props) => (
     className={`leading-tight mb-rhythm-base ${className ?? ""}`}
     style={{
       fontFamily: "'Architects Daughter', cursive",
-      fontSize: "clamp(0.85rem, 1vh + 0.8vw, 1.2rem)",
+      fontSize: "var(--fs-subtitle)",
       // Inherit the row's auto-resolved foreground unless the admin
       // set a per-row override. `--row-fg` is published by RowSection.
       color: color ?? "var(--row-fg, inherit)",

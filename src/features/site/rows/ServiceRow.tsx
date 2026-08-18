@@ -208,7 +208,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
               className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
               style={{
                 color: pillarDescriptionColor,
-                fontSize: "clamp(0.78rem, 0.85vh + 0.55vw, 1.05rem)",
+                fontSize: "var(--fs-body)",
                 overflow: "visible",
                 height: "auto",
                 maxWidth: 600,
@@ -221,7 +221,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
                 className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
                 style={{
                   color: pillarDescriptionColor,
-                  fontSize: "clamp(0.78rem, 0.85vh + 0.55vw, 1.05rem)",
+                  fontSize: "var(--fs-body)",
                   overflow: "visible",
                   height: "auto",
                   maxWidth: 600,

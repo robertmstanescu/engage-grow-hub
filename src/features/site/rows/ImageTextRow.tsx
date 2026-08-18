@@ -164,7 +164,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             as="div"
             data-rte-fit=""
             className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
-            style={{ fontSize: "clamp(0.9rem, 1.5vw, 1.05rem)", color: c.color_description || "hsl(var(--foreground) / 0.75)", height: "auto", overflow: "visible" }}
+            style={{ fontSize: "var(--fs-body)", color: c.color_description || "hsl(var(--foreground) / 0.75)", height: "auto", overflow: "visible" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
           />
         </SelectableWrapper>

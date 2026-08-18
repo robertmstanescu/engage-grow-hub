@@ -37,7 +37,7 @@ const RowTitle = ({ children, as = "h2", color, style, className, icon, iconSize
       <Tag
         className={`font-display font-black leading-[0.95] tracking-tight mb-rhythm-base ${className ?? ""}`}
         style={{
-          fontSize: "clamp(1.2rem, 1.8vh + 1.3vw, 2.6rem)",
+          fontSize: "var(--fs-title)",
           color: resolvedColor,
           ...style,
         }}

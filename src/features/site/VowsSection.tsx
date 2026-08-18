@@ -54,7 +54,7 @@ const VowsSection = () => {
         */}
         <h3
           className="font-display font-bold leading-tight mb-16"
-          style={{ ...revealStyle(isVisible, 0), color: c.color_title || "hsl(var(--vows-title))", fontSize: "clamp(1.5rem, 1.5vh + 1.4vw, 3rem)" }}>
+          style={{ ...revealStyle(isVisible, 0), color: c.color_title || "hsl(var(--vows-title))", fontSize: "var(--fs-title)" }}>
           {titleLines.map((line, i) => (
             <span key={i}>
               {i > 0 && <br />}
@@ -76,7 +76,7 @@ const VowsSection = () => {
                 border: "1px solid hsl(var(--border))",
                 boxShadow: "var(--shadow-card)",
               }}>
-              <p className="font-body-heading font-bold mb-3" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))", fontSize: "clamp(0.85rem, 0.4vh + 0.45vw, 1rem)" }}>{vow.title}</p>
+              <p className="font-body-heading font-bold mb-3" style={{ color: c.color_card_title || "hsl(var(--vows-card-title))", fontSize: "var(--fs-card-title)" }}>{vow.title}</p>
               {/*
                 Body has NO Tailwind text-* class — the RTE writes inline
                 <span style="font-size: NNpx"> for every selection the admin
@@ -85,7 +85,7 @@ const VowsSection = () => {
                 The inline `font-size` here only acts as a fallback for
                 un-styled paragraphs.
               */}
-              <div className="font-body leading-relaxed" style={{ color: c.color_card_body || "hsl(var(--vows-card-body))", overflow: "visible", height: "auto", fontSize: "clamp(0.78rem, 0.4vh + 0.4vw, 0.95rem)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(vow.body) }} />
+              <div className="font-body leading-relaxed" style={{ color: c.color_card_body || "hsl(var(--vows-card-body))", overflow: "visible", height: "auto", fontSize: "var(--fs-card-body)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(vow.body) }} />
             </div>
           ))}
         </div>

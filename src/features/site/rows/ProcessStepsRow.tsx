@@ -77,7 +77,7 @@ const ProcessStepsRow = ({
               <span className="font-display text-sm font-semibold tracking-[0.18em] text-muted-foreground">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <h3 className="font-display font-bold leading-tight text-foreground" style={{ fontSize: "clamp(17px, 1.5vw, 22px)" }}>
+              <h3 className="font-display font-bold leading-tight text-foreground" style={{ fontSize: "var(--fs-step-title)" }}>
                 {step.title}
               </h3>
               {step.description && (
