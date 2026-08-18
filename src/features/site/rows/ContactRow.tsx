@@ -169,7 +169,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
           </div>
         )}
       </div>
-    </section>
+    </RowSection>
   );
 };
 
