@@ -47,7 +47,7 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
       <div className="relative z-10 pt-20 md:pt-28 pb-8 px-3">
         <div className="max-w-[900px] mr-auto ml-0 text-left">
           <span
-            className="font-body text-[10px] tracking-[0.35em] uppercase block mb-5"
+            className="font-body text-micro tracking-[0.35em] uppercase block mb-5"
             style={{ color: "hsl(var(--pillar-label))" }}>
             {pillarNumber}
           </span>

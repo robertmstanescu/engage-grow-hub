@@ -84,7 +84,7 @@ const StatUnit = memo(({ value, label, colors, isVisible, idx }: {
       </p>
       {label && (
         <p
-          className="font-body text-[10px] tracking-[0.2em] uppercase mt-3 text-center leading-[1.6] whitespace-pre-line"
+          className="font-body text-micro tracking-[0.2em] uppercase mt-3 text-center leading-[1.6] whitespace-pre-line"
           style={{ color: colors.statLabel }}
         >
           {label}

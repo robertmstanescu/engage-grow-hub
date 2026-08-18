@@ -220,7 +220,7 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
             ].map((field) => (
               <div key={field.key}>
                 <label
-                  className="block font-body text-[10px] uppercase tracking-[0.25em] mb-2"
+                  className="block font-body text-micro uppercase tracking-[0.25em] mb-2"
                   style={{ color: `${CREAM}99` }}
                 >
                   {field.label}
@@ -240,7 +240,7 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
               </div>
             ))}
 
-            <p className="font-body text-[11px] leading-relaxed" style={{ color: `${CREAM}99` }}>
+            <p className="font-body text-micro leading-relaxed" style={{ color: `${CREAM}99` }}>
               By clicking download, you agree to our Privacy Policy and consent to be contacted for
               consulting insights and marketing updates. You can unsubscribe at any time.
             </p>
@@ -248,7 +248,7 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
             <button
               type="submit"
               disabled={submitting}
-              className="btn-glass font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+              className="btn-glass font-display text-micro uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
             >
               {submitting ? "Sending…" : "Download now"}
             </button>

@@ -360,7 +360,7 @@ const Navbar = () => {
               <a
                 href={ctaHref}
                 onClick={(e) => handleNavClick(e, ctaHref)}
-                className="font-display text-[9px] uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
+                className="font-display text-micro uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
                 style={{
                   backgroundColor: "hsl(var(--nav-cta-bg, 280 57% 16%))",
                   color: "hsl(var(--nav-cta-text, 45 60% 96%))",

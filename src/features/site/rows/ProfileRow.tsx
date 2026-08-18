@@ -125,7 +125,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                 {credentials.map((cred, i) => (
                   <span
                     key={i}
-                    className="font-body text-[10px] tracking-wider px-3 py-1 rounded-full"
+                    className="font-body text-micro tracking-wider px-3 py-1 rounded-full"
                     style={{ backgroundColor: credBg, color: credText, backdropFilter: "blur(8px)" }}
                   >
                     {cred}
