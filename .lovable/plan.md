@@ -92,12 +92,17 @@ The site already has the right machinery: a crawler-facing `ssr-index` edge func
 
 After the build I'll run an SEO review so anything the scanner still flags gets picked up.
 
-## 9. Navbar: floating glass island
+## 9. Navbar: floating island that content passes under
 
-- The pill loses its opaque white fill. It becomes a translucent floating island: content behind it (the hero wordmark, images, bands) stays visible through a light frosted wash — low-opacity background tint plus blur and a hairline border, with a soft shadow so it reads as lifted above the page.
-- It stays legible over both light bands and the deep plum band: the wash and text colour adapt to what's underneath, so links never disappear.
-- Layout inside the pill is fixed so nothing crowds: logo left, links centred with even spacing, primary CTA right, settings/admin control outside or at the far right.
-- On scroll the island stays put and tightens slightly (a touch less height, a touch more opacity) rather than changing colour scheme.
+Modelled on the Lativ reference: the bar is a wide, rounded cream island pinned at the top, and the page scrolls *underneath* it — the hero wordmark visibly runs beneath the island rather than being pushed below it.
+
+- The island sits over the content, not in the document flow: no white strip pushing the hero down, no reserved gap. Hero type starts at the very top of the viewport and is partially overlapped by the island, exactly as in the reference.
+- Fill: warm cream/off-white with a subtle backdrop blur and a hairline edge, plus a soft shadow so it reads as a floating card above the page. Not stark white, not a full-width opaque header band.
+- Width: near-full-width (roughly 96% of the viewport) with a small margin on all sides and a large corner radius — the wide-island proportion from the reference, not a narrow centred pill.
+- Contents: logo (and wordmark) left, links centred with even spacing and a caret for any dropdown, ink pill CTA right, settings/admin control tucked at the far right.
+- Over the deep plum band the island's text and CTA flip to the light pairing so links stay legible.
+- On scroll the island stays fixed and tightens slightly (a little less height, a touch more opacity) — no colour-scheme change.
+
 
 ## 10. Responsive behaviour across all breakpoints
 
