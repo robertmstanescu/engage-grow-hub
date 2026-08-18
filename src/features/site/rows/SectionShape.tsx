@@ -1,0 +1,90 @@
+import type { SectionShapeConfig, SectionShapeKind, SectionShapeSize } from "@/types/rows";
+
+/**
+ * <SectionShape/> — decorative top/bottom edge for a CMS row.
+ *
+ * ## Why
+ * Flat stacked bands read as a wireframe. A single curved or angled
+ * edge makes the page feel composed — a section "lifting" over the one
+ * above it (the rounded-card look), a soft wave into a deep plum band,
+ * an editorial arch above a statement.
+ *
+ * ## How it works
+ * The SVG is absolutely positioned OUTSIDE the section (translated
+ * fully above the top edge / below the bottom edge) and filled with the
+ * SECTION's own surface colour. The result reads as one continuous
+ * surface whose edge is shaped, rather than a separate decoration.
+ *
+ * Rows on the transparent page-mesh band don't render a shape (there is
+ * no surface to shape) — that check lives in RowSection.
+ *
+ * Accessibility: purely decorative, so `aria-hidden` + `focusable=false`.
+ */
+
+/** Shape heights in px. Mobile flattens all of them to 28px via CSS. */
+const SIZE_PX: Record<SectionShapeSize, number> = {
+  subtle: 40,
+  medium: 72,
+  dramatic: 120,
+};
+
+/**
+ * Path data per shape, drawn in a 1200×120 viewBox where the BOTTOM
+ * edge (y=120) is flush with the section and the top edge is the shape.
+ */
+const PATHS: Record<Exclude<SectionShapeKind, "none" | "rounded">, string> = {
+  // Soft single-crest wave.
+  wave: "M0,120 L0,74 C180,10 380,10 600,52 C820,94 1020,94 1200,44 L1200,120 Z",
+  // One wide dome — calm and editorial.
+  arch: "M0,120 L0,110 C300,0 900,0 1200,110 L1200,120 Z",
+  // Clean diagonal cut.
+  angled: "M0,120 L0,120 L1200,0 L1200,120 Z",
+  // Gentle concave scoop, subtler than the wave.
+  taper: "M0,120 L0,30 C400,120 800,120 1200,30 L1200,120 Z",
+  // Small centred cut-out — good above a section that opens with an icon.
+  notch: "M0,120 L0,26 L480,26 C520,26 540,96 600,96 C660,96 680,26 720,26 L1200,26 L1200,120 Z",
+};
+
+interface Props {
+  edge: "top" | "bottom";
+  config?: SectionShapeConfig;
+  /** The section's own surface colour (CSS colour string). */
+  color: string;
+}
+
+const SectionShape = ({ edge, config, color }: Props) => {
+  const kind = config?.kind ?? "none";
+  if (!kind || kind === "none" || kind === "rounded") return null;
+
+  const size = config?.size ?? "medium";
+  const path = PATHS[kind];
+  if (!path) return null;
+
+  return (
+    <svg
+      aria-hidden
+      focusable="false"
+      role="presentation"
+      className="section-shape"
+      data-edge={edge}
+      data-flip={config?.flip ? "true" : undefined}
+      viewBox="0 0 1200 120"
+      preserveAspectRatio="none"
+      style={{ height: SIZE_PX[size] }}
+    >
+      <path d={path} fill={color} />
+    </svg>
+  );
+};
+
+/**
+ * Border radius (px) applied to the section itself for the
+ * "rounded card" shape — the section lifts as a big rounded rectangle
+ * over its neighbour, matching the reference design.
+ */
+export const roundedRadius = (config?: SectionShapeConfig): number => {
+  if (config?.kind !== "rounded") return 0;
+  return { subtle: 24, medium: 48, dramatic: 80 }[config.size ?? "medium"];
+};
+
+export default SectionShape;
