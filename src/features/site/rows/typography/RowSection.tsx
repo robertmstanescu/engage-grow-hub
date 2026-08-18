@@ -127,21 +127,20 @@ const RowSection = ({
     : resolveRowForeground(row);
 
   /* ── Section shapes ──
-   *  Decorative curved / angled edges, off by default. They're only
-   *  meaningful when the section actually has a surface to shape, so
-   *  transparent mesh rows skip them. */
-  const shapeSurface =
-    band === "deep" ? "hsl(var(--band-deep))"
-    : band === "tint" ? "hsl(var(--band-tint))"
-    : band === "white" ? "hsl(var(--band-white))"
-    : getRowBgColor(row) || (meshBand ? undefined : defaultBg);
-  const shapeTop = shapeSurface ? row.layout?.shapeTop : undefined;
-  const shapeBottom = shapeSurface ? row.layout?.shapeBottom : undefined;
+   *  Decorative curved / angled edges, off by default. The shape is
+   *  filled with the NEIGHBOURING row's surface colour, so the row above
+   *  appears to bleed down into this one (and the row below to bleed up).
+   *  That means shapes work on every band — including transparent mesh
+   *  rows, which resolve to a soft mesh tint. */
+  const { prevSurface, nextSurface } = useRowNeighbors();
+  const shapeTop = row.layout?.shapeTop;
+  const shapeBottom = row.layout?.shapeBottom;
   const topRadius = roundedRadius(shapeTop);
   const bottomRadius = roundedRadius(shapeBottom);
   /* Hairline separator on the top edge — independent of shapes so a row
    * can have a plain rule without taking on a decorative curve. */
   const dividerTop = row.layout?.dividerTop || "none";
+
 
   return (
     <>
