@@ -52,22 +52,26 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
     return (
       <div key={colIndex}>
         {c.eyebrow && (
-          <RowEyebrow color={c.color_eyebrow || "hsl(var(--vows-title) / 0.6)"} style={revealStyle(isVisible, -0.5)}>
+          /* No hardcoded fallback colour: the section band publishes
+             `--row-fg`, so headings stay readable on white, tint and
+             deep bands alike. Admin overrides still win. */
+          <RowEyebrow color={c.color_eyebrow} style={revealStyle(isVisible, -0.5)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
           </RowEyebrow>
         )}
 
         {titleLines.length > 0 && (
-          <RowTitle icon={c.icon} color={c.color_title || "hsl(var(--vows-title))"} style={revealStyle(isVisible, 0)}>
+          <RowTitle icon={c.icon} color={c.color_title} style={revealStyle(isVisible, 0)}>
             {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
           </RowTitle>
         )}
 
         {c.subtitle && (
-          <RowSubtitle color={c.subtitle_color || "hsl(var(--vows-title))"} style={revealStyle(isVisible, 1)}>
+          <RowSubtitle color={c.subtitle_color} style={revealStyle(isVisible, 1)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
           </RowSubtitle>
         )}
+
 
         <div className={`grid ${getGridCols(cards.length)} gap-6 lg:gap-8 items-stretch ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
           {cards.slice(0, 6).map((card: any, i: number) => {
