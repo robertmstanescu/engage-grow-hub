@@ -70,7 +70,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
   const alignClass = cardTextAlign === "center" ? "text-center" : cardTextAlign === "right" ? "text-right" : "text-left";
 
   return (
-    <div className={`bg-card border border-border rounded-xl shadow-sm overflow-hidden ${compact ? "flex flex-col" : ""}`}>
+    <div className={`surface-card overflow-hidden ${compact ? "flex flex-col" : ""}`}>
       <div className={`${compact ? "p-6 flex-shrink-0" : "p-6 md:p-8"} ${alignClass}`}>
         <div className="flex items-center gap-3 mb-4">
           <span className="inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
