@@ -123,6 +123,8 @@ const WidgetInspectorTabs = ({
   onVisibilityChange,
   onCustomCssChange,
   showWidgetTabs = true,
+  slugEditor,
+
 }: Props) => {
   return (
     <Tabs
