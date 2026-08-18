@@ -166,21 +166,13 @@
   html {
     scroll-behavior: smooth;
     /*
-     * Default navbar offsets — set by Navbar.tsx at runtime, but seeded
-     * here so the very first paint already accounts for the rail/topbar.
-     * Desktop default = vertical left rail (40px). Mobile overrides via
-     * the media query below. JS will refine on mount.
+     * The navbar is a floating island rendered OVER the page — content
+     * scrolls underneath it, so no space is reserved at the top or left.
      */
-    --nav-left-offset: 40px;
+    --nav-left-offset: 0px;
     --nav-top-offset: 0px;
   }
 
-  @media (max-width: 1023px) {
-    html {
-      --nav-left-offset: 0px;
-      --nav-top-offset: 36px;
-    }
-  }
 
   /*
    * ──────────────────────────────────────────────────────────────────
