@@ -1,6 +1,5 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { useMomentumSnap } from "@/hooks/useMomentumSnap";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
@@ -85,7 +84,6 @@ const CmsPage = () => {
 
 const CmsPageBody = ({ rows, isPreview }: { rows: PageRow[]; isPreview: boolean }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  useMomentumSnap(containerRef);
   return (
     <div ref={containerRef} className="snap-container page-shell">
       <Navbar />
