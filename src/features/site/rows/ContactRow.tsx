@@ -19,15 +19,12 @@ const defaultFields: ContactField[] = [
   { key: "marketing", label: "Keep me updated with news and articles", type: "checkbox", required: false, visible: true },
 ];
 
-const CREAM = "hsl(var(--foreground))";
-
-/* Form typography matches the rest of the site: labels use the same
- * eyebrow scale as <RowEyebrow/> and inputs the same body scale as
- * <RowBody/>, instead of the old 9px/12px one-off sizes. */
+/* Form typography uses the shared card-scale utilities so the contact
+ * row reads like the service/boxed cards instead of a one-off form. */
 const LABEL_CLASS =
-  "block font-body text-[11px] uppercase tracking-[0.18em] mb-2 text-left";
+  "block text-card-label text-foreground mb-2 text-left";
 const INPUT_CLASS =
-  "w-full bg-transparent border border-border rounded-lg px-4 py-3 font-body text-sm outline-none interactive text-left transition-colors";
+  "w-full bg-transparent border border-border rounded-lg px-4 py-3 text-card-input text-foreground outline-none interactive text-left transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
 
 const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
