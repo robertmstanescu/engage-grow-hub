@@ -25,7 +25,10 @@ type ResponsiveLogoProps = {
   imgClassName?: string;
   width?: number;
   height?: number;
+  /** Apply the CSS darkening filter (used when no dark asset is uploaded). */
+  darken?: boolean;
 };
+
 const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, height, darken }: ResponsiveLogoProps) => (
   <picture className={className}>
     <source media="(min-width: 1024px)" srcSet={emblemUrl} />
