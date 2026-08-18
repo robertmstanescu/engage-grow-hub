@@ -17,7 +17,7 @@ const Deliverables = memo(({ label, items, textAlign }: { label: string; items: 
   return (
     <div data-deliverables-open={open ? "true" : "false"} className={`border-t border-border px-6 py-4 ${alignClass}`}>
       <button onClick={toggle} aria-expanded={open} className="flex items-center justify-between w-full text-left">
-        <span className="font-body text-[9px] tracking-[0.2em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
+        <span className="font-body text-[10px] tracking-[0.18em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
         <ChevronDown
           className="w-4 h-4 shrink-0 transition-transform duration-300 ease-out"
           style={{
@@ -38,7 +38,7 @@ const Deliverables = memo(({ label, items, textAlign }: { label: string; items: 
         <div style={{ overflow: "hidden", minHeight: 0 }}>
           <ul className="divide-y divide-border pt-3">
             {items.map((item, i) => (
-              <li key={i} className="font-body text-xs leading-relaxed py-2 pl-4 relative" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+              <li key={i} className="font-body text-sm leading-relaxed py-2 pl-4 relative" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
                 <span className="absolute left-0 top-2 text-[10px]" style={{ color: "hsl(var(--accent) / 0.6)" }}>—</span>
                 {item}
               </li>
