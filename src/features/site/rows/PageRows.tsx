@@ -8,6 +8,8 @@ import CanvasDropZone from "@/features/admin/builder/CanvasDropZone";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
 import { computeAutoAlignments, resolveAlignment } from "@/lib/layoutUtils";
 import RowRenderer from "./RowRenderer";
+import { resolveRowSurface, MESH_SHAPE_FILL } from "./rowSurface";
+
 
 // Re-export so existing widget renderers (BoxedRow, ServiceRow, …) can
 // keep importing alignment types from this module.
@@ -63,9 +65,18 @@ export const RowsRenderer = ({
               rowIndex={index}
               align={resolveAlignment(row, autoAlignments[index])}
               globalMap={globalMap}
+              prevSurface={index > 0 ? surfaces[index - 1] : MESH_SHAPE_FILL}
+              nextSurface={
+                index < lastIndex
+                  ? surfaces[index + 1]
+                  : footerSlot
+                    ? "hsl(var(--secondary))"
+                    : MESH_SHAPE_FILL
+              }
             />
           </ErrorBoundary>
         );
+
         // Group the last row with the footer in one snap section.
         if (index === lastIndex && footerSlot) {
           return (
