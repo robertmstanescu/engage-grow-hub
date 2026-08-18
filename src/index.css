@@ -365,6 +365,105 @@
     box-shadow: var(--shadow-card);
   }
 
+  /* ──────────────────────────────────────────────────────────────────
+     BANDS — white / tint / deep. Foreground always derived from band.
+     ────────────────────────────────────────────────────────────────── */
+  [data-band="white"] {
+    background-color: hsl(var(--band-white));
+    color: hsl(var(--band-white-fg));
+  }
+  [data-band="tint"] {
+    background-color: hsl(var(--band-tint));
+    color: hsl(var(--band-tint-fg));
+  }
+  [data-band="deep"] {
+    background-color: hsl(var(--band-deep));
+    color: hsl(var(--band-deep-fg));
+  }
+  [data-band="deep"] h1,
+  [data-band="deep"] h2,
+  [data-band="deep"] h3,
+  [data-band="deep"] p,
+  [data-band="deep"] li {
+    color: inherit;
+  }
+
+  /* ──────────────────────────────────────────────────────────────────
+     BUTTONS — ink pill / arrow link / ghost pill
+     ────────────────────────────────────────────────────────────────── */
+  .btn-ink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1.5rem;
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
+    line-height: 1;
+    background-color: hsl(var(--foreground));
+    color: hsl(45 60% 96%);
+    border: 1px solid transparent;
+    transition: background-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  }
+  .btn-ink:hover {
+    background-color: hsl(var(--primary));
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-card);
+  }
+
+  .btn-ghost-ink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
+    background-color: hsl(45 60% 96%);
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    transition: background-color 200ms ease, transform 200ms ease;
+  }
+  .btn-ghost-ink:hover {
+    transform: translateY(-1px);
+    background-color: hsl(0 0% 100%);
+  }
+
+  .btn-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+    font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
+    color: inherit;
+    position: relative;
+    padding-bottom: 2px;
+    transition: gap 200ms ease;
+  }
+  .btn-arrow::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 100%;
+    bottom: 0;
+    height: 1px;
+    background: currentColor;
+    transition: right 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-arrow:hover {
+    gap: 0.65rem;
+  }
+  .btn-arrow:hover::after {
+    right: 0;
+  }
+
+
+
 
   /* ──────────────────────────────────────────────────────────────────
      MOBILE-LITE GLASS (<1024px)
