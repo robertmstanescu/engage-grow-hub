@@ -61,7 +61,7 @@ import TitleLinesEditor from "./TitleLinesEditor";
 import HeroRowFieldsInline from "./HeroRowFieldsInline";
 import BoxedArrayField from "./BoxedArrayField";
 import SubscribeToggle from "./SubscribeToggle";
-import { TestimonialEditor, LogoCloudEditor, FaqEditor } from "./NewRowEditors";
+import { TestimonialEditor, LogoCloudEditor, FaqEditor, ProofBandEditor, ProcessStepsEditor, QuoteBandEditor, CtaBandEditor } from "./NewRowEditors";
 import { IconPickerField } from "@/features/icons/IconPicker";
 import {
   Accordion,
