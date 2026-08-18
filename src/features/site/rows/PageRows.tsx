@@ -58,6 +58,16 @@ export const RowsRenderer = ({
     [v3Rows, promoteHeading],
   );
 
+  /* THE page background. The hero row owns the single mesh gradient that
+     is painted behind the whole page (`.page-mesh-layer`); we push it to
+     the document root so it survives across rows, the footer and any
+     fixed chrome. Pages without a hero fall back to the brand default. */
+  const meshCSS = useMemo(() => buildPageMeshCSS(resolvePageMesh(v3Rows as any)), [v3Rows]);
+  useEffect(() => {
+    document.documentElement.style.setProperty("--gradient-mesh-page", meshCSS);
+    return () => document.documentElement.style.removeProperty("--gradient-mesh-page");
+  }, [meshCSS]);
+
   return (
     <PromotedWidgetProvider value={promotedWidgetId}>
       {v3Rows.map((row, index) => {
