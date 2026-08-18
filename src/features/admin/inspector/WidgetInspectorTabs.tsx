@@ -51,7 +51,7 @@ const ADVANCED_KEYS = new Set<string>([
  *  edits the SECTION that contains the current selection. */
 const STYLE_KEYS = new Set<string>([
   "shapeTop", "shapeBottom", "dividerTop",
-  "bgImage", "bgColorOpacity", "bgImageOpacity", "gradient",
+  "bgColor", "bgColorOpacity", "mesh",
   "column_widths", "snapEnabled",
 ]);
 
