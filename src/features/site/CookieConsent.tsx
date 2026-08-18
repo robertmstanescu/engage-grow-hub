@@ -132,27 +132,27 @@ const CookieConsent = () => {
         <div
           className="rounded-xl backdrop-blur-md overflow-hidden"
           style={{
-            backgroundColor: "hsl(280 57% 13% / 0.97)",
-            border: "1px solid hsl(50 82% 87% / 0.18)",
-            boxShadow: "0 20px 50px -10px hsl(280 57% 8% / 0.6)",
-            color: "hsl(50 82% 87%)",
+            backgroundColor: "hsl(var(--card) / 0.98)",
+            border: "1px solid hsl(var(--muted-foreground))",
+            boxShadow: "var(--shadow-card)",
+            color: "hsl(var(--foreground))",
           }}
         >
           {/* Header bar with title + close button */}
           <div
             className="flex items-center justify-between px-4 py-3"
-            style={{ borderBottom: "1px solid hsl(50 82% 87% / 0.12)" }}
+            style={{ borderBottom: "1px solid hsl(var(--muted-foreground))" }}
           >
             <div className="flex items-center gap-2">
               <span
                 className="inline-flex items-center justify-center w-7 h-7 rounded-full"
-                style={{ backgroundColor: "hsl(46 75% 55% / 0.18)", color: "hsl(46 75% 70%)" }}
+                style={{ backgroundColor: "hsl(var(--accent) / 0.22)", color: "hsl(var(--accent-ink))" }}
               >
                 <Cookie size={13} />
               </span>
               <h2
                 className="font-display text-sm font-bold"
-                style={{ fontFamily: "'Bricolage Grotesque', 'Unbounded', sans-serif" }}
+                style={{ fontFamily: "var(--font-title)" }}
               >
                 Cookie Settings
               </h2>
@@ -162,7 +162,7 @@ const CookieConsent = () => {
               onClick={() => setVisible(false)}
               aria-label="Close"
               className="opacity-60 hover:opacity-100 transition-opacity"
-              style={{ color: "hsl(50 82% 87%)" }}
+              style={{ color: "hsl(var(--foreground))" }}
             >
               <X size={16} />
             </button>
@@ -197,7 +197,7 @@ const CookieConsent = () => {
             {/* Plain-English summary */}
             <p
               className="font-body text-[12px] leading-relaxed mb-4"
-              style={{ color: "hsl(50 82% 87% / 0.75)" }}
+              style={{ color: "hsl(var(--muted-foreground))" }}
             >
               We use a small number of cookies to understand which of our articles
               actually help people. We never sell your data, never run ad-tracking,
@@ -214,14 +214,14 @@ const CookieConsent = () => {
                   key={c.name}
                   className="rounded-lg p-3"
                   style={{
-                    backgroundColor: "hsl(280 30% 18% / 0.5)",
-                    border: "1px solid hsl(50 82% 87% / 0.08)",
+                    backgroundColor: "hsl(var(--muted))",
+                    border: "1px solid hsl(var(--muted-foreground))",
                   }}
                 >
                   <div className="flex items-baseline justify-between gap-2 mb-1">
                     <code
                       className="font-mono text-[11px]"
-                      style={{ color: "hsl(46 75% 70%)" }}
+                      style={{ color: "hsl(var(--accent-ink))" }}
                     >
                       {c.name}
                     </code>
@@ -233,7 +233,7 @@ const CookieConsent = () => {
                   </div>
                   <p
                     className="font-body text-[12px] leading-relaxed"
-                    style={{ color: "hsl(50 82% 87% / 0.75)" }}
+                    style={{ color: "hsl(var(--muted-foreground))" }}
                   >
                     {c.purpose}
                   </p>
@@ -246,7 +246,7 @@ const CookieConsent = () => {
               current state so the consequence of clicking is obvious. */}
           <div
             className="px-4 py-3 flex items-center gap-2"
-            style={{ borderTop: "1px solid hsl(50 82% 87% / 0.12)" }}
+            style={{ borderTop: "1px solid hsl(var(--muted-foreground))" }}
           >
             {isAccepted ? (
               <button
@@ -254,8 +254,8 @@ const CookieConsent = () => {
                 onClick={() => recordChoice("rejected", false)}
                 className="flex-1 font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-full transition-colors"
                 style={{
-                  border: "1px solid hsl(50 82% 87% / 0.25)",
-                  color: "hsl(50 82% 87%)",
+                  border: "1px solid hsl(var(--muted-foreground))",
+                  color: "hsl(var(--foreground))",
                 }}
               >
                 Withdraw consent
@@ -265,7 +265,7 @@ const CookieConsent = () => {
                 type="button"
                 onClick={() => recordChoice("accepted", false)}
                 className="flex-1 font-display text-[10px] uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "hsl(46 75% 55%)", color: "hsl(280 57% 13%)" }}
+                style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
               >
                 {currentStatus === "rejected" ? "Accept cookies" : "Accept cookies"}
               </button>
@@ -274,7 +274,7 @@ const CookieConsent = () => {
               type="button"
               onClick={() => setVisible(false)}
               className="font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-full transition-opacity hover:opacity-70"
-              style={{ color: "hsl(50 82% 87% / 0.7)" }}
+              style={{ color: "hsl(var(--muted-foreground))" }}
             >
               Done
             </button>
@@ -297,27 +297,27 @@ const CookieConsent = () => {
       <div
         className="rounded-xl p-4 backdrop-blur-md"
         style={{
-          backgroundColor: "hsl(280 57% 13% / 0.95)",
-          border: "1px solid hsl(50 82% 87% / 0.18)",
-          boxShadow: "0 20px 50px -10px hsl(280 57% 8% / 0.6)",
-          color: "hsl(50 82% 87%)",
+          backgroundColor: "hsl(var(--card) / 0.98)",
+          border: "1px solid hsl(var(--muted-foreground))",
+          boxShadow: "var(--shadow-card)",
+          color: "hsl(var(--foreground))",
         }}
       >
         <div className="flex items-start gap-3">
           <span
             className="inline-flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0 mt-0.5"
-            style={{ backgroundColor: "hsl(46 75% 55% / 0.18)", color: "hsl(46 75% 70%)" }}
+            style={{ backgroundColor: "hsl(var(--accent) / 0.22)", color: "hsl(var(--accent-ink))" }}
           >
             <Cookie size={15} />
           </span>
           <div className="min-w-0 flex-1">
             <h2
               className="font-display text-sm font-bold leading-tight"
-              style={{ fontFamily: "'Bricolage Grotesque', 'Unbounded', sans-serif" }}
+              style={{ fontFamily: "var(--font-title)" }}
             >
               {view === "compact" ? "We respect your privacy" : "Choose what you allow"}
             </h2>
-            <p className="font-body text-[12px] leading-relaxed mt-1.5" style={{ color: "hsl(50 82% 87% / 0.75)" }}>
+            <p className="font-body text-[12px] leading-relaxed mt-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
               {view === "compact"
                 ? "We use a simple cookie to remember how you found us. This helps us understand which of our links are most helpful. We never store personal information without your explicit consent. 😊"
                 : "Accept lets us remember you across visits so your form submissions enrich our content insights. Reject keeps every page view fully anonymous — you'll still get the same site."}
@@ -329,7 +329,7 @@ const CookieConsent = () => {
                   type="button"
                   onClick={() => recordChoice("accepted")}
                   className="flex-1 font-display text-[10px] uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: "hsl(46 75% 55%)", color: "hsl(280 57% 13%)" }}
+                  style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
                 >
                   Accept
                 </button>
@@ -337,7 +337,7 @@ const CookieConsent = () => {
                   type="button"
                   onClick={() => setView("preferences")}
                   className="font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-full transition-opacity hover:opacity-70"
-                  style={{ color: "hsl(50 82% 87% / 0.7)" }}
+                  style={{ color: "hsl(var(--muted-foreground))" }}
                 >
                   Preferences
                 </button>
@@ -348,7 +348,7 @@ const CookieConsent = () => {
                   type="button"
                   onClick={() => recordChoice("accepted")}
                   className="flex-1 font-display text-[10px] uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: "hsl(46 75% 55%)", color: "hsl(280 57% 13%)" }}
+                  style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
                 >
                   Accept
                 </button>
@@ -357,8 +357,8 @@ const CookieConsent = () => {
                   onClick={() => recordChoice("rejected")}
                   className="flex-1 font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-full transition-colors"
                   style={{
-                    border: "1px solid hsl(50 82% 87% / 0.25)",
-                    color: "hsl(50 82% 87%)",
+                    border: "1px solid hsl(var(--muted-foreground))",
+                    color: "hsl(var(--foreground))",
                   }}
                 >
                   Reject
