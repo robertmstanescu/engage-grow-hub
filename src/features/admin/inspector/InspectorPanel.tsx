@@ -141,6 +141,12 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     return tail[tail.length - 1] || null;
   }, [activeNodePath]);
   useEffect(() => {
+    // Selecting a whole ROW has no widget content to show, so land the
+    // user straight on Style — that's the only thing a row exposes.
+    if (activeElement?.startsWith("row:")) {
+      setWidgetTab("style");
+      return;
+    }
     const target = pickTabForFocusKey(focusLeaf);
     setWidgetTab(target);
   }, [focusLeaf, activeElement]);
