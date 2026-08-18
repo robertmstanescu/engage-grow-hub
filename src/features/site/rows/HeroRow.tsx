@@ -24,11 +24,9 @@ const HeroRow = ({ row }: Props) => {
   const bgUrl = c.bg_url || "";
   const hasBg = bgType !== "none" && bgUrl;
 
-  const { ref, isVisible } = useScrollReveal({ threshold: 0.15 });
-  const reveal = (staggerIndex: number, baseDelay = 0): CSSProperties => ({
-    ...revealStyle(isVisible, staggerIndex, baseDelay),
-    animationDelay: `calc(300ms + ${staggerIndex} * 220ms)`,
-  });
+  // Motion is deliberately minimal: one soft fade-and-rise on the whole
+  // hero block (see `.hero-enter` in index.css). No per-item stagger.
+
 
   return (
     <section
