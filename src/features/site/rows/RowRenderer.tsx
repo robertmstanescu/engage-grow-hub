@@ -14,6 +14,9 @@ import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import CellRenderer from "./CellRenderer";
 import WidgetNode from "./WidgetNode";
 import type { Alignment, VAlign } from "@/lib/layoutUtils";
+import { MESH_SHAPE_FILL } from "./rowSurface";
+import { RowNeighborProvider } from "./RowNeighborContext";
+
 
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
