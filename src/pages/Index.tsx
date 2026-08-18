@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import Navbar from "@/features/site/Navbar";
 import PageRows from "@/features/site/rows/PageRows";
 import Footer from "@/features/site/Footer";
@@ -28,6 +28,32 @@ const Index = () => {
   // any user wheel/touch gesture so it never traps the reader.
   useSmoothAnchors(containerRef);
 
+  /* Landing on `/#some-row` from another page (footer / nav links on
+     the blog, for example): rows load asynchronously, so the browser's
+     native hash jump fires before the target exists — and it targets
+     the window, not our custom scroll container. Poll briefly for the
+     element and scroll the container to it ourselves. */
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    let tries = 0;
+    const timer = window.setInterval(() => {
+      const container = containerRef.current;
+      const target = document.getElementById(hash);
+      if (container && target) {
+        window.clearInterval(timer);
+        const top =
+          target.getBoundingClientRect().top -
+          container.getBoundingClientRect().top +
+          container.scrollTop;
+        container.scrollTo({ top, behavior: "smooth" });
+      } else if (++tries > 40) {
+        window.clearInterval(timer);
+      }
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
     <div ref={containerRef} className="snap-container page-shell">
       <Navbar />
@@ -37,3 +63,4 @@ const Index = () => {
 };
 
 export default Index;
+

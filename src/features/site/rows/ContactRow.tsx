@@ -5,8 +5,8 @@ import { sanitizeHtml } from "@/services/sanitize";
 import type { PageRow, ContactField } from "@/types/rows";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import RowBackground from "./RowBackground";
-import { RowEyebrow, RowTitle, RowSubtitle, RowBody } from "./typography";
+import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
+
 import { getAttributionForPayload } from "@/services/attribution";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
@@ -73,20 +73,13 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
 
   const { ref, isVisible } = useScrollReveal();
 
-  // ContactRow uses a custom <section> wrapper (not RowSection) because it
-  // needs the .section-light class which inverts the foreground variable.
-  const vAlignJustify = vAlign === "top" ? "justify-start" : vAlign === "bottom" ? "justify-end" : "justify-center";
-  // Snap behaviour is opt-in per row. When the admin enables it in the
-  // Style tab the section also takes the full viewport height; otherwise
-  // it free-scrolls inside the standard 18px row-fluid breathing strip.
-  const snapEnabled = row.layout?.snapEnabled === true;
-  const snapAttrs = snapEnabled ? { "data-snap-enabled": "true" as const } : {};
-  const heightClass = snapEnabled ? "min-h-screen" : "";
-
+  /* ContactRow uses the shared <RowSection/> wrapper so it inherits the
+   * whole row feature set — band tones, edge shapes, separators, snap —
+   * exactly like every other row. `.section-light` still ships the
+   * inverted foreground the form controls expect. */
   if (submitted) {
     return (
-      <section {...snapAttrs} className={`snap-section section-light relative ${heightClass} flex flex-col ${vAlignJustify} py-row-fluid`} style={{ isolation: "isolate" }}>
-        <RowBackground row={row} />
+      <RowSection row={row} vAlign={vAlign} className="section-light" grain={false}>
         <div className={`relative z-10 max-w-[520px] row-container ${containerPos} ${contentAlign}`}>
           <div style={revealStyle(true, 0)}>
             <RowTitle color="hsl(var(--primary))">{successHeading}</RowTitle>
@@ -96,13 +89,13 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
 >{successButton}</button>
           </div>
         </div>
-      </section>
+      </RowSection>
     );
   }
 
   return (
-    <section {...snapAttrs} className={`snap-section section-light relative ${heightClass} flex flex-col ${vAlignJustify} py-row-fluid`} style={{ isolation: "isolate" }}>
-      <RowBackground row={row} />
+    <RowSection row={row} vAlign={vAlign} className="section-light" grain={false}>
+
 
       <div ref={ref} className={`relative z-10 max-w-[1280px] row-container ${containerPos} ${contentAlign}`}>
         <div className={`mb-rhythm-base ${contentAlign}`} style={revealStyle(isVisible, 0)}>
@@ -176,7 +169,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
           </div>
         )}
       </div>
-    </section>
+    </RowSection>
   );
 };
 

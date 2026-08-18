@@ -97,6 +97,10 @@ interface Props {
   /** When false, the widget-only tabs (Design / Advanced) are hidden —
    *  used when a whole ROW is selected and there is no widget context. */
   showWidgetTabs?: boolean;
+
+  /** Optional slug/anchor editor rendered at the top of Advanced. */
+  slugEditor?: ReactNode;
+
 }
 
 const PANEL_LABEL =
@@ -119,6 +123,8 @@ const WidgetInspectorTabs = ({
   onVisibilityChange,
   onCustomCssChange,
   showWidgetTabs = true,
+  slugEditor,
+
 }: Props) => {
   return (
     <Tabs
@@ -205,7 +211,14 @@ const WidgetInspectorTabs = ({
 
       {/* ── ADVANCED tab ────────────────────────────────────────── */}
       <TabsContent value="advanced" forceMount className="data-[state=inactive]:hidden mt-4">
+        {slugEditor ? (
+          <div className="mb-5">
+            <PanelHeading>Slug / anchor</PanelHeading>
+            {slugEditor}
+          </div>
+        ) : null}
         <div className="mb-5">
+
           <PanelHeading>Visibility</PanelHeading>
           <div className="space-y-3">
             <div

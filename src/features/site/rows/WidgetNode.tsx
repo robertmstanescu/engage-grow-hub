@@ -88,11 +88,20 @@ const WidgetNode = ({
   const design = readDesignSettings(renderRow.content);
   const widgetPath: NodePath = ["row", parentRow.id, "widget", widget.id];
 
+  /* Optional per-widget slug → DOM id, so any widget can be deep-linked
+     (`/#pricing-cards`) exactly like a row. */
+  const slug = typeof (renderRow.content as any)?.__slug === "string"
+    ? (renderRow.content as any).__slug.trim()
+    : "";
+
   return (
     <SelectableWrapper path={widgetPath} label={renderRow.type} variant="widget">
-      <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
+      <div id={slug || undefined} className={slug ? "scroll-mt-16" : undefined}>
+        <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
+      </div>
     </SelectableWrapper>
   );
+
 };
 
 export default WidgetNode;

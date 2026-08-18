@@ -1,5 +1,7 @@
 import { Instagram, Linkedin, Twitter, Facebook, Youtube } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
+
 
 const PLATFORMS = [
   { key: "linkedin", icon: Linkedin, label: "LinkedIn" },
@@ -35,8 +37,17 @@ interface FooterContent {
 }
 
 const Footer = () => {
+  const { pathname } = useLocation();
+  /* Footer hash links (#vows, #contact) point at rows that only exist
+     on the homepage. When the footer renders on /blog or a CMS page we
+     rewrite them to absolute `/#slug` links so they navigate home and
+     then scroll, instead of silently doing nothing. */
+  const resolveHref = (href: string) =>
+    href.startsWith("#") && pathname !== "/" ? `/${href}` : href;
+
   const { isLoading: socialLoading, content: socialLinks } =
     useSiteContentWithStatus<Record<string, string>>("social_links", {});
+
   // No hardcoded fallback content. The DB is the single source of truth;
   // until "footer" arrives we render an empty shell rather than flashing
   // stale defaults like "Based in Sweden 🇸🇪 · Operating globally" or a
@@ -95,11 +106,12 @@ const Footer = () => {
               <ul className="space-y-2.5">
                 {col.links.map((link, j) => (
                   <li key={j}>
-                    <a href={link.href} className="font-body text-xs transition-all duration-500 hover:opacity-100" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
+                    <a href={resolveHref(link.href)} className="font-body text-xs transition-all duration-500 hover:opacity-100" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
                       {link.label}
                     </a>
                   </li>
                 ))}
+
                 {col === connectColumn && activeLinks.map((p) => {
                   const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;
                   return (

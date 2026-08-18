@@ -14,6 +14,9 @@ import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import CellRenderer from "./CellRenderer";
 import WidgetNode from "./WidgetNode";
 import type { Alignment, VAlign } from "@/lib/layoutUtils";
+import { MESH_SHAPE_FILL } from "./rowSurface";
+import { RowNeighborProvider } from "./RowNeighborContext";
+
 
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -23,11 +26,22 @@ interface RowRendererProps {
   rowIndex: number;
   align: Alignment;
   globalMap: Map<string, GlobalWidget>;
+  /** Surface colour of the row above / below (fills the edge shapes). */
+  prevSurface?: string;
+  nextSurface?: string;
 }
 
-const RowRenderer = ({ row, rowIndex, align, globalMap }: RowRendererProps) => {
+const RowRenderer = ({
+  row,
+  rowIndex,
+  align,
+  globalMap,
+  prevSurface = MESH_SHAPE_FILL,
+  nextSurface = MESH_SHAPE_FILL,
+}: RowRendererProps) => {
   const id = row.scope || slugify(row.strip_title);
   const vAlign: VAlign = row.layout?.verticalAlign || "middle";
+
 
   const widths =
     row.layout?.column_widths ||
@@ -70,20 +84,23 @@ const RowRenderer = ({ row, rowIndex, align, globalMap }: RowRendererProps) => {
   });
 
   return (
-    <div
-      id={id}
-      data-section-row-id={row.id}
-      className="scroll-mt-16 isolate"
-    >
-      <SelectableWrapper path={["row", row.id]} label="Row" variant="row">
-        <div
-          className="grid gap-8"
-          style={{ gridTemplateColumns: widths.map((w) => `${w}fr`).join(" ") }}
-        >
-          {renderedColumns}
-        </div>
-      </SelectableWrapper>
-    </div>
+    <RowNeighborProvider value={{ prevSurface, nextSurface }}>
+      <div
+        id={id}
+        data-section-row-id={row.id}
+        className="scroll-mt-16 isolate"
+      >
+        <SelectableWrapper path={["row", row.id]} label="Row" variant="row">
+          <div
+            className="grid gap-8"
+            style={{ gridTemplateColumns: widths.map((w) => `${w}fr`).join(" ") }}
+          >
+            {renderedColumns}
+          </div>
+        </SelectableWrapper>
+      </div>
+    </RowNeighborProvider>
+
   );
 };
 
