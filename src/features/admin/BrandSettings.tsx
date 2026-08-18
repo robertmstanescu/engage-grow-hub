@@ -31,7 +31,7 @@ const contrastRatio = (hex1: string, hex2: string) => {
   return (lighter + 0.05) / (darker + 0.05);
 };
 
-const INPUT_STYLE: React.CSSProperties = { backgroundColor: "#FFFFFF", color: "#1a1a1a", borderColor: "hsl(var(--border))" };
+const INPUT_STYLE: React.CSSProperties = { backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))", borderColor: "hsl(var(--border))" };
 
 const FONT_OPTIONS = [
   

@@ -60,7 +60,7 @@ const NumField = ({
         onChange(Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : 0);
       }}
       className="w-full px-3 py-2 rounded-lg font-body text-sm border"
-      style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }}
+      style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
     />
   </div>
 );

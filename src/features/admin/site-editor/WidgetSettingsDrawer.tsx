@@ -101,7 +101,7 @@ const NumberField = ({
       className={NUM_INPUT}
       style={{
         borderColor: "hsl(var(--border))",
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "hsl(var(--card))",
         color: "#1a1a1a",
       }}
     />
@@ -203,7 +203,7 @@ const WidgetSettingsDrawer = ({
                     onChange={(e) => setSavingName(e.target.value)}
                     placeholder="e.g. Footer Newsletter CTA"
                     className={NUM_INPUT}
-                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF", color: "#1a1a1a" }}
+                    style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && savingName.trim()) handleConfirmSave();
                       if (e.key === "Escape") setSavingName(null);
@@ -315,7 +315,7 @@ const WidgetSettingsDrawer = ({
                 className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
                 style={{
                   borderColor: "hsl(var(--border))",
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: "hsl(var(--card))",
                   color: "#1a1a1a",
                 }}
               />

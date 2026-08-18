@@ -86,7 +86,7 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
                 value={text}
                 onChange={(v) => updateAchievement(i, v)}
                 placeholder="Achievement text"
-                style={{ borderColor: "hsl(var(--border))", backgroundColor: "#FFFFFF" }}
+                style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
               />
               <button type="button" onClick={() => removeAchievement(i)} className="mt-2 hover:opacity-70 transition-opacity" style={{ color: "hsl(var(--destructive))" }}>
                 <Trash2 size={14} />

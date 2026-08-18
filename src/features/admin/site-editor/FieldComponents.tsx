@@ -6,7 +6,7 @@ import { useBrandColors } from "@/hooks/useBrandSettings";
 /* Shared style: always legible regardless of site theme */
 const INPUT_STYLE: React.CSSProperties = {
   borderColor: "hsl(var(--border))",
-  backgroundColor: "#FFFFFF",
+  backgroundColor: "hsl(var(--card))",
   color: "#1a1a1a",
 };
 
