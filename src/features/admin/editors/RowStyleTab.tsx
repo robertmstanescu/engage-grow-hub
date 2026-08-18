@@ -180,17 +180,16 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   const columnWidths =
     row.layout?.column_widths || Array(widthColCount).fill(Math.round(100 / widthColCount));
 
-  // ── Gradient & overlay defaults ────────────────────────────────────
-  const currentGradient = row.layout?.gradient;
-  const rowDefaults = ROW_DEFAULTS[row.type] || { start: "#4D1B5E", end: "#5A2370" };
-  const legacyStart = row.layout?.gradientStart || rowDefaults.start;
-  const legacyEnd = row.layout?.gradientEnd || rowDefaults.end;
   const currentOverlays = row.layout?.overlays || [];
 
-  // ── Background opacity / image ─────────────────────────────────────
+  // ── Background opacity ─────────────────────────────────────────────
   const bgColorOpacity = row.layout?.bgColorOpacity ?? 100;
-  const bgImageOpacity = row.layout?.bgImageOpacity ?? 100;
-  const bgImage = row.layout?.bgImage || "";
+
+  // ── Page mesh (hero rows only) ─────────────────────────────────────
+  // The hero owns the single gradient painted behind the entire page.
+  const isHero = row.type === "hero";
+  const mesh = { ...DEFAULT_PAGE_MESH, ...(row.layout?.mesh || {}) };
+  const meshColors = (mesh.colors?.length === 4 ? mesh.colors : DEFAULT_PAGE_MESH.colors) as string[];
   // ── Snap to viewport toggle ────────────────────────────────────────
   // Default OFF: only the Hero snaps. Admins opt-in for hero-class rows
   // (e.g. the Vows pledge) where a full-viewport reveal is desired.
