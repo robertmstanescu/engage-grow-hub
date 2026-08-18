@@ -95,11 +95,12 @@ const Footer = () => {
               <ul className="space-y-2.5">
                 {col.links.map((link, j) => (
                   <li key={j}>
-                    <a href={link.href} className="font-body text-xs transition-all duration-500 hover:opacity-100" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
+                    <a href={resolveHref(link.href)} className="font-body text-xs transition-all duration-500 hover:opacity-100" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
                       {link.label}
                     </a>
                   </li>
                 ))}
+
                 {col === connectColumn && activeLinks.map((p) => {
                   const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;
                   return (
