@@ -280,9 +280,65 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                 </span>
               </div>
             </div>
+
+            {/* ── Page background (hero rows only) ──
+                The hero owns the ONE gradient behind the whole page.
+                Every other row sits transparent on top of it. */}
+            {isHero && (
+              <div className="pt-1 border-t border-border">
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 mt-3 block text-muted-foreground">
+                  Page background (whole page)
+                </label>
+                <div
+                  className="h-14 rounded-lg border border-border mb-2"
+                  style={{ background: buildPageMeshCSS(mesh) }}
+                />
+                <div className="grid grid-cols-4 gap-1.5">
+                  {meshColors.map((c, i) => (
+                    <input
+                      key={i}
+                      type="color"
+                      value={c}
+                      aria-label={`Page background colour ${i + 1}`}
+                      onChange={(e) => {
+                        const next = [...meshColors];
+                        next[i] = e.target.value;
+                        patchLayout({ mesh: { ...mesh, colors: next } });
+                      }}
+                      className="w-full h-9 rounded border border-border cursor-pointer"
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
+                    Intensity
+                  </span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={mesh.strength}
+                    onChange={(e) => patchLayout({ mesh: { ...mesh, strength: Number(e.target.value) } })}
+                    className="flex-1"
+                    style={{ accentColor: "hsl(var(--secondary))" }}
+                  />
+                  <span className="font-body text-[10px] text-foreground min-w-[32px] text-right">
+                    {mesh.strength}%
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => patchLayout({ mesh: DEFAULT_PAGE_MESH })}
+                  className="mt-2 font-body text-[10px] underline text-muted-foreground hover:text-foreground"
+                >
+                  Reset to brand default
+                </button>
+              </div>
+            )}
           </div>
         </AccordionContent>
       </AccordionItem>
+
 
       {/* ═══ EDGES ═══ */}
       <AccordionItem value="edges" className="border-none">
