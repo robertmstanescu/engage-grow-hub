@@ -92,7 +92,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
         <a
           href="#contact"
           className="font-display text-[10px] uppercase tracking-[0.1em] font-bold px-4 py-2 rounded-full inline-block transition-opacity duration-300 hover:opacity-90"
-          style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}
+          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >
           {price}
         </a>
