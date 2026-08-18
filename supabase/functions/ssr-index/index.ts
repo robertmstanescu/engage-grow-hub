@@ -91,6 +91,8 @@ interface SeoPayload {
   description: string;
   canonical: string;
   ogImage: string | null;
+  /** Open Graph object type — "article" for blog posts, "website" elsewhere. */
+  ogType?: "website" | "article";
   jsonLd: object | null;
   noscript: string;
 }
@@ -254,15 +256,15 @@ const applySeoToDocument = (doc: HTMLDocument, payload: SeoPayload): void => {
   setLinkRel(doc, head, "canonical", payload.canonical);
 
   // Open Graph
-  setMetaProperty(doc, head, "og:type", "website");
+  setMetaProperty(doc, head, "og:type", payload.ogType || "website");
   setMetaProperty(doc, head, "og:title", payload.title);
   if (payload.description) {
     setMetaProperty(doc, head, "og:description", payload.description);
   }
   setMetaProperty(doc, head, "og:url", payload.canonical);
-  if (payload.ogImage) {
-    setMetaProperty(doc, head, "og:image", payload.ogImage);
-  }
+  // Fall back to the sitewide preview card so no shared link is imageless.
+  const ogImage = payload.ogImage || `${new URL(payload.canonical).origin}/og-image.jpg`;
+  setMetaProperty(doc, head, "og:image", ogImage);
 
   // Twitter
   setMetaName(doc, head, "twitter:card", "summary_large_image");
@@ -270,9 +272,7 @@ const applySeoToDocument = (doc: HTMLDocument, payload: SeoPayload): void => {
   if (payload.description) {
     setMetaName(doc, head, "twitter:description", payload.description);
   }
-  if (payload.ogImage) {
-    setMetaName(doc, head, "twitter:image", payload.ogImage);
-  }
+  setMetaName(doc, head, "twitter:image", ogImage);
 
   setJsonLd(doc, head, payload.jsonLd);
   if (body) setNoscript(doc, body, payload);
@@ -358,6 +358,7 @@ const buildBlogSeo = async (
     description,
     canonical: `${origin}/blog/${slug}/`,
     ogImage,
+    ogType: "article",
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "Article",

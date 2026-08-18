@@ -24,7 +24,16 @@ interface PageMetaProps {
   description?: string;
   ogImage?: string;
   suffix?: string;
+  /** Open Graph object type. Use "article" for blog posts. */
+  ogType?: "website" | "article";
 }
+
+/**
+ * Sitewide social-preview image. Lives in `public/` so it resolves at the
+ * site root; we make it absolute below because crawlers reject relative
+ * og:image URLs. Used whenever a page has no image of its own.
+ */
+const DEFAULT_OG_IMAGE_PATH = "/og-image.jpg";
 
 /* ─────────────────────────────────────────────────────────────────────
    GLOBAL HEAD INJECTOR
@@ -134,7 +143,7 @@ const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
   }
 };
 
-const usePageMeta = ({ title, description, ogImage, suffix }: PageMetaProps) => {
+const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website" }: PageMetaProps) => {
   const location = useLocation();
 
   useEffect(() => {
@@ -182,20 +191,30 @@ const usePageMeta = ({ title, description, ogImage, suffix }: PageMetaProps) => 
       }
       canonical.setAttribute("href", canonicalUrl);
 
+      // Resolve the preview image: page-specific first, then the sitewide
+      // fallback. Always absolute — relative og:image URLs are ignored by
+      // Facebook, LinkedIn, Slack and X.
+      const rawImage = ogImage || DEFAULT_OG_IMAGE_PATH;
+      const socialImage = /^https?:\/\//i.test(rawImage)
+        ? rawImage
+        : `${canonicalOrigin}${rawImage.startsWith("/") ? "" : "/"}${rawImage}`;
+
       if (description) setMeta("description", description);
+      setMeta("og:type", ogType, true);
       setMeta("og:title", socialTitle, true);
       if (description) setMeta("og:description", description, true);
-      if (ogImage) setMeta("og:image", ogImage, true);
+      setMeta("og:image", socialImage, true);
       setMeta("og:url", canonicalUrl, true);
+      setMeta("twitter:card", "summary_large_image");
       setMeta("twitter:title", socialTitle);
       if (description) setMeta("twitter:description", description);
-      if (ogImage) setMeta("twitter:image", ogImage);
+      setMeta("twitter:image", socialImage);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [title, description, ogImage, suffix, location.pathname]);
+  }, [title, description, ogImage, suffix, ogType, location.pathname]);
 };
 
 export default usePageMeta;
