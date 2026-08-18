@@ -740,72 +740,71 @@
     white-space: nowrap;
   }
   /*
-   * Hover → Intense Cream (--primary-foreground, #F9F0C1).
-   * Active link colour (Eliza gold, #E5C54F) is set inline in the
-   * Navbar component and uses `!important` here so it wins over hover.
+   * Hover → deep violet ink on the light canvas. Active link colour
+   * (brand violet) wins via !important over hover.
    */
   .side-nav-label:hover {
-    color: hsl(var(--primary-foreground)) !important;
+    color: hsl(var(--foreground)) !important;
   }
   .side-nav-label[data-active="true"] {
-    color: hsl(var(--accent)) !important;
+    color: hsl(var(--primary)) !important;
   }
   .side-nav-label[data-active="true"]:hover {
-    color: hsl(var(--accent)) !important;
+    color: hsl(var(--primary)) !important;
   }
 
   /* Mobile nav links — same hover/active palette as side nav. */
   .mobile-nav-link:hover {
-    color: hsl(var(--primary-foreground)) !important;
+    color: hsl(var(--foreground)) !important;
   }
   .mobile-nav-link[data-active="true"],
   .mobile-nav-link[data-active="true"]:hover {
-    color: hsl(var(--accent)) !important;
+    color: hsl(var(--primary)) !important;
   }
 
-  /* Top nav links (desktop horizontal fallback) — same palette. */
+  /* Top nav links (desktop horizontal pill bar). */
   .top-nav-label {
-    font-size: 8px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
     white-space: nowrap;
     cursor: pointer;
     transition: color 300ms cubic-bezier(0.16, 1, 0.3, 1);
   }
   .top-nav-label:hover {
-    color: hsl(var(--primary-foreground)) !important;
+    color: hsl(var(--foreground)) !important;
   }
   .top-nav-label[data-active="true"],
   .top-nav-label[data-active="true"]:hover {
-    color: hsl(var(--accent)) !important;
+    color: hsl(var(--primary)) !important;
   }
 
-  /* ── Navbar scope (for admin pages) ── */
+  /* ── Navbar scope ── */
   .scope-navbar {
-    --nav-bg: 260 20% 6%;
-    --nav-text: 30 20% 94%;
-    --nav-text-muted: 30 20% 70%;
-    --nav-dropdown-bg: 260 25% 10%;
-    --nav-dropdown-hover: 280 55% 24%;
-    --nav-cta-bg: 46 75% 60%;
-    --nav-cta-text: 280 57% 13%;
-    --nav-border: 280 20% 18%;
+    --nav-bg: 0 0% 100%;
+    --nav-text: 282 40% 13%;
+    --nav-text-muted: 281 16% 40%;
+    --nav-dropdown-bg: 0 0% 100%;
+    --nav-dropdown-hover: 288 30% 95%;
+    --nav-cta-bg: 280 57% 16%;
+    --nav-cta-text: 45 60% 96%;
+    --nav-border: 285 22% 89%;
   }
 
   /* ── Hero scope ── */
   .scope-hero {
-    --hero-bg: 260 20% 4%;
-    --hero-title: 30 20% 94%;
-    --hero-title-accent: 46 75% 60%;
-    --hero-label: 46 75% 60%;
-    --hero-body: 30 20% 80%;
+    --hero-bg: 32 40% 97%;
+    --hero-title: 282 40% 13%;
+    --hero-title-accent: 280 55% 34%;
+    --hero-label: 40 68% 30%;
+    --hero-body: 281 16% 34%;
   }
 
   .scope-footer {
-    --footer-bg: 260 20% 4%;
-    --footer-text: 30 20% 80%;
-    --footer-text-sub: 30 20% 50%;
+    --footer-bg: 288 30% 96%;
+    --footer-text: 281 16% 32%;
+    --footer-text-sub: 281 12% 48%;
   }
+
 }
 
 @layer utilities {
