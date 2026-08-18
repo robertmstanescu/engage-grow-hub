@@ -101,6 +101,20 @@ const RowSection = ({
 
   const snapEnabled = row.layout?.snapEnabled === true;
 
+  /* ── Band system ────────────────────────────────────────────────
+   *  Sections belong to one of three tones: white, tint (soft plum
+   *  wash) or deep (plum ink). "auto" lets the stylesheet alternate
+   *  white/tint by document order so a page reads as calm bands
+   *  without the admin having to set anything. An explicit tone wins
+   *  over legacy per-row colours and decorative gradients — those are
+   *  what made the old page look muddy. */
+  const band = (row.layout as { bandTone?: string } | undefined)?.bandTone || "auto";
+  const explicitBand = band === "white" || band === "tint" || band === "deep";
+  const bandFg =
+    band === "deep" ? "hsl(var(--band-deep-fg))"
+    : explicitBand ? "hsl(var(--band-white-fg))"
+    : resolveRowForeground(row);
+
   return (
     <>
       {scopedCss && <style dangerouslySetInnerHTML={{ __html: scopedCss }} />}
@@ -110,10 +124,11 @@ const RowSection = ({
         data-row-id={dataRowId ?? row.id}
         data-row-type={dataRowType ?? row.type}
         data-row-title={dataRowTitle ?? row.strip_title}
+        data-band={band}
         data-snap-enabled={snapEnabled ? "true" : undefined}
-        className={`snap-section ${grain ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
+        className={`snap-section ${grain && !explicitBand ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
         style={{
-          backgroundColor: getRowBgColor(row, defaultBg),
+          backgroundColor: explicitBand ? undefined : getRowBgColor(row, defaultBg),
           isolation: "isolate",
           scrollMarginTop: "0px",
           /*
@@ -123,7 +138,7 @@ const RowSection = ({
            * flips the text to a contrasting tone. Per-row colour
            * pickers in the admin still override via the `color` prop.
            */
-          ["--row-fg" as string]: resolveRowForeground(row),
+          ["--row-fg" as string]: bandFg,
           ...style,
         }}
       >
@@ -134,7 +149,9 @@ const RowSection = ({
           3. Overlay elements     — z-[-1]: decorative PNGs (logos, shapes) above bg
           4. {children}           — actual row content, on top of everything
         */}
-        <div className="absolute inset-0 pointer-events-none z-[-3]"><RowBackground row={row} /></div>
+        {!explicitBand && (
+          <div className="absolute inset-0 pointer-events-none z-[-3]"><RowBackground row={row} /></div>
+        )}
         <div aria-hidden className="absolute inset-0 pointer-events-none z-[-2]" style={getRowBgImageStyle(row)} />
         {row.layout?.overlays?.length ? (
           <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden">
@@ -145,6 +162,7 @@ const RowSection = ({
       </section>
     </>
   );
+
 };
 
 export default RowSection;
