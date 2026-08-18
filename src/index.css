@@ -6,30 +6,51 @@
 
 @layer base {
   :root {
-    --background: 260 20% 6%; /* Near-black purple */
-    --foreground: 30 20% 94%; /* Isabelline */
-    --card: 260 25% 10%; /* Dark purple card */
-    --card-foreground: 30 20% 94%;
-    --popover: 260 25% 10%;
-    --popover-foreground: 30 20% 94%;
+    /* ──────────────────────────────────────────────────────────────
+       LIGHT BRAND THEME (Lativ-style)
+       Same brand hues (violet #4D1B5E, plum, gold #E5C54F, isabelline)
+       re-toned for a soft, airy light canvas. HSL channel format only.
+       ────────────────────────────────────────────────────────────── */
+    --background: 32 30% 97%; /* warm isabelline canvas */
+    --foreground: 282 40% 13%; /* deep plum ink */
+    --card: 0 0% 100%;
+    --card-foreground: 282 40% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 282 40% 13%;
     --primary: 280 55% 24%; /* #4D1B5E */
-    --primary-foreground: 50 82% 87%; /* #F9F0C1 */
-    --secondary: 280 57% 13%; /* #2A0E33 */
-    --secondary-foreground: 50 82% 87%;
-    --muted: 260 15% 14%;
-    --muted-foreground: 30 10% 55%;
-    --accent: 46 75% 60%; /* #E5C54F */
+    --primary-foreground: 45 60% 97%;
+    --secondary: 285 38% 94%; /* pale violet surface */
+    --secondary-foreground: 280 55% 24%;
+    --muted: 288 24% 95%;
+    --muted-foreground: 281 16% 40%;
+    --accent: 46 75% 58%; /* #E5C54F */
     --accent-foreground: 280 57% 13%;
-    --destructive: 0 84% 60%;
+    --accent-ink: 40 68% 30%; /* legible gold-on-light text */
+    --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
-    --border: 280 20% 18%;
-    --input: 280 20% 18%;
+    --border: 285 22% 89%;
+    --input: 285 22% 89%;
     --ring: 280 55% 24%;
-    --radius: 0.75rem;
+    --radius: 1.5rem;
 
-    /* Light section tokens */
-    --light-bg: 30 20% 94%; /* Isabelline */
-    --light-fg: 260 20% 10%;
+    /* Soft light gradients / shadows */
+    --gradient-canvas: linear-gradient(
+      180deg,
+      hsl(288 42% 94%) 0%,
+      hsl(32 40% 97%) 45%,
+      hsl(45 55% 95%) 100%
+    );
+    --gradient-hero: radial-gradient(ellipse 90% 70% at 15% 0%, hsl(286 50% 90%), transparent 70%),
+      radial-gradient(ellipse 80% 60% at 95% 20%, hsl(45 70% 90%), transparent 70%),
+      radial-gradient(ellipse 70% 60% at 50% 110%, hsl(280 40% 92%), transparent 70%),
+      hsl(32 40% 97%);
+    --gradient-card: linear-gradient(160deg, hsl(0 0% 100%) 0%, hsl(288 30% 98%) 100%);
+    --shadow-soft: 0 1px 2px hsl(282 40% 13% / 0.04), 0 8px 24px -12px hsl(282 40% 13% / 0.12);
+    --shadow-card: 0 1px 2px hsl(282 40% 13% / 0.05), 0 18px 40px -24px hsl(282 40% 13% / 0.25);
+
+    /* Light section tokens (inverted band = deep plum) */
+    --light-bg: 32 30% 97%;
+    --light-fg: 282 40% 13%;
 
     /* Extended brand palette */
     --valentino: 286 42% 40%;
@@ -40,71 +61,72 @@
     --plum: 310 52% 17%;
     --isabelline: 30 20% 94%;
 
-    --sidebar-background: 260 25% 8%;
-    --sidebar-foreground: 30 20% 94%;
-    --sidebar-primary: 46 75% 60%;
-    --sidebar-primary-foreground: 260 20% 6%;
-    --sidebar-accent: 280 20% 15%;
-    --sidebar-accent-foreground: 30 20% 94%;
-    --sidebar-border: 280 20% 18%;
-    --sidebar-ring: 46 75% 60%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 282 40% 13%;
+    --sidebar-primary: 280 55% 24%;
+    --sidebar-primary-foreground: 45 60% 97%;
+    --sidebar-accent: 288 30% 95%;
+    --sidebar-accent-foreground: 282 40% 13%;
+    --sidebar-border: 285 22% 89%;
+    --sidebar-ring: 280 55% 24%;
 
     --font-title: "Unbounded", sans-serif;
     --font-header: "Bricolage Grotesque", sans-serif;
     --font-body: "Inter", sans-serif;
 
     /* ── Pillar/service tokens ── */
-    --pillar-label: 46 75% 60%;
-    --pillar-heading: 30 20% 94%;
-    --pillar-heading-sub: 30 20% 80%;
-    --pillar-section-bg: 260 20% 6%;
-    --pillar-primary: 46 75% 60%;
-    --pillar-card-bg: 260 25% 10%;
-    --pillar-card-title: 30 20% 94%;
-    --pillar-subtitle: 46 75% 60%;
-    --pillar-body: 30 20% 80%;
-    --pillar-deliverables-bg: 260 20% 8%;
-    --pillar-deliverables-label: 46 75% 60%;
-    --pillar-tag-fixed-bg: 46 75% 60%;
-    --pillar-tag-fixed-fg: 280 57% 13%;
-    --pillar-tag-retainer-bg: 280 55% 24%;
-    --pillar-tag-retainer-fg: 50 82% 87%;
-    --pillar-meta-bg: 260 20% 8%;
-    --pillar-meta-fg: 46 75% 60%;
-    --pillar-note-border: 46 75% 60%;
-    --pillar-note-bg: 260 25% 10%;
-    --pillar-divider-from: 280 55% 24%;
-    --pillar-divider-to: 286 42% 40%;
-    --pillar-card-description: 30 20% 70%;
-    --pillar-cta-text: 46 75% 60%;
-    --pillar-cta-time: 30 20% 55%;
-    --pillar-carousel-btn-bg: 0 0% 100%;
-    --pillar-carousel-btn-fg: 0 0% 100%;
-    --pillar-dot-active: 46 75% 60%;
-    --pillar-dot-inactive: 0 0% 100%;
+    --pillar-label: 40 68% 30%;
+    --pillar-heading: 282 40% 13%;
+    --pillar-heading-sub: 281 20% 32%;
+    --pillar-section-bg: 32 30% 97%;
+    --pillar-primary: 280 55% 24%;
+    --pillar-card-bg: 0 0% 100%;
+    --pillar-card-title: 282 40% 13%;
+    --pillar-subtitle: 280 55% 34%;
+    --pillar-body: 281 16% 34%;
+    --pillar-deliverables-bg: 288 30% 97%;
+    --pillar-deliverables-label: 280 55% 30%;
+    --pillar-tag-fixed-bg: 46 80% 78%;
+    --pillar-tag-fixed-fg: 40 68% 22%;
+    --pillar-tag-retainer-bg: 285 45% 92%;
+    --pillar-tag-retainer-fg: 280 55% 28%;
+    --pillar-meta-bg: 288 30% 96%;
+    --pillar-meta-fg: 280 55% 28%;
+    --pillar-note-border: 46 75% 55%;
+    --pillar-note-bg: 45 70% 96%;
+    --pillar-divider-from: 285 30% 88%;
+    --pillar-divider-to: 45 40% 90%;
+    --pillar-card-description: 281 16% 38%;
+    --pillar-cta-text: 280 55% 28%;
+    --pillar-cta-time: 281 12% 48%;
+    --pillar-carousel-btn-bg: 282 40% 13%;
+    --pillar-carousel-btn-fg: 282 40% 13%;
+    --pillar-dot-active: 280 55% 24%;
+    --pillar-dot-inactive: 282 20% 60%;
 
     /* ── Vows/boxed tokens ── */
-    --vows-bg: 260 20% 6%;
-    --vows-title: 30 20% 94%;
-    --vows-card-border: 280 20% 20%;
-    --vows-card-title: 46 75% 60%;
-    --vows-card-body: 30 20% 80%;
+    --vows-bg: 32 30% 97%;
+    --vows-title: 282 40% 13%;
+    --vows-card-border: 285 22% 88%;
+    --vows-card-title: 280 55% 26%;
+    --vows-card-body: 281 16% 36%;
 
-    /* ── Contact tokens (light section) ── */
-    --contact-bg: 30 20% 94%;
+    /* ── Contact tokens ── */
+    --contact-bg: 32 30% 97%;
     --contact-title: 280 55% 24%;
-    --contact-body: 260 20% 20%;
-    --contact-label: 260 20% 20%;
-    --contact-input-border: 260 20% 20%;
+    --contact-body: 281 16% 32%;
+    --contact-label: 282 30% 20%;
+    --contact-input-border: 285 22% 85%;
     --contact-input-focus: 280 55% 24%;
-    --contact-input-text: 260 20% 10%;
-    --contact-btn-bg: 280 57% 13%;
-    --contact-btn-text: 50 80% 87%;
-    --contact-success-bg: 46 75% 60%;
+    --contact-input-text: 282 40% 13%;
+    --contact-btn-bg: 280 57% 16%;
+    --contact-btn-text: 45 60% 96%;
+    --contact-success-bg: 46 80% 82%;
     --contact-success-fg: 280 57% 13%;
-    --contact-success-btn-bg: 280 57% 13%;
-    --contact-success-btn-text: 46 75% 60%;
+    --contact-success-btn-bg: 280 57% 16%;
+    --contact-success-btn-text: 45 70% 92%;
   }
+
 }
 
 @layer base {
