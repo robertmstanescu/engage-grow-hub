@@ -158,156 +158,70 @@ const Navbar = () => {
   };
 
   /**
-   * Decide whether the desktop vertical rail can fit in the viewport.
-   * We compute needed height from item count rather than measuring the
-   * DOM — once we've switched to horizontal the rail's actual height
-   * shrinks, so a DOM-based measurement would flip us back into vertical
-   * and oscillate.
-   *
-   * Per-item budget in the vertical rail (labels are rotated 90° so
-   * their visual height ≈ label width — ~150px covers realistic labels):
-   *   item ≈ 150px, gap ≈ 20px, fixed chrome ≈ 128px (logo + CTA + padding).
+   * Lativ-style layout: the desktop nav is a floating rounded pill bar
+   * pinned to the top, so the vertical rail is retired. We keep the
+   * `verticalFits` state name for the offset publishing logic below but
+   * it is always false now (horizontal bar on every breakpoint).
    */
-  useLayoutEffect(() => {
-    const ITEM_HEIGHT = 120;
-    const ITEM_GAP = 16;
-    const CHROME = 80;
-    const check = () => {
-      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
-      if (!isDesktop) {
-        setVerticalFits(true);
-        return;
-      }
-      const count = renderedItems.length;
-      if (count === 0) {
-        setVerticalFits(true);
-        return;
-      }
-      const needed = CHROME + count * ITEM_HEIGHT + Math.max(0, count - 1) * ITEM_GAP;
-      setVerticalFits(needed <= window.innerHeight);
-    };
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, [renderedItems.length]);
+  const verticalFits = false;
 
   /**
    * Publish the navbar's current footprint as CSS custom properties on
    * <html>, so page wrappers can offset content using a single source of
-   * truth instead of hardcoded `lg:pl-16` / `pt-14` classes.
-   *
-   *   --nav-left-offset → horizontal space the left-rail nav occupies
-   *   --nav-top-offset  → vertical space the top-bar nav occupies
-   *
-   * Three modes:
-   *   1. Mobile (<lg)         → top bar (56px) → top offset only
-   *   2. Desktop, vertical    → left rail (64px) → left offset only
-   *   3. Desktop, horizontal  → top bar (56px)  → top offset only
+   * truth instead of hardcoded padding classes.
    */
   useLayoutEffect(() => {
     const apply = () => {
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
       const root = document.documentElement;
-      if (!isDesktop) {
-        root.style.setProperty("--nav-left-offset", "0px");
-        root.style.setProperty("--nav-top-offset", "36px");
-      } else if (verticalFits) {
-        root.style.setProperty("--nav-left-offset", "40px");
-        root.style.setProperty("--nav-top-offset", "0px");
-      } else {
-        root.style.setProperty("--nav-left-offset", "0px");
-        root.style.setProperty("--nav-top-offset", "36px");
-      }
+      root.style.setProperty("--nav-left-offset", "0px");
+      root.style.setProperty("--nav-top-offset", isDesktop ? "88px" : "56px");
     };
     apply();
     window.addEventListener("resize", apply);
     return () => window.removeEventListener("resize", apply);
-  }, [verticalFits]);
+  }, []);
 
   return (
     <>
-      {/*
-        Desktop navigation. Default = vertical left rail.
-        When the rail's content height exceeds the viewport (short
-        windows, lots of links, zoomed-in browsers), we collapse to a
-        horizontal top bar that always fits.
-      */}
+      {/* Desktop navigation — floating rounded pill bar */}
       <nav
         ref={railRef}
-        className={
-          verticalFits
-            ? "hidden lg:flex fixed left-0 top-0 bottom-0 z-50 w-10 flex-col items-center py-row-fluid-lg gap-4"
-            : "hidden lg:flex fixed top-0 left-0 right-0 z-50 h-9 flex-row items-center px-3 gap-4"
-        }
-        style={
-          verticalFits
-            ? {
-                backgroundColor: "hsl(var(--background) / 0.8)",
-                backdropFilter: "blur(12px)",
-                borderRight: "1px solid hsl(var(--border) / 0.3)",
-              }
-            : {
-                backgroundColor: "hsl(var(--background) / 0.9)",
-                backdropFilter: "blur(12px)",
-                borderBottom: "1px solid hsl(var(--border) / 0.2)",
-              }
-        }
+        className="hidden lg:flex fixed top-5 left-1/2 -translate-x-1/2 z-50 items-center gap-8 rounded-full pl-6 pr-2 py-2 max-w-[min(1200px,calc(100%-64px))]"
+        style={{
+          backgroundColor: "hsl(var(--card) / 0.85)",
+          backdropFilter: "blur(16px) saturate(140%)",
+          WebkitBackdropFilter: "blur(16px) saturate(140%)",
+          border: "1px solid hsl(var(--border))",
+          boxShadow: "var(--shadow-soft)",
+        }}
       >
         <a
           href="/"
-          className={verticalFits ? "mb-2" : "flex items-center flex-shrink-0"}
+          className="flex items-center flex-shrink-0"
           style={{
-            // Cascade entrance — runs once on mount via the global
-            // `nav-cascade` keyframe (see index.css). We can't use
-            // framer-motion here because <ResponsiveLogo/> is a plain
-            // function component and motion's ref-forwarding would warn,
-            // and because the side-nav links rely on a CSS rotate(180deg)
-            // that motion's inline transform would clobber.
             animation: "nav-cascade-emblem 1100ms cubic-bezier(0.16, 1, 0.3, 1) 2600ms both",
           }}
         >
           {!brandingLoading && logoUrl ? (
-            <ResponsiveLogo
-              emblemUrl={emblemUrl}
-              logoUrl={logoUrl}
-              imgClassName={
-                verticalFits ? "w-6 h-6 object-contain brightness-200" : "h-5 object-contain brightness-200"
-              }
-              width={verticalFits ? 24 : undefined}
-              height={verticalFits ? 24 : 20}
-            />
+            <ResponsiveLogo emblemUrl={emblemUrl} logoUrl={logoUrl} imgClassName="h-7 object-contain" height={28} />
           ) : null}
         </a>
 
-        <div
-          className={
-            verticalFits
-              ? "flex-1 flex flex-col items-center justify-center gap-5"
-              : "flex-1 flex-row gap-6 flex items-center justify-start"
-          }
-        >
+        <div className="flex-1 flex flex-row items-center justify-center gap-7">
           {renderedItems.map((item, i) => {
             const active = isActive(item.href);
-            // CSS-driven cascade. Vertical (rail) labels carry an
-            // intrinsic rotate(180deg) so we use a non-transform fade
-            // keyframe (`nav-cascade-fade`) for them; horizontal labels
-            // get the slide-in keyframe (`nav-cascade`).
-            const animName = verticalFits ? "nav-cascade-fade" : "nav-cascade";
             return (
               <a
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
-                className={
-                  verticalFits
-                    ? "side-nav-label font-body"
-                    : "top-nav-label font-body"
-                }
+                className="top-nav-label font-body"
                 data-active={active}
                 style={{
-                  color: active ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.55)",
-                  fontWeight: active ? 600 : 400,
-                  animation: `${animName} 900ms cubic-bezier(0.16, 1, 0.3, 1) ${3300 + i * 150}ms both`,
+                  color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.7)",
+                  fontWeight: active ? 600 : 450,
+                  animation: `nav-cascade 900ms cubic-bezier(0.16, 1, 0.3, 1) ${3300 + i * 150}ms both`,
                 }}
               >
                 {item.label}
@@ -321,20 +235,16 @@ const Navbar = () => {
             href={ctaHref}
             onClick={(e) => handleNavClick(e, ctaHref)}
             title={ctaText}
-            className={
-              verticalFits
-                ? "w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold transition-all duration-500 hover:scale-110"
-                : "px-3 h-6 rounded-full flex items-center justify-center text-[9px] font-bold uppercase tracking-[0.14em] transition-all duration-300 hover:opacity-90 whitespace-nowrap"
-            }
+            className="px-5 h-9 rounded-full flex items-center justify-center text-xs font-semibold tracking-[0.02em] transition-all duration-300 hover:opacity-90 whitespace-nowrap"
             style={{
-              backgroundColor: "hsl(var(--accent))",
-              color: "hsl(var(--accent-foreground))",
+              backgroundColor: "hsl(var(--nav-cta-bg, 280 57% 16%))",
+              color: "hsl(var(--nav-cta-text, 45 60% 96%))",
               animation: `nav-cascade-fade 900ms cubic-bezier(0.16, 1, 0.3, 1) ${
                 3300 + renderedItems.length * 150
               }ms both`,
             }}
           >
-            {verticalFits ? "→" : ctaText || "→"}
+            {ctaText || "→"}
           </a>
         ) : null}
       </nav>
@@ -345,7 +255,7 @@ const Navbar = () => {
         style={{
           backgroundColor: "hsl(var(--background) / 0.9)",
           backdropFilter: "blur(12px)",
-          borderBottom: "1px solid hsl(var(--border) / 0.2)",
+          borderBottom: "1px solid hsl(var(--border))",
         }}
       >
         <a
@@ -357,7 +267,7 @@ const Navbar = () => {
               emblemUrl={emblemUrl}
               logoUrl={logoUrl}
               className="flex items-center"
-              imgClassName="h-7 brightness-200 object-contain"
+              imgClassName="h-7 object-contain"
               height={28}
             />
           ) : null}
@@ -373,6 +283,7 @@ const Navbar = () => {
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </nav>
+
 
       {/* Mobile menu overlay */}
       <AnimatePresence>
