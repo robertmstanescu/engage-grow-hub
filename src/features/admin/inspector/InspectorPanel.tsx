@@ -10,6 +10,8 @@ import { countRowWidgets } from "../builder/rowWidgetCount";
 import CellSettingsEditor from "./CellSettingsEditor";
 import { type BoxField } from "./BoxModelControl";
 import WidgetInspectorTabs, { pickTabForFocusKey, type InspectorTab } from "./WidgetInspectorTabs";
+import SlugField, { slugify } from "../site-editor/SlugField";
+
 import { resolveRowBgColor } from "@/lib/rowForeground";
 import { DEFAULT_DESIGN_SETTINGS, readDesignSettings } from "@/lib/constants/rowDefaults";
 // Debug Story 1.1 — sibling-safe widget lookup/patch helpers. The
