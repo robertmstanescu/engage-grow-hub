@@ -836,10 +836,10 @@
   }
 
   /* ── Light section ── */
+  /* No surface of its own — rows sit transparent on the page mesh unless
+     an admin picks a colour in Style ▸ Row background. */
   .section-light {
     --foreground: 282 40% 13%;
-    background-color: hsl(var(--light-bg));
-    color: hsl(var(--light-fg));
   }
 
 
