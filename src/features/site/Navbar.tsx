@@ -62,8 +62,20 @@ const Navbar = () => {
    * path is identical to the DB default for fresh projects.
    */
   const { isLoading: navLoading, content: navConfig } = useSiteContentWithStatus<Record<string, any>>("navbar", {});
-  const logoUrl = branding.logo_url || "";
-  const emblemUrl = branding.emblem_logo_url || logoUrl;
+  /*
+   * Light theme → we need the DARK logo assets. Prefer the dedicated dark
+   * uploads from Brand settings; when they are missing we fall back to the
+   * light asset plus the `.logo-darken` CSS filter so the mark is never
+   * pale-on-pale.
+   */
+  const lightLogo = branding.logo_url || "";
+  const lightEmblem = branding.emblem_logo_url || lightLogo;
+  const darkLogo = branding.logo_dark_url || "";
+  const darkEmblem = branding.emblem_dark_url || darkLogo;
+  const logoUrl = darkLogo || lightLogo;
+  const emblemUrl = darkEmblem || (darkLogo ? darkLogo : lightEmblem);
+  const needsDarken = !darkLogo && !darkEmblem;
+
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
