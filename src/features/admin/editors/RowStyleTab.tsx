@@ -103,7 +103,7 @@ const SHAPE_SIZES: [SectionShapeSize, string][] = [
   ["dramatic", "Dramatic"],
 ];
 
-const ShapePicker = ({
+export const ShapePicker = ({
   label,
   value,
   onChange,

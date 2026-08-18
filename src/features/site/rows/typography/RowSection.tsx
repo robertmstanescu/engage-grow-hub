@@ -4,7 +4,7 @@ import { getRowBgColor } from "../rowBackground";
 import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEditor";
 import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
-import SectionShape, { roundedRadius } from "../SectionShape";
+import SectionShape from "../SectionShape";
 
 
 interface Props {
