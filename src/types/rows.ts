@@ -102,6 +102,12 @@ export interface RowLayout {
   shapeTop?: SectionShapeConfig;
   /** Decorative shape on the row's bottom edge. */
   shapeBottom?: SectionShapeConfig;
+  /**
+   * Hairline separator drawn along the row's top edge. Off by default.
+   * "full" spans the viewport, "content" is inset to the row container
+   * so it lines up with the text column.
+   */
+  dividerTop?: "none" | "full" | "content";
 }
 
 /* ─── Section shapes ───────────────────────────────────────────────── */

@@ -174,7 +174,7 @@ const CookieConsent = () => {
           <div className="px-4 py-4">
             {/* Current status pill */}
             <div className="mb-3">
-              <p className="font-body text-[11px] uppercase tracking-wider opacity-60 mb-1.5">
+              <p className="font-body text-micro uppercase tracking-wider opacity-60 mb-1.5">
                 Your current preference
               </p>
               <div className="flex items-center gap-2">
@@ -184,7 +184,7 @@ const CookieConsent = () => {
                     backgroundColor: isAccepted ? "hsl(140 60% 55%)" : "hsl(0 70% 60%)",
                   }}
                 />
-                <span className="font-body text-[13px]">
+                <span className="font-body text-mini">
                   {isAccepted
                     ? "Accepted — analytics cookies are active."
                     : currentStatus === "rejected"
@@ -196,7 +196,7 @@ const CookieConsent = () => {
 
             {/* Plain-English summary */}
             <p
-              className="font-body text-[12px] leading-relaxed mb-4"
+              className="font-body text-mini leading-relaxed mb-4"
               style={{ color: "hsl(var(--muted-foreground))" }}
             >
               We use a small number of cookies to understand which of our articles
@@ -205,7 +205,7 @@ const CookieConsent = () => {
             </p>
 
             {/* Cookie inventory — one card per stored value */}
-            <p className="font-body text-[11px] uppercase tracking-wider opacity-60 mb-2">
+            <p className="font-body text-micro uppercase tracking-wider opacity-60 mb-2">
               What we store when you accept
             </p>
             <ul className="space-y-2.5 mb-4">
@@ -220,19 +220,19 @@ const CookieConsent = () => {
                 >
                   <div className="flex items-baseline justify-between gap-2 mb-1">
                     <code
-                      className="font-mono text-[11px]"
+                      className="font-mono text-micro"
                       style={{ color: "hsl(var(--accent-ink))" }}
                     >
                       {c.name}
                     </code>
                     <span
-                      className="font-body text-[10px] uppercase tracking-wider opacity-50"
+                      className="font-body text-micro uppercase tracking-wider opacity-50"
                     >
                       {c.lifespan}
                     </span>
                   </div>
                   <p
-                    className="font-body text-[12px] leading-relaxed"
+                    className="font-body text-mini leading-relaxed"
                     style={{ color: "hsl(var(--muted-foreground))" }}
                   >
                     {c.purpose}
@@ -252,7 +252,7 @@ const CookieConsent = () => {
               <button
                 type="button"
                 onClick={() => recordChoice("rejected", false)}
-                className="flex-1 font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-full transition-colors"
+                className="flex-1 font-body text-micro uppercase tracking-wider px-3 py-2 rounded-full transition-colors"
                 style={{
                   border: "1px solid hsl(var(--border))",
                   color: "hsl(var(--foreground))",
@@ -264,7 +264,7 @@ const CookieConsent = () => {
               <button
                 type="button"
                 onClick={() => recordChoice("accepted", false)}
-                className="flex-1 font-display text-[10px] uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
+                className="flex-1 font-display text-micro uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
                 style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
               >
                 {currentStatus === "rejected" ? "Accept cookies" : "Accept cookies"}
@@ -273,7 +273,7 @@ const CookieConsent = () => {
             <button
               type="button"
               onClick={() => setVisible(false)}
-              className="font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-full transition-opacity hover:opacity-70"
+              className="font-body text-micro uppercase tracking-wider px-3 py-2 rounded-full transition-opacity hover:opacity-70"
               style={{ color: "hsl(var(--muted-foreground))" }}
             >
               Done
@@ -317,7 +317,7 @@ const CookieConsent = () => {
             >
               {view === "compact" ? "We respect your privacy" : "Choose what you allow"}
             </h2>
-            <p className="font-body text-[12px] leading-relaxed mt-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <p className="font-body text-mini leading-relaxed mt-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
               {view === "compact"
                 ? "We use a simple cookie to remember how you found us. This helps us understand which of our links are most helpful. We never store personal information without your explicit consent. 😊"
                 : "Accept lets us remember you across visits so your form submissions enrich our content insights. Reject keeps every page view fully anonymous — you'll still get the same site."}
@@ -328,7 +328,7 @@ const CookieConsent = () => {
                 <button
                   type="button"
                   onClick={() => recordChoice("accepted")}
-                  className="flex-1 font-display text-[10px] uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
+                  className="flex-1 font-display text-micro uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
                   style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
                 >
                   Accept
@@ -336,7 +336,7 @@ const CookieConsent = () => {
                 <button
                   type="button"
                   onClick={() => setView("preferences")}
-                  className="font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-full transition-opacity hover:opacity-70"
+                  className="font-body text-micro uppercase tracking-wider px-3 py-2 rounded-full transition-opacity hover:opacity-70"
                   style={{ color: "hsl(var(--muted-foreground))" }}
                 >
                   Preferences
@@ -347,7 +347,7 @@ const CookieConsent = () => {
                 <button
                   type="button"
                   onClick={() => recordChoice("accepted")}
-                  className="flex-1 font-display text-[10px] uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
+                  className="flex-1 font-display text-micro uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
                   style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
                 >
                   Accept
@@ -355,7 +355,7 @@ const CookieConsent = () => {
                 <button
                   type="button"
                   onClick={() => recordChoice("rejected")}
-                  className="flex-1 font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-full transition-colors"
+                  className="flex-1 font-body text-micro uppercase tracking-wider px-3 py-2 rounded-full transition-colors"
                   style={{
                     border: "1px solid hsl(var(--border))",
                     color: "hsl(var(--foreground))",

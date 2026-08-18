@@ -139,6 +139,9 @@ const RowSection = ({
   const shapeBottom = shapeSurface ? row.layout?.shapeBottom : undefined;
   const topRadius = roundedRadius(shapeTop);
   const bottomRadius = roundedRadius(shapeBottom);
+  /* Hairline separator on the top edge — independent of shapes so a row
+   * can have a plain rule without taking on a decorative curve. */
+  const dividerTop = row.layout?.dividerTop || "none";
 
   return (
     <>
@@ -181,6 +184,17 @@ const RowSection = ({
           3. Overlay elements     — z-[-1]: decorative PNGs (logos, shapes) above bg
           4. {children}           — actual row content, on top of everything
         */}
+        {dividerTop !== "none" ? (
+          <div aria-hidden className="absolute inset-x-0 top-0 z-[1] pointer-events-none">
+            {dividerTop === "content" ? (
+              <div className="row-container mx-auto max-w-[1280px]">
+                <div className="border-t border-border" />
+              </div>
+            ) : (
+              <div className="border-t border-border" />
+            )}
+          </div>
+        ) : null}
         {shapeSurface && shapeTop ? (
           <SectionShape edge="top" config={shapeTop} color={shapeSurface} />
         ) : null}

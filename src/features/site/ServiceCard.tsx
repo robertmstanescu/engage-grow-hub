@@ -17,7 +17,7 @@ const Deliverables = memo(({ label, items, textAlign }: { label: string; items: 
   return (
     <div data-deliverables-open={open ? "true" : "false"} className={`border-t border-border px-6 py-4 ${alignClass}`}>
       <button onClick={toggle} aria-expanded={open} className="flex items-center justify-between w-full text-left">
-        <span className="font-body text-[10px] tracking-[0.18em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
+        <span className="font-body text-micro tracking-[0.18em] uppercase" style={{ color: "hsl(var(--pillar-deliverables-label))" }}>{label}</span>
         <ChevronDown
           className="w-4 h-4 shrink-0 transition-transform duration-300 ease-out"
           style={{
@@ -39,7 +39,7 @@ const Deliverables = memo(({ label, items, textAlign }: { label: string; items: 
           <ul className="divide-y divide-border pt-3">
             {items.map((item, i) => (
               <li key={i} className="font-body text-sm leading-relaxed py-2 pl-4 relative" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
-                <span className="absolute left-0 top-2 text-[10px]" style={{ color: "hsl(var(--accent) / 0.6)" }}>—</span>
+                <span className="absolute left-0 top-2 text-micro" style={{ color: "hsl(var(--accent) / 0.6)" }}>—</span>
                 {item}
               </li>
             ))}
@@ -79,7 +79,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
     <div className={`surface-card overflow-hidden ${compact ? "flex flex-col" : ""}`}>
       <div className={`${compact ? "p-6 flex-shrink-0" : "p-6 md:p-8"} ${alignClass}`}>
         <div className="flex items-center gap-3 mb-4">
-          <span className="inline-block font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
+          <span className="inline-block font-body text-micro tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
           {carouselControls && (
             <div className="ml-auto">{carouselControls}</div>
           )}
@@ -91,7 +91,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
           {outcome}
         </h4>
         {serviceName && (
-          <p className="font-body text-[11px] uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(var(--pillar-subtitle))" }}>{serviceName}</p>
+          <p className="font-body text-micro uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(var(--pillar-subtitle))" }}>{serviceName}</p>
         )}
         <p className="font-body text-sm leading-relaxed measure" style={{ color: "hsl(var(--pillar-card-description))" }}>{description}</p>
       </div>
@@ -105,17 +105,17 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
       <div className="border-t border-border px-6 py-4 flex items-center justify-between gap-4 flex-wrap flex-shrink-0">
         <a
           href="#contact"
-          className="font-display text-[10px] uppercase tracking-[0.1em] font-bold px-4 py-2 rounded-full inline-block transition-opacity duration-300 hover:opacity-90"
+          className="font-display text-micro uppercase tracking-[0.1em] font-bold px-4 py-2 rounded-full inline-block transition-opacity duration-300 hover:opacity-90"
           style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >
           {price}
         </a>
-        <span className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--pillar-cta-time))" }}>{time}</span>
+        <span className="font-body text-micro tracking-wide" style={{ color: "hsl(var(--pillar-cta-time))" }}>{time}</span>
       </div>
 
       {note && (
         <div className="border-t border-border px-6 py-4 flex-shrink-0">
-          <p className={`font-body text-[11px] italic leading-relaxed ${alignClass}`} style={{ color: "hsl(var(--foreground) / 0.55)" }}>{note}</p>
+          <p className={`font-body text-micro italic leading-relaxed ${alignClass}`} style={{ color: "hsl(var(--foreground) / 0.55)" }}>{note}</p>
         </div>
       )}
     </div>

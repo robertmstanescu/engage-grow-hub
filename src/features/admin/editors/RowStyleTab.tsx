@@ -345,24 +345,70 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               </p>
             </div>
 
-            {/* ── Section shape ──
-                Decorative curved / angled edges on the row's top and
-                bottom. Off by default; only meaningful when the row has
-                its own surface (i.e. not the transparent mesh band). */}
-            <ShapePicker
-              label="Shape — top edge"
-              value={row.layout?.shapeTop}
-              onChange={(shapeTop) =>
-                onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), shapeTop } })
-              }
-            />
-            <ShapePicker
-              label="Shape — bottom edge"
-              value={row.layout?.shapeBottom}
-              onChange={(shapeBottom) =>
-                onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), shapeBottom } })
-              }
-            />
+            {/* ── Edges & separators ──
+                Everything that draws the boundary between this row and
+                its neighbours: a hairline rule on the top edge, plus the
+                decorative curved / angled shapes. Grouped so admins stop
+                hunting for "where do I add a separator?". */}
+            <div className="rounded-xl border border-border p-3 space-y-3 bg-muted/10">
+              <p className="font-body text-[10px] uppercase tracking-[0.14em] text-foreground font-semibold">
+                Edges &amp; separators
+              </p>
+
+              <div>
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                  Top separator line
+                </label>
+                <div className="grid grid-cols-3 gap-1">
+                  {([
+                    ["none", "None"],
+                    ["full", "Full width"],
+                    ["content", "Content width"],
+                  ] as const).map(([value, label]) => {
+                    const active = (row.layout?.dividerTop || "none") === value;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() =>
+                          onRowMetaChange({
+                            layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), dividerTop: value },
+                          })
+                        }
+                        className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+                          active
+                            ? "bg-secondary/15 border-secondary/40 text-foreground"
+                            : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <ShapePicker
+                label="Shape — top edge"
+                value={row.layout?.shapeTop}
+                onChange={(shapeTop) =>
+                  onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), shapeTop } })
+                }
+              />
+              <ShapePicker
+                label="Shape — bottom edge"
+                value={row.layout?.shapeBottom}
+                onChange={(shapeBottom) =>
+                  onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), shapeBottom } })
+                }
+              />
+              <p className="font-body text-[10px] text-muted-foreground leading-snug">
+                Shapes need a surface to cut into — set the section band to
+                White, Tint or Deep (or give the row a background colour)
+                for them to show.
+              </p>
+            </div>
+
 
             {/* ── Snap to viewport ──
                 When enabled the row stretches to a full viewport and the

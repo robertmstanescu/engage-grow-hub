@@ -86,7 +86,7 @@ export const ImageRowAdmin = ({ content, onChange }: AdminProps) => {
       {altMissing && (
         <div
           role="alert"
-          className="rounded-md border px-2 py-1.5 font-body text-[11px]"
+          className="rounded-md border px-2 py-1.5 font-body text-micro"
           style={{
             borderColor: "hsl(var(--destructive) / 0.5)",
             color: "hsl(var(--destructive))",
@@ -99,7 +99,7 @@ export const ImageRowAdmin = ({ content, onChange }: AdminProps) => {
 
       <div>
         <label
-          className="font-body text-[10px] uppercase tracking-wider mb-1 block"
+          className="font-body text-micro uppercase tracking-wider mb-1 block"
           style={{ color: "hsl(var(--muted-foreground))" }}
         >
           Caption (optional)

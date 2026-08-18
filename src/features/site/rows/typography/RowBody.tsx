@@ -54,7 +54,7 @@ const RowBody = ({ children, html, color, style, className, ...rest }: Props) =>
   // Rows that genuinely need full-bleed copy can pass `max-w-none`.
   const baseClass = `font-body-heading leading-[1.55] measure [&_p]:mb-[4px] [&_p]:mt-[4px] ${className ?? ""}`;
   const baseStyle: CSSProperties = {
-    fontSize: "clamp(0.78rem, 0.85vh + 0.55vw, 1.05rem)",
+    fontSize: "var(--fs-body)",
     // Default to the row's auto-resolved foreground (`--row-fg`,
     // published by RowSection). Per-row admin colour pickers still
     // win via the `color` prop.

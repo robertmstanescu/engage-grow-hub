@@ -89,7 +89,7 @@ const ProofBandRow = ({
                   className="h-8 w-auto object-contain opacity-80"
                 />
               ) : (
-                <dt className="font-display font-bold leading-none text-foreground" style={{ fontSize: "clamp(28px, 3.2vw, 48px)" }}>
+                <dt className="font-display font-bold leading-none text-foreground" style={{ fontSize: "var(--fs-stat)" }}>
                   {item.value}
                 </dt>
               )}

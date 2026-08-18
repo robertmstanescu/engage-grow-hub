@@ -151,7 +151,37 @@
 
     /* Ink pill label — pure white so CTAs never read muted. */
     --btn-ink-fg: 0 0% 100%;
+
+    /* ──────────────────────────────────────────────────────────────
+       FLUID TYPE SCALE — the single source of truth
+       Every row, card and hero reads these variables. Components must
+       NEVER inline their own clamp(): one row's title would drift from
+       another's (that's how the contact row ended up smaller than the
+       vows row). Add a variable here instead.
+       ────────────────────────────────────────────────────────────── */
+    --fs-eyebrow: clamp(9px, 0.4vh + 0.5vw, 11px);
+    --fs-title: clamp(1.5rem, 1.6vh + 1.5vw, 3rem);
+    --fs-subtitle: clamp(0.95rem, 1vh + 0.85vw, 1.35rem);
+    --fs-body: clamp(0.9rem, 0.8vh + 0.6vw, 1.1rem);
+
+    /* Card-scale (secondary surfaces: service, boxed, vows, forms) */
+    --fs-card-title: clamp(0.95rem, 0.4vh + 0.5vw, 1.1rem);
+    --fs-card-body: clamp(0.85rem, 0.35vh + 0.55vw, 1rem);
+    --fs-card-label: clamp(10px, 0.3vh + 0.55vw, 12px);
+    --fs-card-input: clamp(13px, 0.4vh + 0.7vw, 15px);
+
+    /* Feature moments */
+    --fs-stat: clamp(2rem, 3.4vw, 3.5rem);
+    --fs-quote: clamp(26px, 3.4vw, 46px);
+    --fs-step-title: clamp(18px, 1.6vw, 24px);
+
+    /* Hero (poster scale — deliberately larger than the row scale) */
+    --fs-hero-title: clamp(40px, 8.4vw, 132px);
+    --fs-hero-label: clamp(11px, 0.9vw, 14px);
+    --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
+    --fs-hero-body: clamp(15px, 1.15vw, 19px);
   }
+
 
 
 }
@@ -1116,20 +1146,28 @@
      jumps between viewports. */
   .text-card-label {
     font-family: var(--font-body);
-    font-size: clamp(10px, 0.3vh + 0.55vw, 12px);
+    font-size: var(--fs-card-label);
     text-transform: uppercase;
     letter-spacing: 0.18em;
     line-height: 1.3;
   }
   .text-card-body {
     font-family: var(--font-body);
-    font-size: clamp(12px, 0.35vh + 0.6vw, 14px);
+    font-size: var(--fs-card-body);
     line-height: 1.65;
   }
   .text-card-input {
     font-family: var(--font-body);
-    font-size: clamp(13px, 0.4vh + 0.7vw, 15px);
+    font-size: var(--fs-card-input);
     line-height: 1.55;
+  }
+  /* Size-only helpers — for spots that already own their tracking /
+     transform and just need to stop hardcoding a pixel size. */
+  .text-micro {
+    font-size: var(--fs-card-label);
+  }
+  .text-mini {
+    font-size: var(--fs-card-body);
   }
 }
 

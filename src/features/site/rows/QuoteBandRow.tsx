@@ -57,7 +57,7 @@ const QuoteBandRow = ({
         <blockquote style={revealStyle(isVisible, 0)}>
           <div
             className="font-display font-semibold leading-[1.2] [&_p]:my-0"
-            style={{ fontSize: "clamp(24px, 3.2vw, 44px)" }}
+            style={{ fontSize: "var(--fs-quote)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.quote) }}
           />
           <footer

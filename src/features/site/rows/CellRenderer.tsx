@@ -246,12 +246,12 @@ const EmptyCellPlaceholder = ({ rowId, colId, cellId, onPick }: EmptyCellPlaceho
         // the popover trigger would compete with the drop interaction.
         <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full"
           style={{ backgroundColor: "hsl(var(--accent) / 0.2)" }}>
-          <span className="font-body text-[11px] uppercase tracking-wider">
+          <span className="font-body text-micro uppercase tracking-wider">
             Drop to add
           </span>
         </span>
       ) : (
-        <span className="font-body text-[11px] uppercase tracking-wider">
+        <span className="font-body text-micro uppercase tracking-wider">
           Drag a widget here
         </span>
       )}

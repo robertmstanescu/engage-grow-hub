@@ -82,14 +82,14 @@ const HeroRow = ({ row }: Props) => {
 
         {c.label && (
           <p className="font-body tracking-[0.32em] uppercase mb-[clamp(12px,1.5vh,24px)]"
-            style={{ color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "clamp(11px, 0.9vw, 14px)" }}>
+            style={{ color: c.color_label || c.label_color || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
             {c.label}
           </p>
         )}
 
         {titleLines.length > 0 && (
           <h1 className="font-display font-black leading-[0.98] tracking-tight mb-0 w-full overflow-visible"
-            style={{ color: c.title_color || "hsl(var(--hero-title))", fontSize: "clamp(40px, 8.4vw, 132px)" }}>
+            style={{ color: c.title_color || "hsl(var(--hero-title))", fontSize: "var(--fs-hero-title)" }}>
             {titleLines.map((line, i) => (
               <span key={i} className="block overflow-visible">
                 <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
@@ -100,21 +100,21 @@ const HeroRow = ({ row }: Props) => {
 
         {c.tagline && (
           <p className="font-body tracking-[0.28em] uppercase mt-[clamp(14px,1.8vh,28px)]"
-            style={{ color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(11px, 0.9vw, 14px)", opacity: 0.75 }}>
+            style={{ color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)", opacity: 0.75 }}>
             {c.tagline}
           </p>
         )}
 
         {c.subtitle && (
           <p className="leading-tight mt-[clamp(12px,1.5vh,24px)] max-w-[640px]"
-            style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--hero-body))", fontSize: "clamp(16px, 1.6vw, 24px)" }}>
+            style={{ fontFamily: "'Architects Daughter', cursive", color: c.subtitle_color || "hsl(var(--hero-body))", fontSize: "var(--fs-hero-subtitle)" }}>
             {c.subtitle}
           </p>
         )}
 
         {c.body && (
           <div className="font-body-heading max-w-[620px] leading-relaxed mt-[clamp(12px,1.5vh,24px)] [&_p]:mb-[4px] [&_p]:mt-[4px]"
-            style={{ color: c.body_color || "hsl(var(--hero-body))", fontSize: "clamp(15px, 1.15vw, 19px)" }}
+            style={{ color: c.body_color || "hsl(var(--hero-body))", fontSize: "var(--fs-hero-body)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
           />
         )}

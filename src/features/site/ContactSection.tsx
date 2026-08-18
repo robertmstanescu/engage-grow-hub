@@ -56,7 +56,7 @@ const ContactSection = () => {
             <h3 className="font-display text-3xl md:text-4xl font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))" }}>Message received.</h3>
             <p className="font-body-heading text-base md:text-lg mb-8" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>We respond within 24 hours.</p>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
-              className="btn-glass interactive font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-4 rounded-full"
+              className="btn-glass interactive font-display text-micro uppercase tracking-[0.1em] font-bold px-8 py-4 rounded-full"
 >
               Send another message
             </button>
@@ -114,7 +114,7 @@ const ContactSection = () => {
                   { label: "Company", key: "company", type: "text", required: false },
                 ].map((field) => (
                   <div key={field.key}>
-                    <label className="block font-body text-[10px] uppercase tracking-[0.25em] mb-2" style={{ color: `${CREAM}99` }}>{field.label}</label>
+                    <label className="block font-body text-micro uppercase tracking-[0.25em] mb-2" style={{ color: `${CREAM}99` }}>{field.label}</label>
                     <input
                       type={field.type} required={field.required}
                       value={formData[field.key as keyof typeof formData] as string}
@@ -129,7 +129,7 @@ const ContactSection = () => {
               </div>
 
               <div className="flex flex-col">
-                <label className="block font-body text-[10px] uppercase tracking-[0.25em] mb-2" style={{ color: `${CREAM}99` }}>Tell us about your vampire moment</label>
+                <label className="block font-body text-micro uppercase tracking-[0.25em] mb-2" style={{ color: `${CREAM}99` }}>Tell us about your vampire moment</label>
                 <textarea required rows={8} value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   className="w-full bg-transparent pb-3 font-body text-sm outline-none resize-none flex-1"
@@ -146,7 +146,7 @@ const ContactSection = () => {
                 <span className="font-body text-xs" style={{ color: `${CREAM}99` }}>Keep me updated with insights and articles</span>
               </label>
               <button type="submit" disabled={submitting}
-                className="btn-glass font-display text-[11px] uppercase tracking-[0.1em] font-bold px-10 py-4 rounded-full disabled:opacity-50">
+                className="btn-glass font-display text-micro uppercase tracking-[0.1em] font-bold px-10 py-4 rounded-full disabled:opacity-50">
                 {submitting ? "Sending…" : "Request a discovery call"}
               </button>
             </div>

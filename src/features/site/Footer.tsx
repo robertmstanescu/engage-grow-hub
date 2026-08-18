@@ -89,7 +89,7 @@ const Footer = () => {
 
           {columns.map((col, i) => (
             <div key={i}>
-              <h4 className="font-body text-[10px] uppercase tracking-[0.25em] font-semibold mb-4" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
+              <h4 className="font-body text-micro uppercase tracking-[0.25em] font-semibold mb-4" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
                 {col.title}
               </h4>
               <ul className="space-y-2.5">
@@ -131,7 +131,7 @@ const Footer = () => {
           ───────────────────────────────────────────────────────────
           Typography:
             • Both the copyright text and the legal links share the
-              EXACT same classes (`font-body text-[11px] tracking-wide`)
+              EXACT same classes (`font-body text-micro tracking-wide`)
               and base color (`hsl(var(--foreground) / 0.5)`) so the
               row reads as one consistent legal-line. Hover lifts the
               link colour to `hsl(var(--foreground))` (full opacity)
@@ -151,21 +151,21 @@ const Footer = () => {
           className="pt-6 flex flex-wrap items-center justify-between gap-4"
           style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}
         >
-          <p className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
+          <p className="font-body text-micro tracking-wide" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
             {!footerLoading && footer.copyright ? footer.copyright : null}
           </p>
 
           <div className="flex items-center gap-2">
             <a
               href="/privacy-policy"
-              className="font-body text-[11px] tracking-wide transition-colors duration-500 hover:text-foreground"
+              className="font-body text-micro tracking-wide transition-colors duration-500 hover:text-foreground"
               style={{ color: "hsl(var(--foreground) / 0.5)" }}
             >
               Privacy Policy
             </a>
             <span
               aria-hidden="true"
-              className="font-body text-[11px] tracking-wide"
+              className="font-body text-micro tracking-wide"
               style={{ color: "hsl(var(--foreground) / 0.5)" }}
             >
               ·
@@ -188,7 +188,7 @@ const Footer = () => {
                   console.warn("Failed to open cookie settings:", err);
                 }
               }}
-              className="font-body text-[11px] tracking-wide transition-colors duration-500 hover:text-foreground bg-transparent border-0 p-0 cursor-pointer"
+              className="font-body text-micro tracking-wide transition-colors duration-500 hover:text-foreground bg-transparent border-0 p-0 cursor-pointer"
               style={{ color: "hsl(var(--foreground) / 0.5)" }}
             >
               Cookie Settings
