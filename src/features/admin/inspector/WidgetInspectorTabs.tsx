@@ -168,7 +168,7 @@ const WidgetInspectorTabs = ({
               className="w-full px-3 py-2 rounded-lg font-body text-sm border"
               style={{
                 borderColor: "hsl(var(--border))",
-                backgroundColor: "#FFFFFF",
+                backgroundColor: "hsl(var(--card))",
                 color: "#1a1a1a",
               }}
             />
@@ -241,7 +241,7 @@ const WidgetInspectorTabs = ({
               className="w-full px-3 py-2 rounded-lg font-mono text-xs border"
               style={{
                 borderColor: "hsl(var(--border))",
-                backgroundColor: "#FFFFFF",
+                backgroundColor: "hsl(var(--card))",
                 color: "#1a1a1a",
               }}
               placeholder="& { background: red; }"

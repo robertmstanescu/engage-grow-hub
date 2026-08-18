@@ -120,11 +120,11 @@
     --contact-input-focus: 280 55% 24%;
     --contact-input-text: 282 40% 13%;
     --contact-btn-bg: 280 57% 16%;
-    --contact-btn-text: 45 60% 96%;
+    --contact-btn-text: 0 0% 100%;
     --contact-success-bg: 46 80% 82%;
     --contact-success-fg: 280 57% 13%;
     --contact-success-btn-bg: 280 57% 16%;
-    --contact-success-btn-text: 45 70% 92%;
+    --contact-success-btn-text: 0 0% 100%;
 
     /* ── Band system (alternating section tones) ── */
     --band-white: 0 0% 100%;
@@ -133,7 +133,26 @@
     --band-tint-fg: 282 40% 13%;
     --band-deep: 280 57% 14%;
     --band-deep-fg: 45 60% 96%;
+
+    /* ── Page mesh (default page-level background) ──
+       One fixed, continuous mesh painted behind the whole site: soft
+       plum + gold blooms on the isabelline canvas. Rows are transparent
+       by default so the mesh reads as ONE surface while you scroll,
+       instead of restarting per section.
+       `--mesh-strength` (0–1) is the global intensity dial exposed in
+       Brand Settings (subtle 0.45 / medium 0.7 / strong 1). */
+    --mesh-strength: 0.7;
+    --gradient-mesh-page:
+      radial-gradient(ellipse 70% 55% at 12% 4%, hsl(286 52% 88% / var(--mesh-strength)), transparent 68%),
+      radial-gradient(ellipse 60% 48% at 92% 14%, hsl(45 78% 87% / var(--mesh-strength)), transparent 68%),
+      radial-gradient(ellipse 65% 50% at 78% 62%, hsl(280 45% 90% / var(--mesh-strength)), transparent 70%),
+      radial-gradient(ellipse 80% 45% at 22% 88%, hsl(46 70% 90% / var(--mesh-strength)), transparent 72%),
+      hsl(var(--background));
+
+    /* Ink pill label — pure white so CTAs never read muted. */
+    --btn-ink-fg: 0 0% 100%;
   }
+
 
 }
 
@@ -396,14 +415,68 @@
     color: inherit;
   }
 
-  /* Auto band: alternate white / tint down the page so a default page
-     already reads as calm bands with zero admin configuration. */
+  /* Auto band: alternate white / tint down the page. Opt-in now — the
+     page default is the mesh below. */
   section[data-band="auto"] {
     background-color: hsl(var(--band-white));
   }
   section[data-band="auto"]:nth-of-type(even) {
     background-color: hsl(var(--band-tint));
   }
+
+  /* ── Page mesh band (the default) ──
+     Fully transparent section so the fixed page mesh shows through.
+     Text colour comes from the canvas foreground. */
+  [data-band="mesh"] {
+    background-color: transparent;
+    color: hsl(var(--foreground));
+  }
+
+  /* The fixed mesh layer itself. pointer-events:none + z-index:-1 keep
+     it out of hit-testing and below every section, and `fixed` keeps it
+     continuous (and cheap) while the page scrolls. */
+  .page-mesh-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--gradient-mesh-page);
+  }
+
+  /* ── Section shapes ──
+     Decorative top/bottom edges. The SVG is filled with the SECTION's
+     own surface colour so the shape reads as the section rising into
+     (or falling away from) its neighbour. */
+  .section-shape {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    pointer-events: none;
+    display: block;
+    z-index: 0;
+  }
+  .section-shape[data-edge="top"] {
+    top: 0;
+    transform: translateY(-99%);
+  }
+  .section-shape[data-edge="bottom"] {
+    bottom: 0;
+    transform: translateY(99%) scaleY(-1);
+  }
+  .section-shape[data-flip="true"] {
+    transform: translateY(-99%) scaleX(-1);
+  }
+  .section-shape[data-edge="bottom"][data-flip="true"] {
+    transform: translateY(99%) scaleY(-1) scaleX(-1);
+  }
+  /* Dramatic curves eat vertical space on phones — flatten them. */
+  @media (max-width: 767px) {
+    .section-shape {
+      height: 28px !important;
+    }
+  }
+
 
 
   /* ──────────────────────────────────────────────────────────────────
@@ -421,7 +494,7 @@
     font-weight: 600;
     font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
     line-height: 1;
-    background-color: hsl(var(--foreground));
+    color: hsl(var(--btn-ink-fg));
     color: hsl(45 60% 96%);
     border: 1px solid transparent;
     transition: background-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
@@ -635,7 +708,20 @@
     --admin-primary: 239 84% 53%;
     --admin-primary-hover: 243 75% 47%; /* indigo-700 */
     --admin-primary-foreground: 0 0% 100%;
+
+    /* ACCENT REMAP — the admin historically painted its accents with
+       the public `--secondary` token. On the light site that token is a
+       pale violet SURFACE (285 38% 94%), so active nav items, section
+       titles, chevrons and badges rendered near-white on near-white.
+       Inside the admin shell `--secondary` is remapped to the readable
+       indigo used for primary actions, which fixes every existing
+       `text-secondary` / `bg-secondary/10` / `border-secondary` usage
+       at once. Public rows never render inside `.admin-light`, so the
+       site palette is untouched. */
+    --secondary: 239 60% 40%; /* indigo-700-ish, legible as TEXT */
+    --secondary-foreground: 0 0% 100%;
   }
+
 
   /* Reusable primary-action button for the admin shell. Vibrant indigo
      on a white card; lifts on hover; clear focus ring. */
@@ -886,7 +972,7 @@
     --nav-dropdown-bg: 0 0% 100%;
     --nav-dropdown-hover: 288 30% 95%;
     --nav-cta-bg: 280 57% 16%;
-    --nav-cta-text: 45 60% 96%;
+    --nav-cta-text: 0 0% 100%;
     --nav-border: 285 22% 89%;
   }
 

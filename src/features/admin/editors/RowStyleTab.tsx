@@ -54,7 +54,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import type { PageRow } from "@/types/rows";
+import type { PageRow, SectionShapeConfig, SectionShapeKind, SectionShapeSize } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 
 interface Props {
@@ -86,6 +86,92 @@ const TRIGGER_CLASS =
   "font-body text-[10px] uppercase tracking-[0.12em] text-foreground";
 
 const CONTENT_CLASS = "pt-3 pb-1";
+
+/* ─── Section shape picker ────────────────────────────────────────────
+ * Shapes the row's top or bottom edge. "None" is the default; sizes are
+ * subtle / medium / dramatic (all flatten on mobile). `flip` mirrors the
+ * shape horizontally, which matters most for the angled cut.           */
+const SHAPE_KINDS: [SectionShapeKind, string][] = [
+  ["none", "None"],
+  ["rounded", "Rounded"],
+  ["wave", "Wave"],
+  ["arch", "Arch"],
+  ["angled", "Angled"],
+  ["taper", "Taper"],
+  ["notch", "Notch"],
+];
+
+const SHAPE_SIZES: [SectionShapeSize, string][] = [
+  ["subtle", "Subtle"],
+  ["medium", "Medium"],
+  ["dramatic", "Dramatic"],
+];
+
+const ShapePicker = ({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value?: SectionShapeConfig;
+  onChange: (v: SectionShapeConfig | undefined) => void;
+}) => {
+  const kind = value?.kind ?? "none";
+  const size = value?.size ?? "medium";
+  return (
+    <div>
+      <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+        {label}
+      </label>
+      <div className="grid grid-cols-4 gap-1">
+        {SHAPE_KINDS.map(([k, l]) => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => onChange(k === "none" ? undefined : { ...value, kind: k, size })}
+            className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+              kind === k
+                ? "bg-secondary/15 border-secondary/40 text-foreground"
+                : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+            }`}
+          >
+            {l}
+          </button>
+        ))}
+      </div>
+      {kind !== "none" && (
+        <div className="flex items-center gap-1 mt-1.5">
+          {SHAPE_SIZES.map(([sz, l]) => (
+            <button
+              key={sz}
+              type="button"
+              onClick={() => onChange({ kind, size: sz, flip: value?.flip })}
+              className={`flex-1 font-body text-[10px] py-1.5 rounded-lg border transition-colors ${
+                size === sz
+                  ? "bg-secondary/15 border-secondary/40 text-foreground"
+                  : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+              }`}
+            >
+              {l}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => onChange({ kind, size, flip: !value?.flip })}
+            className={`font-body text-[10px] px-2.5 py-1.5 rounded-lg border transition-colors ${
+              value?.flip
+                ? "bg-secondary/15 border-secondary/40 text-foreground"
+                : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+            }`}
+          >
+            Flip
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   // ── Column count derivation ────────────────────────────────────────
@@ -220,14 +306,15 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
                 Section band
               </label>
-              <div className="grid grid-cols-4 gap-1">
+              <div className="grid grid-cols-5 gap-1">
                 {([
+                  ["mesh", "Mesh"],
                   ["auto", "Auto"],
                   ["white", "White"],
                   ["tint", "Tint"],
                   ["deep", "Deep"],
                 ] as const).map(([value, label]) => {
-                  const active = ((row.layout as { bandTone?: string } | undefined)?.bandTone || "auto") === value;
+                  const active = ((row.layout as { bandTone?: string } | undefined)?.bandTone || "mesh") === value;
                   return (
                     <button
                       key={value}
@@ -252,10 +339,30 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                 })}
               </div>
               <p className="font-body text-[10px] text-muted-foreground mt-1 leading-snug">
-                Auto alternates white / tint down the page. Deep is the plum
-                ink band for emphasis moments.
+                Mesh (default) is transparent — the page-wide mesh gradient
+                shows through. Auto alternates white / tint down the page.
+                Deep is the plum ink band for emphasis moments.
               </p>
             </div>
+
+            {/* ── Section shape ──
+                Decorative curved / angled edges on the row's top and
+                bottom. Off by default; only meaningful when the row has
+                its own surface (i.e. not the transparent mesh band). */}
+            <ShapePicker
+              label="Shape — top edge"
+              value={row.layout?.shapeTop}
+              onChange={(shapeTop) =>
+                onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), shapeTop } })
+              }
+            />
+            <ShapePicker
+              label="Shape — bottom edge"
+              value={row.layout?.shapeBottom}
+              onChange={(shapeBottom) =>
+                onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), shapeBottom } })
+              }
+            />
 
             {/* ── Snap to viewport ──
                 When enabled the row stretches to a full viewport and the

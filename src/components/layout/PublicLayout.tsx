@@ -8,10 +8,18 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
  */
 const PublicLayout = () => (
   <ErrorBoundary label="page">
+    {/*
+      PAGE MESH — one fixed, continuous gradient behind the entire site.
+      Rows are transparent by default (bandTone "mesh"), so the page
+      reads as a single surface instead of stacked blocks. Fixed +
+      pointer-events-none keeps it cheap and out of hit-testing.
+    */}
+    <div aria-hidden className="page-mesh-layer" />
     <div className="public-fluid-type">
       <Outlet />
     </div>
   </ErrorBoundary>
 );
+
 
 export default PublicLayout;

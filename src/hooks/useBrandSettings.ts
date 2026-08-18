@@ -27,8 +27,19 @@ export interface BrandIdentity {
   canonicalOrigin: string;
 }
 
+/** Global page-mesh intensity. Tuned once, applies to the whole site. */
+export type MeshStrength = "subtle" | "medium" | "strong";
+
+export const MESH_STRENGTH_VALUES: Record<MeshStrength, string> = {
+  subtle: "0.45",
+  medium: "0.7",
+  strong: "1",
+};
+
 export interface BrandSettings {
   identity: BrandIdentity;
+  /** Intensity of the fixed page-level mesh gradient. */
+  meshStrength: MeshStrength;
   colors: BrandColor[];
   typography: {
     h1: TypographyLevel;
@@ -64,6 +75,7 @@ const DEFAULT_IDENTITY: BrandIdentity = {
 
 export const DEFAULT_BRAND: BrandSettings = {
   identity: DEFAULT_IDENTITY,
+  meshStrength: "medium",
   colors: DEFAULT_COLORS,
   typography: DEFAULT_TYPOGRAPHY,
 };
@@ -90,6 +102,11 @@ export const applyBrandCSSVars = (brand: BrandSettings) => {
     root.style.setProperty(varName, c.hex);
     root.style.setProperty(`--brand-color-${i}`, c.hex);
   });
+  // Page mesh intensity
+  root.style.setProperty(
+    "--mesh-strength",
+    MESH_STRENGTH_VALUES[brand.meshStrength] ?? MESH_STRENGTH_VALUES.medium,
+  );
   // Typography
   const levels = ["h1", "h2", "h3", "body"] as const;
   for (const level of levels) {
@@ -112,6 +129,7 @@ export const useBrandSettings = (): BrandSettings => {
         .then((resolved) => {
           const merged: BrandSettings = {
             identity: { ...DEFAULT_BRAND.identity, ...(resolved?.identity || {}) },
+            meshStrength: resolved?.meshStrength || DEFAULT_BRAND.meshStrength,
             colors: resolved?.colors || DEFAULT_BRAND.colors,
             typography: { ...DEFAULT_BRAND.typography, ...resolved?.typography },
           };
