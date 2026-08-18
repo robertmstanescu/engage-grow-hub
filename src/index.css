@@ -343,17 +343,12 @@
     z-index: 1;
   }
 
-  /* ── Gradient mesh backgrounds (light) ── */
-  .mesh-dark {
-    background:
-      radial-gradient(ellipse 80% 60% at 10% 95%, hsl(286 45% 92% / 0.9), transparent 70%),
-      radial-gradient(ellipse 60% 50% at 85% 10%, hsl(45 70% 92% / 0.9), transparent 70%),
-      hsl(var(--background));
-  }
+  /* NOTE: there are deliberately no `.mesh-*` section backgrounds any
+     more. The site has ONE background — the fixed `.page-mesh-layer`,
+     whose colours the Hero row owns (Style ▸ Page background). Rows are
+     transparent unless an admin gives them a plain colour. */
 
-  .mesh-hero {
-    background: var(--gradient-hero);
-  }
+
 
 
   /* ──────────────────────────────────────────────────────────────────
