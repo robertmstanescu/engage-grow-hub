@@ -35,8 +35,17 @@ interface FooterContent {
 }
 
 const Footer = () => {
+  const { pathname } = useLocation();
+  /* Footer hash links (#vows, #contact) point at rows that only exist
+     on the homepage. When the footer renders on /blog or a CMS page we
+     rewrite them to absolute `/#slug` links so they navigate home and
+     then scroll, instead of silently doing nothing. */
+  const resolveHref = (href: string) =>
+    href.startsWith("#") && pathname !== "/" ? `/${href}` : href;
+
   const { isLoading: socialLoading, content: socialLinks } =
     useSiteContentWithStatus<Record<string, string>>("social_links", {});
+
   // No hardcoded fallback content. The DB is the single source of truth;
   // until "footer" arrives we render an empty shell rather than flashing
   // stale defaults like "Based in Sweden 🇸🇪 · Operating globally" or a
