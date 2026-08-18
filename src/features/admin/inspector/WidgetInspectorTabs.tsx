@@ -167,16 +167,12 @@ const WidgetInspectorTabs = ({
           />
         </div>
 
-        <div className="mb-5">
-          <PanelHeading>Background</PanelHeading>
-          <div data-inspector-field="bgColor">
-            <ColorField
-              label="Background Colour"
-              value={design.bgColor || ""}
-              onChange={onDesignBgChange}
-            />
-          </div>
-        </div>
+        {/* NO background control here on purpose. Backgrounds have ONE
+            home: Style ▸ Surface ▸ Row background (plus the hero's
+            page-wide mesh). Two colour pickers for the same surface was
+            the single most confusing thing in this panel. */}
+
+
 
         <div className="mb-5">
           <PanelHeading>Border Radius</PanelHeading>
