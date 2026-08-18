@@ -246,7 +246,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
           <div className="mt-rhythm-base">
             <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
               className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
-              style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
+>
               {c.cta_label}
             </a>
           </div>

@@ -57,7 +57,7 @@ const ContactSection = () => {
             <p className="font-body-heading text-base md:text-lg mb-8" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>We respond within 24 hours.</p>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
               className="btn-glass interactive font-display text-[11px] uppercase tracking-[0.1em] font-bold px-8 py-4 rounded-full"
-              style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
+>
               Send another message
             </button>
           </motion.div>
