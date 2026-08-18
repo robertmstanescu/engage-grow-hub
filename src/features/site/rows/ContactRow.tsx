@@ -181,8 +181,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         {c.note && (
-          <div className="mt-rhythm-base pt-3 text-left" style={{ borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
-            <p className="font-body text-xs italic leading-[1.6]" style={{ color: "hsl(var(--light-fg) / 0.5)" }}>{c.note}</p>
+          <div className="mt-rhythm-base pt-3 text-left border-t border-border">
+            <p className="font-body text-sm italic leading-[1.6] text-muted-foreground measure">{c.note}</p>
           </div>
         )}
       </div>
