@@ -205,7 +205,14 @@ const WidgetInspectorTabs = ({
 
       {/* ── ADVANCED tab ────────────────────────────────────────── */}
       <TabsContent value="advanced" forceMount className="data-[state=inactive]:hidden mt-4">
+        {slugEditor ? (
+          <div className="mb-5">
+            <PanelHeading>Slug / anchor</PanelHeading>
+            {slugEditor}
+          </div>
+        ) : null}
         <div className="mb-5">
+
           <PanelHeading>Visibility</PanelHeading>
           <div className="space-y-3">
             <div
