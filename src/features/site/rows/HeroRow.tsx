@@ -73,7 +73,7 @@ const HeroRow = ({ row }: Props) => {
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] pointer-events-none"
         style={{ background: "radial-gradient(circle, hsl(285 45% 88%), transparent)" }} />
 
-      <div className="hero-enter relative z-10 flex min-h-0 flex-1 w-full max-w-[1400px] flex-col justify-center overflow-y-auto px-4 py-[6vh] sm:px-8">
+      <div className="hero-enter relative z-10 flex min-h-0 flex-1 w-full max-w-[1400px] flex-col justify-center overflow-y-auto row-container py-[6vh]">
         {c.icon && (
           <div className="mb-[1.5vh]" style={{ color: c.title_color || "hsl(var(--hero-title))" }}>
             <Icon value={c.icon} size={48} />

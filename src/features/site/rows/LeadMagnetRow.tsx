@@ -27,7 +27,7 @@ const LeadMagnetRow = ({ row, align = "center" }: Props) => {
   if (!resourceAssetId) {
     return (
       <section
-        className="py-16 px-6"
+        className="py-16 row-container"
         style={{ backgroundColor: row.bg_color || "transparent" }}
       >
         <div

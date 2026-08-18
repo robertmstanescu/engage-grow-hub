@@ -73,7 +73,7 @@ const StatUnit = memo(({ value, label, colors, isVisible, idx }: {
     number === null ? value : `${prefix}${formatNumber(animated, decimals)}${suffix}`;
   return (
     <div
-      className="flex-1 flex flex-col items-center justify-center py-rhythm-base px-4"
+      className="flex-1 flex flex-col items-center justify-center py-rhythm-base row-container"
       style={revealStyle(isVisible, idx + 3)}
     >
       <p
@@ -173,7 +173,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
       defaultBg="hsl(var(--background))"
       innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
     >
-      <div className={`relative z-10 ${maxW} w-full px-6 ${containerPos} ${contentAlign}`}>
+      <div className={`relative z-10 ${maxW} w-full row-container ${containerPos} ${contentAlign}`}>
         <div className="mb-rhythm-loose">
           {c.eyebrow && (
             <RowEyebrow color={c.color_eyebrow} style={revealStyle(isVisible, 0)}>

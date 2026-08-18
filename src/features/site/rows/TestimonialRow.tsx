@@ -81,7 +81,7 @@ const TestimonialRow = ({
     <RowSection row={row}>
       {/* `l` (resolved layout) is used inside via maxW; row prop carries
        * bg_color, bg_image, gradients, overlays into <RowSection/>. */}
-      <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} px-4 md:px-8`}>
+      <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
         {/* Optional header */}
         {c.eyebrow && (
           <RowEyebrow color={c.color_eyebrow || "hsl(var(--secondary))"} style={revealStyle(isVisible, -0.5)}>

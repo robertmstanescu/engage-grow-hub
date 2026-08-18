@@ -82,7 +82,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
     return (
       <section {...snapAttrs} className={`snap-section section-light relative ${heightClass} flex flex-col ${vAlignJustify} py-row-fluid`} style={{ isolation: "isolate" }}>
         <RowBackground row={row} />
-        <div className={`relative z-10 max-w-[520px] px-6 ${containerPos} ${contentAlign}`}>
+        <div className={`relative z-10 max-w-[520px] row-container ${containerPos} ${contentAlign}`}>
           <div style={revealStyle(true, 0)}>
             <RowTitle color="hsl(var(--primary))">{successHeading}</RowTitle>
             <RowBody color="hsl(var(--light-fg) / 0.7)" className="mb-rhythm-base">{successBody}</RowBody>
@@ -99,7 +99,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
     <section {...snapAttrs} className={`snap-section section-light relative ${heightClass} flex flex-col ${vAlignJustify} py-row-fluid`} style={{ isolation: "isolate" }}>
       <RowBackground row={row} />
 
-      <div ref={ref} className={`relative z-10 max-w-[900px] px-6 ${containerPos} ${contentAlign}`}>
+      <div ref={ref} className={`relative z-10 max-w-[900px] row-container ${containerPos} ${contentAlign}`}>
         <div className="mb-rhythm-loose text-left" style={revealStyle(isVisible, 0)}>
           {c.eyebrow && (
             <RowEyebrow color={c.color_eyebrow || "hsl(var(--primary) / 0.6)"}>{c.eyebrow}</RowEyebrow>
