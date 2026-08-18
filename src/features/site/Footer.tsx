@@ -53,10 +53,10 @@ const Footer = () => {
   const connectColumn = columns.find((c) => c.title.toLowerCase() === "connect");
 
   return (
-    <footer className="grain relative border-t" style={{ backgroundColor: "hsl(260 20% 4%)", borderColor: "hsl(var(--border) / 0.2)", scrollSnapAlign: "end" }}>
+    <footer className="grain relative border-t" style={{ backgroundColor: "hsl(var(--secondary))", borderColor: "hsl(var(--border))", scrollSnapAlign: "end" }}>
       {/* Ambient glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full opacity-8 blur-[120px]"
-        style={{ background: "radial-gradient(circle, hsl(280 55% 20%), transparent)" }} />
+        style={{ background: "radial-gradient(circle, hsl(46 70% 82%), transparent)" }} />
 
       <div className="relative z-10 max-w-[1100px] mx-auto px-3 pt-16 md:pt-20 pb-2">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">
@@ -66,7 +66,7 @@ const Footer = () => {
             {!brandingLoading && emblemUrl ? (
               <img
                 alt="The Magic Coffin logo"
-                className="w-8 h-8 object-contain brightness-200 mb-4"
+                className="w-8 h-8 object-contain mb-4"
                 src={emblemUrl}
                 width={32}
                 height={32}
@@ -75,7 +75,7 @@ const Footer = () => {
               />
             ) : null}
             {!footerLoading && footer.tagline ? (
-              <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.35)" }}>
+              <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
                 {footer.tagline}
               </p>
             ) : null}
@@ -83,13 +83,13 @@ const Footer = () => {
 
           {columns.map((col, i) => (
             <div key={i}>
-              <h4 className="font-body text-[10px] uppercase tracking-[0.25em] font-semibold mb-4" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
+              <h4 className="font-body text-[10px] uppercase tracking-[0.25em] font-semibold mb-4" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
                 {col.title}
               </h4>
               <ul className="space-y-2.5">
                 {col.links.map((link, j) => (
                   <li key={j}>
-                    <a href={link.href} className="font-body text-xs transition-all duration-500 hover:opacity-100" style={{ color: "hsl(var(--foreground) / 0.35)" }}>
+                    <a href={link.href} className="font-body text-xs transition-all duration-500 hover:opacity-100" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
                       {link.label}
                     </a>
                   </li>
@@ -98,7 +98,7 @@ const Footer = () => {
                   const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;
                   return (
                     <li key={p.key}>
-                      <a href={socialLinks[p.key]} target="_blank" rel="noopener noreferrer" className="font-body text-xs transition-all duration-500 hover:opacity-100 inline-flex items-center gap-1.5" style={{ color: "hsl(var(--foreground) / 0.35)" }}>
+                      <a href={socialLinks[p.key]} target="_blank" rel="noopener noreferrer" className="font-body text-xs transition-all duration-500 hover:opacity-100 inline-flex items-center gap-1.5" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
                         {Icon && <Icon />}
                         {p.label}
                       </a>
@@ -126,7 +126,7 @@ const Footer = () => {
           Typography:
             • Both the copyright text and the legal links share the
               EXACT same classes (`font-body text-[11px] tracking-wide`)
-              and base color (`hsl(var(--foreground) / 0.2)`) so the
+              and base color (`hsl(var(--foreground) / 0.5)`) so the
               row reads as one consistent legal-line. Hover lifts the
               link colour to `hsl(var(--foreground))` (full opacity)
               over a 500ms transition matching the rest of the footer.
@@ -145,7 +145,7 @@ const Footer = () => {
           className="pt-6 flex flex-wrap items-center justify-between gap-4"
           style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}
         >
-          <p className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--foreground) / 0.2)" }}>
+          <p className="font-body text-[11px] tracking-wide" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
             {!footerLoading && footer.copyright ? footer.copyright : null}
           </p>
 
@@ -153,14 +153,14 @@ const Footer = () => {
             <a
               href="/privacy-policy"
               className="font-body text-[11px] tracking-wide transition-colors duration-500 hover:text-foreground"
-              style={{ color: "hsl(var(--foreground) / 0.2)" }}
+              style={{ color: "hsl(var(--foreground) / 0.5)" }}
             >
               Privacy Policy
             </a>
             <span
               aria-hidden="true"
               className="font-body text-[11px] tracking-wide"
-              style={{ color: "hsl(var(--foreground) / 0.2)" }}
+              style={{ color: "hsl(var(--foreground) / 0.5)" }}
             >
               ·
             </span>
@@ -183,7 +183,7 @@ const Footer = () => {
                 }
               }}
               className="font-body text-[11px] tracking-wide transition-colors duration-500 hover:text-foreground bg-transparent border-0 p-0 cursor-pointer"
-              style={{ color: "hsl(var(--foreground) / 0.2)" }}
+              style={{ color: "hsl(var(--foreground) / 0.5)" }}
             >
               Cookie Settings
             </button>
