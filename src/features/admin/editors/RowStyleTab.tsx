@@ -54,7 +54,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import type { PageRow } from "@/types/rows";
+import type { PageRow, SectionShapeConfig, SectionShapeKind, SectionShapeSize } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 
 interface Props {
@@ -220,14 +220,15 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
                 Section band
               </label>
-              <div className="grid grid-cols-4 gap-1">
+              <div className="grid grid-cols-5 gap-1">
                 {([
+                  ["mesh", "Mesh"],
                   ["auto", "Auto"],
                   ["white", "White"],
                   ["tint", "Tint"],
                   ["deep", "Deep"],
                 ] as const).map(([value, label]) => {
-                  const active = ((row.layout as { bandTone?: string } | undefined)?.bandTone || "auto") === value;
+                  const active = ((row.layout as { bandTone?: string } | undefined)?.bandTone || "mesh") === value;
                   return (
                     <button
                       key={value}
@@ -252,10 +253,30 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                 })}
               </div>
               <p className="font-body text-[10px] text-muted-foreground mt-1 leading-snug">
-                Auto alternates white / tint down the page. Deep is the plum
-                ink band for emphasis moments.
+                Mesh (default) is transparent — the page-wide mesh gradient
+                shows through. Auto alternates white / tint down the page.
+                Deep is the plum ink band for emphasis moments.
               </p>
             </div>
+
+            {/* ── Section shape ──
+                Decorative curved / angled edges on the row's top and
+                bottom. Off by default; only meaningful when the row has
+                its own surface (i.e. not the transparent mesh band). */}
+            <ShapePicker
+              label="Shape — top edge"
+              value={row.layout?.shapeTop}
+              onChange={(shapeTop) =>
+                onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), shapeTop } })
+              }
+            />
+            <ShapePicker
+              label="Shape — bottom edge"
+              value={row.layout?.shapeBottom}
+              onChange={(shapeBottom) =>
+                onRowMetaChange({ layout: { ...(row.layout || DEFAULT_ROW_LAYOUT), shapeBottom } })
+              }
+            />
 
             {/* ── Snap to viewport ──
                 When enabled the row stretches to a full viewport and the
