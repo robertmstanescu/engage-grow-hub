@@ -77,21 +77,16 @@ const RowRenderer = ({
   });
 
   return (
-    <div
-        id={id}
-        data-section-row-id={row.id}
-        className="scroll-mt-16 isolate"
-      >
-        <SelectableWrapper path={["row", row.id]} label="Row" variant="row">
-          <div
-            className="grid gap-8"
-            style={{ gridTemplateColumns: widths.map((w) => `${w}fr`).join(" ") }}
-          >
-            {renderedColumns}
-          </div>
-        </SelectableWrapper>
-      </div>
-
+    <div id={id} data-section-row-id={row.id} className="scroll-mt-16">
+      <SelectableWrapper path={["row", row.id]} label="Row" variant="row">
+        <div
+          className="grid gap-8"
+          style={{ gridTemplateColumns: widths.map((w) => `${w}fr`).join(" ") }}
+        >
+          {renderedColumns}
+        </div>
+      </SelectableWrapper>
+    </div>
   );
 };
 
