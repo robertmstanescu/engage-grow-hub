@@ -65,7 +65,23 @@ Other things worth borrowing from those sites, applied throughout: one action pe
 - **Language**: plain-language labels replace technical field names; helper text where a control is non-obvious.
 - **Navigation**: admin sections regrouped as Content (Pages, Blog, Services, Media), Audience (Contacts, Leads, Campaigns), and Settings (Brand, Navigation, SEO, Team).
 
+
+## 7. SEO for the new pages
+
+The site already has the right machinery: a crawler-facing `ssr-index` edge function that injects title, description, canonical, OG/Twitter and JSON-LD per route, a dynamic `generate-sitemap` function reading published `cms_pages` and `blog_posts`, an `llms-txt` function, and the `usePageMeta` hook for browsers. Right now none of it knows about `/services`, so the new pages have to be wired into each piece:
+
+- **Crawler head**: `ssr-index` currently dispatches on `/`, `/blog/:slug` and `/p/:slug`. Add `/services` and `/services/:slug`, reading meta from the `services` table, so bots and social scrapers see per-service titles, descriptions and OG tags rather than the neutral template.
+- **Sitemap**: `generate-sitemap` gains a third query over published services, so a new service appears in the sitemap the moment it is published. The static `public/sitemap.xml` stays as the fallback and gets `/services/` added.
+- **Structured data**: each service page emits `Service` plus `BreadcrumbList` JSON-LD; the index page emits an `ItemList`. Organization stays sitewide.
+- **Canonicals**: `/services/<slug>/` self-referencing, non-www, trailing slash — same rule as the rest of the site.
+- **Editable SEO fields**: the service form includes meta title, meta description, OG image and an AI summary field, matching what pages and posts already have, with character counters and a preview.
+- **AI discovery**: services are added to the `llms-txt` output and to the noscript crawler fallback.
+- **Content-side wins from the redesign**: one H1 per page, real heading hierarchy in the new row types, alt text enforced on the stat/logo/case-study images, and internal links from the homepage cards to each service page — which is what actually helps these pages rank.
+
+After the build I'll run an SEO review so anything the scanner still flags gets picked up.
+
 ## Technical notes
+
 
 - Font removal touches `index.html`, `src/index.css`, `tailwind.config.ts`, `src/features/admin/BrandSettings.tsx`, `src/hooks/useBrandSettings.ts`, plus a data migration on stored brand settings and page content.
 - Band system lives in `src/index.css` as tokens (`--band-white`, `--band-tint`, `--band-deep` and matching foregrounds) with a `data-band` attribute on `RowSection`; `rowBackground.ts` resolves the alternation.
