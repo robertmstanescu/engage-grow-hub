@@ -140,7 +140,7 @@ const BlogPost = () => {
           </div>
         )}
 
-        <header className={`grain relative ${article.cover_image ? "pt-6" : "pt-36"} pb-16 px-8 mesh-hero`}>
+        <header className={`grain relative ${article.cover_image ? "pt-6" : "pt-36"} pb-16 px-8`}>
           <div className="relative z-10 max-w-[700px] mx-auto">
             <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-8 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.4)" }}>
               <ArrowLeft size={14} /> All articles
