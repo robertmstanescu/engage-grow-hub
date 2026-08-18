@@ -474,9 +474,10 @@
   }
 
   /* ── Section shapes ──
-     Decorative top/bottom edges. The SVG is filled with the SECTION's
-     own surface colour so the shape reads as the section rising into
-     (or falling away from) its neighbour. */
+     Decorative top/bottom edges. The SVG sits INSIDE the section and is
+     filled with the NEIGHBOUR's surface colour, so the row above appears
+     to bleed down into this one (top edge) and the row below to bleed up
+     (bottom edge) — one continuous page, shaped at the seam. */
   .section-shape {
     position: absolute;
     left: 0;
@@ -488,18 +489,21 @@
   }
   .section-shape[data-edge="top"] {
     top: 0;
-    transform: translateY(-99%);
+    /* Flip vertically so the filled mass sits at the TOP (the neighbour
+       bleeding down) with the curve cutting into this section. */
+    transform: scaleY(-1);
   }
   .section-shape[data-edge="bottom"] {
     bottom: 0;
-    transform: translateY(99%) scaleY(-1);
+    transform: none;
   }
-  .section-shape[data-flip="true"] {
-    transform: translateY(-99%) scaleX(-1);
+  .section-shape[data-edge="top"][data-flip="true"] {
+    transform: scaleY(-1) scaleX(-1);
   }
   .section-shape[data-edge="bottom"][data-flip="true"] {
-    transform: translateY(99%) scaleY(-1) scaleX(-1);
+    transform: scaleX(-1);
   }
+
   /* Dramatic curves eat vertical space on phones — flatten them. */
   @media (max-width: 767px) {
     .section-shape {
