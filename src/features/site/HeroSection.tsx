@@ -99,7 +99,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
     <section
       data-section="hero"
       data-snap-enabled="true"
-      className="scope-hero snap-section grain relative flex flex-col justify-end mesh-hero overflow-hidden"
+      className="scope-hero snap-section grain relative flex flex-col justify-center mesh-hero overflow-hidden"
       style={{ minHeight: "calc(100dvh - var(--nav-top-offset, 0px))" }}
     >
       {/*
@@ -144,7 +144,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
             decoding="async"
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
-          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute inset-0" style={{ backgroundColor: "hsl(var(--background) / 0.72)" }} />
         </div>
       )}
       {hasBg && c.bg_type === "video" && (
@@ -163,7 +163,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
             (() => {
               const fallbackImg = c.bg_poster_url || (isSupabaseStorageUrl(c.bg_url) ? c.bg_url : undefined);
               if (!fallbackImg) {
-                return <div className="absolute inset-0 bg-black" />;
+                return <div className="absolute inset-0" style={{ backgroundColor: "hsl(var(--background))" }} />;
               }
               return (
                 <img
@@ -207,18 +207,18 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
               className="w-full h-full object-cover"
             />
           )}
-          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute inset-0" style={{ backgroundColor: "hsl(var(--background) / 0.72)" }} />
         </div>
       )}
 
-      <div className="relative z-10 w-full max-w-[1200px] mx-auto px-6 sm:px-8 pb-16 pt-24 flex min-h-0 flex-1 flex-col justify-end overflow-y-auto">
+      <div className="relative z-10 w-full max-w-[1100px] mx-auto px-6 sm:px-8 py-20 flex min-h-0 flex-1 flex-col justify-center items-center text-center">
         {/*
           Structured hero block — a single vertical rhythm stack for the
           eyebrow, headline, tagline, subtitle and body. Spacing is crisp
           and consistent instead of vh-driven, keeping the layout clean at
           every breakpoint while the headline stays poster-sized.
         */}
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col items-center gap-6">
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -232,7 +232,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
 
           <h1
             className="font-display font-black leading-[0.9] tracking-tight flex-shrink-0"
-            style={{ color: "hsl(var(--hero-title))", fontSize: "clamp(2rem, min(10vw, 15vh), 9rem)" }}>
+            style={{ color: "hsl(var(--hero-title))", fontSize: "clamp(2.2rem, min(8vw, 12vh), 6.5rem)" }}>
             {titleLines.map((line, i) => (
               <motion.span
                 key={i}
@@ -268,7 +268,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
                 sectionKey="hero"
                 fieldPath="subtitle"
                 as="p"
-                className="leading-tight max-w-[600px]"
+                className="leading-tight max-w-[600px] mx-auto"
                 style={{
                   fontFamily: "'Architects Daughter', cursive",
                   color: c.subtitle_color || "hsl(var(--hero-body))",
@@ -289,7 +289,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
               fieldPath="body"
               html
               as="div"
-              className="font-body-heading max-w-[560px] leading-relaxed"
+              className="font-body-heading max-w-[640px] mx-auto leading-relaxed"
               style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "clamp(0.78rem, min(1.4vw, 1.8vh), 1.05rem)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
             />

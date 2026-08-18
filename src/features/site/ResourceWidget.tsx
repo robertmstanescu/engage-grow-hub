@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { fetchAssetById, getAssetPublicUrl, type MediaAsset } from "@/services/mediaLibrary";
 import { submitLeadAndGetDownload } from "@/services/leads";
 
-const CREAM = "#F4F0EC";
+const CREAM = "hsl(var(--foreground))";
 const ease = [0.16, 1, 0.3, 1] as const;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -158,9 +158,9 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
       transition={{ duration: 0.6, ease }}
       className="overflow-hidden rounded-2xl"
       style={{
-        backgroundColor: "hsl(280 55% 24%)",
-        border: "1px solid hsl(280 55% 35% / 0.4)",
-        boxShadow: "0 20px 60px -15px hsl(280 55% 15% / 0.5)",
+        backgroundColor: "hsl(var(--card))",
+        border: "1px solid hsl(var(--border))",
+        boxShadow: "var(--shadow-card)",
       }}
     >
       <div className="grid grid-cols-1 md:grid-cols-2">
@@ -208,7 +208,7 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
             className="absolute inset-0 opacity-30 pointer-events-none"
             style={{
               background:
-                "linear-gradient(135deg, hsl(280 55% 40% / 0.4) 0%, transparent 50%, hsl(280 55% 30% / 0.2) 100%)",
+                "linear-gradient(135deg, hsl(285 40% 96% / 0.9) 0%, transparent 55%, hsl(46 70% 92% / 0.5) 100%)",
             }}
           />
           <form onSubmit={handleSubmit} className="relative z-10 space-y-6">

@@ -32,9 +32,9 @@ const HeroRow = ({ row }: Props) => {
 
   return (
     <section
-      className="snap-section grain relative flex flex-col justify-end overflow-hidden"
+      className="snap-section grain relative flex flex-col justify-center overflow-hidden"
       data-snap-enabled="true"
-      style={{ isolation: "isolate", backgroundColor: "hsl(260 20% 4%)", minHeight: "calc(100dvh - var(--nav-top-offset, 0px))" }}
+      style={{ isolation: "isolate", backgroundColor: "hsl(var(--background))", minHeight: "calc(100dvh - var(--nav-top-offset, 0px))" }}
     >
       <RowBackground row={row} />
 
@@ -74,9 +74,9 @@ const HeroRow = ({ row }: Props) => {
       )}
 
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] pointer-events-none"
-        style={{ background: "radial-gradient(circle, hsl(280 55% 30%), transparent)" }} />
+        style={{ background: "radial-gradient(circle, hsl(285 45% 88%), transparent)" }} />
 
-      <div ref={ref} className="relative z-10 flex min-h-0 flex-1 w-full max-w-[1400px] flex-col justify-end overflow-y-auto px-4 pb-[4vh] pt-[6vh] sm:px-8">
+      <div ref={ref} className="relative z-10 flex min-h-0 flex-1 w-full max-w-[1400px] flex-col justify-center overflow-y-auto px-4 py-[6vh] sm:px-8">
         {c.icon && (
           <div className="mb-[1.5vh] hero-cascade-item" style={{ ...reveal(0), color: c.title_color || "hsl(var(--hero-title))" }}>
             <Icon value={c.icon} size={48} />
@@ -103,7 +103,7 @@ const HeroRow = ({ row }: Props) => {
 
         {c.tagline && (
           <p className="font-body tracking-[0.28em] uppercase mt-[1.8vh] hero-cascade-item"
-            style={{ ...reveal(titleLines.length + 1, 0.1), ...(isVisible ? { "--hero-cascade-opacity": "0.4" } as CSSProperties : {}), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)", opacity: isVisible ? 0.4 : 0 }}>
+            style={{ ...reveal(titleLines.length + 1, 0.1), ...(isVisible ? { "--hero-cascade-opacity": "0.75" } as CSSProperties : {}), color: c.color_tagline || c.tagline_color || "hsl(var(--hero-label))", fontSize: "clamp(0.55rem, min(1.1vw, 1.4vh), 0.85rem)", opacity: isVisible ? 0.75 : 0 }}>
             {c.tagline}
           </p>
         )}
@@ -126,7 +126,7 @@ const HeroRow = ({ row }: Props) => {
           <div className="mt-[2vh] hero-cascade-item" style={reveal(titleLines.length + 4, 0.1)}>
             <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
               className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full inline-block"
-              style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>
+>
               {c.cta_label}
             </a>
           </div>

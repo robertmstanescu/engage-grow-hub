@@ -70,7 +70,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
   const alignClass = cardTextAlign === "center" ? "text-center" : cardTextAlign === "right" ? "text-right" : "text-left";
 
   return (
-    <div className={`bg-card border border-border rounded-xl shadow-sm overflow-hidden ${compact ? "flex flex-col" : ""}`}>
+    <div className={`surface-card overflow-hidden ${compact ? "flex flex-col" : ""}`}>
       <div className={`${compact ? "p-6 flex-shrink-0" : "p-6 md:p-8"} ${alignClass}`}>
         <div className="flex items-center gap-3 mb-4">
           <span className="inline-block font-body text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
@@ -92,7 +92,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
         <a
           href="#contact"
           className="font-display text-[10px] uppercase tracking-[0.1em] font-bold px-4 py-2 rounded-full inline-block transition-opacity duration-300 hover:opacity-90"
-          style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}
+          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >
           {price}
         </a>

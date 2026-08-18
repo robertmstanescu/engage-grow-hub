@@ -19,7 +19,7 @@ const defaultFields: ContactField[] = [
   { key: "marketing", label: "Keep me updated with news and articles", type: "checkbox", required: false, visible: true },
 ];
 
-const CREAM = "#F4F0EC";
+const CREAM = "hsl(var(--foreground))";
 
 const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
@@ -88,7 +88,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
             <RowBody color="hsl(var(--light-fg) / 0.7)" className="mb-rhythm-base">{successBody}</RowBody>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
               className="btn-glass interactive font-display text-[10px] uppercase tracking-[0.1em] font-bold px-6 py-3 rounded-full"
-              style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--primary-foreground))" }}>{successButton}</button>
+>{successButton}</button>
           </div>
         </div>
       </section>
@@ -120,7 +120,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         <div
-          className="bg-card border border-border shadow-sm rounded-2xl p-6 md:p-8"
+          className="surface-card p-6 md:p-8"
           style={revealStyle(isVisible, 1)}>
 
           <form onSubmit={handleSubmit}>
@@ -159,7 +159,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                     <input type="checkbox" checked={formData.subscribed_to_marketing || false}
                       onChange={(e) => setFormData({ ...formData, subscribed_to_marketing: e.target.checked })}
                       className="rounded" style={{ accentColor: "hsl(var(--accent))" }} />
-                    <span className="font-body text-[10px]" style={{ color: `${CREAM}99` }}>{field.label}</span>
+                    <span className="font-body text-[10px]" style={{ color: "hsl(var(--foreground) / 0.6)" }}>{field.label}</span>
                   </label>
                 ))}
               </div>
