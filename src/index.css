@@ -320,45 +320,59 @@
        neighbouring content during scroll.
      ────────────────────────────────────────────────────────────── */
   .glass {
-    background: hsl(260 25% 12% / 0.15);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid hsl(280 20% 25% / 0.1);
+    background: hsl(0 0% 100% / 0.72);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-soft);
     transform: translateZ(0);
     backface-visibility: hidden;
-    /* `isolation: isolate` creates a new stacking context so the
-       backdrop-filter only composites against the immediate parent
-       layer instead of every layer behind it. Drastically reduces
-       GPU work and eliminates the saturation "pop" on reveal. */
     isolation: isolate;
-    /* Smooth luminous hover — border + glow ease in/out so the card
-       feels physically lit rather than flicker-swapped. */
     transition: border-color 300ms ease, box-shadow 300ms ease, background-color 300ms ease;
   }
 
-  /*
-   * Hover glow: replace the previous sharp gold border + tight shadow
-   * with a SOFT, WIDE bloom of brand gold around the card. Border
-   * stays at its base colour so the edge doesn't flash. The bloom is
-   * built from two stacked shadows — a tighter inner halo and a wider
-   * outer atmospheric glow — giving the card a luminous, lit-from-
-   * behind feel rather than a hard outline.
-   */
+  /* Hover: gentle lift + slightly deeper soft shadow (no dark glow). */
   .glass:hover {
-    box-shadow:
-      0 0 40px 4px hsl(var(--accent) / 0.28),
-      0 0 90px 20px hsl(var(--accent) / 0.18);
+    background: hsl(0 0% 100% / 0.9);
+    border-color: hsl(280 30% 78%);
+    box-shadow: var(--shadow-card);
   }
 
   .glass-light {
-    background: hsl(30 20% 96% / 0.8);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid hsl(280 20% 80% / 0.5);
+    background: hsl(0 0% 100% / 0.85);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-soft);
     transform: translateZ(0);
     backface-visibility: hidden;
     isolation: isolate;
   }
+
+  /* Solid Lativ-style card enclosure */
+  .surface-card {
+    background: var(--gradient-card);
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    transition: box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 320ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .surface-card:hover {
+    box-shadow: var(--shadow-card);
+    border-color: hsl(280 30% 80%);
+  }
+
+  /* Inverted (deep plum) card for colour rhythm */
+  .surface-invert {
+    background: hsl(280 57% 14%);
+    color: hsl(45 60% 96%);
+    border: 1px solid hsl(280 40% 22%);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+  }
+
 
   /* ──────────────────────────────────────────────────────────────────
      MOBILE-LITE GLASS (<1024px)
