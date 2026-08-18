@@ -69,14 +69,14 @@ interface Props {
  * admin sees in the editor === what's currently painting on the page.
  */
 const ROW_DEFAULTS: Record<string, { start: string; end: string }> = {
-  hero: { start: "hsl(280 55% 20% / 0.8)", end: "hsl(286 42% 25% / 0.5)" },
-  text: { start: "hsl(280 55% 18% / 0.5)", end: "hsl(286 42% 20% / 0.3)" },
-  service: { start: "hsl(286 42% 30%)", end: "hsl(280 55% 25%)" },
-  boxed: { start: "hsl(280 55% 18% / 0.6)", end: "hsl(286 42% 20% / 0.4)" },
-  contact: { start: "hsl(280 55% 24% / 0.3)", end: "transparent" },
-  image_text: { start: "hsl(280 55% 20% / 0.5)", end: "hsl(286 42% 25% / 0.3)" },
-  profile: { start: "hsl(280 55% 20% / 0.5)", end: "hsl(286 42% 25% / 0.3)" },
-  grid: { start: "hsl(280 55% 20% / 0.5)", end: "hsl(286 42% 25% / 0.3)" },
+  hero: { start: "hsl(280 40% 96% / 0.9)", end: "hsl(45 55% 96% / 0.6)" },
+  text: { start: "hsl(280 30% 97% / 0.7)", end: "hsl(45 50% 97% / 0.4)" },
+  service: { start: "hsl(280 32% 96%)", end: "hsl(45 52% 96%)" },
+  boxed: { start: "hsl(280 30% 97% / 0.8)", end: "hsl(45 50% 97% / 0.5)" },
+  contact: { start: "hsl(280 35% 96% / 0.6)", end: "transparent" },
+  image_text: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
+  profile: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
+  grid: { start: "hsl(280 32% 97% / 0.7)", end: "hsl(45 50% 97% / 0.45)" },
 };
 
 // Mirrors the trigger style used in RowContentEditor for visual parity
