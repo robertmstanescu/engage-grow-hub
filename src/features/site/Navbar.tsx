@@ -303,16 +303,30 @@ const Navbar = () => {
           ) : null}
         </a>
 
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
-          aria-expanded={mobileOpen}
-          style={{
-            color: "hsl(var(--foreground) / 0.7)",
-          }}
-        >
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="flex items-center gap-2">
+          {!navLoading && ctaHref && ctaText ? (
+            <a
+              href={ctaHref}
+              onClick={(e) => handleNavClick(e, ctaHref)}
+              className="hidden sm:flex px-4 h-9 rounded-full items-center justify-center text-xs font-semibold whitespace-nowrap"
+              style={{
+                backgroundColor: "hsl(var(--nav-cta-bg, 280 57% 16%))",
+                color: "hsl(var(--nav-cta-text, 45 60% 96%))",
+              }}
+            >
+              {ctaText}
+            </a>
+          ) : null}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            className="min-h-11 min-w-11 flex items-center justify-center"
+            style={{ color: "hsl(var(--foreground) / 0.7)" }}
+          >
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </nav>
 
 
