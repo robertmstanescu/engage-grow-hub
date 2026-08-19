@@ -4,7 +4,7 @@ import { getRowBgColor } from "../rowBackground";
 import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEditor";
 import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
-import SectionShape, { shapeHeightPx } from "../SectionShape";
+import SectionShape, { shapeHeightPx, shapeMaskStyle } from "../SectionShape";
 import { resolveRowMinHeight } from "@/lib/rowHeight";
 
 /** Tracks the same breakpoint index.css uses to flatten shapes. */
