@@ -211,10 +211,10 @@ const RowSection = ({
           <div aria-hidden className="absolute inset-x-0 top-0 z-[1] pointer-events-none">
             {dividerTop === "content" ? (
               <div className="row-container mx-auto max-w-[1280px]">
-                <div className="border-t border-border" />
+                <div className="border-t row-border" />
               </div>
             ) : (
-              <div className="border-t border-border" />
+              <div className="border-t row-border" />
             )}
           </div>
         ) : null}

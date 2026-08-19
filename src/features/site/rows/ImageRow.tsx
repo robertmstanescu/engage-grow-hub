@@ -20,6 +20,7 @@
  */
 import type { PageRow } from "@/types/rows";
 import ImagePickerField from "@/features/admin/ImagePickerField";
+import RowSection from "./typography/RowSection";
 
 /* ---------- shared content shape -------------------------------- */
 export interface ImageRowContent {
@@ -46,20 +47,22 @@ const ImageRow = ({ row }: FrontendProps) => {
   if (!data.url) return null;
 
   return (
-    <figure className="w-full my-4">
+    <RowSection row={row as any}>
+      <figure className="w-full row-container mx-auto max-w-[1280px] relative z-10">
       {/* Per acceptance criteria — strict element, no rewrites. */}
       <img
         src={data.url}
         alt={data.alt_text || ""}
-        className="w-full h-auto rounded-md"
+        className="w-full h-auto"
         loading="lazy"
       />
       {data.caption ? (
-        <figcaption className="mt-2 text-xs text-muted-foreground font-body text-center">
+        <figcaption className="mt-2 text-xs row-fg-muted font-body text-center">
           {data.caption}
         </figcaption>
       ) : null}
-    </figure>
+      </figure>
+    </RowSection>
   );
 };
 
