@@ -209,6 +209,10 @@ const RowSection = ({
              foreground too (dark row ⇒ light text AND light rules). */
           ["--row-fg-muted" as string]: `color-mix(in srgb, ${bandFg} 68%, transparent)`,
           ["--row-border" as string]: `color-mix(in srgb, ${bandFg} 22%, transparent)`,
+          /* A card surface that sits on THIS row: the row's own colour
+             lifted slightly toward its foreground, so cards stay light
+             on light rows and dark on dark ones. */
+          ["--row-surface" as string]: `color-mix(in srgb, ${surfaceColor || "hsl(var(--background))"} 94%, ${bandFg})`,
           ...(contentRadius ? { borderRadius: contentRadius, overflow: "hidden" } : null),
           ...style,
         }}

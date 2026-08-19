@@ -136,7 +136,7 @@ const TestimonialRow = ({
                  */}
                 <article
                   className="h-full rounded-2xl border row-border backdrop-blur-md p-6 md:p-8 shadow-sm flex flex-col gap-5 text-left"
-                  style={{ ...revealStyle(isVisible, 0.4 + i * 0.1), background: "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 6%, transparent)" }}
+                  style={{ ...revealStyle(isVisible, 0.4 + i * 0.1), background: "var(--row-surface, hsl(var(--card) / 0.6))" }}
                 >
                   <div
                     className="font-body row-fg text-base md:text-lg leading-relaxed [&>p]:my-1"
