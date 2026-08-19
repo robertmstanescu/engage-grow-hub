@@ -144,6 +144,21 @@ const RowSection = ({
    * including the footer — otherwise the overhang gets covered. */
   const hasShape = Boolean(shapeTop || shapeBottom);
 
+  /* A transparent row has no surface to spill, so a "Rounded" edge is
+     applied to its CONTENT instead (rounds the image of an image row,
+     for example) rather than silently rendering nothing. */
+  const ROUNDED_PX = { subtle: 24, medium: 48, dramatic: 80 } as const;
+  const roundKind = (cfg?: { kind?: string; size?: string }) =>
+    !hasOwnPaint && cfg?.kind === "rounded"
+      ? ROUNDED_PX[(cfg.size as keyof typeof ROUNDED_PX) || "medium"]
+      : 0;
+  const contentRoundTop = roundKind(row.layout?.shapeTop as any);
+  const contentRoundBottom = roundKind(row.layout?.shapeBottom as any);
+  const contentRadius =
+    contentRoundTop || contentRoundBottom
+      ? `${contentRoundTop}px ${contentRoundTop}px ${contentRoundBottom}px ${contentRoundBottom}px`
+      : undefined;
+
   /* ── Optical centring ──
    *  A cap paints OUTSIDE the section, so a row with only a bottom edge
    *  has more coloured surface below the content than above it. Add the
@@ -190,6 +205,15 @@ const RowSection = ({
            * pickers in the admin still override via the `color` prop.
            */
           ["--row-fg" as string]: bandFg,
+          /* Derived tones so muted copy and hairlines follow the row's
+             foreground too (dark row ⇒ light text AND light rules). */
+          ["--row-fg-muted" as string]: `color-mix(in srgb, ${bandFg} 68%, transparent)`,
+          ["--row-border" as string]: `color-mix(in srgb, ${bandFg} 22%, transparent)`,
+          /* A card surface that sits on THIS row: the row's own colour
+             lifted slightly toward its foreground, so cards stay light
+             on light rows and dark on dark ones. */
+          ["--row-surface" as string]: `color-mix(in srgb, ${surfaceColor || "hsl(var(--background))"} 94%, ${bandFg})`,
+          ...(contentRadius ? { borderRadius: contentRadius, overflow: "hidden" } : null),
           ...style,
         }}
       >
@@ -207,10 +231,10 @@ const RowSection = ({
           <div aria-hidden className="absolute inset-x-0 top-0 z-[1] pointer-events-none">
             {dividerTop === "content" ? (
               <div className="row-container mx-auto max-w-[1280px]">
-                <div className="border-t border-border" />
+                <div className="border-t row-border" />
               </div>
             ) : (
-              <div className="border-t border-border" />
+              <div className="border-t row-border" />
             )}
           </div>
         ) : null}

@@ -33,7 +33,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
   const roleColor = c.color_role || "hsl(var(--accent))";
   const credBg = c.color_credential_bg || "hsl(280 55% 24% / 0.6)";
   const credText = c.color_credential_text || "#FFFFFF";
-  const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
+  const noteColor = c.color_note || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 55%, transparent)";
   const eyebrowColor = c.color_eyebrow || "hsl(var(--primary))";
 
   const credentials: string[] = c.credentials || [];
@@ -57,11 +57,10 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
     <RowSection
       row={row}
       vAlign={vAlign}
-      defaultBg="hsl(var(--background))"
       innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
     >
       <div className={`relative z-10 ${maxW} w-full row-container ${containerPos}`}>
-        <div className="grid grid-cols-1 gap-rhythm-loose items-start" style={{ gridTemplateColumns: window.innerWidth > 768 ? gridCols : undefined }}>
+        <div className="grid grid-cols-1 gap-rhythm-loose items-center" style={{ gridTemplateColumns: window.innerWidth > 768 ? gridCols : undefined }}>
           {/* Left column: Image + Name + Credentials */}
           <div className="flex flex-col items-center" style={revealStyle(isVisible, 1)}>
             <div
@@ -174,11 +173,10 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                   fieldPath={`${prefix}.body`}
                   html
                   as="div"
-                  data-rte-fit=""
                   className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
                   style={{
                     fontSize: "var(--fs-body)",
-                    color: c.color_body || "hsl(var(--foreground) / 0.75)",
+                    color: c.color_body || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 85%, transparent)",
                     height: "auto",
                     overflow: "visible",
                   }}

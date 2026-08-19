@@ -74,12 +74,12 @@ const ProofBandRow = ({
         )}
         {c.body && <RowBody html={sanitizeHtml(c.body)} className="measure" style={revealStyle(isVisible, 0.35)} />}
 
-        <dl className={`mt-8 grid grid-cols-1 ${cols} gap-px overflow-hidden rounded-[var(--radius)] border border-border bg-border`}>
+        <dl className={`mt-8 grid grid-cols-1 ${cols} gap-px overflow-hidden rounded-[var(--radius)] border row-border`} style={{ background: "var(--row-border, hsl(var(--border)))" }}>
           {items.map((item, i) => (
             <div
               key={i}
-              className="bg-background/70 px-6 py-7 flex flex-col gap-2 items-start"
-              style={revealStyle(isVisible, 0.4 + i * 0.08)}
+              className="px-6 py-7 flex flex-col gap-2 items-start"
+              style={{ ...revealStyle(isVisible, 0.4 + i * 0.08), background: "var(--row-surface, hsl(var(--background) / 0.7))" }}
             >
               {item.logo ? (
                 <img
@@ -89,11 +89,11 @@ const ProofBandRow = ({
                   className="h-8 w-auto object-contain opacity-80"
                 />
               ) : (
-                <dt className="font-display font-bold leading-none text-foreground" style={{ fontSize: "var(--fs-stat)" }}>
+                <dt className="font-display font-bold leading-none row-fg" style={{ fontSize: "var(--fs-stat)" }}>
                   {item.value}
                 </dt>
               )}
-              <dd className="font-body text-sm leading-snug text-muted-foreground measure">{item.label}</dd>
+              <dd className="font-body text-sm leading-snug row-fg-muted measure">{item.label}</dd>
             </div>
           ))}
         </dl>

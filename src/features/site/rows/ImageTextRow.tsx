@@ -54,8 +54,8 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
   const captionPos = c.caption_position || "bottom-left";
 
   const captionBg = c.color_caption_bg || "hsl(var(--card) / 0.9)";
-  const captionText = c.color_caption_text || "hsl(var(--foreground))";
-  const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
+  const captionText = c.color_caption_text || "var(--row-fg, hsl(var(--foreground)))";
+  const noteColor = c.color_note || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 55%, transparent)";
 
   const containerPos = align === "center" ? "mx-auto"
     : align === "right" ? "ml-auto mr-6"
@@ -164,13 +164,13 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             as="div"
             data-rte-fit=""
             className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
-            style={{ fontSize: "var(--fs-body)", color: c.color_description || "hsl(var(--foreground) / 0.75)", height: "auto", overflow: "visible" }}
+            style={{ fontSize: "var(--fs-body)", color: c.color_description || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 80%, transparent)", height: "auto", overflow: "visible" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
           />
         </SelectableWrapper>
       )}
       {c.note && (
-        <div className="mt-rhythm-base pt-3" style={{ borderTop: `1px solid hsl(var(--foreground) / 0.1)` }}>
+        <div className="mt-rhythm-base pt-3" style={{ borderTop: `1px solid var(--row-border, hsl(var(--border)))` }}>
           <p className="font-body text-xs italic leading-[1.6]" style={{ color: noteColor }}>{c.note}</p>
         </div>
       )}

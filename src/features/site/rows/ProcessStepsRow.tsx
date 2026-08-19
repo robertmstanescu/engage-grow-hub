@@ -70,19 +70,19 @@ const ProcessStepsRow = ({
           {steps.map((step, i) => (
             <li
               key={i}
-              className="border-t border-border pt-5 flex flex-col gap-2"
+              className="border-t row-border pt-5 flex flex-col gap-2"
               style={revealStyle(isVisible, 0.4 + i * 0.08)}
             >
               {/* Understated number — a quiet counter, not a badge. */}
-              <span className="font-display text-sm font-semibold tracking-[0.18em] text-muted-foreground">
+              <span className="font-display text-sm font-semibold tracking-[0.18em] row-fg-muted">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <h3 className="font-display font-bold leading-tight text-foreground" style={{ fontSize: "var(--fs-step-title)" }}>
+              <h3 className="font-display font-bold leading-tight row-fg" style={{ fontSize: "var(--fs-step-title)" }}>
                 {step.title}
               </h3>
               {step.description && (
                 <div
-                  className="font-body text-sm leading-relaxed text-muted-foreground measure [&_p]:my-1"
+                  className="font-body text-sm leading-relaxed row-fg-muted measure [&_p]:my-1"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(step.description) }}
                 />
               )}

@@ -130,16 +130,16 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText();
 
-  const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
+  const noteColor = c.color_note || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 55%, transparent)";
   const cardBg = c.color_card_bg || "hsl(var(--card))";
 
   const colors = {
     border: c.color_card_border || "hsl(var(--border))",
     borderHover: c.color_card_border_hover || "hsl(var(--accent))",
-    cardTitle: c.color_card_title || "hsl(var(--foreground))",
-    cardDesc: c.color_card_description || "hsl(var(--foreground) / 0.6)",
+    cardTitle: c.color_card_title || "var(--row-fg, hsl(var(--foreground)))",
+    cardDesc: c.color_card_description || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 65%, transparent)",
     statNumber: c.color_stat_number || "hsl(var(--accent))",
-    statLabel: c.color_stat_label || "hsl(var(--foreground) / 0.5)",
+    statLabel: c.color_stat_label || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 55%, transparent)",
     statSuffix: c.color_stat_suffix || c.color_stat_number || "hsl(var(--accent))",
   };
 
@@ -211,7 +211,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
               as="div"
               data-rte-fit=""
               className={`font-body-heading leading-[1.6] max-w-[600px] [&_p]:mb-[5px] [&_p]:mt-[5px] ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
-              style={{ ...revealStyle(isVisible, 2), fontSize: "var(--fs-body)", color: c.color_description || "hsl(var(--foreground) / 0.75)" }}
+              style={{ ...revealStyle(isVisible, 2), fontSize: "var(--fs-body)", color: c.color_description || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 80%, transparent)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }}
             />
           )}

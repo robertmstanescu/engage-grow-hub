@@ -22,9 +22,9 @@ const defaultFields: ContactField[] = [
 /* Form typography uses the shared card-scale utilities so the contact
  * row reads like the service/boxed cards instead of a one-off form. */
 const LABEL_CLASS =
-  "block text-card-label text-foreground mb-2 text-left";
+  "block text-card-label row-fg mb-2 text-left";
 const INPUT_CLASS =
-  "w-full bg-transparent border border-border rounded-lg px-4 py-3 text-card-input text-foreground outline-none interactive text-left transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
+  "w-full bg-transparent border row-border rounded-lg px-4 py-3 text-card-input row-fg outline-none interactive text-left transition-colors placeholder:text-[color:var(--row-fg-muted,hsl(var(--muted-foreground)))] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
 
 const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
@@ -144,14 +144,14 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-8 pt-6 border-t border-border" style={revealStyle(isVisible, leftFields.length + 3)}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-8 pt-6 border-t row-border" style={revealStyle(isVisible, leftFields.length + 3)}>
               <div className="space-y-1.5">
                 {checkboxFields.map((field) => (
                   <label key={field.key} className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={formData.subscribed_to_marketing || false}
                       onChange={(e) => setFormData({ ...formData, subscribed_to_marketing: e.target.checked })}
                       className="rounded accent-foreground" />
-                    <span className="text-card-body text-muted-foreground">{field.label}</span>
+                    <span className="text-card-body row-fg-muted">{field.label}</span>
                   </label>
                 ))}
               </div>
@@ -164,8 +164,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         {c.note && (
-          <div className={`mt-rhythm-base pt-3 border-t border-border ${contentAlign}`}>
-            <p className="text-card-body italic text-muted-foreground measure">{c.note}</p>
+          <div className={`mt-rhythm-base pt-3 border-t row-border ${contentAlign}`}>
+            <p className="text-card-body italic row-fg-muted measure">{c.note}</p>
           </div>
         )}
       </div>
