@@ -29,7 +29,7 @@
  * so the heading hierarchy stays consistent across the site.
  * ───────────────────────────────────────────────────────────────────── */
 
-import { Field, RichField, SectionBox } from "../site-editor/FieldComponents";
+import { Field, RichField, SectionBox, ColorField } from "../site-editor/FieldComponents";
 import ImagePickerField from "../ImagePickerField";
 import TitleLinesEditor from "./TitleLinesEditor";
 import SubtitleEditor from "../site-editor/SubtitleEditor";
