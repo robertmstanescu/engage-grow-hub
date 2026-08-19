@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { buildPageMeshCSS, resolvePageMesh } from "@/features/site/pageMesh";
+import { buildPageMeshCSS, resolvePageMesh, meshForegroundColor } from "@/features/site/pageMesh";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import type { PageRow, PageRowV3 } from "@/types/rows";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
