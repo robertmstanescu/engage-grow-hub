@@ -144,6 +144,21 @@ const RowSection = ({
    * including the footer — otherwise the overhang gets covered. */
   const hasShape = Boolean(shapeTop || shapeBottom);
 
+  /* A transparent row has no surface to spill, so a "Rounded" edge is
+     applied to its CONTENT instead (rounds the image of an image row,
+     for example) rather than silently rendering nothing. */
+  const ROUNDED_PX = { subtle: 24, medium: 48, dramatic: 80 } as const;
+  const roundKind = (cfg?: { kind?: string; size?: string }) =>
+    !hasOwnPaint && cfg?.kind === "rounded"
+      ? ROUNDED_PX[(cfg.size as keyof typeof ROUNDED_PX) || "medium"]
+      : 0;
+  const contentRoundTop = roundKind(row.layout?.shapeTop as any);
+  const contentRoundBottom = roundKind(row.layout?.shapeBottom as any);
+  const contentRadius =
+    contentRoundTop || contentRoundBottom
+      ? `${contentRoundTop}px ${contentRoundTop}px ${contentRoundBottom}px ${contentRoundBottom}px`
+      : undefined;
+
   /* ── Optical centring ──
    *  A cap paints OUTSIDE the section, so a row with only a bottom edge
    *  has more coloured surface below the content than above it. Add the
