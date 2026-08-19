@@ -329,7 +329,7 @@ export const HeroView = ({
                 fieldPath="body"
                 html
                 as="div"
-                className="font-body-heading max-w-[640px] mx-auto leading-relaxed"
+                className="font-body max-w-[640px] mx-auto leading-relaxed"
                 style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "var(--fs-hero-body)" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
               />

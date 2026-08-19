@@ -57,7 +57,7 @@ const ServicesPillar = ({ id, colorScope, pillarNumber, title, description, serv
             {title}
           </h3>
           <div
-            className="font-body-heading text-base md:text-lg max-w-[600px] leading-relaxed"
+            className="font-body text-base md:text-lg max-w-[600px] leading-relaxed"
             style={{ color: "hsl(var(--pillar-heading-sub) / 0.7)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
           />

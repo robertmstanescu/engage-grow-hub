@@ -16,7 +16,7 @@ const IntroStrip = () => {
       <div className="relative z-10 max-w-[700px] mr-auto ml-0 text-left">
         <div className="text-5xl mb-8" style={{ color: "hsl(var(--primary))", opacity: 0.15 }}>✦</div>
         <p
-          className="font-body-heading text-lg md:text-xl font-medium leading-relaxed"
+          className="font-body text-lg md:text-xl font-medium leading-relaxed"
           style={{ color: "hsl(var(--light-fg) / 0.85)" }}
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.text) }}
         />

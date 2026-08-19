@@ -54,7 +54,7 @@ const ContactSection = () => {
         <div className="relative z-10 max-w-[520px] mr-auto ml-0 px-3 text-left">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease }}>
             <h3 className="font-display text-3xl md:text-4xl font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))" }}>Message received.</h3>
-            <p className="font-body-heading text-base md:text-lg mb-8" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>We respond within 24 hours.</p>
+            <p className="font-body text-base md:text-lg mb-8" style={{ color: "hsl(var(--light-fg) / 0.7)" }}>We respond within 24 hours.</p>
             <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
               className="btn-glass interactive font-display text-micro uppercase tracking-[0.1em] font-bold px-8 py-4 rounded-full"
 >
@@ -86,7 +86,7 @@ const ContactSection = () => {
           <h3 className="font-display text-3xl md:text-4xl font-black leading-tight mb-5" style={{ color: "hsl(var(--primary))" }}>
             {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}
           </h3>
-          <div className="font-body-heading text-base md:text-lg leading-relaxed" style={{ color: "hsl(var(--light-fg) / 0.7)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
+          <div className="font-body text-base md:text-lg leading-relaxed" style={{ color: "hsl(var(--light-fg) / 0.7)" }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
         </div>
 
         {/* Purple glass form panel */}
