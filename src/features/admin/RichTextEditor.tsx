@@ -110,7 +110,36 @@ interface RichTextEditorProps {
   bgColor?: string;
 }
 
+/**
+ * Toolbar button — defined at MODULE level on purpose. When it lived
+ * inside `RichTextEditor` every re-render created a brand-new component
+ * type, so React unmounted and remounted the buttons mid-interaction:
+ * the element under the pointer was replaced between `mousedown` and
+ * `mouseup`, so the `click` never fired (or fired on the wrong button).
+ * That was the "I press italic and something else happens" bug.
+ */
+const ToolbarButton = ({
+  onClick, children, title, active,
+}: {
+  onClick: () => void; children: React.ReactNode; title: string; active?: boolean;
+}) => (
+  <button
+    type="button"
+    title={title}
+    onMouseDown={(event) => event.preventDefault()}
+    onClick={onClick}
+    className="p-1.5 rounded transition-colors"
+    style={{
+      color: active ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
+      backgroundColor: active ? "hsl(var(--secondary) / 0.15)" : undefined,
+    }}
+  >
+    {children}
+  </button>
+);
+
 const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEditorProps) => {
+
   // The editor surface is transparent and inherits parent text color,
   // so the writing area always matches the rendered area it edits.
   const editorRef = useRef<HTMLDivElement>(null);
@@ -209,9 +238,9 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
       restoreSelection();
       document.execCommand("styleWithCSS", false, "true");
       document.execCommand(command, false, value);
-      if (editorRef.current) {
-        normalizeRichTextContainerFontSizes(editorRef.current);
-      }
+      // NOTE: we deliberately do NOT normalise font sizes here — bold /
+      // italic / colour commands must never rewrite the sizes the admin
+      // picked. Size normalisation happens only in `applyFontSize`.
       saveSelection();
       emitChange();
     },
@@ -219,55 +248,63 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   );
 
   /**
-   * applyFontSize — manual span wrapping with cursor repositioning.
+   * applyFontSize — wraps the current selection in a span carrying the
+   * exact pixel size.
    *
-   * Why not just rely on `normalizeRichTextContainerFontSizes`? Because
-   * after `execCommand("fontSize", "7")` the browser's selection lives
-   * inside a `<font size="7">` node. When we replace that node with a
-   * fresh `<span style="font-size: …">`, the original Range is orphaned
-   * and the toolbar reads the OLD computed size on the next sync.
-   *
-   * Here we:
-   *   1. Force HTML output (`styleWithCSS = false`) so we get `<font>`
-   *      tags we can find deterministically.
-   *   2. Manually swap each `<font size="7">` for a `<span style="…">`.
-   *   3. Reposition the caret at the end of the LAST new span so the
-   *      next `syncToolbarState()` call reads the new size.
+   * We no longer round-trip through `execCommand("fontSize", "7")`:
+   * any `<font size="7">` that survived the swap was later mapped to
+   * 48px by the shared normaliser, which is why every size change
+   * ended up as 48. Wrapping the range ourselves is deterministic and
+   * keeps the selection alive so the dropdown reflects reality.
    */
   const applyFontSize = useCallback(
     (fontSize: string) => {
       focusEditor();
       restoreSelection();
 
-      document.execCommand("styleWithCSS", false, "false");
-      document.execCommand("fontSize", false, "7");
-      if (editorRef.current) {
-        const fonts = Array.from(editorRef.current.querySelectorAll('font[size="7"]'));
-        let lastSpan: HTMLSpanElement | null = null;
-        fonts.forEach((font) => {
-          const span = document.createElement("span");
-          span.style.fontSize = fontSize;
-          while (font.firstChild) span.appendChild(font.firstChild);
-          font.parentNode?.replaceChild(span, font);
-          lastSpan = span;
-        });
-        // Restore cursor inside the new element so the dropdown syncs
-        if (lastSpan) {
-          const sel = window.getSelection();
-          if (sel) {
-            const range = document.createRange();
-            range.selectNodeContents(lastSpan);
-            range.collapse(false);
-            sel.removeAllRanges();
-            sel.addRange(range);
-          }
+      const editor = editorRef.current;
+      const sel = window.getSelection();
+      if (!editor || !sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      if (!editor.contains(range.commonAncestorContainer)) return;
+
+      if (range.collapsed) {
+        // No selection — apply to the element the caret sits in so the
+        // next typed characters inherit the chosen size.
+        let node: Node | null = range.startContainer;
+        if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+        if (node && node !== editor && editor.contains(node)) {
+          (node as HTMLElement).style.fontSize = fontSize;
         }
+      } else {
+        const span = document.createElement("span");
+        span.style.fontSize = fontSize;
+        try {
+          span.appendChild(range.extractContents());
+        } catch {
+          return;
+        }
+        // Strip competing sizes from descendants so the new size wins.
+        span.querySelectorAll<HTMLElement>("[style*='font-size']").forEach((el) => {
+          el.style.fontSize = "";
+          if (!el.getAttribute("style")) el.removeAttribute("style");
+        });
+        span.querySelectorAll("font[size]").forEach((el) => el.removeAttribute("size"));
+        range.insertNode(span);
+
+        const next = document.createRange();
+        next.selectNodeContents(span);
+        sel.removeAllRanges();
+        sel.addRange(next);
       }
+
+      setActiveSize(fontSize);
       saveSelection();
       emitChange();
     },
     [emitChange, focusEditor, restoreSelection, saveSelection]
   );
+
 
   const handleImageUpload = useCallback(
     async (file: File) => {
@@ -426,25 +463,8 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     return () => document.removeEventListener("selectionchange", handler);
   }, [syncToolbarState]);
 
-  const ToolbarButton = ({
-    onClick, children, title, active,
-  }: {
-    onClick: () => void; children: React.ReactNode; title: string; active?: boolean;
-  }) => (
-    <button
-      type="button"
-      title={title}
-      onMouseDown={(event) => event.preventDefault()}
-      onClick={onClick}
-      className="p-1.5 rounded transition-colors"
-      style={{
-        color: active ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
-        backgroundColor: active ? "hsl(var(--secondary) / 0.15)" : undefined,
-      }}
-    >
-      {children}
-    </button>
-  );
+
+
 
   return (
     <div
@@ -471,6 +491,7 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           }}
           className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
           style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "120px" }}
+          onMouseDown={(event) => { saveSelection(); event.preventDefault(); }}
           title="Font Family"
         >
           <option value="">Font</option>
@@ -490,6 +511,7 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           }}
           className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
           style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "85px" }}
+          onMouseDown={(event) => { saveSelection(); event.preventDefault(); }}
           title="Font Size"
         >
           <option value="">{activeSize || "Size"}</option>

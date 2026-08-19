@@ -307,6 +307,26 @@ export const ProofBandEditor = ({
           </>
         )}
       />
+      {/* Tile colours — all optional. Left empty, each tile keeps
+          inheriting the row's automatic light/dark contrast. */}
+      <ColorField
+        label="Tile background"
+        value={content.color_tile_bg || ""}
+        fallback=""
+        onChange={(v) => onChange("color_tile_bg", v)}
+      />
+      <ColorField
+        label="Stat / value colour"
+        value={content.color_stat || ""}
+        fallback=""
+        onChange={(v) => onChange("color_stat", v)}
+      />
+      <ColorField
+        label="Supporting label colour"
+        value={content.color_stat_label || ""}
+        fallback=""
+        onChange={(v) => onChange("color_stat_label", v)}
+      />
     </div>
   );
 };
