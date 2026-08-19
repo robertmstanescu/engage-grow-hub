@@ -78,8 +78,8 @@ const ProofBandRow = ({
           {items.map((item, i) => (
             <div
               key={i}
-              className="bg-background/70 px-6 py-7 flex flex-col gap-2 items-start"
-              style={revealStyle(isVisible, 0.4 + i * 0.08)}
+              className="px-6 py-7 flex flex-col gap-2 items-start"
+              style={{ ...revealStyle(isVisible, 0.4 + i * 0.08), background: "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 4%, hsl(var(--background) / 0.7))" }}
             >
               {item.logo ? (
                 <img
