@@ -396,10 +396,54 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               </div>
             ) : null}
 
+            {row.type === "image" ? (
+              <>
+                <label className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/30 px-2.5 py-2">
+                  <span className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Full bleed
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={row.layout?.fullBleed !== false}
+                    onChange={(e) => patchLayout({ fullBleed: e.target.checked })}
+                    style={{ accentColor: "hsl(var(--secondary))" }}
+                  />
+                </label>
+
+                {(row.layout?.heightMode || "auto") !== "auto" ? (
+                  <div>
+                    <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                      Focal point
+                    </label>
+                    <div className="grid grid-cols-5 gap-1">
+                      {(["top", "center", "bottom", "left", "right"] as const).map((point) => {
+                        const active = (row.layout?.focalPoint || "center") === point;
+                        return (
+                          <button
+                            key={point}
+                            type="button"
+                            onClick={() => patchLayout({ focalPoint: point })}
+                            className={`font-body text-[10px] py-1.5 rounded-lg border capitalize transition-colors ${
+                              active
+                                ? "bg-secondary/15 border-secondary/40 text-foreground"
+                                : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                            }`}
+                          >
+                            {point}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+
             <p className="font-body text-[10px] text-muted-foreground leading-snug">
               Sets a minimum height — longer content still grows past it, so
               nothing ever gets cut off.
             </p>
+
           </div>
         </AccordionContent>
       </AccordionItem>

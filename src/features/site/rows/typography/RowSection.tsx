@@ -41,11 +41,17 @@ interface Props {
   grain?: boolean;
   /** Render the section as `min-h-screen` (default) or as auto-height. */
   fullHeight?: boolean;
+  /**
+   * Edge-to-edge row: removes the section's vertical padding so the
+   * content can paint the full band (page-breaker image rows).
+   */
+  bleed?: boolean;
   /** Marks for scroll-reveal targeting / admin row navigation. */
   dataRowId?: string;
   dataRowType?: string;
   dataRowTitle?: string;
 }
+
 
 /**
  * <RowSection/> — the standardised <section> wrapper for every CMS row.
@@ -91,6 +97,8 @@ const RowSection = ({
   style,
   grain = true,
   fullHeight = true,
+  bleed = false,
+
   dataRowId,
   dataRowType,
   dataRowTitle,
@@ -188,13 +196,18 @@ const RowSection = ({
         data-row-type={dataRowType ?? row.type}
         data-row-title={dataRowTitle ?? row.strip_title}
         data-snap-enabled={snapEnabled ? "true" : undefined}
-        className={`snap-section ${grain && !hasOwnPaint ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
+        className={`snap-section ${grain && !hasOwnPaint ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} ${bleed ? "" : "py-row-fluid"} ${className}`}
         style={{
           backgroundColor: surfaceColor,
           zIndex: hasShape ? 2 : undefined,
           ...(minHeight ? { minHeight } : null),
-          ...(bottomShapeH ? { paddingTop: `calc(${basePad} + ${bottomShapeH}px)` } : null),
-          ...(topShapeH ? { paddingBottom: `calc(${basePad} + ${topShapeH}px)` } : null),
+          ...(bleed
+            ? { paddingTop: 0, paddingBottom: 0 }
+            : {
+                ...(bottomShapeH ? { paddingTop: `calc(${basePad} + ${bottomShapeH}px)` } : null),
+                ...(topShapeH ? { paddingBottom: `calc(${basePad} + ${topShapeH}px)` } : null),
+              }),
+
 
           scrollMarginTop: "0px",
           /*

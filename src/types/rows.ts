@@ -124,7 +124,16 @@ export interface RowLayout {
    * so it lines up with the text column.
    */
   dividerTop?: "none" | "full" | "content";
+  /**
+   * Edge-to-edge row: drops the content container's max-width and the
+   * row's vertical padding so the content (typically an image) becomes a
+   * full-bleed page breaker. Image rows default to true.
+   */
+  fullBleed?: boolean;
+  /** Which part of a cropped image stays visible when a height is set. */
+  focalPoint?: "top" | "center" | "bottom" | "left" | "right";
 }
+
 
 /* ─── Section shapes ───────────────────────────────────────────────── */
 
