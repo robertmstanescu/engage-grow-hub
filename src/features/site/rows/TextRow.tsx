@@ -58,7 +58,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
       <div key={colIndex} className={isMultiCol ? "" : `${maxW} ${containerPos} ${contentAlign}`}>
         {c.eyebrow && (
           <SelectableWrapper path={[...basePath, "eyebrow"]} label="Eyebrow" variant="atom" inline>
-            <RowEyebrow color={c.color_eyebrow || (isLight ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.5)")} style={revealStyle(isVisible, -0.5)}>
+            <RowEyebrow color={c.color_eyebrow || ""} style={revealStyle(isVisible, -0.5)}>
               <CanvasEditable path={[...basePath, "eyebrow"]} value={c.eyebrow} as="span">
                 <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">{c.eyebrow}</EditableText>
               </CanvasEditable>

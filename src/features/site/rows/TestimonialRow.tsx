@@ -85,7 +85,7 @@ const TestimonialRow = ({
       <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
         {/* Optional header */}
         {c.eyebrow && (
-          <RowEyebrow color={c.color_eyebrow || "hsl(var(--secondary))"} style={revealStyle(isVisible, -0.5)}>
+          <RowEyebrow color={c.color_eyebrow || ""} style={revealStyle(isVisible, -0.5)}>
             {c.eyebrow}
           </RowEyebrow>
         )}
