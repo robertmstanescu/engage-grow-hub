@@ -434,25 +434,8 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     return () => document.removeEventListener("selectionchange", handler);
   }, [syncToolbarState]);
 
-  const ToolbarButton = ({
-    onClick, children, title, active,
-  }: {
-    onClick: () => void; children: React.ReactNode; title: string; active?: boolean;
-  }) => (
-    <button
-      type="button"
-      title={title}
-      onMouseDown={(event) => event.preventDefault()}
-      onClick={onClick}
-      className="p-1.5 rounded transition-colors"
-      style={{
-        color: active ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
-        backgroundColor: active ? "hsl(var(--secondary) / 0.15)" : undefined,
-      }}
-    >
-      {children}
-    </button>
-  );
+
+
 
   return (
     <div
