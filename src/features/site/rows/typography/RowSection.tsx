@@ -126,7 +126,11 @@ const RowSection = ({
    *  to a readable tone.                                            */
   const hasOwnPaint = Boolean(row.bg_color);
   const surfaceColor = getRowBgColor(row);
-  const bandFg = hasOwnPaint ? resolveRowForeground(row) : "hsl(var(--foreground))";
+  /* Transparent rows inherit `--page-fg`, which PageRows derives from the
+     hero's mesh brightness — so a dark mesh flips them to light text. */
+  const bandFg = hasOwnPaint
+    ? resolveRowForeground(row)
+    : "var(--page-fg, hsl(var(--foreground)))";
 
   /* ── Section shapes ──
    *  Decorative curved / angled edges, off by default. The shape is
