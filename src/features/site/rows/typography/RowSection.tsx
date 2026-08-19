@@ -190,6 +190,10 @@ const RowSection = ({
            * pickers in the admin still override via the `color` prop.
            */
           ["--row-fg" as string]: bandFg,
+          /* Derived tones so muted copy and hairlines follow the row's
+             foreground too (dark row ⇒ light text AND light rules). */
+          ["--row-fg-muted" as string]: `color-mix(in srgb, ${bandFg} 68%, transparent)`,
+          ["--row-border" as string]: `color-mix(in srgb, ${bandFg} 22%, transparent)`,
           ...style,
         }}
       >
