@@ -491,6 +491,7 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           }}
           className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
           style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "120px" }}
+          onMouseDown={(event) => { saveSelection(); event.preventDefault(); }}
           title="Font Family"
         >
           <option value="">Font</option>
@@ -510,6 +511,7 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           }}
           className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
           style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "85px" }}
+          onMouseDown={(event) => { saveSelection(); event.preventDefault(); }}
           title="Font Size"
         >
           <option value="">{activeSize || "Size"}</option>
