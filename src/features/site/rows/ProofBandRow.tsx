@@ -80,7 +80,10 @@ const ProofBandRow = ({
             <div
               key={i}
               className="px-6 py-7 flex flex-col gap-2 items-start"
-              style={{ ...revealStyle(isVisible, 0.4 + i * 0.08), background: "var(--row-surface, hsl(var(--background) / 0.7))" }}
+              style={{
+                ...revealStyle(isVisible, 0.4 + i * 0.08),
+                background: c.color_tile_bg || "var(--row-surface, hsl(var(--background) / 0.7))",
+              }}
             >
               {item.logo ? (
                 <img
@@ -90,11 +93,20 @@ const ProofBandRow = ({
                   className="h-8 w-auto object-contain opacity-80"
                 />
               ) : (
-                <dt className="font-display font-bold leading-none row-fg" style={{ fontSize: "var(--fs-stat)" }}>
+                <dt
+                  className="font-display font-bold leading-none row-fg"
+                  style={{ fontSize: "var(--fs-stat)", ...(c.color_stat ? { color: c.color_stat } : {}) }}
+                >
                   {item.value}
                 </dt>
               )}
-              <dd className="font-body text-sm leading-snug row-fg-muted measure">{item.label}</dd>
+              <dd
+                className="font-body text-sm leading-snug row-fg-muted measure"
+                style={c.color_stat_label ? { color: c.color_stat_label } : undefined}
+              >
+                {item.label}
+              </dd>
+
             </div>
           ))}
         </dl>
