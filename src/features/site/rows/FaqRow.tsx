@@ -102,12 +102,12 @@ const FaqRow = ({
             <AccordionItem
               key={i}
               value={`item-${i}`}
-              className="border-b border-border/60"
+              className="border-b row-border"
             >
-              <AccordionTrigger className="font-display text-base md:text-lg text-foreground hover:no-underline py-5">
+              <AccordionTrigger className="font-display text-base md:text-lg row-fg hover:no-underline py-5">
                 {item.question}
               </AccordionTrigger>
-              <AccordionContent className="font-body text-sm md:text-base text-muted-foreground leading-relaxed pb-5">
+              <AccordionContent className="font-body text-sm md:text-base row-fg-muted leading-relaxed pb-5">
                 <div
                   className="[&>p]:my-1"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.answer || "") }}

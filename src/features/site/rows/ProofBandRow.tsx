@@ -74,7 +74,7 @@ const ProofBandRow = ({
         )}
         {c.body && <RowBody html={sanitizeHtml(c.body)} className="measure" style={revealStyle(isVisible, 0.35)} />}
 
-        <dl className={`mt-8 grid grid-cols-1 ${cols} gap-px overflow-hidden rounded-[var(--radius)] border border-border bg-border`}>
+        <dl className={`mt-8 grid grid-cols-1 ${cols} gap-px overflow-hidden rounded-[var(--radius)] border row-border bg-border`}>
           {items.map((item, i) => (
             <div
               key={i}
@@ -89,11 +89,11 @@ const ProofBandRow = ({
                   className="h-8 w-auto object-contain opacity-80"
                 />
               ) : (
-                <dt className="font-display font-bold leading-none text-foreground" style={{ fontSize: "var(--fs-stat)" }}>
+                <dt className="font-display font-bold leading-none row-fg" style={{ fontSize: "var(--fs-stat)" }}>
                   {item.value}
                 </dt>
               )}
-              <dd className="font-body text-sm leading-snug text-muted-foreground measure">{item.label}</dd>
+              <dd className="font-body text-sm leading-snug row-fg-muted measure">{item.label}</dd>
             </div>
           ))}
         </dl>

@@ -135,11 +135,11 @@ const TestimonialRow = ({
                  * the frosted look against any row background.
                  */}
                 <article
-                  className="h-full rounded-2xl border border-border/60 bg-card/60 backdrop-blur-md p-6 md:p-8 shadow-sm flex flex-col gap-5 text-left"
+                  className="h-full rounded-2xl border row-border bg-card/60 backdrop-blur-md p-6 md:p-8 shadow-sm flex flex-col gap-5 text-left"
                   style={revealStyle(isVisible, 0.4 + i * 0.1)}
                 >
                   <div
-                    className="font-body text-foreground/90 text-base md:text-lg leading-relaxed [&>p]:my-1"
+                    className="font-body row-fg text-base md:text-lg leading-relaxed [&>p]:my-1"
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.quote || "") }}
                   />
                   <div className="flex items-center gap-3 mt-auto">
@@ -148,7 +148,7 @@ const TestimonialRow = ({
                         src={item.avatar}
                         alt={resolveImageAlt(item.avatar_alt, item.name || "Client portrait")}
                         loading="lazy"
-                        className="w-12 h-12 rounded-full object-cover border border-border/40"
+                        className="w-12 h-12 rounded-full object-cover border row-border"
                       />
                     ) : (
                       <div
@@ -159,11 +159,11 @@ const TestimonialRow = ({
                       </div>
                     )}
                     <div className="min-w-0">
-                      <div className="font-display text-sm font-semibold text-foreground truncate">
+                      <div className="font-display text-sm font-semibold row-fg truncate">
                         {item.name}
                       </div>
                       {item.role && (
-                        <div className="font-body text-xs text-muted-foreground truncate">
+                        <div className="font-body text-xs row-fg-muted truncate">
                           {item.role}
                         </div>
                       )}
