@@ -139,5 +139,84 @@ export const roundedRadius = (config?: SectionShapeConfig): number => {
   return ROUNDED_PX[config.size ?? "medium"];
 };
 
+/**
+ * shapeMaskStyle — "mask" mode for rows whose CONTENT is the surface
+ * (image page-breakers). Instead of painting a coloured cap outside the
+ * section, the section itself is masked by the shape and pulled up/down
+ * by the shape height, so the PICTURE spills over the neighbouring row.
+ */
+export const shapeMaskStyle = (
+  top: SectionShapeConfig | undefined,
+  bottom: SectionShapeConfig | undefined,
+  isMobile = false,
+): React.CSSProperties => {
+  const th = shapeHeightPx(top, isMobile);
+  const bh = shapeHeightPx(bottom, isMobile);
+  if (!th && !bh) return {};
+
+  const svg = (kind: SectionShapeKind, flip: boolean) => {
+    const d = PATHS[kind as Exclude<SectionShapeKind, "none" | "rounded">];
+    if (!d) return null;
+    const inner = flip
+      ? `<g transform="translate(0,120) scale(1,-1)"><path d="${d}" fill="#000"/></g>`
+      : `<path d="${d}" fill="#000"/>`;
+    const raw = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">${inner}</svg>`;
+    return `url("data:image/svg+xml,${encodeURIComponent(raw)}")`;
+  };
+
+  const layers: string[] = [];
+  const sizes: string[] = [];
+  const positions: string[] = [];
+
+  const topRounded = top?.kind === "rounded";
+  const bottomRounded = bottom?.kind === "rounded";
+
+  const topLayer = th && !topRounded ? svg(top!.kind, false) : null;
+  const bottomLayer = bh && !bottomRounded ? svg(bottom!.kind, true) : null;
+
+  if (topLayer) {
+    layers.push(topLayer);
+    sizes.push(`100% ${th}px`);
+    positions.push("top center");
+  }
+  if (bottomLayer) {
+    layers.push(bottomLayer);
+    sizes.push(`100% ${bh}px`);
+    positions.push("bottom center");
+  }
+  const midTop = topLayer ? th : 0;
+  const midBottom = bottomLayer ? bh : 0;
+  layers.push("linear-gradient(#000,#000)");
+  sizes.push(`100% calc(100% - ${midTop + midBottom}px)`);
+  positions.push(`center ${midTop}px`);
+
+  const maskProps: React.CSSProperties =
+    layers.length > 1
+      ? ({
+          maskImage: layers.join(","),
+          WebkitMaskImage: layers.join(","),
+          maskSize: sizes.join(","),
+          WebkitMaskSize: sizes.join(","),
+          maskPosition: positions.join(","),
+          WebkitMaskPosition: positions.join(","),
+          maskRepeat: "no-repeat",
+          WebkitMaskRepeat: "no-repeat",
+        } as React.CSSProperties)
+      : {};
+
+  return {
+    ...maskProps,
+    marginTop: th ? -th : undefined,
+    marginBottom: bh ? -bh : undefined,
+    borderTopLeftRadius: topRounded ? th : undefined,
+    borderTopRightRadius: topRounded ? th : undefined,
+    borderBottomLeftRadius: bottomRounded ? bh : undefined,
+    borderBottomRightRadius: bottomRounded ? bh : undefined,
+    overflow: topRounded || bottomRounded ? "hidden" : undefined,
+    position: "relative",
+    zIndex: 3,
+  };
+};
+
 export default SectionShape;
 
