@@ -106,11 +106,14 @@ export interface RowLayout {
    */
   snapEnabled?: boolean;
   /**
-   * Section tone. "mesh" (the default) is transparent so the fixed page
-   * mesh shows through; "auto" alternates white / tint by document
-   * order; explicit tones override legacy per-row colours and
-   * decorative gradients so the page reads as calm, deliberate bands.
+   * Row height. "auto" (default) sizes to content; the presets and the
+   * custom value are applied as a MIN height so content never clips.
    */
+  heightMode?: "auto" | "small" | "medium" | "large" | "full" | "custom";
+  /** Numeric value used when `heightMode` is "custom". */
+  heightValue?: number;
+  /** Unit for the custom height. Defaults to vh. */
+  heightUnit?: "vh" | "px";
   /** Decorative shape on the row's top edge. */
   shapeTop?: SectionShapeConfig;
   /** Decorative shape on the row's bottom edge. */

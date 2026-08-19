@@ -56,6 +56,7 @@ import {
 } from "@/components/ui/accordion";
 import type { PageRow, SectionShapeConfig, SectionShapeKind, SectionShapeSize } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
+import { ROW_HEIGHT_MODES } from "@/lib/rowHeight";
 import { DEFAULT_PAGE_MESH, buildPageMeshCSS } from "@/features/site/pageMesh";
 
 interface Props {
@@ -335,6 +336,70 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                 </button>
               </div>
             )}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* ═══ HEIGHT ═══ */}
+      <AccordionItem value="height" className="border-none">
+        <AccordionTrigger className={TRIGGER_CLASS}>Height</AccordionTrigger>
+        <AccordionContent className={CONTENT_CLASS}>
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-3 gap-1">
+              {ROW_HEIGHT_MODES.map(([value, label]) => {
+                const active = (row.layout?.heightMode || "auto") === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => patchLayout({ heightMode: value })}
+                    className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+                      active
+                        ? "bg-secondary/15 border-secondary/40 text-foreground"
+                        : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {row.layout?.heightMode === "custom" ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  value={row.layout?.heightValue ?? 50}
+                  onChange={(e) => patchLayout({ heightValue: Number(e.target.value) })}
+                  className="w-24 font-body text-xs px-2 py-1.5 rounded-lg border border-border bg-background text-foreground"
+                />
+                <div className="grid grid-cols-2 gap-1">
+                  {(["vh", "px"] as const).map((unit) => {
+                    const active = (row.layout?.heightUnit || "vh") === unit;
+                    return (
+                      <button
+                        key={unit}
+                        type="button"
+                        onClick={() => patchLayout({ heightUnit: unit })}
+                        className={`font-body text-[10px] px-3 py-1.5 rounded-lg border transition-colors ${
+                          active
+                            ? "bg-secondary/15 border-secondary/40 text-foreground"
+                            : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                        }`}
+                      >
+                        {unit}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            <p className="font-body text-[10px] text-muted-foreground leading-snug">
+              Sets a minimum height — longer content still grows past it, so
+              nothing ever gets cut off.
+            </p>
           </div>
         </AccordionContent>
       </AccordionItem>

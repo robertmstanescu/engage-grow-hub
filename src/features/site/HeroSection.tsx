@@ -56,15 +56,53 @@ const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
  * RULE (per US 15.1 Dev Notes): this component must be COMPLETELY
  * IGNORANT of the admin panel. It only takes `content` and renders HTML.
  */
-export const HeroView = ({ content: c, isLoading = false }: { content: HeroContent; isLoading?: boolean }) => {
+export const HeroView = ({
+  content: c,
+  isLoading = false,
+  /* CMS hero ROWS reuse this exact view, but they are not the
+     site_content "hero" section, so inline editing must be off there
+     (otherwise a blur would write into the homepage hero). */
+  editable = true,
+  /** Extra style merged onto the <section> (e.g. a row's own colour). */
+  sectionStyle,
+  /** Optional node rendered above the eyebrow (CMS hero rows use an icon). */
+  leading,
+  /** Optional node rendered under the body (CMS hero rows use a CTA). */
+  trailing,
+}: {
+  content: HeroContent;
+  isLoading?: boolean;
+  editable?: boolean;
+  sectionStyle?: React.CSSProperties;
+  leading?: React.ReactNode;
+  trailing?: React.ReactNode;
+}) => {
   const isMobile = useIsMobile();
 
-  const titleLines: string[] = (c.title_lines || []).map((line: any) => {
-    if (typeof line === "string") return line;
-    return line.type === "accent"
-      ? `<p><span style="color: hsl(var(--hero-title-accent))">${line.text}</span></p>`
-      : `<p>${line.text}</p>`;
-  });
+  /* Inline-edit wrapper. On CMS hero rows we render the plain element so
+     the markup, spacing and type scale stay byte-identical. */
+  const Field = ({ fieldPath, as = "span", html, children, ...rest }: any) => {
+    if (editable) {
+      return (
+        <EditableText sectionKey="hero" fieldPath={fieldPath} as={as} html={html} {...rest}>
+          {children}
+        </EditableText>
+      );
+    }
+    const El = as as any;
+    return <El {...rest}>{children}</El>;
+  };
+
+  const titleLines: string[] = (c.title_lines || [])
+    .map((line: any) => {
+      if (typeof line === "string") return line;
+      return line.type === "accent"
+        ? `<p><span style="color: hsl(var(--hero-title-accent))">${line.text}</span></p>`
+        : `<p>${line.text}</p>`;
+    })
+    /* Drop blank / markup-only lines so an empty hero never emits an
+       empty <h1> (worse for SEO than no heading at all). */
+    .filter((line: string) => line.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim().length > 0);
 
   if (titleLines.length === 0 && (c.title_line1 || c.title_accent || c.title_line2)) {
     if (c.title_line1) titleLines.push(`<p>${c.title_line1}</p>`);
@@ -100,7 +138,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
       data-section="hero"
       data-snap-enabled="true"
       className="scope-hero snap-section grain relative flex flex-col justify-center overflow-hidden"
-      style={{ minHeight: "calc(100dvh - var(--nav-top-offset, 0px))" }}
+      style={{ minHeight: "calc(100dvh - var(--nav-top-offset, 0px))", ...sectionStyle }}
     >
       {/*
         LAYERING ORDER (bottom → top):
@@ -219,16 +257,19 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
           every breakpoint while the headline stays poster-sized.
         */}
         <div className="flex flex-col items-center gap-6">
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.2, ease }}
-            className="font-body tracking-[0.32em] uppercase flex-shrink-0"
-            style={{ color: "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
-            <EditableText sectionKey="hero" fieldPath="label" as="span">
-              {c.label}
-            </EditableText>
-          </motion.p>
+          {leading}
+          {c.label && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.2, ease }}
+              className="font-body tracking-[0.32em] uppercase flex-shrink-0"
+              style={{ color: "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
+              <Field fieldPath="label" as="span">
+                {c.label}
+              </Field>
+            </motion.p>
+          )}
 
           <h1
             className="font-display font-black leading-[0.9] tracking-tight flex-shrink-0"
@@ -252,9 +293,9 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
               transition={{ duration: 1, delay: 0.8, ease }}
               className="font-body tracking-[0.28em] uppercase flex-shrink-0"
               style={{ color: c.tagline_color || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
-              <EditableText sectionKey="hero" fieldPath="tagline" as="span">
+              <Field fieldPath="tagline" as="span">
                 {c.tagline}
-              </EditableText>
+              </Field>
             </motion.p>
           )}
 
@@ -264,8 +305,7 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 1, ease }}
               className="flex-shrink-0">
-              <EditableText
-                sectionKey="hero"
+              <Field
                 fieldPath="subtitle"
                 as="p"
                 className="leading-tight max-w-[600px] mx-auto"
@@ -275,26 +315,38 @@ export const HeroView = ({ content: c, isLoading = false }: { content: HeroConte
                   fontSize: "var(--fs-hero-subtitle)",
                 }}>
                 {c.subtitle}
-              </EditableText>
+              </Field>
             </motion.div>
           )}
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.1, ease }}
-            className="flex-shrink-0">
-            <EditableText
-              sectionKey="hero"
-              fieldPath="body"
-              html
-              as="div"
-              className="font-body-heading max-w-[640px] mx-auto leading-relaxed"
-              style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "var(--fs-hero-body)" }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
-            />
-          </motion.div>
+          {c.body && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.1, ease }}
+              className="flex-shrink-0">
+              <Field
+                fieldPath="body"
+                html
+                as="div"
+                className="font-body-heading max-w-[640px] mx-auto leading-relaxed"
+                style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "var(--fs-hero-body)" }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
+              />
+            </motion.div>
+          )}
+
+          {trailing && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.2, ease }}
+              className="flex-shrink-0">
+              {trailing}
+            </motion.div>
+          )}
         </div>
+
       </div>
     </section>
   );

@@ -5,6 +5,7 @@ import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEdito
 import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
 import SectionShape, { shapeHeightPx } from "../SectionShape";
+import { resolveRowMinHeight } from "@/lib/rowHeight";
 
 /** Tracks the same breakpoint index.css uses to flatten shapes. */
 const useFlatShapes = () => {
@@ -125,7 +126,11 @@ const RowSection = ({
    *  to a readable tone.                                            */
   const hasOwnPaint = Boolean(row.bg_color);
   const surfaceColor = getRowBgColor(row);
-  const bandFg = hasOwnPaint ? resolveRowForeground(row) : "hsl(var(--foreground))";
+  /* Transparent rows inherit `--page-fg`, which PageRows derives from the
+     hero's mesh brightness — so a dark mesh flips them to light text. */
+  const bandFg = hasOwnPaint
+    ? resolveRowForeground(row)
+    : "var(--page-fg, hsl(var(--foreground)))";
 
   /* ── Section shapes ──
    *  Decorative curved / angled edges, off by default. The shape is
@@ -153,6 +158,10 @@ const RowSection = ({
    * can have a plain rule without taking on a decorative curve. */
   const dividerTop = row.layout?.dividerTop || "none";
 
+  /* Admin-chosen row height (Style ▸ Height). Applied as a MIN height so
+   * content can still grow past it. Overrides the snap full-height class. */
+  const minHeight = resolveRowMinHeight(row.layout);
+
 
   return (
     <>
@@ -168,6 +177,7 @@ const RowSection = ({
         style={{
           backgroundColor: surfaceColor,
           zIndex: hasShape ? 2 : undefined,
+          ...(minHeight ? { minHeight } : null),
           ...(bottomShapeH ? { paddingTop: `calc(${basePad} + ${bottomShapeH}px)` } : null),
           ...(topShapeH ? { paddingBottom: `calc(${basePad} + ${topShapeH}px)` } : null),
 

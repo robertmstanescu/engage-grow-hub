@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { buildPageMeshCSS, resolvePageMesh } from "@/features/site/pageMesh";
+import { buildPageMeshCSS, resolvePageMesh, meshForegroundColor } from "@/features/site/pageMesh";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import type { PageRow, PageRowV3 } from "@/types/rows";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
@@ -62,13 +62,21 @@ export const RowsRenderer = ({
      is painted behind the whole page (`.page-mesh-layer`); we push it to
      the document root so it survives across rows, the footer and any
      fixed chrome. Pages without a hero fall back to the brand default. */
-  const meshCSS = useMemo(() => buildPageMeshCSS(resolvePageMesh(v3Rows as any)), [v3Rows]);
+  const mesh = useMemo(() => resolvePageMesh(v3Rows as any), [v3Rows]);
+  const meshCSS = useMemo(() => buildPageMeshCSS(mesh), [mesh]);
   useEffect(() => {
-    document.documentElement.style.setProperty("--gradient-mesh-page", meshCSS);
+    const root = document.documentElement;
+    root.style.setProperty("--gradient-mesh-page", meshCSS);
+    /* Rows with no colour of their own sit straight on the mesh, so their
+       default text colour must follow the MESH's brightness — not a fixed
+       dark token — otherwise a dark mesh renders dark-on-dark. */
+    const base = getComputedStyle(document.body).backgroundColor || "#FAF9F6";
+    root.style.setProperty("--page-fg", meshForegroundColor(mesh, base));
     return () => {
-      document.documentElement.style.removeProperty("--gradient-mesh-page");
+      root.style.removeProperty("--gradient-mesh-page");
+      root.style.removeProperty("--page-fg");
     };
-  }, [meshCSS]);
+  }, [meshCSS, mesh]);
 
   return (
     <PromotedWidgetProvider value={promotedWidgetId}>
