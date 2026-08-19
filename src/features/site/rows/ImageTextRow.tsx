@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
@@ -65,6 +65,22 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
   );
 
+  /* Two-column split only above 768px. A matchMedia listener keeps this
+     reactive — a one-shot `window.innerWidth` read never updated on
+     resize (and broke SSR/preview). */
+  const [isWide, setIsWide] = useState(
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 769px)").matches : true,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 769px)");
+    const onChange = () => setIsWide(mq.matches);
+    onChange();
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  /* column_widths is always [image, text] regardless of which side the
+     image sits on — the grid order below handles the position. */
   const colWidths = l.column_widths || [50, 50];
   const imgWidth = colWidths[0] || 50;
   const textWidth = colWidths[1] || 50;
@@ -121,7 +137,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
   );
 
   const textBlock = (
-    <div className="flex flex-col justify-center" style={revealStyle(isVisible, imgPos === "left" ? 2 : 0)}>
+    <div className="flex flex-col justify-center min-w-0" style={revealStyle(isVisible, imgPos === "left" ? 2 : 0)}>
       {c.eyebrow && (
         <SelectableWrapper path={[...basePath, "eyebrow"]} label="Eyebrow" variant="atom" inline>
           <RowEyebrow color={c.color_eyebrow}>
@@ -203,7 +219,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
         <div
           className="grid grid-cols-1 items-center"
           style={{
-            gridTemplateColumns: window.innerWidth > 768 ? gridCols : "1fr",
+            gridTemplateColumns: isWide ? gridCols : "1fr",
             gap: "2rem",
           }}
         >

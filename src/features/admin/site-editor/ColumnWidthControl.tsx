@@ -5,6 +5,8 @@ interface Props {
   widths: number[];
   onChange: (widths: number[]) => void;
   disabled?: boolean;
+  /** Per-zone names, e.g. ["Image", "Text"] — clearer than "Col 1". */
+  labels?: string[];
 }
 
 const PRESETS: Record<number, { label: string; widths: number[] }[]> = {
@@ -29,7 +31,7 @@ const PRESETS: Record<number, { label: string; widths: number[] }[]> = {
   ],
 };
 
-const ColumnWidthControl = ({ columnCount, widths, onChange, disabled = false }: Props) => {
+const ColumnWidthControl = ({ columnCount, widths, onChange, disabled = false, labels }: Props) => {
   const presets = PRESETS[columnCount] || [];
   const [customMode, setCustomMode] = useState(false);
   const [open, setOpen] = useState(false);
@@ -112,8 +114,8 @@ const ColumnWidthControl = ({ columnCount, widths, onChange, disabled = false }:
             <div className="space-y-2">
               {widths.map((w, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="font-body text-[10px] w-16" style={{ color: "hsl(var(--foreground))" }}>
-                    Col {i + 1}: {w}%
+                  <span className="font-body text-[10px] w-20" style={{ color: "hsl(var(--foreground))" }}>
+                    {labels?.[i] || `Col ${i + 1}`}: {w}%
                   </span>
                   <input
                     type="range"

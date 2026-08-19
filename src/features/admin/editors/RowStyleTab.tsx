@@ -564,6 +564,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               widths={columnWidths}
               onChange={onUpdateColumnWidths}
               disabled={!showWidthControl}
+              labels={hasInherentSplit ? ["Image side", "Text side"] : undefined}
             />
 
             <OverlayEditor
