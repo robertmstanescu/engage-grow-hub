@@ -176,7 +176,9 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   // even when columns_data is empty, so we always show the width control
   // for them with at least 2 zones.
   const colCount = 1 + (row.columns_data?.length || 0);
-  const hasInherentSplit = row.type === "image_text" || row.type === "profile";
+  // Image+Text owns its internal Image/Text split in its Content editor.
+  // Row-level widths must describe real builder columns only.
+  const hasInherentSplit = row.type === "profile";
   const showWidthControl = colCount > 1 || hasInherentSplit;
   const widthColCount = hasInherentSplit && colCount === 1 ? 2 : colCount;
   const columnWidths =

@@ -36,9 +36,14 @@ const RowRenderer = ({
   const vAlign: VAlign = row.layout?.verticalAlign || "middle";
 
 
-  const widths =
-    row.layout?.column_widths ||
-    row.columns.map(() => Math.round(100 / Math.max(row.columns.length, 1)));
+  // A row-level width array is only valid when it matches the number of
+  // actual builder columns. Older image+text rows sometimes persisted the
+  // widget's internal two-zone split here despite living in one column;
+  // ignoring that mismatch keeps the host row full-width.
+  const storedWidths = row.layout?.column_widths;
+  const widths = Array.isArray(storedWidths) && storedWidths.length === row.columns.length
+    ? storedWidths
+    : row.columns.map(() => Math.round(100 / Math.max(row.columns.length, 1)));
 
   const renderWidgetsForCell = (cell: PageCell, _basePath: string[]) =>
     cell.widgets.map((widget) => (

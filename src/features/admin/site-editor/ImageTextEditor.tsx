@@ -2,6 +2,7 @@ import { SectionBox, Field, RichField, SelectField, ColorField } from "./FieldCo
 import ImagePickerField from "../ImagePickerField";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
+import ColumnWidthControl from "./ColumnWidthControl";
 import { Plus, Trash2 } from "lucide-react";
 
 const IMAGE_POSITIONS = [
@@ -38,6 +39,9 @@ const ImageTextEditor = ({ content, onChange, bgColor }: Props) => {
   const titleLines: string[] = (content.title_lines || []).map((l: any) =>
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
   );
+  const splitWidths = Array.isArray(content.split_widths) && content.split_widths.length === 2
+    ? content.split_widths
+    : [50, 50];
 
   return (
     <div className="space-y-3">
@@ -76,6 +80,13 @@ const ImageTextEditor = ({ content, onChange, bgColor }: Props) => {
         />
         <SelectField label="Image Position" value={content.image_position || "right"} options={IMAGE_POSITIONS} onChange={(v) => onChange("image_position", v)} />
         <SelectField label="Image Shape" value={content.image_shape || "default"} options={IMAGE_SHAPES} onChange={(v) => onChange("image_shape", v)} />
+        <ColumnWidthControl
+          columnCount={2}
+          widths={splitWidths}
+          onChange={(widths) => onChange("split_widths", widths)}
+          labels={["Image side", "Text side"]}
+          defaultOpen
+        />
       </SectionBox>
 
       <SectionBox label="Floating Caption">

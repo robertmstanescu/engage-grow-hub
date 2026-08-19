@@ -81,7 +81,9 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
 
   /* column_widths is always [image, text] regardless of which side the
      image sits on — the grid order below handles the position. */
-  const colWidths = l.column_widths || [50, 50];
+  const colWidths = Array.isArray(c.split_widths) && c.split_widths.length === 2
+    ? c.split_widths
+    : (Array.isArray(l.column_widths) && l.column_widths.length === 2 ? l.column_widths : [50, 50]);
   const imgWidth = colWidths[0] || 50;
   const textWidth = colWidths[1] || 50;
   const gridCols = imgPos === "left"
