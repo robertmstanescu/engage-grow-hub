@@ -4,7 +4,7 @@ import { getRowBgColor } from "../rowBackground";
 import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEditor";
 import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
-import SectionShape, { shapeHeightPx } from "../SectionShape";
+import SectionShape, { shapeHeightPx, shapeMaskStyle } from "../SectionShape";
 import { resolveRowMinHeight } from "@/lib/rowHeight";
 
 /** Tracks the same breakpoint index.css uses to flatten shapes. */
@@ -46,6 +46,17 @@ interface Props {
    * content can paint the full band (page-breaker image rows).
    */
   bleed?: boolean;
+  /**
+   * The row's CONTENT is its surface (image page-breakers): edge shapes
+   * mask the section itself and pull it over the neighbouring rows, so
+   * the picture spills instead of a colour cap.
+   */
+  maskShapes?: boolean;
+  /**
+   * Treat the admin height as an EXACT height (crop) rather than a
+   * minimum. Used by image bands so "Small" really is small.
+   */
+  exactHeight?: boolean;
   /** Marks for scroll-reveal targeting / admin row navigation. */
   dataRowId?: string;
   dataRowType?: string;
@@ -98,6 +109,8 @@ const RowSection = ({
   grain = true,
   fullHeight = true,
   bleed = false,
+  maskShapes = false,
+  exactHeight = false,
 
   dataRowId,
   dataRowType,
@@ -146,8 +159,8 @@ const RowSection = ({
    *  the row's surface bleeds up over the section above (top edge) or
    *  down over the section below (bottom edge). A transparent row has
    *  no surface to extend, so it renders no shape. */
-  const shapeTop = hasOwnPaint ? row.layout?.shapeTop : undefined;
-  const shapeBottom = hasOwnPaint ? row.layout?.shapeBottom : undefined;
+  const shapeTop = hasOwnPaint && !maskShapes ? row.layout?.shapeTop : undefined;
+  const shapeBottom = hasOwnPaint && !maskShapes ? row.layout?.shapeBottom : undefined;
   /* A row that spills an edge must always paint ABOVE its neighbours —
    * including the footer — otherwise the overhang gets covered. */
   const hasShape = Boolean(shapeTop || shapeBottom);
@@ -157,7 +170,7 @@ const RowSection = ({
      for example) rather than silently rendering nothing. */
   const ROUNDED_PX = { subtle: 24, medium: 48, dramatic: 80 } as const;
   const roundKind = (cfg?: { kind?: string; size?: string }) =>
-    !hasOwnPaint && cfg?.kind === "rounded"
+    !hasOwnPaint && !maskShapes && cfg?.kind === "rounded"
       ? ROUNDED_PX[(cfg.size as keyof typeof ROUNDED_PX) || "medium"]
       : 0;
   const contentRoundTop = roundKind(row.layout?.shapeTop as any);
@@ -182,8 +195,20 @@ const RowSection = ({
   const dividerTop = row.layout?.dividerTop || "none";
 
   /* Admin-chosen row height (Style ▸ Height). Applied as a MIN height so
-   * content can still grow past it. Overrides the snap full-height class. */
-  const minHeight = resolveRowMinHeight(row.layout);
+   * content can still grow past it — unless the row asked for an exact
+   * (cropping) band, as image page-breakers do. */
+  const heightValue = resolveRowMinHeight(row.layout);
+  const heightStyle = heightValue
+    ? exactHeight
+      ? { height: heightValue, minHeight: heightValue, overflow: "hidden" as const }
+      : { minHeight: heightValue }
+    : null;
+
+  /* Mask mode: the section itself is shaped and pulled over its
+     neighbours, so the row's CONTENT (a photo) does the spilling. */
+  const maskStyle = maskShapes
+    ? shapeMaskStyle(row.layout?.shapeTop, row.layout?.shapeBottom, flatShapes)
+    : {};
 
 
   return (
@@ -200,13 +225,14 @@ const RowSection = ({
         style={{
           backgroundColor: surfaceColor,
           zIndex: hasShape ? 2 : undefined,
-          ...(minHeight ? { minHeight } : null),
+          ...heightStyle,
           ...(bleed
             ? { paddingTop: 0, paddingBottom: 0 }
             : {
                 ...(bottomShapeH ? { paddingTop: `calc(${basePad} + ${bottomShapeH}px)` } : null),
                 ...(topShapeH ? { paddingBottom: `calc(${basePad} + ${topShapeH}px)` } : null),
               }),
+          ...maskStyle,
 
 
           scrollMarginTop: "0px",

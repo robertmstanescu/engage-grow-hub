@@ -71,7 +71,7 @@ const LogoCloudRow = ({
          *  filled in. Each typography component is shared with every
          *  other row type for visual consistency. */}
         {c.eyebrow && (
-          <RowEyebrow color={c.color_eyebrow || "hsl(var(--secondary))"} style={revealStyle(isVisible, -0.5)}>
+          <RowEyebrow color={c.color_eyebrow || ""} style={revealStyle(isVisible, -0.5)}>
             {c.eyebrow}
           </RowEyebrow>
         )}

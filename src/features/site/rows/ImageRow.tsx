@@ -62,29 +62,31 @@ const ImageRow = ({ row }: FrontendProps) => {
   const objectPosition = FOCAL[row.layout?.focalPoint || "center"];
 
   return (
-    <RowSection row={row as any} bleed={bleed}>
+    <RowSection row={row as any} bleed={bleed} maskShapes exactHeight={cropped}>
       <figure
         className={`relative z-10 w-full ${
-          bleed ? "self-stretch flex-1 flex flex-col" : "row-container mx-auto max-w-[1280px]"
+          bleed ? "self-stretch flex-1 flex flex-col min-h-0" : "row-container mx-auto max-w-[1280px]"
         }`}
       >
-      {/* Per acceptance criteria — strict element, no rewrites. */}
-      <img
-        src={data.url}
-        alt={data.alt_text || ""}
-        className={cropped ? "w-full flex-1 min-h-0 object-cover" : "w-full h-auto"}
-        style={cropped ? { objectPosition } : undefined}
-        loading="lazy"
-      />
-      {data.caption ? (
-        <figcaption
-          className={`mt-2 text-xs row-fg-muted font-body text-center ${
-            bleed ? "row-container mx-auto max-w-[1280px] pb-4" : ""
-          }`}
-        >
-          {data.caption}
-        </figcaption>
-      ) : null}
+        {/* Per acceptance criteria — strict element, no rewrites. */}
+        <img
+          src={data.url}
+          alt={data.alt_text || ""}
+          className={cropped ? "w-full h-full flex-1 min-h-0 object-cover" : "w-full h-auto"}
+          style={cropped ? { objectPosition } : undefined}
+          loading="lazy"
+        />
+        {data.caption ? (
+          <figcaption
+            className={
+              cropped
+                ? "absolute bottom-3 left-0 right-0 row-container mx-auto max-w-[1280px] text-xs font-body text-center text-white drop-shadow"
+                : "mt-2 text-xs row-fg-muted font-body text-center"
+            }
+          >
+            {data.caption}
+          </figcaption>
+        ) : null}
       </figure>
     </RowSection>
   );

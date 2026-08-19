@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/accordion";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
+import RowNote from "./typography/RowNote";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 
@@ -65,7 +66,7 @@ const FaqRow = ({
     <RowSection row={row}>
       <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
         {c.eyebrow && (
-          <RowEyebrow color={c.color_eyebrow || "hsl(var(--secondary))"} style={revealStyle(isVisible, -0.5)}>
+          <RowEyebrow color={c.color_eyebrow || ""} style={revealStyle(isVisible, -0.5)}>
             {c.eyebrow}
           </RowEyebrow>
         )}
@@ -116,6 +117,8 @@ const FaqRow = ({
             </AccordionItem>
           ))}
         </Accordion>
+
+        {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
 
         {/* Universal subscribe widget — see SubscribeToggle.tsx. */}
         {c.show_subscribe && (

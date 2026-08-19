@@ -29,7 +29,7 @@
  * so the heading hierarchy stays consistent across the site.
  * ───────────────────────────────────────────────────────────────────── */
 
-import { Field, RichField, SectionBox } from "../site-editor/FieldComponents";
+import { Field, RichField, SectionBox, ColorField } from "../site-editor/FieldComponents";
 import ImagePickerField from "../ImagePickerField";
 import TitleLinesEditor from "./TitleLinesEditor";
 import SubtitleEditor from "../site-editor/SubtitleEditor";
@@ -41,7 +41,7 @@ import type { TestimonialItem, FaqItem, LogoCloudLogo, ProofItem, ProcessStep } 
  * every section on the site should have. Centralising it here means
  * one component to update if the heading structure ever changes.
  * ──────────────────────────────────────────────────────────────────── */
-const BrandHeaderFields = ({
+export const BrandHeaderFields = ({
   content,
   onChange,
   bgColor,
@@ -78,9 +78,31 @@ const BrandHeaderFields = ({
         onChange={(v) => onChange("body", v)}
         bgColor={bgColor}
       />
+      <Field
+        label="Note (optional)"
+        value={content.note || ""}
+        onChange={(v) => onChange("note", v)}
+      />
+      {/* Colour overrides. Leaving a picker empty keeps the automatic
+          light/dark colour the row derives from its background. */}
+      <div className="grid grid-cols-2 gap-3">
+        <ColorField
+          label="Eyebrow colour"
+          value={content.color_eyebrow || ""}
+          fallback=""
+          onChange={(v) => onChange("color_eyebrow", v)}
+        />
+        <ColorField
+          label="Note colour"
+          value={content.color_note || ""}
+          fallback=""
+          onChange={(v) => onChange("color_note", v)}
+        />
+      </div>
     </SectionBox>
   );
 };
+
 
 /* ────────────────────────────────────────────────────────────────────
  * Reusable "card list" primitive — renders a header + add/remove
