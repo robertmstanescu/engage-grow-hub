@@ -135,7 +135,8 @@ const TestimonialRow = ({
                  * the frosted look against any row background.
                  */}
                 <article
-                  className="h-full rounded-2xl border row-border bg-card/60 backdrop-blur-md p-6 md:p-8 shadow-sm flex flex-col gap-5 text-left"
+                  className="h-full rounded-2xl border row-border backdrop-blur-md p-6 md:p-8 shadow-sm flex flex-col gap-5 text-left"
+                  style={{ background: "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 6%, transparent)" }}
                   style={revealStyle(isVisible, 0.4 + i * 0.1)}
                 >
                   <div
