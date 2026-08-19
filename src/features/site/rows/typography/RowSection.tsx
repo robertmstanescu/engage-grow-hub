@@ -41,11 +41,17 @@ interface Props {
   grain?: boolean;
   /** Render the section as `min-h-screen` (default) or as auto-height. */
   fullHeight?: boolean;
+  /**
+   * Edge-to-edge row: removes the section's vertical padding so the
+   * content can paint the full band (page-breaker image rows).
+   */
+  bleed?: boolean;
   /** Marks for scroll-reveal targeting / admin row navigation. */
   dataRowId?: string;
   dataRowType?: string;
   dataRowTitle?: string;
 }
+
 
 /**
  * <RowSection/> — the standardised <section> wrapper for every CMS row.
