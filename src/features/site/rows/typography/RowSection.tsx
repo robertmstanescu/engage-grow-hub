@@ -196,13 +196,18 @@ const RowSection = ({
         data-row-type={dataRowType ?? row.type}
         data-row-title={dataRowTitle ?? row.strip_title}
         data-snap-enabled={snapEnabled ? "true" : undefined}
-        className={`snap-section ${grain && !hasOwnPaint ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} py-row-fluid ${className}`}
+        className={`snap-section ${grain && !hasOwnPaint ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} ${bleed ? "" : "py-row-fluid"} ${className}`}
         style={{
           backgroundColor: surfaceColor,
           zIndex: hasShape ? 2 : undefined,
           ...(minHeight ? { minHeight } : null),
-          ...(bottomShapeH ? { paddingTop: `calc(${basePad} + ${bottomShapeH}px)` } : null),
-          ...(topShapeH ? { paddingBottom: `calc(${basePad} + ${topShapeH}px)` } : null),
+          ...(bleed
+            ? { paddingTop: 0, paddingBottom: 0 }
+            : {
+                ...(bottomShapeH ? { paddingTop: `calc(${basePad} + ${bottomShapeH}px)` } : null),
+                ...(topShapeH ? { paddingBottom: `calc(${basePad} + ${topShapeH}px)` } : null),
+              }),
+
 
           scrollMarginTop: "0px",
           /*
