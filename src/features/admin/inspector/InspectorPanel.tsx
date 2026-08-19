@@ -468,12 +468,24 @@ const InspectorPanel = (props: InspectorPanelProps) => {
               return <LogoCloudEditor content={widgetContent} onChange={updateWidgetField} />;
             case "vows":
               return <VowsEditor content={widgetContent} onChange={updateWidgetField} />;
+            case "testimonial":
+              return <TestimonialEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
+            case "faq":
+              return <FaqEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
+            case "proof_band":
+              return <ProofBandEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
+            case "process_steps":
+              return <ProcessStepsEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
+            case "quote_band":
+              return <QuoteBandEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
+            case "cta_band":
+              return <CtaBandEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
+            case "image":
+              return <ImageRowAdmin content={widgetContent as any} onChange={updateWidgetField} />;
             default:
-              return (
-                <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  No inspector editor available for widget type "{widgetType}". Edit it from the row's form view instead.
-                </p>
-              );
+              /* Unknown / future row types still get the standard header
+                 fields rather than a dead end. */
+              return <BrandHeaderFields content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
           }
         })();
 
