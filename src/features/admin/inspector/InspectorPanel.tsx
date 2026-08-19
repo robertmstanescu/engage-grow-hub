@@ -453,7 +453,14 @@ const InspectorPanel = (props: InspectorPanelProps) => {
             case "contact":
               return <ContactAdmin content={widgetContent} onChange={updateWidgetField} />;
             case "image_text":
-              return <ImageTextEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
+              return (
+                <ImageTextEditor
+                  content={widgetContent}
+                  onChange={updateWidgetField}
+                  bgColor={parentRowBg}
+                  legacySplitWidths={(pageRows[loc.rowIdx] as PageRow).layout?.column_widths}
+                />
+              );
             case "profile":
               return <ProfileEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
             case "grid":

@@ -33,15 +33,17 @@ interface Props {
   onChange: (field: string, value: any) => void;
   /** Live row background, forwarded to RichField for legible contrast. */
   bgColor?: string;
+  /** Existing ratio from rows created before the split became widget data. */
+  legacySplitWidths?: number[];
 }
 
-const ImageTextEditor = ({ content, onChange, bgColor }: Props) => {
+const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Props) => {
   const titleLines: string[] = (content.title_lines || []).map((l: any) =>
     typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
   );
   const splitWidths = Array.isArray(content.split_widths) && content.split_widths.length === 2
     ? content.split_widths
-    : [50, 50];
+    : (Array.isArray(legacySplitWidths) && legacySplitWidths.length === 2 ? legacySplitWidths : [50, 50]);
 
   return (
     <div className="space-y-3">
