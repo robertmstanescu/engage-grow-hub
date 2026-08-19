@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/carousel";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
+import RowNote from "./typography/RowNote";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 
@@ -180,6 +181,8 @@ const TestimonialRow = ({
             </>
           )}
         </Carousel>
+
+        {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
 
         {/* Universal subscribe widget — rendered when admin toggles
          *  `show_subscribe` on this row. See SubscribeToggle.tsx. */}

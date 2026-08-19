@@ -23,6 +23,7 @@ import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowBody, RowSection } from "./typography";
+import RowNote from "./typography/RowNote";
 import type { Alignment, VAlign } from "./PageRows";
 
 const CtaBandRow = ({
@@ -84,6 +85,8 @@ const CtaBandRow = ({
             )}
           </div>
         </div>
+
+        {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
       </div>
     </RowSection>
   );

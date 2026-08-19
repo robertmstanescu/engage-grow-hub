@@ -8,3 +8,4 @@ export { default as RowTitle } from "./RowTitle";
 export { default as RowSubtitle } from "./RowSubtitle";
 export { default as RowBody } from "./RowBody";
 export { default as RowSection } from "./RowSection";
+export { default as RowNote } from "./RowNote";

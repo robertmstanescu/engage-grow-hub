@@ -24,6 +24,7 @@ import { sanitizeHtml } from "@/services/sanitize";
 import { resolveImageAlt } from "@/services/imageAlt";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
+import RowNote from "./typography/RowNote";
 import type { Alignment, VAlign } from "./PageRows";
 
 const ProofBandRow = ({
@@ -97,6 +98,8 @@ const ProofBandRow = ({
             </div>
           ))}
         </dl>
+
+        {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
       </div>
     </RowSection>
   );

@@ -26,6 +26,7 @@ import { sanitizeHtml } from "@/services/sanitize";
 import { resolveImageAlt } from "@/services/imageAlt";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowSection } from "./typography";
+import RowNote from "./typography/RowNote";
 import type { Alignment, VAlign } from "./PageRows";
 
 const QuoteBandRow = ({
@@ -77,6 +78,8 @@ const QuoteBandRow = ({
             </div>
           </footer>
         </blockquote>
+
+        {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
       </div>
     </RowSection>
   );
