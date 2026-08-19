@@ -47,7 +47,17 @@ import TextRowEditor from "../site-editor/TextRowEditor";
 import BoxedRowEditor from "../site-editor/BoxedRowEditor";
 import LeadMagnetEditor from "../site-editor/LeadMagnetEditor";
 import VowsEditor from "../site-editor/VowsEditor";
-import { LogoCloudEditor } from "../editors/NewRowEditors";
+import {
+  LogoCloudEditor,
+  BrandHeaderFields,
+  TestimonialEditor,
+  FaqEditor,
+  ProofBandEditor,
+  ProcessStepsEditor,
+  QuoteBandEditor,
+  CtaBandEditor,
+} from "../editors/NewRowEditors";
+import { ImageRowAdmin } from "@/features/site/rows/ImageRow";
 
 /* ════════════════════════════════════════════════════════════════════
  * InspectorPanel — US 16.1
