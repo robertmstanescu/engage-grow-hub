@@ -109,6 +109,8 @@ const RowSection = ({
   grain = true,
   fullHeight = true,
   bleed = false,
+  maskShapes = false,
+  exactHeight = false,
 
   dataRowId,
   dataRowType,
