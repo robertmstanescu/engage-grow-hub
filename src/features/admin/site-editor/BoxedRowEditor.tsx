@@ -35,6 +35,20 @@ const BoxedRowEditor = ({ content, onChange, bgColor }: Props) => {
       <BoxedArrayField content={content} onChange={onChange} bgColor={bgColor} />
       <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
       <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
+      <div className="grid grid-cols-2 gap-3">
+        <ColorField
+          label="Eyebrow colour"
+          value={content.color_eyebrow || ""}
+          fallback=""
+          onChange={(v) => onChange("color_eyebrow", v)}
+        />
+        <ColorField
+          label="Note colour"
+          value={content.color_note || ""}
+          fallback=""
+          onChange={(v) => onChange("color_note", v)}
+        />
+      </div>
       <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onChange("color_card_title", v)} />
       <ColorField label="Card Body Color" value={content.color_card_body || ""} fallback="" onChange={(v) => onChange("color_card_body", v)} />
     </div>
