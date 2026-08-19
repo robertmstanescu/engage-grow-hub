@@ -79,7 +79,7 @@ const ProofBandRow = ({
             <div
               key={i}
               className="px-6 py-7 flex flex-col gap-2 items-start"
-              style={{ ...revealStyle(isVisible, 0.4 + i * 0.08), background: "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 4%, hsl(var(--background) / 0.7))" }}
+              style={{ ...revealStyle(isVisible, 0.4 + i * 0.08), background: "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 5%, transparent)" }}
             >
               {item.logo ? (
                 <img
