@@ -397,6 +397,20 @@
   }
 
   /* Solid Lativ-style card enclosure */
+  /* Row-aware text/border tones. Inside a RowSection these follow the
+     row's resolved foreground, so any row placed on a dark colour flips
+     its whole text set automatically. Outside a row they fall back to
+     the global theme tokens. */
+  .row-fg {
+    color: var(--row-fg, hsl(var(--foreground)));
+  }
+  .row-fg-muted {
+    color: var(--row-fg-muted, hsl(var(--muted-foreground)));
+  }
+  .row-border {
+    border-color: var(--row-border, hsl(var(--border)));
+  }
+
   .surface-card {
     background: var(--gradient-card);
     border: 1px solid hsl(var(--border));
