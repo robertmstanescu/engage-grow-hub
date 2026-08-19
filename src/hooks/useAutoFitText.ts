@@ -54,11 +54,24 @@ export const useAutoFitText = (minScale = 0.7) => {
   useEffect(() => {
     const raf = requestAnimationFrame(() => fit());
     window.addEventListener("resize", fit);
+    // Re-fit when the section itself changes size (column split changed,
+    // image loaded, copy edited inline) — not just on window resize.
+    let ro: ResizeObserver | undefined;
+    if (sectionRef.current && typeof ResizeObserver !== "undefined") {
+      let pending = 0;
+      ro = new ResizeObserver(() => {
+        cancelAnimationFrame(pending);
+        pending = requestAnimationFrame(() => fit());
+      });
+      ro.observe(sectionRef.current);
+    }
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", fit);
+      ro?.disconnect();
     };
   }, [fit]);
+
 
   return sectionRef;
 };

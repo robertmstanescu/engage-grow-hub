@@ -109,7 +109,7 @@ const AchievementCard = memo(({ text, colors, cardBg, isVisible, idx }: {
       className="inline-block mt-[7px] flex-shrink-0"
       style={{ width: 16, height: 2, backgroundColor: colors.statNumber, borderRadius: 1 }}
     />
-    <p className="font-body-heading text-sm leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: colors.cardDesc }}>
+    <p className="font-body text-sm leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: colors.cardDesc }}>
       {text}
     </p>
   </div>
@@ -210,7 +210,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
               html
               as="div"
               data-rte-fit=""
-              className={`font-body-heading leading-[1.6] max-w-[600px] [&_p]:mb-[5px] [&_p]:mt-[5px] ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
+              className={`font-body leading-[1.6] max-w-[600px] [&_p]:mb-[5px] [&_p]:mt-[5px] ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
               style={{ ...revealStyle(isVisible, 2), fontSize: "var(--fs-body)", color: c.color_description || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 80%, transparent)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }}
             />

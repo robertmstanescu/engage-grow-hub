@@ -62,7 +62,7 @@ const Blog = () => {
           <h1 className="font-display text-3xl md:text-5xl font-black leading-tight mb-5" style={{ color: "hsl(var(--foreground))" }}>
             {pageData.header_title || "Insights & Articles"}
           </h1>
-          <p className="font-body-heading text-base md:text-lg max-w-[600px] mx-auto" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
+          <p className="font-body text-base md:text-lg max-w-[600px] mx-auto" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
             {pageData.header_subtitle || ""}
           </p>
         </div>

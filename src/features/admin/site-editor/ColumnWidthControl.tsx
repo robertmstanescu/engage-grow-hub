@@ -7,6 +7,8 @@ interface Props {
   disabled?: boolean;
   /** Per-zone names, e.g. ["Image", "Text"] — clearer than "Col 1". */
   labels?: string[];
+  /** Open the panel on mount — used for rows with an inherent 2-zone split. */
+  defaultOpen?: boolean;
 }
 
 const PRESETS: Record<number, { label: string; widths: number[] }[]> = {
@@ -31,10 +33,10 @@ const PRESETS: Record<number, { label: string; widths: number[] }[]> = {
   ],
 };
 
-const ColumnWidthControl = ({ columnCount, widths, onChange, disabled = false, labels }: Props) => {
+const ColumnWidthControl = ({ columnCount, widths, onChange, disabled = false, labels, defaultOpen = false }: Props) => {
   const presets = PRESETS[columnCount] || [];
   const [customMode, setCustomMode] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen && !disabled);
 
   useEffect(() => {
     if (disabled) setOpen(false);
@@ -70,7 +72,7 @@ const ColumnWidthControl = ({ columnCount, widths, onChange, disabled = false, l
         }}
         title={disabled ? "Add another column to edit widths" : "Adjust column widths"}
       >
-        Column Widths
+        {labels ? `${labels[0]} / ${labels[1]} split` : "Column Widths"}
       </button>
 
       {open && !disabled && (
