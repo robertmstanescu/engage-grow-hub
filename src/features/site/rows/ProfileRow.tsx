@@ -173,7 +173,6 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                   fieldPath={`${prefix}.body`}
                   html
                   as="div"
-                  data-rte-fit=""
                   className="font-body-heading leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
                   style={{
                     fontSize: "var(--fs-body)",
