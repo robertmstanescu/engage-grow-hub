@@ -110,7 +110,36 @@ interface RichTextEditorProps {
   bgColor?: string;
 }
 
+/**
+ * Toolbar button — defined at MODULE level on purpose. When it lived
+ * inside `RichTextEditor` every re-render created a brand-new component
+ * type, so React unmounted and remounted the buttons mid-interaction:
+ * the element under the pointer was replaced between `mousedown` and
+ * `mouseup`, so the `click` never fired (or fired on the wrong button).
+ * That was the "I press italic and something else happens" bug.
+ */
+const ToolbarButton = ({
+  onClick, children, title, active,
+}: {
+  onClick: () => void; children: React.ReactNode; title: string; active?: boolean;
+}) => (
+  <button
+    type="button"
+    title={title}
+    onMouseDown={(event) => event.preventDefault()}
+    onClick={onClick}
+    className="p-1.5 rounded transition-colors"
+    style={{
+      color: active ? "hsl(var(--secondary))" : "hsl(var(--muted-foreground))",
+      backgroundColor: active ? "hsl(var(--secondary) / 0.15)" : undefined,
+    }}
+  >
+    {children}
+  </button>
+);
+
 const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEditorProps) => {
+
   // The editor surface is transparent and inherits parent text color,
   // so the writing area always matches the rendered area it edits.
   const editorRef = useRef<HTMLDivElement>(null);
