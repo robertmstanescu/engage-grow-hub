@@ -159,8 +159,8 @@ const RowSection = ({
    *  the row's surface bleeds up over the section above (top edge) or
    *  down over the section below (bottom edge). A transparent row has
    *  no surface to extend, so it renders no shape. */
-  const shapeTop = hasOwnPaint ? row.layout?.shapeTop : undefined;
-  const shapeBottom = hasOwnPaint ? row.layout?.shapeBottom : undefined;
+  const shapeTop = hasOwnPaint && !maskShapes ? row.layout?.shapeTop : undefined;
+  const shapeBottom = hasOwnPaint && !maskShapes ? row.layout?.shapeBottom : undefined;
   /* A row that spills an edge must always paint ABOVE its neighbours —
    * including the footer — otherwise the overhang gets covered. */
   const hasShape = Boolean(shapeTop || shapeBottom);
