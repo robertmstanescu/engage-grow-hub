@@ -46,6 +46,17 @@ interface Props {
    * content can paint the full band (page-breaker image rows).
    */
   bleed?: boolean;
+  /**
+   * The row's CONTENT is its surface (image page-breakers): edge shapes
+   * mask the section itself and pull it over the neighbouring rows, so
+   * the picture spills instead of a colour cap.
+   */
+  maskShapes?: boolean;
+  /**
+   * Treat the admin height as an EXACT height (crop) rather than a
+   * minimum. Used by image bands so "Small" really is small.
+   */
+  exactHeight?: boolean;
   /** Marks for scroll-reveal targeting / admin row navigation. */
   dataRowId?: string;
   dataRowType?: string;
