@@ -170,7 +170,7 @@ const RowSection = ({
      for example) rather than silently rendering nothing. */
   const ROUNDED_PX = { subtle: 24, medium: 48, dramatic: 80 } as const;
   const roundKind = (cfg?: { kind?: string; size?: string }) =>
-    !hasOwnPaint && cfg?.kind === "rounded"
+    !hasOwnPaint && !maskShapes && cfg?.kind === "rounded"
       ? ROUNDED_PX[(cfg.size as keyof typeof ROUNDED_PX) || "medium"]
       : 0;
   const contentRoundTop = roundKind(row.layout?.shapeTop as any);
