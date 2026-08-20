@@ -90,6 +90,7 @@ const BlogEditor = () => {
   };
 
   const handleEdit = (post: BlogPost) => {
+    setEditMode("content");
     setIsNew(false);
     setEditing(post);
     setForm({
