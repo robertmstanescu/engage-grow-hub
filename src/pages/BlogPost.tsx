@@ -85,7 +85,7 @@ const BlogPost = () => {
       // `draft_page_rows` is admin-only at the column level, so anonymous
       // readers never request it.
       const baseColumns =
-        "slug, title, published_at, content, category, cover_image, cover_image_alt, author_name, author_image, author_image_alt, meta_title, meta_description, og_image, og_image_alt, tags, lead_magnet_asset_id, lead_magnet_cover_id, page_rows";
+        "slug, title, excerpt, published_at, content, category, cover_image, cover_image_alt, author_name, author_image, author_image_alt, meta_title, meta_description, og_image, og_image_alt, tags, lead_magnet_asset_id, lead_magnet_cover_id, page_rows";
       let query = supabase
         .from("blog_posts")
         .select(isPreview ? `${baseColumns}, draft_page_rows` : baseColumns)
