@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { blocksToHtml } from "../_shared/emailBlocks.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -242,29 +243,3 @@ serve(async (req) => {
     );
   }
 });
-
-function blocksToHtml(blocks: any[]): string {
-  const rows = blocks.map((b: any) => {
-    const s = b.settings || {};
-    switch (b.type) {
-      case "hero": {
-        const bgImage = s.backgroundImage
-          ? `background-image:linear-gradient(rgba(0,0,0,${s.gradientOpacity ?? 0.65}),rgba(0,0,0,${s.gradientOpacity ?? 0.65})),url(${s.backgroundImage});background-size:cover;background-position:center;`
-          : "";
-        return `<tr><td style="background-color:${s.backgroundColor || '#2A0E33'};${bgImage}color:${s.textColor || '#F4F0EC'};padding:${s.padding || '60px 40px'};text-align:${s.alignment || 'center'};font-family:'Unbounded',Arial,sans-serif;font-size:28px;font-weight:900;">${b.content}</td></tr>`;
-      }
-      case "text":
-        return `<tr><td style="background-color:${s.backgroundColor || '#ffffff'};color:${s.textColor || '#1B1F24'};padding:${s.padding || '30px 40px'};font-family:'Bricolage Grotesque',Arial,sans-serif;font-size:15px;line-height:1.6;text-align:${s.alignment || 'left'};">${b.content}</td></tr>`;
-      case "button":
-        return `<tr><td style="background-color:${s.backgroundColor || '#ffffff'};padding:${s.padding || '20px 40px'};text-align:${s.alignment || 'center'};"><a href="${s.buttonUrl || '#'}" style="display:inline-block;background-color:${s.buttonBg || '#4D1B5E'};color:${s.buttonColor || '#F9F0C1'};padding:14px 32px;text-decoration:none;border-radius:50px;font-family:'Unbounded',Arial,sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">${s.buttonText || 'Click Here'}</a></td></tr>`;
-      case "image":
-        return `<tr><td style="background-color:${s.backgroundColor || '#ffffff'};padding:${s.padding || '20px 40px'};text-align:${s.alignment || 'center'};"><img src="${b.content}" style="max-width:100%;height:auto;" /></td></tr>`;
-      case "divider":
-        return `<tr><td style="background-color:${s.backgroundColor || '#ffffff'};padding:${s.padding || '10px 40px'};"><hr style="border:none;border-top:1px solid ${s.textColor || '#E5C54F'};margin:0;" /></td></tr>`;
-      default:
-        return "";
-    }
-  }).join("");
-
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background-color:#F4F0EC;"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background-color:#ffffff;">${rows}</table></body></html>`;
-}
