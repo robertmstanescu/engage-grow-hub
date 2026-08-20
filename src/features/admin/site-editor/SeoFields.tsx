@@ -75,6 +75,10 @@ interface Props {
   /** Optional: enables the AI Search Summary block when both are provided. */
   aiSummary?: string;
   onAiSummaryChange?: (v: string) => void;
+  /** Optional source material for the "Generate with AI" button. */
+  aiSourceTitle?: string;
+  aiSourceContent?: string;
+  aiSourceKind?: "page" | "blog post";
 }
 
 const AEO_MIN = 60;
