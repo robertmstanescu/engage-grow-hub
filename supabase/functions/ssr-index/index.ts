@@ -51,19 +51,19 @@ const corsHeaders = {
 };
 
 /**
- * Last-resort canonical origin used only when the database is
- * unreachable AND the request URL doesn't reveal a public origin.
- * Tenants override this by setting `identity.canonicalOrigin` in the
- * `brand_settings` site_content row.
+ * Local development hosts are the ONLY case where we accept the request's
+ * own origin as canonical. There is deliberately no `https://example.com`
+ * default: a wrong canonical is worse for indexing than an empty one.
  */
-const FALLBACK_ORIGIN = "https://example.com";
+const LOCAL_HOST_RE = /^(localhost|127\.0\.0\.1|\[::1\])$/i;
 
 /**
  * Resolve the canonical origin in priority order:
  *   1. brand_settings.identity.canonicalOrigin (admin-configured)
  *   2. legacy brand_settings.canonical_origin (back-compat)
- *   3. The incoming request's origin if it isn't a Supabase function URL
- *   4. FALLBACK_ORIGIN
+ *   3. The incoming request's origin, only on a local dev host
+ * Returns "" when nothing trustworthy is available; callers then emit
+ * relative URLs rather than pointing crawlers at a domain we don't own.
  */
 const resolveOrigin = (
   brand: Record<string, any> | null | undefined,
@@ -75,12 +75,12 @@ const resolveOrigin = (
   const legacy = typeof brand?.canonical_origin === "string" ? brand.canonical_origin.trim() : "";
   if (legacy) return legacy.replace(/\/+$/, "");
   try {
-    const reqOrigin = new URL(req.url).origin;
-    // Avoid leaking the supabase.co function origin into <link rel=canonical>.
-    if (!/supabase\.co$/i.test(new URL(req.url).hostname)) return reqOrigin;
+    const reqUrl = new URL(req.url);
+    if (LOCAL_HOST_RE.test(reqUrl.hostname)) return reqUrl.origin;
   } catch { /* noop */ }
-  return FALLBACK_ORIGIN;
+  return "";
 };
+
 
 // Strip HTML tags from rich-text strings so they're safe for meta-tag content.
 const stripHtml = (input: unknown): string =>
