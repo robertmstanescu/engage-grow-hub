@@ -31,7 +31,10 @@
  * ───────────────────────────────────────────────────────────────────── */
 
 import { useState, useEffect, useRef } from "react";
+import { Sparkles, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Field } from "./FieldComponents";
+import { generateAiSummary } from "@/services/aiSummary";
 
 /**
  * Debug Story 3.2 — useDeferredText
