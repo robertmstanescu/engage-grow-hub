@@ -237,6 +237,44 @@ const NavigationManager = () => {
               style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
             />
           </div>
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>Dropdown Link (page the label itself opens)</label>
+            <select
+              value={cmsPages.some((p) => `/${p.slug}/` === content.services_href || `/p/${p.slug}` === content.services_href) ? content.services_href : ""}
+              onChange={(e) => updateField("services_href", e.target.value)}
+              className="w-full px-3 py-2 rounded-md font-body text-sm border mt-1"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
+              <option value="">— custom / none —</option>
+              {cmsPages.map((p) => (
+                <option key={p.slug} value={p.slug === "services" || p.slug.startsWith("services/") ? `/${p.slug}/` : `/p/${p.slug}`}>
+                  {p.title}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              placeholder="Custom link (e.g. /services/)"
+              value={content.services_href || ""}
+              onChange={(e) => updateField("services_href", e.target.value)}
+              className="w-full px-3 py-2 rounded-md font-body text-sm border mt-1"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+            />
+          </div>
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>Position in navigation</label>
+            <select
+              value={String(content.services_index ?? 0)}
+              onChange={(e) => updateField("services_index", Number(e.target.value))}
+              className="w-full px-3 py-2 rounded-md font-body text-sm border mt-1"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
+              {Array.from({ length: links.length + 1 }).map((_, i) => (
+                <option key={i} value={i}>
+                  {i === 0 ? "First" : i === links.length ? "Last" : `After “${links[i - 1]?.label || `link ${i}`}”`}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd("sub_links")}>
             <SortableContext items={subLinks.map((l) => l.id)} strategy={verticalListSortingStrategy}>
               {subLinks.map((link, i) => (
