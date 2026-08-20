@@ -108,6 +108,27 @@ const SeoFields = ({
   // Counter is green ONLY inside the 60-320 window — matches AdminInsights.tsx.
   const aeoInRange = aeoLen >= AEO_MIN && aeoLen <= AEO_MAX;
 
+  /** Ask the built-in AI connector for an AEO summary of this page. */
+  const handleGenerate = async () => {
+    if (generating) return;
+    setGenerating(true);
+    try {
+      const summary = await generateAiSummary({
+        title: aiSourceTitle || metaTitle || "",
+        content: aiSourceContent || metaDescription || "",
+        kind: aiSourceKind,
+      });
+      aeo.setLocal(summary);
+      onAiSummaryChange?.(summary);
+      toast.success("AI summary generated");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to generate summary");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+
   return (
     <div
       className="space-y-3 p-3 rounded-lg border"
