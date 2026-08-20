@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import RowsManager from "./site-editor/RowsManager";
 import { SectionBox, Field } from "./site-editor/FieldComponents";
 import SeoFields from "./site-editor/SeoFields";
+import { rowsToPlainText } from "@/services/aiSummary";
 import type { PageRow } from "@/types/rows";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { SpinnerButton } from "@/components/ui/spinner-button";
