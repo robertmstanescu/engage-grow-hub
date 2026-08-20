@@ -15,6 +15,26 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Allowlist for the Origin header used to build the magic-link redirect.
+// SITE_URL is the canonical site domain; ALLOWED_ORIGINS can hold extra
+// comma-separated origins (e.g. staging/preview deployments).
+const SITE_URL = Deno.env.get("SITE_URL") ?? "";
+const ALLOWED_ORIGINS = new Set(
+  [SITE_URL, ...(Deno.env.get("ALLOWED_ORIGINS")?.split(",") ?? [])]
+    .map((o) => o.trim())
+    .filter(Boolean),
+);
+
+// Never trust the Origin header blindly for building a redirect URL — an
+// attacker-controlled Origin could otherwise send the magic link to a
+// look-alike domain. Only use it if it's on our allowlist; fall back to
+// the canonical site URL otherwise.
+function resolveRedirectOrigin(req: Request): string {
+  const origin = req.headers.get("origin");
+  if (origin && ALLOWED_ORIGINS.has(origin)) return origin;
+  return SITE_URL;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -58,6 +78,7 @@ Deno.serve(async (req) => {
 
     const cleanEmail = email.trim().toLowerCase();
     const adminClient = createClient(supabaseUrl, serviceKey);
+    const redirectTo = `${resolveRedirectOrigin(req)}/admin`;
 
     // Upsert invite row.
     const { error: insertErr } = await adminClient
@@ -67,14 +88,14 @@ Deno.serve(async (req) => {
 
     // Send magic link via Supabase Admin API.
     const { error: linkErr } = await adminClient.auth.admin.inviteUserByEmail(cleanEmail, {
-      redirectTo: `${req.headers.get("origin") || ""}/admin`,
+      redirectTo,
     });
 
     if (linkErr) {
       // If user already exists, send a magic-link sign-in instead.
       const { error: otpErr } = await adminClient.auth.signInWithOtp({
         email: cleanEmail,
-        options: { emailRedirectTo: `${req.headers.get("origin") || ""}/admin` },
+        options: { emailRedirectTo: redirectTo },
       });
       if (otpErr) throw otpErr;
     }
@@ -83,8 +104,9 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return new Response(JSON.stringify({ error: msg }), {
+    // Log the real error server-side only; never leak internals to the client.
+    console.error("invite-admin error:", e);
+    return new Response(JSON.stringify({ error: "Something went wrong. Please try again." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
