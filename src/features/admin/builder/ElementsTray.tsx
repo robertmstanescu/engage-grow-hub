@@ -33,6 +33,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import { Blocks, Columns2, Columns3, Columns4, Square } from "lucide-react";
 import { listWidgets, type WidgetDefinition } from "@/lib/WidgetRegistry";
+import { useBuilder } from "./BuilderContext";
 
 /** Stable id prefix used by the DnD context to recognise tray sources. */
 export const TRAY_DRAG_ID_PREFIX = "new-widget-";
@@ -80,6 +81,7 @@ interface TrayCardProps {
 const TrayCard = ({ def }: TrayCardProps) => {
   const Icon = def.icon ?? Blocks;
   const label = def.label ?? def.type;
+  const { insertWidgetAtSelection } = useBuilder();
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `${TRAY_DRAG_ID_PREFIX}${def.type}`,
@@ -94,8 +96,21 @@ const TrayCard = ({ def }: TrayCardProps) => {
       // card surface is grabbable (not just a tiny handle).
       {...listeners}
       {...attributes}
-      title={`Drag “${label}” onto the canvas`}
-      aria-label={`Drag ${label} widget`}
+      // Non-drag alternative: a plain mouse click inserts the widget
+      // after the current selection, or at the end of the page, without
+      // any drag gesture — PointerSensor only starts a drag once the
+      // pointer moves past its activation distance, so a genuine click
+      // (no movement) never gets swallowed by the drag listeners above
+      // and reaches this handler instead. Keyboard users reach the SAME
+      // insertWidgetAtSelection via the KeyboardSensor drag flow instead
+      // (Tab here, Space/Enter to pick up, arrows to a drop zone,
+      // Space/Enter to drop) — dnd-kit's keyboard listeners, spread in
+      // via {...listeners} above, take priority over this button's own
+      // native Enter/Space click activation once KeyboardSensor is
+      // registered, so that's the actual keyboard path, not this onClick.
+      onClick={() => insertWidgetAtSelection(def.type)}
+      title={`Click or drag “${label}” onto the canvas`}
+      aria-label={`Add ${label} widget`}
       className="group relative flex flex-col items-center justify-center gap-1.5 rounded-lg border p-2.5 transition-all cursor-grab active:cursor-grabbing focus:outline-none focus-visible:ring-2"
       style={{
         // WHY: while a card is being dragged we hide it locally — the
@@ -146,6 +161,7 @@ interface LayoutCardProps {
 }
 
 const LayoutCard = ({ columnCount, label, Icon }: LayoutCardProps) => {
+  const { insertLayoutAtSelection } = useBuilder();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `${TRAY_LAYOUT_DRAG_ID_PREFIX}${columnCount}`,
     data: {
@@ -163,8 +179,11 @@ const LayoutCard = ({ columnCount, label, Icon }: LayoutCardProps) => {
       type="button"
       {...listeners}
       {...attributes}
-      title={`Drag a ${label.toLowerCase()} onto the canvas`}
-      aria-label={`Drag ${label}`}
+      // Non-drag alternative — see TrayCard's onClick for the full
+      // rationale. Same insertion logic either way.
+      onClick={() => insertLayoutAtSelection(columnCount)}
+      title={`Click or drag a ${label.toLowerCase()} onto the canvas`}
+      aria-label={`Add ${label}`}
       className="group relative flex flex-col items-center justify-center gap-1.5 rounded-lg border p-2.5 transition-all cursor-grab active:cursor-grabbing focus:outline-none focus-visible:ring-2"
       style={{
         opacity: isDragging ? 0.35 : 1,

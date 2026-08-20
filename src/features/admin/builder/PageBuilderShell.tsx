@@ -29,10 +29,13 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  KeyboardSensor,
+  closestCenter,
   defaultDropAnimationSideEffects,
   pointerWithin,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragStartEvent,
   type DragEndEvent,
   type DropAnimation,
@@ -55,13 +58,25 @@ import ElementsTray, {
   type TrayDragData,
 } from "./ElementsTray";
 import { parseDropZoneId } from "./CanvasDropZone";
-import { getWidget } from "@/lib/WidgetRegistry";
 import type { PageRow } from "@/types/rows";
-import { generateRowId, DEFAULT_ROW_LAYOUT, buildEmptyV3Row } from "@/lib/constants/rowDefaults";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import InspectorPanel from "../inspector/InspectorPanel";
 import CanvasBreadcrumb from "./CanvasBreadcrumb";
 import PageNavigator, { isSectionNavDragData } from "./PageNavigator";
+
+/**
+ * Pointer drags want pointerWithin's precision (only counts as "over" a
+ * zone when the cursor is actually inside it — see the Abyss Test note
+ * below). Keyboard drags have no pointer position at all, so
+ * pointerWithin always returns zero hits for them; fall back to
+ * closestCenter (dnd-kit's own recommendation for keyboard support) only
+ * when pointerWithin found nothing, so pointer-driven precision is
+ * unaffected.
+ */
+const pointerThenClosestCenter: CollisionDetection = (args) => {
+  const pointerHits = pointerWithin(args);
+  return pointerHits.length > 0 ? pointerHits : closestCenter(args);
+};
 
 /* ------------------------------------------------------------------
  * BuilderDndShell — drop handler that needs `useBuilder()` (auto-select
@@ -86,7 +101,7 @@ const BuilderDndShell = ({
   onRowsChange,
   children,
 }: BuilderDndShellProps) => {
-  const { setActiveElement } = useBuilder();
+  const { insertWidgetRow, insertLayoutRow, addWidgetToCell, setActiveElement } = useBuilder();
 
   const handleDragEnd = (e: DragEndEvent) => {
     const data = e.active.data.current;
@@ -117,6 +132,14 @@ const BuilderDndShell = ({
     const drop = parseDropZoneId(overId);
     if (!drop) return;
 
+    // Row-construction + insertion is shared with the tray's click and
+    // keyboard-drag paths via BuilderContext's insertWidgetRow /
+    // insertLayoutRow / addWidgetToCell — this handler only resolves
+    // WHERE the drop landed into an index/target for those.
+    const insertAt = drop.kind === "before"
+      ? (() => { const idx = pageRows.findIndex((r) => r.id === drop.rowId); return idx >= 0 ? idx : pageRows.length; })()
+      : pageRows.length;
+
     // ── Layout-drop branch ───────────────────────────────────────
     // The "Structure" cards in the tray drop an EMPTY v3 row (with N
     // columns + one empty cell each) so editors can sketch a page
@@ -126,95 +149,32 @@ const BuilderDndShell = ({
     // ignore those drops.
     if (isLayoutTrayDragData(data)) {
       if (drop.kind === "cell") return;
-      const emptyRow = buildEmptyV3Row(data.columnCount);
-      let insertAt = pageRows.length;
-      if (drop.kind === "before") {
-        const idx = pageRows.findIndex((r) => r.id === drop.rowId);
-        if (idx >= 0) insertAt = idx;
-      }
-      const next = [
-        ...pageRows.slice(0, insertAt),
-        emptyRow as unknown as PageRow,
-        ...pageRows.slice(insertAt),
-      ];
-      onRowsChange(next);
-      // Select the new row so the inspector shows its layout settings.
-      setActiveElement(`row:${emptyRow.id}`);
+      insertLayoutRow(data.columnCount, insertAt);
       return;
     }
-
-    const def = getWidget(data.type);
-    if (!def) {
-      // US 1.2 — never let a drop disappear into the void. If a widget
-      // type is missing from the registry we surface a toast so editors
-      // know WHY their drop didn't materialise (instead of blaming DnD).
-      toast.error(`Unknown widget type: "${data.type}". Drop ignored.`);
-      return;
-    }
-    // Defensive default-data spread (US 1.1). Even if a misregistered
-    // widget slipped through with `defaultData === undefined`, we want
-    // an empty object — never `{ ...undefined }` semantics elsewhere.
-    const seed = (def.defaultData ?? {}) as Record<string, any>;
 
     // ── Cell-drop branch (US 1.2) ────────────────────────────────
-    // Drop landed inside an empty cell on a v3 row. We push a new
-    // PageWidget into that cell instead of creating a new row.
+    // Drop landed inside an empty cell on a v3 row. Push a new widget
+    // into that cell instead of creating a new row.
     if (drop.kind === "cell") {
-      const newWidgetId = generateRowId();
-      const next = pageRows.map((r: any) => {
-        if (r.id !== drop.rowId || !Array.isArray(r.columns)) return r;
-        return {
-          ...r,
-          columns: r.columns.map((col: any) => {
-            if (col.id !== drop.colId) return col;
-            return {
-              ...col,
-              cells: (col.cells || []).map((cc: any) => {
-                if (cc.id !== drop.cellId) return cc;
-                return {
-                  ...cc,
-                  widgets: [
-                    ...(cc.widgets || []),
-                    { id: newWidgetId, type: data.type, data: { ...seed } },
-                  ],
-                };
-              }),
-            };
-          }),
-        };
-      });
-      onRowsChange(next);
-      // Select the new widget so the inspector opens its editor.
-      setActiveElement(`widget:${newWidgetId}`);
+      const newWidgetId = addWidgetToCell({ rowId: drop.rowId, colId: drop.colId, cellId: drop.cellId }, data.type);
+      if (newWidgetId) setActiveElement(`widget:${newWidgetId}`);
+      else toast.error(`Unknown widget type: "${data.type}". Drop ignored.`);
       return;
     }
 
-    const newRow: PageRow = {
-      id: generateRowId(),
-      type: data.type as PageRow["type"],
-      strip_title: data.label || data.type,
-      bg_color: "#FFFFFF",
-      content: { ...seed },
-      layout: { ...DEFAULT_ROW_LAYOUT },
-    };
-
-    let insertAt = pageRows.length;
-    if (drop.kind === "before") {
-      const idx = pageRows.findIndex((r) => r.id === drop.rowId);
-      if (idx >= 0) insertAt = idx;
+    // US 1.2 — never let a drop disappear into the void. If a widget
+    // type is missing from the registry, surface a toast so editors
+    // know WHY their drop didn't materialise (instead of blaming DnD).
+    if (!insertWidgetRow(data.type, insertAt)) {
+      toast.error(`Unknown widget type: "${data.type}". Drop ignored.`);
     }
-    const next = [...pageRows.slice(0, insertAt), newRow, ...pageRows.slice(insertAt)];
-    onRowsChange(next);
-    setActiveElement(`widget:${newRow.id}`);
   };
 
   return (
     <DndContext
       sensors={sensors}
-      // `pointerWithin` only flags an "over" when the cursor is actually
-      // inside a droppable's bounds — so a drop on the 1px border between
-      // two zones leaves `over` null and the handler safely rejects it.
-      collisionDetection={pointerWithin}
+      collisionDetection={pointerThenClosestCenter}
       onDragStart={onDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveDrag(null)}
@@ -339,6 +299,13 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
   const [previewMode, setPreviewMode] = useState<"edit" | "preview">("edit");
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    // Tab to a tray card, Space/Enter to pick it up, arrow keys to move
+    // between drop zones (via pointerThenClosestCenter's closestCenter
+    // fallback, since there's no pointer position to test against
+    // during a keyboard drag), Space/Enter again to drop. Goes through
+    // the exact same handleDragEnd as a pointer drag — no separate
+    // insertion logic to keep in sync.
+    useSensor(KeyboardSensor),
   );
   const [activeDrag, setActiveDrag] = useState<TrayDragData | null>(null);
   const handleDragStart = (e: DragStartEvent) => {

@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import type { PageRow } from "@/types/rows";
 import { getWidget } from "@/lib/WidgetRegistry";
-import { generateRowId } from "@/lib/constants/rowDefaults";
+import { generateRowId, DEFAULT_ROW_LAYOUT, buildEmptyV3Row } from "@/lib/constants/rowDefaults";
 
 /**
  * ════════════════════════════════════════════════════════════════════
@@ -164,6 +165,32 @@ export interface BuilderContextValue {
     widgetType: string,
   ) => string | null;
   /**
+   * Insert `widgetType` as a brand-new row at `insertAt` (an index into
+   * `pageRows`). Shared by the drag-drop path (PageBuilderShell's
+   * handleDragEnd, given an index derived from the drop zone) and the
+   * click/keyboard path (ElementsTray, given an index derived from the
+   * current selection) — one implementation, two triggers. Selects the
+   * new widget and returns its row id, or null if `widgetType` isn't a
+   * registered widget (callers should toast on null; this function
+   * doesn't, since drag-drop and click want different wording).
+   */
+  insertWidgetRow: (widgetType: string, insertAt: number) => string | null;
+  /**
+   * Insert an empty N-column structure row at `insertAt`. Same
+   * drag-drop / click-or-keyboard sharing as insertWidgetRow.
+   */
+  insertLayoutRow: (columnCount: 1 | 2 | 3 | 4, insertAt: number) => string;
+  /**
+   * Click/keyboard entry point (US — tray click-to-insert): insert a
+   * widget after the currently-selected row (or into the currently-
+   * selected cell, if the selection resolves that deep), or at the end
+   * of the page when nothing is selected. Toasts on an unknown widget
+   * type — this IS the user-facing action, unlike insertWidgetRow.
+   */
+  insertWidgetAtSelection: (widgetType: string) => void;
+  /** Click/keyboard entry point for Structure cards — see insertWidgetAtSelection. */
+  insertLayoutAtSelection: (columnCount: 1 | 2 | 3 | 4) => void;
+  /**
    * EPIC 1 / US 1.5 — Breadcrumb Navigation
    * Read-only access to the rows tree so the breadcrumb can resolve
    * human-readable labels (row type, widget kind, item title, etc.)
@@ -185,6 +212,10 @@ const DISABLED: BuilderContextValue = {
   setActiveElement: () => {},
   commitTextAtPath: () => false,
   addWidgetToCell: () => null,
+  insertWidgetRow: () => null,
+  insertLayoutRow: () => "",
+  insertWidgetAtSelection: () => {},
+  insertLayoutAtSelection: () => {},
   pageRows: undefined,
 };
 
@@ -418,6 +449,108 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
     [],
   );
 
+  const insertWidgetRow = useCallback<BuilderContextValue["insertWidgetRow"]>(
+    (widgetType, insertAt) => {
+      const rows = rowsRef.current;
+      const setter = onRowsChangeRef.current;
+      if (!rows || !setter) return null;
+      const def = getWidget(widgetType);
+      if (!def) return null;
+      const seed = (def.defaultData ?? {}) as Record<string, any>;
+      const newRow: PageRow = {
+        id: generateRowId(),
+        type: widgetType as PageRow["type"],
+        strip_title: def.label || widgetType,
+        bg_color: "#FFFFFF",
+        content: { ...seed },
+        layout: { ...DEFAULT_ROW_LAYOUT },
+      };
+      const at = Math.max(0, Math.min(insertAt, rows.length));
+      setter([...rows.slice(0, at), newRow, ...rows.slice(at)]);
+      setActiveNodePathState(["row", newRow.id, "widget", newRow.id]);
+      setEditingPathState(null);
+      return newRow.id;
+    },
+    [],
+  );
+
+  const insertLayoutRow = useCallback<BuilderContextValue["insertLayoutRow"]>(
+    (columnCount, insertAt) => {
+      const rows = rowsRef.current;
+      const setter = onRowsChangeRef.current;
+      const emptyRow = buildEmptyV3Row(columnCount) as unknown as PageRow;
+      if (rows && setter) {
+        const at = Math.max(0, Math.min(insertAt, rows.length));
+        setter([...rows.slice(0, at), emptyRow, ...rows.slice(at)]);
+        setActiveNodePathState(["row", emptyRow.id]);
+        setEditingPathState(null);
+      }
+      return emptyRow.id;
+    },
+    [],
+  );
+
+  /**
+   * Resolve "where should a click/keyboard insert land" from the
+   * current selection: inside the selected cell if the path is deep
+   * enough to name one, otherwise right after the selected row,
+   * otherwise at the end of the page.
+   */
+  const resolveSelectionInsertion = useCallback((): { kind: "cell"; rowId: string; colId: string; cellId: string } | { kind: "after"; rowId: string } | { kind: "end" } => {
+    const path = activeNodePath;
+    const rows = rowsRef.current;
+    if (!path || path.length === 0 || path[0] !== "row" || !rows) return { kind: "end" };
+    const rowId = path[1];
+    if (!rows.some((r) => r.id === rowId)) return { kind: "end" };
+    if (path[2] === "col" && path[4] === "cell" && path[3] && path[5]) {
+      return { kind: "cell", rowId, colId: path[3], cellId: path[5] };
+    }
+    return { kind: "after", rowId };
+  }, [activeNodePath]);
+
+  const insertWidgetAtSelection = useCallback<BuilderContextValue["insertWidgetAtSelection"]>(
+    (widgetType) => {
+      const def = getWidget(widgetType);
+      if (!def) {
+        toast.error(`Unknown widget type: "${widgetType}". Insert ignored.`);
+        return;
+      }
+      const rows = rowsRef.current || [];
+      const target = resolveSelectionInsertion();
+      if (target.kind === "cell") {
+        // Match the drag-drop cell-insert convention (PageBuilderShell's
+        // handleDragEnd): addWidgetToCell doesn't select on its own, the
+        // caller does, so the inspector opens on the freshly-added widget.
+        const newWidgetId = addWidgetToCell(
+          { rowId: target.rowId, colId: target.colId, cellId: target.cellId },
+          widgetType,
+        );
+        if (newWidgetId) setActiveElement(`widget:${newWidgetId}`);
+        return;
+      }
+      const insertAt = target.kind === "after"
+        ? rows.findIndex((r) => r.id === target.rowId) + 1
+        : rows.length;
+      insertWidgetRow(widgetType, insertAt);
+    },
+    [resolveSelectionInsertion, addWidgetToCell, insertWidgetRow, setActiveElement],
+  );
+
+  const insertLayoutAtSelection = useCallback<BuilderContextValue["insertLayoutAtSelection"]>(
+    (columnCount) => {
+      const rows = rowsRef.current || [];
+      const target = resolveSelectionInsertion();
+      // Layout cards can't go inside a cell (would nest a row inside a
+      // row) — fall back to inserting after that cell's own row.
+      const anchorRowId = target.kind === "end" ? null : target.rowId;
+      const insertAt = anchorRowId
+        ? rows.findIndex((r) => r.id === anchorRowId) + 1
+        : rows.length;
+      insertLayoutRow(columnCount, insertAt);
+    },
+    [resolveSelectionInsertion, insertLayoutRow],
+  );
+
   const value = useMemo<BuilderContextValue>(
     () => ({
       enabled: true,
@@ -431,6 +564,10 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       setActiveElement,
       commitTextAtPath,
       addWidgetToCell,
+      insertWidgetRow,
+      insertLayoutRow,
+      insertWidgetAtSelection,
+      insertLayoutAtSelection,
       pageRows,
     }),
     [
@@ -443,6 +580,10 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       setActiveElement,
       commitTextAtPath,
       addWidgetToCell,
+      insertWidgetRow,
+      insertLayoutRow,
+      insertWidgetAtSelection,
+      insertLayoutAtSelection,
       pageRows,
     ],
   );
