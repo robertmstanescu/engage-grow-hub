@@ -143,10 +143,10 @@ const BlogPost = () => {
                   background: `linear-gradient(
                     to bottom,
                     hsl(var(--background) / 0) 0%,
-                    hsl(var(--background) / 0) 45%,
-                    hsl(var(--background) / 0.25) 65%,
-                    hsl(var(--background) / 0.55) 85%,
-                    hsl(var(--background) / 0) 100%
+                    hsl(var(--background) / 0) 35%,
+                    hsl(var(--background) / 0.35) 55%,
+                    hsl(var(--background) / 0.75) 80%,
+                    hsl(var(--background) / 1) 100%
                   )`,
                 }}
               />
