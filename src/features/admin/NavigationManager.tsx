@@ -319,15 +319,10 @@ const NavigationManager = () => {
 
       {/* Settings */}
       <AccordionSection id="settings" label="Settings">
-        <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            checked={content.show_blog_link !== false}
-            onChange={(e) => updateField("show_blog_link", e.target.checked)}
-            className="rounded"
-          />
-          <label className="font-body text-sm" style={{ color: "hsl(var(--foreground))" }}>Show Blog link in navigation</label>
-        </div>
+        <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Blog is managed like any other navigation link — add it under “Navigation Links” with the link <code>/blog/</code>.
+        </p>
+
         <div className="space-y-2 mt-3">
           <label className="font-body text-[10px] uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>Call-to-Action Button</label>
           <div className="flex gap-2">
