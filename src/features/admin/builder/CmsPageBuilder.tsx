@@ -42,9 +42,15 @@ interface Props {
   pageId: string;
   /** Exit the builder back to the admin dashboard (Page Manager). */
   onExit?: () => void;
+  /**
+   * Reports this adapter's own hasChanges up to AdminDashboard, whose
+   * useBlocker guard has no other way to see it — draftRows/seoTitle/etc.
+   * are local state here, not lifted into AdminDashboard's props.
+   */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
-const CmsPageBuilder = ({ pageId, onExit }: Props) => {
+const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
   const [record, setRecord] = useState<CmsPageRecord | null>(null);
   const [draftRows, setDraftRows] = useState<PageRow[]>([]);
   const [seoTitle, setSeoTitle] = useState("");
@@ -110,6 +116,10 @@ const CmsPageBuilder = ({ pageId, onExit }: Props) => {
   // Debug Story 4.2 — block tab close / reload while the local draft
   // hasn't been pushed to the database yet.
   useUnloadGuard(hasChanges);
+  useEffect(() => { onDirtyChange?.(hasChanges); }, [hasChanges, onDirtyChange]);
+  // Clear the parent's dirty flag on unmount so switching away from a
+  // clean page never leaves a stale "unsaved changes" guard armed.
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
 
   /** Guard the exit with the same unsaved-changes confirm used
    *  elsewhere (Debug Story 4.1) before handing off to the dashboard's

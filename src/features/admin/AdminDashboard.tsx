@@ -61,7 +61,7 @@ import {
   GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
   Loader2, Check, Search, History,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams, useBlocker } from "react-router-dom";
 import AdminOverviewDashboard from "./AdminOverviewDashboard";
 // (Sheet/Drawer rollback: properties editor stays as a 3rd column.)
 
@@ -116,7 +116,7 @@ import StyleTab from "./editors/StyleTab";
 import RowStyleTab from "./editors/RowStyleTab";
 import RowContentEditor from "./editors/RowContentEditor";
 import VersionHistory from "./VersionHistory";
-import { confirmDestructive } from "@/components/ConfirmDialog";
+import { confirmDestructive, confirmUnsavedExit } from "@/components/ConfirmDialog";
 import { countRowWidgets } from "./builder/rowWidgetCount";
 import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 // EPIC 14–17 — new three-pane builder shell. Mounted in place of the
@@ -128,6 +128,17 @@ import CmsPageBuilder from "./builder/CmsPageBuilder";
 
 type Tab = "overview" | "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team" | "seo_master" | "versions";
 type PropertiesSubTab = "content" | "style" | "seo";
+
+/** Every Tab except "overview" and "site" — those two have their own
+ *  dedicated routes (/admin/dashboard, /admin/site[/pages/:id]); every
+ *  other tab is reached via the generic /admin/:tab catch-all. Kept as
+ *  a runtime Set so a bad/typo'd URL segment falls back to "overview"
+ *  instead of rendering a blank tab. */
+const SIMPLE_TABS = new Set<Tab>([
+  "pages", "navigation", "blog", "contacts", "emails", "media",
+  "brand", "tags", "settings", "team", "seo_master", "versions",
+]);
+const tabToPath = (tab: Tab): string => (tab === "overview" ? "/admin/dashboard" : `/admin/${tab}`);
 interface Props { session: any; }
 
 /* ── Helpers ── */
@@ -283,8 +294,19 @@ const AdminDashboard = ({ session }: Props) => {
   // raw site editor. The previous behaviour ("site" by default) made it
   // far too easy to fat-finger a layout the moment you logged in.
   const location = useLocation();
-  const initialTab: Tab = location.pathname.startsWith("/admin/site") ? "site" : "overview";
-  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+  const navigate = useNavigate();
+  const params = useParams<{ tab?: string; pageId?: string }>();
+  // ── activeTab is DERIVED from the URL, not stored locally ──
+  // The URL is the single source of truth so Back/Forward always match
+  // what's on screen; navigate() is how every screen change happens now
+  // (see tabToPath, handleEditPage, handleExitBuilder, and the sidebar
+  // nav click handler below).
+  const isSiteRoute = location.pathname === "/admin/site" || location.pathname.startsWith("/admin/site/");
+  const activeTab: Tab = isSiteRoute
+    ? "site"
+    : SIMPLE_TABS.has(params.tab as Tab)
+      ? (params.tab as Tab)
+      : "overview";
   // Set when the overview dashboard's "Create New Page" CTA is clicked.
   // Hands off to PagesManager which auto-opens its inline create form.
   const [pendingCreatePage, setPendingCreatePage] = useState(false);
@@ -313,7 +335,33 @@ const AdminDashboard = ({ session }: Props) => {
   const [activeCol, setActiveCol] = useState(0);
 
   // ── CMS page editing ──
+  // `cmsPage` is a local cache of {id, slug, title} for the topbar
+  // (preview link, page label). The URL's :pageId is the actual source
+  // of truth — handleEditPage seeds this directly (it already has the
+  // full row from PagesManager, no round-trip needed), and the effect
+  // below re-fetches it whenever the URL disagrees (cold load, or the
+  // browser Back/Forward button landing on a /admin/site/pages/:id URL
+  // we didn't navigate to ourselves).
   const [cmsPage, setCmsPage] = useState<CmsPageRef | null>(null);
+  const urlPageId = isSiteRoute ? params.pageId : undefined;
+  useEffect(() => {
+    if (!urlPageId) {
+      setCmsPage((prev) => (prev ? null : prev));
+      return;
+    }
+    if (cmsPage?.id === urlPageId) return; // already in sync
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("cms_pages")
+        .select("id, slug, title")
+        .eq("id", urlPageId)
+        .maybeSingle();
+      if (!cancelled && data) setCmsPage(data as CmsPageRef);
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlPageId]);
   const [cmsPageRows, setCmsPageRows] = useState<PageRow[]>([]);
   const [cmsPageStatus, setCmsPageStatus] = useState<string>("draft");
   const [cmsPageMeta, setCmsPageMeta] = useState<{ meta_title: string; meta_description: string; ai_summary: string }>({ meta_title: "", meta_description: "", ai_summary: "" });
@@ -353,6 +401,35 @@ const AdminDashboard = ({ session }: Props) => {
       return JSON.stringify(draft) !== JSON.stringify(s.content);
     });
   }, [sections, cmsPage, cmsPageDirty]);
+
+  // SiteEditor / CmsPageBuilder (the "new builder", mounted below when
+  // useNewBuilder is true — i.e. always, on the site tab) keep their
+  // OWN draft state locally and report dirtiness up through this, since
+  // `hasUnsavedChanges` above only tracks this component's now-legacy
+  // `sections` / `cmsPageDirty` state. Both feed the navigation blocker.
+  const [builderDirty, setBuilderDirty] = useState(false);
+
+  // ── Guard IN-APP navigation (Back/Forward, sidebar tab switches, any
+  // navigate() call) away from unsaved changes — react-router's
+  // useBlocker, the SPA-navigation counterpart to useUnloadGuard's
+  // beforeunload (see that hook's own comment on the gap this closes).
+  // Only blocks when actually LEAVING the current screen (a different
+  // pathname); switching search params in place is never blocked.
+  // (Passed inline, not via useCallback, so TS infers the param types
+  // from useBlocker's own signature — react-router reads the latest
+  // closure on every check, so a fresh function each render is fine.)
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      (hasUnsavedChanges || builderDirty) && currentLocation.pathname !== nextLocation.pathname,
+  );
+  useEffect(() => {
+    if (blocker.state !== "blocked") return;
+    (async () => {
+      const ok = await confirmUnsavedExit();
+      if (ok) blocker.proceed();
+      else blocker.reset();
+    })();
+  }, [blocker]);
 
   /**
    * ─────────────────────────────────────────────────────────────────────
@@ -894,20 +971,24 @@ const AdminDashboard = ({ session }: Props) => {
   };
 
   // ── Edit page handler (from PagesManager) ──
-  const handleEditPage = (page: CmsPageRef | null) => {
-    setCmsPage(page);
-    setActiveTab("site");
+  const handleEditPage = useCallback((page: CmsPageRef | null) => {
     setSelectedSectionId(null);
-  };
+    if (!page) { navigate("/admin/site"); return; }
+    // Seed the cache directly — PagesManager already has the full row,
+    // no need to round-trip through the URL-sync fetch effect for this.
+    setCmsPage(page);
+    navigate(`/admin/site/pages/${page.id}`);
+  }, [navigate]);
 
   // ── Exit the full-screen builder (CmsPageBuilder / SiteEditor) back
-  // to the dashboard overview. Both adapters guard the call with their
-  // own unsaved-changes confirm before invoking this — see
-  // confirmUnsavedExit in components/ConfirmDialog.tsx. ──
+  // to the dashboard overview — the "connector to the dashboard" for
+  // whatever's currently being edited, main page or CMS page alike.
+  // Both adapters guard the call with their own unsaved-changes confirm
+  // before invoking this — see confirmUnsavedExit in
+  // components/ConfirmDialog.tsx. ──
   const handleExitBuilder = useCallback(() => {
-    setCmsPage(null);
-    setActiveTab("overview");
-  }, []);
+    navigate("/admin/dashboard");
+  }, [navigate]);
 
   const isSiteTab = activeTab === "site";
   const isMainPage = !cmsPage;
@@ -989,7 +1070,7 @@ const AdminDashboard = ({ session }: Props) => {
         <span className="text-[11px] text-muted-foreground font-body flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap flex items-center justify-center gap-2">
           {cmsPage && (
             <button
-              onClick={() => setCmsPage(null)}
+              onClick={() => navigate("/admin/site")}
               className="flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] bg-transparent border-none cursor-pointer text-muted-foreground hover:text-foreground"
               title="Back to Main Page"
             >
@@ -1186,9 +1267,8 @@ const AdminDashboard = ({ session }: Props) => {
                       window.location.href = "/admin/insights";
                       return;
                     }
-                    setActiveTab(item.key as Tab);
                     setSelectedSectionId(null);
-                    if (item.key !== "site") setCmsPage(null);
+                    navigate(tabToPath(item.key as Tab));
                     if (isAdminMobile) setMobileDrawerOpen(false);
                   };
                   return (
@@ -1258,7 +1338,7 @@ const AdminDashboard = ({ session }: Props) => {
           <div className="h-11 flex items-center justify-between px-4 border-b border-border flex-shrink-0">
             {cmsPage ? (
               <button
-                onClick={() => setCmsPage(null)}
+                onClick={() => navigate("/admin/site")}
                 className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-muted-foreground font-body text-[10px]"
               >
                 <ArrowLeft size={12} /> Back to Main Page
@@ -1411,8 +1491,8 @@ const AdminDashboard = ({ session }: Props) => {
             // both the main page (SiteEditor) and CMS pages (CmsPageBuilder).
             <div className="flex-1 overflow-hidden">
               {cmsPage
-                ? <CmsPageBuilder pageId={cmsPage.id} onExit={handleExitBuilder} />
-                : <SiteEditor onExit={handleExitBuilder} />}
+                ? <CmsPageBuilder pageId={cmsPage.id} onExit={handleExitBuilder} onDirtyChange={setBuilderDirty} />
+                : <SiteEditor onExit={handleExitBuilder} onDirtyChange={setBuilderDirty} />}
             </div>
           ) : isSiteTab ? (
             <div className="flex-1 bg-card overflow-hidden flex flex-col">
@@ -1598,10 +1678,10 @@ const AdminDashboard = ({ session }: Props) => {
               <div className="max-w-[1000px] mx-auto">
                 {activeTab === "overview" && (
                   <AdminOverviewDashboard
-                    onNavigate={(tab) => setActiveTab(tab as Tab)}
+                    onNavigate={(tab) => navigate(tabToPath(tab as Tab))}
                     onCreatePage={() => {
                       setPendingCreatePage(true);
-                      setActiveTab("pages");
+                      navigate("/admin/pages");
                     }}
                   />
                 )}

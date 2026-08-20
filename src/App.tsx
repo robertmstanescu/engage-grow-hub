@@ -44,6 +44,15 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/admin/dashboard" element={<Admin />} />
               <Route path="/admin/site" element={<Admin />} />
+              <Route path="/admin/site/pages/:pageId" element={<Admin />} />
+              {/* Catch-all for the remaining simple tabs (pages, blog,
+                  contacts, emails, media, brand, tags, settings, team,
+                  seo_master, versions, navigation) — react-router ranks
+                  the static routes above by specificity, so they always
+                  win over this dynamic one. AdminDashboard validates
+                  `:tab` against the known Tab union and falls back to
+                  "overview" for anything else. */}
+              <Route path="/admin/:tab" element={<Admin />} />
               <Route path="/admin/profile" element={<AdminProfile />} />
               <Route path="/admin/ai-insights" element={<AdminInsights />} />
               <Route path="/admin/insights" element={<AdminInsights />} />

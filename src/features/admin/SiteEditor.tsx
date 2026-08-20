@@ -228,9 +228,15 @@ const SNAP_BACK_ANIMATION: DropAnimation = {
 interface Props {
   /** Exit the builder back to the admin dashboard overview. */
   onExit?: () => void;
+  /**
+   * Reports this editor's own hasChanges up to AdminDashboard, whose
+   * useBlocker guard has no other way to see it — `sections` here is
+   * local state, not lifted into AdminDashboard's props.
+   */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
-const SiteEditor = ({ onExit }: Props) => {
+const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [activeSection, setActiveSection] = useState<"page_rows" | "main_page_seo">("page_rows");
   const [saving, setSaving] = useState<string | null>(null);
@@ -420,6 +426,10 @@ const SiteEditor = ({ onExit }: Props) => {
   };
 
   const hasChanges = sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
+  useEffect(() => { onDirtyChange?.(hasChanges); }, [hasChanges, onDirtyChange]);
+  // Clear the parent's dirty flag on unmount so switching away from a
+  // clean state never leaves a stale "unsaved changes" guard armed.
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
 
   /** Guard the exit with the same unsaved-changes confirm used
    *  elsewhere (Debug Story 4.1) before handing off to the dashboard's
