@@ -488,9 +488,21 @@ const BlogEditor = () => {
 
         {/* AI Search Summary — feeds /llms.txt and /llms-full.txt */}
         <div className="rounded-lg border p-4 space-y-2" style={{ borderColor: "hsl(var(--accent) / 0.4)", backgroundColor: "hsl(var(--accent) / 0.05)" }}>
-          <label className="font-body text-[10px] uppercase tracking-wider font-medium block" style={{ color: "hsl(var(--foreground))" }}>
-            AI Search Summary
-          </label>
+          <div className="flex items-start justify-between gap-2">
+            <label className="font-body text-[10px] uppercase tracking-wider font-medium block" style={{ color: "hsl(var(--foreground))" }}>
+              AI Search Summary
+            </label>
+            <button
+              type="button"
+              onClick={handleGenerateAiSummary}
+              disabled={generatingAiSummary}
+              className="shrink-0 flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full transition-opacity hover:opacity-80 disabled:opacity-50"
+              style={{ border: "1px solid hsl(var(--accent) / 0.6)", color: "hsl(var(--foreground))" }}
+            >
+              {generatingAiSummary ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
+              {generatingAiSummary ? "Generating…" : "Generate with AI"}
+            </button>
+          </div>
           <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
             A 1-3 sentence summary written for AI assistants (ChatGPT, Claude, Perplexity). Aim for 60-320 characters. Leave blank to fall back to the excerpt.
           </p>
