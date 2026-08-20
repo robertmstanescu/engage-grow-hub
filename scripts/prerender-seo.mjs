@@ -157,13 +157,6 @@ async function main() {
     console.warn("[prerender-seo] Missing Supabase env — skipping prerender.");
     return;
   }
-  const shellPath = resolve(DIST, "index.html");
-  if (!existsSync(shellPath)) {
-    console.warn("[prerender-seo] dist/index.html not found — skipping prerender.");
-    return;
-  }
-  const shell = readFileSync(shellPath, "utf8");
-
   const [siteRows, cmsPages, blogPosts] = await Promise.all([
     rest("site_content?select=section_key,content"),
     rest("cms_pages?status=eq.published&select=slug,title,meta_title,meta_description,og_image,updated_at"),
