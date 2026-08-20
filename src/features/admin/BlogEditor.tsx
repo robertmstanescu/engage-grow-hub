@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { sanitizeHtml } from "@/services/sanitize";
 import { toast } from "sonner";
-import { Trash2, Edit, Plus, Eye, ArrowLeft } from "lucide-react";
+import { Trash2, Edit, Plus, Eye, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
+import { generateAiSummary, htmlToPlainText } from "@/services/aiSummary";
 import RichTextEditor from "./RichTextEditor";
 import { patchLivePreviewState } from "@/services/livePreview";
 import ImageAltInput from "./ImageAltInput";
@@ -65,6 +66,27 @@ const BlogEditor = () => {
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
+
+  const [generatingAiSummary, setGeneratingAiSummary] = useState(false);
+
+  /** Ask the built-in AI connector for a 60-320 char AEO summary. */
+  const handleGenerateAiSummary = async () => {
+    if (generatingAiSummary) return;
+    setGeneratingAiSummary(true);
+    try {
+      const summary = await generateAiSummary({
+        title: form.title,
+        content: htmlToPlainText(form.content) || form.excerpt,
+        kind: "blog post",
+      });
+      setForm((f) => ({ ...f, ai_summary: summary }));
+      toast.success("AI summary generated");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to generate summary");
+    } finally {
+      setGeneratingAiSummary(false);
+    }
+  };
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -488,9 +510,21 @@ const BlogEditor = () => {
 
         {/* AI Search Summary — feeds /llms.txt and /llms-full.txt */}
         <div className="rounded-lg border p-4 space-y-2" style={{ borderColor: "hsl(var(--accent) / 0.4)", backgroundColor: "hsl(var(--accent) / 0.05)" }}>
-          <label className="font-body text-[10px] uppercase tracking-wider font-medium block" style={{ color: "hsl(var(--foreground))" }}>
-            AI Search Summary
-          </label>
+          <div className="flex items-start justify-between gap-2">
+            <label className="font-body text-[10px] uppercase tracking-wider font-medium block" style={{ color: "hsl(var(--foreground))" }}>
+              AI Search Summary
+            </label>
+            <button
+              type="button"
+              onClick={handleGenerateAiSummary}
+              disabled={generatingAiSummary}
+              className="shrink-0 flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full transition-opacity hover:opacity-80 disabled:opacity-50"
+              style={{ border: "1px solid hsl(var(--accent) / 0.6)", color: "hsl(var(--foreground))" }}
+            >
+              {generatingAiSummary ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
+              {generatingAiSummary ? "Generating…" : "Generate with AI"}
+            </button>
+          </div>
           <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
             A 1-3 sentence summary written for AI assistants (ChatGPT, Claude, Perplexity). Aim for 60-320 characters. Leave blank to fall back to the excerpt.
           </p>

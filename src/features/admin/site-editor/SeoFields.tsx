@@ -31,7 +31,10 @@
  * ───────────────────────────────────────────────────────────────────── */
 
 import { useState, useEffect, useRef } from "react";
+import { Sparkles, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Field } from "./FieldComponents";
+import { generateAiSummary } from "@/services/aiSummary";
 
 /**
  * Debug Story 3.2 — useDeferredText
@@ -72,6 +75,10 @@ interface Props {
   /** Optional: enables the AI Search Summary block when both are provided. */
   aiSummary?: string;
   onAiSummaryChange?: (v: string) => void;
+  /** Optional source material for the "Generate with AI" button. */
+  aiSourceTitle?: string;
+  aiSourceContent?: string;
+  aiSourceKind?: "page" | "blog post";
 }
 
 const AEO_MIN = 60;
@@ -84,8 +91,12 @@ const SeoFields = ({
   onDescriptionChange,
   aiSummary,
   onAiSummaryChange,
+  aiSourceTitle,
+  aiSourceContent,
+  aiSourceKind = "page",
 }: Props) => {
   const aeoEnabled = typeof onAiSummaryChange === "function";
+  const [generating, setGenerating] = useState(false);
 
   // Local mirrors so per-keystroke typing only re-renders THIS component
   // — the upstream draft state (and therefore the canvas) only updates
@@ -96,6 +107,27 @@ const SeoFields = ({
   const aeoLen = aeo.local.length;
   // Counter is green ONLY inside the 60-320 window — matches AdminInsights.tsx.
   const aeoInRange = aeoLen >= AEO_MIN && aeoLen <= AEO_MAX;
+
+  /** Ask the built-in AI connector for an AEO summary of this page. */
+  const handleGenerate = async () => {
+    if (generating) return;
+    setGenerating(true);
+    try {
+      const summary = await generateAiSummary({
+        title: aiSourceTitle || metaTitle || "",
+        content: aiSourceContent || metaDescription || "",
+        kind: aiSourceKind,
+      });
+      aeo.setLocal(summary);
+      onAiSummaryChange?.(summary);
+      toast.success("AI summary generated");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to generate summary");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
 
   return (
     <div
@@ -146,15 +178,27 @@ const SeoFields = ({
             backgroundColor: "hsl(46 75% 60% / 0.06)",
           }}
         >
-          <label
-            className="font-body text-[10px] uppercase tracking-wider font-medium block flex items-center gap-1.5"
-            style={{ color: "hsl(var(--foreground))" }}
-            // Tooltip via native title — keeps the field lightweight (no portal).
-            title="This summary is fed directly to AI assistants like ChatGPT and Claude via your /llms.txt manifest. Be descriptive and use brand keywords."
-          >
-            AI Search Summary (AEO)
-            <span className="font-body text-[9px] normal-case tracking-normal opacity-70">ⓘ</span>
-          </label>
+          <div className="flex items-start justify-between gap-2">
+            <label
+              className="font-body text-[10px] uppercase tracking-wider font-medium flex items-center gap-1.5"
+              style={{ color: "hsl(var(--foreground))" }}
+              // Tooltip via native title — keeps the field lightweight (no portal).
+              title="This summary is fed directly to AI assistants like ChatGPT and Claude via your /llms.txt manifest. Be descriptive and use brand keywords."
+            >
+              AI Search Summary (AEO)
+              <span className="font-body text-[9px] normal-case tracking-normal opacity-70">ⓘ</span>
+            </label>
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={generating}
+              className="shrink-0 flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full transition-opacity hover:opacity-80 disabled:opacity-50"
+              style={{ border: "1px solid hsl(46 75% 40% / 0.5)", color: "hsl(var(--foreground))" }}
+            >
+              {generating ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
+              {generating ? "Generating…" : "Generate with AI"}
+            </button>
+          </div>
           <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
             Fed to AI assistants (ChatGPT, Claude, Perplexity) via <code>/llms.txt</code>. Aim for {AEO_MIN}–{AEO_MAX} characters.
           </p>
