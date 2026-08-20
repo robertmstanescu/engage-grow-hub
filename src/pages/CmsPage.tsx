@@ -24,6 +24,21 @@ import { readLivePreviewState, subscribeLivePreview } from "@/services/livePrevi
 const SYSTEM_ROUTES = ["blog", "admin", "unsubscribe", "api", "auth", "login", "signup", "p"];
 
 /**
+ * Public URL path for a CMS page slug — mirrors `cmsPagePath()` in
+ * scripts/prerender-seo.mjs exactly (namespaced `services/...` slugs
+ * live at the site root, everything else canonically lives under
+ * `/p/`). CmsPage itself is
+ * mounted at THREE route patterns (/services/:slug, /p/:slug, bare
+ * /:slug) that can all resolve to the same row for a flat slug like
+ * "about-us" — without a shared canonical target, each would
+ * self-canonicalize to whatever URL happened to match, i.e. three
+ * "canonical" URLs for one piece of content. This is what every route
+ * passes to usePageMeta's `canonicalPath` so they all agree on one.
+ */
+const cmsPagePath = (slug: string): string =>
+  slug === "services" || slug.startsWith("services/") ? `/${slug}/` : `/p/${slug}/`;
+
+/**
  * `prefix` lets a nested route (e.g. `/services/:slug`) resolve against a
  * namespaced CMS slug such as `services/internal-communications`, while
  * the flat `/:slug` route keeps working unchanged.
@@ -41,6 +56,7 @@ const CmsPage = ({ prefix = "" }: { prefix?: string }) => {
   usePageMeta({
     title: livePreviewPage?.meta_title || page?.meta_title || page?.title || undefined,
     description: livePreviewPage?.meta_description || page?.meta_description || undefined,
+    canonicalPath: slug ? cmsPagePath(slug) : undefined,
   });
 
   useEffect(() => {

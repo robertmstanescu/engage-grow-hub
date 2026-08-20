@@ -218,19 +218,34 @@ async function main() {
   });
 
   // CMS pages
+  //
+  // Every non-services CMS page is ALSO reachable at the bare /:slug
+  // route (App.tsx mounts CmsPage there too, alongside /p/:slug) — same
+  // content, same DB row, different URL. Without a prerendered file at
+  // that path, a crawler hitting it directly gets the empty SPA shell
+  // instead of real content. `fallbackRoutes` below writes that file,
+  // but its <link rel="canonical"> still points at the /p/ version (via
+  // `meta.url`, decoupled from the file's own path) and it's deliberately
+  // NOT added to `routes` — the sitemap should only ever list the one
+  // preferred URL per page, not the fallback duplicate.
+  const fallbackRoutes = [];
   for (const page of cmsPages) {
     if (!page.slug) continue;
     const path = cmsPagePath(page.slug);
+    const meta = {
+      title: titleFor(page.meta_title, page.title),
+      description: page.meta_description || "",
+      url: abs(path),
+      image: absImage(page.og_image),
+    };
     routes.push({
       path,
-      meta: {
-        title: titleFor(page.meta_title, page.title),
-        description: page.meta_description || "",
-        url: abs(path),
-        image: absImage(page.og_image),
-      },
+      meta,
       sitemap: { lastmod: page.updated_at, changefreq: "monthly", priority: "0.7" },
     });
+    if (path !== `/${trailing(page.slug)}`) {
+      fallbackRoutes.push({ path: `/${trailing(page.slug)}`, meta });
+    }
   }
 
   // Blog posts
@@ -322,10 +337,17 @@ async function main() {
     for (const route of routes) {
       writePage(route.path, renderPage(shell, { ...route.meta, defaultImage }));
     }
+    // Bare-slug fallback files — real content for crawlers, canonical
+    // tag still points at the preferred /p/ URL (see fallbackRoutes note
+    // above). Not counted in the "wrote N pages" total below since they
+    // aren't a distinct indexable page, just a non-canonical mirror.
+    for (const route of fallbackRoutes) {
+      writePage(route.path, renderPage(shell, { ...route.meta, defaultImage }));
+    }
   }
 
   console.log(
-    `[prerender-seo] wrote ${routes.length} pages, sitemap.xml (${routes.length} urls) and llms.txt for ${origin}`,
+    `[prerender-seo] wrote ${routes.length} pages (+${fallbackRoutes.length} bare-slug fallback mirrors), sitemap.xml (${routes.length} urls) and llms.txt for ${origin}`,
   );
 }
 

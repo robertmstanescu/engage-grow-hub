@@ -7,6 +7,7 @@ import {
   parseUserAgentForAnalytics,
 } from "@/services/analytics";
 import { captureAttribution, getAttributionForPayload } from "@/services/attribution";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 /**
  * useAnalyticsBeacon — fires one beacon per route change.
@@ -31,12 +32,24 @@ import { captureAttribution, getAttributionForPayload } from "@/services/attribu
  * localStorage. The captured blob is then attached to every analytics
  * beacon so downstream dashboards can attribute revenue to campaigns.
  *
+ * ADMIN SELF-TRAFFIC — the /admin path-prefix check below only filters
+ * the admin PANEL itself. It does nothing for an admin's own visits to
+ * PUBLIC pages — e.g. the "Open page" preview links in AdminInsights.tsx
+ * open /p/:slug or /blog/:slug in a new tab, which shares this browser's
+ * Supabase session. Without a session check, every one of those clicks
+ * would get counted as real visitor traffic. `useAdminStatus()` reads
+ * the same session Supabase already persists in localStorage (no extra
+ * network round-trip for the common case of an anonymous visitor with no
+ * session at all), so this beacon skips entirely for a logged-in admin,
+ * on ANY path — not just /admin ones.
+ *
  * Failure is non-fatal: if the analytics edge function is down, the page
  * still loads. The beacon is wrapped in try/catch and explicitly does
  * NOT block any user-visible work.
  */
 export function useAnalyticsBeacon(): void {
   const { pathname } = useLocation();
+  const { isAdmin, loading: adminStatusLoading } = useAdminStatus();
   // Track the last logged path to deduplicate StrictMode double-effects.
   const lastLoggedRef = useRef<string | null>(null);
 
@@ -49,6 +62,13 @@ export function useAnalyticsBeacon(): void {
 
     // Admin routes are noise — the table would explode with our own clicks.
     if (pathname.startsWith("/admin")) return;
+    // Wait for the session check to resolve before beaconing (it's fast —
+    // see note above), then skip entirely for a logged-in admin. This
+    // re-runs when adminStatusLoading flips to false, so the FIRST
+    // pageview of an admin session is caught too, not just subsequent
+    // ones.
+    if (adminStatusLoading) return;
+    if (isAdmin) return;
     if (lastLoggedRef.current === pathname) return;
     lastLoggedRef.current = pathname;
 
@@ -94,5 +114,5 @@ export function useAnalyticsBeacon(): void {
     } catch {
       // Synchronous throw (extremely rare) — also silent.
     }
-  }, [pathname]);
+  }, [pathname, isAdmin, adminStatusLoading]);
 }

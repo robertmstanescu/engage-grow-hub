@@ -53,6 +53,15 @@ interface PageMetaProps {
   suffix?: string;
   /** Open Graph object type. Use "article" for blog posts. */
   ogType?: "website" | "article";
+  /**
+   * Override the canonical URL's path — pass this whenever the SAME
+   * content is reachable at more than one URL (e.g. CmsPage mounts at
+   * /services/:slug, /p/:slug, AND bare /:slug), so every route that
+   * matches a given piece of content points its canonical tag at ONE
+   * preferred URL instead of self-canonicalizing to whatever route
+   * happened to match. Defaults to `location.pathname` when omitted.
+   */
+  canonicalPath?: string;
 }
 
 /**
@@ -170,7 +179,7 @@ const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
   }
 };
 
-const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website" }: PageMetaProps) => {
+const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", canonicalPath }: PageMetaProps) => {
   const location = useLocation();
 
   useEffect(() => {
@@ -196,7 +205,7 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website" }
       const socialTitle = prefix ? `${prefix}${pageTitle}` : pageTitle;
       document.title = pageTitle;
 
-      const canonicalUrl = `${canonicalOrigin}${ensureTrailingSlash(location.pathname)}`;
+      const canonicalUrl = `${canonicalOrigin}${ensureTrailingSlash(canonicalPath ?? location.pathname)}`;
 
       const setMeta = (name: string, content: string, property?: boolean) => {
         if (!content) return;
@@ -238,7 +247,7 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website" }
     return () => {
       cancelled = true;
     };
-  }, [title, description, ogImage, suffix, ogType, location.pathname]);
+  }, [title, description, ogImage, suffix, ogType, canonicalPath, location.pathname]);
 };
 
 export default usePageMeta;

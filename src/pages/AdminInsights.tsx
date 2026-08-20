@@ -91,6 +91,10 @@ const AdminInsights = () => {
 
   // Data state
   const [loading, setLoading] = useState(true);
+  // True when any panel's client-side aggregation hit its row cap (see
+  // unifiedAnalytics.ts's ROW_CAP note) — the numbers below are computed
+  // over a truncated sample of the selected window, not the full thing.
+  const [resultsTruncated, setResultsTruncated] = useState(false);
   const [humanReach, setHumanReach] = useState(0);
   const [aiMindshare, setAiMindshare] = useState(0);
   const [leadsCount, setLeadsCount] = useState(0);
@@ -165,6 +169,10 @@ const AdminInsights = () => {
       setBrowsers(deviceResult.browsers || []);
       setBotLeaderboard(leaderboardResult.data || []);
       setJourneys(journeysResult.data || []);
+      setResultsTruncated(
+        !!(uniqueHumans.truncated || countriesResult.truncated || deviceResult.truncated
+          || leaderboardResult.truncated || journeysResult.truncated),
+      );
 
       const blogRows: AuditRow[] = ((blogResult.data as Array<Record<string, unknown>>) || []).map((post) => ({
         id: post.id as string,
@@ -291,6 +299,16 @@ const AdminInsights = () => {
             </select>
           )}
         </div>
+
+        {resultsTruncated && (
+          <div
+            className="rounded-lg border px-4 py-2.5 font-body text-xs"
+            style={{ borderColor: "hsl(38 90% 45% / 0.4)", backgroundColor: "hsl(38 90% 45% / 0.1)", color: "hsl(38 90% 25%)" }}
+          >
+            Results may be incomplete for this range — one or more panels hit their row cap and are
+            computed over a partial sample. Narrow the date range or filters for an exact count.
+          </div>
+        )}
 
         {/* ── Section A: Hero metrics ── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

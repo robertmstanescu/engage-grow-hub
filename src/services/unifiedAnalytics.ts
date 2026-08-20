@@ -86,6 +86,22 @@ export const countAnalyticsRows = async (filters: AnalyticsRangeFilter) => {
 };
 
 /**
+ * Every panel below fetches raw rows client-side and aggregates in JS,
+ * capped at this limit — Postgres will happily return more, but pulling
+ * an unbounded row set into the browser to GROUP BY in JS doesn't scale.
+ * For a busy date range that hits the cap, the aggregation below is
+ * computed over a truncated sample, not the full window — silently
+ * under-reporting with no indication to the admin unless callers check
+ * the `truncated` flag each function now returns. AdminInsights.tsx
+ * surfaces that flag as a visible "results may be incomplete" warning
+ * rather than letting a wrong number pass as a real one. The correct
+ * long-term fix is server-side aggregation (a Postgres RPC/view with
+ * GROUP BY, which scales past this cap trivially) — this flag is the
+ * "at minimum" mitigation until that lands.
+ */
+const ROW_CAP = 5000;
+
+/**
  * Count distinct human visitors in the window. We approximate "unique"
  * by counting distinct `visitor_id`s when present, falling back to
  * distinct `ip_hash` for anonymous-while-not-consented rows.
@@ -98,14 +114,14 @@ export const countUniqueHumanVisitors = async (filters: AnalyticsRangeFilter) =>
     .from("unified_analytics_logs")
     .select("visitor_id, ip_hash");
   const { data, error } = await applyAnalyticsFilters(base as never, humanFilters)
-    .limit(5000);
-  if (error || !data) return { count: 0, error };
+    .limit(ROW_CAP);
+  if (error || !data) return { count: 0, error, truncated: false };
   const seen = new Set<string>();
   for (const row of data as Array<{ visitor_id: string | null; ip_hash: string | null }>) {
     seen.add(row.visitor_id || row.ip_hash || "");
   }
   seen.delete("");
-  return { count: seen.size, error: null };
+  return { count: seen.size, error: null, truncated: data.length >= ROW_CAP };
 };
 
 /**
@@ -116,8 +132,8 @@ export const countUniqueHumanVisitors = async (filters: AnalyticsRangeFilter) =>
 export const fetchBotLeaderboard = async (filters: AnalyticsRangeFilter) => {
   const botFilters: AnalyticsRangeFilter = { ...filters, trafficType: "bot" };
   const base = supabase.from("unified_analytics_logs").select("entity_name");
-  const { data, error } = await applyAnalyticsFilters(base as never, botFilters).limit(5000);
-  if (error || !data) return { data: [] as Array<{ entity_name: string; count: number }>, error };
+  const { data, error } = await applyAnalyticsFilters(base as never, botFilters).limit(ROW_CAP);
+  if (error || !data) return { data: [] as Array<{ entity_name: string; count: number }>, error, truncated: false };
   const counts = new Map<string, number>();
   for (const row of data as Array<{ entity_name: string }>) {
     counts.set(row.entity_name, (counts.get(row.entity_name) ?? 0) + 1);
@@ -127,6 +143,7 @@ export const fetchBotLeaderboard = async (filters: AnalyticsRangeFilter) => {
       (a, b) => b.count - a.count,
     ),
     error: null,
+    truncated: data.length >= ROW_CAP,
   };
 };
 
@@ -136,12 +153,13 @@ export const fetchBotLeaderboard = async (filters: AnalyticsRangeFilter) => {
 export const fetchDeviceBrowserBreakdown = async (filters: AnalyticsRangeFilter) => {
   const humanFilters: AnalyticsRangeFilter = { ...filters, trafficType: "human" };
   const base = supabase.from("unified_analytics_logs").select("device, browser");
-  const { data, error } = await applyAnalyticsFilters(base as never, humanFilters).limit(5000);
+  const { data, error } = await applyAnalyticsFilters(base as never, humanFilters).limit(ROW_CAP);
   if (error || !data) {
     return {
       devices: [] as Array<{ name: string; count: number }>,
       browsers: [] as Array<{ name: string; count: number }>,
       error,
+      truncated: false,
     };
   }
   const deviceMap = new Map<string, number>();
@@ -154,7 +172,7 @@ export const fetchDeviceBrowserBreakdown = async (filters: AnalyticsRangeFilter)
   }
   const toArr = (m: Map<string, number>) =>
     Array.from(m, ([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
-  return { devices: toArr(deviceMap), browsers: toArr(browserMap), error: null };
+  return { devices: toArr(deviceMap), browsers: toArr(browserMap), error: null, truncated: data.length >= ROW_CAP };
 };
 
 /**
@@ -163,8 +181,8 @@ export const fetchDeviceBrowserBreakdown = async (filters: AnalyticsRangeFilter)
 export const fetchTopCountries = async (filters: AnalyticsRangeFilter, topN = 5) => {
   const humanFilters: AnalyticsRangeFilter = { ...filters, trafficType: "human" };
   const base = supabase.from("unified_analytics_logs").select("country");
-  const { data, error } = await applyAnalyticsFilters(base as never, humanFilters).limit(5000);
-  if (error || !data) return { data: [] as Array<{ country: string; count: number }>, error };
+  const { data, error } = await applyAnalyticsFilters(base as never, humanFilters).limit(ROW_CAP);
+  if (error || !data) return { data: [] as Array<{ country: string; count: number }>, error, truncated: false };
   const counts = new Map<string, number>();
   for (const row of data as Array<{ country: string | null }>) {
     if (!row.country) continue;
@@ -175,6 +193,7 @@ export const fetchTopCountries = async (filters: AnalyticsRangeFilter, topN = 5)
       .sort((a, b) => b.count - a.count)
       .slice(0, topN),
     error: null,
+    truncated: data.length >= ROW_CAP,
   };
 };
 
@@ -183,6 +202,8 @@ export const fetchTopCountries = async (filters: AnalyticsRangeFilter, topN = 5)
  * the people who actually converted. Returns one row per visitor with
  * an array of paths in the order they viewed them.
  */
+const JOURNEY_ROW_CAP = 2000;
+
 export const fetchConvertedJourneys = async (filters: AnalyticsRangeFilter, limit = 20) => {
   const base = supabase
     .from("unified_analytics_logs")
@@ -190,8 +211,8 @@ export const fetchConvertedJourneys = async (filters: AnalyticsRangeFilter, limi
     .not("stitched_email", "is", null);
   const { data, error } = await applyAnalyticsFilters(base as never, filters)
     .order("created_at", { ascending: true })
-    .limit(2000);
-  if (error || !data) return { data: [] as JourneyRecord[], error };
+    .limit(JOURNEY_ROW_CAP);
+  if (error || !data) return { data: [] as JourneyRecord[], error, truncated: false };
 
   const grouped = new Map<string, JourneyRecord>();
   for (const row of data as Array<{
@@ -220,6 +241,7 @@ export const fetchConvertedJourneys = async (filters: AnalyticsRangeFilter, limi
       .sort((a, b) => b.converted_at.localeCompare(a.converted_at))
       .slice(0, limit),
     error: null,
+    truncated: data.length >= JOURNEY_ROW_CAP,
   };
 };
 
