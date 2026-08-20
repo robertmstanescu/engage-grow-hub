@@ -19,7 +19,7 @@ import { RowsRenderer } from "@/features/site/rows/PageRows";
 import type { PageRow } from "@/types/rows";
 
 interface BlogArticle {
-  slug: string; title: string; published_at: string | null; content: string; category: string;
+  slug: string; title: string; excerpt: string | null; published_at: string | null; content: string; category: string;
   cover_image: string | null; cover_image_alt: string | null;
   author_name: string | null; author_image: string | null; author_image_alt: string | null;
   meta_title: string | null; meta_description: string | null;
