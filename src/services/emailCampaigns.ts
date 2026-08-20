@@ -3,6 +3,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { DEFAULT_PAGE_SIZE, pageRange } from "@/services/pagination";
 
 export interface CampaignRecord {
   id: string;
@@ -14,8 +15,14 @@ export interface CampaignRecord {
   created_at: string;
 }
 
-export const fetchAllCampaigns = () =>
-  supabase.from("email_campaigns").select("*").order("created_at", { ascending: false });
+export const fetchAllCampaigns = (page = 1, pageSize = DEFAULT_PAGE_SIZE) => {
+  const [from, to] = pageRange(page, pageSize);
+  return supabase
+    .from("email_campaigns")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+};
 
 export const insertCampaign = (payload: { subject: string; html_content: string; status: string }) =>
   supabase.from("email_campaigns").insert(payload);

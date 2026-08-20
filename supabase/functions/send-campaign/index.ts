@@ -10,6 +10,9 @@ const SITE_NAME = "The Magic Coffin";
 const SENDER_DOMAIN = "notify.themagiccoffin.com";
 const FROM_DOMAIN = "themagiccoffin.com";
 
+const CONTACTS_PAGE_SIZE = 500;
+const SEND_BATCH_SIZE = 50;
+
 function generateToken(): string {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
@@ -18,43 +21,51 @@ function generateToken(): string {
     .join('');
 }
 
-async function getOrCreateUnsubscribeToken(supabase: ReturnType<typeof createClient>, email: string) {
-  const normalizedEmail = email.toLowerCase();
+// Looks up/creates unsubscribe tokens for a whole batch of emails in a
+// constant number of queries, instead of 2-3 sequential queries per email.
+async function getOrCreateUnsubscribeTokensBatch(
+  supabase: ReturnType<typeof createClient>,
+  emails: string[],
+): Promise<Map<string, string>> {
+  const normalizedEmails = Array.from(new Set(emails.map((email) => email.toLowerCase())));
+  const tokenMap = new Map<string, string>();
+  if (normalizedEmails.length === 0) return tokenMap;
 
-  const { data: existingToken, error: lookupError } = await supabase
+  const { data: existingTokens, error: lookupError } = await supabase
     .from('email_unsubscribe_tokens')
-    .select('token, used_at')
-    .eq('email', normalizedEmail)
-    .maybeSingle();
+    .select('email, token, used_at')
+    .in('email', normalizedEmails);
 
   if (lookupError) {
-    throw new Error(`Failed to look up unsubscribe token: ${lookupError.message}`);
+    throw new Error(`Failed to look up unsubscribe tokens: ${lookupError.message}`);
   }
 
-  if (existingToken?.token && !existingToken.used_at) {
-    return existingToken.token;
+  const haveValidToken = new Set<string>();
+  for (const row of existingTokens || []) {
+    if (row.token && !row.used_at) {
+      tokenMap.set(row.email, row.token);
+      haveValidToken.add(row.email);
+    }
   }
 
-  const token = generateToken();
-  const { error: upsertError } = await supabase
+  const missingEmails = normalizedEmails.filter((email) => !haveValidToken.has(email));
+  if (missingEmails.length === 0) return tokenMap;
+
+  const newRows = missingEmails.map((email) => ({ email, token: generateToken() }));
+  const { data: upserted, error: upsertError } = await supabase
     .from('email_unsubscribe_tokens')
-    .upsert({ email: normalizedEmail, token }, { onConflict: 'email' });
+    .upsert(newRows, { onConflict: 'email' })
+    .select('email, token');
 
   if (upsertError) {
-    throw new Error(`Failed to store unsubscribe token: ${upsertError.message}`);
+    throw new Error(`Failed to store unsubscribe tokens: ${upsertError.message}`);
   }
 
-  const { data: storedToken, error: storedTokenError } = await supabase
-    .from('email_unsubscribe_tokens')
-    .select('token')
-    .eq('email', normalizedEmail)
-    .single();
-
-  if (storedTokenError || !storedToken?.token) {
-    throw new Error(`Failed to confirm unsubscribe token storage: ${storedTokenError?.message || 'Unknown error'}`);
+  for (const row of upserted || []) {
+    tokenMap.set(row.email, row.token);
   }
 
-  return storedToken.token;
+  return tokenMap;
 }
 
 serve(async (req) => {
@@ -113,13 +124,25 @@ serve(async (req) => {
       });
     }
 
-    const { data: subscribers } = await supabase
-      .from('contacts')
-      .select('email, name')
-      .eq('subscribed_to_marketing', true);
+    const subscribers: { email: string; name: string | null }[] = [];
+    for (let from = 0; ; from += CONTACTS_PAGE_SIZE) {
+      const { data: page, error: pageError } = await supabase
+        .from('contacts')
+        .select('email, name')
+        .eq('subscribed_to_marketing', true)
+        .range(from, from + CONTACTS_PAGE_SIZE - 1);
+
+      if (pageError) {
+        throw new Error(`Failed to fetch contacts: ${pageError.message}`);
+      }
+      if (!page || page.length === 0) break;
+
+      subscribers.push(...page);
+      if (page.length < CONTACTS_PAGE_SIZE) break;
+    }
 
     const uniqueSubscribers = Array.from(
-      new Map((subscribers || []).map((subscriber) => [subscriber.email.toLowerCase(), subscriber])).values()
+      new Map(subscribers.map((subscriber) => [subscriber.email.toLowerCase(), subscriber])).values()
     );
 
     if (uniqueSubscribers.length === 0) {
@@ -146,40 +169,56 @@ serve(async (req) => {
     const suppressedSet = new Set((suppressedEmails || []).map((s) => s.email.toLowerCase()));
 
     let sentCount = 0;
-    for (const subscriber of uniqueSubscribers) {
-      const normalizedEmail = subscriber.email.toLowerCase();
-      if (suppressedSet.has(normalizedEmail)) continue;
+    const sendableSubscribers = uniqueSubscribers.filter(
+      (subscriber) => !suppressedSet.has(subscriber.email.toLowerCase())
+    );
 
-      const unsubscribeToken = await getOrCreateUnsubscribeToken(supabase, normalizedEmail);
-      const messageId = crypto.randomUUID();
-      const idempotencyKey = `campaign-${campaignId}-${normalizedEmail}`;
+    for (let i = 0; i < sendableSubscribers.length; i += SEND_BATCH_SIZE) {
+      const batch = sendableSubscribers.slice(i, i + SEND_BATCH_SIZE);
+      const emails = batch.map((s) => s.email.toLowerCase());
 
-      await supabase.from('email_send_log').insert({
-        message_id: messageId,
+      const tokenMap = await getOrCreateUnsubscribeTokensBatch(supabase, emails);
+      const messageIds = batch.map(() => crypto.randomUUID());
+      const queuedAt = new Date().toISOString();
+
+      const logRows = batch.map((subscriber, idx) => ({
+        message_id: messageIds[idx],
         template_name: `campaign-${campaignId}`,
         recipient_email: subscriber.email,
         status: 'pending',
-      });
+      }));
 
-      await supabase.rpc('enqueue_email', {
-        queue_name: 'transactional_emails',
-        payload: {
-          message_id: messageId,
-          to: subscriber.email,
-          from: `${SITE_NAME} <hello@${FROM_DOMAIN}>`,
-          sender_domain: SENDER_DOMAIN,
-          subject: campaign.subject,
-          html: htmlContent,
-          text: campaign.subject,
-          purpose: 'transactional',
-          label: `campaign-${campaignId}`,
-          idempotency_key: idempotencyKey,
-          unsubscribe_token: unsubscribeToken,
-          queued_at: new Date().toISOString(),
-        },
-      });
+      const { error: logInsertError } = await supabase.from('email_send_log').insert(logRows);
+      if (logInsertError) {
+        console.error('Failed to insert send log batch:', logInsertError.message);
+      }
 
-      sentCount++;
+      const results = await Promise.all(
+        batch.map((subscriber, idx) => {
+          const normalizedEmail = subscriber.email.toLowerCase();
+          const idempotencyKey = `campaign-${campaignId}-${normalizedEmail}`;
+
+          return supabase.rpc('enqueue_email', {
+            queue_name: 'transactional_emails',
+            payload: {
+              message_id: messageIds[idx],
+              to: subscriber.email,
+              from: `${SITE_NAME} <hello@${FROM_DOMAIN}>`,
+              sender_domain: SENDER_DOMAIN,
+              subject: campaign.subject,
+              html: htmlContent,
+              text: campaign.subject,
+              purpose: 'transactional',
+              label: `campaign-${campaignId}`,
+              idempotency_key: idempotencyKey,
+              unsubscribe_token: tokenMap.get(normalizedEmail),
+              queued_at: queuedAt,
+            },
+          });
+        })
+      );
+
+      sentCount += results.filter((r) => !r.error).length;
     }
 
     await supabase

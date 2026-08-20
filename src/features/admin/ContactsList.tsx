@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Trash2, Linkedin } from "lucide-react";
 import { fetchAllContacts, deleteContact, type ContactRecord } from "@/services/contacts";
+import { DEFAULT_PAGE_SIZE } from "@/services/pagination";
 import { runOptimisticAction, handleDatabaseError } from "@/services/db-helpers";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
+import { ListPager } from "@/components/ui/list-pager";
 import { toast } from "sonner";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
@@ -10,6 +12,8 @@ import LeadScoreBadge from "./LeadScoreBadge";
 
 const ContactsList = () => {
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalContacts, setTotalContacts] = useState(0);
   /**
    * Initial load uses a dedicated `isLoadingContacts` flag rather than the
    * shared `isSavingChanges` so the skeleton doesn't get hidden when the
@@ -40,16 +44,18 @@ const ContactsList = () => {
      * for a first-paint failure that the user can recover by refreshing.
      */
     (async () => {
+      setIsLoadingContacts(true);
       try {
-        const { data, error } = await fetchAllContacts();
+        const { data, error, count } = await fetchAllContacts(page, DEFAULT_PAGE_SIZE);
         if (error) toast.error(handleDatabaseError(error, "Failed to load contacts"));
         if (data) setContacts(data);
+        if (typeof count === "number") setTotalContacts(count);
       } finally {
         // ALWAYS reset, even if the network throws synchronously.
         setIsLoadingContacts(false);
       }
     })();
-  }, []);
+  }, [page]);
 
   /**
    * OPTIMISTIC DELETE
@@ -62,8 +68,14 @@ const ContactsList = () => {
     if (!confirm("Delete this contact?")) return;
     await runOptimisticAction({
       snapshot: () => contacts,
-      applyOptimistic: () => setContacts((prev) => prev.filter((c) => c.id !== id)),
-      rollback: (prev) => setContacts(prev),
+      applyOptimistic: () => {
+        setContacts((prev) => prev.filter((c) => c.id !== id));
+        setTotalContacts((prev) => Math.max(0, prev - 1));
+      },
+      rollback: (prev) => {
+        setContacts(prev);
+        setTotalContacts((prev) => prev + 1);
+      },
       action: async () => await deleteContact(id),
       successMessage: "Contact deleted",
     });
@@ -76,7 +88,7 @@ const ContactsList = () => {
       <div className="flex items-center justify-between">
         <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Contacts</h2>
         <span className="font-body text-xs text-muted-foreground">
-          {contacts.length} total · {marketingSubscribers.length} marketing opt-ins
+          {totalContacts} total · {marketingSubscribers.length} marketing opt-ins on this page
         </span>
       </div>
 
@@ -143,6 +155,7 @@ const ContactsList = () => {
               </div>
             </div>
           ))}
+          <ListPager page={page} pageSize={DEFAULT_PAGE_SIZE} total={totalContacts} onPageChange={setPage} />
         </div>
       )}
     </div>

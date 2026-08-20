@@ -9,6 +9,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { DEFAULT_PAGE_SIZE, pageRange } from "@/services/pagination";
 
 export interface LeadRecord {
   id: string;
@@ -22,8 +23,14 @@ export interface LeadRecord {
   updated_at: string;
 }
 
-export const fetchAllLeads = () =>
-  supabase.from("leads").select("*").order("created_at", { ascending: false });
+export const fetchAllLeads = (page = 1, pageSize = DEFAULT_PAGE_SIZE) => {
+  const [from, to] = pageRange(page, pageSize);
+  return supabase
+    .from("leads")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+};
 
 export const deleteLead = (id: string) =>
   supabase.from("leads").delete().eq("id", id);

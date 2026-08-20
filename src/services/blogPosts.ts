@@ -6,6 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { DEFAULT_PAGE_SIZE, pageRange } from "@/services/pagination";
 
 export interface BlogPostRecord {
   id: string;
@@ -30,8 +31,14 @@ export interface BlogPostRecord {
   ai_summary: string | null;
 }
 
-export const fetchAllBlogPosts = () =>
-  supabase.from("blog_posts").select("*").order("created_at", { ascending: false });
+export const fetchAllBlogPosts = (page = 1, pageSize = DEFAULT_PAGE_SIZE) => {
+  const [from, to] = pageRange(page, pageSize);
+  return supabase
+    .from("blog_posts")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+};
 
 export const fetchPublishedBlogPosts = () =>
   supabase

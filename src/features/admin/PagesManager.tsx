@@ -13,9 +13,11 @@ import {
   saveCmsPageDraft, saveCmsPageRows, togglePublishCmsPage,
   updateCmsPageMeta, duplicateCmsPage, RESERVED_SLUGS,
 } from "@/services/cmsPages";
+import { DEFAULT_PAGE_SIZE } from "@/services/pagination";
 import { fetchSection, publishSection } from "@/services/siteContent";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
+import { ListPager } from "@/components/ui/list-pager";
 
 /**
  * ════════════════════════════════════════════════════════════════════
@@ -101,6 +103,8 @@ interface Props {
 const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props) => {
   const [pages, setPages] = useState<CmsPage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pageNum, setPageNum] = useState(1);
+  const [totalCmsPages, setTotalCmsPages] = useState(0);
   const [editingPage, setEditingPage] = useState<CmsPage | null>(null);
   const [editingBlog, setEditingBlog] = useState(false);
   // Which error-page editor is open (null = none).
@@ -142,12 +146,14 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   const filteredPages = pageFilters.filteredItems;
 
   const load = async () => {
-    const { data } = await fetchAllCmsPages();
+    const { data, count } = await fetchAllCmsPages(pageNum, DEFAULT_PAGE_SIZE);
     setPages(((data as unknown) as CmsPage[]) || []);
+    if (typeof count === "number") setTotalCmsPages(count);
     setLoading(false);
   };
 
-  useEffect(() => { load(); loadBlogPage(); loadErrorPages(); }, []);
+  useEffect(() => { load(); }, [pageNum]);
+  useEffect(() => { loadBlogPage(); loadErrorPages(); }, []);
 
   const loadBlogPage = async () => {
     const { data } = await fetchSection("blog_page");
@@ -230,7 +236,9 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
       setNewTitle("");
       setNewSlug("");
       setShowCreate(false);
-      load();
+      // New pages sort to page 1 (newest first) — jump there so it's visible.
+      if (pageNum !== 1) setPageNum(1);
+      else load();
     }
   };
 
@@ -244,8 +252,14 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
     if (editingPage?.id === id) setEditingPage(null);
     return runOptimisticAction({
       snapshot: () => pages,
-      applyOptimistic: () => setPages((p) => p.filter((x) => x.id !== id)),
-      rollback: (prev) => setPages(prev),
+      applyOptimistic: () => {
+        setPages((p) => p.filter((x) => x.id !== id));
+        setTotalCmsPages((prev) => Math.max(0, prev - 1));
+      },
+      rollback: (prev) => {
+        setPages(prev);
+        setTotalCmsPages((prev) => prev + 1);
+      },
       action: () => deleteCmsPage(id),
       successMessage: "Deleted",
     });
@@ -805,6 +819,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
               </table>
             </div>
           )}
+          <ListPager page={pageNum} pageSize={DEFAULT_PAGE_SIZE} total={totalCmsPages} onPageChange={setPageNum} />
         </div>
       )}
     </div>

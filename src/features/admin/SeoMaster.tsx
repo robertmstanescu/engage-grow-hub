@@ -69,6 +69,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { Loader2, Search, Globe, Code2, Sparkles, AlertCircle, ExternalLink, ChevronDown, ChevronRight, Plus, Trash2, BarChart3, Building2 } from "lucide-react";
 import { fetchAllCmsPages, updateCmsPageMeta } from "@/services/cmsPages";
 import { fetchAllBlogPosts, updateBlogPost } from "@/services/blogPosts";
+import { fetchAllPages } from "@/services/pagination";
 import { fetchSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
@@ -332,7 +333,9 @@ const HeadingsAudit = () => {
   const load = useCallback(async () => {
     setLoading(true);
     // Two independent reads — kick them off in parallel for snappier load.
-    const [cmsRes, blogRes] = await Promise.all([fetchAllCmsPages(), fetchAllBlogPosts()]);
+    // The audit needs every row (not just one page), so page through each
+    // table's `.range()`-based fetcher instead of one unbounded query.
+    const [cmsRes, blogRes] = await Promise.all([fetchAllPages(fetchAllCmsPages), fetchAllPages(fetchAllBlogPosts)]);
 
     const cmsRows: HeadingRow[] = (cmsRes.data || []).map((p: any) => {
       // Prefer published rows, fall back to draft if nothing has shipped yet.

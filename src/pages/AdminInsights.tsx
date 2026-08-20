@@ -37,6 +37,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllBlogPosts } from "@/services/blogPosts";
 import { fetchAllCmsPages } from "@/services/cmsPages";
+import { fetchAllPages } from "@/services/pagination";
 import {
   countAnalyticsRows,
   countUniqueHumanVisitors,
@@ -150,8 +151,10 @@ const AdminInsights = () => {
         fetchConvertedJourneys(filters, 15),
         // `fetchRecentAnalyticsRows` intentionally NOT called — Live Feed
         // panel was deprecated to reduce DB reads. See file header.
-        fetchAllBlogPosts(),
-        fetchAllCmsPages(),
+        // The content audit below needs every row, so page through each
+        // table's `.range()`-based fetcher instead of one unbounded query.
+        fetchAllPages(fetchAllBlogPosts),
+        fetchAllPages(fetchAllCmsPages),
       ]);
 
       setHumanReach(uniqueHumans.count ?? 0);

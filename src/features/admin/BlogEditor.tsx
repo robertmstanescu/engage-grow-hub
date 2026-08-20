@@ -10,9 +10,11 @@ import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { SpinnerButton } from "@/components/ui/spinner-button";
 import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
 import { fetchAllBlogPosts, insertBlogPost, updateBlogPost, deleteBlogPost } from "@/services/blogPosts";
+import { DEFAULT_PAGE_SIZE } from "@/services/pagination";
 import { fetchSection } from "@/services/siteContent";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
+import { ListPager } from "@/components/ui/list-pager";
 import LeadMagnetSection from "./LeadMagnetSection";
 import BlogPostBuilder from "./builder/BlogPostBuilder";
 
@@ -54,6 +56,8 @@ interface BlogPost {
 const BlogEditor = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPosts, setTotalPosts] = useState(0);
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [previewing, setPreviewing] = useState(false);
@@ -76,12 +80,13 @@ const BlogEditor = () => {
 
   const fetchPosts = async () => {
     setPostsLoading(true);
-    const { data } = await fetchAllBlogPosts();
+    const { data, count } = await fetchAllBlogPosts(page, DEFAULT_PAGE_SIZE);
     if (data) setPosts(data as BlogPost[]);
+    if (typeof count === "number") setTotalPosts(count);
     setPostsLoading(false);
   };
 
-  useEffect(() => { fetchPosts(); }, []);
+  useEffect(() => { fetchPosts(); }, [page]);
 
   const handleNew = () => {
     setIsNew(true);
@@ -158,7 +163,9 @@ const BlogEditor = () => {
     if (result !== null) {
       setEditing(null);
       setIsNew(false);
-      fetchPosts();
+      // New posts sort to page 1 (newest first) — jump there so it's visible.
+      if (isNew && page !== 1) setPage(1);
+      else fetchPosts();
     }
   };
 
@@ -167,8 +174,14 @@ const BlogEditor = () => {
     if (!confirm("Delete this post?")) return;
     return runOptimisticAction({
       snapshot: () => posts,
-      applyOptimistic: () => setPosts((p) => p.filter((x) => x.id !== id)),
-      rollback: (prev) => setPosts(prev),
+      applyOptimistic: () => {
+        setPosts((p) => p.filter((x) => x.id !== id));
+        setTotalPosts((prev) => Math.max(0, prev - 1));
+      },
+      rollback: (prev) => {
+        setPosts(prev);
+        setTotalPosts((prev) => prev + 1);
+      },
       action: () => deleteBlogPost(id),
       successMessage: "Post deleted",
     });
@@ -607,6 +620,7 @@ const BlogEditor = () => {
               </div>
             </div>
           ))}
+          <ListPager page={page} pageSize={DEFAULT_PAGE_SIZE} total={totalPosts} onPageChange={setPage} />
         </div>
       )}
     </div>

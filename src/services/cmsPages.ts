@@ -12,6 +12,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Json } from "@/integrations/supabase/types";
 import type { PageRow } from "@/types/rows";
+import { DEFAULT_PAGE_SIZE, pageRange } from "@/services/pagination";
 
 /** Strict aliases for the generated `cms_pages` row shapes. */
 type CmsPageRow = Database["public"]["Tables"]["cms_pages"]["Row"];
@@ -37,8 +38,14 @@ export interface CmsPage extends Omit<CmsPageRow, "page_rows" | "draft_page_rows
   draft_page_rows: PageRow[] | null;
 }
 
-export const fetchAllCmsPages = () =>
-  supabase.from("cms_pages").select("*").order("created_at", { ascending: false });
+export const fetchAllCmsPages = (page = 1, pageSize = DEFAULT_PAGE_SIZE) => {
+  const [from, to] = pageRange(page, pageSize);
+  return supabase
+    .from("cms_pages")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+};
 
 export const fetchPublishedCmsPageRefs = () =>
   supabase.from("cms_pages").select("slug, title").eq("status", "published");

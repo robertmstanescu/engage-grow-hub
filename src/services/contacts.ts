@@ -6,6 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { DEFAULT_PAGE_SIZE, pageRange } from "@/services/pagination";
 
 export interface ContactRecord {
   id: string;
@@ -36,8 +37,14 @@ export interface ContactRecord {
   zero_party_data: unknown;
 }
 
-export const fetchAllContacts = () =>
-  supabase.from("contacts").select("*").order("created_at", { ascending: false });
+export const fetchAllContacts = (page = 1, pageSize = DEFAULT_PAGE_SIZE) => {
+  const [from, to] = pageRange(page, pageSize);
+  return supabase
+    .from("contacts")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+};
 
 export const deleteContact = (id: string) =>
   supabase.from("contacts").delete().eq("id", id);

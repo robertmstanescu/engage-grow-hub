@@ -18,8 +18,10 @@ import { EmailBlock, createBlock, blocksToHtml } from "./email-blocks";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { SpinnerButton } from "@/components/ui/spinner-button";
 import ListFilters from "@/components/ui/list-filters";
+import { ListPager } from "@/components/ui/list-pager";
 import { useListFilters } from "@/hooks/useListFilters";
 import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
+import { DEFAULT_PAGE_SIZE } from "@/services/pagination";
 import {
   fetchAllCampaigns,
   insertCampaign,
@@ -32,6 +34,8 @@ import {
 const EmailCampaigns = () => {
   const [campaigns, setCampaigns] = useState<CampaignRecord[]>([]);
   const [isLoadingList, setIsLoadingList] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalCampaigns, setTotalCampaigns] = useState(0);
   const [editing, setEditing] = useState<CampaignRecord | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [subject, setSubject] = useState("");
@@ -56,19 +60,21 @@ const EmailCampaigns = () => {
   });
 
   const reloadCampaigns = async () => {
-    const result = await fetchAllCampaigns();
+    setIsLoadingList(true);
+    const result = await fetchAllCampaigns(page, DEFAULT_PAGE_SIZE);
     if (result.error) {
       toast.error("Failed to load campaigns");
       setIsLoadingList(false);
       return;
     }
     setCampaigns((result.data as CampaignRecord[]) || []);
+    if (typeof result.count === "number") setTotalCampaigns(result.count);
     setIsLoadingList(false);
   };
 
   useEffect(() => {
     reloadCampaigns();
-  }, []);
+  }, [page]);
 
   const handleNew = () => {
     setIsNew(true);
@@ -122,7 +128,9 @@ const EmailCampaigns = () => {
     if (result !== null) {
       setEditing(null);
       setIsNew(false);
-      reloadCampaigns();
+      // New campaigns sort to page 1 (newest first) — jump there so it's visible.
+      if (isNew && page !== 1) setPage(1);
+      else reloadCampaigns();
     }
   };
 
@@ -148,8 +156,14 @@ const EmailCampaigns = () => {
     // Optimistic delete — the row disappears instantly, restored only on failure.
     await runOptimisticAction({
       snapshot: () => campaigns,
-      applyOptimistic: () => setCampaigns((c) => c.filter((x) => x.id !== id)),
-      rollback: (prev) => setCampaigns(prev),
+      applyOptimistic: () => {
+        setCampaigns((c) => c.filter((x) => x.id !== id));
+        setTotalCampaigns((prev) => Math.max(0, prev - 1));
+      },
+      rollback: (prev) => {
+        setCampaigns(prev);
+        setTotalCampaigns((prev) => prev + 1);
+      },
       action: () => deleteCampaign(id),
       successMessage: "Campaign deleted",
     });
@@ -291,6 +305,7 @@ const EmailCampaigns = () => {
               </div>
             </div>
           ))}
+          <ListPager page={page} pageSize={DEFAULT_PAGE_SIZE} total={totalCampaigns} onPageChange={setPage} />
         </div>
       )}
     </div>
