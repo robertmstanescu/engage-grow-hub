@@ -184,3 +184,19 @@ export const getAttributionForPayload = (): AttributionRecord | null => {
   // Return a shallow copy so callers can't mutate the cached blob.
   return { ...attr };
 };
+
+/**
+ * Wipe any previously captured attribution. Called when the visitor
+ * rejects or withdraws consent (see `setConsentStatus` in
+ * services/analytics.ts) — accepting, getting attributed to a campaign,
+ * then later withdrawing shouldn't leave that campaign data sitting in
+ * localStorage indefinitely with no way to clear it.
+ */
+export const clearAttribution = (): void => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* private mode — ignore */
+  }
+};

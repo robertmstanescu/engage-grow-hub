@@ -38,9 +38,15 @@ type ViewMode = "compact" | "preferences" | "settings";
  */
 const COOKIE_INVENTORY: { name: string; purpose: string; lifespan: string }[] = [
   {
+    name: "Anonymous Page-View ID",
+    purpose:
+      "Set on every visit, regardless of your choice below — it's what lets us count how many separate people visit (instead of over-counting one person who changes networks). It's a random ID stored on this device only, never sent anywhere with your name or email attached, and we can't use it to identify you.",
+    lifespan: "Until you clear your browser storage",
+  },
+  {
     name: "Visitor ID",
     purpose:
-      "A randomly generated ID that lets us connect a download or contact form back to the article that brought you to the site, so we can see which content is genuinely useful. It contains no personal information.",
+      "Only set if you accept below. Lets us connect a download or contact form back to the campaign or article that brought you to the site, so we can see which content is genuinely useful. Cleared immediately if you reject or later withdraw consent.",
     lifespan: "12 months",
   },
   {
@@ -186,9 +192,9 @@ const CookieConsent = () => {
                 />
                 <span className="font-body text-mini">
                   {isAccepted
-                    ? "Accepted — analytics cookies are active."
+                    ? "Accepted — campaign attribution is active, on top of the anonymous page-view counting that's always on."
                     : currentStatus === "rejected"
-                    ? "Rejected — no analytics cookies are set."
+                    ? "Rejected — no campaign or marketing tracking is stored. Anonymous, non-identifying page-view counts still happen (see below)."
                     : "Not yet decided."}
                 </span>
               </div>
@@ -206,7 +212,7 @@ const CookieConsent = () => {
 
             {/* Cookie inventory — one card per stored value */}
             <p className="font-body text-micro uppercase tracking-wider opacity-60 mb-2">
-              What we store when you accept
+              What we store, and when
             </p>
             <ul className="space-y-2.5 mb-4">
               {COOKIE_INVENTORY.map((c) => (

@@ -84,6 +84,12 @@ export function setConsentStatus(status: "accepted" | "rejected"): void {
     ensureVisitorIdCookie();
   } else {
     clearVisitorIdCookie();
+    // Withdrawing (or never having granted) consent should also wipe any
+    // marketing attribution (UTM/GCLID/FBCLID) already captured while
+    // previously accepted — see clearAttribution()'s own doc comment.
+    // Dynamic import avoids a circular dependency: attribution.ts doesn't
+    // import from here, but this keeps it that way structurally too.
+    import("./attribution").then(({ clearAttribution }) => clearAttribution());
   }
 }
 

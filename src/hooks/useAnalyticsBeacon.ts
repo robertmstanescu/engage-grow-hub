@@ -1,8 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   detectSearchEngine,
+  getConsentStatus,
   getStableVisitorId,
   parseUserAgentForAnalytics,
 } from "@/services/analytics";
@@ -29,8 +30,22 @@ import { useAdminStatus } from "@/hooks/useAdminStatus";
  * Marketing attribution (Epic 4 / US 4.1) — captureAttribution() runs
  * BEFORE the admin-route guard so an inbound paid click that happens to
  * land on /admin?utm_…=… (e.g. an internal QA link) still seeds
- * localStorage. The captured blob is then attached to every analytics
- * beacon so downstream dashboards can attribute revenue to campaigns.
+ * localStorage, PROVIDED consent has actually been accepted (see below).
+ * The captured blob is then attached to every analytics beacon so
+ * downstream dashboards can attribute revenue to campaigns.
+ *
+ * WHY ATTRIBUTION CAPTURE IS CONSENT-GATED BUT THE PLAIN BEACON ISN'T —
+ * a UTM/GCLID/FBCLID is a tracking identifier tied to an ad platform
+ * (Google/Meta can correlate it back to a specific ad click), which is
+ * squarely what GDPR/ePrivacy consent requirements are about. The plain
+ * pageview beacon carries no such identifier — just a path, device/
+ * browser class and the anonymous `mh_visitor_id` (see the note below) —
+ * so it stays on for aggregate traffic counts regardless of consent, the
+ * same way a server access log would. Only capture is gated: it only
+ * ever runs once consent is "accepted", and a reject/withdraw wipes
+ * whatever was already captured (see `setConsentStatus` in
+ * services/analytics.ts) so a visitor who accepts, gets attributed, then
+ * later withdraws isn't still carrying that campaign data around.
  *
  * ADMIN SELF-TRAFFIC — the /admin path-prefix check below only filters
  * the admin PANEL itself. It does nothing for an admin's own visits to
@@ -52,13 +67,28 @@ export function useAnalyticsBeacon(): void {
   const { isAdmin, loading: adminStatusLoading } = useAdminStatus();
   // Track the last logged path to deduplicate StrictMode double-effects.
   const lastLoggedRef = useRef<string | null>(null);
+  // Re-read on every mount; kept as state (not a plain read inside the
+  // effect) so the CookieConsent panel's "tmc:consent-changed" event can
+  // unlock capture immediately when someone accepts mid-session, without
+  // requiring a route change to re-run the effect.
+  // Named to avoid colliding, even just visually, with services/analytics.ts's
+  // exported `setConsentStatus` (which writes the user's choice) — this
+  // setter only updates this component's own local mirror of it.
+  const [consentStatus, setLocalConsentStatus] = useState(getConsentStatus);
+
+  useEffect(() => {
+    const onConsentChanged = () => setLocalConsentStatus(getConsentStatus());
+    window.addEventListener("tmc:consent-changed", onConsentChanged);
+    return () => window.removeEventListener("tmc:consent-changed", onConsentChanged);
+  }, []);
 
   useEffect(() => {
     // Capture attribution FIRST — must run even on /admin routes so an
     // inbound campaign URL (?utm_…) is still recorded if it happens to
-    // land there. Idempotent: only writes when there are new params or
-    // nothing was stored yet.
-    captureAttribution();
+    // land there, PROVIDED the visitor has actually accepted (see the
+    // file header for why this specific piece is gated). Idempotent:
+    // only writes when there are new params or nothing was stored yet.
+    if (consentStatus === "accepted") captureAttribution();
 
     // Admin routes are noise — the table would explode with our own clicks.
     if (pathname.startsWith("/admin")) return;
@@ -114,5 +144,5 @@ export function useAnalyticsBeacon(): void {
     } catch {
       // Synchronous throw (extremely rare) — also silent.
     }
-  }, [pathname, isAdmin, adminStatusLoading]);
+  }, [pathname, isAdmin, adminStatusLoading, consentStatus]);
 }
