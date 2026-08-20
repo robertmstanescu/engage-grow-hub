@@ -200,15 +200,30 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   // re-renders of the entire admin tree. 1000ms gives the admin time
   // to finish a sentence before the global cascade fires. See file
   // header for the FOCUS PROTECTION rationale.
-  const debouncedEmit = useDebouncedCallback((html: string) => {
-    onChange(html);
+  //
+  // Font-size normalization happens HERE — not synchronously on every
+  // keystroke in emitChangeOnInput — via normalizeRichTextHtml, which
+  // safely operates on a detached <template> clone rather than the
+  // live, focused contentEditable DOM. Replacing a <font> node in the
+  // LIVE DOM mid-keystroke (e.g. via normalizeRichTextContainerFontSizes)
+  // collapses the browser's selection, forcing the admin to click back
+  // in after every character. So the live DOM is only touched when the
+  // normalized markup actually differs AND the editor isn't currently
+  // focused — mirroring the FOCUS PROTECTION guard in the useEffect
+  // below — with the caret preserved across that write.
+  const debouncedEmit = useDebouncedCallback(() => {
+    const raw = editorRef.current?.innerHTML || "";
+    const normalized = normalizeRichTextHtml(raw);
+    if (editorRef.current && normalized !== raw && document.activeElement !== editorRef.current) {
+      saveSelection();
+      editorRef.current.innerHTML = normalized;
+      restoreSelection();
+    }
+    onChange(normalized);
   }, 1000);
 
   const emitChangeOnInput = useCallback(() => {
-    if (editorRef.current) {
-      normalizeRichTextContainerFontSizes(editorRef.current);
-    }
-    debouncedEmit(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
+    debouncedEmit();
   }, [debouncedEmit]);
 
   const saveSelection = useCallback(() => {
