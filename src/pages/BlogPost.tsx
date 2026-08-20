@@ -37,7 +37,7 @@ const BlogPost = () => {
   const [searchParams] = useSearchParams();
   const [article, setArticle] = useState<BlogArticle | null>(null);
   const [loading, setLoading] = useState(true);
-  const { getCategoryColors } = useTagColors();
+  const { getCategoryColors, getTagColors } = useTagColors();
   const isPreview = searchParams.get("preview") === "draft";
   const previewKey = searchParams.get("previewKey") || slug || "";
 
@@ -134,7 +134,7 @@ const BlogPost = () => {
       <Navbar />
       <article>
         {article.cover_image && (
-          <div className="relative h-64 md:h-80 lg:h-96 overflow-hidden">
+          <div className="relative w-full overflow-hidden aspect-video max-h-[70vh]">
             <img src={article.cover_image} alt={article.cover_image_alt || `${article.title} — cover image`} className="w-full h-full object-cover" />
             <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 30%, hsl(var(--background)))" }} />
           </div>
@@ -153,6 +153,22 @@ const BlogPost = () => {
                 </span>
               </div>
               <h1 className="font-display text-2xl md:text-4xl lg:text-5xl font-black leading-tight" style={{ color: "hsl(var(--foreground))" }}>{article.title}</h1>
+              {article.tags && article.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-4">
+                  {article.tags.map((tag) => {
+                    const tc = getTagColors(tag);
+                    return (
+                      <span
+                        key={tag}
+                        className="font-body text-[10px] tracking-[0.12em] uppercase px-2.5 py-1 rounded-full font-medium"
+                        style={{ backgroundColor: tc.bgColor, color: tc.textColor }}
+                      >
+                        {tag}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
               {article.author_name && (
                 <div className="flex items-center gap-3 mt-6">
                   {article.author_image && <img src={article.author_image} alt={article.author_image_alt || article.author_name} className="w-10 h-10 rounded-full object-cover" />}
@@ -177,7 +193,7 @@ const BlogPost = () => {
             }
             return (
               <div
-                className="max-w-[700px] mx-auto prose prose-sm md:prose-base prose-headings:font-display prose-headings:text-[hsl(260_20%_10%)] prose-p:text-[hsl(260_20%_10%_/_0.75)] prose-p:leading-[1.8] prose-a:text-[hsl(280_55%_24%)] prose-img:rounded-lg"
+                className="max-w-[700px] mx-auto prose prose-sm md:prose-base prose-headings:font-display prose-headings:text-[hsl(260_20%_10%)] prose-p:text-[hsl(260_20%_10%_/_0.75)] prose-p:leading-[1.8] prose-p:my-2 prose-a:text-[hsl(280_55%_24%)] prose-img:rounded-lg"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
               />
             );

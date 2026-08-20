@@ -1,16 +1,16 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { sanitizeHtml } from "@/services/sanitize";
 import { toast } from "sonner";
-import { Trash2, Edit, Plus, Eye, ArrowLeft, Upload } from "lucide-react";
+import { Trash2, Edit, Plus, Eye, ArrowLeft } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { patchLivePreviewState } from "@/services/livePreview";
 import ImageAltInput from "./ImageAltInput";
+import ImagePickerField from "./ImagePickerField";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { SpinnerButton } from "@/components/ui/spinner-button";
-import { runDbAction, runOptimisticAction, handleDatabaseError } from "@/services/db-helpers";
+import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
 import { fetchAllBlogPosts, insertBlogPost, updateBlogPost, deleteBlogPost } from "@/services/blogPosts";
 import { fetchSection } from "@/services/siteContent";
-import { uploadEditorImage } from "@/services/mediaStorage";
 import { useListFilters } from "@/hooks/useListFilters";
 import ListFilters from "@/components/ui/list-filters";
 import LeadMagnetSection from "./LeadMagnetSection";
@@ -60,8 +60,6 @@ const BlogEditor = () => {
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
-  const authorInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -116,25 +114,6 @@ const BlogEditor = () => {
     });
   };
 
-  const handleCoverUpload = useCallback(async (file: File) => {
-    if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
-    if (file.size > 5 * 1024 * 1024) { toast.error("Max 5MB"); return; }
-
-    const { publicUrl, error } = await uploadEditorImage("covers", file);
-    if (error || !publicUrl) { toast.error(handleDatabaseError(error, "Upload failed")); return; }
-    setForm((f) => ({ ...f, cover_image: publicUrl, og_image: f.og_image || publicUrl }));
-    toast.success("Cover image uploaded");
-  }, []);
-
-  const handleAuthorImageUpload = useCallback(async (file: File) => {
-    if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
-    if (file.size > 2 * 1024 * 1024) { toast.error("Max 2MB"); return; }
-
-    const { publicUrl, error } = await uploadEditorImage("authors", file);
-    if (error || !publicUrl) { toast.error(handleDatabaseError(error, "Upload failed")); return; }
-    setForm((f) => ({ ...f, author_image: publicUrl }));
-    toast.success("Author image uploaded");
-  }, []);
 
   const handleSave = async (status: string) => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
@@ -272,7 +251,7 @@ const BlogEditor = () => {
 
         <div className="rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
           {form.cover_image && (
-            <div className="relative h-48 md:h-64 overflow-hidden">
+            <div className="relative w-full overflow-hidden aspect-video max-h-[70vh]">
               <img src={form.cover_image} alt="" className="w-full h-full object-cover" />
               <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 40%, hsl(var(--primary)))" }} />
             </div>
@@ -304,7 +283,7 @@ const BlogEditor = () => {
 
           <div className="py-8 px-6" style={{ backgroundColor: "hsl(var(--background))" }}>
             <div
-              className="max-w-[600px] mx-auto prose prose-sm prose-headings:font-display prose-headings:text-secondary prose-p:text-foreground/80 prose-p:leading-[1.8] prose-a:text-primary prose-img:rounded-lg"
+              className="max-w-[600px] mx-auto prose prose-sm prose-headings:font-display prose-headings:text-secondary prose-p:text-foreground/80 prose-p:leading-[1.8] prose-p:my-2 prose-a:text-primary prose-img:rounded-lg"
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(form.content || "<p>No content yet.</p>") }}
             />
           </div>
@@ -358,54 +337,13 @@ const BlogEditor = () => {
         </div>
 
         {/* Cover image */}
-        <div>
-          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">Cover Image</label>
-          {form.cover_image ? (
-            <div className="relative rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
-              <img src={form.cover_image} alt="" className="w-full h-40 object-cover" />
-              <div className="absolute bottom-2 right-2 flex gap-1.5">
-                <button
-                  onClick={() => coverInputRef.current?.click()}
-                  className="font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full backdrop-blur-sm hover:opacity-80 transition-opacity"
-                  style={{ backgroundColor: "hsl(var(--card) / 0.9)", color: "hsl(var(--foreground))" }}>
-                  Replace
-                </button>
-                <button
-                  onClick={() => setForm({ ...form, cover_image: "" })}
-                  className="font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full backdrop-blur-sm hover:opacity-80 transition-opacity"
-                  style={{ backgroundColor: "hsl(var(--destructive) / 0.9)", color: "hsl(var(--destructive-foreground))" }}>
-                  Remove
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => coverInputRef.current?.click()}
-              className="w-full py-8 rounded-lg border-2 border-dashed flex flex-col items-center gap-2 hover:opacity-70 transition-opacity"
-              style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
-              <Upload size={20} />
-              <span className="font-body text-xs">Upload cover image</span>
-            </button>
-          )}
-          {form.cover_image && (
-            <ImageAltInput
-              value={form.cover_image_alt}
-              onChange={(v) => setForm({ ...form, cover_image_alt: v })}
-              label="Cover Image Alt Text (SEO)"
-            />
-          )}
-          <input
-            ref={coverInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleCoverUpload(file);
-              e.target.value = "";
-            }}
-          />
-        </div>
+        <ImagePickerField
+          label="Cover Image"
+          value={form.cover_image}
+          onChange={(url) => setForm((f) => ({ ...f, cover_image: url, og_image: f.og_image || url }))}
+          altValue={form.cover_image_alt}
+          onAltChange={(v) => setForm((f) => ({ ...f, cover_image_alt: v }))}
+        />
 
         <input
           placeholder="Title"
@@ -445,54 +383,24 @@ const BlogEditor = () => {
         </p>
 
         {/* Author */}
-        <div>
-          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">Author</label>
-          <div className="flex items-center gap-3">
-            {form.author_image ? (
-              <div className="relative">
-                <img src={form.author_image} alt="" className="w-12 h-12 rounded-full object-cover" />
-                <button
-                  onClick={() => setForm({ ...form, author_image: "" })}
-                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px]"
-                  style={{ backgroundColor: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
-                  ×
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => authorInputRef.current?.click()}
-                className="w-12 h-12 rounded-full border-2 border-dashed flex items-center justify-center hover:opacity-70 transition-opacity"
-                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
-                <Upload size={16} />
-              </button>
-            )}
-            <input
-              type="text"
-              placeholder="Author name"
-              value={form.author_name}
-              onChange={(e) => setForm({ ...form, author_name: e.target.value })}
-              className="flex-1 px-4 py-3 rounded-lg font-body text-sm border"
-              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
+        <div className="flex items-end gap-3">
+          <div className="flex-1 min-w-0">
+            <ImagePickerField
+              label="Author Image"
+              value={form.author_image}
+              onChange={(url) => setForm((f) => ({ ...f, author_image: url }))}
+              altValue={form.author_image_alt}
+              onAltChange={(v) => setForm((f) => ({ ...f, author_image_alt: v }))}
             />
           </div>
           <input
-            ref={authorInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleAuthorImageUpload(file);
-              e.target.value = "";
-            }}
+            type="text"
+            placeholder="Author name"
+            value={form.author_name}
+            onChange={(e) => setForm({ ...form, author_name: e.target.value })}
+            className="flex-1 px-4 py-3 rounded-lg font-body text-sm border"
+            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
           />
-          {form.author_image && (
-            <ImageAltInput
-              value={form.author_image_alt}
-              onChange={(v) => setForm({ ...form, author_image_alt: v })}
-              label="Author Image Alt Text (SEO)"
-            />
-          )}
         </div>
 
         {/* Tags */}
