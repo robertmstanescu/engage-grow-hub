@@ -470,7 +470,44 @@ const Navbar = () => {
             className="lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-6"
             style={{ backgroundColor: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" }}
           >
-            {allItems.map((item) => {
+            {renderedItems.map((item) => {
+              if (item.kind === "dropdown") {
+                return (
+                  <div key={item.label} className="flex flex-col items-center gap-3">
+                    <a
+                      href={item.href || "#"}
+                      onClick={(e) => (item.href ? handleNavClick(e, item.href) : e.preventDefault())}
+                      className="mobile-nav-link font-body text-sm uppercase tracking-[0.2em] transition-colors duration-200"
+                      style={{
+                        color: location.pathname.startsWith("/services")
+                          ? "hsl(var(--primary))"
+                          : "hsl(var(--foreground) / 0.65)",
+                      }}
+                    >
+                      {item.label}
+                    </a>
+                    <div className="flex flex-col items-center gap-2">
+                      {item.items.map((sub) => {
+                        const subActive = isActive(sub.href);
+                        return (
+                          <a
+                            key={sub.href + sub.label}
+                            href={sub.href}
+                            onClick={(e) => handleNavClick(e, sub.href)}
+                            data-active={subActive}
+                            className="mobile-nav-link font-body text-xs tracking-[0.12em] transition-colors duration-200"
+                            style={{
+                              color: subActive ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.55)",
+                            }}
+                          >
+                            {sub.label}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
               const active = isActive(item.href);
               return (
                 <a
@@ -485,6 +522,7 @@ const Navbar = () => {
                 </a>
               );
             })}
+
             {ctaHref && ctaText ? (
               <a
                 href={ctaHref}
