@@ -900,6 +900,15 @@ const AdminDashboard = ({ session }: Props) => {
     setSelectedSectionId(null);
   };
 
+  // ── Exit the full-screen builder (CmsPageBuilder / SiteEditor) back
+  // to the dashboard overview. Both adapters guard the call with their
+  // own unsaved-changes confirm before invoking this — see
+  // confirmUnsavedExit in components/ConfirmDialog.tsx. ──
+  const handleExitBuilder = useCallback(() => {
+    setCmsPage(null);
+    setActiveTab("overview");
+  }, []);
+
   const isSiteTab = activeTab === "site";
   const isMainPage = !cmsPage;
   // EPIC 14–17 + US 17.x — when the admin is on the Site tab, mount the
@@ -1401,7 +1410,9 @@ const AdminDashboard = ({ session }: Props) => {
             // EPIC 14–17 + US 17.x — new three-pane builder shell for
             // both the main page (SiteEditor) and CMS pages (CmsPageBuilder).
             <div className="flex-1 overflow-hidden">
-              {cmsPage ? <CmsPageBuilder pageId={cmsPage.id} /> : <SiteEditor />}
+              {cmsPage
+                ? <CmsPageBuilder pageId={cmsPage.id} onExit={handleExitBuilder} />
+                : <SiteEditor onExit={handleExitBuilder} />}
             </div>
           ) : isSiteTab ? (
             <div className="flex-1 bg-card overflow-hidden flex flex-col">

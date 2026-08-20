@@ -25,6 +25,7 @@ import PageBuilderShell from "./PageBuilderShell";
 import RevisionHistoryPanel from "./RevisionHistoryPanel";
 import SchedulePublishPanel from "./SchedulePublishPanel";
 import { useUnloadGuard } from "@/hooks/useUnloadGuard";
+import { confirmUnsavedExit } from "@/components/ConfirmDialog";
 
 interface CmsPageRecord {
   id: string;
@@ -39,9 +40,11 @@ interface CmsPageRecord {
 
 interface Props {
   pageId: string;
+  /** Exit the builder back to the admin dashboard (Page Manager). */
+  onExit?: () => void;
 }
 
-const CmsPageBuilder = ({ pageId }: Props) => {
+const CmsPageBuilder = ({ pageId, onExit }: Props) => {
   const [record, setRecord] = useState<CmsPageRecord | null>(null);
   const [draftRows, setDraftRows] = useState<PageRow[]>([]);
   const [seoTitle, setSeoTitle] = useState("");
@@ -107,6 +110,14 @@ const CmsPageBuilder = ({ pageId }: Props) => {
   // Debug Story 4.2 — block tab close / reload while the local draft
   // hasn't been pushed to the database yet.
   useUnloadGuard(hasChanges);
+
+  /** Guard the exit with the same unsaved-changes confirm used
+   *  elsewhere (Debug Story 4.1) before handing off to the dashboard's
+   *  own navigation logic. */
+  const handleExit = useCallback(async () => {
+    if (hasChanges && !(await confirmUnsavedExit())) return;
+    onExit?.();
+  }, [hasChanges, onExit]);
 
   /** US 2.3 — Slug uniqueness guard. The slug is the route, so two CMS
    *  pages can't share one. We check the table for collisions before
@@ -246,6 +257,7 @@ const CmsPageBuilder = ({ pageId }: Props) => {
   return (
     <PageBuilderShell
       title={pageTitle || pageSlug || "Untitled page"}
+      onExit={onExit ? handleExit : undefined}
       pageTitle={pageTitle}
       onPageTitleChange={setPageTitle}
       pageSlug={pageSlug}

@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { confirmUnsavedExit } from "@/components/ConfirmDialog";
 
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import RowsManager from "./site-editor/RowsManager";
@@ -224,7 +225,12 @@ const SNAP_BACK_ANIMATION: DropAnimation = {
   }),
 };
 
-const SiteEditor = () => {
+interface Props {
+  /** Exit the builder back to the admin dashboard overview. */
+  onExit?: () => void;
+}
+
+const SiteEditor = ({ onExit }: Props) => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [activeSection, setActiveSection] = useState<"page_rows" | "main_page_seo">("page_rows");
   const [saving, setSaving] = useState<string | null>(null);
@@ -415,6 +421,14 @@ const SiteEditor = () => {
 
   const hasChanges = sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
 
+  /** Guard the exit with the same unsaved-changes confirm used
+   *  elsewhere (Debug Story 4.1) before handing off to the dashboard's
+   *  own navigation logic. */
+  const handleExit = useCallback(async () => {
+    if (hasChanges && !(await confirmUnsavedExit())) return;
+    onExit?.();
+  }, [hasChanges, onExit]);
+
   // Ensure page_rows and main_page_seo sections exist in state
   useEffect(() => {
     if (sections.length > 0) {
@@ -530,6 +544,7 @@ const SiteEditor = () => {
           One global Save Draft button (saves every dirty section in a
           single batch). Accents itself when there are unsaved changes. */}
       <AdminBuilderToolbar
+        onExit={onExit ? handleExit : undefined}
         viewport={viewport}
         onViewportChange={setViewport}
         previewMode={previewMode}

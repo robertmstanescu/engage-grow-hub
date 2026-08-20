@@ -1,4 +1,4 @@
-import { Monitor, Tablet, Smartphone, Eye, Pencil, Save, Send, FileText, ExternalLink, EyeOff } from "lucide-react";
+import { Monitor, Tablet, Smartphone, Eye, Pencil, Save, Send, FileText, ExternalLink, EyeOff, ArrowLeft } from "lucide-react";
 
 /**
  * Viewport modes drive the Canvas wrapper width in SiteEditor.
@@ -27,6 +27,14 @@ export type ViewportMode = "desktop" | "tablet" | "mobile";
 export type PreviewMode = "edit" | "preview";
 
 interface AdminBuilderToolbarProps {
+  /**
+   * Exit the full-screen builder back to the admin dashboard. The
+   * dashboard's own sidebar/topbar nav sits BEHIND this builder's
+   * fixed-position overlay, so this is the only reachable way out
+   * while editing. Omit to hide the button entirely.
+   */
+  onExit?: () => void;
+
   viewport: ViewportMode;
   onViewportChange: (v: ViewportMode) => void;
 
@@ -72,6 +80,7 @@ const MODES: { key: PreviewMode; label: string; Icon: typeof Pencil }[] = [
 ];
 
 const AdminBuilderToolbar = ({
+  onExit,
   viewport,
   onViewportChange,
   previewMode,
@@ -114,8 +123,20 @@ const AdminBuilderToolbar = ({
         gridTemplateColumns: "1fr auto 1fr",
       }}
     >
-      {/* LEFT — title + dirty pill */}
+      {/* LEFT — exit button + title + dirty pill */}
       <div className="flex items-center gap-3 min-w-0">
+        {onExit && (
+          <button
+            type="button"
+            onClick={onExit}
+            title="Back to Dashboard"
+            aria-label="Back to Dashboard"
+            className="flex items-center gap-1.5 flex-shrink-0 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"
+            style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
+          >
+            <ArrowLeft size={13} /> <span className="hidden sm:inline">Dashboard</span>
+          </button>
+        )}
         <h2
           className="font-display text-sm font-bold truncate"
           style={{ color: "hsl(var(--secondary))" }}

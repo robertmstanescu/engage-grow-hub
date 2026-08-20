@@ -268,6 +268,16 @@ export interface PageBuilderShellProps {
   /** Header label for the toolbar (e.g. "Edit Blog Post · Hello World"). */
   title: string;
 
+  /**
+   * Exit the full-screen builder back to the admin dashboard. Rendered
+   * as a Back button in the toolbar — the dashboard's own nav sits
+   * behind this shell's fixed-position overlay, so without this the
+   * admin has no way out. The adapter (CmsPageBuilder / BlogPostBuilder)
+   * is responsible for guarding this with an unsaved-changes confirm
+   * before actually navigating away.
+   */
+  onExit?: () => void;
+
   /** Page rows (working draft). */
   pageRows: PageRow[];
   onRowsChange: (rows: PageRow[]) => void;
@@ -365,6 +375,7 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
             exits via the toolbar's Back / Dashboard control. */}
         <div className="fixed inset-0 z-50 bg-background flex flex-col h-screen w-screen overflow-hidden">
           <AdminBuilderToolbar
+            onExit={props.onExit}
             viewport={viewport}
             onViewportChange={setViewport}
             previewMode={previewMode}

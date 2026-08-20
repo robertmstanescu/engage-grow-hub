@@ -371,7 +371,10 @@ const BlogEditor = () => {
             </button>
           </div>
         </div>
-        <BlogPostBuilder postId={editing.id} />
+        <BlogPostBuilder
+          postId={editing.id}
+          onExit={() => { setEditing(null); setIsNew(false); setPreviewing(false); }}
+        />
       </div>
     );
   }

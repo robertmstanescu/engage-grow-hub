@@ -61,6 +61,22 @@ export const confirmDestructive = (opts: ConfirmOptions): Promise<boolean> => {
 };
 
 /**
+ * confirmUnsavedExit — the "leave without saving?" guard shared by the
+ * full-screen editors (PageBuilderShell's adapters, SiteEditor) before
+ * they navigate back to the dashboard with unsaved changes. Centralized
+ * so the copy can't drift between call sites — the exact kind of drift
+ * that split blocksToHtml into two out-of-sync copies elsewhere.
+ */
+export const confirmUnsavedExit = (): Promise<boolean> =>
+  confirmDestructive({
+    title: "Leave without saving?",
+    description: "You have unsaved changes. If you leave now, they'll be lost.",
+    confirmLabel: "Leave without saving",
+    cancelLabel: "Stay and save",
+    destructive: true,
+  });
+
+/**
  * Mount once at the root of the admin shell. Owns the singleton dialog
  * state and registers itself with the module-level `openConfirm` hook
  * so any deep descendant can trigger a confirmation without prop drilling.
