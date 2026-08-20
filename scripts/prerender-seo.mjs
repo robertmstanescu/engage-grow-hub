@@ -157,13 +157,6 @@ async function main() {
     console.warn("[prerender-seo] Missing Supabase env — skipping prerender.");
     return;
   }
-  const shellPath = resolve(DIST, "index.html");
-  if (!existsSync(shellPath)) {
-    console.warn("[prerender-seo] dist/index.html not found — skipping prerender.");
-    return;
-  }
-  const shell = readFileSync(shellPath, "utf8");
-
   const [siteRows, cmsPages, blogPosts] = await Promise.all([
     rest("site_content?select=section_key,content"),
     rest("cms_pages?status=eq.published&select=slug,title,meta_title,meta_description,og_image,updated_at"),
@@ -282,12 +275,7 @@ async function main() {
     routes.length = MAX_PRERENDER_PAGES;
   }
 
-  // ── 1. Per-route HTML ──────────────────────────────────────────────
-  for (const route of routes) {
-    writePage(route.path, renderPage(shell, { ...route.meta, defaultImage }));
-  }
-
-  // ── 2. sitemap.xml ─────────────────────────────────────────────────
+  // ── 1. sitemap.xml ─────────────────────────────────────────────────
   const urls = routes.map(({ path, sitemap }) => {
     const parts = [`    <loc>${escapeXml(abs(path))}</loc>`];
     if (sitemap.lastmod) {
@@ -297,12 +285,14 @@ async function main() {
     if (sitemap.priority) parts.push(`    <priority>${sitemap.priority}</priority>`);
     return `  <url>\n${parts.join("\n")}\n  </url>`;
   });
-  writeFileSync(
-    resolve(DIST, "sitemap.xml"),
-    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`,
-  );
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`;
 
-  // ── 3. llms.txt ────────────────────────────────────────────────────
+  // Write to public/ so the file exists in source for dev previews and SEO scanners.
+  writeFileSync(resolve("public", "sitemap.xml"), sitemapXml);
+  // Write to dist/ after a build so the deployed site serves the authoritative version.
+  if (existsSync(DIST)) writeFileSync(resolve(DIST, "sitemap.xml"), sitemapXml);
+
+  // ── 2. llms.txt ────────────────────────────────────────────────────
   const lines = [`# ${brandName}`, ""];
   if (tagline) lines.push(`> ${tagline}`, "");
   if (homeSeo.meta_description) lines.push(homeSeo.meta_description, "");
@@ -321,7 +311,18 @@ async function main() {
       `- [${post.title}](${abs(`/blog/${trailing(post.slug)}`)}): ${plain(post.excerpt || post.meta_description || post.content, 160)}`,
     );
   }
-  writeFileSync(resolve(DIST, "llms.txt"), `${lines.join("\n")}\n`);
+  const llmsTxt = `${lines.join("\n")}\n`;
+  writeFileSync(resolve("public", "llms.txt"), llmsTxt);
+  if (existsSync(DIST)) writeFileSync(resolve(DIST, "llms.txt"), llmsTxt);
+
+  // ── 3. Per-route HTML (only after vite build, when dist/index.html exists) ──
+  const shellPath = resolve(DIST, "index.html");
+  if (existsSync(shellPath)) {
+    const shell = readFileSync(shellPath, "utf8");
+    for (const route of routes) {
+      writePage(route.path, renderPage(shell, { ...route.meta, defaultImage }));
+    }
+  }
 
   console.log(
     `[prerender-seo] wrote ${routes.length} pages, sitemap.xml (${routes.length} urls) and llms.txt for ${origin}`,
