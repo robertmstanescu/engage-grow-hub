@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { sanitizeHtml } from "@/services/sanitize";
 import { toast } from "sonner";
-import { Trash2, Edit, Plus, Eye, ArrowLeft } from "lucide-react";
+import { Trash2, Edit, Plus, Eye, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
+import { generateAiSummary, htmlToPlainText } from "@/services/aiSummary";
 import RichTextEditor from "./RichTextEditor";
 import { patchLivePreviewState } from "@/services/livePreview";
 import ImageAltInput from "./ImageAltInput";
