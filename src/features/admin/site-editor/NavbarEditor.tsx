@@ -167,18 +167,8 @@ const NavbarEditor = ({ content, onChange }: Props) => {
         </button>
       </div>
 
-      {/* Blog link toggle */}
-      <div className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          checked={content.show_blog_link !== false}
-          onChange={(e) => onChange("show_blog_link", e.target.checked)}
-          className="rounded"
-        />
-        <label className="font-body text-sm" style={{ color: "hsl(var(--foreground))" }}>
-          Show Blog link in navigation
-        </label>
-      </div>
+      {/* Blog is a normal nav link (/blog/) — no separate toggle. */}
+
 
       {/* CTA button */}
       <div className="space-y-3">
