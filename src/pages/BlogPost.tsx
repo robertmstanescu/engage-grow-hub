@@ -133,54 +133,73 @@ const BlogPost = () => {
     <div className="min-h-screen page-shell">
       <Navbar />
       <article>
-        {article.cover_image && (
-          <div className="relative w-full overflow-hidden aspect-video max-h-[70vh]">
-            <img src={article.cover_image} alt={article.cover_image_alt || `${article.title} — cover image`} className="w-full h-full object-cover" />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 0%, hsl(var(--background) / 0.45) 55%, hsl(var(--background)) 100%)" }} />
-          </div>
-        )}
-
-        <header className={`grain relative ${article.cover_image ? "pt-6" : "pt-36"} pb-16 px-8`}>
-          <div className="relative z-10 max-w-[700px] mx-auto">
-            <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-8 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.4)" }}>
-              <ArrowLeft size={14} /> All articles
-            </Link>
-            <div>
-              <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-5">
-                {(() => { const cc = getCategoryColors(article.category); return (<span className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 rounded-full font-medium" style={{ backgroundColor: cc.bgColor, color: cc.textColor }}>{article.category}</span>); })()}
-                <span className="font-body text-xs" style={{ color: "hsl(var(--foreground) / 0.4)" }}>
-                  {article.published_at ? formatDate(article.published_at) : ""} · {calculateReadTime(article.content)}
-                </span>
-              </div>
-              <h1 className="font-display text-2xl md:text-4xl lg:text-5xl font-black leading-tight" style={{ color: "hsl(var(--foreground))" }}>{article.title}</h1>
-              {article.tags && article.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-4">
-                  {article.tags.map((tag) => {
-                    const tc = getTagColors(tag);
-                    return (
-                      <span
-                        key={tag}
-                        className="font-body text-[10px] tracking-[0.12em] uppercase px-2.5 py-1 rounded-full font-medium"
-                        style={{ backgroundColor: tc.bgColor, color: tc.textColor }}
-                      >
-                        {tag}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-              {article.author_name && (
-                <div className="flex items-center gap-3 mt-6">
-                  {article.author_image && <img src={article.author_image} alt={article.author_image_alt || article.author_name} className="w-10 h-10 rounded-full object-cover" />}
-                  <div>
-                    <p className="font-body text-[10px] uppercase tracking-[0.14em]" style={{ color: "hsl(var(--foreground) / 0.3)" }}>Written by</p>
-                    <p className="text-sm font-bold font-body-heading" style={{ color: "hsl(var(--foreground))" }}>{article.author_name}</p>
-                  </div>
-                </div>
-              )}
+        <div className="relative">
+          {article.cover_image && (
+            <div className="relative w-full overflow-hidden aspect-video max-h-[70vh]">
+              <img src={article.cover_image} alt={article.cover_image_alt || `${article.title} — cover image`} className="w-full h-full object-cover" />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(
+                    to bottom,
+                    hsl(var(--background) / 0) 0%,
+                    hsl(var(--background) / 0) 45%,
+                    hsl(var(--background) / 0.35) 65%,
+                    hsl(var(--background) / 0.72) 85%,
+                    hsl(var(--background) / 0.92) 100%
+                  )`,
+                }}
+              />
             </div>
-          </div>
-        </header>
+          )}
+
+          <header className={`relative z-10 px-8 ${article.cover_image ? "-mt-24 md:-mt-32 pb-8" : "pt-36 pb-16"}`}>
+            <div className="relative z-10 max-w-[700px] mx-auto">
+              <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-6 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
+                <ArrowLeft size={14} /> All articles
+              </Link>
+              <div>
+                <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-4">
+                  {(() => { const cc = getCategoryColors(article.category); return (<span className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 rounded-full font-medium" style={{ backgroundColor: cc.bgColor, color: cc.textColor }}>{article.category}</span>); })()}
+                  <span className="font-body text-xs" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
+                    {article.published_at ? formatDate(article.published_at) : ""} · {calculateReadTime(article.content)}
+                  </span>
+                </div>
+                <h1 className="font-display text-2xl md:text-4xl lg:text-5xl font-black leading-tight" style={{ color: "hsl(var(--foreground))" }}>{article.title}</h1>
+                {article.excerpt && (
+                  <p className="font-body text-base md:text-lg leading-relaxed mt-4" style={{ color: "hsl(var(--foreground) / 0.72)" }}>
+                    {article.excerpt}
+                  </p>
+                )}
+                {article.tags && article.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {article.tags.map((tag) => {
+                      const tc = getTagColors(tag);
+                      return (
+                        <span
+                          key={tag}
+                          className="font-body text-[10px] tracking-[0.12em] uppercase px-2.5 py-1 rounded-full font-medium"
+                          style={{ backgroundColor: tc.bgColor, color: tc.textColor }}
+                        >
+                          {tag}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+                {article.author_name && (
+                  <div className="flex items-center gap-3 mt-6">
+                    {article.author_image && <img src={article.author_image} alt={article.author_image_alt || article.author_name} className="w-10 h-10 rounded-full object-cover" />}
+                    <div>
+                      <p className="font-body text-[10px] uppercase tracking-[0.14em]" style={{ color: "hsl(var(--foreground) / 0.4)" }}>Written by</p>
+                      <p className="text-sm font-bold font-body-heading" style={{ color: "hsl(var(--foreground))" }}>{article.author_name}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
+        </div>
 
         <div className="section-light py-16 px-8">
           {(() => {
