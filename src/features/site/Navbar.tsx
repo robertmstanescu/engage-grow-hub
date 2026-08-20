@@ -264,6 +264,96 @@ const Navbar = () => {
 
         <div className="flex flex-row items-center justify-center gap-9 min-w-0">
           {renderedItems.map((item) => {
+            if (item.kind === "dropdown") {
+              const active =
+                (item.href && isActive(item.href)) ||
+                item.items.some((s) => isActive(s.href)) ||
+                location.pathname.startsWith("/services");
+              const open = openDropdown === item.label;
+              return (
+                <div
+                  key={item.label}
+                  className="relative"
+                  onMouseEnter={() => setOpenDropdown(item.label)}
+                  onMouseLeave={() => setOpenDropdown(null)}
+                >
+                  <a
+                    href={item.href || "#"}
+                    onClick={(e) => {
+                      if (!item.href) {
+                        e.preventDefault();
+                        setOpenDropdown(open ? null : item.label);
+                        return;
+                      }
+                      handleNavClick(e, item.href);
+                    }}
+                    onFocus={() => setOpenDropdown(item.label)}
+                    aria-haspopup="true"
+                    aria-expanded={open}
+                    className="top-nav-label font-body inline-flex items-center gap-1"
+                    data-active={active}
+                    style={{
+                      color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
+                      fontWeight: active ? 600 : 450,
+                    }}
+                  >
+                    {item.label}
+                    <ChevronDown
+                      size={13}
+                      style={{
+                        transition: "transform 200ms ease",
+                        transform: open ? "rotate(180deg)" : "none",
+                      }}
+                    />
+                  </a>
+                  <AnimatePresence>
+                    {open && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.18, ease }}
+                        className="absolute left-1/2 -translate-x-1/2 top-full pt-3 min-w-[240px] z-50"
+                      >
+                        <div
+                          className="flex flex-col py-2"
+                          style={{
+                            borderRadius: "calc(var(--radius) * 1.2)",
+                            backgroundColor: "hsl(var(--card) / 0.98)",
+                            backdropFilter: "blur(18px) saturate(140%)",
+                            WebkitBackdropFilter: "blur(18px) saturate(140%)",
+                            border: "1px solid hsl(var(--border))",
+                            boxShadow: "var(--shadow-soft)",
+                          }}
+                        >
+                          {item.items.map((sub) => {
+                            const subActive = isActive(sub.href);
+                            return (
+                              <a
+                                key={sub.href + sub.label}
+                                href={sub.href}
+                                onClick={(e) => {
+                                  setOpenDropdown(null);
+                                  handleNavClick(e, sub.href);
+                                }}
+                                className="top-nav-label font-body px-4 py-2 whitespace-nowrap transition-colors duration-150 hover:bg-[hsl(var(--muted))]"
+                                data-active={subActive}
+                                style={{
+                                  color: subActive ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.78)",
+                                  fontWeight: subActive ? 600 : 450,
+                                }}
+                              >
+                                {sub.label}
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            }
             const active = isActive(item.href);
             return (
               <a
@@ -282,6 +372,7 @@ const Navbar = () => {
             );
           })}
         </div>
+
 
         {!navLoading && ctaHref ? (
           <a
