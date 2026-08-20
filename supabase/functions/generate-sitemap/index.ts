@@ -136,20 +136,28 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  // Resolve canonical origin: admin-configured → request origin → fallback.
-  let canonicalOrigin = FALLBACK_ORIGIN;
-  try {
-    const { data: brandRow } = await supabaseAdmin
-      .from("site_content").select("content").eq("section_key", "brand_settings").maybeSingle();
-    const brand = (brandRow?.content as Record<string, any>) || {};
-    const identityOrigin = typeof brand?.identity?.canonicalOrigin === "string"
-      ? brand.identity.canonicalOrigin.trim().replace(/\/+$/, "") : "";
-    if (identityOrigin) canonicalOrigin = identityOrigin;
-    else {
-      const reqHost = new URL(req.url).hostname;
-      if (!/supabase\.co$/i.test(reqHost)) canonicalOrigin = new URL(req.url).origin;
-    }
-  } catch { /* keep fallback */ }
+  // Resolve canonical origin: admin-configured → local dev origin → 500.
+  let canonicalOrigin = "";
+  const { data: brandRow } = await supabaseAdmin
+    .from("site_content").select("content").eq("section_key", "brand_settings").maybeSingle();
+  const brand = (brandRow?.content as Record<string, any>) || {};
+  const identityOrigin = typeof brand?.identity?.canonicalOrigin === "string"
+    ? brand.identity.canonicalOrigin.trim().replace(/\/+$/, "") : "";
+  if (identityOrigin) canonicalOrigin = identityOrigin;
+  else {
+    try {
+      const reqUrl = new URL(req.url);
+      if (LOCAL_HOST_RE.test(reqUrl.hostname)) canonicalOrigin = reqUrl.origin;
+    } catch { /* noop */ }
+  }
+  if (!canonicalOrigin) {
+    console.error("generate-sitemap: brand_settings.identity.canonicalOrigin is not configured");
+    return new Response(
+      "Sitemap unavailable: canonical origin is not configured.",
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "text/plain" } },
+    );
+  }
+
 
   // Fetched in parallel — both queries are independent and small enough
   // that issuing them serially would only add latency.
