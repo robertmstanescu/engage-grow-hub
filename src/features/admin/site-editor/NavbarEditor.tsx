@@ -70,7 +70,34 @@ const NavbarEditor = ({ content, onChange }: Props) => {
           className="w-full px-3 py-2 rounded-md font-body text-sm border"
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
         />
+        <label className="font-body text-xs uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Dropdown Link (page the label opens)
+        </label>
+        <DeferredInput
+          type="text"
+          placeholder="/services/"
+          value={content.services_href || ""}
+          onChange={(v) => onChange("services_href", v)}
+          className="w-full px-3 py-2 rounded-md font-body text-sm border"
+          style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+        />
+        <label className="font-body text-xs uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Position in navigation
+        </label>
+        <select
+          value={String(content.services_index ?? 0)}
+          onChange={(e) => onChange("services_index", Number(e.target.value))}
+          className="w-full px-3 py-2 rounded-md font-body text-sm border"
+          style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+        >
+          {Array.from({ length: links.length + 1 }).map((_, i) => (
+            <option key={i} value={i}>
+              {i === 0 ? "First" : i === links.length ? "Last" : `After “${links[i - 1]?.label || `link ${i}`}”`}
+            </option>
+          ))}
+        </select>
       </div>
+
 
       {/* Sub links (services dropdown items) */}
       <div className="space-y-3">
