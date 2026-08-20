@@ -178,15 +178,27 @@ const SeoFields = ({
             backgroundColor: "hsl(46 75% 60% / 0.06)",
           }}
         >
-          <label
-            className="font-body text-[10px] uppercase tracking-wider font-medium block flex items-center gap-1.5"
-            style={{ color: "hsl(var(--foreground))" }}
-            // Tooltip via native title — keeps the field lightweight (no portal).
-            title="This summary is fed directly to AI assistants like ChatGPT and Claude via your /llms.txt manifest. Be descriptive and use brand keywords."
-          >
-            AI Search Summary (AEO)
-            <span className="font-body text-[9px] normal-case tracking-normal opacity-70">ⓘ</span>
-          </label>
+          <div className="flex items-start justify-between gap-2">
+            <label
+              className="font-body text-[10px] uppercase tracking-wider font-medium flex items-center gap-1.5"
+              style={{ color: "hsl(var(--foreground))" }}
+              // Tooltip via native title — keeps the field lightweight (no portal).
+              title="This summary is fed directly to AI assistants like ChatGPT and Claude via your /llms.txt manifest. Be descriptive and use brand keywords."
+            >
+              AI Search Summary (AEO)
+              <span className="font-body text-[9px] normal-case tracking-normal opacity-70">ⓘ</span>
+            </label>
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={generating}
+              className="shrink-0 flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full transition-opacity hover:opacity-80 disabled:opacity-50"
+              style={{ border: "1px solid hsl(46 75% 40% / 0.5)", color: "hsl(var(--foreground))" }}
+            >
+              {generating ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
+              {generating ? "Generating…" : "Generate with AI"}
+            </button>
+          </div>
           <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
             Fed to AI assistants (ChatGPT, Claude, Perplexity) via <code>/llms.txt</code>. Aim for {AEO_MIN}–{AEO_MAX} characters.
           </p>
