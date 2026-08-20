@@ -79,6 +79,18 @@ const Navbar = () => {
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  // Escape closes an open desktop dropdown.
+  useEffect(() => {
+    if (!openDropdown) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenDropdown(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openDropdown]);
+
   // (Desktop nav is a horizontal pill bar — see below.)
 
   const railRef = useRef<HTMLDivElement | null>(null);
