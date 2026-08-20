@@ -5,9 +5,8 @@ import { useEffect } from "react";
  *
  * Intercepts in-page anchor link clicks (e.g. `<a href="#contact">`)
  * inside a scroll container and replaces the browser's near-instant
- * jump with a slow, fluid rAF-driven tween. The duration and easing
- * mirror {@link useMomentumSnap} so the experience feels coherent —
- * navigation glides instead of teleports.
+ * jump with a slow, fluid rAF-driven tween so navigation glides
+ * instead of teleports.
  *
  * Behaviour:
  *  - Only handles plain left-clicks without modifier keys (so users
@@ -33,7 +32,7 @@ export const useSmoothAnchors = (
     const container = containerRef.current;
     if (!container) return;
 
-    /** Soft cubic ease-in-out — same curve as useMomentumSnap. */
+    /** Soft cubic ease-in-out. */
     const ease = (t: number) =>
       t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 

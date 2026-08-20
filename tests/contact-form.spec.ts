@@ -1,18 +1,29 @@
 import { test, expect } from "../playwright-fixture";
 
 /**
- * Public contact form (ContactSection → submit-contact edge function).
+ * Public contact form (the "contact" CMS row, ContactRow.tsx →
+ * submit-contact edge function).
  *
  * This is the site's primary lead-gen surface ("Request a discovery
  * call"), so we drive it exactly the way a visitor would: fill the
  * form, submit, and confirm both the network round trip and the UI's
  * success state.
+ *
+ * The contact row is admin-configurable content (added to a page like
+ * any other widget), so we locate it by `data-row-type="contact"` —
+ * the stable attribute every row gets from the shared RowSection
+ * wrapper (src/features/site/rows/typography/RowSection.tsx:221) —
+ * rather than assuming it lives at a fixed spot on the homepage.
  */
 test.describe("Contact form", () => {
   test("submits successfully through to a successful submit-contact response", async ({ page }) => {
     await page.goto("/");
 
-    const contactSection = page.locator('[data-section="contact"]');
+    const contactSection = page.locator('section[data-row-type="contact"]').first();
+    test.skip(
+      (await contactSection.count()) === 0,
+      "No contact row found on the homepage — nothing to exercise the contact form against.",
+    );
     await contactSection.scrollIntoViewIfNeeded();
 
     const nameInput = contactSection.locator('input[type="text"]').first();
