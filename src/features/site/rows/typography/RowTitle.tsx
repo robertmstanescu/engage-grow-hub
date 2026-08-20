@@ -32,6 +32,11 @@ const RowTitle = ({ children, as, color, style, className, icon, iconSize = 32 }
   const isPrimary = useIsPrimaryHeading();
   const Tag = as ?? (isPrimary ? "h1" : "h2");
   const resolvedColor = color ?? "var(--row-fg, hsl(var(--foreground)))";
+  // H1 (the page's Hero, or this row when it stands in for a missing Hero)
+  // stays at the heaviest weight; H2/H3 row titles drop to font-bold so
+  // there's an actual weight step down from H1 instead of every level
+  // maxing out at font-black and reading as the same weight, just smaller.
+  const weightClass = Tag === "h1" ? "font-black" : "font-bold";
   return (
     <>
       {icon && (
@@ -40,7 +45,7 @@ const RowTitle = ({ children, as, color, style, className, icon, iconSize = 32 }
         </div>
       )}
       <Tag
-        className={`font-display font-black leading-[0.95] tracking-tight mb-rhythm-base ${className ?? ""}`}
+        className={`font-display ${weightClass} leading-[0.95] tracking-tight mb-rhythm-base ${className ?? ""}`}
         style={{
           fontSize: "var(--fs-title)",
           color: resolvedColor,
