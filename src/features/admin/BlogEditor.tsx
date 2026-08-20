@@ -66,6 +66,27 @@ const BlogEditor = () => {
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
 
+  const [generatingAiSummary, setGeneratingAiSummary] = useState(false);
+
+  /** Ask the built-in AI connector for a 60-320 char AEO summary. */
+  const handleGenerateAiSummary = async () => {
+    if (generatingAiSummary) return;
+    setGeneratingAiSummary(true);
+    try {
+      const summary = await generateAiSummary({
+        title: form.title,
+        content: htmlToPlainText(form.content) || form.excerpt,
+        kind: "blog post",
+      });
+      setForm((f) => ({ ...f, ai_summary: summary }));
+      toast.success("AI summary generated");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to generate summary");
+    } finally {
+      setGeneratingAiSummary(false);
+    }
+  };
+
   useEffect(() => {
     const loadCategories = async () => {
       const { data } = await fetchSection("tags_config");
