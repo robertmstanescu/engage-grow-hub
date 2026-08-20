@@ -8,12 +8,15 @@ interface NavLink {
 
 interface NavbarContent {
   services_label?: string;
+  services_href?: string;
+  services_index?: number;
   sub_links?: NavLink[];
   links?: NavLink[];
   show_blog_link?: boolean;
   cta_text?: string;
   cta_href?: string;
 }
+
 
 interface Props {
   content: NavbarContent;

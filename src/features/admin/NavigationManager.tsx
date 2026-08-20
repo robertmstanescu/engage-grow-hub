@@ -29,12 +29,15 @@ interface NavLink {
 
 interface NavContent {
   services_label?: string;
+  services_href?: string;
+  services_index?: number;
   sub_links?: NavLink[];
   links?: NavLink[];
   show_blog_link?: boolean;
   cta_text?: string;
   cta_href?: string;
 }
+
 
 const genId = () => crypto.randomUUID();
 
