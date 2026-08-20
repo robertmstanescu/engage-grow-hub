@@ -136,22 +136,20 @@ const BlogPost = () => {
         <div className="relative">
           {article.cover_image && (
             <div className="relative w-full overflow-hidden aspect-video max-h-[70vh]">
-              <img src={article.cover_image} alt={article.cover_image_alt || `${article.title} — cover image`} className="w-full h-full object-cover" />
-              <div
-                className="absolute inset-0"
+              <img
+                src={article.cover_image}
+                alt={article.cover_image_alt || `${article.title} — cover image`}
+                className="w-full h-full object-cover"
                 style={{
-                  background: `linear-gradient(
-                    to bottom,
-                    hsl(var(--background) / 0) 0%,
-                    hsl(var(--background) / 0) 35%,
-                    hsl(var(--background) / 0.35) 55%,
-                    hsl(var(--background) / 0.75) 80%,
-                    hsl(var(--background) / 1) 100%
-                  )`,
+                  WebkitMaskImage:
+                    "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0.6) 68%, rgba(0,0,0,0.2) 85%, rgba(0,0,0,0) 100%)",
+                  maskImage:
+                    "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0.6) 68%, rgba(0,0,0,0.2) 85%, rgba(0,0,0,0) 100%)",
                 }}
               />
             </div>
           )}
+
 
           <header className={`relative z-10 px-8 ${article.cover_image ? "-mt-24 md:-mt-32 pb-6" : "pt-36 pb-12"}`}>
             <div className="relative z-10 max-w-[700px] mx-auto">
