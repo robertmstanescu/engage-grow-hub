@@ -136,7 +136,7 @@ const BlogPost = () => {
         {article.cover_image && (
           <div className="relative w-full overflow-hidden aspect-video max-h-[70vh]">
             <img src={article.cover_image} alt={article.cover_image_alt || `${article.title} — cover image`} className="w-full h-full object-cover" />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 30%, hsl(var(--background)))" }} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 0%, hsl(var(--background) / 0.45) 55%, hsl(var(--background)) 100%)" }} />
           </div>
         )}
 

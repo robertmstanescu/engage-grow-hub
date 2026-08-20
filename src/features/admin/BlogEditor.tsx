@@ -57,6 +57,7 @@ const BlogEditor = () => {
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [previewing, setPreviewing] = useState(false);
+  const [editMode, setEditMode] = useState<"content" | "structure">("content");
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
@@ -89,6 +90,7 @@ const BlogEditor = () => {
   };
 
   const handleEdit = (post: BlogPost) => {
+    setEditMode("content");
     setIsNew(false);
     setEditing(post);
     setForm({
@@ -292,23 +294,47 @@ const BlogEditor = () => {
     );
   }
 
-  /* ── New builder for existing posts (US 17.x) ── */
-  // Existing posts open in the visual widget builder. New posts still
-  // go through the legacy form below so the admin can set slug, title,
-  // category, cover, etc., before there's a record to attach widgets to.
-  if (editing && !isNew) {
+  /* ── Mode switcher for existing posts ──
+     "content"   → metadata + rich-text article editor (default)
+     "structure" → visual widget/page-structure builder */
+  const ModeTabs = editing && !isNew ? (
+    <div className="inline-flex rounded-full border p-0.5" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.3)" }}>
+      {([
+        { id: "content", label: "Content & Metadata" },
+        { id: "structure", label: "Page Structure" },
+      ] as const).map((t) => (
+        <button
+          key={t.id}
+          onClick={() => setEditMode(t.id)}
+          className="font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full transition-opacity"
+          style={
+            editMode === t.id
+              ? { backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }
+              : { color: "hsl(var(--muted-foreground))" }
+          }
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
+  if (editing && !isNew && editMode === "structure") {
     return (
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>
             Edit Post · {editing.title}
           </h2>
-          <button
-            onClick={() => { setEditing(null); setIsNew(false); setPreviewing(false); }}
-            className="font-body text-xs text-muted-foreground hover:opacity-70"
-          >
-            ← Back to posts
-          </button>
+          <div className="flex items-center gap-2">
+            {ModeTabs}
+            <button
+              onClick={() => { setEditing(null); setIsNew(false); setPreviewing(false); }}
+              className="font-body text-xs text-muted-foreground hover:opacity-70"
+            >
+              ← Back to posts
+            </button>
+          </div>
         </div>
         <BlogPostBuilder postId={editing.id} />
       </div>
@@ -319,11 +345,12 @@ const BlogEditor = () => {
   if (isNew || editing) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>
             {isNew ? "New Post" : "Edit Post"}
           </h2>
           <div className="flex items-center gap-2">
+            {ModeTabs}
             <button
               onClick={openLivePreview}
               className="flex items-center gap-1 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"

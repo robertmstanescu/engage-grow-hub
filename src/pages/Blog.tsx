@@ -57,8 +57,9 @@ const BlogCard = ({ post }: { post: BlogPost }) => {
     <article key={post.slug} className="group">
       <Link
         to={`/blog/${post.slug}`}
-        className={`relative block rounded-xl overflow-hidden transition-transform duration-300 hover:scale-[1.01] ${
-          hasCover ? "" : "glass p-6 md:p-8 hover:glow-accent"
+        style={hasCover ? { boxShadow: "0 18px 40px -12px hsl(var(--foreground) / 0.28), 0 4px 12px -4px hsl(var(--foreground) / 0.12)" } : undefined}
+        className={`relative block rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.01] ${
+          hasCover ? "hover:-translate-y-0.5" : "glass p-6 md:p-8 hover:glow-accent"
         }`}
       >
         {hasCover && (
@@ -72,8 +73,8 @@ const BlogCard = ({ post }: { post: BlogPost }) => {
               className="absolute inset-0"
               style={{
                 background: isLight
-                  ? "linear-gradient(to bottom, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.88) 100%)"
-                  : "linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.78) 100%)",
+                  ? "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 45%, rgba(255,255,255,0.9) 100%)"
+                  : "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.82) 100%)",
               }}
             />
           </>
