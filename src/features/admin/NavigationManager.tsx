@@ -29,12 +29,15 @@ interface NavLink {
 
 interface NavContent {
   services_label?: string;
+  services_href?: string;
+  services_index?: number;
   sub_links?: NavLink[];
   links?: NavLink[];
   show_blog_link?: boolean;
   cta_text?: string;
   cta_href?: string;
 }
+
 
 const genId = () => crypto.randomUUID();
 
@@ -237,6 +240,44 @@ const NavigationManager = () => {
               style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
             />
           </div>
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>Dropdown Link (page the label itself opens)</label>
+            <select
+              value={cmsPages.some((p) => `/${p.slug}/` === content.services_href || `/p/${p.slug}` === content.services_href) ? content.services_href : ""}
+              onChange={(e) => updateField("services_href", e.target.value)}
+              className="w-full px-3 py-2 rounded-md font-body text-sm border mt-1"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
+              <option value="">— custom / none —</option>
+              {cmsPages.map((p) => (
+                <option key={p.slug} value={p.slug === "services" || p.slug.startsWith("services/") ? `/${p.slug}/` : `/p/${p.slug}`}>
+                  {p.title}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              placeholder="Custom link (e.g. /services/)"
+              value={content.services_href || ""}
+              onChange={(e) => updateField("services_href", e.target.value)}
+              className="w-full px-3 py-2 rounded-md font-body text-sm border mt-1"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+            />
+          </div>
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>Position in navigation</label>
+            <select
+              value={String(content.services_index ?? 0)}
+              onChange={(e) => updateField("services_index", Number(e.target.value))}
+              className="w-full px-3 py-2 rounded-md font-body text-sm border mt-1"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
+              {Array.from({ length: links.length + 1 }).map((_, i) => (
+                <option key={i} value={i}>
+                  {i === 0 ? "First" : i === links.length ? "Last" : `After “${links[i - 1]?.label || `link ${i}`}”`}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd("sub_links")}>
             <SortableContext items={subLinks.map((l) => l.id)} strategy={verticalListSortingStrategy}>
               {subLinks.map((link, i) => (
@@ -278,15 +319,10 @@ const NavigationManager = () => {
 
       {/* Settings */}
       <AccordionSection id="settings" label="Settings">
-        <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            checked={content.show_blog_link !== false}
-            onChange={(e) => updateField("show_blog_link", e.target.checked)}
-            className="rounded"
-          />
-          <label className="font-body text-sm" style={{ color: "hsl(var(--foreground))" }}>Show Blog link in navigation</label>
-        </div>
+        <p className="font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Blog is managed like any other navigation link — add it under “Navigation Links” with the link <code>/blog/</code>.
+        </p>
+
         <div className="space-y-2 mt-3">
           <label className="font-body text-[10px] uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>Call-to-Action Button</label>
           <div className="flex gap-2">

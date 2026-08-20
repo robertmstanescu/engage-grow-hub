@@ -8,12 +8,15 @@ interface NavLink {
 
 interface NavbarContent {
   services_label?: string;
+  services_href?: string;
+  services_index?: number;
   sub_links?: NavLink[];
   links?: NavLink[];
   show_blog_link?: boolean;
   cta_text?: string;
   cta_href?: string;
 }
+
 
 interface Props {
   content: NavbarContent;
@@ -67,7 +70,34 @@ const NavbarEditor = ({ content, onChange }: Props) => {
           className="w-full px-3 py-2 rounded-md font-body text-sm border"
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
         />
+        <label className="font-body text-xs uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Dropdown Link (page the label opens)
+        </label>
+        <DeferredInput
+          type="text"
+          placeholder="/services/"
+          value={content.services_href || ""}
+          onChange={(v) => onChange("services_href", v)}
+          className="w-full px-3 py-2 rounded-md font-body text-sm border"
+          style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+        />
+        <label className="font-body text-xs uppercase tracking-wider font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>
+          Position in navigation
+        </label>
+        <select
+          value={String(content.services_index ?? 0)}
+          onChange={(e) => onChange("services_index", Number(e.target.value))}
+          className="w-full px-3 py-2 rounded-md font-body text-sm border"
+          style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+        >
+          {Array.from({ length: links.length + 1 }).map((_, i) => (
+            <option key={i} value={i}>
+              {i === 0 ? "First" : i === links.length ? "Last" : `After “${links[i - 1]?.label || `link ${i}`}”`}
+            </option>
+          ))}
+        </select>
       </div>
+
 
       {/* Sub links (services dropdown items) */}
       <div className="space-y-3">
@@ -137,18 +167,8 @@ const NavbarEditor = ({ content, onChange }: Props) => {
         </button>
       </div>
 
-      {/* Blog link toggle */}
-      <div className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          checked={content.show_blog_link !== false}
-          onChange={(e) => onChange("show_blog_link", e.target.checked)}
-          className="rounded"
-        />
-        <label className="font-body text-sm" style={{ color: "hsl(var(--foreground))" }}>
-          Show Blog link in navigation
-        </label>
-      </div>
+      {/* Blog is a normal nav link (/blog/) — no separate toggle. */}
+
 
       {/* CTA button */}
       <div className="space-y-3">

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSiteContent, useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -79,6 +79,18 @@ const Navbar = () => {
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  // Escape closes an open desktop dropdown.
+  useEffect(() => {
+    if (!openDropdown) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenDropdown(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openDropdown]);
+
   // (Desktop nav is a horizontal pill bar — see below.)
 
   const railRef = useRef<HTMLDivElement | null>(null);
@@ -95,15 +107,41 @@ const Navbar = () => {
   const showBlogLink = !navLoading && navConfig.show_blog_link === true;
   const ctaText = navConfig.cta_text || "";
   const ctaHref = navConfig.cta_href || "";
+  const servicesLabel = navConfig.services_label || "Services";
+  const servicesHref = navConfig.services_href || "";
+  const servicesIndex = Number.isFinite(Number(navConfig.services_index))
+    ? Math.max(0, Number(navConfig.services_index))
+    : 0;
 
-  const allItems = navLoading
+  type NavItem =
+    | { kind: "link"; label: string; href: string }
+    | { kind: "dropdown"; label: string; href: string; items: { label: string; href: string }[] };
+
+  const baseLinks: NavItem[] = navLoading
     ? []
     : [
-        ...subLinks.map((l: any) => ({ label: l.label, href: l.href })),
-        ...links.map((l: any) => ({ label: l.label, href: l.href })),
-        ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
+        ...links.map((l: any) => ({ kind: "link" as const, label: l.label, href: l.href })),
+        ...(showBlogLink ? [{ kind: "link" as const, label: "Blog", href: "/blog/" }] : []),
       ];
-  const renderedItems = allItems;
+
+  const navItems: NavItem[] = [...baseLinks];
+  if (!navLoading && subLinks.length > 0) {
+    navItems.splice(Math.min(servicesIndex, navItems.length), 0, {
+      kind: "dropdown",
+      label: servicesLabel,
+      href: servicesHref,
+      items: subLinks.map((l: any) => ({ label: l.label, href: l.href })),
+    });
+  }
+
+  // Flat list used for scroll-spy and the mobile overlay ordering.
+  const allItems = navItems.flatMap((item) =>
+    item.kind === "dropdown"
+      ? [...(item.href ? [{ label: item.label, href: item.href }] : []), ...item.items]
+      : [{ label: item.label, href: item.href }],
+  );
+  const renderedItems = navItems;
+
 
   const handleScroll = useCallback(() => {
     if (location.pathname !== "/") return;
@@ -238,6 +276,96 @@ const Navbar = () => {
 
         <div className="flex flex-row items-center justify-center gap-9 min-w-0">
           {renderedItems.map((item) => {
+            if (item.kind === "dropdown") {
+              const active =
+                (item.href && isActive(item.href)) ||
+                item.items.some((s) => isActive(s.href)) ||
+                location.pathname.startsWith("/services");
+              const open = openDropdown === item.label;
+              return (
+                <div
+                  key={item.label}
+                  className="relative"
+                  onMouseEnter={() => setOpenDropdown(item.label)}
+                  onMouseLeave={() => setOpenDropdown(null)}
+                >
+                  <a
+                    href={item.href || "#"}
+                    onClick={(e) => {
+                      if (!item.href) {
+                        e.preventDefault();
+                        setOpenDropdown(open ? null : item.label);
+                        return;
+                      }
+                      handleNavClick(e, item.href);
+                    }}
+                    onFocus={() => setOpenDropdown(item.label)}
+                    aria-haspopup="true"
+                    aria-expanded={open}
+                    className="top-nav-label font-body inline-flex items-center gap-1"
+                    data-active={active}
+                    style={{
+                      color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
+                      fontWeight: active ? 600 : 450,
+                    }}
+                  >
+                    {item.label}
+                    <ChevronDown
+                      size={13}
+                      style={{
+                        transition: "transform 200ms ease",
+                        transform: open ? "rotate(180deg)" : "none",
+                      }}
+                    />
+                  </a>
+                  <AnimatePresence>
+                    {open && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.18, ease }}
+                        className="absolute left-1/2 -translate-x-1/2 top-full pt-3 min-w-[240px] z-50"
+                      >
+                        <div
+                          className="flex flex-col py-2"
+                          style={{
+                            borderRadius: "calc(var(--radius) * 1.2)",
+                            backgroundColor: "hsl(var(--card) / 0.98)",
+                            backdropFilter: "blur(18px) saturate(140%)",
+                            WebkitBackdropFilter: "blur(18px) saturate(140%)",
+                            border: "1px solid hsl(var(--border))",
+                            boxShadow: "var(--shadow-soft)",
+                          }}
+                        >
+                          {item.items.map((sub) => {
+                            const subActive = isActive(sub.href);
+                            return (
+                              <a
+                                key={sub.href + sub.label}
+                                href={sub.href}
+                                onClick={(e) => {
+                                  setOpenDropdown(null);
+                                  handleNavClick(e, sub.href);
+                                }}
+                                className="top-nav-label font-body px-4 py-2 whitespace-nowrap transition-colors duration-150 hover:bg-[hsl(var(--muted))]"
+                                data-active={subActive}
+                                style={{
+                                  color: subActive ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.78)",
+                                  fontWeight: subActive ? 600 : 450,
+                                }}
+                              >
+                                {sub.label}
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            }
             const active = isActive(item.href);
             return (
               <a
@@ -256,6 +384,7 @@ const Navbar = () => {
             );
           })}
         </div>
+
 
         {!navLoading && ctaHref ? (
           <a
@@ -341,7 +470,44 @@ const Navbar = () => {
             className="lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-6"
             style={{ backgroundColor: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" }}
           >
-            {allItems.map((item) => {
+            {renderedItems.map((item) => {
+              if (item.kind === "dropdown") {
+                return (
+                  <div key={item.label} className="flex flex-col items-center gap-3">
+                    <a
+                      href={item.href || "#"}
+                      onClick={(e) => (item.href ? handleNavClick(e, item.href) : e.preventDefault())}
+                      className="mobile-nav-link font-body text-sm uppercase tracking-[0.2em] transition-colors duration-200"
+                      style={{
+                        color: location.pathname.startsWith("/services")
+                          ? "hsl(var(--primary))"
+                          : "hsl(var(--foreground) / 0.65)",
+                      }}
+                    >
+                      {item.label}
+                    </a>
+                    <div className="flex flex-col items-center gap-2">
+                      {item.items.map((sub) => {
+                        const subActive = isActive(sub.href);
+                        return (
+                          <a
+                            key={sub.href + sub.label}
+                            href={sub.href}
+                            onClick={(e) => handleNavClick(e, sub.href)}
+                            data-active={subActive}
+                            className="mobile-nav-link font-body text-xs tracking-[0.12em] transition-colors duration-200"
+                            style={{
+                              color: subActive ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.55)",
+                            }}
+                          >
+                            {sub.label}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
               const active = isActive(item.href);
               return (
                 <a
@@ -356,6 +522,7 @@ const Navbar = () => {
                 </a>
               );
             })}
+
             {ctaHref && ctaText ? (
               <a
                 href={ctaHref}
