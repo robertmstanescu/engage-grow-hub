@@ -86,16 +86,31 @@ const TitleLineEditor = ({ value, onChange, bgColor }: Props) => {
    * but the parent component is only notified once they pause for 1000ms.
    * That gives the admin time to finish a sentence before the global
    * cascade (and any auto-save) fires.
+   *
+   * Font-size normalization happens HERE — not synchronously on every
+   * keystroke in `emitChange`'s onInput path — via normalizeRichTextHtml,
+   * which safely operates on a detached <template> clone rather than the
+   * live, focused contentEditable DOM. Replacing a <font> node in the
+   * LIVE DOM mid-keystroke (e.g. via normalizeRichTextContainerFontSizes)
+   * collapses the browser's selection, forcing the admin to click back
+   * in after every character. So the live DOM is only touched when the
+   * normalized markup actually differs AND the editor isn't currently
+   * focused — mirroring the FOCUS-PROTECTED value sync below — with the
+   * caret preserved across that write.
    */
-  const debouncedPush = useDebouncedCallback((html: string) => {
-    onChange(html);
+  const debouncedPush = useDebouncedCallback(() => {
+    const raw = editorRef.current?.innerHTML || "";
+    const normalized = normalizeRichTextHtml(raw);
+    if (editorRef.current && normalized !== raw && document.activeElement !== editorRef.current) {
+      saveSelection();
+      editorRef.current.innerHTML = normalized;
+      restoreSelection();
+    }
+    onChange(normalized);
   }, 1000);
 
   const emitChange = useCallback(() => {
-    if (editorRef.current) {
-      normalizeRichTextContainerFontSizes(editorRef.current);
-    }
-    debouncedPush(normalizeRichTextHtml(editorRef.current?.innerHTML || ""));
+    debouncedPush();
   }, [debouncedPush]);
 
   const saveSelection = useCallback(() => {

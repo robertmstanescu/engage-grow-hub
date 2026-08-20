@@ -1,4 +1,4 @@
-import { useRef, useCallback, KeyboardEvent } from "react";
+import { useEffect, useRef, useCallback, KeyboardEvent } from "react";
 import { useInlineEdit } from "./InlineEditContext";
 
 interface EditableTextProps {
@@ -33,6 +33,17 @@ const EditableText = ({
   const ref = useRef<HTMLElement>(null);
   const originalRef = useRef<string>("");
 
+  // Canonical string value for the contentEditable surface. Every
+  // current caller passes content as either an HTML string
+  // (`dangerouslySetInnerHTML`) or plain-text `children` — never both.
+  const domValue = dangerouslySetInnerHTML
+    ? dangerouslySetInnerHTML.__html
+    : typeof children === "string"
+      ? children
+      : children == null
+        ? ""
+        : String(children);
+
   const handleFocus = useCallback(() => {
     if (ref.current) {
       originalRef.current = html ? ref.current.innerHTML : ref.current.textContent || "";
@@ -63,6 +74,24 @@ const EditableText = ({
       ref.current?.blur();
     }
   }, [html]);
+
+  // FOCUS PROTECTION: while this field is focused (actively being
+  // edited), never let an upstream content change overwrite the
+  // in-flight edit — that would snap the cursor to the start and could
+  // drop keystrokes. Mirrors the pattern in RichTextEditor.tsx /
+  // TitleLineEditor.tsx. `ref.current` is only non-null while the
+  // contentEditable branch below is mounted, so this is a no-op
+  // outside edit/select mode.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (document.activeElement === el) return;
+    if (html) {
+      if (el.innerHTML !== domValue) el.innerHTML = domValue;
+    } else if (el.textContent !== domValue) {
+      el.textContent = domValue;
+    }
+  }, [domValue, html, editMode, selectMode]);
 
   if (!editMode && !selectMode) {
     const El = Tag as any;
@@ -106,6 +135,12 @@ const EditableText = ({
     minHeight: "1em"
   };
 
+  // Content is seeded/synced exclusively by the FOCUS-PROTECTED effect
+  // above — we deliberately never pass children/dangerouslySetInnerHTML
+  // here. Doing so would hand this node back to React's diffing on
+  // every re-render (e.g. the debounced/refetch-triggered prop updates
+  // below) and collapse the caret mid-edit — the exact bug fixed in
+  // RichTextEditor.tsx's emitChangeOnInput.
   const El = Tag as any;
   const props: any = {
     ref,
@@ -118,12 +153,6 @@ const EditableText = ({
     onKeyDown: handleKeyDown,
     ...rest
   };
-
-  if (dangerouslySetInnerHTML) {
-    props.dangerouslySetInnerHTML = dangerouslySetInnerHTML;
-  } else {
-    props.children = children;
-  }
 
   return <El {...props} />;
 };
