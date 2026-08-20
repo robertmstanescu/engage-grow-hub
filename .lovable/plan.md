@@ -9,7 +9,7 @@ Fix: render the cover at its natural landscape aspect ratio (16:9), full contain
 The author image field is a bare upload button. Replace it with the same gallery-backed picker used everywhere else in admin (upload, pick from gallery, or paste URL) plus the standard alt-text input. The cover image field gets the same treatment for consistency.
 
 ## 3. Paragraph spacing in body text
-Rich-text paragraphs currently get 10px top/bottom in some contexts, but row body copy uses only 4px and blog body copy inherits inconsistently. Standardise on a single paragraph rhythm token applied to all long-form body text (row bodies, blog article body, prose blocks) so every paragraph has clear breathing room.
+Rich-text paragraphs currently get inconsistent top/bottom spacing depending on context. Standardise on 8px top and bottom margin for every paragraph in all long-form body text (row bodies, blog article body, prose blocks) so every paragraph has clear, even breathing room.
 
 ## 4. Excerpt and tags everywhere
 - `/blog` cards: show excerpt (already there) plus the post's tags as pills, using the existing tag colour system.
