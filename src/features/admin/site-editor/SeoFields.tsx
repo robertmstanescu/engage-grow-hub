@@ -91,8 +91,12 @@ const SeoFields = ({
   onDescriptionChange,
   aiSummary,
   onAiSummaryChange,
+  aiSourceTitle,
+  aiSourceContent,
+  aiSourceKind = "page",
 }: Props) => {
   const aeoEnabled = typeof onAiSummaryChange === "function";
+  const [generating, setGenerating] = useState(false);
 
   // Local mirrors so per-keystroke typing only re-renders THIS component
   // — the upstream draft state (and therefore the canvas) only updates
