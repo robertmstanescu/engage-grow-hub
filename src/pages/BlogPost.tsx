@@ -201,7 +201,7 @@ const BlogPost = () => {
           </header>
         </div>
 
-        <div className="section-light py-16 px-8">
+        <div className="section-light pt-6 pb-16 px-8">
           {(() => {
             // Prefer widget rows when the post has been (re-)composed in
             // the new builder. Fall back to legacy HTML for posts that
