@@ -37,7 +37,7 @@ const BlogPost = () => {
   const [searchParams] = useSearchParams();
   const [article, setArticle] = useState<BlogArticle | null>(null);
   const [loading, setLoading] = useState(true);
-  const { getCategoryColors, getTagColors } = useTagColors();
+  const { getTagColors } = useTagColors();
   const isPreview = searchParams.get("preview") === "draft";
   const previewKey = searchParams.get("previewKey") || slug || "";
 
