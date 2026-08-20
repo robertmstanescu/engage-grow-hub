@@ -41,7 +41,7 @@ const COOKIE_INVENTORY: { name: string; purpose: string; lifespan: string }[] = 
     name: "Anonymous Page-View ID",
     purpose:
       "Set on every visit, regardless of your choice below — it's what lets us count how many separate people visit (instead of over-counting one person who changes networks). It's a random ID stored on this device only, never sent anywhere with your name or email attached, and we can't use it to identify you.",
-    lifespan: "Until you clear your browser storage",
+    lifespan: "Until cleared",
   },
   {
     name: "Visitor ID",
@@ -132,11 +132,22 @@ const CookieConsent = () => {
         aria-label="Cookie settings"
         // Wider than the compact toast (max 420px) so the cookie list is
         // legible without horizontal cramming. Same 26px edge spacing.
-        style={{ position: "fixed", bottom: "26px", right: "26px", zIndex: 60 }}
-        className="w-[calc(100vw-3.25rem)] max-w-[420px]"
+        // maxHeight caps the WHOLE dialog to the viewport minus that same
+        // 26px margin on both ends — without this, the inner card below
+        // was free to grow taller than the screen with nothing to scroll
+        // it, so on shorter viewports the footer action bar (and even the
+        // bottom of the cookie list) rendered off-screen and unreachable.
+        style={{
+          position: "fixed",
+          bottom: "26px",
+          right: "26px",
+          zIndex: 60,
+          maxHeight: "calc(100vh - 52px)",
+        }}
+        className="w-[calc(100vw-3.25rem)] max-w-[420px] flex flex-col"
       >
         <div
-          className="rounded-xl backdrop-blur-md overflow-hidden"
+          className="rounded-xl backdrop-blur-md overflow-hidden flex flex-col min-h-0"
           style={{
             backgroundColor: "hsl(var(--card) / 0.98)",
             border: "1px solid hsl(var(--border))",
@@ -144,9 +155,10 @@ const CookieConsent = () => {
             color: "hsl(var(--foreground))",
           }}
         >
-          {/* Header bar with title + close button */}
+          {/* Header bar with title + close button — stays put; only the
+              body below scrolls. */}
           <div
-            className="flex items-center justify-between px-4 py-3"
+            className="flex items-center justify-between px-4 py-3 flex-shrink-0"
             style={{ borderBottom: "1px solid hsl(var(--border))" }}
           >
             <div className="flex items-center gap-2">
@@ -174,10 +186,11 @@ const CookieConsent = () => {
             </button>
           </div>
 
-          {/* Body. Allowed to grow to fit all content — no scrollbar.
-              The panel expands naturally to whatever height the cookie
-              inventory needs. */}
-          <div className="px-4 py-4">
+          {/* Body — the ONLY part that scrolls. min-h-0 is load-bearing:
+              without it, a flex child refuses to shrink below its content
+              height, which would defeat the maxHeight above entirely and
+              bring back the original overflow. */}
+          <div className="px-4 py-4 overflow-y-auto min-h-0">
             {/* Current status pill */}
             <div className="mb-3">
               <p className="font-body text-micro uppercase tracking-wider opacity-60 mb-1.5">
@@ -224,7 +237,7 @@ const CookieConsent = () => {
                     border: "1px solid hsl(var(--border))",
                   }}
                 >
-                  <div className="flex items-baseline justify-between gap-2 mb-1">
+                  <div className="flex items-baseline justify-between gap-2 mb-1 flex-wrap">
                     <code
                       className="font-mono text-micro"
                       style={{ color: "hsl(var(--accent-ink))" }}
@@ -249,9 +262,12 @@ const CookieConsent = () => {
           </div>
 
           {/* Footer action — flips the choice. Label changes based on
-              current state so the consequence of clicking is obvious. */}
+              current state so the consequence of clicking is obvious.
+              flex-shrink-0 keeps it pinned below the scrolling body, same
+              as the header above, so Accept/Withdraw/Done stay reachable
+              no matter how tall the cookie inventory list gets. */}
           <div
-            className="px-4 py-3 flex items-center gap-2"
+            className="px-4 py-3 flex items-center gap-2 flex-shrink-0"
             style={{ borderTop: "1px solid hsl(var(--border))" }}
           >
             {isAccepted ? (
