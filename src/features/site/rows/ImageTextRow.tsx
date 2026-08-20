@@ -215,7 +215,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             html
             as="div"
             data-rte-fit=""
-            className="font-body leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
+            className="font-body leading-[1.6] [&_p]:mb-3 [&_p]:mt-3"
             style={{ fontSize: "var(--fs-body)", color: c.color_description || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 80%, transparent)", height: "auto", overflow: "visible" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
           />

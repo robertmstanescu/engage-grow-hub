@@ -92,7 +92,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
                   className="font-body-heading font-bold mb-3 text-lg leading-[1.6]" style={{ color: titleColor }}>{card.title}</EditableText>
                 <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
                   data-rte-fit=""
-                  className="font-body text-xs leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]" style={{ color: bodyColor, overflow: "visible", height: "auto" }}
+                  className="font-body text-xs leading-[1.6] [&_p]:mb-3 [&_p]:mt-3" style={{ color: bodyColor, overflow: "visible", height: "auto" }}
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
 
                 {cardCtaUrl && cardCtaLabel && (

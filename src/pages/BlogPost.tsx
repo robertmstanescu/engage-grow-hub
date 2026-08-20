@@ -226,7 +226,7 @@ const BlogPost = () => {
             }
             return (
               <div
-                className="max-w-[700px] mx-auto prose prose-sm md:prose-base prose-headings:font-display prose-headings:text-[hsl(260_20%_10%)] prose-p:text-[hsl(260_20%_10%_/_0.75)] prose-p:leading-[1.8] prose-p:my-2 prose-a:text-[hsl(280_55%_24%)] prose-img:rounded-lg"
+                className="max-w-[700px] mx-auto prose prose-sm md:prose-base prose-headings:font-display prose-headings:text-[hsl(260_20%_10%)] prose-p:text-[hsl(260_20%_10%_/_0.75)] prose-p:leading-[1.8] prose-p:my-4 prose-a:text-[hsl(280_55%_24%)] prose-img:rounded-lg"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
               />
             );

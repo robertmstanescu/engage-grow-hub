@@ -173,7 +173,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                   fieldPath={`${prefix}.body`}
                   html
                   as="div"
-                  className="font-body leading-[1.6] [&_p]:mb-[5px] [&_p]:mt-[5px]"
+                  className="font-body leading-[1.6] [&_p]:mb-3 [&_p]:mt-3"
                   style={{
                     fontSize: "var(--fs-body)",
                     color: c.color_body || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 85%, transparent)",
