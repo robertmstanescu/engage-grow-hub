@@ -95,15 +95,41 @@ const Navbar = () => {
   const showBlogLink = !navLoading && navConfig.show_blog_link === true;
   const ctaText = navConfig.cta_text || "";
   const ctaHref = navConfig.cta_href || "";
+  const servicesLabel = navConfig.services_label || "Services";
+  const servicesHref = navConfig.services_href || "";
+  const servicesIndex = Number.isFinite(Number(navConfig.services_index))
+    ? Math.max(0, Number(navConfig.services_index))
+    : 0;
 
-  const allItems = navLoading
+  type NavItem =
+    | { kind: "link"; label: string; href: string }
+    | { kind: "dropdown"; label: string; href: string; items: { label: string; href: string }[] };
+
+  const baseLinks: NavItem[] = navLoading
     ? []
     : [
-        ...subLinks.map((l: any) => ({ label: l.label, href: l.href })),
-        ...links.map((l: any) => ({ label: l.label, href: l.href })),
-        ...(showBlogLink ? [{ label: "Blog", href: "/blog/" }] : []),
+        ...links.map((l: any) => ({ kind: "link" as const, label: l.label, href: l.href })),
+        ...(showBlogLink ? [{ kind: "link" as const, label: "Blog", href: "/blog/" }] : []),
       ];
-  const renderedItems = allItems;
+
+  const navItems: NavItem[] = [...baseLinks];
+  if (!navLoading && subLinks.length > 0) {
+    navItems.splice(Math.min(servicesIndex, navItems.length), 0, {
+      kind: "dropdown",
+      label: servicesLabel,
+      href: servicesHref,
+      items: subLinks.map((l: any) => ({ label: l.label, href: l.href })),
+    });
+  }
+
+  // Flat list used for scroll-spy and the mobile overlay ordering.
+  const allItems = navItems.flatMap((item) =>
+    item.kind === "dropdown"
+      ? [...(item.href ? [{ label: item.label, href: item.href }] : []), ...item.items]
+      : [{ label: item.label, href: item.href }],
+  );
+  const renderedItems = navItems;
+
 
   const handleScroll = useCallback(() => {
     if (location.pathname !== "/") return;
