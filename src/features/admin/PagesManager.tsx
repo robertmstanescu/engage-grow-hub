@@ -490,6 +490,9 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
             setEditingPage({ ...editingPage, meta_description: v });
             updateCmsPageMeta(editingPage.id, "meta_description", v);
           }}
+          aiSourceTitle={editingPage.title}
+          aiSourceContent={rowsToPlainText(draftRows)}
+          aiSourceKind="page"
           aiSummary={editingPage.ai_summary || ""}
           onAiSummaryChange={(v) => {
             setEditingPage({ ...editingPage, ai_summary: v });
