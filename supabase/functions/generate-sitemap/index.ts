@@ -70,10 +70,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// The canonical, public origin we want Google to index. This is now
-// resolved per-request from `brand_settings.identity.canonicalOrigin`,
-// falling back to the request origin and then to this neutral default.
-const FALLBACK_ORIGIN = "https://example.com";
+// The canonical, public origin we want Google to index. There is NO
+// neutral default any more: emitting `https://example.com` silently
+// produced a sitemap for a domain we do not own, and Google rejects
+// cross-domain entries. `brand_settings.identity.canonicalOrigin` is the
+// single source of truth; a local/preview request may fall back to its
+// own origin, and anything else fails loudly with a 500.
+const LOCAL_HOST_RE = /^(localhost|127\.0\.0\.1|\[::1\])$/i;
+
 
 /**
  * Escape characters that have special meaning inside XML element text.
