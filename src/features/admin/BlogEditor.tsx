@@ -14,6 +14,7 @@ import { fetchAllBlogPosts, insertBlogPost, updateBlogPost, deleteBlogPost } fro
 import { DEFAULT_PAGE_SIZE } from "@/services/pagination";
 import { fetchSection } from "@/services/siteContent";
 import { useListFilters } from "@/hooks/useListFilters";
+import { createRedirect } from "@/services/redirects";
 import ListFilters from "@/components/ui/list-filters";
 import { ListPager } from "@/components/ui/list-pager";
 import LeadMagnetSection from "./LeadMagnetSection";
@@ -194,6 +195,10 @@ const BlogEditor = () => {
   /** Optimistic delete — see db-helpers.ts for rationale. */
   const handleDelete = (id: string) => {
     if (!confirm("Delete this post?")) return;
+    // Redirects manager — capture the slug before the row is gone so a
+    // published post's old URL redirects to the blog index instead of
+    // 404ing.
+    const target = posts.find((p) => p.id === id);
     return runOptimisticAction({
       snapshot: () => posts,
       applyOptimistic: () => {
@@ -204,7 +209,13 @@ const BlogEditor = () => {
         setPosts(prev);
         setTotalPosts((prev) => prev + 1);
       },
-      action: () => deleteBlogPost(id),
+      action: async () => {
+        const result = await deleteBlogPost(id);
+        if (!result.error && target?.status === "published" && target.slug) {
+          createRedirect(`/blog/${target.slug}`, "/blog", "auto");
+        }
+        return result;
+      },
       successMessage: "Post deleted",
     });
   };

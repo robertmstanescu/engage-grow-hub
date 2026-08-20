@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import type { PageRow } from "@/types/rows";
+import type { PageRow, PageRowV3 } from "@/types/rows";
 import { getWidget } from "@/lib/WidgetRegistry";
 import { generateRowId, DEFAULT_ROW_LAYOUT, buildEmptyV3Row } from "@/lib/constants/rowDefaults";
 
@@ -191,6 +191,19 @@ export interface BuilderContextValue {
   /** Click/keyboard entry point for Structure cards — see insertWidgetAtSelection. */
   insertLayoutAtSelection: (columnCount: 1 | 2 | 3 | 4) => void;
   /**
+   * Reusable row snippets — CLONE-ON-INSERT (not live-synced, unlike
+   * `global_widgets`). Deep-clones `row` and regenerates every id in its
+   * subtree (row/columns/cells/widgets) via `generateRowId()` so two
+   * pages — or two instances of one snippet on one page — never collide
+   * on a shared id, then inserts it at `insertAt`. `row` must already be
+   * normalized to v3 shape (`normalizeRowsToV3`) — that's done once at
+   * save time in the "Save as Snippet" flow, not here. Returns the new
+   * row's id.
+   */
+  insertPrebuiltRow: (row: PageRowV3, insertAt: number) => string | null;
+  /** Click/keyboard entry point for Snippet cards — see insertWidgetAtSelection. */
+  insertSnippetAtSelection: (row: PageRowV3) => void;
+  /**
    * EPIC 1 / US 1.5 — Breadcrumb Navigation
    * Read-only access to the rows tree so the breadcrumb can resolve
    * human-readable labels (row type, widget kind, item title, etc.)
@@ -216,10 +229,39 @@ const DISABLED: BuilderContextValue = {
   insertLayoutRow: () => "",
   insertWidgetAtSelection: () => {},
   insertLayoutAtSelection: () => {},
+  insertPrebuiltRow: () => null,
+  insertSnippetAtSelection: () => {},
   pageRows: undefined,
 };
 
 const BuilderContext = createContext<BuilderContextValue>(DISABLED);
+
+/**
+ * Deep-clone a stored v3 row and regenerate every id in its subtree
+ * (row, each column, each cell, each widget) so two pages — or two
+ * instances of the same snippet on one page — never collide on a
+ * shared id. Snippets are always saved/inserted in canonical v3 shape
+ * (normalized once at save time via `normalizeRowsToV3`), so this only
+ * has to handle one shape.
+ */
+const cloneRowWithFreshIds = (row: PageRowV3): PageRowV3 => {
+  const cloned = structuredClone(row) as PageRowV3;
+  cloned.id = generateRowId();
+  cloned.columns = cloned.columns.map((col) => ({
+    ...col,
+    id: generateRowId(),
+    cells: (col.cells || []).map((cell) => ({
+      ...cell,
+      id: generateRowId(),
+      widgets: (cell.widgets || []).map((w) => ({ ...w, id: generateRowId() })),
+    })),
+    // v2 back-compat field on PageColumn — regenerate if present, though
+    // snippets are always saved as v3 so this branch is normally dead
+    // code; kept only as a defensive no-op guard.
+    widgets: col.widgets ? col.widgets.map((w) => ({ ...w, id: generateRowId() })) : undefined,
+  }));
+  return cloned;
+};
 
 /**
  * Provider — mount once around the admin canvas. Anything outside this
@@ -551,6 +593,37 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
     [resolveSelectionInsertion, insertLayoutRow],
   );
 
+  const insertPrebuiltRow = useCallback<BuilderContextValue["insertPrebuiltRow"]>(
+    (snippetRow, insertAt) => {
+      const rows = rowsRef.current;
+      const setter = onRowsChangeRef.current;
+      if (!rows || !setter) return null;
+      const fresh = cloneRowWithFreshIds(snippetRow);
+      const at = Math.max(0, Math.min(insertAt, rows.length));
+      setter([...rows.slice(0, at), fresh as unknown as PageRow, ...rows.slice(at)]);
+      setActiveNodePathState(["row", fresh.id]);
+      setEditingPathState(null);
+      return fresh.id;
+    },
+    [],
+  );
+
+  const insertSnippetAtSelection = useCallback<BuilderContextValue["insertSnippetAtSelection"]>(
+    (snippetRow) => {
+      const rows = rowsRef.current || [];
+      const target = resolveSelectionInsertion();
+      // Same rule as insertLayoutAtSelection — a row can't nest inside a
+      // cell, so a snippet inserted while a cell is selected lands after
+      // that cell's own row instead.
+      const anchorRowId = target.kind === "end" ? null : target.rowId;
+      const insertAt = anchorRowId
+        ? rows.findIndex((r) => r.id === anchorRowId) + 1
+        : rows.length;
+      insertPrebuiltRow(snippetRow, insertAt);
+    },
+    [resolveSelectionInsertion, insertPrebuiltRow],
+  );
+
   const value = useMemo<BuilderContextValue>(
     () => ({
       enabled: true,
@@ -568,6 +641,8 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       insertLayoutRow,
       insertWidgetAtSelection,
       insertLayoutAtSelection,
+      insertPrebuiltRow,
+      insertSnippetAtSelection,
       pageRows,
     }),
     [
@@ -584,6 +659,8 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       insertLayoutRow,
       insertWidgetAtSelection,
       insertLayoutAtSelection,
+      insertPrebuiltRow,
+      insertSnippetAtSelection,
       pageRows,
     ],
   );

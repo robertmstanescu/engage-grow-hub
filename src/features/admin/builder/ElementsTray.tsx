@@ -31,13 +31,16 @@
  */
 
 import { useDraggable } from "@dnd-kit/core";
-import { Blocks, Columns2, Columns3, Columns4, Square } from "lucide-react";
+import { Blocks, Bookmark, Columns2, Columns3, Columns4, Square } from "lucide-react";
 import { listWidgets, type WidgetDefinition } from "@/lib/WidgetRegistry";
 import { useBuilder } from "./BuilderContext";
+import { useRowSnippets, type RowSnippet } from "@/hooks/useRowSnippets";
+import type { PageRowV3 } from "@/types/rows";
 
 /** Stable id prefix used by the DnD context to recognise tray sources. */
 export const TRAY_DRAG_ID_PREFIX = "new-widget-";
 export const TRAY_LAYOUT_DRAG_ID_PREFIX = "new-layout-";
+export const TRAY_SNIPPET_DRAG_ID_PREFIX = "new-snippet-";
 
 /**
  * Shape of the payload attached to a tray-card drag event.
@@ -60,6 +63,13 @@ export type TrayDragData =
       type: "layout";
       label: string;
       columnCount: 1 | 2 | 3 | 4;
+    }
+  | {
+      source: "tray";
+      kind: "snippet";
+      type: "snippet";
+      label: string;
+      snippetRow: PageRowV3;
     };
 
 /** Type guard for `active.data.current` coming from the tray. */
@@ -70,6 +80,11 @@ export const isLayoutTrayDragData = (
   d: TrayDragData,
 ): d is Extract<TrayDragData, { kind: "layout" }> =>
   (d as any).kind === "layout";
+
+export const isSnippetTrayDragData = (
+  d: TrayDragData,
+): d is Extract<TrayDragData, { kind: "snippet" }> =>
+  (d as any).kind === "snippet";
 
 /* ──────────────────────────────────────────────────────────────────
  * Single draggable card
@@ -213,15 +228,80 @@ const LayoutCard = ({ columnCount, label, Icon }: LayoutCardProps) => {
 };
 
 /* ──────────────────────────────────────────────────────────────────
+ * SnippetCard — draggable/clickable card for a saved reusable row
+ * (see InspectorPanel's "Save as Snippet"). Inserting one ALWAYS
+ * clones with fresh ids (BuilderContext's insertPrebuiltRow /
+ * insertSnippetAtSelection) — editing the inserted copy never affects
+ * the saved snippet or any other page using it.
+ * ────────────────────────────────────────────────────────────────── */
+interface SnippetCardProps {
+  snippet: RowSnippet;
+}
+
+const SnippetCard = ({ snippet }: SnippetCardProps) => {
+  const { insertSnippetAtSelection } = useBuilder();
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `${TRAY_SNIPPET_DRAG_ID_PREFIX}${snippet.id}`,
+    data: {
+      source: "tray",
+      kind: "snippet",
+      type: "snippet",
+      label: snippet.name,
+      snippetRow: snippet.row_data,
+    } satisfies TrayDragData,
+  });
+
+  return (
+    <button
+      ref={setNodeRef}
+      type="button"
+      {...listeners}
+      {...attributes}
+      // Non-drag alternative — see TrayCard's onClick for the full
+      // rationale. Same insertion logic either way.
+      onClick={() => insertSnippetAtSelection(snippet.row_data)}
+      title={`Click or drag "${snippet.name}" onto the canvas`}
+      aria-label={`Add ${snippet.name} snippet`}
+      className="group relative flex flex-col items-center justify-center gap-1.5 rounded-lg border p-2.5 transition-all cursor-grab active:cursor-grabbing focus:outline-none focus-visible:ring-2"
+      style={{
+        opacity: isDragging ? 0.35 : 1,
+        backgroundColor: "hsl(var(--card))",
+        borderColor: "hsl(var(--border) / 0.6)",
+        // @ts-expect-error — CSS custom prop for focus ring colour
+        "--tw-ring-color": "hsl(var(--accent))",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "hsl(var(--accent))";
+        e.currentTarget.style.backgroundColor = "hsl(var(--accent) / 0.06)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "hsl(var(--border) / 0.6)";
+        e.currentTarget.style.backgroundColor = "hsl(var(--card))";
+      }}
+    >
+      <Bookmark size={18} strokeWidth={1.6} style={{ color: "hsl(var(--foreground))" }} />
+      <span
+        className="font-body text-[10px] leading-tight text-center line-clamp-2"
+        style={{ color: "hsl(var(--muted-foreground))" }}
+      >
+        {snippet.name}
+      </span>
+    </button>
+  );
+};
+
+/* ──────────────────────────────────────────────────────────────────
  * Floating preview rendered inside <DragOverlay> by SiteEditor.
  * Exported so the parent can mount it without recreating the look.
  * ────────────────────────────────────────────────────────────────── */
 export const TrayDragPreview = ({ data }: { data: TrayDragData }) => {
-  // Layout drags don't have a registry entry; pick a structure icon.
+  // Layout/snippet drags don't have a registry entry; pick a fixed icon.
   let Icon: typeof Blocks;
   if ((data as any).kind === "layout") {
     const cc = (data as any).columnCount as number;
     Icon = cc === 1 ? Square : cc === 2 ? Columns2 : cc === 3 ? Columns3 : Columns4;
+  } else if ((data as any).kind === "snippet") {
+    Icon = Bookmark;
   } else {
     const def = listWidgets().find((w) => w.type === data.type);
     Icon = def?.icon ?? Blocks;
@@ -246,6 +326,7 @@ export const TrayDragPreview = ({ data }: { data: TrayDragData }) => {
  * ────────────────────────────────────────────────────────────────── */
 const ElementsTray = () => {
   const all = listWidgets();
+  const { snippets } = useRowSnippets();
 
   // Group by `category` for a tidier menu. Widgets with no category
   // bucket into "Other" so they're never silently hidden.
@@ -287,6 +368,25 @@ const ElementsTray = () => {
           <LayoutCard columnCount={4} label="4 columns" Icon={Columns4} />
         </div>
       </div>
+
+      {/* Snippets — saved reusable rows (InspectorPanel's "Save as
+          Snippet"). Hidden entirely when there are none so a fresh
+          project doesn't show an empty header. */}
+      {snippets.length > 0 && (
+        <div>
+          <h4
+            className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-2 px-1"
+            style={{ color: "hsl(var(--muted-foreground))" }}
+          >
+            Snippets
+          </h4>
+          <div className="grid grid-cols-2 gap-2">
+            {snippets.map((snippet) => (
+              <SnippetCard key={snippet.id} snippet={snippet} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {orderedCategories.map((cat) => (
         <div key={cat}>

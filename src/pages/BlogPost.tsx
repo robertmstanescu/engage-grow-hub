@@ -9,6 +9,7 @@ import { useTagColors } from "@/hooks/useTagColors";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
+import { useRedirectLookup } from "@/hooks/useRedirectLookup";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
 // US 17.x — blog posts can now be composed with the same widget builder
 // as the main page and CMS pages. When `page_rows` is non-empty, the
@@ -38,6 +39,10 @@ const BlogPost = () => {
   const [article, setArticle] = useState<BlogArticle | null>(null);
   const [loading, setLoading] = useState(true);
   const { getTagColors } = useTagColors();
+  // BlogPost has its own bespoke "not found" branch below — it does NOT
+  // render <NotFound/>, so it needs its own redirect check (NotFound.tsx's
+  // check doesn't cover this route).
+  const checkingRedirect = useRedirectLookup();
   const isPreview = searchParams.get("preview") === "draft";
   const previewKey = searchParams.get("previewKey") || slug || "";
 
@@ -117,6 +122,7 @@ const BlogPost = () => {
   }
 
   if (!article) {
+    if (checkingRedirect) return null;
     return (
       <div className="min-h-screen page-shell">
         <Navbar />

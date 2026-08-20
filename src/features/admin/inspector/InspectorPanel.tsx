@@ -1,12 +1,14 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
-import { MousePointer2, Trash2 } from "lucide-react";
+import { MousePointer2, Trash2, BookmarkPlus, Loader2 } from "lucide-react";
 import { useBuilder } from "../builder/BuilderContext";
 import { useInspectorFocus } from "./useInspectorFocus";
 import { getWidget } from "@/lib/WidgetRegistry";
-import type { PageRow } from "@/types/rows";
+import type { PageRow, PageRowV3 } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { confirmDestructive } from "@/components/ConfirmDialog";
 import { countRowWidgets } from "../builder/rowWidgetCount";
+import { useRowSnippets } from "@/hooks/useRowSnippets";
+import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import CellSettingsEditor from "./CellSettingsEditor";
 import { type BoxField } from "./BoxModelControl";
 import WidgetInspectorTabs, { pickTabForFocusKey, type InspectorTab } from "./WidgetInspectorTabs";
@@ -162,6 +164,14 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     const target = pickTabForFocusKey(focusLeaf);
     setWidgetTab(target);
   }, [focusLeaf, activeElement]);
+
+  // "Save as Snippet" (row-level reusable blocks) — must live here, not
+  // inside renderBody's row branch, since renderBody has multiple early
+  // returns and hooks can't be called conditionally between renders.
+  // Mirrors WidgetSettingsDrawer's "Save as Global" inline-prompt UX.
+  const [savingSnippetName, setSavingSnippetName] = useState<string | null>(null);
+  const { create: createSnippet, isMutating: savingSnippet } = useRowSnippets();
+  useEffect(() => setSavingSnippetName(null), [activeElement]);
 
   const renderBody = () => {
 
@@ -346,6 +356,72 @@ const InspectorPanel = (props: InspectorPanelProps) => {
           onCustomCssChange={() => {}}
         />
 
+
+        {/* Reusable Row (clone-on-insert snippet) — save this row's
+         * current content by name, then insert copies of it on any
+         * page from the ElementsTray's "Snippets" group. Editing one
+         * page's copy never affects another (see BuilderContext's
+         * insertPrebuiltRow — every insert regenerates fresh ids). */}
+        <Section title="Reusable Row">
+          {savingSnippetName === null ? (
+            <button
+              type="button"
+              onClick={() => setSavingSnippetName(row.strip_title || "")}
+              className="flex items-center gap-2 font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-md hover:opacity-80 w-full justify-center"
+              style={{
+                color: "hsl(var(--primary))",
+                border: "1px solid hsl(var(--primary) / 0.4)",
+                backgroundColor: "hsl(var(--primary) / 0.06)",
+              }}
+            >
+              <BookmarkPlus size={14} /> Save as Snippet
+            </button>
+          ) : (
+            <div className="space-y-2">
+              <input
+                autoFocus
+                value={savingSnippetName}
+                onChange={(e) => setSavingSnippetName(e.target.value)}
+                placeholder="e.g. Testimonial + CTA band"
+                className="w-full px-3 py-2 rounded-md font-body text-xs border"
+                style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
+                onKeyDown={async (e) => {
+                  if (e.key === "Enter" && savingSnippetName.trim()) {
+                    const v3Row = normalizeRowsToV3([row])[0] as PageRowV3;
+                    await createSnippet({ name: savingSnippetName.trim(), row_data: v3Row });
+                    setSavingSnippetName(null);
+                  }
+                  if (e.key === "Escape") setSavingSnippetName(null);
+                }}
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!savingSnippetName.trim()) return;
+                    const v3Row = normalizeRowsToV3([row])[0] as PageRowV3;
+                    await createSnippet({ name: savingSnippetName.trim(), row_data: v3Row });
+                    setSavingSnippetName(null);
+                  }}
+                  disabled={!savingSnippetName.trim() || savingSnippet}
+                  className="flex-1 flex items-center justify-center gap-2 font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-md disabled:opacity-50"
+                  style={{ color: "hsl(var(--primary-foreground))", backgroundColor: "hsl(var(--primary))" }}
+                >
+                  {savingSnippet ? <Loader2 size={12} className="animate-spin" /> : <BookmarkPlus size={12} />}
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSavingSnippetName(null)}
+                  className="font-body text-[11px] uppercase tracking-wider px-3 py-2 rounded-md hover:opacity-70"
+                  style={{ color: "hsl(var(--muted-foreground))", border: "1px solid hsl(var(--border))" }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </Section>
 
         {/* Destructive action lives at the bottom of the row inspector
          * so the user has to scroll past the safe controls first — and

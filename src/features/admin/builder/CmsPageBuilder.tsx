@@ -26,6 +26,7 @@ import RevisionHistoryPanel from "./RevisionHistoryPanel";
 import SchedulePublishPanel from "./SchedulePublishPanel";
 import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 import { confirmUnsavedExit } from "@/components/ConfirmDialog";
+import { createRedirect } from "@/services/redirects";
 
 interface CmsPageRecord {
   id: string;
@@ -217,6 +218,13 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
     if (error) toast.error(error.message);
     else {
       toast.success("Published");
+      // Redirects manager — only matters if the OLD slug was already
+      // live (public visitors/search engines may have it bookmarked or
+      // indexed). A slug change on a page that was still a draft never
+      // had a public URL to redirect from.
+      if (record.status === "published" && record.slug && pageSlug !== record.slug) {
+        createRedirect(`/${record.slug}`, `/${pageSlug}`, "auto");
+      }
       setRecord({
         ...record,
         page_rows: draftRows,

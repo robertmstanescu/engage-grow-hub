@@ -23,6 +23,7 @@ import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
+import { useRedirectLookup } from "@/hooks/useRedirectLookup";
 
 interface Error404Content {
   headline: string;
@@ -39,6 +40,10 @@ const FALLBACK: Error404Content = {
 const NotFound = () => {
   const location = useLocation();
   const content = useSiteContent<Error404Content>("error_404", FALLBACK);
+  // Check for a configured redirect before committing to a 404 render —
+  // covers CmsPage.tsx's inline <NotFound/> (all slug routes) AND the
+  // router's own catch-all "*" route.
+  const checkingRedirect = useRedirectLookup();
 
   usePageMeta({
     title: "Page Not Found",
@@ -48,6 +53,8 @@ const NotFound = () => {
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
   }, [location.pathname]);
+
+  if (checkingRedirect) return null;
 
   return (
     <div

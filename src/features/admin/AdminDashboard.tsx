@@ -59,7 +59,7 @@ import {
   Users, Mail, Image, Palette, Settings, LogOut,
   Save, Send, Tag, UserCog,
   GripVertical, Plus, Trash2, ArrowLeft, X, Sparkles, Menu,
-  Loader2, Check, Search, History,
+  Loader2, Check, Search, History, Link2,
 } from "lucide-react";
 import { Link, useLocation, useNavigate, useParams, useBlocker } from "react-router-dom";
 import AdminOverviewDashboard from "./AdminOverviewDashboard";
@@ -97,6 +97,7 @@ import BlogEditor from "./BlogEditor";
 import ContactsList from "./ContactsList";
 import EmailCampaigns from "./EmailCampaigns";
 import TagsManager from "./TagsManager";
+import RedirectsManager from "./RedirectsManager";
 import PagesManager from "./PagesManager";
 import NavigationManager from "./NavigationManager";
 import GlobalSettings from "./GlobalSettings";
@@ -126,7 +127,7 @@ import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 import SiteEditor from "./SiteEditor";
 import CmsPageBuilder from "./builder/CmsPageBuilder";
 
-type Tab = "overview" | "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "settings" | "team" | "seo_master" | "versions";
+type Tab = "overview" | "site" | "pages" | "navigation" | "blog" | "contacts" | "emails" | "media" | "brand" | "tags" | "redirects" | "settings" | "team" | "seo_master" | "versions";
 type PropertiesSubTab = "content" | "style" | "seo";
 
 /** Every Tab except "overview" and "site" — those two have their own
@@ -136,7 +137,7 @@ type PropertiesSubTab = "content" | "style" | "seo";
  *  instead of rendering a blank tab. */
 const SIMPLE_TABS = new Set<Tab>([
   "pages", "navigation", "blog", "contacts", "emails", "media",
-  "brand", "tags", "settings", "team", "seo_master", "versions",
+  "brand", "tags", "redirects", "settings", "team", "seo_master", "versions",
 ]);
 const tabToPath = (tab: Tab): string => (tab === "overview" ? "/admin/dashboard" : `/admin/${tab}`);
 interface Props { session: any; }
@@ -208,6 +209,7 @@ const NAV_GROUPS = [
     items: [
       { key: "brand" as Tab, icon: Palette, label: "Brand" },
       { key: "tags" as Tab, icon: Tag, label: "Tags" },
+      { key: "redirects" as Tab, icon: Link2, label: "Redirects" },
       { key: "seo_master" as Tab, icon: Search, label: "Global SEO Settings" },
       { key: "versions" as Tab, icon: History, label: "Version History" },
       { key: "team" as Tab, icon: UserCog, label: "Manage Team" },
@@ -1699,6 +1701,7 @@ const AdminDashboard = ({ session }: Props) => {
                 {activeTab === "media" && <MediaGallery />}
                 {activeTab === "brand" && <BrandSettings />}
                 {activeTab === "tags" && <TagsManager />}
+                {activeTab === "redirects" && <RedirectsManager />}
                 {activeTab === "team" && <ManageTeam />}
                 {activeTab === "seo_master" && <SeoMaster />}
                 {activeTab === "versions" && <VersionHistory />}

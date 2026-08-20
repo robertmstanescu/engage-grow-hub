@@ -17,6 +17,7 @@ import {
 import { DEFAULT_PAGE_SIZE } from "@/services/pagination";
 import { fetchSection, publishSection } from "@/services/siteContent";
 import { useListFilters } from "@/hooks/useListFilters";
+import { createRedirect } from "@/services/redirects";
 import ListFilters from "@/components/ui/list-filters";
 import { ListPager } from "@/components/ui/list-pager";
 
@@ -251,6 +252,9 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   const deletePage = (id: string) => {
     if (!confirm("Delete this page permanently?")) return;
     if (editingPage?.id === id) setEditingPage(null);
+    // Redirects manager — capture the slug before the row is gone so a
+    // published page's old URL redirects home instead of 404ing.
+    const target = pages.find((p) => p.id === id);
     return runOptimisticAction({
       snapshot: () => pages,
       applyOptimistic: () => {
@@ -261,7 +265,13 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
         setPages(prev);
         setTotalCmsPages((prev) => prev + 1);
       },
-      action: () => deleteCmsPage(id),
+      action: async () => {
+        const result = await deleteCmsPage(id);
+        if (!result.error && target?.status === "published" && target.slug) {
+          createRedirect(`/${target.slug}`, "/", "auto");
+        }
+        return result;
+      },
       successMessage: "Deleted",
     });
   };

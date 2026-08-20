@@ -55,6 +55,7 @@ import ElementsTray, {
   TrayDragPreview,
   isTrayDragData,
   isLayoutTrayDragData,
+  isSnippetTrayDragData,
   type TrayDragData,
 } from "./ElementsTray";
 import { parseDropZoneId } from "./CanvasDropZone";
@@ -101,7 +102,7 @@ const BuilderDndShell = ({
   onRowsChange,
   children,
 }: BuilderDndShellProps) => {
-  const { insertWidgetRow, insertLayoutRow, addWidgetToCell, setActiveElement } = useBuilder();
+  const { insertWidgetRow, insertLayoutRow, addWidgetToCell, insertPrebuiltRow, setActiveElement } = useBuilder();
 
   const handleDragEnd = (e: DragEndEvent) => {
     const data = e.active.data.current;
@@ -150,6 +151,18 @@ const BuilderDndShell = ({
     if (isLayoutTrayDragData(data)) {
       if (drop.kind === "cell") return;
       insertLayoutRow(data.columnCount, insertAt);
+      return;
+    }
+
+    // ── Snippet-drop branch ──────────────────────────────────────
+    // A saved reusable row (InspectorPanel's "Save as Snippet") from
+    // the tray's "Snippets" group. Same "can't nest a row inside a
+    // cell" rule as the layout branch above — reject cell drops.
+    // insertPrebuiltRow deep-clones with fresh ids, so this is always
+    // an independent copy, never a live reference back to the snippet.
+    if (isSnippetTrayDragData(data)) {
+      if (drop.kind === "cell") return;
+      insertPrebuiltRow(data.snippetRow, insertAt);
       return;
     }
 

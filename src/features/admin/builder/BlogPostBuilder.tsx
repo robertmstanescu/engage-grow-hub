@@ -24,6 +24,7 @@ import RevisionHistoryPanel from "./RevisionHistoryPanel";
 import SchedulePublishPanel from "./SchedulePublishPanel";
 import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 import { confirmUnsavedExit } from "@/components/ConfirmDialog";
+import { createRedirect } from "@/services/redirects";
 
 interface BlogPostRecord {
   id: string;
@@ -221,6 +222,12 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
     if (error) toast.error(error.message);
     else {
       toast.success("Published");
+      // Redirects manager — only matters if the OLD slug was already
+      // live. A slug change on a post that was still a draft never had
+      // a public URL to redirect from.
+      if (record.status === "published" && record.slug && pageSlug !== record.slug) {
+        createRedirect(`/blog/${record.slug}`, `/blog/${pageSlug}`, "auto");
+      }
       setRecord({
         ...record,
         page_rows: draftRows,

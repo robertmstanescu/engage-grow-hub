@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useId, useState } from "react";
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
@@ -12,16 +12,32 @@ import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 // EPIC 1 / US 1.1 — atomic-node selection.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 
+/**
+ * Percentage/function-based clip-path values — these scale correctly to
+ * any element size on their own, no SVG assist needed.
+ */
 const CLIP_PATHS: Record<string, string> = {
-  puddle:
-    "path('M 50 2 C 65 0, 78 5, 88 12 C 96 20, 100 32, 99 48 C 100 62, 97 76, 90 86 C 82 95, 70 100, 55 99 C 40 100, 26 96, 16 88 C 6 78, 1 65, 2 50 C 1 36, 5 22, 14 13 C 24 4, 36 1, 50 2 Z')",
-  clover:
-    "path('M 50 5 C 55 5, 62 0, 68 2 C 78 5, 78 16, 75 22 C 82 15, 92 12, 96 20 C 100 28, 95 38, 88 42 C 95 46, 100 56, 98 64 C 95 74, 85 76, 78 72 C 82 80, 80 92, 72 96 C 64 100, 55 95, 50 88 C 45 95, 36 100, 28 96 C 20 92, 18 80, 22 72 C 15 76, 5 74, 2 64 C 0 56, 5 46, 12 42 C 5 38, 0 28, 4 20 C 8 12, 18 15, 25 22 C 22 16, 22 5, 32 2 C 38 0, 45 5, 50 5 Z')",
   blob: "circle(50% at 50% 50%)",
-  diamond:
-    "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+  diamond: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+};
+
+/**
+ * `path()` clip-paths, by contrast, do NOT scale — CSS treats a path's
+ * coordinates as absolute pixels in the element's own box, not relative
+ * percentages. These were authored on a 0–100 grid (as if a 100×100
+ * viewBox), so on a real ~300–500px image `clip-path: path(...)` only
+ * carved out a tiny sliver in the corner instead of the intended shape.
+ * Rescaled to 0–1 here so they can drive an SVG `clipPath` with
+ * `clipPathUnits="objectBoundingBox"` instead, which DOES auto-scale to
+ * the element — see the `<clipPath>` rendered below.
+ */
+const OBB_PATHS: Record<string, string> = {
+  puddle:
+    "M 0.5 0.02 C 0.65 0, 0.78 0.05, 0.88 0.12 C 0.96 0.2, 1 0.32, 0.99 0.48 C 1 0.62, 0.97 0.76, 0.9 0.86 C 0.82 0.95, 0.7 1, 0.55 0.99 C 0.4 1, 0.26 0.96, 0.16 0.88 C 0.06 0.78, 0.01 0.65, 0.02 0.5 C 0.01 0.36, 0.05 0.22, 0.14 0.13 C 0.24 0.04, 0.36 0.01, 0.5 0.02 Z",
+  clover:
+    "M 0.5 0.05 C 0.55 0.05, 0.62 0, 0.68 0.02 C 0.78 0.05, 0.78 0.16, 0.75 0.22 C 0.82 0.15, 0.92 0.12, 0.96 0.2 C 1 0.28, 0.95 0.38, 0.88 0.42 C 0.95 0.46, 1 0.56, 0.98 0.64 C 0.95 0.74, 0.85 0.76, 0.78 0.72 C 0.82 0.8, 0.8 0.92, 0.72 0.96 C 0.64 1, 0.55 0.95, 0.5 0.88 C 0.45 0.95, 0.36 1, 0.28 0.96 C 0.2 0.92, 0.18 0.8, 0.22 0.72 C 0.15 0.76, 0.05 0.74, 0.02 0.64 C 0 0.56, 0.05 0.46, 0.12 0.42 C 0.05 0.38, 0 0.28, 0.04 0.2 C 0.08 0.12, 0.18 0.15, 0.25 0.22 C 0.22 0.16, 0.22 0.05, 0.32 0.02 C 0.38 0, 0.45 0.05, 0.5 0.05 Z",
   heart:
-    "path('M 50 90 C 25 65, 0 50, 0 30 C 0 12, 12 0, 28 0 C 38 0, 46 6, 50 14 C 54 6, 62 0, 72 0 C 88 0, 100 12, 100 30 C 100 50, 75 65, 50 90 Z')",
+    "M 0.5 0.9 C 0.25 0.65, 0 0.5, 0 0.3 C 0 0.12, 0.12 0, 0.28 0 C 0.38 0, 0.46 0.06, 0.5 0.14 C 0.54 0.06, 0.62 0, 0.72 0 C 0.88 0, 1 0.12, 1 0.3 C 1 0.5, 0.75 0.65, 0.5 0.9 Z",
 };
 
 const CAPTION_STYLE: Record<string, React.CSSProperties> = {
@@ -52,6 +68,11 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
   const imgPos = c.image_position || "right";
   const shape = c.image_shape || "default";
   const captionPos = c.caption_position || "bottom-left";
+  // useId() emits colons (e.g. ":r4:"), which aren't valid inside a CSS
+  // url(#...) reference — strip them. Per-instance so multiple
+  // ImageTextRows on one page never collide on a shared clip-path id.
+  const clipId = useId().replace(/:/g, "");
+  const obbPath = OBB_PATHS[shape];
 
   const captionBg = c.color_caption_bg || "hsl(var(--card) / 0.9)";
   const captionText = c.color_caption_text || "var(--row-fg, hsl(var(--foreground)))";
@@ -101,11 +122,24 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
           style={{
             aspectRatio: "4/5",
             borderRadius: shape === "default" ? 4 : 0,
-            clipPath: CLIP_PATHS[shape] || undefined,
+            clipPath: obbPath ? `url(#img-clip-${clipId})` : CLIP_PATHS[shape] || undefined,
             backfaceVisibility: "hidden",
             transform: "translateZ(0)",
           }}
         >
+          {obbPath && (
+            // objectBoundingBox coordinates (0–1) auto-scale to the
+            // element's actual rendered size — unlike a CSS path()
+            // clip-path, which treats its numbers as fixed pixels. See
+            // the OBB_PATHS comment above for why this exists.
+            <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+              <defs>
+                <clipPath id={`img-clip-${clipId}`} clipPathUnits="objectBoundingBox">
+                  <path d={obbPath} />
+                </clipPath>
+              </defs>
+            </svg>
+          )}
           {c.image_url ? (
             // Below-the-fold images: lazy-load + async decode for fast
             // first paint. The browser only fetches them when the user

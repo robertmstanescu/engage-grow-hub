@@ -334,9 +334,27 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
         successMessage: "Image uploaded",
         errorMessage: "Failed to upload image",
       });
-      if (result?.publicUrl) runCommand("insertImage", result.publicUrl);
+      if (result?.publicUrl) {
+        runCommand("insertImage", result.publicUrl);
+        // Tag the freshly-inserted <img> with baseline sizing so it can
+        // never overflow the editor before an admin resizes it (see the
+        // resize-handle overlay below), then persist that immediately —
+        // runCommand()'s emitChange() already ran, but BEFORE these
+        // styles existed on the node. CSS.escape guards the attribute
+        // selector against a URL containing quote characters.
+        requestAnimationFrame(() => {
+          const img = editorRef.current?.querySelector<HTMLImageElement>(
+            `img[src="${CSS.escape(result.publicUrl)}"]`,
+          );
+          if (img) {
+            img.style.maxWidth = "100%";
+            img.style.height = "auto";
+            emitChange();
+          }
+        });
+      }
     },
-    [runCommand]
+    [runCommand, emitChange]
   );
 
   const addLink = useCallback(() => {
@@ -450,6 +468,103 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
     }
     setHtmlMode((prev) => !prev);
   }, [htmlMode, onChange]);
+
+  /**
+   * ── Inline image resize + shape ──────────────────────────────────
+   * WP-style: click an image to select it, drag its corner handle to
+   * resize, pick a shape preset. The handles/toolbar below are rendered
+   * as a SIBLING overlay (position: fixed, positioned via
+   * getBoundingClientRect()) — never inside the contentEditable
+   * subtree. Content here persists as a raw HTML string (see
+   * emitChange/onChange above): any handle DOM living INSIDE editorRef
+   * would get captured by that innerHTML read and corrupt every future
+   * save. Any `<img>` is selectable, including ones saved before this
+   * feature shipped — no marker attribute needed.
+   */
+  const [selectedImage, setSelectedImage] = useState<HTMLImageElement | null>(null);
+  const [overlayRect, setOverlayRect] = useState<DOMRect | null>(null);
+
+  useEffect(() => {
+    if (htmlMode) setSelectedImage(null);
+  }, [htmlMode]);
+
+  useEffect(() => {
+    if (!selectedImage) {
+      setOverlayRect(null);
+      return;
+    }
+    const update = () => {
+      if (!selectedImage.isConnected) {
+        setSelectedImage(null);
+        return;
+      }
+      setOverlayRect(selectedImage.getBoundingClientRect());
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [selectedImage]);
+
+  const handleEditorClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target instanceof HTMLImageElement) setSelectedImage(target);
+    else setSelectedImage((prev) => (prev ? null : prev));
+  }, []);
+
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      if (!selectedImage) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const startX = e.clientX;
+      const startWidth = selectedImage.getBoundingClientRect().width;
+      const maxWidth = editorRef.current?.clientWidth || Infinity;
+
+      const onMove = (moveEvent: MouseEvent) => {
+        const next = Math.max(40, Math.min(startWidth + (moveEvent.clientX - startX), maxWidth));
+        selectedImage.style.width = `${next}px`;
+        setOverlayRect(selectedImage.getBoundingClientRect());
+      };
+      const onUp = () => {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+        // One emitChange for the whole drag, not per mousemove frame —
+        // matches the debounce discipline used everywhere else here.
+        emitChange();
+      };
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    },
+    [selectedImage, emitChange],
+  );
+
+  const applyImageShape = useCallback(
+    (shape: "square" | "rounded" | "circle") => {
+      if (!selectedImage) return;
+      if (shape === "square") {
+        selectedImage.style.borderRadius = "0";
+        selectedImage.style.aspectRatio = "";
+        selectedImage.style.objectFit = "";
+      } else if (shape === "rounded") {
+        selectedImage.style.borderRadius = "12px";
+        selectedImage.style.aspectRatio = "";
+        selectedImage.style.objectFit = "";
+      } else {
+        // Circle needs a forced 1:1 box + cover crop, or a non-square
+        // source image renders as an ellipse instead of a circle.
+        selectedImage.style.borderRadius = "50%";
+        selectedImage.style.aspectRatio = "1";
+        selectedImage.style.objectFit = "cover";
+      }
+      setOverlayRect(selectedImage.getBoundingClientRect());
+      emitChange();
+    },
+    [selectedImage, emitChange],
+  );
 
   useEffect(() => {
     if (htmlMode) return; // Don't sync when in HTML mode
@@ -608,10 +723,85 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           }}
           onKeyUp={saveSelection}
           onMouseUp={saveSelection}
+          onClick={handleEditorClick}
           // Transparent surface + inherited color so the editor
           // always blends with the rendered area, regardless of parent.
           style={{ color: "inherit", backgroundColor: "transparent" }}
         />
+      )}
+
+      {/* Image resize/shape overlay — a SIBLING of the contentEditable
+          div, never a descendant (see the hook comment above for why).
+          position: fixed + viewport coordinates from getBoundingClientRect
+          keep it pinned to the selected <img> regardless of where in the
+          DOM tree it renders. */}
+      {selectedImage && overlayRect && (
+        <div
+          style={{
+            position: "fixed",
+            left: overlayRect.left,
+            top: overlayRect.top,
+            width: overlayRect.width,
+            height: overlayRect.height,
+            pointerEvents: "none",
+            zIndex: 50,
+            outline: "2px solid hsl(var(--accent))",
+            outlineOffset: 2,
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: -34,
+              left: 0,
+              display: "flex",
+              gap: 4,
+              pointerEvents: "auto",
+              backgroundColor: "hsl(var(--card))",
+              border: "1px solid hsl(var(--border))",
+              borderRadius: 6,
+              padding: 3,
+            }}
+          >
+            <button
+              type="button"
+              title="Square"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => applyImageShape("square")}
+              style={{ width: 18, height: 18, padding: 0, border: "1px solid hsl(var(--border))", backgroundColor: "hsl(var(--muted-foreground))", cursor: "pointer" }}
+            />
+            <button
+              type="button"
+              title="Rounded"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => applyImageShape("rounded")}
+              style={{ width: 18, height: 18, padding: 0, borderRadius: 5, border: "1px solid hsl(var(--border))", backgroundColor: "hsl(var(--muted-foreground))", cursor: "pointer" }}
+            />
+            <button
+              type="button"
+              title="Circle"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => applyImageShape("circle")}
+              style={{ width: 18, height: 18, padding: 0, borderRadius: "50%", border: "1px solid hsl(var(--border))", backgroundColor: "hsl(var(--muted-foreground))", cursor: "pointer" }}
+            />
+          </div>
+          <div
+            onMouseDown={handleResizeStart}
+            title="Drag to resize"
+            style={{
+              position: "absolute",
+              right: -6,
+              bottom: -6,
+              width: 12,
+              height: 12,
+              borderRadius: "50%",
+              backgroundColor: "hsl(var(--accent))",
+              border: "2px solid white",
+              cursor: "nwse-resize",
+              pointerEvents: "auto",
+            }}
+          />
+        </div>
       )}
 
       <input
