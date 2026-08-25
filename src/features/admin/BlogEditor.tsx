@@ -148,7 +148,10 @@ const BlogEditor = () => {
   const handleSave = async (status: string) => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
 
-    const slug = generateSlug(form.title);
+    // Slug is the public URL — only derive it from the title for a brand
+    // new post. Editing an existing post keeps its slug so shared links
+    // (and search rankings) stay valid.
+    const slug = isNew ? generateSlug(form.title) : (editing?.slug || generateSlug(form.title));
     const payload = {
       title: form.title,
       slug,
@@ -166,7 +169,11 @@ const BlogEditor = () => {
       og_image: form.og_image || null,
       og_image_alt: form.og_image_alt?.trim() || null,
       tags: form.tags.length > 0 ? form.tags : null,
-      published_at: status === "published" ? new Date().toISOString() : null,
+      // Preserve the original publication date — re-saving an old post
+      // must not push it to the top of the blog, and unpublishing keeps
+      // the date so republishing restores it.
+      published_at:
+        editing?.published_at ?? (status === "published" ? new Date().toISOString() : null),
       lead_magnet_asset_id: form.lead_magnet_asset_id,
       lead_magnet_cover_id: form.lead_magnet_cover_id,
       ai_summary: form.ai_summary?.trim() || null,
