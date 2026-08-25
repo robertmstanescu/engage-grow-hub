@@ -191,6 +191,7 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
     const { error } = await supabase
       .from("blog_posts")
       .update({
+        page_rows: visibility === "live" ? draftRows as any : record.page_rows as any,
         draft_page_rows: draftRows as any,
         meta_title: seoTitle,
         meta_description: seoDescription,
@@ -206,6 +207,7 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
       toast.success(visibility === "scheduled" ? "Blog scheduled" : visibility === "live" ? "Blog saved live" : "Draft saved");
       setRecord({
         ...record,
+        page_rows: visibility === "live" ? draftRows : record.page_rows,
         draft_page_rows: draftRows,
         meta_title: seoTitle,
         meta_description: seoDescription,

@@ -186,6 +186,7 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
     const { error } = await supabase
       .from("cms_pages")
       .update({
+        page_rows: visibility === "live" ? draftRows as any : record.page_rows as any,
         draft_page_rows: draftRows as any,
         meta_title: seoTitle,
         meta_description: seoDescription,
@@ -202,6 +203,7 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
       // Refresh the snapshot so hasChanges resets.
       setRecord({
         ...record,
+        page_rows: visibility === "live" ? draftRows : record.page_rows,
         draft_page_rows: draftRows,
         meta_title: seoTitle,
         meta_description: seoDescription,
