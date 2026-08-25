@@ -74,6 +74,7 @@ const BlogEditor = () => {
   const [previewing, setPreviewing] = useState(false);
   const [editMode, setEditMode] = useState<"content" | "structure">("content");
   const [isSavingChanges, setIsSavingChanges] = useState(false);
+  const [visibility, setVisibility] = useState<ContentState>("draft");
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
   const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", publish_at: null as string | null, expiry_at: null as string | null, cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
 
@@ -143,6 +144,7 @@ const BlogEditor = () => {
   const handleNew = () => {
     setIsNew(true);
     setEditing(null);
+    setVisibility("draft");
     setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", publish_at: null, expiry_at: null, cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "", lead_magnet_asset_id: null, lead_magnet_cover_id: null, ai_summary: "" });
   };
 
@@ -150,6 +152,7 @@ const BlogEditor = () => {
     setEditMode("content");
     setIsNew(false);
     setEditing(post);
+    setVisibility(contentState(post.status, post.publish_at));
     setForm({
       title: post.title,
       excerpt: post.excerpt || "",
@@ -183,7 +186,6 @@ const BlogEditor = () => {
     // new post. Editing an existing post keeps its slug so shared links
     // (and search rankings) stay valid.
     const slug = isNew ? generateSlug(form.title) : (editing?.slug || generateSlug(form.title));
-    const visibility = contentState(status, form.publish_at);
     if (visibility === "scheduled") {
       if (!form.publish_at || new Date(form.publish_at).getTime() <= Date.now()) {
         toast.error("Choose a future date and time for this blog to go live.");
@@ -443,14 +445,15 @@ const BlogEditor = () => {
 
   /* ── Editor Mode ── */
   if (isNew || editing) {
-    const visibility = contentState(form.status, form.publish_at);
-    const setVisibility = (v: ContentState) =>
+    const changeVisibility = (v: ContentState) => {
+      setVisibility(v);
       setForm((f) => ({
         ...f,
         status: stateToStatus(v),
         publish_at: v === "scheduled" ? f.publish_at : null,
         expiry_at: v === "scheduled" ? f.expiry_at : null,
       }));
+    };
 
     return (
       <div className="space-y-4 pb-2">
@@ -537,7 +540,7 @@ const BlogEditor = () => {
         <AdminSection title="Visibility" description="Draft, live now, or scheduled for later.">
           <AdminStatusControl
             state={visibility}
-            onStateChange={setVisibility}
+            onStateChange={changeVisibility}
             publishAt={form.publish_at}
             expiryAt={form.expiry_at}
             onPublishAtChange={(publish_at) => setForm((f) => ({ ...f, publish_at }))}
