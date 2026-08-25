@@ -291,13 +291,15 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
 
   return (
     <div
-      className="rounded-lg border overflow-hidden"
+      className="rounded-lg border"
       style={{ borderColor: "hsl(var(--border))", backgroundColor: bgColor || "transparent" }}
     >
+      {/* Sticky so the formatting controls stay reachable while you write. */}
       <div
-        className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b"
-        style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.3)" }}
+        className="sticky top-0 z-20 flex flex-wrap items-center gap-0.5 rounded-t-lg border-b px-2 py-1.5 backdrop-blur"
+        style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card) / 0.95)" }}
       >
+
         <ToolbarButton onClick={() => run(() => editor.chain().focus().undo().run())} title="Undo"><Undo size={15} /></ToolbarButton>
         <ToolbarButton onClick={() => run(() => editor.chain().focus().redo().run())} title="Redo"><Redo size={15} /></ToolbarButton>
 
