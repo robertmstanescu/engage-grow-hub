@@ -148,7 +148,10 @@ const BlogEditor = () => {
   const handleSave = async (status: string) => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
 
-    const slug = generateSlug(form.title);
+    // Slug is the public URL — only derive it from the title for a brand
+    // new post. Editing an existing post keeps its slug so shared links
+    // (and search rankings) stay valid.
+    const slug = isNew ? generateSlug(form.title) : (editing?.slug || generateSlug(form.title));
     const payload = {
       title: form.title,
       slug,
