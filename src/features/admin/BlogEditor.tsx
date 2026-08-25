@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Trash2, Edit, Plus, Eye, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { generateAiSummary, htmlToPlainText } from "@/services/aiSummary";
 import SeoAssistantPanel, { type SeoApplyPayload } from "./SeoAssistantPanel";
+import SchedulePublishPanel from "./builder/SchedulePublishPanel";
 import RichTextEditor from "./RichTextEditor";
 import { patchLivePreviewState } from "@/services/livePreview";
 import ImageAltInput from "./ImageAltInput";
@@ -549,6 +550,16 @@ const BlogEditor = () => {
             }))
           }
         />
+
+        {/* Scheduling — only for saved posts (needs a row id). The cron
+            job in `run_scheduled_publishing()` flips status at the time. */}
+        {editing?.id && (
+          <SchedulePublishPanel
+            entityType="blog_posts"
+            entityId={editing.id}
+            entityLabel={form.title || "this post"}
+          />
+        )}
 
         {/* One-click SEO assistant — suggests every metadata field at
             once and lets the admin accept or reject each one. */}
