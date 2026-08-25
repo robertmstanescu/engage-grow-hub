@@ -106,6 +106,7 @@ import BrandSettings from "./BrandSettings";
 import SeoMaster from "./SeoMaster";
 import HeroEditor from "./site-editor/HeroEditor";
 import SeoFields from "./site-editor/SeoFields";
+import { rowsToPlainText } from "@/services/aiSummary";
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROWS, DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
@@ -1631,6 +1632,13 @@ const AdminDashboard = ({ session }: Props) => {
                           onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
                           aiSummary={cmsPageMeta.ai_summary}
                           onAiSummaryChange={(v) => updateCmsPageMeta("ai_summary", v)}
+                          aiSourceTitle={cmsPage.title}
+                          aiSourceContent={rowsToPlainText(cmsPageRows)}
+                          onApplySuggestions={(payload) => {
+                            if (payload.meta_title) updateCmsPageMeta("meta_title", payload.meta_title);
+                            if (payload.meta_description) updateCmsPageMeta("meta_description", payload.meta_description);
+                            if (payload.ai_summary) updateCmsPageMeta("ai_summary", payload.ai_summary);
+                          }}
                         />
                       ) : (
                         // Main page — ai_summary lives inside the main_page_seo JSON blob.
@@ -1641,6 +1649,13 @@ const AdminDashboard = ({ session }: Props) => {
                           onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
                           aiSummary={(getDraft("main_page_seo") as any)?.ai_summary || ""}
                           onAiSummaryChange={(v) => updateField("main_page_seo", "ai_summary", v)}
+                          aiSourceTitle={(getDraft("hero") as any)?.title || "Home"}
+                          aiSourceContent={rowsToPlainText(sections.map((s) => s.content))}
+                          onApplySuggestions={(payload) => {
+                            if (payload.meta_title) updateField("main_page_seo", "meta_title", payload.meta_title);
+                            if (payload.meta_description) updateField("main_page_seo", "meta_description", payload.meta_description);
+                            if (payload.ai_summary) updateField("main_page_seo", "ai_summary", payload.ai_summary);
+                          }}
                         />
                       )
                     ) : selectedSectionId === "__hero__" ? (

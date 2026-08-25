@@ -512,6 +512,13 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
             // to avoid spamming on backspace-to-empty.
             updateCmsPageMeta(editingPage.id, "ai_summary", v.trim());
           }}
+          onApplySuggestions={(payload) => {
+            const next = { ...editingPage };
+            if (payload.meta_title) { next.meta_title = payload.meta_title; updateCmsPageMeta(editingPage.id, "meta_title", payload.meta_title); }
+            if (payload.meta_description) { next.meta_description = payload.meta_description; updateCmsPageMeta(editingPage.id, "meta_description", payload.meta_description); }
+            if (payload.ai_summary) { next.ai_summary = payload.ai_summary; updateCmsPageMeta(editingPage.id, "ai_summary", payload.ai_summary); }
+            setEditingPage(next);
+          }}
         />
         <RowsManager
           rows={draftRows}
