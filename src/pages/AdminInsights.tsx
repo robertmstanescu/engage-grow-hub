@@ -431,6 +431,116 @@ const AdminInsights = () => {
           </Panel>
         </div>
 
+        {/* ── Per-page performance ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
+            <Panel title="Pages" loading={loading}>
+              {pageStats.length === 0 ? <Empty>No page views in this window yet.</Empty> : (
+                <div className="max-h-[420px] overflow-y-auto">
+                  <table className="w-full font-body text-xs">
+                    <thead>
+                      <tr style={{ color: "hsl(260 20% 45%)" }}>
+                        <th className="text-left font-medium pb-2">Page</th>
+                        <th className="text-right font-medium pb-2">Views</th>
+                        <th className="text-right font-medium pb-2">Unique</th>
+                        <th className="text-right font-medium pb-2">Avg&nbsp;time</th>
+                        <th className="text-right font-medium pb-2">Scroll</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageStats.map((row) => (
+                        <tr
+                          key={row.path}
+                          onClick={() => setSelectedPath(row.path === selectedPath ? null : row.path)}
+                          className="cursor-pointer"
+                          style={{
+                            backgroundColor: selectedPath === row.path ? "hsl(280 55% 24% / 0.07)" : "transparent",
+                          }}
+                        >
+                          <td className="py-1.5 pr-2 truncate max-w-[240px]" style={{ color: "hsl(260 20% 15%)" }}>{row.path}</td>
+                          <td className="py-1.5 text-right" style={{ color: "hsl(260 20% 25%)" }}>{row.views}</td>
+                          <td className="py-1.5 text-right" style={{ color: "hsl(260 20% 45%)" }}>{row.unique_visitors}</td>
+                          <td className="py-1.5 text-right" style={{ color: "hsl(260 20% 45%)" }}>{row.avg_duration ? `${row.avg_duration}s` : "—"}</td>
+                          <td className="py-1.5 text-right" style={{ color: "hsl(260 20% 45%)" }}>{row.avg_scroll ? `${row.avg_scroll}%` : "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Panel>
+          </div>
+
+          <div className="space-y-4">
+            <Panel title="Traffic Sources" loading={loading}>
+              {referrers.length === 0 ? <Empty>No referrer data yet.</Empty> : (
+                <ul className="space-y-2 max-h-[200px] overflow-y-auto">
+                  {referrers.slice(0, 10).map((r) => (
+                    <li key={`${r.kind}-${r.label}`} className="flex items-center justify-between gap-2 font-body text-xs">
+                      <span className="flex items-center gap-1.5 min-w-0">
+                        <Tag color={r.kind === "search" ? "gold" : r.kind === "campaign" ? "purple" : r.kind === "direct" ? "amber" : "green"}>{r.kind}</Tag>
+                        <span className="truncate" style={{ color: "hsl(260 20% 25%)" }}>{r.label}</span>
+                      </span>
+                      <span style={{ color: "hsl(260 20% 50%)" }}>{r.visits} · {r.unique_visitors}u</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Panel>
+
+            <Panel title="Reading Depth" loading={loading}>
+              <ul className="space-y-2 font-body text-xs">
+                <li className="flex justify-between"><span style={{ color: "hsl(260 20% 40%)" }}>Unique visitors</span><span style={{ color: "hsl(260 20% 15%)" }}>{visitorDepth.total_visitors}</span></li>
+                <li className="flex justify-between"><span style={{ color: "hsl(260 20% 40%)" }}>Read 2+ pages</span><span style={{ color: "hsl(260 20% 15%)" }}>{visitorDepth.multi_page_visitors}</span></li>
+                <li className="flex justify-between"><span style={{ color: "hsl(260 20% 40%)" }}>Avg pages / visitor</span><span style={{ color: "hsl(260 20% 15%)" }}>{visitorDepth.avg_pages_per_visitor}</span></li>
+              </ul>
+            </Panel>
+          </div>
+        </div>
+
+        {/* Page drill-down */}
+        {selectedPath && (
+          <Panel title={`Page detail · ${selectedPath}`} loading={detailLoading}>
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <MiniList title="Came from" rows={detailReferrers} />
+              <MiniList title="Devices" rows={detailDevices} />
+              <MiniList title="Countries" rows={detailCountries} />
+              <div>
+                <h4 className="font-body text-[10px] uppercase tracking-wider mb-2" style={{ color: "hsl(260 20% 45%)" }}>Daily views</h4>
+                {detailTrend.length === 0 ? <Empty>No data.</Empty> : (
+                  <ul className="space-y-1 max-h-[160px] overflow-y-auto">
+                    {detailTrend.map((d) => (
+                      <li key={d.day} className="flex justify-between font-body text-xs">
+                        <span style={{ color: "hsl(260 20% 40%)" }}>{d.day}</span>
+                        <span style={{ color: "hsl(260 20% 15%)" }}>{d.views} · {d.unique_visitors}u</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+            <button onClick={() => setSelectedPath(null)} className="mt-3 font-body text-[11px] uppercase tracking-wider" style={{ color: "hsl(280 55% 24%)" }}>
+              Close detail
+            </button>
+          </Panel>
+        )}
+
+        {/* Where visitors go next */}
+        <Panel title="Where Visitors Go Next" loading={loading}>
+          {transitions.length === 0 ? <Empty>Not enough multi-page sessions yet.</Empty> : (
+            <ul className="space-y-1.5">
+              {transitions.map((t) => (
+                <li key={`${t.from_path}->${t.to_path}`} className="flex items-center gap-2 font-body text-xs">
+                  <span className="px-1.5 py-0.5 rounded truncate max-w-[38%]" style={{ backgroundColor: "hsl(280 55% 24% / 0.08)", color: "hsl(260 20% 25%)" }}>{t.from_path}</span>
+                  <ChevronRight size={11} style={{ color: "hsl(260 20% 55%)" }} />
+                  <span className="px-1.5 py-0.5 rounded truncate max-w-[38%]" style={{ backgroundColor: "hsl(46 75% 40% / 0.14)", color: "hsl(260 20% 25%)" }}>{t.to_path}</span>
+                  <span className="ml-auto" style={{ color: "hsl(260 20% 50%)" }}>{t.transitions}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+
         {/* Path to Lead */}
         <Panel title="Path to Lead" loading={loading}>
           {journeys.length === 0 ? (
