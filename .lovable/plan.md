@@ -52,18 +52,48 @@ Status:  ( ) Draft   ( ) Published   (•) Scheduled
 - Confirmation reads in plain language: "Goes live Saturday 12 Sep at 09:00."
 - Same control used for blog posts, CMS pages and site sections, so scheduling behaves identically everywhere.
 
-## 5. Rollout order
+## 5. Plain-English naming everywhere
 
-1. Token layer + shared primitives.
-2. Blog editor (sticky toolbar, grouping, new scheduler) — the screen you hit most.
-3. Pages manager + site editor shell.
+Nothing in the admin should show a system identifier where a human name exists.
+
+**Vocabulary (used consistently, no synonyms):** Blogs, Rows, Live. So: "Blogs" not Posts/Articles, "Rows" not sections/blocks, "Live" not Published/Active. Draft stays "Draft", "Scheduled" for future-dated.
+
+**Labels.** A single glossary maps every internal key to a human label and a one-line helper:
+
+| Internal | Shown as |
+|---|---|
+| `site_content` / `section_key` | Homepage section (named: Hero, Services, Contact…) |
+| `cms_pages` | Pages |
+| `blog_posts` | Blogs |
+| `page_rows` / `draft_page_rows` | Rows / Unsaved rows |
+| `slug` | Web address — with the full URL previewed underneath |
+| `status`, `publish_at`, `expiry_at` | Live / Goes live on / Stops showing on |
+| `og_image`, `ai_summary` | Social share image / AI answer summary |
+| `entity_type`, `entity_ref` | The item's type and name |
+
+Every row in the builder gets a readable name derived from its own content (e.g. "Hero — Comms and experience", "Boxed row — 3 cards") instead of a type code plus index.
+
+**Change history reads like a sentence.** Revisions are auto-described by comparing the saved snapshot against the previous one: "Cover image replaced, excerpt edited — 12 Sep, 14:03 by Robert". Whole-item events get their own phrasing ("Set live", "Scheduled for 14 Sep 09:00", "Restored version from 3 Sep"). The `page_revisions.label` column already exists and stores the generated description, so nothing new is needed in the schema.
+
+**Preview links.** Raw preview URLs disappear from the interface. Buttons read "Preview — Blogs: My First Post" or "View live — /about-us". Content that is Live links to the real domain (`themagiccoffin.com/...`); drafts and scheduled items use the preview host behind that same friendly label, with the raw URL available on hover and via a "copy link" action.
+
+**Toasts and errors** get the same treatment: "Blog saved as draft" instead of "site_content updated", and failures name the item and the fix rather than surfacing a database message.
+
+## 6. Rollout order
+
+1. Token layer + shared primitives + naming glossary.
+2. Blog editor (sticky toolbar, grouping, new scheduler, readable history) — the screen you hit most.
+3. Pages manager + site editor shell + row naming.
 4. Media, Contacts, Campaigns, Tags, Redirects, Navigation.
 5. SEO Master, Insights, Brand/Global/Team settings.
 
 ## Technical notes
 
-- New files: `src/features/admin/ui/` for `AdminPageHeader`, `AdminSection`, `AdminField`, `AdminStickyBar`, `AdminStatusControl`.
+- New files: `src/features/admin/ui/` for `AdminPageHeader`, `AdminSection`, `AdminField`, `AdminStickyBar`, `AdminStatusControl`; `src/features/admin/naming.ts` for the label glossary, row-name derivation and preview-link builder.
 - Admin tokens added under the existing `.admin-light` scope in `src/index.css` (HSL channel format), so public-site styling is untouched.
 - Sticky toolbar implemented inside `RichTextEditor.tsx` via a `position: sticky` toolbar wrapper plus a scroll container on the editor shell — no editor engine change; TipTap stays.
 - `AdminStatusControl` wraps the existing `publish_at` / `expiry_at` persistence in `SchedulePublishPanel.tsx` and `SiteSectionSchedulePanel.tsx`; database schema and the 5-minute publish cron stay as they are.
+- Auto-described revisions are generated client-side at save time in `src/services/pageRevisions.ts` and stored in the existing `page_revisions.label`; `VersionHistory.tsx` renders the description. Older revisions with no label keep showing date/time.
+- Live-vs-preview link choice uses the canonical origin already stored in brand settings (`identity.canonicalOrigin`).
 - Data flow, saving semantics, RLS and edge functions are unchanged — this is presentation-layer work.
+
