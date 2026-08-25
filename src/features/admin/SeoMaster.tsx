@@ -72,6 +72,8 @@ import { fetchAllBlogPosts, updateBlogPost } from "@/services/blogPosts";
 import { fetchAllPages } from "@/services/pagination";
 import { fetchSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
+import { generateAiSummary, htmlToPlainText, rowsToPlainText } from "@/services/aiSummary";
+import { toast } from "sonner";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 
 /* ═════════════════════════════════════════════════════════════════════
@@ -93,6 +95,8 @@ interface HeadingRow {
   h2s: string[];
   /** AI summary (the "answer-first" snippet AI scrapers extract). */
   aiSummary: string;
+  /** Plain-text body used as source material for AI summary generation. */
+  bodyText: string;
   editPath?: string;
 }
 
@@ -350,6 +354,7 @@ const HeadingsAudit = () => {
         h1s,
         h2s,
         aiSummary: p.ai_summary || "",
+        bodyText: rowsToPlainText(sourceRows),
       };
     });
 
@@ -365,6 +370,7 @@ const HeadingsAudit = () => {
       h1s: b.title ? [b.title] : [],
       h2s: b.excerpt ? [b.excerpt] : [],
       aiSummary: b.ai_summary || "",
+      bodyText: htmlToPlainText(b.content || "") || b.excerpt || "",
     }));
 
     setRows([...cmsRows, ...blogRows]);
@@ -407,6 +413,29 @@ const HeadingsAudit = () => {
     },
     [],
   );
+
+  /**
+   * Ask the AI for an AEO summary for one row and persist it straight
+   * to the source table. Used by the "Generate" button in the AI
+   * summary column so admins can fill gaps without opening each editor.
+   */
+  const generateSummaryForRow = useCallback(async (row: HeadingRow) => {
+    try {
+      const summary = await generateAiSummary({
+        title: row.pageTitle,
+        content: row.bodyText || row.h2s.join(". ") || row.pageTitle,
+        kind: row.source === "blog_post" ? "blog post" : "page",
+      });
+      const action =
+        row.source === "cms_page"
+          ? () => updateCmsPageMeta(row.id, "ai_summary", summary)
+          : () => updateBlogPost(row.id, { ai_summary: summary });
+      await runDbAction({ action, successMessage: "AI summary saved" });
+      setRows((prev) => prev.map((r) => (r.id === row.id && r.source === row.source ? { ...r, aiSummary: summary } : r)));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to generate summary");
+    }
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -465,7 +494,12 @@ const HeadingsAudit = () => {
             </thead>
             <tbody>
               {filtered.map((row) => (
-                <HeadingRowItem key={`${row.source}-${row.id}`} row={row} onSaveMetaTitle={saveMetaTitle} />
+                <HeadingRowItem
+                  key={`${row.source}-${row.id}`}
+                  row={row}
+                  onSaveMetaTitle={saveMetaTitle}
+                  onGenerateSummary={generateSummaryForRow}
+                />
               ))}
             </tbody>
           </table>
@@ -478,9 +512,12 @@ const HeadingsAudit = () => {
 const HeadingRowItem = ({
   row,
   onSaveMetaTitle,
+  onGenerateSummary,
 }: {
   row: HeadingRow;
   onSaveMetaTitle: (row: HeadingRow, value: string) => void;
+  /** Generate + save an AI search summary for this row. */
+  onGenerateSummary?: (row: HeadingRow) => Promise<void>;
 }) => {
   // Local draft so typing doesn't fire a write on every keystroke.
   // Commit on blur — matches the project's deferred-saving Core memory.
@@ -558,7 +595,7 @@ const HeadingRowItem = ({
         )}
       </td>
       <td className="px-3 py-3 max-w-[280px]">
-        <AiSummaryCell summary={row.aiSummary} />
+        <AiSummaryCell summary={row.aiSummary} onGenerate={onGenerateSummary ? () => onGenerateSummary(row) : undefined} />
       </td>
     </tr>
   );
@@ -571,17 +608,32 @@ const HeadingRowItem = ({
    the snippet falls inside the 40–60 word "answer-first" sweet spot
    AI scrapers prefer for direct citation extraction.
    ───────────────────────────────────────────────────────────────────── */
-const AiSummaryCell = ({ summary }: { summary: string }) => {
+const AiSummaryCell = ({ summary, onGenerate }: { summary: string; onGenerate?: () => Promise<void> | void }) => {
   const { status, words } = classifyAiSummary(summary);
+  const [busy, setBusy] = useState(false);
+
+  const GenerateButton = onGenerate ? (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={async () => { setBusy(true); try { await onGenerate(); } finally { setBusy(false); } }}
+      className="inline-flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border hover:opacity-70 disabled:opacity-50"
+    >
+      <Sparkles size={10} /> {busy ? "Generating…" : summary ? "Regenerate" : "Generate"}
+    </button>
+  ) : null;
 
   if (status === "missing") {
     return (
-      <span
-        className="inline-flex items-center gap-1 font-body text-xs text-orange-500"
-        title={`Add a ${AI_SUMMARY_MIN_WORDS}–${AI_SUMMARY_MAX_WORDS} word answer-first summary to maximize AI citation probability.`}
-      >
-        <AlertCircle size={12} /> missing
-      </span>
+      <div className="space-y-1.5">
+        <span
+          className="inline-flex items-center gap-1 font-body text-xs text-orange-500"
+          title={`Add a ${AI_SUMMARY_MIN_WORDS}–${AI_SUMMARY_MAX_WORDS} word answer-first summary to maximize AI citation probability.`}
+        >
+          <AlertCircle size={12} /> missing
+        </span>
+        {GenerateButton}
+      </div>
     );
   }
 
@@ -611,6 +663,7 @@ const AiSummaryCell = ({ summary }: { summary: string }) => {
             ✓ {words} words
           </span>
         )}
+        {GenerateButton}
       </div>
     </div>
   );

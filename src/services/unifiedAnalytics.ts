@@ -264,3 +264,122 @@ export const countLeadsInWindow = async (filters: AnalyticsRangeFilter) => {
     .gte("created_at", filters.since)
     .lte("created_at", filters.until);
 };
+
+/* ══════════════════════════════════════════════════════════════════════
+ * Server-side aggregation (Postgres RPCs)
+ * ══════════════════════════════════════════════════════════════════════
+ * The helpers above pull raw rows and GROUP BY in JS, capped at
+ * ROW_CAP. The functions below push the aggregation into Postgres, so
+ * they're exact regardless of window size. They're admin-gated inside
+ * the SQL (`public.is_admin(auth.uid())`), so a non-admin simply gets
+ * an empty set.
+ */
+
+export interface PageStatRow {
+  path: string;
+  views: number;
+  unique_visitors: number;
+  avg_duration: number | null;
+  avg_scroll: number | null;
+}
+
+export interface ReferrerStatRow {
+  label: string;
+  kind: "search" | "campaign" | "direct" | "referral";
+  visits: number;
+  unique_visitors: number;
+}
+
+export interface VisitorDepthRow {
+  total_visitors: number;
+  multi_page_visitors: number;
+  avg_pages_per_visitor: number;
+}
+
+export interface TransitionRow {
+  from_path: string;
+  to_path: string;
+  transitions: number;
+}
+
+export interface LabelCountRow {
+  label: string;
+  visits: number;
+}
+
+export interface PageTrendRow {
+  day: string;
+  views: number;
+  unique_visitors: number;
+}
+
+/** Per-page views / unique visitors / engagement for the filter window. */
+export const fetchPageStats = async (filters: AnalyticsRangeFilter) => {
+  const { data, error } = await supabase.rpc("analytics_page_stats", {
+    p_since: filters.since,
+    p_until: filters.until,
+    p_traffic: filters.trafficType,
+    p_country: filters.country ?? null,
+    p_category: filters.category ?? null,
+  });
+  return { data: (data ?? []) as PageStatRow[], error };
+};
+
+/** Where the traffic came from (search engine, campaign, referral, direct). */
+export const fetchReferrerStats = async (filters: AnalyticsRangeFilter) => {
+  const { data, error } = await supabase.rpc("analytics_referrer_stats", {
+    p_since: filters.since,
+    p_until: filters.until,
+    p_traffic: filters.trafficType,
+  });
+  return { data: (data ?? []) as ReferrerStatRow[], error };
+};
+
+/** How many visitors read more than one page, and the average depth. */
+export const fetchVisitorDepth = async (filters: AnalyticsRangeFilter) => {
+  const { data, error } = await supabase.rpc("analytics_visitor_depth", {
+    p_since: filters.since,
+    p_until: filters.until,
+  });
+  const row = (data as VisitorDepthRow[] | null)?.[0] ?? {
+    total_visitors: 0,
+    multi_page_visitors: 0,
+    avg_pages_per_visitor: 0,
+  };
+  return { data: row, error };
+};
+
+/** Most common page-to-page hops (which page leads to which). */
+export const fetchPageTransitions = async (filters: AnalyticsRangeFilter, limit = 12) => {
+  const { data, error } = await supabase.rpc("analytics_page_transitions", {
+    p_since: filters.since,
+    p_until: filters.until,
+    p_limit: limit,
+  });
+  return { data: (data ?? []) as TransitionRow[], error };
+};
+
+/** Drill-down for one page: referrers / devices / browsers / countries. */
+export const fetchPageBreakdown = async (
+  path: string,
+  filters: AnalyticsRangeFilter,
+  dimension: "referrer" | "device" | "browser" | "country" = "referrer",
+) => {
+  const { data, error } = await supabase.rpc("analytics_page_breakdown", {
+    p_path: path,
+    p_since: filters.since,
+    p_until: filters.until,
+    p_dimension: dimension,
+  });
+  return { data: (data ?? []) as LabelCountRow[], error };
+};
+
+/** Daily views / unique visitors for one page. */
+export const fetchPageTrend = async (path: string, filters: AnalyticsRangeFilter) => {
+  const { data, error } = await supabase.rpc("analytics_page_trend", {
+    p_path: path,
+    p_since: filters.since,
+    p_until: filters.until,
+  });
+  return { data: (data ?? []) as PageTrendRow[], error };
+};

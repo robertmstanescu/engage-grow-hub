@@ -3,6 +3,8 @@ import { sanitizeHtml } from "@/services/sanitize";
 import { toast } from "sonner";
 import { Trash2, Edit, Plus, Eye, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { generateAiSummary, htmlToPlainText } from "@/services/aiSummary";
+import SeoAssistantPanel, { type SeoApplyPayload } from "./SeoAssistantPanel";
+import SchedulePublishPanel from "./builder/SchedulePublishPanel";
 import RichTextEditor from "./RichTextEditor";
 import { patchLivePreviewState } from "@/services/livePreview";
 import ImageAltInput from "./ImageAltInput";
@@ -87,6 +89,26 @@ const BlogEditor = () => {
     } finally {
       setGeneratingAiSummary(false);
     }
+  };
+
+  /**
+   * Apply whatever the admin accepted from the "Generate all SEO"
+   * review panel. Only the ticked fields arrive here.
+   */
+  const applySeoSuggestions = (payload: SeoApplyPayload) => {
+    setForm((f) => {
+      const next = { ...f };
+      if (payload.meta_title) next.meta_title = payload.meta_title;
+      if (payload.meta_description) next.meta_description = payload.meta_description;
+      if (payload.ai_summary) next.ai_summary = payload.ai_summary;
+      if (payload.tags) next.tags = Array.from(new Set([...f.tags, ...payload.tags]));
+      for (const { key, alt } of payload.image_alts || []) {
+        if (key === "cover") next.cover_image_alt = alt;
+        if (key === "og") next.og_image_alt = alt;
+        if (key === "author") next.author_image_alt = alt;
+      }
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -527,6 +549,32 @@ const BlogEditor = () => {
               lead_magnet_cover_id: cover_asset_id,
             }))
           }
+        />
+
+        {/* Scheduling — only for saved posts (needs a row id). The cron
+            job in `run_scheduled_publishing()` flips status at the time. */}
+        {editing?.id && (
+          <SchedulePublishPanel
+            entityType="blog_posts"
+            entityId={editing.id}
+            entityLabel={form.title || "this post"}
+          />
+        )}
+
+        {/* One-click SEO assistant — suggests every metadata field at
+            once and lets the admin accept or reject each one. */}
+        <SeoAssistantPanel
+          sourceTitle={form.title}
+          sourceContent={htmlToPlainText(form.content) || form.excerpt}
+          kind="blog post"
+          knownTags={blogCategories}
+          supports={{ tags: true, images: true }}
+          images={[
+            ...(form.cover_image ? [{ key: "cover", context: "blog cover image", current: form.cover_image_alt }] : []),
+            ...(form.og_image ? [{ key: "og", context: "social share image", current: form.og_image_alt }] : []),
+            ...(form.author_image ? [{ key: "author", context: "author portrait", current: form.author_image_alt }] : []),
+          ]}
+          onApply={applySeoSuggestions}
         />
 
         {/* AI Search Summary — feeds /llms.txt and /llms-full.txt */}
