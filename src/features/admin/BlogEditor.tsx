@@ -595,7 +595,7 @@ const BlogEditor = () => {
         </AdminSection>
 
         <AdminSection
-          title="Search &amp; AI"
+          title="Search and AI"
           description="How this blog appears in Google and in AI answers."
           defaultCollapsed
         >
@@ -698,7 +698,7 @@ const BlogEditor = () => {
             className="rounded-full px-5 py-2.5 font-body text-xs font-medium"
             style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
           >
-            {visibility === "live" ? "Save &amp; publish" : "Save"}
+            {visibility === "live" ? "Save & publish" : "Save"}
           </SpinnerButton>
         </AdminStickyBar>
       </div>
@@ -708,19 +708,19 @@ const BlogEditor = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Blog Posts</h2>
+        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Blogs</h2>
         <button
           onClick={handleNew}
           className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
           style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-          <Plus size={14} /> New Post
+          <Plus size={14} /> New blog
         </button>
       </div>
 
       {postsLoading ? (
         <ListSkeleton rows={3} rowHeight="h-20" />
       ) : posts.length === 0 ? (
-        <p className="font-body text-sm text-muted-foreground py-8 text-center">No posts yet. Create your first one!</p>
+        <p className="font-body text-sm text-muted-foreground py-8 text-center">No blogs yet. Create your first one!</p>
       ) : (
         <div className="space-y-3">
           {posts.length > 1 && (
