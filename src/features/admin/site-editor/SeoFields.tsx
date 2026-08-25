@@ -35,6 +35,8 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Field } from "./FieldComponents";
 import { generateAiSummary } from "@/services/aiSummary";
+import SeoAssistantPanel, { type SeoApplyPayload } from "../SeoAssistantPanel";
+import type { SeoImageInput } from "@/services/seoAssistant";
 
 /**
  * Debug Story 3.2 — useDeferredText
@@ -79,6 +81,18 @@ interface Props {
   aiSourceTitle?: string;
   aiSourceContent?: string;
   aiSourceKind?: "page" | "blog post";
+  /**
+   * Optional: enables the "Generate all SEO with AI" assistant. The
+   * parent receives only the suggestions the admin accepted and decides
+   * how to persist each one.
+   */
+  onApplySuggestions?: (payload: SeoApplyPayload) => void;
+  /** Images that need alt text, surfaced to the assistant. */
+  aiImages?: SeoImageInput[];
+  /** Existing tag vocabulary so suggested tags reuse your taxonomy. */
+  knownTags?: string[];
+  /** Which suggestion types the parent can actually save. */
+  assistantSupports?: { tags?: boolean; images?: boolean };
 }
 
 const AEO_MIN = 60;
@@ -94,6 +108,10 @@ const SeoFields = ({
   aiSourceTitle,
   aiSourceContent,
   aiSourceKind = "page",
+  onApplySuggestions,
+  aiImages,
+  knownTags,
+  assistantSupports,
 }: Props) => {
   const aeoEnabled = typeof onAiSummaryChange === "function";
   const [generating, setGenerating] = useState(false);
@@ -140,6 +158,18 @@ const SeoFields = ({
       >
         SEO & Metadata
       </label>
+
+      {onApplySuggestions && (
+        <SeoAssistantPanel
+          sourceTitle={aiSourceTitle || metaTitle || ""}
+          sourceContent={aiSourceContent || metaDescription || ""}
+          kind={aiSourceKind}
+          images={aiImages}
+          knownTags={knownTags}
+          supports={assistantSupports}
+          onApply={onApplySuggestions}
+        />
+      )}
 
       <Field label="Meta Title (for search engines)" value={metaTitle} onChange={onTitleChange} />
 
