@@ -191,31 +191,41 @@ const NAV_GROUPS = [
   {
     label: "CONTENT",
     items: [
-      { key: "site" as Tab, icon: FileText, label: "Page Builder" },
-      { key: "pages" as Tab, icon: FileText, label: "Page Manager" },
-      { key: "navigation" as Tab, icon: Compass, label: "Navigation" },
-      { key: "blog" as Tab, icon: BookOpen, label: "Blog Posts" },
-    ],
-  },
-  {
-    label: "ENGAGE",
-    items: [
-      { key: "contacts" as Tab, icon: Users, label: "Contacts" },
-      { key: "emails" as Tab, icon: Mail, label: "Email Campaigns" },
+      { key: "site" as Tab, icon: FileText, label: "Site" },
+      { key: "pages" as Tab, icon: FileText, label: "Pages" },
+      { key: "blog" as Tab, icon: BookOpen, label: "Blogs" },
       { key: "media" as Tab, icon: Image, label: "Media" },
     ],
   },
   {
-    label: "CONFIGURE",
+    label: "AUDIENCE",
     items: [
-      { key: "brand" as Tab, icon: Palette, label: "Brand" },
+      { key: "contacts" as Tab, icon: Users, label: "Contacts" },
+      { key: "emails" as Tab, icon: Mail, label: "Campaigns" },
+    ],
+  },
+  {
+    label: "STRUCTURE",
+    items: [
+      { key: "navigation" as Tab, icon: Compass, label: "Navigation" },
       { key: "tags" as Tab, icon: Tag, label: "Tags" },
       { key: "redirects" as Tab, icon: Link2, label: "Redirects" },
-      { key: "seo_master" as Tab, icon: Search, label: "Global SEO Settings" },
+    ],
+  },
+  {
+    label: "INSIGHTS",
+    items: [
+      { key: "insights" as const, icon: Sparkles, label: "Analytics" },
+      { key: "seo_master" as Tab, icon: Search, label: "SEO" },
       { key: "versions" as Tab, icon: History, label: "Version History" },
-      { key: "team" as Tab, icon: UserCog, label: "Manage Team" },
-      { key: "insights" as const, icon: Sparkles, label: "Insights" },
+    ] as Array<{ key: Tab | "insights"; icon: typeof LayoutDashboard; label: string }>,
+  },
+  {
+    label: "SETTINGS",
+    items: [
+      { key: "brand" as Tab, icon: Palette, label: "Brand" },
       { key: "settings" as Tab, icon: Settings, label: "Settings" },
+      { key: "team" as Tab, icon: UserCog, label: "Team" },
     ] as Array<{ key: Tab | "insights"; icon: typeof LayoutDashboard; label: string }>,
   },
 ];

@@ -26,12 +26,16 @@ import {
 } from "@/services/contentAccessibility";
 import PageBuilderShell from "./builder/PageBuilderShell";
 import RevisionHistoryPanel from "./builder/RevisionHistoryPanel";
-import SiteSectionSchedulePanel from "./builder/SiteSectionSchedulePanel";
+import AdminStatusControl from "./ui/AdminStatusControl";
+import type { ContentState } from "./naming";
 
 interface SectionData {
+  id: string;
   section_key: string;
   content: Record<string, any>;
   draft_content: Record<string, any> | null;
+  publish_at: string | null;
+  expiry_at: string | null;
 }
 
 interface Props {
@@ -49,19 +53,32 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [visibility, setVisibility] = useState<ContentState>("live");
+  const [savedVisibility, setSavedVisibility] = useState<ContentState>("live");
+  const [publishAt, setPublishAt] = useState<string | null>(null);
+  const [expiryAt, setExpiryAt] = useState<string | null>(null);
 
   const reloadSections = useCallback(async () => {
     const { data } = await supabase
       .from("site_content")
-      .select("section_key, content, draft_content")
+      .select("id, section_key, content, draft_content, publish_at, expiry_at")
       .in("section_key", ["page_rows", "main_page_seo"]) as any;
     if (data) {
       const mapped = data.map((s: any) => ({
         section_key: s.section_key,
+        id: s.id,
         content: s.content,
         draft_content: s.draft_content || s.content,
+        publish_at: s.publish_at,
+        expiry_at: s.expiry_at,
       }));
       setSections(mapped);
+      const rows = mapped.find((s: SectionData) => s.section_key === "page_rows");
+      setPublishAt(rows?.publish_at ?? null);
+      setExpiryAt(rows?.expiry_at ?? null);
+      const loadedVisibility: ContentState = rows?.publish_at && new Date(rows.publish_at).getTime() > Date.now() ? "scheduled" : "live";
+      setVisibility(loadedVisibility);
+      setSavedVisibility(loadedVisibility);
     }
   }, []);
 
@@ -74,10 +91,10 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
     if (sections.length === 0) return;
     const toAdd: SectionData[] = [];
     if (!sections.some((s) => s.section_key === "page_rows")) {
-      toAdd.push({ section_key: "page_rows", content: { rows: DEFAULT_ROWS }, draft_content: { rows: DEFAULT_ROWS } });
+      toAdd.push({ id: "", section_key: "page_rows", content: { rows: DEFAULT_ROWS }, draft_content: { rows: DEFAULT_ROWS }, publish_at: null, expiry_at: null });
     }
     if (!sections.some((s) => s.section_key === "main_page_seo")) {
-      toAdd.push({ section_key: "main_page_seo", content: { meta_title: "", meta_description: "" }, draft_content: { meta_title: "", meta_description: "" } });
+      toAdd.push({ id: "", section_key: "main_page_seo", content: { meta_title: "", meta_description: "" }, draft_content: { meta_title: "", meta_description: "" }, publish_at: null, expiry_at: null });
     }
     if (toAdd.length) setSections((prev) => [...prev, ...toAdd]);
   }, [sections]);
@@ -106,7 +123,9 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
   const pageRows: PageRow[] = normalizeRowsToV3((getDraft("page_rows") as any)?.rows || []) as unknown as PageRow[];
   const onRowsChange = useCallback((rows: PageRow[]) => updateFullDraft("page_rows", { rows }), []);
 
-  const hasChanges = sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
+  const rowsSection = getSection("page_rows");
+  const hasTimingChanges = visibility !== savedVisibility || publishAt !== (rowsSection?.publish_at ?? null) || expiryAt !== (rowsSection?.expiry_at ?? null);
+  const hasChanges = hasTimingChanges || sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
   useEffect(() => { onDirtyChange?.(hasChanges); }, [hasChanges, onDirtyChange]);
   // Clear the parent's dirty flag on unmount so switching away from a
   // clean state never leaves a stale "unsaved changes" guard armed.
@@ -127,24 +146,55 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
    */
   const onSaveDraft = useCallback(async () => {
     const dirty = sections.filter((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
-    if (dirty.length === 0) {
+    if (dirty.length === 0 && !hasTimingChanges) {
       toast.info("Nothing to save");
       return;
     }
     setSaving(true);
-    const updates = dirty.map((s) => {
+    if (visibility === "scheduled" && (!publishAt || new Date(publishAt).getTime() <= Date.now())) {
+      toast.error("Choose a future date and time for the homepage to go live.");
+      setSaving(false);
+      return;
+    }
+    if (visibility === "scheduled" && expiryAt && publishAt && new Date(expiryAt).getTime() <= new Date(publishAt).getTime()) {
+      toast.error("The stop date must be after the go-live date.");
+      setSaving(false);
+      return;
+    }
+    const targets = sections.filter(
+      (s) => dirty.includes(s) || (hasTimingChanges && s.section_key === "page_rows"),
+    );
+    const updates = targets.map((s) => {
       const draft = (s.draft_content || s.content) as any;
+      const isPageRows = s.section_key === "page_rows";
       return supabase.from("site_content").upsert(
-        { section_key: s.section_key, content: s.content, draft_content: draft } as any,
+        {
+          section_key: s.section_key,
+          content: isPageRows && visibility === "live" ? draft : s.content,
+          draft_content: draft,
+          publish_at: isPageRows && visibility === "scheduled" ? publishAt : null,
+          expiry_at: isPageRows && visibility === "scheduled" ? expiryAt : null,
+        } as any,
         { onConflict: "section_key" },
       );
     });
     const results = await Promise.all(updates);
     const err = results.find((r) => r.error);
     if (err?.error) toast.error((err.error as any).message);
-    else toast.success(`Draft saved (${dirty.length} ${dirty.length === 1 ? "section" : "sections"})`);
+    else {
+      setSections((prev) => prev.map((s) => targets.includes(s)
+        ? {
+            ...s,
+            content: s.section_key === "page_rows" && visibility === "live" ? (s.draft_content || s.content) : s.content,
+            publish_at: s.section_key === "page_rows" && visibility === "scheduled" ? publishAt : null,
+            expiry_at: s.section_key === "page_rows" && visibility === "scheduled" ? expiryAt : null,
+          }
+        : s));
+      setSavedVisibility(visibility);
+      toast.success(visibility === "scheduled" ? "Homepage schedule saved" : visibility === "live" ? "Homepage is live" : "Homepage draft saved");
+    }
     setSaving(false);
-  }, [sections]);
+  }, [sections, hasTimingChanges, visibility, publishAt, expiryAt]);
 
   const onPublish = useCallback(async () => {
     // EPIC 13 / US 13.1 — gate publish on accessibility (alt text). Pull
@@ -168,7 +218,7 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
       const data = (s.draft_content || s.content) as any;
       return supabase
         .from("site_content")
-        .upsert({ section_key: s.section_key, content: data, draft_content: data } as any, { onConflict: "section_key" });
+        .upsert({ section_key: s.section_key, content: data, draft_content: data, publish_at: null, expiry_at: null } as any, { onConflict: "section_key" });
     });
     const results = await Promise.all(updates);
     const err = results.find((r) => r.error);
@@ -176,6 +226,10 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
       toast.error((err.error as any).message);
     } else {
       setSections((prev) => prev.map((s) => ({ ...s, content: s.draft_content || s.content })));
+      setVisibility("live");
+      setSavedVisibility("live");
+      setPublishAt(null);
+      setExpiryAt(null);
       sections.forEach((s) => invalidateSiteContent(s.section_key));
       toast.success("All changes published!");
     }
@@ -223,7 +277,16 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
-      schedulePanel={<SiteSectionSchedulePanel sectionKey="page_rows" hasUnsavedChanges={hasChanges} />}
+      schedulePanel={
+        <AdminStatusControl
+          state={visibility}
+          onStateChange={setVisibility}
+          publishAt={publishAt}
+          expiryAt={expiryAt}
+          onPublishAtChange={setPublishAt}
+          onExpiryAtChange={setExpiryAt}
+        />
+      }
       inspectorFooter={
         <RevisionHistoryPanel
           entityType="site_content"

@@ -60,6 +60,8 @@ interface BlogPost {
   lead_magnet_asset_id: string | null;
   lead_magnet_cover_id: string | null;
   ai_summary: string | null;
+  publish_at: string | null;
+  expiry_at: string | null;
 }
 
 const BlogEditor = () => {
@@ -73,7 +75,7 @@ const BlogEditor = () => {
   const [editMode, setEditMode] = useState<"content" | "structure">("content");
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
-  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
+  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", publish_at: null as string | null, expiry_at: null as string | null, cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
 
   const [generatingAiSummary, setGeneratingAiSummary] = useState(false);
 
@@ -141,7 +143,7 @@ const BlogEditor = () => {
   const handleNew = () => {
     setIsNew(true);
     setEditing(null);
-    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "", lead_magnet_asset_id: null, lead_magnet_cover_id: null, ai_summary: "" });
+    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", publish_at: null, expiry_at: null, cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "", lead_magnet_asset_id: null, lead_magnet_cover_id: null, ai_summary: "" });
   };
 
   const handleEdit = (post: BlogPost) => {
@@ -154,6 +156,8 @@ const BlogEditor = () => {
       content: post.content,
       category: post.category,
       status: post.status,
+      publish_at: post.publish_at,
+      expiry_at: post.expiry_at,
       cover_image: post.cover_image || "",
       cover_image_alt: post.cover_image_alt || "",
       author_name: post.author_name || "",
@@ -179,6 +183,17 @@ const BlogEditor = () => {
     // new post. Editing an existing post keeps its slug so shared links
     // (and search rankings) stay valid.
     const slug = isNew ? generateSlug(form.title) : (editing?.slug || generateSlug(form.title));
+    const visibility = contentState(status, form.publish_at);
+    if (visibility === "scheduled") {
+      if (!form.publish_at || new Date(form.publish_at).getTime() <= Date.now()) {
+        toast.error("Choose a future date and time for this blog to go live.");
+        return;
+      }
+      if (form.expiry_at && new Date(form.expiry_at).getTime() <= new Date(form.publish_at).getTime()) {
+        toast.error("The stop date must be after the go-live date.");
+        return;
+      }
+    }
     const payload = {
       title: form.title,
       slug,
@@ -186,6 +201,8 @@ const BlogEditor = () => {
       content: form.content,
       category: form.category,
       status,
+      publish_at: visibility === "scheduled" ? form.publish_at : null,
+      expiry_at: visibility === "scheduled" ? form.expiry_at : null,
       cover_image: form.cover_image || null,
       cover_image_alt: form.cover_image_alt?.trim() || null,
       author_name: form.author_name || null,
@@ -426,9 +443,14 @@ const BlogEditor = () => {
 
   /* ── Editor Mode ── */
   if (isNew || editing) {
-    const visibility = contentState(form.status);
+    const visibility = contentState(form.status, form.publish_at);
     const setVisibility = (v: ContentState) =>
-      setForm((f) => ({ ...f, status: stateToStatus(v) }));
+      setForm((f) => ({
+        ...f,
+        status: stateToStatus(v),
+        publish_at: v === "scheduled" ? f.publish_at : null,
+        expiry_at: v === "scheduled" ? f.expiry_at : null,
+      }));
 
     return (
       <div className="space-y-4 pb-2">
@@ -516,8 +538,10 @@ const BlogEditor = () => {
           <AdminStatusControl
             state={visibility}
             onStateChange={setVisibility}
-            entityType="blog_posts"
-            entityId={editing?.id ?? null}
+            publishAt={form.publish_at}
+            expiryAt={form.expiry_at}
+            onPublishAtChange={(publish_at) => setForm((f) => ({ ...f, publish_at }))}
+            onExpiryAtChange={(expiry_at) => setForm((f) => ({ ...f, expiry_at }))}
           />
         </AdminSection>
 
