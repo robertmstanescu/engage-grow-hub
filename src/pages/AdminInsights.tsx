@@ -661,6 +661,23 @@ const Panel = ({ title, loading, children }: { title: string; loading: boolean; 
   </div>
 );
 
+/** Compact label/count list used by the single-page drill-down. */
+const MiniList = ({ title, rows }: { title: string; rows: Array<{ label: string; visits: number }> }) => (
+  <div>
+    <h4 className="font-body text-[10px] uppercase tracking-wider mb-2" style={{ color: "hsl(260 20% 45%)" }}>{title}</h4>
+    {rows.length === 0 ? <Empty>No data.</Empty> : (
+      <ul className="space-y-1 max-h-[160px] overflow-y-auto">
+        {rows.slice(0, 8).map((r) => (
+          <li key={r.label} className="flex justify-between gap-2 font-body text-xs">
+            <span className="truncate" style={{ color: "hsl(260 20% 40%)" }}>{r.label}</span>
+            <span style={{ color: "hsl(260 20% 15%)" }}>{r.visits}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+);
+
 const Empty = ({ children }: { children: React.ReactNode }) => (
   <p className="font-body text-xs py-4 text-center" style={{ color: "hsl(260 20% 50%)" }}>{children}</p>
 );
