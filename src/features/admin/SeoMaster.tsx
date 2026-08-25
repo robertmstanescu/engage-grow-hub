@@ -592,17 +592,16 @@ const AiSummaryCell = ({ summary, onGenerate }: { summary: string; onGenerate?: 
 
   if (status === "missing") {
     return (
-      <span
-        className="inline-flex items-center gap-1 font-body text-xs text-orange-500"
-        title={`Add a ${AI_SUMMARY_MIN_WORDS}–${AI_SUMMARY_MAX_WORDS} word answer-first summary to maximize AI citation probability.`}
-      >
-        <AlertCircle size={12} /> missing
-      </span>
+      <div className="space-y-1.5">
+        <span
+          className="inline-flex items-center gap-1 font-body text-xs text-orange-500"
+          title={`Add a ${AI_SUMMARY_MIN_WORDS}–${AI_SUMMARY_MAX_WORDS} word answer-first summary to maximize AI citation probability.`}
+        >
+          <AlertCircle size={12} /> missing
+        </span>
+        {GenerateButton}
+      </div>
     );
-  }
-
-  if (status === "missing_never") {
-    return null;
   }
 
   const isWarning = status !== "ok";
@@ -631,6 +630,7 @@ const AiSummaryCell = ({ summary, onGenerate }: { summary: string; onGenerate?: 
             ✓ {words} words
           </span>
         )}
+        {GenerateButton}
       </div>
     </div>
   );
