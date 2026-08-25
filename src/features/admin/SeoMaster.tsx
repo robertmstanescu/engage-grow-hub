@@ -93,6 +93,8 @@ interface HeadingRow {
   h2s: string[];
   /** AI summary (the "answer-first" snippet AI scrapers extract). */
   aiSummary: string;
+  /** Plain-text body used as source material for AI summary generation. */
+  bodyText: string;
   editPath?: string;
 }
 
@@ -350,6 +352,7 @@ const HeadingsAudit = () => {
         h1s,
         h2s,
         aiSummary: p.ai_summary || "",
+        bodyText: rowsToPlainText(sourceRows),
       };
     });
 
@@ -365,6 +368,7 @@ const HeadingsAudit = () => {
       h1s: b.title ? [b.title] : [],
       h2s: b.excerpt ? [b.excerpt] : [],
       aiSummary: b.ai_summary || "",
+      bodyText: htmlToPlainText(b.content || "") || b.excerpt || "",
     }));
 
     setRows([...cmsRows, ...blogRows]);
@@ -558,7 +562,7 @@ const HeadingRowItem = ({
         )}
       </td>
       <td className="px-3 py-3 max-w-[280px]">
-        <AiSummaryCell summary={row.aiSummary} />
+        <AiSummaryCell summary={row.aiSummary} onGenerate={onGenerateSummary ? () => onGenerateSummary(row) : undefined} />
       </td>
     </tr>
   );
@@ -571,8 +575,20 @@ const HeadingRowItem = ({
    the snippet falls inside the 40–60 word "answer-first" sweet spot
    AI scrapers prefer for direct citation extraction.
    ───────────────────────────────────────────────────────────────────── */
-const AiSummaryCell = ({ summary }: { summary: string }) => {
+const AiSummaryCell = ({ summary, onGenerate }: { summary: string; onGenerate?: () => Promise<void> | void }) => {
   const { status, words } = classifyAiSummary(summary);
+  const [busy, setBusy] = useState(false);
+
+  const GenerateButton = onGenerate ? (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={async () => { setBusy(true); try { await onGenerate(); } finally { setBusy(false); } }}
+      className="inline-flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border hover:opacity-70 disabled:opacity-50"
+    >
+      <Sparkles size={10} /> {busy ? "Generating…" : summary ? "Regenerate" : "Generate"}
+    </button>
+  ) : null;
 
   if (status === "missing") {
     return (
@@ -583,6 +599,10 @@ const AiSummaryCell = ({ summary }: { summary: string }) => {
         <AlertCircle size={12} /> missing
       </span>
     );
+  }
+
+  if (status === "missing_never") {
+    return null;
   }
 
   const isWarning = status !== "ok";
