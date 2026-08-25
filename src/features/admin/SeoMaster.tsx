@@ -72,6 +72,8 @@ import { fetchAllBlogPosts, updateBlogPost } from "@/services/blogPosts";
 import { fetchAllPages } from "@/services/pagination";
 import { fetchSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
+import { generateAiSummary, htmlToPlainText, rowsToPlainText } from "@/services/aiSummary";
+import { toast } from "sonner";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 
 /* ═════════════════════════════════════════════════════════════════════
@@ -412,6 +414,29 @@ const HeadingsAudit = () => {
     [],
   );
 
+  /**
+   * Ask the AI for an AEO summary for one row and persist it straight
+   * to the source table. Used by the "Generate" button in the AI
+   * summary column so admins can fill gaps without opening each editor.
+   */
+  const generateSummaryForRow = useCallback(async (row: HeadingRow) => {
+    try {
+      const summary = await generateAiSummary({
+        title: row.pageTitle,
+        content: row.bodyText || row.h2s.join(". ") || row.pageTitle,
+        kind: row.source === "blog_post" ? "blog post" : "page",
+      });
+      const action =
+        row.source === "cms_page"
+          ? () => updateCmsPageMeta(row.id, "ai_summary", summary)
+          : () => updateBlogPost(row.id, { ai_summary: summary });
+      await runDbAction({ action, successMessage: "AI summary saved" });
+      setRows((prev) => prev.map((r) => (r.id === row.id && r.source === row.source ? { ...r, aiSummary: summary } : r)));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to generate summary");
+    }
+  }, []);
+
   return (
     <div className="space-y-4">
       {/* ── Toolbar ───────────────────────────────────────────────── */}
@@ -469,7 +494,12 @@ const HeadingsAudit = () => {
             </thead>
             <tbody>
               {filtered.map((row) => (
-                <HeadingRowItem key={`${row.source}-${row.id}`} row={row} onSaveMetaTitle={saveMetaTitle} />
+                <HeadingRowItem
+                  key={`${row.source}-${row.id}`}
+                  row={row}
+                  onSaveMetaTitle={saveMetaTitle}
+                  onGenerateSummary={generateSummaryForRow}
+                />
               ))}
             </tbody>
           </table>
@@ -482,9 +512,12 @@ const HeadingsAudit = () => {
 const HeadingRowItem = ({
   row,
   onSaveMetaTitle,
+  onGenerateSummary,
 }: {
   row: HeadingRow;
   onSaveMetaTitle: (row: HeadingRow, value: string) => void;
+  /** Generate + save an AI search summary for this row. */
+  onGenerateSummary?: (row: HeadingRow) => Promise<void>;
 }) => {
   // Local draft so typing doesn't fire a write on every keystroke.
   // Commit on blur — matches the project's deferred-saving Core memory.
