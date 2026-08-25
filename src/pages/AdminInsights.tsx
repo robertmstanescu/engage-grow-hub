@@ -46,9 +46,21 @@ import {
   fetchTopCountries,
   fetchConvertedJourneys,
   countLeadsInWindow,
+  fetchPageStats,
+  fetchReferrerStats,
+  fetchVisitorDepth,
+  fetchPageTransitions,
+  fetchPageBreakdown,
+  fetchPageTrend,
   type AnalyticsRangeFilter,
   type TrafficTypeFilter,
   type JourneyRecord,
+  type PageStatRow,
+  type ReferrerStatRow,
+  type VisitorDepthRow,
+  type TransitionRow,
+  type LabelCountRow,
+  type PageTrendRow,
 } from "@/services/unifiedAnalytics";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 
@@ -104,6 +116,20 @@ const AdminInsights = () => {
   const [botLeaderboard, setBotLeaderboard] = useState<Array<{ entity_name: string; count: number }>>([]);
   const [auditRows, setAuditRows] = useState<AuditRow[]>([]);
   const [journeys, setJourneys] = useState<JourneyRecord[]>([]);
+  // Server-side aggregated panels (exact, no ROW_CAP sampling).
+  const [pageStats, setPageStats] = useState<PageStatRow[]>([]);
+  const [referrers, setReferrers] = useState<ReferrerStatRow[]>([]);
+  const [visitorDepth, setVisitorDepth] = useState<VisitorDepthRow>({
+    total_visitors: 0, multi_page_visitors: 0, avg_pages_per_visitor: 0,
+  });
+  const [transitions, setTransitions] = useState<TransitionRow[]>([]);
+  // Single-page drill-down
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailReferrers, setDetailReferrers] = useState<LabelCountRow[]>([]);
+  const [detailDevices, setDetailDevices] = useState<LabelCountRow[]>([]);
+  const [detailCountries, setDetailCountries] = useState<LabelCountRow[]>([]);
+  const [detailTrend, setDetailTrend] = useState<PageTrendRow[]>([]);
   // NOTE: `recentRows` (the Live Feed data) was removed — see file header
   // for why. Don't add it back without product approval.
 
@@ -145,6 +171,7 @@ const AdminInsights = () => {
         uniqueHumans, botCountResult, leadsResult,
         countriesResult, deviceResult, leaderboardResult,
         journeysResult, blogResult, pageResult,
+        pageStatsResult, referrerResult, depthResult, transitionsResult,
       ] = await Promise.all([
         countUniqueHumanVisitors(filters),
         countAnalyticsRows({ ...filters, trafficType: "bot" }),
@@ -159,7 +186,16 @@ const AdminInsights = () => {
         // table's `.range()`-based fetcher instead of one unbounded query.
         fetchAllPages(fetchAllBlogPosts),
         fetchAllPages(fetchAllCmsPages),
+        fetchPageStats(filters),
+        fetchReferrerStats(filters),
+        fetchVisitorDepth(filters),
+        fetchPageTransitions(filters, 10),
       ]);
+
+      setPageStats(pageStatsResult.data);
+      setReferrers(referrerResult.data);
+      setVisitorDepth(depthResult.data);
+      setTransitions(transitionsResult.data);
 
       setHumanReach(uniqueHumans.count ?? 0);
       setAiMindshare(botCountResult.count ?? 0);
@@ -201,6 +237,32 @@ const AdminInsights = () => {
   };
 
   useEffect(() => { if (isAdmin) refreshAll(); }, [isAdmin, filters]);
+
+  /**
+   * Drill-down loader — runs whenever an admin clicks a row in the
+   * "Pages" table (or changes the global filters while one is open).
+   */
+  useEffect(() => {
+    if (!isAdmin || !selectedPath) return;
+    let cancelled = false;
+    const load = async () => {
+      setDetailLoading(true);
+      const [ref, dev, ctry, trend] = await Promise.all([
+        fetchPageBreakdown(selectedPath, filters, "referrer"),
+        fetchPageBreakdown(selectedPath, filters, "device"),
+        fetchPageBreakdown(selectedPath, filters, "country"),
+        fetchPageTrend(selectedPath, filters),
+      ]);
+      if (cancelled) return;
+      setDetailReferrers(ref.data);
+      setDetailDevices(dev.data);
+      setDetailCountries(ctry.data);
+      setDetailTrend(trend.data);
+      setDetailLoading(false);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [isAdmin, selectedPath, filters]);
 
   if (!authChecked) {
     return (
