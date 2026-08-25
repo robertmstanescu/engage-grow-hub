@@ -180,10 +180,15 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
       attributes: {
         class: "prose prose-sm max-w-none min-h-[300px] px-4 py-3 focus:outline-none",
       },
+      handlePaste: (view, event) => {
+        const text = event.clipboardData?.getData("text/plain");
+        if (text === undefined) return false;
+        view.dispatch(view.state.tr.insertText(text));
+        return true;
+      },
     },
-    // Paste cleanup: TipTap parses pasted markup against the schema, so
-    // Word/Docs junk (mso styles, nested spans, <o:p>) is dropped and only
-    // the structure our schema knows about survives.
+    // Paste as plain text deliberately: copied typography, colours and
+    // layout from Word/Docs/web pages must never leak into site content.
     onUpdate: ({ editor: instance }) => {
       debouncedEmit(instance.getHTML());
     },
