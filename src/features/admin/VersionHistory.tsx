@@ -20,6 +20,7 @@ import {
   type RevisionEntityType,
 } from "@/services/pageRevisions";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
+import { describeChanges, friendlyDateTime } from "./naming";
 
 interface EntitySummary {
   entity_type: RevisionEntityType;
@@ -28,19 +29,10 @@ interface EntitySummary {
   count: number;
 }
 
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
 const ENTITY_LABEL: Record<RevisionEntityType, string> = {
-  site_content: "Site Section",
-  cms_page: "CMS Page",
-  blog_post: "Blog Post",
+  site_content: "Homepage section",
+  cms_page: "Page",
+  blog_post: "Blog",
 };
 
 const VersionHistory = () => {
@@ -89,7 +81,7 @@ const VersionHistory = () => {
   const handleRestore = async (rev: PageRevisionWithAuthor) => {
     if (
       !confirm(
-        `Restore v${rev.version}?\n\nThis copies the snapshot into the editor draft. Open the relevant editor and click Publish to make it live.`,
+        `Restore version ${rev.version}?\n\nThis copies the snapshot into the editor draft. Open the relevant editor and click Publish to make it live.`,
       )
     )
       return;
@@ -101,7 +93,7 @@ const VersionHistory = () => {
       return;
     }
     if (rev.entity_type === "site_content") invalidateSiteContent(rev.entity_ref);
-    toast.success(`v${rev.version} restored to draft.`);
+    toast.success(`Version ${rev.version} copied into the draft.`);
   };
 
   return (
@@ -109,7 +101,7 @@ const VersionHistory = () => {
       <header className="space-y-2">
         <h2 className="text-2xl font-display flex items-center gap-2 text-primary">
           <History className="h-6 w-6" />
-          Revision History
+          Change history
         </h2>
         <p className="text-sm text-muted-foreground max-w-2xl">
           Every Publish creates an automatic snapshot — for site sections, CMS
@@ -171,22 +163,19 @@ const VersionHistory = () => {
                       </div>
                     ) : (
                       <ul className="divide-y divide-border">
-                        {revs.map((r) => (
+                        {revs.map((r, i) => (
                           <li
                             key={r.id}
                             className="px-4 py-3 flex items-center justify-between gap-4"
                           >
                             <div className="min-w-0">
-                              <div className="font-mono text-sm text-foreground">
-                                v{r.version}
-                                {r.label ? (
-                                  <span className="ml-2 text-xs text-muted-foreground">
-                                    {r.label}
-                                  </span>
-                                ) : null}
+                              <div className="font-body text-sm text-foreground">
+                                {r.label ||
+                                  describeChanges(r.content, revs[i + 1]?.content) ||
+                                  (i === revs.length - 1 ? "First saved version" : "Saved with no visible changes")}
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                {formatDate(r.created_at)}
+                                Version {r.version} · {friendlyDateTime(r.created_at)}
                                 {r.author_display_name
                                   ? ` · by ${r.author_display_name}`
                                   : ""}
