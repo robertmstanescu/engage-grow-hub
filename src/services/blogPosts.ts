@@ -29,6 +29,8 @@ export interface BlogPostRecord {
   og_image_alt: string | null;
   tags: string[] | null;
   ai_summary: string | null;
+  publish_at: string | null;
+  expiry_at: string | null;
 }
 
 export const fetchAllBlogPosts = (page = 1, pageSize = DEFAULT_PAGE_SIZE) => {

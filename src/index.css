@@ -719,64 +719,32 @@
     transform: translate3d(0, -2px, 0);
   }
 
-  /* ──────────────────────────────────────────────────────────────────
-     ADMIN LIGHT THEME — EPIC 4 / US 4.1 High-Contrast Audit
-     ──────────────────────────────────────────────────────────────────
-     The admin panel previously felt like a wireframe (grey-on-grey).
-     This rebuild raises the contrast floor so labels, body copy and
-     section titles inside the admin shell read as confidently as a
-     finished SaaS product:
-
-       --foreground             slate-900 (titles, primary text)
-       --muted-foreground       slate-700 (labels, secondary text — was
-                                grey-on-grey at 40%, now 28% lightness
-                                so it always passes WCAG AA on white)
-       --border                 slate-200 (sharper but not harsh)
-
-     PRIMARY ACTION COLOR
-     --------------------
-     `--admin-primary` is a vibrant indigo (Tailwind indigo-600 ≈ 239
-     84% 53%). Used for "Save", "Publish", "Add Element" — anywhere we
-     want the eye drawn to the next thing. Pairs with `--admin-primary
-     -hover` for hover states. The brand gold (--accent) is reserved
-     for content emphasis on the public site; the admin shell uses a
-     neutral-yet-vibrant indigo so it doesn't fight the live preview
-     colors editors are working on. */
+  /* Admin uses semantic aliases of the site's light brand palette. */
   .admin-light {
     --background: 30 20% 96%;
-    --foreground: 222 47% 11%; /* slate-900 — sharp body text */
+    --foreground: 282 40% 13%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 282 40% 13%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --muted: 210 40% 96%; /* slate-100 — clean hover surface */
-    --muted-foreground: 215 25% 28%; /* slate-700 — readable secondary */
-    --border: 214 32% 88%; /* slate-200 — sharper card edges */
-    --input: 214 32% 88%;
-    --ring: 239 84% 53%; /* indigo-600 — focus ring matches CTA */
+    --popover-foreground: 282 40% 13%;
+    --muted: 285 38% 94%;
+    --muted-foreground: 282 18% 32%;
+    --border: 285 18% 84%;
+    --input: 285 18% 84%;
+    --ring: 282 55% 32%;
 
     /* Sidebars */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-accent: 210 40% 96%; /* slate-100 hover */
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 88%;
+    --sidebar-foreground: 282 40% 13%;
+    --sidebar-accent: 285 38% 94%;
+    --sidebar-accent-foreground: 282 40% 13%;
+    --sidebar-border: 285 18% 84%;
 
-    /* Vibrant primary action color (indigo-600) */
-    --admin-primary: 239 84% 53%;
-    --admin-primary-hover: 243 75% 47%; /* indigo-700 */
+    --admin-primary: 282 55% 32%;
+    --admin-primary-hover: 282 55% 25%;
     --admin-primary-foreground: 0 0% 100%;
 
-    /* ACCENT REMAP — the admin historically painted its accents with
-       the public `--secondary` token. On the light site that token is a
-       pale violet SURFACE (285 38% 94%), so active nav items, section
-       titles, chevrons and badges rendered near-white on near-white.
-       Inside the admin shell `--secondary` is remapped to the readable
-       indigo used for primary actions, which fixes every existing
-       `text-secondary` / `bg-secondary/10` / `border-secondary` usage
-       at once. Public rows never render inside `.admin-light`, so the
-       site palette is untouched. */
-    --secondary: 239 60% 40%; /* indigo-700-ish, legible as TEXT */
+    --secondary: 282 55% 32%;
     --secondary-foreground: 0 0% 100%;
   }
 
