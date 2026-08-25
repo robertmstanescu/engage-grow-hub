@@ -6,7 +6,7 @@ A full redesign of the admin experience: one refreshed light visual language, a 
 
 - Keep every existing control. Group and rank them instead of hiding them.
 - One visual language: same header, same section cards, same save bar, same buttons everywhere.
-- Light theme only, built from the existing brand tokens (plum primary, Unbounded titles) so admin feels like the site without copying its dark-luxury drama.
+- Light theme only, built from the existing brand tokens (plum primary, Bricolage Grotesque titles — Unbounded removed from the system entirely) so admin matches the site's current light design, with no leftover hardcoded dark styling.
 - Anything you act on repeatedly (formatting, save, publish) must always be reachable without scrolling.
 
 ## 1. Admin design refresh (light)
