@@ -170,7 +170,7 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
       return supabase.from("site_content").upsert(
         {
           section_key: s.section_key,
-          content: isPageRows && visibility === "live" ? draft : s.content,
+          content: s.content,
           draft_content: draft,
           publish_at: isPageRows && visibility === "scheduled" ? publishAt : null,
           expiry_at: isPageRows && visibility === "scheduled" ? expiryAt : null,
@@ -185,13 +185,12 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
       setSections((prev) => prev.map((s) => targets.includes(s)
         ? {
             ...s,
-            content: s.section_key === "page_rows" && visibility === "live" ? (s.draft_content || s.content) : s.content,
             publish_at: s.section_key === "page_rows" && visibility === "scheduled" ? publishAt : null,
             expiry_at: s.section_key === "page_rows" && visibility === "scheduled" ? expiryAt : null,
           }
         : s));
       setSavedVisibility(visibility);
-      toast.success(visibility === "scheduled" ? "Homepage schedule saved" : visibility === "live" ? "Homepage is live" : "Homepage draft saved");
+      toast.success(visibility === "scheduled" ? "Homepage schedule saved" : "Homepage draft saved");
     }
     setSaving(false);
   }, [sections, hasTimingChanges, visibility, publishAt, expiryAt]);

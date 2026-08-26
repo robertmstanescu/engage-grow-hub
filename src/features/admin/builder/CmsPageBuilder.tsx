@@ -186,7 +186,6 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
     const { error } = await supabase
       .from("cms_pages")
       .update({
-        page_rows: visibility === "live" ? draftRows as any : record.page_rows as any,
         draft_page_rows: draftRows as any,
         meta_title: seoTitle,
         meta_description: seoDescription,
@@ -199,11 +198,10 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
       .eq("id", record.id);
     if (error) toast.error(error.message);
     else {
-      toast.success(visibility === "scheduled" ? "Page scheduled" : visibility === "live" ? "Page saved live" : "Draft saved");
+      toast.success(visibility === "scheduled" ? "Page scheduled" : "Draft saved");
       // Refresh the snapshot so hasChanges resets.
       setRecord({
         ...record,
-        page_rows: visibility === "live" ? draftRows : record.page_rows,
         draft_page_rows: draftRows,
         meta_title: seoTitle,
         meta_description: seoDescription,
