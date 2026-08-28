@@ -183,10 +183,16 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
       }
     }
     setSaving(true);
+    // Choosing "Live" and saving is an explicit publish: promote the
+    // edited draft rows into the live column in the same write, otherwise
+    // the page would flip to published while visitors still see the old
+    // (or empty) content. Draft/scheduled saves never touch page_rows.
+    const goingLive = visibility === "live";
     const { error } = await supabase
       .from("cms_pages")
       .update({
         draft_page_rows: draftRows as any,
+        ...(goingLive ? { page_rows: draftRows as any } : {}),
         meta_title: seoTitle,
         meta_description: seoDescription,
         title: pageTitle,
@@ -198,11 +204,14 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
       .eq("id", record.id);
     if (error) toast.error(error.message);
     else {
-      toast.success(visibility === "scheduled" ? "Page scheduled" : "Draft saved");
+      toast.success(
+        goingLive ? "Page published" : visibility === "scheduled" ? "Page scheduled" : "Draft saved",
+      );
       // Refresh the snapshot so hasChanges resets.
       setRecord({
         ...record,
         draft_page_rows: draftRows,
+        ...(goingLive ? { page_rows: draftRows } : {}),
         meta_title: seoTitle,
         meta_description: seoDescription,
         title: pageTitle,

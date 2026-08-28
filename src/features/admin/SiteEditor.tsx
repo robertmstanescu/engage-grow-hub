@@ -164,13 +164,19 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
     const targets = sections.filter(
       (s) => dirty.includes(s) || (hasTimingChanges && s.section_key === "page_rows"),
     );
+    // Choosing "Live" and saving is an explicit publish: promote the
+    // draft content into the live `content` column in the same write,
+    // otherwise the homepage would flip to published while visitors
+    // still see the old content. Draft/scheduled saves keep `content`
+    // untouched.
+    const goingLive = visibility === "live";
     const updates = targets.map((s) => {
       const draft = (s.draft_content || s.content) as any;
       const isPageRows = s.section_key === "page_rows";
       return supabase.from("site_content").upsert(
         {
           section_key: s.section_key,
-          content: s.content,
+          content: goingLive ? draft : s.content,
           draft_content: draft,
           publish_at: isPageRows && visibility === "scheduled" ? publishAt : null,
           expiry_at: isPageRows && visibility === "scheduled" ? expiryAt : null,
@@ -185,12 +191,19 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
       setSections((prev) => prev.map((s) => targets.includes(s)
         ? {
             ...s,
+            content: goingLive ? ((s.draft_content || s.content) as any) : s.content,
             publish_at: s.section_key === "page_rows" && visibility === "scheduled" ? publishAt : null,
             expiry_at: s.section_key === "page_rows" && visibility === "scheduled" ? expiryAt : null,
           }
         : s));
       setSavedVisibility(visibility);
-      toast.success(visibility === "scheduled" ? "Homepage schedule saved" : "Homepage draft saved");
+      toast.success(
+        goingLive
+          ? "Homepage published"
+          : visibility === "scheduled"
+            ? "Homepage schedule saved"
+            : "Homepage draft saved",
+      );
     }
     setSaving(false);
   }, [sections, hasTimingChanges, visibility, publishAt, expiryAt]);
