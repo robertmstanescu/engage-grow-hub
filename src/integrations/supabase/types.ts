@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -836,6 +836,67 @@ export type Database = {
       }
     }
     Functions: {
+      analytics_page_breakdown: {
+        Args: {
+          p_dimension?: string
+          p_path: string
+          p_since: string
+          p_until: string
+        }
+        Returns: {
+          label: string
+          visits: number
+        }[]
+      }
+      analytics_page_stats: {
+        Args: {
+          p_category?: string
+          p_country?: string
+          p_since: string
+          p_traffic?: string
+          p_until: string
+        }
+        Returns: {
+          avg_duration: number
+          avg_scroll: number
+          path: string
+          unique_visitors: number
+          views: number
+        }[]
+      }
+      analytics_page_transitions: {
+        Args: { p_limit?: number; p_since: string; p_until: string }
+        Returns: {
+          from_path: string
+          to_path: string
+          transitions: number
+        }[]
+      }
+      analytics_page_trend: {
+        Args: { p_path: string; p_since: string; p_until: string }
+        Returns: {
+          day: string
+          unique_visitors: number
+          views: number
+        }[]
+      }
+      analytics_referrer_stats: {
+        Args: { p_since: string; p_traffic?: string; p_until: string }
+        Returns: {
+          kind: string
+          label: string
+          unique_visitors: number
+          visits: number
+        }[]
+      }
+      analytics_visitor_depth: {
+        Args: { p_since: string; p_until: string }
+        Returns: {
+          avg_pages_per_visitor: number
+          multi_page_visitors: number
+          total_visitors: number
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean

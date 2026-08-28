@@ -21,7 +21,8 @@ import {
 } from "@/services/contentAccessibility";
 import PageBuilderShell from "./PageBuilderShell";
 import RevisionHistoryPanel from "./RevisionHistoryPanel";
-import SchedulePublishPanel from "./SchedulePublishPanel";
+import AdminStatusControl from "../ui/AdminStatusControl";
+import { contentState, stateToStatus, type ContentState } from "../naming";
 import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 import { confirmUnsavedExit } from "@/components/ConfirmDialog";
 import { createRedirect } from "@/services/redirects";
@@ -36,6 +37,8 @@ interface BlogPostRecord {
   draft_page_rows: PageRow[] | null;
   meta_title: string | null;
   meta_description: string | null;
+  publish_at: string | null;
+  expiry_at: string | null;
 }
 
 interface Props {
@@ -71,6 +74,9 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
   // US 2.3 — Page identity edited in the Left Navigator.
   const [pageTitle, setPageTitle] = useState("");
   const [pageSlug, setPageSlug] = useState("");
+  const [visibility, setVisibility] = useState<ContentState>("draft");
+  const [publishAt, setPublishAt] = useState<string | null>(null);
+  const [expiryAt, setExpiryAt] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [unpublishing, setUnpublishing] = useState(false);
@@ -78,7 +84,7 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
   const load = useCallback(async () => {
     const { data, error } = await supabase
       .from("blog_posts")
-      .select("id, slug, title, status, content, page_rows, draft_page_rows, meta_title, meta_description")
+      .select("id, slug, title, status, content, page_rows, draft_page_rows, meta_title, meta_description, publish_at, expiry_at")
       .eq("id", postId)
       .maybeSingle();
     if (error || !data) {
@@ -93,6 +99,9 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
     setSeoDescription(rec.meta_description || "");
     setPageTitle(rec.title || "");
     setPageSlug(rec.slug || "");
+    setVisibility(contentState(rec.status, rec.publish_at));
+    setPublishAt(rec.publish_at);
+    setExpiryAt(rec.expiry_at);
   }, [postId]);
 
   useEffect(() => {
@@ -109,6 +118,9 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
       meta_description: record.meta_description || "",
       title: record.title || "",
       slug: record.slug || "",
+      visibility: contentState(record.status, record.publish_at),
+      publish_at: record.publish_at,
+      expiry_at: record.expiry_at,
     });
   }, [record]);
 
@@ -119,8 +131,11 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
       meta_description: seoDescription,
       title: pageTitle,
       slug: pageSlug,
+      visibility,
+      publish_at: publishAt,
+      expiry_at: expiryAt,
     }),
-    [draftRows, seoTitle, seoDescription, pageTitle, pageSlug],
+    [draftRows, seoTitle, seoDescription, pageTitle, pageSlug, visibility, publishAt, expiryAt],
   );
 
   const hasChanges = !!record && initialSnapshot !== currentSnapshot;
@@ -162,31 +177,49 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
     if (!record) return;
     const slugOk = await checkSlugAvailable();
     if (!slugOk) return;
+    if (visibility === "scheduled") {
+      if (!publishAt || new Date(publishAt).getTime() <= Date.now()) {
+        toast.error("Choose a future date and time for this blog to go live.");
+        return;
+      }
+      if (expiryAt && new Date(expiryAt).getTime() <= new Date(publishAt).getTime()) {
+        toast.error("The stop date must be after the go-live date.");
+        return;
+      }
+    }
     setSaving(true);
     const { error } = await supabase
       .from("blog_posts")
       .update({
+        page_rows: visibility === "live" ? draftRows as any : record.page_rows as any,
         draft_page_rows: draftRows as any,
         meta_title: seoTitle,
         meta_description: seoDescription,
         title: pageTitle,
         slug: pageSlug,
+        status: stateToStatus(visibility),
+        publish_at: visibility === "scheduled" ? publishAt : null,
+        expiry_at: visibility === "scheduled" ? expiryAt : null,
       } as any)
       .eq("id", record.id);
     if (error) toast.error(error.message);
     else {
-      toast.success("Draft saved");
+      toast.success(visibility === "scheduled" ? "Blog scheduled" : visibility === "live" ? "Blog saved live" : "Draft saved");
       setRecord({
         ...record,
+        page_rows: visibility === "live" ? draftRows : record.page_rows,
         draft_page_rows: draftRows,
         meta_title: seoTitle,
         meta_description: seoDescription,
         title: pageTitle,
         slug: pageSlug,
+        status: stateToStatus(visibility),
+        publish_at: visibility === "scheduled" ? publishAt : null,
+        expiry_at: visibility === "scheduled" ? expiryAt : null,
       });
     }
     setSaving(false);
-  }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, checkSlugAvailable]);
+  }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, visibility, publishAt, expiryAt, checkSlugAvailable]);
 
   const onPublish = useCallback(async () => {
     if (!record) return;
@@ -217,6 +250,8 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
         title: pageTitle,
         slug: pageSlug,
         status: "published",
+        publish_at: null,
+        expiry_at: null,
       } as any)
       .eq("id", record.id);
     if (error) toast.error(error.message);
@@ -237,7 +272,12 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
         title: pageTitle,
         slug: pageSlug,
         status: "published",
+        publish_at: null,
+        expiry_at: null,
       });
+      setVisibility("live");
+      setPublishAt(null);
+      setExpiryAt(null);
     }
     setPublishing(false);
   }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, checkSlugAvailable]);
@@ -248,12 +288,15 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
     setUnpublishing(true);
     const { error } = await supabase
       .from("blog_posts")
-      .update({ status: "draft" } as any)
+      .update({ status: "draft", publish_at: null, expiry_at: null } as any)
       .eq("id", record.id);
     if (error) toast.error(error.message);
     else {
       toast.success("Unpublished — post is no longer visible to the public");
       setRecord({ ...record, status: "draft" });
+      setVisibility("draft");
+      setPublishAt(null);
+      setExpiryAt(null);
     }
     setUnpublishing(false);
   }, [record]);
@@ -297,11 +340,13 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
       onUnpublish={onUnpublish}
       unpublishing={unpublishing}
       schedulePanel={
-        <SchedulePublishPanel
-          entityType="blog_posts"
-          entityId={record.id}
-          entityLabel={pageTitle || pageSlug}
-          hasUnsavedChanges={hasChanges}
+        <AdminStatusControl
+          state={visibility}
+          onStateChange={setVisibility}
+          publishAt={publishAt}
+          expiryAt={expiryAt}
+          onPublishAtChange={setPublishAt}
+          onExpiryAtChange={setExpiryAt}
         />
       }
       inspectorFooter={

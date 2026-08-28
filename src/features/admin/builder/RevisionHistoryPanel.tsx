@@ -17,6 +17,7 @@ import {
   type PageRevisionWithAuthor,
   type RevisionEntityType,
 } from "@/services/pageRevisions";
+import { describeChanges, friendlyDateTime } from "../naming";
 
 interface Props {
   entityType: RevisionEntityType;
@@ -24,15 +25,6 @@ interface Props {
   /** Called after a successful restore so the parent can reload its draft. */
   onRestored?: () => void;
 }
-
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
 const RevisionHistoryPanel = ({ entityType, entityRef, onRestored }: Props) => {
   const [loading, setLoading] = useState(true);
@@ -55,7 +47,7 @@ const RevisionHistoryPanel = ({ entityType, entityRef, onRestored }: Props) => {
   const handleRestore = async (rev: PageRevisionWithAuthor) => {
     if (
       !confirm(
-        `Restore v${rev.version}?\n\nThis copies the snapshot into your draft. Click Publish afterwards to make it live.`,
+        `Restore version ${rev.version}?\n\nThis copies the snapshot into your draft. Click Publish afterwards to make it live.`,
       )
     )
       return;
@@ -66,7 +58,7 @@ const RevisionHistoryPanel = ({ entityType, entityRef, onRestored }: Props) => {
       toast.error(`Restore failed: ${(error as any).message || error}`);
       return;
     }
-    toast.success(`v${rev.version} restored to draft.`);
+    toast.success(`Version ${rev.version} copied into your draft.`);
     onRestored?.();
   };
 
@@ -75,7 +67,7 @@ const RevisionHistoryPanel = ({ entityType, entityRef, onRestored }: Props) => {
       <div className="flex items-center gap-2">
         <History className="h-4 w-4 text-secondary" />
         <h4 className="font-body text-[10px] uppercase tracking-[0.18em] font-medium text-muted-foreground">
-          Revision history
+          Change history
         </h4>
       </div>
 
@@ -89,22 +81,19 @@ const RevisionHistoryPanel = ({ entityType, entityRef, onRestored }: Props) => {
         </p>
       ) : (
         <ul className="divide-y divide-border rounded-md border border-border bg-background/40 max-h-72 overflow-y-auto">
-          {revisions.map((r) => (
+          {revisions.map((r, i) => (
             <li
               key={r.id}
               className="px-3 py-2 flex items-center justify-between gap-3"
             >
               <div className="min-w-0">
-                <div className="font-mono text-xs text-foreground">
-                  v{r.version}
-                  {r.label ? (
-                    <span className="ml-2 text-[10px] text-muted-foreground">
-                      {r.label}
-                    </span>
-                  ) : null}
+                <div className="font-body text-xs text-foreground">
+                  {r.label ||
+                    describeChanges(r.content, revisions[i + 1]?.content) ||
+                    (i === revisions.length - 1 ? "First saved version" : "Saved with no visible changes")}
                 </div>
                 <div className="text-[10px] text-muted-foreground truncate">
-                  {formatDate(r.created_at)}
+                  Version {r.version} · {friendlyDateTime(r.created_at)}
                   {r.author_display_name ? ` · ${r.author_display_name}` : ""}
                 </div>
               </div>

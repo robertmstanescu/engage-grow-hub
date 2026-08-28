@@ -3,6 +3,7 @@ import { sanitizeHtml } from "@/services/sanitize";
 import { toast } from "sonner";
 import { Trash2, Edit, Plus, Eye, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { generateAiSummary, htmlToPlainText } from "@/services/aiSummary";
+import SeoAssistantPanel, { type SeoApplyPayload } from "./SeoAssistantPanel";
 import RichTextEditor from "./RichTextEditor";
 import { patchLivePreviewState } from "@/services/livePreview";
 import ImageAltInput from "./ImageAltInput";
@@ -19,6 +20,12 @@ import ListFilters from "@/components/ui/list-filters";
 import { ListPager } from "@/components/ui/list-pager";
 import LeadMagnetSection from "./LeadMagnetSection";
 import BlogPostBuilder from "./builder/BlogPostBuilder";
+import AdminPageHeader from "./ui/AdminPageHeader";
+import AdminSection from "./ui/AdminSection";
+import AdminField, { adminInputClass } from "./ui/AdminField";
+import AdminStickyBar from "./ui/AdminStickyBar";
+import AdminStatusControl from "./ui/AdminStatusControl";
+import { contentState, stateToStatus, type ContentState } from "./naming";
 
 const generateSlug = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -53,6 +60,8 @@ interface BlogPost {
   lead_magnet_asset_id: string | null;
   lead_magnet_cover_id: string | null;
   ai_summary: string | null;
+  publish_at: string | null;
+  expiry_at: string | null;
 }
 
 const BlogEditor = () => {
@@ -65,8 +74,9 @@ const BlogEditor = () => {
   const [previewing, setPreviewing] = useState(false);
   const [editMode, setEditMode] = useState<"content" | "structure">("content");
   const [isSavingChanges, setIsSavingChanges] = useState(false);
+  const [visibility, setVisibility] = useState<ContentState>("draft");
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
-  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
+  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", publish_at: null as string | null, expiry_at: null as string | null, cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
 
   const [generatingAiSummary, setGeneratingAiSummary] = useState(false);
 
@@ -87,6 +97,26 @@ const BlogEditor = () => {
     } finally {
       setGeneratingAiSummary(false);
     }
+  };
+
+  /**
+   * Apply whatever the admin accepted from the "Generate all SEO"
+   * review panel. Only the ticked fields arrive here.
+   */
+  const applySeoSuggestions = (payload: SeoApplyPayload) => {
+    setForm((f) => {
+      const next = { ...f };
+      if (payload.meta_title) next.meta_title = payload.meta_title;
+      if (payload.meta_description) next.meta_description = payload.meta_description;
+      if (payload.ai_summary) next.ai_summary = payload.ai_summary;
+      if (payload.tags) next.tags = Array.from(new Set([...f.tags, ...payload.tags]));
+      for (const { key, alt } of payload.image_alts || []) {
+        if (key === "cover") next.cover_image_alt = alt;
+        if (key === "og") next.og_image_alt = alt;
+        if (key === "author") next.author_image_alt = alt;
+      }
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -114,19 +144,23 @@ const BlogEditor = () => {
   const handleNew = () => {
     setIsNew(true);
     setEditing(null);
-    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "", lead_magnet_asset_id: null, lead_magnet_cover_id: null, ai_summary: "" });
+    setVisibility("draft");
+    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", publish_at: null, expiry_at: null, cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "", lead_magnet_asset_id: null, lead_magnet_cover_id: null, ai_summary: "" });
   };
 
   const handleEdit = (post: BlogPost) => {
     setEditMode("content");
     setIsNew(false);
     setEditing(post);
+    setVisibility(contentState(post.status, post.publish_at));
     setForm({
       title: post.title,
       excerpt: post.excerpt || "",
       content: post.content,
       category: post.category,
       status: post.status,
+      publish_at: post.publish_at,
+      expiry_at: post.expiry_at,
       cover_image: post.cover_image || "",
       cover_image_alt: post.cover_image_alt || "",
       author_name: post.author_name || "",
@@ -148,7 +182,20 @@ const BlogEditor = () => {
   const handleSave = async (status: string) => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
 
-    const slug = generateSlug(form.title);
+    // Slug is the public URL — only derive it from the title for a brand
+    // new post. Editing an existing post keeps its slug so shared links
+    // (and search rankings) stay valid.
+    const slug = isNew ? generateSlug(form.title) : (editing?.slug || generateSlug(form.title));
+    if (visibility === "scheduled") {
+      if (!form.publish_at || new Date(form.publish_at).getTime() <= Date.now()) {
+        toast.error("Choose a future date and time for this blog to go live.");
+        return;
+      }
+      if (form.expiry_at && new Date(form.expiry_at).getTime() <= new Date(form.publish_at).getTime()) {
+        toast.error("The stop date must be after the go-live date.");
+        return;
+      }
+    }
     const payload = {
       title: form.title,
       slug,
@@ -156,6 +203,8 @@ const BlogEditor = () => {
       content: form.content,
       category: form.category,
       status,
+      publish_at: visibility === "scheduled" ? form.publish_at : null,
+      expiry_at: visibility === "scheduled" ? form.expiry_at : null,
       cover_image: form.cover_image || null,
       cover_image_alt: form.cover_image_alt?.trim() || null,
       author_name: form.author_name || null,
@@ -166,7 +215,11 @@ const BlogEditor = () => {
       og_image: form.og_image || null,
       og_image_alt: form.og_image_alt?.trim() || null,
       tags: form.tags.length > 0 ? form.tags : null,
-      published_at: status === "published" ? new Date().toISOString() : null,
+      // Preserve the original publication date — re-saving an old post
+      // must not push it to the top of the blog, and unpublishing keeps
+      // the date so republishing restores it.
+      published_at:
+        editing?.published_at ?? (status === "published" ? new Date().toISOString() : null),
       lead_magnet_asset_id: form.lead_magnet_asset_id,
       lead_magnet_cover_id: form.lead_magnet_cover_id,
       ai_summary: form.ai_summary?.trim() || null,
@@ -392,105 +445,151 @@ const BlogEditor = () => {
 
   /* ── Editor Mode ── */
   if (isNew || editing) {
+    const changeVisibility = (v: ContentState) => {
+      setVisibility(v);
+      setForm((f) => ({
+        ...f,
+        status: stateToStatus(v),
+        publish_at: v === "scheduled" ? f.publish_at : null,
+        expiry_at: v === "scheduled" ? f.expiry_at : null,
+      }));
+    };
+
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>
-            {isNew ? "New Post" : "Edit Post"}
-          </h2>
-          <div className="flex items-center gap-2">
-            {ModeTabs}
-            <button
-              onClick={openLivePreview}
-              className="flex items-center gap-1 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"
-              style={{ borderColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))", backgroundColor: "hsl(var(--accent) / 0.1)" }}>
-              <Eye size={13} /> Preview
-            </button>
-            <button onClick={() => { setEditing(null); setIsNew(false); setPreviewing(false); }} className="font-body text-xs text-muted-foreground hover:opacity-70">
-              Cancel
-            </button>
-          </div>
-        </div>
-
-        {/* Cover image */}
-        <ImagePickerField
-          label="Cover Image"
-          value={form.cover_image}
-          onChange={(url) => setForm((f) => ({ ...f, cover_image: url, og_image: f.og_image || url }))}
-          altValue={form.cover_image_alt}
-          onAltChange={(v) => setForm((f) => ({ ...f, cover_image_alt: v }))}
+      <div className="space-y-4 pb-2">
+        <AdminPageHeader
+          title={isNew ? "New blog" : form.title || "Edit blog"}
+          description={
+            isNew
+              ? "Write it, then choose whether it goes live now or later."
+              : `Web address: /blog/${editing?.slug || ""}`
+          }
+          backLabel="All blogs"
+          onBack={() => { setEditing(null); setIsNew(false); setPreviewing(false); }}
+          actions={
+            <>
+              {ModeTabs}
+              <button
+                onClick={openLivePreview}
+                className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-body text-xs"
+                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
+                title={`Preview — Blogs: ${form.title || "Untitled"}`}
+              >
+                <Eye size={13} /> Preview — Blogs: {form.title ? (form.title.length > 24 ? `${form.title.slice(0, 23)}…` : form.title) : "Untitled"}
+              </button>
+            </>
+          }
         />
 
-        <input
-          placeholder="Title"
-          value={form.title}
-          onChange={(e) => setForm({ ...form, title: e.target.value })}
-          className="w-full px-4 py-3 rounded-lg font-body text-sm border"
-          style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
-        />
-        <input
-          placeholder="Excerpt (short summary for listing page)"
-          value={form.excerpt}
-          onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-          className="w-full px-4 py-3 rounded-lg font-body text-sm border"
-          style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
-        />
-        <select
-          value={form.category}
-          onChange={(e) => setForm({ ...form, category: e.target.value })}
-          className="w-full px-4 py-3 rounded-lg font-body text-sm border"
-          style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}>
-          {blogCategories.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+        <AdminSection title="The basics" description="What readers see first on the Blogs listing.">
+          <ImagePickerField
+            label="Cover image"
+            value={form.cover_image}
+            onChange={(url) => setForm((f) => ({ ...f, cover_image: url, og_image: f.og_image || url }))}
+            altValue={form.cover_image_alt}
+            onAltChange={(v) => setForm((f) => ({ ...f, cover_image_alt: v }))}
+          />
 
-        <div>
-          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">Article Content</label>
+          <AdminField label="Title">
+            <input
+              placeholder="Give this blog a title"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              className={adminInputClass}
+            />
+          </AdminField>
+
+          <AdminField label="Short summary" hint="Shown on the Blogs listing page and used if no AI summary is set.">
+            <input
+              placeholder="One or two sentences"
+              value={form.excerpt}
+              onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
+              className={adminInputClass}
+            />
+          </AdminField>
+
+          <AdminField label="Category" hint="Readers can filter the Blogs page by category.">
+            <select
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              className={adminInputClass}
+            >
+              {blogCategories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </AdminField>
+        </AdminSection>
+
+        <AdminSection
+          title="Article"
+          description="The formatting bar stays with you as you scroll."
+          action={
+            <span className="font-body text-[11px] text-muted-foreground">
+              {calculateReadTime(form.content)}
+            </span>
+          }
+        >
           <RichTextEditor
             content={form.content}
             onChange={(html) => setForm({ ...form, content: html })}
             placeholder="Write your article..."
           />
-        </div>
+        </AdminSection>
 
-        <p className="font-body text-xs text-muted-foreground">
-          Estimated read time: {calculateReadTime(form.content)}
-        </p>
-
-        {/* Author */}
-        <div className="flex items-end gap-3">
-          <div className="flex-1 min-w-0">
-            <ImagePickerField
-              label="Author Image"
-              value={form.author_image}
-              onChange={(url) => setForm((f) => ({ ...f, author_image: url }))}
-              altValue={form.author_image_alt}
-              onAltChange={(v) => setForm((f) => ({ ...f, author_image_alt: v }))}
-            />
-          </div>
-          <input
-            type="text"
-            placeholder="Author name"
-            value={form.author_name}
-            onChange={(e) => setForm({ ...form, author_name: e.target.value })}
-            className="flex-1 px-4 py-3 rounded-lg font-body text-sm border"
-            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
+        <AdminSection title="Visibility" description="Draft, live now, or scheduled for later.">
+          <AdminStatusControl
+            state={visibility}
+            onStateChange={changeVisibility}
+            publishAt={form.publish_at}
+            expiryAt={form.expiry_at}
+            onPublishAtChange={(publish_at) => setForm((f) => ({ ...f, publish_at }))}
+            onExpiryAtChange={(expiry_at) => setForm((f) => ({ ...f, expiry_at }))}
           />
-        </div>
+        </AdminSection>
 
-        {/* Tags */}
-        <div>
-          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">Tags</label>
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {form.tags.map((tag, i) => (
-              <span key={i} className="flex items-center gap-1 font-body text-xs px-2.5 py-1 rounded-full" style={{ backgroundColor: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
-                {tag}
-                <button type="button" onClick={() => setForm({ ...form, tags: form.tags.filter((_, j) => j !== i) })} className="hover:opacity-70">×</button>
-              </span>
-            ))}
-          </div>
-          <div className="flex gap-1.5">
+        <AdminSection title="Author" defaultCollapsed>
+          <ImagePickerField
+            label="Author photo"
+            value={form.author_image}
+            onChange={(url) => setForm((f) => ({ ...f, author_image: url }))}
+            altValue={form.author_image_alt}
+            onAltChange={(v) => setForm((f) => ({ ...f, author_image_alt: v }))}
+          />
+          <AdminField label="Author name">
+            <input
+              type="text"
+              placeholder="Who wrote this?"
+              value={form.author_name}
+              onChange={(e) => setForm({ ...form, author_name: e.target.value })}
+              className={adminInputClass}
+            />
+          </AdminField>
+        </AdminSection>
+
+        <AdminSection title="Tags" description="Help readers and search engines group related blogs." defaultCollapsed>
+          {form.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {form.tags.map((tag, i) => (
+                <span
+                  key={i}
+                  className="flex items-center gap-1 rounded-full px-2.5 py-1 font-body text-xs"
+                  style={{ backgroundColor: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, tags: form.tags.filter((_, j) => j !== i) })}
+                    className="hover:opacity-70"
+                    aria-label={`Remove tag ${tag}`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <AdminField label="Add a tag" hint="Type a tag and press Enter.">
             <input
               value={form.newTag}
               onChange={(e) => setForm({ ...form, newTag: e.target.value })}
@@ -502,111 +601,133 @@ const BlogEditor = () => {
                   }
                 }
               }}
-              placeholder="Add tag + Enter"
-              className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
-              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
+              placeholder="e.g. internal comms"
+              className={adminInputClass}
             />
-          </div>
-        </div>
+          </AdminField>
+        </AdminSection>
 
-        {/* Lead magnet (gated download) */}
-        <LeadMagnetSection
-          resourceAssetId={form.lead_magnet_asset_id}
-          coverAssetId={form.lead_magnet_cover_id}
-          onChange={({ resource_asset_id, cover_asset_id }) =>
-            setForm((f) => ({
-              ...f,
-              lead_magnet_asset_id: resource_asset_id,
-              lead_magnet_cover_id: cover_asset_id,
-            }))
-          }
-        />
+        <AdminSection title="Download offer" description="Optional gated file readers get in exchange for their email." defaultCollapsed>
+          <LeadMagnetSection
+            resourceAssetId={form.lead_magnet_asset_id}
+            coverAssetId={form.lead_magnet_cover_id}
+            onChange={({ resource_asset_id, cover_asset_id }) =>
+              setForm((f) => ({
+                ...f,
+                lead_magnet_asset_id: resource_asset_id,
+                lead_magnet_cover_id: cover_asset_id,
+              }))
+            }
+          />
+        </AdminSection>
 
-        {/* AI Search Summary — feeds /llms.txt and /llms-full.txt */}
-        <div className="rounded-lg border p-4 space-y-2" style={{ borderColor: "hsl(var(--accent) / 0.4)", backgroundColor: "hsl(var(--accent) / 0.05)" }}>
-          <div className="flex items-start justify-between gap-2">
-            <label className="font-body text-[10px] uppercase tracking-wider font-medium block" style={{ color: "hsl(var(--foreground))" }}>
-              AI Search Summary
-            </label>
-            <button
-              type="button"
-              onClick={handleGenerateAiSummary}
-              disabled={generatingAiSummary}
-              className="shrink-0 flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full transition-opacity hover:opacity-80 disabled:opacity-50"
-              style={{ border: "1px solid hsl(var(--accent) / 0.6)", color: "hsl(var(--foreground))" }}
-            >
-              {generatingAiSummary ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
-              {generatingAiSummary ? "Generating…" : "Generate with AI"}
-            </button>
-          </div>
-          <p className="font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-            A 1-3 sentence summary written for AI assistants (ChatGPT, Claude, Perplexity). Aim for 60-320 characters. Leave blank to fall back to the excerpt.
-          </p>
-          <textarea
-            placeholder="e.g. A practical guide to designing internal comms channels for distributed teams, with concrete examples from the consulting practice."
-            value={form.ai_summary}
-            onChange={(e) => setForm({ ...form, ai_summary: e.target.value })}
-            rows={3}
-            className="w-full px-4 py-2.5 rounded-lg font-body text-sm border resize-none"
-            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+        <AdminSection
+          title="Search and AI"
+          description="How this blog appears in Google and in AI answers."
+          defaultCollapsed
+        >
+          <SeoAssistantPanel
+            sourceTitle={form.title}
+            sourceContent={htmlToPlainText(form.content) || form.excerpt}
+            kind="blog post"
+            knownTags={blogCategories}
+            supports={{ tags: true, images: true }}
+            images={[
+              ...(form.cover_image ? [{ key: "cover", context: "blog cover image", current: form.cover_image_alt }] : []),
+              ...(form.og_image ? [{ key: "og", context: "social share image", current: form.og_image_alt }] : []),
+              ...(form.author_image ? [{ key: "author", context: "author portrait", current: form.author_image_alt }] : []),
+            ]}
+            onApply={applySeoSuggestions}
           />
-          <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-            {form.ai_summary.length}/320 chars
-          </p>
-        </div>
-        {/* SEO & Metadata */}
-        <div className="rounded-lg border p-4 space-y-3" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.2)" }}>
-          <label className="font-body text-[10px] uppercase tracking-wider font-medium block" style={{ color: "hsl(var(--foreground))" }}>SEO & Metadata</label>
-          <input
-            placeholder="Meta Title (defaults to post title)"
-            value={form.meta_title}
-            onChange={(e) => setForm({ ...form, meta_title: e.target.value })}
-            className="w-full px-4 py-2.5 rounded-lg font-body text-sm border"
-            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
-          />
-          <textarea
-            placeholder="Meta Description (for search engines & social sharing)"
-            value={form.meta_description}
-            onChange={(e) => setForm({ ...form, meta_description: e.target.value })}
-            rows={2}
-            className="w-full px-4 py-2.5 rounded-lg font-body text-sm border resize-none"
-            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
-          />
-          <input
-            placeholder="OG Image URL (for social sharing previews)"
-            value={form.og_image}
-            onChange={(e) => setForm({ ...form, og_image: e.target.value })}
-            className="w-full px-4 py-2.5 rounded-lg font-body text-sm border"
-            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
-          />
+
+          <AdminField
+            label="AI answer summary"
+            note={`${form.ai_summary.length}/320`}
+            hint="1-3 sentences written for AI assistants. Leave blank to fall back to the short summary."
+          >
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={handleGenerateAiSummary}
+                disabled={generatingAiSummary}
+                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-body text-[11px] hover:opacity-80 disabled:opacity-50"
+                style={{ borderColor: "hsl(var(--accent) / 0.6)", color: "hsl(var(--foreground))" }}
+              >
+                {generatingAiSummary ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
+                {generatingAiSummary ? "Generating…" : "Generate with AI"}
+              </button>
+              <textarea
+                placeholder="e.g. A practical guide to designing internal comms channels for distributed teams."
+                value={form.ai_summary}
+                onChange={(e) => setForm({ ...form, ai_summary: e.target.value })}
+                rows={3}
+                className={`${adminInputClass} resize-none`}
+              />
+            </div>
+          </AdminField>
+
+          <AdminField
+            label="Search title"
+            note={form.meta_title ? `${form.meta_title.length}/60` : undefined}
+            hint="Defaults to the blog title."
+          >
+            <input
+              placeholder="Title shown in Google results"
+              value={form.meta_title}
+              onChange={(e) => setForm({ ...form, meta_title: e.target.value })}
+              className={adminInputClass}
+            />
+          </AdminField>
+
+          <AdminField
+            label="Search description"
+            note={form.meta_description ? `${form.meta_description.length}/160` : undefined}
+          >
+            <textarea
+              placeholder="The snippet under the title in search results"
+              value={form.meta_description}
+              onChange={(e) => setForm({ ...form, meta_description: e.target.value })}
+              rows={2}
+              className={`${adminInputClass} resize-none`}
+            />
+          </AdminField>
+
+          <AdminField label="Social share image" hint="Used when the link is posted on social media.">
+            <input
+              placeholder="Image address"
+              value={form.og_image}
+              onChange={(e) => setForm({ ...form, og_image: e.target.value })}
+              className={adminInputClass}
+            />
+          </AdminField>
           {form.og_image && (
             <ImageAltInput
               value={form.og_image_alt}
               onChange={(v) => setForm({ ...form, og_image_alt: v })}
-              label="OG Image Alt Text (SEO)"
+              label="Social share image description"
             />
           )}
-          {form.meta_title && <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Title: {form.meta_title.length}/60 chars</p>}
-          {form.meta_description && <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Description: {form.meta_description.length}/160 chars</p>}
-        </div>
-        <div className="flex gap-3">
+        </AdminSection>
+
+        <AdminStickyBar
+          status={
+            visibility === "live"
+              ? "Saving will publish this blog."
+              : visibility === "scheduled"
+                ? "Saved as a draft until the scheduled time."
+                : "Saved as a draft — nobody else can see it."
+          }
+        >
           <SpinnerButton
             isLoading={isSavingChanges}
             loadingLabel="Saving…"
-            onClick={() => handleSave("draft")}
-            className="font-body text-xs uppercase tracking-wider px-5 py-2.5 rounded-full border hover:opacity-80 transition-opacity"
-            style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}>
-            Save as Draft
+            onClick={() => handleSave(visibility === "live" ? "published" : "draft")}
+            className="rounded-full px-5 py-2.5 font-body text-xs font-medium"
+            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+          >
+            {visibility === "live" ? "Save & publish" : "Save"}
           </SpinnerButton>
-          <SpinnerButton
-            isLoading={isSavingChanges}
-            loadingLabel="Publishing…"
-            onClick={() => handleSave("published")}
-            className="font-body text-xs uppercase tracking-wider px-5 py-2.5 rounded-full hover:opacity-80 transition-opacity"
-            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-            Publish
-          </SpinnerButton>
-        </div>
+        </AdminStickyBar>
       </div>
     );
   }
@@ -614,19 +735,19 @@ const BlogEditor = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Blog Posts</h2>
+        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Blogs</h2>
         <button
           onClick={handleNew}
           className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
           style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-          <Plus size={14} /> New Post
+          <Plus size={14} /> New blog
         </button>
       </div>
 
       {postsLoading ? (
         <ListSkeleton rows={3} rowHeight="h-20" />
       ) : posts.length === 0 ? (
-        <p className="font-body text-sm text-muted-foreground py-8 text-center">No posts yet. Create your first one!</p>
+        <p className="font-body text-sm text-muted-foreground py-8 text-center">No blogs yet. Create your first one!</p>
       ) : (
         <div className="space-y-3">
           {posts.length > 1 && (

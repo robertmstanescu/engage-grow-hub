@@ -106,6 +106,7 @@ import BrandSettings from "./BrandSettings";
 import SeoMaster from "./SeoMaster";
 import HeroEditor from "./site-editor/HeroEditor";
 import SeoFields from "./site-editor/SeoFields";
+import { rowsToPlainText } from "@/services/aiSummary";
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROWS, DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
@@ -190,31 +191,41 @@ const NAV_GROUPS = [
   {
     label: "CONTENT",
     items: [
-      { key: "site" as Tab, icon: FileText, label: "Page Builder" },
-      { key: "pages" as Tab, icon: FileText, label: "Page Manager" },
-      { key: "navigation" as Tab, icon: Compass, label: "Navigation" },
-      { key: "blog" as Tab, icon: BookOpen, label: "Blog Posts" },
-    ],
-  },
-  {
-    label: "ENGAGE",
-    items: [
-      { key: "contacts" as Tab, icon: Users, label: "Contacts" },
-      { key: "emails" as Tab, icon: Mail, label: "Email Campaigns" },
+      { key: "site" as Tab, icon: FileText, label: "Site" },
+      { key: "pages" as Tab, icon: FileText, label: "Pages" },
+      { key: "blog" as Tab, icon: BookOpen, label: "Blogs" },
       { key: "media" as Tab, icon: Image, label: "Media" },
     ],
   },
   {
-    label: "CONFIGURE",
+    label: "AUDIENCE",
     items: [
-      { key: "brand" as Tab, icon: Palette, label: "Brand" },
+      { key: "contacts" as Tab, icon: Users, label: "Contacts" },
+      { key: "emails" as Tab, icon: Mail, label: "Campaigns" },
+    ],
+  },
+  {
+    label: "STRUCTURE",
+    items: [
+      { key: "navigation" as Tab, icon: Compass, label: "Navigation" },
       { key: "tags" as Tab, icon: Tag, label: "Tags" },
       { key: "redirects" as Tab, icon: Link2, label: "Redirects" },
-      { key: "seo_master" as Tab, icon: Search, label: "Global SEO Settings" },
+    ],
+  },
+  {
+    label: "INSIGHTS",
+    items: [
+      { key: "insights" as const, icon: Sparkles, label: "Analytics" },
+      { key: "seo_master" as Tab, icon: Search, label: "SEO" },
       { key: "versions" as Tab, icon: History, label: "Version History" },
-      { key: "team" as Tab, icon: UserCog, label: "Manage Team" },
-      { key: "insights" as const, icon: Sparkles, label: "Insights" },
+    ] as Array<{ key: Tab | "insights"; icon: typeof LayoutDashboard; label: string }>,
+  },
+  {
+    label: "SETTINGS",
+    items: [
+      { key: "brand" as Tab, icon: Palette, label: "Brand" },
       { key: "settings" as Tab, icon: Settings, label: "Settings" },
+      { key: "team" as Tab, icon: UserCog, label: "Team" },
     ] as Array<{ key: Tab | "insights"; icon: typeof LayoutDashboard; label: string }>,
   },
 ];
@@ -1631,6 +1642,13 @@ const AdminDashboard = ({ session }: Props) => {
                           onDescriptionChange={(v) => updateCmsPageMeta("meta_description", v)}
                           aiSummary={cmsPageMeta.ai_summary}
                           onAiSummaryChange={(v) => updateCmsPageMeta("ai_summary", v)}
+                          aiSourceTitle={cmsPage.title}
+                          aiSourceContent={rowsToPlainText(cmsPageRows)}
+                          onApplySuggestions={(payload) => {
+                            if (payload.meta_title) updateCmsPageMeta("meta_title", payload.meta_title);
+                            if (payload.meta_description) updateCmsPageMeta("meta_description", payload.meta_description);
+                            if (payload.ai_summary) updateCmsPageMeta("ai_summary", payload.ai_summary);
+                          }}
                         />
                       ) : (
                         // Main page — ai_summary lives inside the main_page_seo JSON blob.
@@ -1641,6 +1659,13 @@ const AdminDashboard = ({ session }: Props) => {
                           onDescriptionChange={(v) => updateField("main_page_seo", "meta_description", v)}
                           aiSummary={(getDraft("main_page_seo") as any)?.ai_summary || ""}
                           onAiSummaryChange={(v) => updateField("main_page_seo", "ai_summary", v)}
+                          aiSourceTitle={(getDraft("hero") as any)?.title || "Home"}
+                          aiSourceContent={rowsToPlainText(sections.map((s) => s.content))}
+                          onApplySuggestions={(payload) => {
+                            if (payload.meta_title) updateField("main_page_seo", "meta_title", payload.meta_title);
+                            if (payload.meta_description) updateField("main_page_seo", "meta_description", payload.meta_description);
+                            if (payload.ai_summary) updateField("main_page_seo", "ai_summary", payload.ai_summary);
+                          }}
                         />
                       )
                     ) : selectedSectionId === "__hero__" ? (
