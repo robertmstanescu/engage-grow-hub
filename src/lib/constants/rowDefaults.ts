@@ -218,9 +218,9 @@ export const multiColGridStyle = (widths: number[]): React.CSSProperties => ({
 /**
  * Seed content shipped with a brand-new site.
  *
- * Kept intentionally generic — no brand-specific copy, no domain-
- * specific examples — so this codebase can be re-used as a starter
- * template. The admin will replace these strings on first edit.
+ * Defaults use plain, descriptive copy for the current brand so the
+ * public site is useful out of the box. Admins override these strings
+ * in the CMS without needing to edit source code.
  */
 export const DEFAULT_ROWS: PageRow[] = [
   {
@@ -229,25 +229,25 @@ export const DEFAULT_ROWS: PageRow[] = [
     strip_title: "Intro",
     bg_color: "#FFFFFF",
     content: {
-      title_lines: ["<p>Welcome to your new site.</p>"],
+      title_lines: ["<p>Fractional people & comms consultancy.</p>"],
       subtitle: "",
       subtitle_color: "",
-      body: "Edit this section in the page builder to introduce yourself, your product, or your service.",
+      body: "We help scale-ups fix culture gaps, align teams, and make change stick through internal comms, employee experience, people operations, and fractional HRBP support.",
     },
   },
   {
     id: generateRowId(),
     type: "boxed",
-    strip_title: "Highlights",
+    strip_title: "Services",
     bg_color: "#F5F5F5",
     content: {
-      title_lines: ["<p>Three things to highlight</p>"],
+      title_lines: ["<p>How we can help</p>"],
       subtitle: "",
       subtitle_color: "",
       cards: [
-        { title: "First point", body: "Describe the first thing visitors should know about." },
-        { title: "Second point", body: "Describe the second thing visitors should know about." },
-        { title: "Third point", body: "Describe the third thing visitors should know about." },
+        { title: "Internal Communications", body: "Cut through the noise with clear, honest messaging that keeps everyone aligned." },
+        { title: "Employee Experience", body: "Design moments and rituals that make people want to stay and do their best work." },
+        { title: "People Operations", body: "Build lightweight HR systems, processes, and policies that scale with your team." },
       ],
     },
   },
