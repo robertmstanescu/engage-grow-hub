@@ -105,7 +105,7 @@ const Navbar = () => {
   const subLinks = Array.isArray(navConfig.sub_links) ? navConfig.sub_links : [];
   const links = Array.isArray(navConfig.links) ? navConfig.links : [];
   const showBlogLink = !navLoading && navConfig.show_blog_link === true;
-  const ctaText = navConfig.cta_text || "";
+  const ctaText = navConfig.cta_text || "Get started";
   const ctaHref = navConfig.cta_href || "";
   const servicesLabel = navConfig.services_label || "Services";
   const servicesHref = navConfig.services_href || "";
@@ -397,7 +397,7 @@ const Navbar = () => {
               color: "hsl(var(--nav-cta-text, 45 60% 96%))",
             }}
           >
-            {ctaText || "→"}
+            {ctaText}
           </a>
         ) : (
           <span />

@@ -108,7 +108,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
           className="font-display text-micro uppercase tracking-[0.1em] font-bold px-4 py-2 rounded-full inline-block transition-opacity duration-300 hover:opacity-90"
           style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >
-          {price}
+          Inquire Now
         </a>
         <span className="font-body text-micro tracking-wide" style={{ color: "hsl(var(--pillar-cta-time))" }}>{time}</span>
       </div>

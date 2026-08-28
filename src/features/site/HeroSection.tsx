@@ -177,7 +177,7 @@ export const HeroView = ({
             }
             srcSet={buildImageSrcSet(c.bg_url) || undefined}
             sizes={`(max-width: 640px) 100vw, (max-width: 1280px) 100vw, ${HERO_SRCSET_WIDTHS[HERO_SRCSET_WIDTHS.length - 1]}px`}
-            alt={c.bg_image_alt || ""}
+            alt={c.bg_image_alt || "Homepage hero background for The Magic Coffin fractional people and comms consultancy"}
             className="w-full h-full object-cover"
             fetchPriority="high"
             decoding="async"
@@ -213,7 +213,7 @@ export const HeroView = ({
                   }
                   srcSet={buildImageSrcSet(fallbackImg) || undefined}
                   sizes="100vw"
-                  alt={c.bg_image_alt || ""}
+                  alt={c.bg_image_alt || "Homepage hero background for The Magic Coffin fractional people and comms consultancy"}
                   className="w-full h-full object-cover"
                   fetchPriority="high"
                   decoding="async"
