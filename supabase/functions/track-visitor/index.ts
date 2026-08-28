@@ -191,17 +191,24 @@ function identifyBot(userAgent: string): string | null {
 }
 
 /**
- * Normalize a page path so `/services` and `/services/` (same page,
- * different URL) collapse to one row instead of fragmenting analytics.
- * Mirrors `src/lib/redirectPaths.ts`'s `normalizePath`: single leading
- * slash, no trailing slash except root "/", no query or hash. Duplicated
- * here (rather than imported) because edge functions can't reach into
- * `src/` — see `sanitizeAttribution` above for the same pattern.
+ * Normalize a page path so `/services/foo` and `/services/foo/` (same
+ * page, different URL) collapse to one row instead of fragmenting
+ * analytics. Mirrors `ensureTrailingSlash` in `src/hooks/usePageMeta.ts`
+ * — ALWAYS trailing-slash, no query or hash — which is this site's one
+ * established canonical-URL convention: every `<link rel="canonical">`
+ * is built that way, and both `public/sitemap.xml` and `public/llms.txt`
+ * list every page with a trailing slash. (`src/lib/redirectPaths.ts`'s
+ * `normalizePath` looks similar but does the OPPOSITE — strips the
+ * trailing slash — because it serves a different job: matching a raw
+ * `location.pathname` for the redirects table, not building an SEO
+ * canonical URL. Don't reuse that one here.) Duplicated here (rather
+ * than imported) because edge functions can't reach into `src/` — see
+ * `sanitizeAttribution` above for the same pattern.
  */
 function normalizePath(path: string): string {
   let out = path.split("?")[0].split("#")[0].trim();
   if (!out.startsWith("/")) out = `/${out}`;
-  if (out.length > 1 && out.endsWith("/")) out = out.slice(0, -1);
+  if (!out.endsWith("/")) out = `${out}/`;
   return out;
 }
 
@@ -213,7 +220,14 @@ function normalizePath(path: string): string {
 function classifyPathCategory(path: string): "blog" | "page" | "manifest" | "other" {
   if (path.startsWith("/blog/")) return "blog";
   if (path.startsWith("/p/")) return "page";
-  if (path === "/llms.txt" || path === "/llms-full.txt") return "manifest";
+  // `path` has already gone through `normalizePath` (always trailing-slash)
+  // by the time this runs, hence the trailing slash here too. In practice
+  // this branch is unreachable from the client beacon — /llms.txt and
+  // /llms-full.txt are static files served outside the React app, so
+  // useAnalyticsBeacon() never fires for them (llms-txt/index.ts logs
+  // those bot hits directly, with its own hardcoded "manifest" category).
+  // Kept for defensive parity with classifyPathCategory in src/services/analytics.ts.
+  if (path === "/llms.txt/" || path === "/llms-full.txt/") return "manifest";
   return "other";
 }
 
