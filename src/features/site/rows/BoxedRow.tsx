@@ -8,6 +8,7 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 import Icon from "@/features/icons/Icon";
+import { pillarColorFromLink } from "@/lib/constants/pillarColors";
 
 /**
  * Smart link helper — internal anchors / paths stay in-tab, external
@@ -75,9 +76,18 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
 
         <div className={`grid ${getGridCols(cards.length)} gap-6 lg:gap-8 items-stretch ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
           {cards.slice(0, 6).map((card: any, i: number) => {
-            const titleColor = c.color_card_title || "hsl(var(--vows-card-title))";
-            const bodyColor = c.color_card_body || "hsl(var(--vows-card-body))";
             const cardLink: string | undefined = card.link_url?.trim() || undefined;
+            // A card linking to one of the 4 service pillars gets that
+            // pillar's own brand color for its icon/title (and a matching
+            // top-accent border below) instead of the row's one shared
+            // color — so e.g. the homepage "Our Services" grid reads as 4
+            // distinct pillars, not 4 identical purple cards. Any other
+            // boxed-card row (testimonials, "Our Vows", etc.) has no
+            // pillar-matching link_url, so pillarColor is always
+            // undefined there and behavior is unchanged.
+            const pillarColor = pillarColorFromLink(cardLink);
+            const titleColor = pillarColor || c.color_card_title || "hsl(var(--vows-card-title))";
+            const bodyColor = c.color_card_body || "hsl(var(--vows-card-body))";
             const cardCtaUrl: string | undefined = card.cta_url?.trim() || undefined;
             const cardCtaLabel: string | undefined = card.cta_label?.trim() || undefined;
 
@@ -115,7 +125,10 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
             // 1px border, uniform padding and a subtle shadow. `boxed-lift`
             // keeps the GPU-friendly hover transform (no icon shake).
             const cardClass = `surface-card p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
-            const cardStyle = { ...revealStyle(isVisible, i + 2) } as React.CSSProperties;
+            const cardStyle = {
+              ...revealStyle(isVisible, i + 2),
+              ...(pillarColor ? { borderTop: `3px solid ${pillarColor}` } : {}),
+            } as React.CSSProperties;
 
             if (cardLink) {
               return (
