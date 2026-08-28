@@ -930,6 +930,10 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      merge_widget_data_by_type: {
+        Args: { patch: Json; rows: Json; target_type: string }
+        Returns: Json
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
