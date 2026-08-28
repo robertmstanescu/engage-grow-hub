@@ -213,6 +213,44 @@ function normalizePath(path: string): string {
 }
 
 /**
+ * Top-level path segments that are their own dedicated route, NOT a
+ * candidate for the CmsPage bare-slug alias below. Mirrors SYSTEM_ROUTES
+ * in src/pages/CmsPage.tsx (minus "services", handled separately since
+ * it's a flat-slug special case rather than a route prefix).
+ */
+const SYSTEM_ROUTES = new Set(["blog", "admin", "unsubscribe", "api", "auth", "login", "signup", "p"]);
+
+/**
+ * Resolve CmsPage's bare-slug route alias to its ONE canonical location,
+ * mirroring `cmsPagePath()` in src/pages/CmsPage.tsx / scripts/prerender-seo.mjs:
+ * CmsPage is mounted at THREE route patterns for the same content
+ * (`/services/:slug`, `/p/:slug`, and a bare `/:slug` catch-all), so
+ * `/about-us/` and `/p/about-us/` are the same page under different
+ * URLs, same problem as the trailing-slash one above.
+ *
+ * Only a single-segment path is a candidate — the bare route can only
+ * ever match ONE path segment (`:slug` isn't a splat), so anything with
+ * more segments already went through a more specific route
+ * (/blog/:slug, /services/:slug, /p/:slug) and is already canonical.
+ *
+ * We verify the slug is a REAL `cms_pages` row before rewriting —
+ * otherwise a mistyped/dead bare URL (which still renders CmsPage's own
+ * not-found state, not a real page) would get mislabeled as a page in
+ * the analytics "Pages" table instead of staying bucketed as "other".
+ */
+async function canonicalizeCmsAlias(
+  path: string,
+  supabaseAdmin: ReturnType<typeof createClient>,
+): Promise<string> {
+  const segments = path.split("/").filter(Boolean);
+  if (segments.length !== 1) return path;
+  const [slug] = segments;
+  if (SYSTEM_ROUTES.has(slug) || slug === "services") return path;
+  const { data } = await supabaseAdmin.from("cms_pages").select("id").eq("slug", slug).maybeSingle();
+  return data ? `/p/${slug}/` : path;
+}
+
+/**
  * Categorise a request path the same way the client does. Centralising
  * here means the bucket counts on the dashboard always agree no matter
  * which logger wrote the row.
@@ -343,6 +381,9 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+    // Collapse CmsPage's bare-slug route alias (see canonicalizeCmsAlias
+    // above) before this path gets categorised/stored/throttled on.
+    pagePath = await canonicalizeCmsAlias(pagePath, supabaseAdmin);
     const ipHash = ipAddress ? await hashIpAddress(ipAddress) : null;
 
     // ── Throttle: abuse/cost protection, NOT accuracy filtering ─────────
