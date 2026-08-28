@@ -23,9 +23,15 @@ const DEFAULT_TAGS: TagsConfig = {
     { label: "Fixed project", value: "fixed", bgColor: "#4D1B5E", textColor: "#F9F0C1" },
     { label: "Monthly retainer", value: "retainer", bgColor: "#E5C54F", textColor: "#2A0E33" },
   ],
+  // Brand colors for the 4 service pillars — kept in sync with the
+  // per-pillar page palette assigned in PillarEditor (see the
+  // "pillar branding" migration that seeds/updates this same set into
+  // the live `tags_config` site_content row).
   blog_categories: [
-    { label: "Internal Communications", bgColor: "#4D1B5E", textColor: "#F9F0C1" },
-    { label: "Employee Experience", bgColor: "#E5C54F", textColor: "#2A0E33" },
+    { label: "Internal Communications", bgColor: "#43143B", textColor: "#FFFFFF" },
+    { label: "Employee Experience", bgColor: "#002B67", textColor: "#FFFFFF" },
+    { label: "People Operations", bgColor: "#6A010E", textColor: "#FFFFFF" },
+    { label: "Fractional HRBP", bgColor: "#003728", textColor: "#FFFFFF" },
     { label: "General", bgColor: "#7B3A91", textColor: "#FFFFFF" },
   ],
 };

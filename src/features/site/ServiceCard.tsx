@@ -114,7 +114,14 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
       </div>
 
       {note && (
-        <div className="border-t border-border px-6 py-4 flex-shrink-0">
+        // `--pillar-note-border` is the admin's "Border Accent" color
+        // (PillarEditor's Note section) — previously only exposed as an
+        // editable field with no matching style, so it never actually
+        // showed up. Wired here as the intended left-accent stripe.
+        <div
+          className="border-t border-border px-6 py-4 flex-shrink-0"
+          style={{ borderLeft: "3px solid hsl(var(--pillar-note-border))" }}
+        >
           <p className={`font-body text-micro italic leading-relaxed ${alignClass}`} style={{ color: "hsl(var(--foreground) / 0.55)" }}>{note}</p>
         </div>
       )}
