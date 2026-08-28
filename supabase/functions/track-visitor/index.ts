@@ -191,6 +191,21 @@ function identifyBot(userAgent: string): string | null {
 }
 
 /**
+ * Normalize a page path so `/services` and `/services/` (same page,
+ * different URL) collapse to one row instead of fragmenting analytics.
+ * Mirrors `src/lib/redirectPaths.ts`'s `normalizePath`: single leading
+ * slash, no trailing slash except root "/", no query or hash. Duplicated
+ * here (rather than imported) because edge functions can't reach into
+ * `src/` — see `sanitizeAttribution` above for the same pattern.
+ */
+function normalizePath(path: string): string {
+  let out = path.split("?")[0].split("#")[0].trim();
+  if (!out.startsWith("/")) out = `/${out}`;
+  if (out.length > 1 && out.endsWith("/")) out = out.slice(0, -1);
+  return out;
+}
+
+/**
  * Categorise a request path the same way the client does. Centralising
  * here means the bucket counts on the dashboard always agree no matter
  * which logger wrote the row.
@@ -273,7 +288,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    pagePath = truncate(body?.pagePath, 500) || "/";
+    pagePath = normalizePath(truncate(body?.pagePath, 500) || "/");
     clientBrowser = truncate(body?.browser, 50);
     clientDevice = truncate(body?.device, 30);
     referrer = truncate(body?.referrer, 500);
@@ -316,22 +331,46 @@ Deno.serve(async (req) => {
     );
     const ipHash = ipAddress ? await hashIpAddress(ipAddress) : null;
 
-    await supabaseAdmin.from("unified_analytics_logs").insert({
-      is_bot: isBot,
-      entity_name: detectedBotName ?? "Human",
-      path: pagePath,
-      category: classifyPathCategory(pagePath),
-      referrer: referrer || null,
-      search_engine: searchEngine,
-      browser: clientBrowser || null,
-      device: clientDevice || null,
-      country,
-      visitor_id: visitorId,
-      user_agent: userAgent.slice(0, 500),
-      ip_hash: ipHash,
-      source: "client",
-      attribution,
-    });
+    // ── Throttle: abuse/cost protection, NOT accuracy filtering ─────────
+    // This endpoint is public, unauthenticated, and wildcard-CORS, so it
+    // can be hit directly (no SPA, no beacon pacing) by a scripted flood.
+    // is_bot already handles accuracy (keeping scrapers out of "human"
+    // counts); this just caps insert volume so a burst can't run up our
+    // database costs. The threshold is generous — legitimate SPA
+    // route-change beacons can legitimately fire several times in quick
+    // succession — and prefers visitor_id over ip_hash as the identity
+    // key, matching the dedup hierarchy described in the file header.
+    const throttleKey = visitorId ?? ipHash;
+    let throttled = false;
+    if (throttleKey) {
+      const identityColumn = visitorId ? "visitor_id" : "ip_hash";
+      const windowStart = new Date(Date.now() - 60_000).toISOString();
+      const { count } = await supabaseAdmin
+        .from("unified_analytics_logs")
+        .select("id", { count: "exact", head: true })
+        .eq(identityColumn, throttleKey)
+        .gte("created_at", windowStart);
+      throttled = (count ?? 0) >= 30;
+    }
+
+    if (!throttled) {
+      await supabaseAdmin.from("unified_analytics_logs").insert({
+        is_bot: isBot,
+        entity_name: detectedBotName ?? "Human",
+        path: pagePath,
+        category: classifyPathCategory(pagePath),
+        referrer: referrer || null,
+        search_engine: searchEngine,
+        browser: clientBrowser || null,
+        device: clientDevice || null,
+        country,
+        visitor_id: visitorId,
+        user_agent: userAgent.slice(0, 500),
+        ip_hash: ipHash,
+        source: "client",
+        attribution,
+      });
+    }
   } catch (insertError) {
     console.error("track-visitor insert failed:", insertError);
     // Still 200 — analytics must not affect the visitor's experience.

@@ -131,6 +131,15 @@ const WidgetWrapper = ({ design, children, className }: Props) => {
   const visClass = visibilityClass(design);
   const hasStyles = hasDesignOverrides(design);
 
+  /* useId gives us a stable, SSR-safe per-instance id. We strip the
+   * leading colons React uses (`:r1:`) and prefix a readable token so
+   * the resulting class is a valid CSS identifier. Computed unconditionally
+   * (Rules of Hooks) even though it's only used on the non-short-circuit path. */
+  const reactId = useId().replace(/[:]/g, "");
+  const scope = `widget-scope-${reactId}`;
+  const customCss = design.customCss?.trim();
+  const scopedCss = customCss ? scopeCss(customCss, scope) : "";
+
   // Skip the wrapper entirely when there's nothing to apply. This keeps
   // the DOM identical to the pre-US 6.1 baseline for every widget that
   // hasn't opted into design settings — zero visual regression risk.
@@ -138,14 +147,6 @@ const WidgetWrapper = ({ design, children, className }: Props) => {
   // visibility overrides, otherwise we'd have nowhere to put the
   // responsive `hidden` classes.
   if (!hasStyles && !visClass) return <>{children}</>;
-
-  /* useId gives us a stable, SSR-safe per-instance id. We strip the
-   * leading colons React uses (`:r1:`) and prefix a readable token so
-   * the resulting class is a valid CSS identifier. */
-  const reactId = useId().replace(/[:]/g, "");
-  const scope = `widget-scope-${reactId}`;
-  const customCss = design.customCss?.trim();
-  const scopedCss = customCss ? scopeCss(customCss, scope) : "";
 
   const composedClass = [className, visClass, customCss ? scope : null]
     .filter(Boolean)
