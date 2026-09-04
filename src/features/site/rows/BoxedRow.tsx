@@ -107,15 +107,36 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
 
                 {cardCtaUrl && cardCtaLabel && (
                   <div className="mt-rhythm-base">
-                    <a
-                      href={cardCtaUrl}
-                      target={isExternal(cardCtaUrl) ? "_blank" : undefined}
-                      rel={isExternal(cardCtaUrl) ? "noopener noreferrer" : undefined}
-                      onClick={(e) => { if (cardLink) e.stopPropagation(); }}
-                      className="btn-ink"
->
-                      {cardCtaLabel}
-                    </a>
+                    {cardLink ? (
+                      // The card itself is already an <a> (cardLink below), so this
+                      // CTA can't also be an <a> without nesting anchors — invalid
+                      // HTML5 and inconsistent click targets across browsers. A
+                      // button that stops propagation and navigates manually keeps
+                      // the same click behavior without the nesting.
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isExternal(cardCtaUrl)) {
+                            window.open(cardCtaUrl, "_blank", "noopener,noreferrer");
+                          } else {
+                            window.location.href = cardCtaUrl;
+                          }
+                        }}
+                        className="btn-ink"
+                      >
+                        {cardCtaLabel}
+                      </button>
+                    ) : (
+                      <a
+                        href={cardCtaUrl}
+                        target={isExternal(cardCtaUrl) ? "_blank" : undefined}
+                        rel={isExternal(cardCtaUrl) ? "noopener noreferrer" : undefined}
+                        className="btn-ink"
+                      >
+                        {cardCtaLabel}
+                      </a>
+                    )}
                   </div>
                 )}
               </>
