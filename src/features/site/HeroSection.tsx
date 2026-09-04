@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { sanitizeHtml } from "@/services/sanitize";
@@ -40,6 +41,57 @@ const fallback: HeroContent = {
 };
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
+
+/**
+ * useFitTitleLines — guarantees NO hero title line ever wraps.
+ *
+ * Font metrics differ across platforms (a 117px "We bring the coffin."
+ * fit our headless Chromium's 1036px box but wrapped in the owner's
+ * desktop Chrome), so instead of trusting a static clamp() ceiling we
+ * measure each line's REAL rendered width in the visitor's own browser
+ * and shrink only the oversized lines just enough to fit on one line.
+ * The base size stays the fluid --fs-hero-title, so the hero keeps
+ * filling the viewport; untouched lines render at full size.
+ */
+const useFitTitleLines = (lineCount: number) => {
+  const h1Ref = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    const h1 = h1Ref.current;
+    if (!h1) return;
+    let raf = 0;
+    const fit = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const avail = h1.clientWidth;
+        if (!avail) return;
+        h1.querySelectorAll<HTMLElement>("span.block").forEach((line) => {
+          line.style.fontSize = "";
+          line.style.whiteSpace = "nowrap";
+          const base = parseFloat(getComputedStyle(line).fontSize);
+          const need = line.scrollWidth;
+          line.style.whiteSpace = "";
+          if (need > avail) {
+            /* -1px guard against sub-pixel rounding pushing us over. */
+            line.style.fontSize = `${Math.max(28, Math.floor((base * avail) / need) - 1)}px`;
+          }
+        });
+      });
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(h1);
+    /* Re-fit once webfonts finish loading — metrics change when the
+       display font swaps in. */
+    (document as any).fonts?.ready?.then(fit);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, [lineCount]);
+
+  return h1Ref;
+};
 
 /**
  * HeroView — PURE, presentational hero.
@@ -110,6 +162,10 @@ export const HeroView = ({
   }
 
   const hasBg = c.bg_type && c.bg_type !== "none" && c.bg_url;
+
+  /* Per-line shrink-to-fit so no title line ever wraps unintentionally
+     (see useFitTitleLines above). */
+  const titleRef = useFitTitleLines(titleLines.length);
 
   /**
    * Cold-load guard — `isLoading` is an explicit prop the caller
@@ -273,6 +329,7 @@ export const HeroView = ({
           )}
 
           <h1
+            ref={titleRef}
             className="font-display font-black leading-[0.9] tracking-tight flex-shrink-0"
             style={{ color: "hsl(var(--hero-title))", fontSize: "var(--fs-hero-title)" }}>
             {titleLines.map((line, i) => (

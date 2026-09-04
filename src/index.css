@@ -179,7 +179,7 @@
     --fs-step-title: clamp(18px, 1.6vw, 24px);
 
     /* Hero (poster scale — deliberately larger than the row scale) */
-    --fs-hero-title: clamp(40px, 8.4vw, 117px);
+    --fs-hero-title: clamp(40px, 8.4vw, 132px);
     --fs-hero-label: clamp(11px, 0.9vw, 14px);
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
     --fs-hero-body: clamp(15px, 1.15vw, 19px);
