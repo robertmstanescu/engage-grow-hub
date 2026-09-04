@@ -72,8 +72,13 @@ const useFitTitleLines = (lineCount: number) => {
           const need = line.scrollWidth;
           line.style.whiteSpace = "";
           if (need > avail) {
-            /* -1px guard against sub-pixel rounding pushing us over. */
-            line.style.fontSize = `${Math.max(28, Math.floor((base * avail) / need) - 1)}px`;
+            /* Shrink to fit — but never below 70% of the base size.
+               A line that STILL doesn't fit at the floor (e.g. a long
+               first sentence) is allowed to wrap naturally; the floor
+               only guarantees short lines like "We bring the coffin."
+               stay intact on one line. -1px guards sub-pixel rounding. */
+            const scale = Math.max(0.7, avail / need);
+            line.style.fontSize = `${Math.floor(base * scale) - 1}px`;
           }
         });
       });
@@ -330,7 +335,7 @@ export const HeroView = ({
 
           <h1
             ref={titleRef}
-            className="font-display font-black leading-[0.9] tracking-tight flex-shrink-0"
+            className="font-display font-black leading-[0.9] tracking-tight flex-shrink-0 w-full"
             style={{ color: "hsl(var(--hero-title))", fontSize: "var(--fs-hero-title)" }}>
             {titleLines.map((line, i) => (
               <motion.span
