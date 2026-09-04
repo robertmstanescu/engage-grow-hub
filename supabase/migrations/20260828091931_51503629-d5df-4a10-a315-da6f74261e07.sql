@@ -1,3 +1,4 @@
+-- NOTE: byte-identical re-run of the immediately preceding migration (20260828091241) — a no-op, safe to leave in place.
 -- CORRECTS migration 20260828084834_7943e4b9-b5ad-4033-844b-2f0606e9f99b.sql
 -- (already applied, but a no-op): that migration assumed `page_rows`
 -- elements were flat `{id, type, content}` objects. The real "V3" row

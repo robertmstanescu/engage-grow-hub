@@ -1,3 +1,4 @@
+-- NOTE: byte-identical re-run of the immediately preceding migration (20260828082533) — a no-op, safe to leave in place.
 -- Analytics CMS-page alias backfill.
 --
 -- CmsPage is mounted at THREE route patterns that can render the same

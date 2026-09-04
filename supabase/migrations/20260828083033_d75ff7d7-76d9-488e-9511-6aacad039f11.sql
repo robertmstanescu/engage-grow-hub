@@ -1,3 +1,4 @@
+-- NOTE: byte-identical re-run of the immediately preceding migration (20260828080542) — a no-op, safe to leave in place.
 -- Analytics path normalization backfill.
 --
 -- `/services/foo` and `/services/foo/` are the same page, but

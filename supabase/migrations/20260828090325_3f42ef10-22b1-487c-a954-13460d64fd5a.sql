@@ -1,3 +1,4 @@
+-- NOTE: byte-identical re-run of the immediately preceding migration (20260828084834) — a no-op, safe to leave in place.
 -- Assign each of the 4 service pillars its brand color, applied as a
 -- full page palette (per src/features/admin/site-editor/PillarEditor.tsx's
 -- "Section Colors" fields) rather than just one accent:
