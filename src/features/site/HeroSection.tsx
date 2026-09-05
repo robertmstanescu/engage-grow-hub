@@ -447,7 +447,7 @@ export const HeroView = ({
           and consistent instead of vh-driven, keeping the layout clean at
           every breakpoint while the headline stays poster-sized.
         */}
-        <div className={`flex w-full min-w-0 flex-col items-center gap-6 ${hasVisual ? "xl:flex-1" : ""}`}>
+        <div className={`flex w-full min-w-0 flex-col items-center gap-6 ${hasVisual ? "xl:flex-1 xl:items-start xl:text-left" : ""}`}>
 
           {leading}
           {c.label && (
