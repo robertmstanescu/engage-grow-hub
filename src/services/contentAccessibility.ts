@@ -87,26 +87,81 @@ export interface AccessibilityViolation {
 }
 
 /**
+ * Yield every widget in the row array, across all three content shapes
+ * a row can be stored in (see `src/lib/rowWidgets.ts` for the full
+ * history):
+ *   v1 — the row itself IS the widget: `{ id, type, content }`
+ *   v2 — `row.columns[].widgets[]`
+ *   v3 — `row.columns[].cells[].widgets[]` (current/canonical shape)
+ *
+ * This MUST NOT assume v1: every page saved by the current builder is
+ * v3, and a v1-only walk (the original implementation) found zero
+ * widgets on any real page — silently disabling the publish gate.
+ */
+function* walkWidgets(
+  rows: PageRow[],
+): Generator<{ id: string; type: string; data: any; stripTitle: string }> {
+  for (const row of rows || []) {
+    if (!row || typeof row !== "object") continue;
+
+    // v1: no `columns` key — the row itself is the widget.
+    if (!Array.isArray((row as any).columns)) {
+      if (typeof row.type === "string") {
+        yield {
+          id: row.id,
+          type: row.type,
+          data: row.content,
+          stripTitle: row.strip_title || "",
+        };
+      }
+      continue;
+    }
+
+    // v2 / v3: widgets are nested; `type` and field data live on the
+    // widget, not the row.
+    for (const col of (row as any).columns || []) {
+      const widgetLists: any[][] = Array.isArray(col?.cells)
+        ? col.cells.map((cell: any) => cell?.widgets || [])
+        : Array.isArray(col?.widgets)
+          ? [col.widgets]
+          : [];
+      for (const widgets of widgetLists) {
+        for (const w of widgets || []) {
+          if (typeof w?.type === "string") {
+            yield {
+              id: w.id || row.id,
+              type: w.type,
+              data: w.data || w.content,
+              stripTitle: (row as any).strip_title || "",
+            };
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
  * Walk a page's rows and return an entry per image that has a URL but
  * no alt text. Empty array means the page is publishable.
  */
 export const findMissingAltViolations = (rows: PageRow[]): AccessibilityViolation[] => {
   const violations: AccessibilityViolation[] = [];
 
-  for (const row of rows || []) {
-    const fields = IMAGE_FIELDS_BY_TYPE[row.type];
+  for (const widget of walkWidgets(rows)) {
+    const fields = IMAGE_FIELDS_BY_TYPE[widget.type as PageRow["type"]];
     if (!fields) continue;
 
     for (const field of fields) {
-      const url = getPath(row.content, field.urlPath);
+      const url = getPath(widget.data, field.urlPath);
       if (typeof url !== "string" || url.trim().length === 0) continue; // no image, nothing to validate
-      const alt = getPath(row.content, field.altPath);
+      const alt = getPath(widget.data, field.altPath);
       if (isMissingAlt(alt)) {
         violations.push({
-          rowId: row.id,
-          rowType: row.type,
+          rowId: widget.id,
+          rowType: widget.type as PageRow["type"],
           label: field.label,
-          stripTitle: row.strip_title || field.label,
+          stripTitle: widget.stripTitle || field.label,
         });
       }
     }
