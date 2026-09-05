@@ -63,6 +63,7 @@ import BoxedArrayField from "./BoxedArrayField";
 import SubscribeToggle from "./SubscribeToggle";
 import { TestimonialEditor, LogoCloudEditor, FaqEditor, ProofBandEditor, ProcessStepsEditor, QuoteBandEditor, CtaBandEditor } from "./NewRowEditors";
 import { IconPickerField } from "@/features/icons/IconPicker";
+import ImagePickerField from "../ImagePickerField";
 import {
   Accordion,
   AccordionContent,
@@ -226,6 +227,21 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                 lives in the Elements tray and can be dropped into any
                 cell. Existing pages keep working — the renderer still
                 reads the legacy fields for backwards compatibility. */}
+
+            {/* Optional cover image — see the "boxed" case above for the
+                full explanation of this capability (RowCoverCard). */}
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
+                />
+              </AccordionContent>
+            </AccordionItem>
           </Shell>
         </>
       );
@@ -247,6 +263,19 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                   onPillarChange={onContentChange}
                   onServicesChange={(svcs) => onContentChange("services", svcs)}
                   bgColor={bg}
+                />
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
                 />
               </AccordionContent>
             </AccordionItem>
@@ -278,6 +307,23 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
 
             {/* Row-level CTA fields removed — see "CTA Button" widget
                 in the Elements tray. Legacy values still render. */}
+
+            {/* GROUP 2 — Optional cover image. Flat, row-level field (not
+                per-card) — set it and this row gets a photo-card treatment
+                with a fading banner above the cards; leave it empty and the
+                row renders exactly as a plain services/testimonial grid. */}
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
             {/* GROUP 3 — Color overrides specific to this content
                 (NOT the row background — that lives in RowStyleTab). */}
@@ -312,6 +358,19 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                 <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
                 <Field label="Button Text" value={content.button_text || ""} onChange={(v) => onContentChange("button_text", v)} />
                 <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
+                />
               </AccordionContent>
             </AccordionItem>
 
@@ -373,6 +432,19 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                 <GridEditor content={content} onChange={onContentChange} bgColor={bg} />
               </AccordionContent>
             </AccordionItem>
+
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
+                />
+              </AccordionContent>
+            </AccordionItem>
           </Shell>
         </>
       );
@@ -388,6 +460,19 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                 <LeadMagnetEditor
                   content={content}
                   onChange={(next) => Object.entries(next).forEach(([k, v]) => onContentChange(k, v))}
+                />
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
                 />
               </AccordionContent>
             </AccordionItem>
@@ -413,6 +498,19 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                 <TestimonialEditor content={content} onChange={onContentChange} bgColor={bg} />
               </AccordionContent>
             </AccordionItem>
+
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
+                />
+              </AccordionContent>
+            </AccordionItem>
           </Shell>
         </>
       );
@@ -429,6 +527,22 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                 <LogoCloudEditor content={content} onChange={onContentChange} bgColor={bg} />
               </AccordionContent>
             </AccordionItem>
+
+            {/* Distinct from the logo strip above — this is the row's own
+                optional cover-image treatment (RowCoverCard), not one of
+                the individual trusted-by logos. */}
+            <AccordionItem value="cover" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Cover Image</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
+                />
+              </AccordionContent>
+            </AccordionItem>
           </Shell>
         </>
       );
@@ -442,6 +556,19 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
               <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
                 <FaqEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
+                />
               </AccordionContent>
             </AccordionItem>
           </Shell>
@@ -460,6 +587,19 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                 <ProofBandEditor content={content} onChange={onContentChange} bgColor={bg} />
               </AccordionContent>
             </AccordionItem>
+
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
+                />
+              </AccordionContent>
+            </AccordionItem>
           </Shell>
         </>
       );
@@ -473,6 +613,19 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
               <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
                 <ProcessStepsEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
+                />
               </AccordionContent>
             </AccordionItem>
           </Shell>
@@ -490,6 +643,19 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                 <QuoteBandEditor content={content} onChange={onContentChange} bgColor={bg} />
               </AccordionContent>
             </AccordionItem>
+
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
+                />
+              </AccordionContent>
+            </AccordionItem>
           </Shell>
         </>
       );
@@ -503,6 +669,19 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
               <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
                 <CtaBandEditor content={content} onChange={onContentChange} bgColor={bg} />
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="media" className="border-none">
+              <AccordionTrigger className={TRIGGER_CLASS}>Media &amp; Interactive</AccordionTrigger>
+              <AccordionContent className={CONTENT_CLASS}>
+                <ImagePickerField
+                  label="Cover Image (optional)"
+                  value={content.cover_image || ""}
+                  onChange={(v) => onContentChange("cover_image", v)}
+                  altValue={content.cover_image_alt || ""}
+                  onAltChange={(v) => onContentChange("cover_image_alt", v)}
+                />
               </AccordionContent>
             </AccordionItem>
           </Shell>

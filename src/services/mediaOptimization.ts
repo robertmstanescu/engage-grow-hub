@@ -35,6 +35,22 @@ export interface ImageTransformOptions {
   quality?: number;
   /** Output format. `webp` is broadly supported and cuts size ~30% vs. JPEG. */
   format?: "webp" | "origin";
+  /**
+   * The CSS container's width/height ratio (e.g. 4/5, 1 for a square).
+   * REQUIRED to get a correctly-cropped, correctly-sized file whenever the
+   * image renders into a fixed-aspect box — verified directly against the
+   * live endpoint: given `width` alone, Supabase's image transform leaves
+   * the height completely untouched at the SOURCE image's native pixel
+   * height, regardless of `resize` mode. A 5000×5000 source requested at
+   * width=800 comes back 800×5000, not 800×800 — so a browser applying
+   * `object-fit: cover` into a 3:4 box then crops an already-wrong-aspect
+   * sliver down to a razor-thin strip (this is exactly what produced the
+   * "images zoomed in way too much" bug on /about-us). Pass this whenever
+   * the caller knows its target aspect ratio; omit only for truly
+   * unconstrained/full-bleed images with no single fixed ratio (e.g. the
+   * hero background, which fills the viewport at whatever shape it is).
+   */
+  aspectRatio?: number;
 }
 
 /**
@@ -64,8 +80,13 @@ export const transformImageUrl = (
   params.set("width", String(Math.round(opts.width)));
   params.set("quality", String(opts.quality ?? 75));
   params.set("format", opts.format ?? "webp");
-  // Tell the CDN to downscale only — never upscale a 1200px source to 2400px.
-  params.set("resize", "cover");
+  // Only ask for a crop when we actually know the target shape — see the
+  // `aspectRatio` doc comment above for why `resize=cover` does nothing
+  // useful without an explicit `height` alongside it.
+  if (opts.aspectRatio) {
+    params.set("height", String(Math.round(opts.width / opts.aspectRatio)));
+    params.set("resize", "cover");
+  }
 
   return `${transformed}?${params.toString()}`;
 };
@@ -84,10 +105,11 @@ export const buildImageSrcSet = (
   url: string | undefined | null,
   widths: readonly number[] = HERO_SRCSET_WIDTHS,
   quality = 75,
+  aspectRatio?: number,
 ): string => {
   if (!isSupabaseStorageUrl(url)) return "";
   return widths
-    .map((w) => `${transformImageUrl(url, { width: w, quality })} ${w}w`)
+    .map((w) => `${transformImageUrl(url, { width: w, quality, aspectRatio })} ${w}w`)
     .join(", ");
 };
 

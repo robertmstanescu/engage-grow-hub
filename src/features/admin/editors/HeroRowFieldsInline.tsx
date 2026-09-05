@@ -88,6 +88,18 @@ const HeroRowFieldsInline = ({ content, onChange, bgColor }: Props) => {
           <Field label="Video URL" value={content.bg_url || ""} onChange={(v) => onChange("bg_url", v)} />
         )}
       </SectionBox>
+      <SectionBox label="Foreground Visual (optional)">
+        <p className="font-body text-[10px] text-muted-foreground mb-1.5 leading-relaxed">
+          A small photo card next to the text — independent of the background above. Leave empty for the plain centred hero.
+        </p>
+        <ImagePickerField
+          label="Visual Image"
+          value={content.visual_image_url || ""}
+          onChange={(v) => onChange("visual_image_url", v)}
+          altValue={content.visual_image_alt || ""}
+          onAltChange={(v) => onChange("visual_image_alt", v)}
+        />
+      </SectionBox>
     </div>
   );
 };

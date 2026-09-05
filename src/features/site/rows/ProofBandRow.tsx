@@ -26,6 +26,7 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 import RowNote from "./typography/RowNote";
 import type { Alignment, VAlign } from "./PageRows";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 const ProofBandRow = ({
   row,
@@ -52,10 +53,10 @@ const ProofBandRow = ({
   // Three or four items read best; the grid adapts without stranding one
   // item alone on the last line.
   const cols = items.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3";
+  const coverImage = c.cover_image?.trim() || undefined;
 
-  return (
-    <RowSection row={row} fullHeight={false}>
-      <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+  const innerContent = (
+    <>
         {c.eyebrow && (
           <RowEyebrow color={c.color_eyebrow || ""} style={revealStyle(isVisible, -0.5)}>
             {c.eyebrow}
@@ -112,7 +113,22 @@ const ProofBandRow = ({
         </dl>
 
         {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
-      </div>
+    </>
+  );
+
+  return (
+    <RowSection row={row} fullHeight={false}>
+      {coverImage ? (
+        <div className={`${maxW} w-full mx-auto`}>
+          <RowCoverCard row={row}>
+            <div ref={ref as any} className={contentAlign}>{innerContent}</div>
+          </RowCoverCard>
+        </div>
+      ) : (
+        <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+          {innerContent}
+        </div>
+      )}
     </RowSection>
   );
 };

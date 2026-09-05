@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
+import Icon from "@/features/icons/Icon";
 import {
   buildImageSrcSet,
   buildPosterUrl,
@@ -29,6 +30,15 @@ interface HeroContent {
   title_line1?: string;
   title_accent?: string;
   title_line2?: string;
+  /**
+   * Optional small foreground photo card next to the text — separate
+   * from `bg_type`/`bg_url` (the full-bleed background). Not mutually
+   * exclusive in the data model, but only one is expected in use on any
+   * given hero at a time. Both fields are required together: there is
+   * no rendering path that shows the image without its alt text.
+   */
+  visual_image_url?: string;
+  visual_image_alt?: string;
 }
 
 // No hardcoded copy — DB is the single source of truth. The hero is
@@ -217,6 +227,10 @@ export const HeroView = ({
   }
 
   const hasBg = c.bg_type && c.bg_type !== "none" && c.bg_url;
+  // Independent of hasBg/bg_type — a small foreground photo card next to
+  // the text, not a full-bleed background. When absent, the layout below
+  // renders exactly as it always has (single centred column, no grid).
+  const hasVisual = Boolean(c.visual_image_url && c.visual_image_alt);
 
   /* Per-line shrink-to-fit so no title line ever wraps unintentionally
      (see useFitTitleLines above). */
@@ -361,14 +375,30 @@ export const HeroView = ({
         </div>
       )}
 
-      <div className="relative z-10 w-full max-w-[1100px] mx-auto px-6 sm:px-8 py-20 flex min-h-0 flex-1 flex-col justify-center items-center text-center">
+      <div
+        className={
+          hasVisual
+            ? // A fixed (not fr-based) width for the visual, and `xl:` rather
+              // than `md:` for the breakpoint — both deliberate. The title
+              // uses the same shrink-to-fit floor as the single-column hero
+              // (max 30% shrink before it gives up and lets a line wrap), so
+              // the text side needs real room: a 50/50 split at `md:`
+              // (768px) leaves so little width that a long word like
+              // "organisation" overflows past the 30%-shrink floor with
+              // nowhere to wrap to. A fixed ~340px visual plus a wider
+              // activation point keeps the text column comfortably above
+              // that floor at every width the grid is actually active.
+              "relative z-10 w-full max-w-[1280px] mx-auto px-6 sm:px-8 py-20 flex flex-col items-center text-center xl:flex-row xl:items-center gap-10 xl:gap-16"
+            : "relative z-10 w-full max-w-[1100px] mx-auto px-6 sm:px-8 py-20 flex min-h-0 flex-1 flex-col justify-center items-center text-center"
+        }
+      >
         {/*
           Structured hero block — a single vertical rhythm stack for the
           eyebrow, headline, tagline, subtitle and body. Spacing is crisp
           and consistent instead of vh-driven, keeping the layout clean at
           every breakpoint while the headline stays poster-sized.
         */}
-        <div className="flex flex-col items-center gap-6">
+        <div className={`flex flex-col items-center gap-6 ${hasVisual ? "min-w-0 xl:flex-1" : ""}`}>
           {leading}
           {c.label && (
             <motion.p
@@ -460,6 +490,54 @@ export const HeroView = ({
           )}
         </div>
 
+        {hasVisual && (
+          // Entrance timing sits between the title's own stagger (which
+          // finishes around 0.3 + (lineCount-1)*0.12 + 0.7 ≈ 1.24s for a
+          // 3-line title... but this card isn't part of that stagger chain,
+          // it's a separate element — placed at 0.65s specifically so it
+          // settles in the gap between the title lines starting (0.3s+)
+          // and the tagline fading in (0.8s), same ease curve as every
+          // other entrance in this component.
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.65, ease }}
+            className="relative mx-auto w-full max-w-sm xl:mx-0 xl:w-[340px] xl:flex-shrink-0"
+          >
+            <div
+              className="relative w-full overflow-hidden"
+              style={{
+                aspectRatio: "3/4",
+                borderRadius: "var(--radius)",
+                boxShadow: "var(--shadow-soft)",
+              }}
+            >
+              <img
+                src={transformImageUrl(c.visual_image_url!, { width: 800, aspectRatio: 3 / 4 })}
+                srcSet={buildImageSrcSet(c.visual_image_url, undefined, 75, 3 / 4)}
+                sizes="(min-width: 768px) 40vw, 80vw"
+                alt={c.visual_image_alt || ""}
+                className="w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+            {/* Decorative mark, overlapping the frame's top-right corner. */}
+            <div
+              className="absolute flex items-center justify-center rounded-full"
+              style={{
+                top: "-0.75rem",
+                right: "-0.75rem",
+                width: "2.75rem",
+                height: "2.75rem",
+                backgroundColor: "hsl(var(--background))",
+                boxShadow: "var(--shadow-soft)",
+              }}
+            >
+              <Icon value="lucide:Sparkles" size={20} color="#E5C54F" />
+            </div>
+          </motion.div>
+        )}
       </div>
     </section>
   );

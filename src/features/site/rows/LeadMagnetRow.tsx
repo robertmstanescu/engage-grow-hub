@@ -11,6 +11,7 @@ import ResourceWidget from "@/features/site/ResourceWidget";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import { parseSpacing } from "@/lib/spacing";
 import type { Alignment, VAlign } from "./PageRows";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 interface Props {
   row: PageRow;
@@ -60,19 +61,21 @@ const LeadMagnetRow = ({ row, align = "center" }: Props) => {
       }}
     >
       <div className="max-w-[1280px] mx-auto">
-        <ResourceWidget
-          resourceAssetId={resourceAssetId}
-          coverAssetId={c.cover_asset_id || null}
-          title={c.title}
-          description={c.description}
-        />
+        <RowCoverCard row={row}>
+          <ResourceWidget
+            resourceAssetId={resourceAssetId}
+            coverAssetId={c.cover_asset_id || null}
+            title={c.title}
+            description={c.description}
+          />
 
-        {/* Universal subscribe widget — see SubscribeToggle.tsx. */}
-        {c.show_subscribe && (
-          <div className="mt-rhythm-loose">
-            <SubscribeWidget align={align} />
-          </div>
-        )}
+          {/* Universal subscribe widget — see SubscribeToggle.tsx. */}
+          {c.show_subscribe && (
+            <div className="mt-rhythm-loose">
+              <SubscribeWidget align={align} />
+            </div>
+          )}
+        </RowCoverCard>
       </div>
     </section>
   );

@@ -8,6 +8,7 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -165,15 +166,10 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
   const effectiveAchievements = achievements.length > 0 ? achievements : legacyItems
     .filter((i: any) => i.type === "list")
     .flatMap((i: any) => i.list_items || []);
+  const coverImage = c.cover_image?.trim() || undefined;
 
-  return (
-    <RowSection
-      row={row}
-      vAlign={vAlign}
-      defaultBg="hsl(var(--background))"
-      innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
-    >
-      <div className={`relative z-10 ${maxW} w-full row-container ${containerPos} ${contentAlign}`}>
+  const innerContent = (
+    <>
         <div className="mb-rhythm-loose">
           {c.eyebrow && (
             <RowEyebrow color={c.color_eyebrow} style={revealStyle(isVisible, 0)}>
@@ -257,7 +253,27 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
             <SubscribeWidget align={align} />
           </div>
         )}
-      </div>
+    </>
+  );
+
+  return (
+    <RowSection
+      row={row}
+      vAlign={vAlign}
+      defaultBg="hsl(var(--background))"
+      innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
+    >
+      {coverImage ? (
+        <div className={`relative z-10 ${maxW} w-full mx-auto`}>
+          <RowCoverCard row={row}>
+            <div className={contentAlign}>{innerContent}</div>
+          </RowCoverCard>
+        </div>
+      ) : (
+        <div className={`relative z-10 ${maxW} w-full row-container ${containerPos} ${contentAlign}`}>
+          {innerContent}
+        </div>
+      )}
     </RowSection>
   );
 });

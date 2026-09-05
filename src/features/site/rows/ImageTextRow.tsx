@@ -146,8 +146,8 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             // first paint. The browser only fetches them when the user
             // scrolls close, saving bandwidth on bounce visits.
             <img
-              src={transformImageUrl(c.image_url, { width: 1200 })}
-              srcSet={buildImageSrcSet(c.image_url)}
+              src={transformImageUrl(c.image_url, { width: 1200, aspectRatio: 4 / 5 })}
+              srcSet={buildImageSrcSet(c.image_url, undefined, 75, 4 / 5)}
               sizes="(min-width: 768px) 50vw, 100vw"
               alt={resolveImageAlt(c.image_alt, c.title || row.strip_title, "section image")}
               className="w-full h-full object-cover"

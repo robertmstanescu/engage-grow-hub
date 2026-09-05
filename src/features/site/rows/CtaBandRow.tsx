@@ -25,6 +25,7 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowBody, RowSection } from "./typography";
 import RowNote from "./typography/RowNote";
 import type { Alignment, VAlign } from "./PageRows";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 const CtaBandRow = ({
   row,
@@ -50,10 +51,10 @@ const CtaBandRow = ({
   const buttonText = c.button_text || "";
   const linkText = c.link_text || "";
   if (titleLines.length === 0 && !buttonText) return null;
+  const coverImage = c.cover_image?.trim() || undefined;
 
-  return (
-    <RowSection row={row} fullHeight={false}>
-      <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+  const innerContent = (
+    <>
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
           <div className="min-w-0">
             {c.eyebrow && (
@@ -87,7 +88,22 @@ const CtaBandRow = ({
         </div>
 
         {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
-      </div>
+    </>
+  );
+
+  return (
+    <RowSection row={row} fullHeight={false}>
+      {coverImage ? (
+        <div className={`${maxW} w-full mx-auto`}>
+          <RowCoverCard row={row}>
+            <div ref={ref as any} className={contentAlign}>{innerContent}</div>
+          </RowCoverCard>
+        </div>
+      ) : (
+        <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+          {innerContent}
+        </div>
+      )}
     </RowSection>
   );
 };

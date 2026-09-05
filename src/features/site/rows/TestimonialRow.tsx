@@ -52,6 +52,7 @@ import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typogr
 import RowNote from "./typography/RowNote";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 const TestimonialRow = ({
   row,
@@ -78,12 +79,10 @@ const TestimonialRow = ({
   const { ref, isVisible } = useScrollReveal();
 
   if (items.length === 0) return null;
+  const coverImage = c.cover_image?.trim() || undefined;
 
-  return (
-    <RowSection row={row}>
-      {/* `l` (resolved layout) is used inside via maxW; row prop carries
-       * bg_color, bg_image, gradients, overlays into <RowSection/>. */}
-      <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+  const innerContent = (
+    <>
         {/* Optional header */}
         {c.eyebrow && (
           <RowEyebrow color={c.color_eyebrow || ""} style={revealStyle(isVisible, -0.5)}>
@@ -147,7 +146,7 @@ const TestimonialRow = ({
                   <div className="flex items-center gap-3 mt-auto">
                     {item.avatar ? (
                       <img
-                        src={transformImageUrl(item.avatar, { width: 96 })}
+                        src={transformImageUrl(item.avatar, { width: 96, aspectRatio: 1 })}
                         alt={resolveImageAlt(item.avatar_alt, item.name || "Client portrait")}
                         loading="lazy"
                         className="w-12 h-12 rounded-full object-cover border row-border"
@@ -192,7 +191,24 @@ const TestimonialRow = ({
             <SubscribeWidget align={align} />
           </div>
         )}
-      </div>
+    </>
+  );
+
+  return (
+    <RowSection row={row}>
+      {/* `l` (resolved layout) is used inside via maxW; row prop carries
+       * bg_color, bg_image, gradients, overlays into <RowSection/>. */}
+      {coverImage ? (
+        <div className={`relative z-10 ${maxW} w-full mx-auto`}>
+          <RowCoverCard row={row}>
+            <div ref={ref as any} className={contentAlign}>{innerContent}</div>
+          </RowCoverCard>
+        </div>
+      ) : (
+        <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+          {innerContent}
+        </div>
+      )}
     </RowSection>
   );
 };

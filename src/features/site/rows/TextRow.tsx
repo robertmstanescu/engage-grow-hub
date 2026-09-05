@@ -11,6 +11,7 @@ import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typogr
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 // EPIC 1 / US 1.4 — direct-on-canvas text editing (double-click → contentEditable).
 import CanvasEditable from "@/features/admin/builder/CanvasEditable";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -40,6 +41,10 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
 
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText();
+
+  // Optional cover image — flat, row-level field, scoped to single-column
+  // rows only (same convention as BoxedRow.tsx).
+  const coverImage = !isMultiCol ? (row.content?.cover_image?.trim() || undefined) : undefined;
 
   const renderColumnContent = (c: Record<string, any>, colIndex: number) => {
     const prefix = rowIndex !== undefined
@@ -147,15 +152,21 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
         ml-auto / mr-auto to shift left or right. Without `w-full`,
         the wrapper would shrink-to-fit and ml-auto would be a no-op.
       */}
-      <div ref={ref} className={`relative z-10 row-container w-full ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1280px]"} ${containerPos}` : ""} ${contentAlign}`}>
-        {isMultiCol ? (
-          <div style={multiColGridStyle(widths)} className="items-start">
-            {contents.map((c, i) => renderColumnContent(c, i))}
-          </div>
-        ) : (
-          renderColumnContent(contents[0], 0)
-        )}
-      </div>
+      {!isMultiCol && coverImage ? (
+        <div className={`relative z-10 w-full ${l.fullWidth ? "" : "max-w-[1280px]"} mx-auto`}>
+          <RowCoverCard row={row}>{renderColumnContent(contents[0], 0)}</RowCoverCard>
+        </div>
+      ) : (
+        <div ref={ref} className={`relative z-10 row-container w-full ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1280px]"} ${containerPos}` : ""} ${contentAlign}`}>
+          {isMultiCol ? (
+            <div style={multiColGridStyle(widths)} className="items-start">
+              {contents.map((c, i) => renderColumnContent(c, i))}
+            </div>
+          ) : (
+            renderColumnContent(contents[0], 0)
+          )}
+        </div>
+      )}
     </RowSection>
   );
 };

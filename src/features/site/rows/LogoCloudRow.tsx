@@ -32,6 +32,7 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 const LogoCloudRow = ({
   row,
@@ -58,13 +59,10 @@ const LogoCloudRow = ({
   const { ref, isVisible } = useScrollReveal();
 
   if (logos.length === 0 && !hasHeader) return null;
+  const coverImage = c.cover_image?.trim() || undefined;
 
-  return (
-    <RowSection row={row}>
-      <div
-        ref={ref as any}
-        className={`${maxW} mx-auto row-container ${textAlign}`}
-      >
+  const innerContent = (
+    <>
         {/* ── Standard Brand Header block — see NewRowEditors.tsx for the
          *  matching admin fields. Renders any combination of eyebrow,
          *  title lines, subtitle, and rich-text body that the admin
@@ -119,7 +117,25 @@ const LogoCloudRow = ({
             <SubscribeWidget align={align} />
           </div>
         )}
-      </div>
+    </>
+  );
+
+  return (
+    <RowSection row={row}>
+      {coverImage ? (
+        <div className={`${maxW} w-full mx-auto`}>
+          <RowCoverCard row={row}>
+            <div ref={ref as any} className={textAlign}>{innerContent}</div>
+          </RowCoverCard>
+        </div>
+      ) : (
+        <div
+          ref={ref as any}
+          className={`${maxW} mx-auto row-container ${textAlign}`}
+        >
+          {innerContent}
+        </div>
+      )}
     </RowSection>
   );
 };

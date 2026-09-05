@@ -29,6 +29,7 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowSection } from "./typography";
 import RowNote from "./typography/RowNote";
 import type { Alignment, VAlign } from "./PageRows";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 const QuoteBandRow = ({
   row,
@@ -47,10 +48,10 @@ const QuoteBandRow = ({
   const { ref, isVisible } = useScrollReveal();
 
   if (!c.quote) return null;
+  const coverImage = c.cover_image?.trim() || undefined;
 
-  return (
-    <RowSection row={row} fullHeight={false}>
-      <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+  const innerContent = (
+    <>
         {c.eyebrow && (
           <RowEyebrow color={c.color_eyebrow || ""} style={revealStyle(isVisible, -0.5)}>
             {c.eyebrow}
@@ -67,7 +68,7 @@ const QuoteBandRow = ({
           >
             {c.avatar && (
               <img
-                src={transformImageUrl(c.avatar, { width: 88 })}
+                src={transformImageUrl(c.avatar, { width: 88, aspectRatio: 1 })}
                 alt={resolveImageAlt(c.avatar_alt, c.name || "Client portrait")}
                 loading="lazy"
                 className="w-11 h-11 rounded-full object-cover border border-current/20"
@@ -81,7 +82,22 @@ const QuoteBandRow = ({
         </blockquote>
 
         {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
-      </div>
+    </>
+  );
+
+  return (
+    <RowSection row={row} fullHeight={false}>
+      {coverImage ? (
+        <div className={`${maxW} w-full mx-auto`}>
+          <RowCoverCard row={row}>
+            <div ref={ref as any} className={contentAlign}>{innerContent}</div>
+          </RowCoverCard>
+        </div>
+      ) : (
+        <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+          {innerContent}
+        </div>
+      )}
     </RowSection>
   );
 };

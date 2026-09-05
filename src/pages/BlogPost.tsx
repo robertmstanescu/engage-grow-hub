@@ -10,7 +10,8 @@ import SubscribeWidget from "@/features/site/SubscribeWidget";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
 import PageBreadcrumbs from "@/features/site/PageBreadcrumbs";
-import { transformImageUrl, buildImageSrcSet } from "@/services/mediaOptimization";
+import CoverFadeImage from "@/features/site/CoverFadeImage";
+import { transformImageUrl } from "@/services/mediaOptimization";
 import { useRedirectLookup } from "@/hooks/useRedirectLookup";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
 // US 17.x — blog posts can now be composed with the same widget builder
@@ -152,21 +153,12 @@ const BlogPost = () => {
       <article>
         <div className="relative">
           {article.cover_image && (
-            <div className="relative w-full overflow-hidden aspect-video max-h-[70vh]">
-              <img
-                src={transformImageUrl(article.cover_image, { width: 1920 })}
-                srcSet={buildImageSrcSet(article.cover_image)}
-                sizes="100vw"
-                alt={article.cover_image_alt || `${article.title} — cover image`}
-                className="w-full h-full object-cover"
-                style={{
-                  WebkitMaskImage:
-                    "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0.6) 68%, rgba(0,0,0,0.2) 85%, rgba(0,0,0,0) 100%)",
-                  maskImage:
-                    "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0.6) 68%, rgba(0,0,0,0.2) 85%, rgba(0,0,0,0) 100%)",
-                }}
-              />
-            </div>
+            <CoverFadeImage
+              src={article.cover_image}
+              alt={article.cover_image_alt || `${article.title} — cover image`}
+              aspectRatio={16 / 9}
+              className="max-h-[70vh]"
+            />
           )}
 
 
@@ -183,7 +175,7 @@ const BlogPost = () => {
                     <>
                       {article.author_image && (
                         <img
-                          src={transformImageUrl(article.author_image, { width: 56 })}
+                          src={transformImageUrl(article.author_image, { width: 56, aspectRatio: 1 })}
                           alt={article.author_image_alt || article.author_name}
                           className="w-7 h-7 rounded-full object-cover"
                           loading="lazy"

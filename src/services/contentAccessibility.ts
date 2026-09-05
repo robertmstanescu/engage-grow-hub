@@ -46,6 +46,25 @@ const IMAGE_FIELDS_BY_TYPE: Partial<Record<PageRow["type"], ImageFieldDescriptor
   image: [{ urlPath: "url", altPath: "alt_text", label: "Image" }],
   // Image + Text composite — the image half must still meet WCAG.
   image_text: [{ urlPath: "image_url", altPath: "image_alt", label: "Image + Text" }],
+  // Boxed row's optional cover image (flat, row-level field — not per-card).
+  boxed: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  // Hero row's optional foreground visual, alongside the existing bg_url.
+  hero: [{ urlPath: "visual_image_url", altPath: "visual_image_alt", label: "Hero visual" }],
+  // Every other row type also carries the same optional cover-image
+  // capability (RowCoverCard, src/features/site/RowCoverCard.tsx) — one
+  // flat, row-level field pair, same convention as `boxed` above.
+  text: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  service: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  grid: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  lead_magnet: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  testimonial: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  logo_cloud: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  faq: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  proof_band: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  process_steps: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  quote_band: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  cta_band: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  contact: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
 };
 
 /* ─────────────────────────────────────────────────────────────── */

@@ -37,6 +37,7 @@ import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typogr
 import RowNote from "./typography/RowNote";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 const FaqRow = ({
   row,
@@ -61,10 +62,10 @@ const FaqRow = ({
   const { ref, isVisible } = useScrollReveal();
 
   if (items.length === 0 && titleLines.length === 0) return null;
+  const coverImage = c.cover_image?.trim() || undefined;
 
-  return (
-    <RowSection row={row}>
-      <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+  const innerContent = (
+    <>
         {c.eyebrow && (
           <RowEyebrow color={c.color_eyebrow || ""} style={revealStyle(isVisible, -0.5)}>
             {c.eyebrow}
@@ -126,7 +127,22 @@ const FaqRow = ({
             <SubscribeWidget align={align} />
           </div>
         )}
-      </div>
+    </>
+  );
+
+  return (
+    <RowSection row={row}>
+      {coverImage ? (
+        <div className={`${maxW} w-full mx-auto`}>
+          <RowCoverCard row={row}>
+            <div ref={ref as any} className={contentAlign}>{innerContent}</div>
+          </RowCoverCard>
+        </div>
+      ) : (
+        <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+          {innerContent}
+        </div>
+      )}
     </RowSection>
   );
 };

@@ -6,6 +6,7 @@ import type { PageRow, ContactField } from "@/types/rows";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 import { getAttributionForPayload } from "@/services/attribution";
 import { trackConversion } from "@/services/conversions";
@@ -74,6 +75,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   const checkboxFields = visibleFields.filter((f) => f.type === "checkbox");
 
   const { ref, isVisible } = useScrollReveal();
+  const coverImage = c.cover_image?.trim() || undefined;
 
   /* ContactRow uses the shared <RowSection/> wrapper so it inherits the
    * whole row feature set — band tones, edge shapes, separators, snap —
@@ -95,11 +97,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
     );
   }
 
-  return (
-    <RowSection row={row} vAlign={vAlign} className="section-light" grain={false}>
-
-
-      <div ref={ref} className={`relative z-10 max-w-[1280px] row-container ${containerPos} ${contentAlign}`}>
+  const innerContent = (
+    <>
         <div className={`mb-rhythm-base ${contentAlign}`} style={revealStyle(isVisible, 0)}>
           {c.eyebrow && (
             <RowEyebrow color={c.color_eyebrow || ""}>{c.eyebrow}</RowEyebrow>
@@ -170,7 +169,22 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
             <p className="text-card-body italic row-fg-muted measure">{c.note}</p>
           </div>
         )}
-      </div>
+    </>
+  );
+
+  return (
+    <RowSection row={row} vAlign={vAlign} className="section-light" grain={false}>
+      {coverImage ? (
+        <div className="relative z-10 w-full max-w-[1280px] mx-auto">
+          <RowCoverCard row={row}>
+            <div ref={ref} className={contentAlign}>{innerContent}</div>
+          </RowCoverCard>
+        </div>
+      ) : (
+        <div ref={ref} className={`relative z-10 max-w-[1280px] row-container ${containerPos} ${contentAlign}`}>
+          {innerContent}
+        </div>
+      )}
     </RowSection>
   );
 };

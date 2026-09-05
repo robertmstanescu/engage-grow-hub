@@ -10,6 +10,7 @@ import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 import Icon from "@/features/icons/Icon";
 import { pillarColorFromLink } from "@/lib/constants/pillarColors";
 import { trackConversion } from "@/services/conversions";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 /**
  * Smart link helper — internal anchors / paths stay in-tab, external
@@ -32,6 +33,13 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
 
   const { ref, isVisible } = useScrollReveal();
   const autoFitRef = useAutoFitText();
+
+  // Optional cover image — a flat, row-level field (not per-column, not
+  // per-card: confirmed against live "Our Vows" content, which is a
+  // single-column row with no columns_data). Scoped to the single-column
+  // case on purpose: a multi-column row has no one place a single cover
+  // image would unambiguously belong to.
+  const coverImage = !isMultiCol ? (row.content?.cover_image?.trim() || undefined) : undefined;
 
   const getGridCols = (count: number) => {
     if (count <= 1) return "grid-cols-1";
@@ -149,10 +157,21 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
             // Clean, structured card enclosure: solid card surface, crisp
             // 1px border, uniform padding and a subtle shadow. `boxed-lift`
             // keeps the GPU-friendly hover transform (no icon shake).
-            const cardClass = `surface-card p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
+            // When the row has a cover image, cards restyle as lighter,
+            // smaller-radius tiles nested inside that photo-card container
+            // — `surface-card`'s own border-radius (var(--radius), 1.5rem)
+            // would look wrong repeated at the same size one level down.
+            const cardClass = `${coverImage ? "" : "surface-card"} p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
             const cardStyle = {
               ...revealStyle(isVisible, i + 2),
               ...(pillarColor ? { borderTop: `3px solid ${pillarColor}` } : {}),
+              ...(coverImage
+                ? {
+                    backgroundColor: "hsl(var(--primary) / 0.045)",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "1rem",
+                  }
+                : {}),
             } as React.CSSProperties;
 
             if (cardLink) {
@@ -206,15 +225,26 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       vAlign={vAlign}
       innerRef={(el) => { autoFitRef.current = el; }}
     >
-      <div ref={ref} className={`relative z-10 row-container ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1280px]"} ${containerPos}` : `${maxW} ${containerPos} ${contentAlign}`}`}>
-        {isMultiCol ? (
-          <div style={multiColGridStyle(widths)} className="items-start">
-            {contents.map((c, i) => renderColumnContent(c, i))}
-          </div>
-        ) : (
-          renderColumnContent(contents[0], 0)
-        )}
-      </div>
+      {!isMultiCol && coverImage ? (
+        // Full-bleed to the row's OWN content boundary (same max-width the
+        // row-container below uses) rather than sitting inset inside
+        // row-container's fluid clamp(24px,5vw,96px) gutter — the card's
+        // edges and corners should read as the row's own surface, not as
+        // a smaller card floating inside it.
+        <div className={`relative z-10 w-full ${l.fullWidth ? "" : "max-w-[1280px]"} mx-auto`}>
+          <RowCoverCard row={row}>{renderColumnContent(contents[0], 0)}</RowCoverCard>
+        </div>
+      ) : (
+        <div ref={ref} className={`relative z-10 row-container ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1280px]"} ${containerPos}` : `${maxW} ${containerPos} ${contentAlign}`}`}>
+          {isMultiCol ? (
+            <div style={multiColGridStyle(widths)} className="items-start">
+              {contents.map((c, i) => renderColumnContent(c, i))}
+            </div>
+          ) : (
+            renderColumnContent(contents[0], 0)
+          )}
+        </div>
+      )}
     </RowSection>
   );
 };

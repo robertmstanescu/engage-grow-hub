@@ -14,6 +14,7 @@ import { RowEyebrow, RowTitle, RowSection } from "./typography";
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 // EPIC 1 / US 1.4 — direct-on-canvas text editing.
 import CanvasEditable from "@/features/admin/builder/CanvasEditable";
+import RowCoverCard from "@/features/site/RowCoverCard";
 
 const hexToHslChannels = (hex: string): string | null => {
   if (!hex || !hex.startsWith("#") || hex.length < 7) return null;
@@ -115,21 +116,10 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
   const pillarLabelColor = c.color_label || "hsl(var(--pillar-label))";
   const pillarTitleColor = c.color_heading || "hsl(var(--pillar-heading))";
   const pillarDescriptionColor = c.color_heading_sub || "hsl(var(--pillar-heading-sub) / 0.7)";
+  const coverImage = c.cover_image?.trim() || undefined;
 
-  return (
-    <RowSection
-      row={row}
-      // LAYOUT LOCK: Force `top` alignment regardless of the inherited
-      // `vAlign` prop. Service rows host a carousel with cards of
-      // different heights — if the row centred itself vertically, the
-      // eyebrow/title/description above the cards would visibly jump up
-      // and down each time the user clicked Next/Prev. Anchoring to the
-      // top pins the header text in place; only the card content swaps.
-      vAlign="top"
-      style={colorOverrides as React.CSSProperties}
-      className="service-row"
-    >
-      <div ref={ref} className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} row-container ${rowTextAlign}`}>
+  const innerContent = (
+    <>
         {/*
           ATOMIC-NODE WRAPPERS (EPIC 1 / US 1.1)
           --------------------------------------
@@ -265,7 +255,33 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
 
         {/* Subscribe widget — `mt-rhythm-loose` (48px) marks a major content break between the carousel and the secondary CTA. */}
         {c.show_subscribe && <div className="mt-rhythm-loose" style={revealStyle(isVisible, 5)}><SubscribeWidget align={align} /></div>}
-      </div>
+    </>
+  );
+
+  return (
+    <RowSection
+      row={row}
+      // LAYOUT LOCK: Force `top` alignment regardless of the inherited
+      // `vAlign` prop. Service rows host a carousel with cards of
+      // different heights — if the row centred itself vertically, the
+      // eyebrow/title/description above the cards would visibly jump up
+      // and down each time the user clicked Next/Prev. Anchoring to the
+      // top pins the header text in place; only the card content swaps.
+      vAlign="top"
+      style={colorOverrides as React.CSSProperties}
+      className="service-row"
+    >
+      {coverImage ? (
+        <div className="relative z-10 w-full max-w-[900px] mx-auto">
+          <RowCoverCard row={row}>
+            <div ref={ref} className={rowTextAlign}>{innerContent}</div>
+          </RowCoverCard>
+        </div>
+      ) : (
+        <div ref={ref} className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} row-container ${rowTextAlign}`}>
+          {innerContent}
+        </div>
+      )}
     </RowSection>
   );
 };

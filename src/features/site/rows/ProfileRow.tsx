@@ -85,8 +85,8 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                   // Profile photos sit below the fold on most pages —
                   // lazy-load + async decode keeps initial paint snappy.
                   <img
-                    src={transformImageUrl(c.image_url, { width: 800 })}
-                    srcSet={buildImageSrcSet(c.image_url)}
+                    src={transformImageUrl(c.image_url, { width: 800, aspectRatio: 3 / 4 })}
+                    srcSet={buildImageSrcSet(c.image_url, undefined, 75, 3 / 4)}
                     sizes="(min-width: 768px) 40vw, 100vw"
                     alt={resolveImageAlt(c.image_alt, c.name || row.strip_title, "profile photo")}
                     className="w-full h-full object-cover"
