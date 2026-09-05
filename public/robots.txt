@@ -1,11 +1,17 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /admin
+Disallow: /.lovable/
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /admin
+Disallow: /.lovable/
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /.lovable/
 
 Host: https://themagiccoffin.com
 Sitemap: https://themagiccoffin.com/sitemap.xml

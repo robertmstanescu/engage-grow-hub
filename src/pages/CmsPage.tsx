@@ -53,10 +53,16 @@ const CmsPage = ({ prefix = "" }: { prefix?: string }) => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  const isServicePage = Boolean(slug && (slug === "services" || slug.startsWith("services/")) && slug !== "services");
+
   usePageMeta({
     title: livePreviewPage?.meta_title || page?.meta_title || page?.title || undefined,
     description: livePreviewPage?.meta_description || page?.meta_description || undefined,
     canonicalPath: slug ? cmsPagePath(slug) : undefined,
+    serviceSchema:
+      isServicePage && page?.title
+        ? { name: page.title, description: page?.meta_description || undefined }
+        : undefined,
   });
 
   useEffect(() => {

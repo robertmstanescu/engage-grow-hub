@@ -158,7 +158,7 @@ async function main() {
     return;
   }
   const [siteRows, cmsPages, blogPosts] = await Promise.all([
-    rest("site_content?select=section_key,content"),
+    rest("site_content?select=section_key,content,updated_at"),
     rest("cms_pages?status=eq.published&select=slug,title,meta_title,meta_description,og_image,updated_at"),
     rest(
       "blog_posts?status=eq.published&select=slug,title,excerpt,content,meta_title,meta_description,og_image,cover_image,author_name,published_at,updated_at&order=published_at.desc",
@@ -166,10 +166,22 @@ async function main() {
   ]);
 
   const section = (key) => siteRows.find((r) => r.section_key === key)?.content || {};
+  const sectionUpdatedAt = (key) => siteRows.find((r) => r.section_key === key)?.updated_at;
   const brand = section("brand_settings");
   const identity = brand.identity || {};
   const homeSeo = section("main_page_seo");
   const blogSeo = section("blog_page");
+  const serviceAreas = (section("global_seo_tags").organization?.service_areas || [])
+    .map((s) => String(s).trim())
+    .filter(Boolean);
+
+  /** Most recent published post's timestamp — the blog index's real
+   *  content is "the list of posts", so a new post is what actually
+   *  changes that page, not edits to the `blog_page` header row. */
+  const latestPostTimestamp = blogPosts.reduce((latest, post) => {
+    const t = post.updated_at || post.published_at;
+    return t && (!latest || new Date(t) > new Date(latest)) ? t : latest;
+  }, undefined);
 
   const origin = String(identity.canonicalOrigin || "").trim().replace(/\/+$/, "");
   if (!origin) {
@@ -202,7 +214,7 @@ async function main() {
       url: abs("/"),
       image: defaultImage,
     },
-    sitemap: { changefreq: "weekly", priority: "1.0" },
+    sitemap: { lastmod: sectionUpdatedAt("main_page_seo"), changefreq: "weekly", priority: "1.0" },
   });
 
   // Blog index
@@ -214,7 +226,7 @@ async function main() {
       url: abs("/blog/"),
       image: defaultImage,
     },
-    sitemap: { changefreq: "weekly", priority: "0.8" },
+    sitemap: { lastmod: latestPostTimestamp, changefreq: "weekly", priority: "0.8" },
   });
 
   // CMS pages
@@ -232,11 +244,33 @@ async function main() {
   for (const page of cmsPages) {
     if (!page.slug) continue;
     const path = cmsPagePath(page.slug);
+    const description = page.meta_description || "";
+    // Individual service pages (not the /services/ index itself) get a
+    // Service schema block — mirrors the client-side version usePageMeta
+    // emits in CmsPage.tsx, so bots and real users see the same markup.
+    // Deliberately carries only fields we know are true (no fabricated
+    // address, phone or price).
+    const isServicePage = page.slug === "services" ? false : page.slug.startsWith("services/");
     const meta = {
       title: titleFor(page.meta_title, page.title),
-      description: page.meta_description || "",
+      description,
       url: abs(path),
       image: absImage(page.og_image),
+      ...(isServicePage
+        ? {
+            jsonLd: {
+              "@context": "https://schema.org",
+              "@type": "Service",
+              name: page.title,
+              ...(description ? { description } : {}),
+              url: abs(path),
+              provider: { "@type": "Organization", name: brandName, url: origin },
+              ...(serviceAreas.length
+                ? { areaServed: serviceAreas.map((name) => ({ "@type": "Place", name })) }
+                : {}),
+            },
+          }
+        : {}),
     };
     routes.push({
       path,

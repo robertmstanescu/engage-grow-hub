@@ -63,6 +63,7 @@ import {
   type PageTrendRow,
 } from "@/services/unifiedAnalytics";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
+import useNoIndex from "@/hooks/useNoIndex";
 
 type DateRangeKey = "today" | "7d" | "30d" | "90d";
 
@@ -91,6 +92,7 @@ function isAiSummaryOptimized(summary: string | null | undefined): boolean {
 }
 
 const AdminInsights = () => {
+  useNoIndex();
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);

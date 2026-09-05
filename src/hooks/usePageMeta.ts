@@ -62,6 +62,14 @@ interface PageMetaProps {
    * happened to match. Defaults to `location.pathname` when omitted.
    */
   canonicalPath?: string;
+  /**
+   * When set, emits a schema.org `Service` JSON-LD block for this page
+   * (e.g. a /services/:slug page). Deliberately only carries fields we
+   * actually know are true — no fabricated address, phone or price —
+   * so as not to ship structured data Google's Rich Results validator
+   * (or a user comparing it to the real business) would flag as wrong.
+   */
+  serviceSchema?: { name: string; description?: string };
 }
 
 /**
@@ -83,7 +91,7 @@ const DEFAULT_OG_IMAGE_PATH = "/og-image.jpg";
 interface GlobalTags {
   social_prefix?: string;
   tracking?: { ga4?: string; meta_pixel?: string; linkedin_partner?: string };
-  organization?: { legal_name?: string; type?: string; social_links?: string[] };
+  organization?: { legal_name?: string; type?: string; social_links?: string[]; service_areas?: string[] };
   json_ld_organization?: string;
   custom_head_scripts?: string;
 }
@@ -179,7 +187,9 @@ const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
   }
 };
 
-const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", canonicalPath }: PageMetaProps) => {
+const SERVICE_JSONLD_ID = "mc-jsonld-service";
+
+const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", canonicalPath, serviceSchema }: PageMetaProps) => {
   const location = useLocation();
 
   useEffect(() => {
@@ -242,12 +252,36 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", 
       setMeta("twitter:title", socialTitle);
       if (description) setMeta("twitter:description", description);
       setMeta("twitter:image", socialImage);
+
+      // Per-page Service schema (only while this page actually is one —
+      // removed again the moment the route navigates away from it).
+      let serviceScript = document.getElementById(SERVICE_JSONLD_ID) as HTMLScriptElement | null;
+      if (serviceSchema?.name) {
+        if (!serviceScript) {
+          serviceScript = document.createElement("script");
+          serviceScript.id = SERVICE_JSONLD_ID;
+          serviceScript.type = "application/ld+json";
+          document.head.appendChild(serviceScript);
+        }
+        const areas = (tags.organization?.service_areas || []).map((s) => s.trim()).filter(Boolean);
+        serviceScript.text = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: serviceSchema.name,
+          ...(serviceSchema.description ? { description: serviceSchema.description } : {}),
+          url: canonicalUrl,
+          provider: { "@type": "Organization", name: identity.brandName, url: canonicalOrigin },
+          ...(areas.length ? { areaServed: areas.map((name) => ({ "@type": "Place", name })) } : {}),
+        });
+      } else {
+        serviceScript?.remove();
+      }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [title, description, ogImage, suffix, ogType, canonicalPath, location.pathname]);
+  }, [title, description, ogImage, suffix, ogType, canonicalPath, serviceSchema?.name, serviceSchema?.description, location.pathname]);
 };
 
 export default usePageMeta;

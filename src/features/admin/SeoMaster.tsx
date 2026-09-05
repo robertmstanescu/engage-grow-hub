@@ -140,6 +140,8 @@ const classifyAiSummary = (summary: string): { status: AiSummaryStatus; words: n
  *   organization.legal_name   — Legal entity name (used in JSON-LD)
  *   organization.type         — Schema.org Organization subtype
  *   organization.social_links — Array of profile URLs (sameAs in JSON-LD)
+ *   organization.service_areas — Cities/regions you serve (areaServed in
+ *                                each service page's Service JSON-LD)
  *
  * Free-text legacy fields (preserved)
  * ───────────────────────────────────
@@ -160,6 +162,7 @@ interface GlobalSeoTags {
     legal_name: string;
     type: string;
     social_links: string[];
+    service_areas: string[];
   };
 }
 
@@ -168,7 +171,7 @@ const EMPTY_GLOBAL: GlobalSeoTags = {
   json_ld_organization: "",
   social_prefix: "",
   tracking: { ga4: "", meta_pixel: "", linkedin_partner: "" },
-  organization: { legal_name: "", type: "Organization", social_links: [] },
+  organization: { legal_name: "", type: "Organization", social_links: [], service_areas: [] },
 };
 
 /** Schema.org Organization subtypes — covers most business shapes. */
@@ -700,6 +703,7 @@ const GlobalMetadata = () => {
             ...EMPTY_GLOBAL.organization,
             ...(c.organization || {}),
             social_links: Array.isArray(c.organization?.social_links) ? c.organization!.social_links : [],
+            service_areas: Array.isArray(c.organization?.service_areas) ? c.organization!.service_areas : [],
           },
         });
       }
@@ -756,6 +760,9 @@ const GlobalMetadata = () => {
     social_links: Array.isArray(data.organization?.social_links)
       ? data.organization!.social_links
       : [],
+    service_areas: Array.isArray(data.organization?.service_areas)
+      ? data.organization!.service_areas
+      : [],
   };
 
   const setTracking = (k: keyof GlobalSeoTags["tracking"], v: string) =>
@@ -774,6 +781,15 @@ const GlobalMetadata = () => {
   const addSocialLink = () => setOrg("social_links", [...organization.social_links, ""]);
   const removeSocialLink = (i: number) =>
     setOrg("social_links", organization.social_links.filter((_, j) => j !== i));
+
+  const updateServiceArea = (i: number, value: string) => {
+    const next = [...organization.service_areas];
+    next[i] = value;
+    setOrg("service_areas", next);
+  };
+  const addServiceArea = () => setOrg("service_areas", [...organization.service_areas, ""]);
+  const removeServiceArea = (i: number) =>
+    setOrg("service_areas", organization.service_areas.filter((_, j) => j !== i));
 
   return (
     <div className="space-y-5 max-w-3xl">
@@ -904,6 +920,42 @@ const GlobalMetadata = () => {
               className="inline-flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full border border-secondary/40 text-secondary hover:bg-secondary/10"
             >
               <Plus size={12} /> Add Link
+            </button>
+          </div>
+        </Field>
+        <Field
+          label="Service Areas"
+          hint={'Where you serve clients — "Worldwide" and/or specific countries or regions (e.g. "United States", "Western Europe", "Australia"). Added as areaServed on every /services/ page\'s Service schema. Avoid piling on every place you have ever worked with — a handful of true, meaningful entries reads better to Google than a long list.'}
+        >
+          <div className="space-y-2">
+            {organization.service_areas.length === 0 && (
+              <p className="font-body text-[11px] italic text-muted-foreground">No service areas yet — schema will omit areaServed.</p>
+            )}
+            {organization.service_areas.map((city, i) => (
+              <div key={i} className="flex gap-2">
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => updateServiceArea(i, e.target.value)}
+                  placeholder="Worldwide"
+                  className="flex-1 px-3 py-2 rounded-lg font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeServiceArea(i)}
+                  className="p-2 rounded-lg border border-border text-destructive hover:bg-destructive/10"
+                  aria-label="Remove service area"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addServiceArea}
+              className="inline-flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full border border-secondary/40 text-secondary hover:bg-secondary/10"
+            >
+              <Plus size={12} /> Add City
             </button>
           </div>
         </Field>

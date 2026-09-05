@@ -5,8 +5,10 @@ import { toast } from "sonner";
 import AdminLogin from "@/features/admin/AdminLogin";
 import AdminDashboard from "@/features/admin/AdminDashboard";
 import { ConfirmDialogHost } from "@/components/ConfirmDialog";
+import useNoIndex from "@/hooks/useNoIndex";
 
 const Admin = () => {
+  useNoIndex();
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);

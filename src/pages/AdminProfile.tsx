@@ -25,8 +25,10 @@ import { SpinnerButton } from "@/components/ui/spinner-button";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { Skeleton } from "@/components/ui/skeleton";
 import ImagePickerField from "@/features/admin/ImagePickerField";
+import useNoIndex from "@/hooks/useNoIndex";
 
 const AdminProfile = () => {
+  useNoIndex();
   const navigate = useNavigate();
   const { isAdmin, loading: adminLoading } = useAdminStatus();
   const [profile, setProfile] = useState<Profile | null>(null);
