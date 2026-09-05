@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
-import Icon from "@/features/icons/Icon";
 import {
   buildImageSrcSet,
   buildPosterUrl,

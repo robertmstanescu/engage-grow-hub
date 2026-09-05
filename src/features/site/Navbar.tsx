@@ -277,6 +277,7 @@ const Navbar = () => {
         <div className="flex flex-row items-center justify-center gap-9 min-w-0">
           {renderedItems.map((item) => {
             if (item.kind === "dropdown") {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const active =
                 (item.href && isActive(item.href)) ||
                 item.items.some((s) => isActive(s.href)) ||
