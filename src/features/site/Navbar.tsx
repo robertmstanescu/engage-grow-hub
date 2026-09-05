@@ -277,7 +277,6 @@ const Navbar = () => {
         <div className="flex flex-row items-center justify-center gap-9 min-w-0">
           {renderedItems.map((item) => {
             if (item.kind === "dropdown") {
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const active =
                 (item.href && isActive(item.href)) ||
                 item.items.some((s) => isActive(s.href)) ||
@@ -303,7 +302,7 @@ const Navbar = () => {
                     onFocus={() => setOpenDropdown(item.label)}
                     aria-haspopup="true"
                     aria-expanded={open}
-                    className="top-nav-label font-body inline-flex items-center gap-1"
+                    className="top-nav-label font-body inline-flex items-center gap-1 leading-none"
                     data-active={active}
                     style={{
                       color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
@@ -373,7 +372,7 @@ const Navbar = () => {
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
-                className="top-nav-label font-body"
+                className="top-nav-label font-body inline-flex items-center leading-none"
                 data-active={active}
                 style={{
                   color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
