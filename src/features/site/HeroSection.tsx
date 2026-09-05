@@ -60,29 +60,55 @@ const useFitTitleLines = (lineCount: number) => {
     const h1 = h1Ref.current;
     if (!h1) return;
     let raf = 0;
+    /* Each line's natural (never-shrunk) font size + text width,
+       measured once and cached. CRITICAL: fit() must never reset a
+       line's fontSize before measuring it on every call — resetting to
+       the full fluid size briefly grows that line's height, which
+       changes the <h1>'s own rendered size, which re-triggers the
+       ResizeObserver watching the <h1> below. That produced an infinite
+       feedback loop — the title's font-size flickering between its
+       full and shrunk values dozens of times a second, forever, on any
+       page whose title needed shrinking at all. Measuring the natural
+       size once (before any shrink has ever been applied) and reusing
+       it, combined with only writing fontSize when the computed value
+       actually differs from what's already applied, keeps this
+       convergent: once a line's size stabilises, fit() becomes a
+       no-op read and the observer has nothing left to react to. */
+    let naturals = new WeakMap<HTMLElement, { base: number; need: number }>();
+
+    const measureNatural = (line: HTMLElement) => {
+      const prevWhiteSpace = line.style.whiteSpace;
+      line.style.whiteSpace = "nowrap";
+      const base = parseFloat(getComputedStyle(line).fontSize);
+      const need = line.scrollWidth;
+      line.style.whiteSpace = prevWhiteSpace;
+      return { base, need };
+    };
+
     const fit = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const avail = h1.clientWidth;
         if (!avail) return;
         h1.querySelectorAll<HTMLElement>("span.block").forEach((line) => {
-          line.style.fontSize = "";
-          line.style.whiteSpace = "nowrap";
-          const base = parseFloat(getComputedStyle(line).fontSize);
-          const need = line.scrollWidth;
-          line.style.whiteSpace = "";
-          if (need > avail) {
-            /* Shrink to fit — but only if the line fits within a 70%
-               floor. A line too long even at the floor (e.g. a long
-               first sentence) stays at FULL size and wraps naturally;
-               shorter lines like "We bring the coffin." shrink just
-               enough to stay intact on one line. -1px guards against
-               sub-pixel rounding pushing us over. */
-            const scale = avail / need;
-            if (scale >= 0.7) {
-              line.style.fontSize = `${Math.floor(base * scale) - 1}px`;
-            }
+          let natural = naturals.get(line);
+          if (!natural) {
+            natural = measureNatural(line);
+            naturals.set(line, natural);
           }
+          const { base, need } = natural;
+          /* Shrink to fit — but only if the line fits within a 70%
+             floor. A line too long even at the floor (e.g. a long
+             first sentence) stays at FULL size and wraps naturally;
+             shorter lines like "We bring the coffin." shrink just
+             enough to stay intact on one line. -1px guards against
+             sub-pixel rounding pushing us over. */
+          let target = "";
+          if (need > avail) {
+            const scale = avail / need;
+            if (scale >= 0.7) target = `${Math.floor(base * scale) - 1}px`;
+          }
+          if (line.style.fontSize !== target) line.style.fontSize = target;
         });
       });
     };
@@ -90,8 +116,13 @@ const useFitTitleLines = (lineCount: number) => {
     const ro = new ResizeObserver(fit);
     ro.observe(h1);
     /* Re-fit once webfonts finish loading — metrics change when the
-       display font swaps in. */
-    (document as any).fonts?.ready?.then(fit);
+       display font swaps in. The cached natural measurements were taken
+       against the fallback font, so they're stale; drop them and
+       re-measure once against the real font. */
+    (document as any).fonts?.ready?.then(() => {
+      naturals = new WeakMap();
+      fit();
+    });
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
