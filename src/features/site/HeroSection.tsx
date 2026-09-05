@@ -53,15 +53,24 @@ const fallback: HeroContent = {
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
 /**
- * useFitTitleLines — guarantees NO hero title line ever wraps.
+ * useFitTitleLines — keeps EVERY hero title line on one line, at ONE
+ * shared font size.
  *
- * Font metrics differ across platforms (a 117px "We bring the coffin."
- * fit our headless Chromium's 1036px box but wrapped in the owner's
- * desktop Chrome), so instead of trusting a static clamp() ceiling we
- * measure each line's REAL rendered width in the visitor's own browser
- * and shrink only the oversized lines just enough to fit on one line.
- * The base size stays the fluid --fs-hero-title, so the hero keeps
- * filling the viewport; untouched lines render at full size.
+ * History / why it looks like this:
+ * The previous implementation measured and shrank each line
+ * INDIVIDUALLY, and measured by appending a clone inside the live <h1>
+ * that a ResizeObserver was watching. That produced two bugs the owner
+ * saw: (1) lines rendered at different sizes, (2) measure → shrink →
+ * observer fires → measure … a visible flicker loop.
+ *
+ * Now:
+ * • Measurement happens in a probe attached to document.body, OUTSIDE
+ *   the observed <h1>, so measuring can never retrigger the observer.
+ * • The widest line decides ONE scale factor for the whole heading, set
+ *   as --hero-fit-scale, so all lines share a size.
+ * • We observe the WIDTH of the <h1>'s parent container and the window,
+ *   never the <h1>'s own height — plus a hysteresis threshold, so tiny
+ *   sub-pixel differences can't oscillate.
  */
 const useFitTitleLines = (lineCount: number) => {
   const h1Ref = useRef<HTMLHeadingElement>(null);
@@ -70,93 +79,126 @@ const useFitTitleLines = (lineCount: number) => {
     const h1 = h1Ref.current;
     if (!h1) return;
     let raf = 0;
-
-    /* Measure a line's NATURAL (unshrunk) font size + text width via a
-       hidden clone, absolutely positioned INSIDE the real <h1> — never
-       the live line itself. Two failure modes this avoids:
-       1) Clearing the LIVE line's fontSize to measure it (the previous
-          approach) briefly grows that line's height, which changes the
-          <h1>'s own rendered size, which re-triggers the very
-          ResizeObserver watching the <h1> below: an infinite feedback
-          loop that visibly re-flowed the title dozens of times a
-          second, forever.
-       2) Caching that natural measurement once (the previous fix for
-          #1) stopped the loop but could go stale: --fs-hero-title is a
-          fluid clamp() driven by viewport width, so a measurement taken
-          moments after mount (e.g. before a webfont swap or a
-          sub-pixel layout settle) could permanently under-measure a
-          borderline line's width by a few px — which is exactly why
-          "We bring the coffin." stopped fitting on one line even
-          though the shrink math would have chosen to shrink it.
-       A clone positioned `absolute` is excluded from the <h1>'s own
-       size calculations (so it can't retrigger the observer), but as a
-       CHILD of the real <h1> it still inherits the same font classes
-       and the real --fs-hero-title value — so it's safe AND accurate
-       to remeasure on every call, same as the original always-fresh
-       behaviour, without the loop. */
-    const measureNatural = (line: HTMLElement) => {
-      const clone = line.cloneNode(true) as HTMLElement;
-      clone.style.position = "absolute";
-      clone.style.visibility = "hidden";
-      clone.style.pointerEvents = "none";
-      clone.style.whiteSpace = "nowrap";
-      clone.style.fontSize = "";
-      clone.style.top = "0";
-      clone.style.left = "0";
-      h1.appendChild(clone);
-      const base = parseFloat(getComputedStyle(clone).fontSize);
-      const need = clone.scrollWidth;
-      h1.removeChild(clone);
-      return { base, need };
-    };
+    let applied = 1;
 
     const fit = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const avail = h1.clientWidth;
+        /* Measure the CONSTRAINING box (the parent), not the <h1>:
+           with white-space:nowrap the heading itself can overflow, and a
+           width that grows with the content is exactly what made the
+           scale oscillate. */
+        const avail = Math.min(
+          h1.clientWidth || Infinity,
+          h1.parentElement?.clientWidth || Infinity,
+        );
+        if (!Number.isFinite(avail)) return;
         if (!avail) return;
+
+        const cs = getComputedStyle(h1);
+        /* Natural (unscaled) font size = the fluid --fs-hero-title. Read
+           it from the CSS variable so the current scale can't feed back
+           into the measurement. */
+        /* Computed fontSize is `--fs-hero-title * applied scale` in px,
+           so dividing by the scale we set recovers the natural fluid
+           size without re-reading the raw clamp() token (custom
+           properties come back unresolved). */
+        const natural = parseFloat(cs.fontSize) / (applied || 1);
+
+        const probe = document.createElement("div");
+        probe.style.cssText =
+          "position:absolute;left:-99999px;top:0;visibility:hidden;pointer-events:none;white-space:nowrap;";
+        probe.style.fontFamily = cs.fontFamily;
+        probe.style.fontWeight = cs.fontWeight;
+        probe.style.fontStyle = cs.fontStyle;
+        probe.style.letterSpacing = cs.letterSpacing;
+        probe.style.fontSize = `${natural}px`;
+
         h1.querySelectorAll<HTMLElement>("span.block").forEach((line) => {
-          const { base, need } = measureNatural(line);
-          /* Shrink to fit — but only if the line fits within a 70%
-             floor. A line too long even at the floor (e.g. a long
-             first sentence) stays at FULL size and wraps naturally;
-             shorter lines like "We bring the coffin." shrink just
-             enough to stay intact on one line. -1px guards against
-             sub-pixel rounding pushing us over.
-             MARGIN below: a line sitting within a handful of px of
-             `avail` (e.g. 1042 vs. 1036) is a genuinely unstable
-             boundary — sub-pixel font rendering can measure it as
-             fitting on one pass and not on the next, since `avail`
-             changes on browser resize but the true, precise text width
-             from a font's hinting/kerning can shift by a couple of
-             px between renders even at the identical width. Treating
-             "within 8px of overflowing" the same as "overflowing"
-             means a borderline line reliably gets a barely-noticeable
-             nudge down instead of gambling on which side of the line
-             a given render lands on. */
-          let target = "";
-          if (need > avail - 8) {
-            const scale = avail / need;
-            if (scale >= 0.7) target = `${Math.floor(base * scale) - 1}px`;
-          }
-          if (line.style.fontSize !== target) line.style.fontSize = target;
+          const clone = line.cloneNode(true) as HTMLElement;
+          clone.style.display = "block";
+          clone.style.fontSize = "";
+          probe.appendChild(clone);
         });
+        document.body.appendChild(probe);
+        const widths: number[] = [];
+        probe.querySelectorAll<HTMLElement>(":scope > *").forEach((el) => {
+          widths.push(el.scrollWidth);
+        });
+        document.body.removeChild(probe);
+
+        if (!widths.length || !widths.some((w) => w > 0)) return;
+
+        /* PAD keeps a visible breathing gap on both sides at whatever
+           size we land on (the old 4px guard only covered sub-pixel
+           rounding, so lines kissed the edges). */
+        const PAD = avail < 640 ? 12 : 32;
+        const usable = Math.max(0, avail - PAD);
+
+        /* Legibility floor — how small the whole heading may go in order
+           to keep a line whole. A line that cannot fit even at the floor
+           (a long opening sentence) is excluded from the calculation and
+           wraps on its own; every other line stays unbroken and ALL
+           lines share the single resulting size. */
+        const FLOOR = avail < 640 ? 0.35 : 0.42;
+        const ratios = widths.map((w) => (w > 0 ? usable / w : Infinity));
+        const feasible = ratios.filter((r) => Number.isFinite(r) && r >= FLOOR);
+        let scale = feasible.length ? Math.min(1, Math.min(...feasible)) : FLOOR;
+        /* floor, never round up — rounding up re-introduces a 1-2px
+           overflow that clips the last glyph. */
+        scale = Math.max(FLOOR, Math.floor(scale * 100) / 100);
+
+        if (Math.abs(scale - applied) > 0.009) {
+          applied = scale;
+          h1.style.setProperty("--hero-fit-scale", String(scale));
+        }
+        /* Wrapping is decided PER LINE: only a line that cannot fit at
+           the floor is allowed to break. Previously a single over-long
+           line switched the whole heading to wrapping, which let short
+           key lines ("We bring the coffin.") break too. */
+        h1.style.whiteSpace = "normal";
+        h1.querySelectorAll<HTMLElement>("span.block").forEach((line, i) => {
+          const r = ratios[i];
+          const wraps = Number.isFinite(r) && r < FLOOR;
+          line.style.whiteSpace = wraps ? "normal" : "nowrap";
+          /* A line that must wrap would otherwise fill the whole box and
+             kiss the edges before breaking. Cap its width at ~60% of its
+             natural (scaled) width so it breaks near the middle into two
+             balanced lines with breathing room on both sides. */
+          if (wraps) {
+            const scaledW = widths[i] * scale;
+            line.style.maxWidth = `${Math.min(usable, Math.ceil(scaledW * 0.6))}px`;
+            line.style.marginInline = "auto";
+          } else {
+            line.style.maxWidth = "";
+            line.style.marginInline = "";
+          }
+        });
+
+
       });
     };
+
     fit();
+    /* Observe the PARENT's width (what actually constrains the title),
+       never the <h1>'s own box — the <h1>'s height changes when we
+       rescale, which is what created the old feedback loop. */
     const ro = new ResizeObserver(fit);
-    ro.observe(h1);
+    if (h1.parentElement) ro.observe(h1.parentElement);
+    window.addEventListener("resize", fit);
     /* Re-fit once webfonts finish loading — metrics change when the
        display font swaps in. */
     (document as any).fonts?.ready?.then(fit);
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      window.removeEventListener("resize", fit);
     };
   }, [lineCount]);
 
   return h1Ref;
 };
+
 
 /**
  * HeroView — PURE, presentational hero.
@@ -398,7 +440,8 @@ export const HeroView = ({
           and consistent instead of vh-driven, keeping the layout clean at
           every breakpoint while the headline stays poster-sized.
         */}
-        <div className={`flex flex-col items-center gap-6 ${hasVisual ? "min-w-0 xl:flex-1" : ""}`}>
+        <div className={`flex w-full min-w-0 flex-col items-center gap-6 ${hasVisual ? "xl:flex-1" : ""}`}>
+
           {leading}
           {c.label && (
             <motion.p
@@ -416,7 +459,10 @@ export const HeroView = ({
           <h1
             ref={titleRef}
             className="font-display font-black leading-[0.9] tracking-tight flex-shrink-0 w-full"
-            style={{ color: "hsl(var(--hero-title))", fontSize: "var(--fs-hero-title)" }}>
+            style={{
+              color: "hsl(var(--hero-title))",
+              fontSize: "calc(var(--fs-hero-title) * var(--hero-fit-scale, 1))",
+            }}>
             {titleLines.map((line, i) => (
               <motion.span
                 key={i}
