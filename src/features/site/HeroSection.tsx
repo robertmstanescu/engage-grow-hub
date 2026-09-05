@@ -283,7 +283,7 @@ export const HeroView = ({
 
   /* Per-line shrink-to-fit so no title line ever wraps unintentionally
      (see useFitTitleLines above). */
-  const titleRef = useFitTitleLines(titleLines.length);
+  const titleRef = useFitTitleLines(titleLines.length, hasVisual);
 
   /**
    * Cold-load guard — `isLoading` is an explicit prop the caller
