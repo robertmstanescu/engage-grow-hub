@@ -119,17 +119,20 @@ const useFitTitleLines = (lineCount: number) => {
 
         if (!widths.length || !widths.some((w) => w > 0)) return;
 
-        /* -2px guards sub-pixel rounding. A line needing less than the
-           FLOOR to stay whole (e.g. a long opening sentence) is allowed
-           to wrap instead of dragging the whole heading down to an
-           illegible size; every other line stays on one line, and all
+        /* PAD keeps a visible breathing gap on both sides at whatever
+           size we land on (the old 4px guard only covered sub-pixel
+           rounding, so lines kissed the edges). */
+        const PAD = avail < 640 ? 12 : 32;
+        const usable = Math.max(0, avail - PAD);
+
+        /* Legibility floor — how small the whole heading may go in order
+           to keep a line whole. A line that cannot fit even at the floor
+           (a long opening sentence) is excluded from the calculation and
+           wraps on its own; every other line stays unbroken and ALL
            lines share the single resulting size. */
-        /* Legibility floor. On phones the fluid base is already small,
-           so we barely shrink and let long sentences wrap instead; on
-           desktop there is room to scale down to keep lines whole. */
-        const FLOOR = avail < 640 ? 0.85 : 0.5;
-        const ratios = widths.filter((w) => w > 0).map((w) => (avail - 4) / w);
-        const feasible = ratios.filter((r) => r >= FLOOR);
+        const FLOOR = avail < 640 ? 0.55 : 0.42;
+        const ratios = widths.map((w) => (w > 0 ? usable / w : Infinity));
+        const feasible = ratios.filter((r) => Number.isFinite(r) && r >= FLOOR);
         let scale = feasible.length ? Math.min(1, Math.min(...feasible)) : FLOOR;
         /* floor, never round up — rounding up re-introduces a 1-2px
            overflow that clips the last glyph. */
@@ -139,9 +142,16 @@ const useFitTitleLines = (lineCount: number) => {
           applied = scale;
           h1.style.setProperty("--hero-fit-scale", String(scale));
         }
-        /* Wrapping is only permitted when some line genuinely cannot fit
-           at the floor; otherwise every line is kept intact. */
-        h1.style.whiteSpace = ratios.some((r) => r < FLOOR) ? "normal" : "nowrap";
+        /* Wrapping is decided PER LINE: only a line that cannot fit at
+           the floor is allowed to break. Previously a single over-long
+           line switched the whole heading to wrapping, which let short
+           key lines ("We bring the coffin.") break too. */
+        h1.style.whiteSpace = "normal";
+        h1.querySelectorAll<HTMLElement>("span.block").forEach((line, i) => {
+          const r = ratios[i];
+          line.style.whiteSpace = Number.isFinite(r) && r < FLOOR ? "normal" : "nowrap";
+        });
+
 
       });
     };
