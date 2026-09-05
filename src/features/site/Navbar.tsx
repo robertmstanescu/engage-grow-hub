@@ -302,7 +302,7 @@ const Navbar = () => {
                     onFocus={() => setOpenDropdown(item.label)}
                     aria-haspopup="true"
                     aria-expanded={open}
-                    className="top-nav-label font-body inline-flex items-center gap-1 leading-none"
+                    className="top-nav-label font-body inline-flex items-center gap-1 h-[1.1rem]"
                     data-active={active}
                     style={{
                       color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
@@ -372,7 +372,7 @@ const Navbar = () => {
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
-                className="top-nav-label font-body inline-flex items-center leading-none"
+                className="top-nav-label font-body inline-flex items-center h-[1.1rem]"
                 data-active={active}
                 style={{
                   color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
