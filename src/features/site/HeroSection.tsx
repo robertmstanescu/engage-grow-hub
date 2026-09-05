@@ -168,7 +168,10 @@ const useFitTitleLines = (lineCount: number) => {
           if (wraps) {
             const scaledW = widths[i] * scale;
             line.style.maxWidth = `${Math.min(usable, Math.ceil(scaledW * 0.6))}px`;
-            line.style.marginInline = "auto";
+            /* Wide screens with a foreground visual left-align the text
+               column (see the container classes below) — a wrapped line
+               must hug the left edge there instead of centering. */
+            line.style.marginInline = leftAlign ? "0 auto" : "auto";
           } else {
             line.style.maxWidth = "";
             line.style.marginInline = "";
