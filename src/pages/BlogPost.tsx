@@ -9,6 +9,7 @@ import { useTagColors } from "@/hooks/useTagColors";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
+import PageBreadcrumbs from "@/features/site/PageBreadcrumbs";
 import { useRedirectLookup } from "@/hooks/useRedirectLookup";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
 // US 17.x — blog posts can now be composed with the same widget builder
@@ -50,7 +51,15 @@ const BlogPost = () => {
   const pageDesc = article ? (article.meta_description || article.content.replace(/<[^>]*>/g, " ").slice(0, 160)) : undefined;
   const pageImage = article?.og_image || article?.cover_image || undefined;
 
-  usePageMeta({ title: pageTitle, description: pageDesc, ogImage: pageImage, ogType: "article" });
+  usePageMeta({
+    title: pageTitle,
+    description: pageDesc,
+    ogImage: pageImage,
+    ogType: "article",
+    breadcrumbs: article
+      ? [{ name: "Home", path: "/" }, { name: "Blog", path: "/blog/" }, { name: article.title }]
+      : undefined,
+  });
 
   // Inject Article JSON-LD for rich results (headline, datePublished, author, image).
   useEffect(() => {
@@ -138,6 +147,7 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen page-shell">
       <Navbar />
+      <PageBreadcrumbs trail={[{ name: "Home", path: "/" }, { name: "Blog", path: "/blog/" }, { name: article.title }]} />
       <article>
         <div className="relative">
           {article.cover_image && (

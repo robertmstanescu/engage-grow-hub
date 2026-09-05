@@ -70,6 +70,19 @@ interface PageMetaProps {
    * (or a user comparing it to the real business) would flag as wrong.
    */
   serviceSchema?: { name: string; description?: string };
+  /**
+   * Question/answer pairs pulled from this page's FAQ row(s), for a
+   * `FAQPage` JSON-LD block — free eligibility for Google's expandable
+   * FAQ rich result. Pass `undefined`/empty when the page has no FAQ row.
+   */
+  faqSchema?: { question: string; answer: string }[];
+  /**
+   * The page's position in the site hierarchy, root first, for a
+   * `BreadcrumbList` JSON-LD block — e.g.
+   * `[{ name: "Home", path: "/" }, { name: "Services", path: "/services/" }, { name: "Fractional HRBP" }]`.
+   * Omit `path` on the last (current) entry.
+   */
+  breadcrumbs?: { name: string; path?: string }[];
 }
 
 /**
@@ -188,9 +201,17 @@ const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
 };
 
 const SERVICE_JSONLD_ID = "mc-jsonld-service";
+const FAQ_JSONLD_ID = "mc-jsonld-faq";
+const BREADCRUMB_JSONLD_ID = "mc-jsonld-breadcrumb";
 
-const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", canonicalPath, serviceSchema }: PageMetaProps) => {
+const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", canonicalPath, serviceSchema, faqSchema, breadcrumbs }: PageMetaProps) => {
   const location = useLocation();
+  // Depend on content, not identity — callers pass a fresh array literal
+  // on every render, which would otherwise re-run this effect (and
+  // re-fetch brand identity) on every render regardless of whether the
+  // FAQ content actually changed.
+  const faqSchemaKey = faqSchema && faqSchema.length > 0 ? JSON.stringify(faqSchema) : undefined;
+  const breadcrumbsKey = breadcrumbs && breadcrumbs.length > 0 ? JSON.stringify(breadcrumbs) : undefined;
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -276,12 +297,62 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", 
       } else {
         serviceScript?.remove();
       }
+
+      // Per-page FAQ schema — same create/update/remove pattern as
+      // Service above, keyed off whether this page's rows include a
+      // FAQ widget right now.
+      let faqScript = document.getElementById(FAQ_JSONLD_ID) as HTMLScriptElement | null;
+      if (faqSchema && faqSchema.length > 0) {
+        if (!faqScript) {
+          faqScript = document.createElement("script");
+          faqScript.id = FAQ_JSONLD_ID;
+          faqScript.type = "application/ld+json";
+          document.head.appendChild(faqScript);
+        }
+        faqScript.text = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqSchema.map(({ question, answer }) => ({
+            "@type": "Question",
+            name: question,
+            acceptedAnswer: { "@type": "Answer", text: answer },
+          })),
+        });
+      } else {
+        faqScript?.remove();
+      }
+
+      // Per-page breadcrumb schema — same create/update/remove pattern.
+      let breadcrumbScript = document.getElementById(BREADCRUMB_JSONLD_ID) as HTMLScriptElement | null;
+      if (breadcrumbs && breadcrumbs.length > 1) {
+        if (!breadcrumbScript) {
+          breadcrumbScript = document.createElement("script");
+          breadcrumbScript.id = BREADCRUMB_JSONLD_ID;
+          breadcrumbScript.type = "application/ld+json";
+          document.head.appendChild(breadcrumbScript);
+        }
+        breadcrumbScript.text = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: breadcrumbs.map((crumb, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: crumb.name,
+            ...(crumb.path ? { item: `${canonicalOrigin}${crumb.path}` } : {}),
+          })),
+        });
+      } else {
+        breadcrumbScript?.remove();
+      }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [title, description, ogImage, suffix, ogType, canonicalPath, serviceSchema?.name, serviceSchema?.description, location.pathname]);
+    // faqSchemaKey (declared above the effect) is the deliberate
+    // content-based substitute for faqSchema itself — see its comment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, description, ogImage, suffix, ogType, canonicalPath, serviceSchema?.name, serviceSchema?.description, faqSchemaKey, breadcrumbsKey, location.pathname]);
 };
 
 export default usePageMeta;

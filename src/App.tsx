@@ -16,13 +16,19 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import GlobalMounts from "@/components/app/GlobalMounts";
 import AnalyticsBeaconMount from "@/components/app/AnalyticsBeaconMount";
 import ConditionalToolbar from "@/components/app/ConditionalToolbar";
-// Public routes — eager so the homepage paints without a round-trip.
+// Index stays eager so the homepage — the site's highest-priority URL —
+// paints without an extra chunk round-trip. Unsubscribe is tiny and
+// reached only from an email link, no real bundle weight either way.
 import Index from "./pages/Index";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
 import Unsubscribe from "./pages/Unsubscribe";
-import CmsPage from "./pages/CmsPage";
 import NotFound from "./pages/NotFound";
+// Blog/BlogPost/CmsPage are lazy: each pulls in its own data-fetching and
+// rendering code that a visitor landing on a DIFFERENT public route (say,
+// the homepage) never needs — same reasoning as the admin split below,
+// just one tier down. PublicLayout supplies the Suspense boundary.
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const CmsPage = lazy(() => import("./pages/CmsPage"));
 // Admin routes — lazy so the editor stack stays out of the public bundle.
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminProfile = lazy(() => import("./pages/AdminProfile"));

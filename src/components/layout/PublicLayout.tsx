@@ -1,10 +1,14 @@
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
+import PublicChunkFallback from "@/components/app/PublicChunkFallback";
 
 /**
  * Layout for every public-facing route. Wraps the matched child in a
  * page-scoped ErrorBoundary so a single page crash never takes down
- * the router or other tabs.
+ * the router or other tabs, plus a Suspense boundary for the lazy
+ * Blog/BlogPost/CmsPage chunks (Index stays eager so the homepage
+ * paints without a round-trip, so it never actually suspends here).
  */
 const PublicLayout = () => (
   <ErrorBoundary label="page">
@@ -16,7 +20,9 @@ const PublicLayout = () => (
     */}
     <div aria-hidden className="page-mesh-layer" />
     <div className="public-fluid-type">
-      <Outlet />
+      <Suspense fallback={<PublicChunkFallback />}>
+        <Outlet />
+      </Suspense>
     </div>
   </ErrorBoundary>
 );

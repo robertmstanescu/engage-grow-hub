@@ -5,6 +5,9 @@ import Footer from "@/features/site/Footer";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
 import { useSmoothAnchors } from "@/hooks/useSmoothAnchors";
+import { extractFaqItems } from "@/features/site/rows/PrimaryHeadingContext";
+import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
+import type { PageRow } from "@/types/rows";
 
 /**
  * Index — the public homepage.
@@ -16,11 +19,15 @@ import { useSmoothAnchors } from "@/hooks/useSmoothAnchors";
 
 const Index = () => {
   const seo = useSiteContent<{ meta_title: string; meta_description: string }>("main_page_seo", { meta_title: "", meta_description: "" });
+  const pageRowsData = useSiteContent<{ rows: PageRow[] }>("page_rows", { rows: [] });
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const faqItems = extractFaqItems(normalizeRowsToV3(pageRowsData.rows || []) as any);
 
   usePageMeta({
     title: seo.meta_title || undefined,
     description: seo.meta_description || undefined,
+    faqSchema: faqItems.length > 0 ? faqItems : undefined,
   });
 
   // Slow, fluid glide for in-page anchor link clicks (Navbar items,

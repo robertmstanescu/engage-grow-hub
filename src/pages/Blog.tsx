@@ -7,6 +7,7 @@ import Footer from "@/features/site/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
+import PageBreadcrumbs from "@/features/site/PageBreadcrumbs";
 import { useImageTone } from "@/hooks/useImageTone";
 import type { PageRow } from "@/types/rows";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
@@ -178,6 +179,7 @@ const Blog = () => {
   usePageMeta({
     title: pageData.meta_title || pageData.header_title || "Blog",
     description: pageData.meta_description || pageData.header_subtitle || undefined,
+    breadcrumbs: [{ name: "Home", path: "/" }, { name: "Blog" }],
   });
 
   useEffect(() => {
@@ -213,6 +215,7 @@ const Blog = () => {
   return (
     <div className="min-h-screen page-shell">
       <Navbar />
+      <PageBreadcrumbs trail={[{ name: "Home", path: "/" }, { name: "Blog" }]} />
       {pageData.rows_above && pageData.rows_above.length > 0 && (
         <RowsRenderer rows={pageData.rows_above} promoteHeading={false} />
       )}

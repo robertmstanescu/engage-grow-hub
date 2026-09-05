@@ -58,7 +58,7 @@ interface RowLike {
 }
 
 /** Flatten a v3 row tree into its widgets, in document order. */
-const flattenWidgets = (rows: RowLike[]): WidgetLike[] =>
+export const flattenWidgets = (rows: RowLike[]): WidgetLike[] =>
   rows.flatMap((row) =>
     (row.columns || []).flatMap((column) =>
       (column.cells || []).flatMap((cell) => cell.widgets || []),
@@ -99,4 +99,37 @@ export const rowsProvideHeading = (rows: RowLike[]): boolean => {
     const lines = Array.isArray(data.title_lines) ? data.title_lines : [];
     return hasText(data.title) || hasText(data.heading) || lines.some((line) => hasText(line));
   });
+};
+
+/** Strip tags/entities down to plain text — schema.org's Question/Answer
+ *  `text` fields expect prose, not markup. */
+const stripToPlainText = (html: unknown): string =>
+  typeof html === "string"
+    ? html.replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim()
+    : "";
+
+export interface FaqSchemaItem {
+  question: string;
+  answer: string;
+}
+
+/**
+ * Pull every FAQ widget's question/answer pairs out of a page's rows,
+ * in document order, for a `FAQPage` JSON-LD block. Reuses the same v3
+ * tree-walk as heading promotion above rather than re-deriving it, so
+ * the two stay consistent as the row schema evolves.
+ */
+export const extractFaqItems = (rows: RowLike[]): FaqSchemaItem[] => {
+  const items: FaqSchemaItem[] = [];
+  for (const widget of flattenWidgets(rows)) {
+    if (widget.type !== "faq") continue;
+    const data = (widget.data || {}) as Record<string, unknown>;
+    const faqItems = Array.isArray(data.items) ? data.items : [];
+    for (const raw of faqItems as Array<{ question?: unknown; answer?: unknown }>) {
+      const question = typeof raw.question === "string" ? raw.question.trim() : "";
+      const answer = stripToPlainText(raw.answer);
+      if (question && answer) items.push({ question, answer });
+    }
+  }
+  return items;
 };

@@ -170,11 +170,19 @@ export const useSiteContentWithStatus = <T = any>(
   const query = useQuery({
     queryKey: siteContentQueryKey(sectionKey),
     queryFn: () => fetchSectionContent(sectionKey),
-    // ZERO-TRUST: never trust an in-memory snapshot — always revalidate.
-    // Safari's bfcache happily restores stale React-Query state across
-    // tab restores; staleTime: 0 + refetchOnMount: true forces a check
-    // on every mount so the live site mirrors the DB exactly.
-    staleTime: 0,
+    // Restored to the staleTime this hook's own top-of-file doc comment
+    // always said it used ("a generous staleTime (5 minutes)") — a later
+    // change had quietly overridden it to 0, which meant EVERY mount of
+    // EVERY section (navbar, footer, hero, page_rows…) on EVERY page
+    // view issued a fresh Postgres read, defeating react-query's cache
+    // almost entirely. That inflated Lovable Cloud's metered database
+    // read cost for no real freshness benefit: the Safari bfcache case
+    // this used to guard against is already handled independently by
+    // the reload-on-restore script in index.html (`window.onpageshow`),
+    // and an admin's OWN edits still land instantly via the explicit
+    // `invalidateSiteContent()` event below — this staleTime only governs
+    // how soon OTHER visitors' cached copies pick up a change.
+    staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
@@ -221,17 +229,18 @@ export const useSiteContent = <T = any>(sectionKey: string, fallback: T): T => {
   const { data } = useQuery({
     queryKey: siteContentQueryKey(sectionKey),
     queryFn: () => fetchSectionContent(sectionKey),
-    // ZERO-TRUST: data is stale on arrival. Cached value renders
-    // instantly (no flash) while a background fetch confirms it
-    // matches the database. This guarantees admin edits propagate to
-    // the public site on the very next mount/focus, even on Safari
-    // where bfcache otherwise preserves stale snapshots indefinitely.
-    staleTime: 0,
+    // See the matching comment in useSiteContentWithStatus above: this
+    // was overridden to 0 at some point, silently defeating react-query's
+    // cache on every single page mount and inflating Lovable Cloud's
+    // metered database-read cost. Restored to the 5-minute staleTime this
+    // file's top-of-file doc comment already claimed was in effect.
+    staleTime: 5 * 60 * 1000,
     // Keep in cache for 10 minutes so back-button navigation is instant
     // but we don't hold onto truly stale snapshots indefinitely.
     gcTime: 10 * 60 * 1000,
     // Refetch when the user returns to the tab — catches admin edits made
-    // elsewhere (e.g. publishing from /admin in another window).
+    // elsewhere (e.g. publishing from /admin in another window), once the
+    // cached copy is actually stale.
     refetchOnWindowFocus: true,
     // Always revalidate on mount.
     refetchOnMount: true,

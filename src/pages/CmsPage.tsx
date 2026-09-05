@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
-import { rowsProvideHeading } from "@/features/site/rows/PrimaryHeadingContext";
+import { rowsProvideHeading, extractFaqItems } from "@/features/site/rows/PrimaryHeadingContext";
+import PageBreadcrumbs, { type BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import type { PageRow } from "@/types/rows";
 import NotFound from "./NotFound";
@@ -55,6 +56,18 @@ const CmsPage = ({ prefix = "" }: { prefix?: string }) => {
 
   const isServicePage = Boolean(slug && (slug === "services" || slug.startsWith("services/")) && slug !== "services");
 
+  const rows: PageRow[] = livePreviewPage?.rows || (isPreview && page?.draft_page_rows ? page.draft_page_rows : (page?.page_rows || []));
+  const faqItems = extractFaqItems(normalizeRowsToV3(rows) as any);
+  const pageTitle: string = page?.title || livePreviewPage?.meta_title || "";
+
+  const breadcrumbTrail: BreadcrumbEntry[] = !pageTitle
+    ? []
+    : isServicePage
+      ? [{ name: "Home", path: "/" }, { name: "Services", path: "/services/" }, { name: pageTitle }]
+      : slug === "services"
+        ? [{ name: "Home", path: "/" }, { name: "Services" }]
+        : [{ name: "Home", path: "/" }, { name: pageTitle }];
+
   usePageMeta({
     title: livePreviewPage?.meta_title || page?.meta_title || page?.title || undefined,
     description: livePreviewPage?.meta_description || page?.meta_description || undefined,
@@ -63,6 +76,8 @@ const CmsPage = ({ prefix = "" }: { prefix?: string }) => {
       isServicePage && page?.title
         ? { name: page.title, description: page?.meta_description || undefined }
         : undefined,
+    faqSchema: faqItems.length > 0 ? faqItems : undefined,
+    breadcrumbs: breadcrumbTrail.length > 0 ? breadcrumbTrail : undefined,
   });
 
   useEffect(() => {
@@ -105,16 +120,22 @@ const CmsPage = ({ prefix = "" }: { prefix?: string }) => {
 
   if (notFound) return <NotFound />;
 
-  const rows: PageRow[] = livePreviewPage?.rows || (isPreview && page?.draft_page_rows ? page.draft_page_rows : (page?.page_rows || []));
-
-  const pageTitle: string = page?.title || livePreviewPage?.meta_title || "";
-
   return (
-    <CmsPageBody rows={rows} isPreview={isPreview} pageTitle={pageTitle} />
+    <CmsPageBody rows={rows} isPreview={isPreview} pageTitle={pageTitle} breadcrumbTrail={breadcrumbTrail} />
   );
 };
 
-const CmsPageBody = ({ rows, isPreview, pageTitle }: { rows: PageRow[]; isPreview: boolean; pageTitle: string }) => {
+const CmsPageBody = ({
+  rows,
+  isPreview,
+  pageTitle,
+  breadcrumbTrail,
+}: {
+  rows: PageRow[];
+  isPreview: boolean;
+  pageTitle: string;
+  breadcrumbTrail: BreadcrumbEntry[];
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   /* Content-only pages (a privacy policy is the classic case) carry no
      titled widget, so nothing can be promoted to <h1>. Print the page
@@ -132,6 +153,7 @@ const CmsPageBody = ({ rows, isPreview, pageTitle }: { rows: PageRow[]; isPrevie
         </div>
       )}
       {needsFallbackHeading && <h1 className="sr-only">{pageTitle}</h1>}
+      <PageBreadcrumbs trail={breadcrumbTrail} />
       <div>
         {rows.length === 0 ? (
           <>

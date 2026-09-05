@@ -26,4 +26,22 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+
+  build: {
+    rollupOptions: {
+      output: {
+        // Third-party deps (React, react-router, react-query, the
+        // Supabase client, Radix, lucide-react, DOMPurify…) rarely
+        // change between deploys; app code changes on almost every
+        // deploy. Without this, both were one bundle sharing one
+        // content hash, so every deploy forced a full re-download of
+        // megabytes of unchanged vendor code for returning visitors.
+        // Splitting them means a content-only deploy only invalidates
+        // the (much smaller) app chunk's cache.
+        manualChunks(id) {
+          if (id.includes("node_modules")) return "vendor";
+        },
+      },
+    },
+  },
 }));
