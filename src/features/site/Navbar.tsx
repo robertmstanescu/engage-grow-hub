@@ -285,7 +285,7 @@ const Navbar = () => {
               return (
                 <div
                   key={item.label}
-                  className="relative"
+                  className="relative flex items-center"
                   onMouseEnter={() => setOpenDropdown(item.label)}
                   onMouseLeave={() => setOpenDropdown(null)}
                 >
