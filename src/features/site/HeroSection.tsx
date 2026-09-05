@@ -124,7 +124,10 @@ const useFitTitleLines = (lineCount: number) => {
            to wrap instead of dragging the whole heading down to an
            illegible size; every other line stays on one line, and all
            lines share the single resulting size. */
-        const FLOOR = 0.5;
+        /* Legibility floor. On phones the fluid base is already small,
+           so we barely shrink and let long sentences wrap instead; on
+           desktop there is room to scale down to keep lines whole. */
+        const FLOOR = avail < 640 ? 0.85 : 0.5;
         const ratios = widths.filter((w) => w > 0).map((w) => (avail - 4) / w);
         const feasible = ratios.filter((r) => r >= FLOOR);
         let scale = feasible.length ? Math.min(1, Math.min(...feasible)) : FLOOR;
