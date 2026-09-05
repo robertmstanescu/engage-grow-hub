@@ -130,7 +130,7 @@ const useFitTitleLines = (lineCount: number) => {
            (a long opening sentence) is excluded from the calculation and
            wraps on its own; every other line stays unbroken and ALL
            lines share the single resulting size. */
-        const FLOOR = avail < 640 ? 0.55 : 0.42;
+        const FLOOR = avail < 640 ? 0.35 : 0.42;
         const ratios = widths.map((w) => (w > 0 ? usable / w : Infinity));
         const feasible = ratios.filter((r) => Number.isFinite(r) && r >= FLOOR);
         let scale = feasible.length ? Math.min(1, Math.min(...feasible)) : FLOOR;
