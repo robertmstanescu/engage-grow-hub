@@ -116,6 +116,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
                       <button
                         type="button"
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           if (isExternal(cardCtaUrl)) {
                             window.open(cardCtaUrl, "_blank", "noopener,noreferrer");
