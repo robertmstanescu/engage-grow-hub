@@ -21,6 +21,7 @@
 import type { PageRow } from "@/types/rows";
 import ImagePickerField from "@/features/admin/ImagePickerField";
 import RowSection from "./typography/RowSection";
+import { transformImageUrl, buildImageSrcSet } from "@/services/mediaOptimization";
 
 /* ---------- shared content shape -------------------------------- */
 export interface ImageRowContent {
@@ -68,9 +69,13 @@ const ImageRow = ({ row }: FrontendProps) => {
           bleed ? "self-stretch flex-1 flex flex-col min-h-0" : "row-container mx-auto max-w-[1280px]"
         }`}
       >
-        {/* Per acceptance criteria — strict element, no rewrites. */}
+        {/* Per acceptance criteria — strict element, no rewrites (the
+            src is CDN-transformed for size/format, not decoratively
+            wrapped — alt text is still exactly what the admin set). */}
         <img
-          src={data.url}
+          src={transformImageUrl(data.url, { width: 1920 })}
+          srcSet={buildImageSrcSet(data.url)}
+          sizes={bleed ? "100vw" : "(min-width: 1280px) 1280px, 100vw"}
           alt={data.alt_text || ""}
           className={cropped ? "w-full h-full flex-1 min-h-0 object-cover" : "w-full h-auto"}
           style={cropped ? { objectPosition } : undefined}

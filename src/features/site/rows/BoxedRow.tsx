@@ -9,6 +9,7 @@ import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 import Icon from "@/features/icons/Icon";
 import { pillarColorFromLink } from "@/lib/constants/pillarColors";
+import { trackConversion } from "@/services/conversions";
 
 /**
  * Smart link helper — internal anchors / paths stay in-tab, external
@@ -118,6 +119,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
+                          trackConversion("cta_click", cardCtaLabel);
                           if (isExternal(cardCtaUrl)) {
                             window.open(cardCtaUrl, "_blank", "noopener,noreferrer");
                           } else {
@@ -134,6 +136,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
                         target={isExternal(cardCtaUrl) ? "_blank" : undefined}
                         rel={isExternal(cardCtaUrl) ? "noopener noreferrer" : undefined}
                         className="btn-ink"
+                        onClick={() => trackConversion("cta_click", cardCtaLabel)}
                       >
                         {cardCtaLabel}
                       </a>

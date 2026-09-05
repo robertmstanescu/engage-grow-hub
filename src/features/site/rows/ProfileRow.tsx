@@ -8,6 +8,7 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { resolveImageAlt } from "@/services/imageAlt";
+import { transformImageUrl, buildImageSrcSet } from "@/services/mediaOptimization";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 // EPIC 1 / US 1.1 — atomic-node selection.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
@@ -84,7 +85,9 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                   // Profile photos sit below the fold on most pages —
                   // lazy-load + async decode keeps initial paint snappy.
                   <img
-                    src={c.image_url}
+                    src={transformImageUrl(c.image_url, { width: 800 })}
+                    srcSet={buildImageSrcSet(c.image_url)}
+                    sizes="(min-width: 768px) 40vw, 100vw"
                     alt={resolveImageAlt(c.image_alt, c.name || row.strip_title, "profile photo")}
                     className="w-full h-full object-cover"
                     loading="lazy"

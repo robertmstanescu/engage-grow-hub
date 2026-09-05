@@ -25,6 +25,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { fetchAssetById, getAssetPublicUrl, type MediaAsset } from "@/services/mediaLibrary";
 import { submitLeadAndGetDownload } from "@/services/leads";
+import { trackConversion } from "@/services/conversions";
 
 const CREAM = "hsl(var(--foreground))";
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -121,6 +122,7 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
     // keeps the article in their current tab.
     window.open(downloadUrl, "_blank", "noopener,noreferrer");
     toast.success("Thanks! Your download is opening in a new tab.");
+    trackConversion("lead_magnet_download", resource.title);
     setForm({ fullName: "", companyUniversity: "", title: "", email: "" });
   };
 

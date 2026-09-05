@@ -8,6 +8,7 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 
 import { getAttributionForPayload } from "@/services/attribution";
+import { trackConversion } from "@/services/conversions";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
@@ -58,6 +59,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
     });
     if (error) { toast.error("Something went wrong."); setSubmitting(false); return; }
     setSubmitted(true); setSubmitting(false); toast.success("Message sent!");
+    trackConversion("contact_form");
   };
 
   const containerPos = align === "center" ? "mx-auto"

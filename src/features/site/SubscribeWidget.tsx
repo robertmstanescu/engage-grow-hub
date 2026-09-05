@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getAttributionForPayload } from "@/services/attribution";
+import { trackConversion } from "@/services/conversions";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 type SubscribeWidgetAlignment = "left" | "center" | "right";
@@ -75,6 +76,7 @@ const SubscribeWidget = forwardRef<HTMLDivElement, SubscribeWidgetProps>(
         if (error) throw error;
         setDone(true);
         toast.success("You're subscribed!");
+        trackConversion("newsletter_signup");
       } catch {
         toast.error("Something went wrong. Please try again.");
       } finally {

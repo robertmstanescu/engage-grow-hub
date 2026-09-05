@@ -11,6 +11,13 @@ import { supabase } from "@/integrations/supabase/client";
 export interface SeoImageInput {
   /** Stable key the caller uses to map an accepted alt back to its field. */
   key: string;
+  /**
+   * Public image URL. When present, the edge function attaches the
+   * actual photo to the AI's request so alt text is grounded in what's
+   * really depicted, not just guessed from the placement label — pass
+   * it whenever the field's current value is a public URL.
+   */
+  url?: string;
   /** Human-readable placement, e.g. "cover image" or "row 2 image". */
   context?: string;
   /** Existing alt text, if any. */

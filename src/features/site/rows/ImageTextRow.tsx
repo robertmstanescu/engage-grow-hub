@@ -8,6 +8,7 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { resolveImageAlt } from "@/services/imageAlt";
+import { transformImageUrl, buildImageSrcSet } from "@/services/mediaOptimization";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 // EPIC 1 / US 1.1 — atomic-node selection.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
@@ -145,7 +146,9 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             // first paint. The browser only fetches them when the user
             // scrolls close, saving bandwidth on bounce visits.
             <img
-              src={c.image_url}
+              src={transformImageUrl(c.image_url, { width: 1200 })}
+              srcSet={buildImageSrcSet(c.image_url)}
+              sizes="(min-width: 768px) 50vw, 100vw"
               alt={resolveImageAlt(c.image_alt, c.title || row.strip_title, "section image")}
               className="w-full h-full object-cover"
               loading="lazy"

@@ -10,6 +10,7 @@ import SubscribeWidget from "@/features/site/SubscribeWidget";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
 import PageBreadcrumbs from "@/features/site/PageBreadcrumbs";
+import { transformImageUrl, buildImageSrcSet } from "@/services/mediaOptimization";
 import { useRedirectLookup } from "@/hooks/useRedirectLookup";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
 // US 17.x — blog posts can now be composed with the same widget builder
@@ -153,7 +154,9 @@ const BlogPost = () => {
           {article.cover_image && (
             <div className="relative w-full overflow-hidden aspect-video max-h-[70vh]">
               <img
-                src={article.cover_image}
+                src={transformImageUrl(article.cover_image, { width: 1920 })}
+                srcSet={buildImageSrcSet(article.cover_image)}
+                sizes="100vw"
                 alt={article.cover_image_alt || `${article.title} — cover image`}
                 className="w-full h-full object-cover"
                 style={{
@@ -180,9 +183,10 @@ const BlogPost = () => {
                     <>
                       {article.author_image && (
                         <img
-                          src={article.author_image}
+                          src={transformImageUrl(article.author_image, { width: 56 })}
                           alt={article.author_image_alt || article.author_name}
                           className="w-7 h-7 rounded-full object-cover"
+                          loading="lazy"
                         />
                       )}
                       <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>

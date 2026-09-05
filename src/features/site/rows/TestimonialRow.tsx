@@ -39,6 +39,7 @@ import type { TestimonialItem } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import { resolveImageAlt } from "@/services/imageAlt";
+import { transformImageUrl } from "@/services/mediaOptimization";
 import {
   Carousel,
   CarouselContent,
@@ -146,7 +147,7 @@ const TestimonialRow = ({
                   <div className="flex items-center gap-3 mt-auto">
                     {item.avatar ? (
                       <img
-                        src={item.avatar}
+                        src={transformImageUrl(item.avatar, { width: 96 })}
                         alt={resolveImageAlt(item.avatar_alt, item.name || "Client portrait")}
                         loading="lazy"
                         className="w-12 h-12 rounded-full object-cover border row-border"

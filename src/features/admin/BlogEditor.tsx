@@ -633,9 +633,9 @@ const BlogEditor = () => {
             knownTags={blogCategories}
             supports={{ tags: true, images: true }}
             images={[
-              ...(form.cover_image ? [{ key: "cover", context: "blog cover image", current: form.cover_image_alt }] : []),
-              ...(form.og_image ? [{ key: "og", context: "social share image", current: form.og_image_alt }] : []),
-              ...(form.author_image ? [{ key: "author", context: "author portrait", current: form.author_image_alt }] : []),
+              ...(form.cover_image ? [{ key: "cover", url: form.cover_image, context: "blog cover image", current: form.cover_image_alt }] : []),
+              ...(form.og_image ? [{ key: "og", url: form.og_image, context: "social share image", current: form.og_image_alt }] : []),
+              ...(form.author_image ? [{ key: "author", url: form.author_image, context: "author portrait", current: form.author_image_alt }] : []),
             ]}
             onApply={applySeoSuggestions}
           />

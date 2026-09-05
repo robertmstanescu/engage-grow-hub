@@ -10,6 +10,17 @@
  * Nothing is written to the database here — the client shows an
  * accept/reject panel and only persists what the admin keeps.
  *
+ * VISION: image_alts is grounded in the actual image, not just its
+ * placement label. Each image with a public `url` is attached to the
+ * model's user message as an `image_url` content part (the Lovable AI
+ * Gateway is OpenAI-Chat-Completions-compatible, so this is the
+ * standard multimodal format) alongside the page's title/body, so the
+ * model can describe what it actually sees AND relate it to the
+ * page/article's subject — e.g. "A candidate reading a rejection
+ * letter at a laptop, illustrating the hiring-bias study below" rather
+ * than a generic "person at a desk". Images without a usable public
+ * URL fall back to context-only guessing, same as before.
+ *
  * Model: google/gemini-2.5-flash-lite via the Lovable AI Gateway.
  */
 
@@ -82,11 +93,19 @@ Deno.serve(async (req) => {
     const kind = String(payload?.kind ?? "page").slice(0, 40);
     const siteName = String(payload?.siteName ?? "").slice(0, 120);
     const images: ImageInput[] = Array.isArray(payload?.images)
-      ? payload.images.slice(0, 12).map((i: ImageInput) => ({
-          key: String(i?.key ?? "").slice(0, 80),
-          context: String(i?.context ?? "").slice(0, 120),
-          current: String(i?.current ?? "").slice(0, 200),
-        }))
+      ? payload.images.slice(0, 12).map((i: ImageInput) => {
+          const rawUrl = String(i?.url ?? "").slice(0, 2000);
+          return {
+            key: String(i?.key ?? "").slice(0, 80),
+            context: String(i?.context ?? "").slice(0, 120),
+            current: String(i?.current ?? "").slice(0, 200),
+            // Only pass through URLs the model gateway can actually fetch —
+            // public http(s) URLs. Data URIs / blob URLs / relative paths
+            // are dropped rather than sent, since the gateway can't reach
+            // them and a broken image_url would fail the whole request.
+            url: /^https?:\/\//i.test(rawUrl) ? rawUrl : undefined,
+          };
+        })
       : [];
     const knownTags: string[] = Array.isArray(payload?.knownTags)
       ? payload.knownTags.slice(0, 60).map((t: unknown) => String(t).slice(0, 40))
@@ -96,20 +115,38 @@ Deno.serve(async (req) => {
       return json({ error: "Nothing to analyse yet — add a title or content first." }, 400);
     }
 
+    const imagesWithPhoto = images.filter((i) => i.url);
+    const imagesTextOnly = images.filter((i) => !i.url);
+
     const userParts = [
       `Content type: ${kind}`,
       siteName ? `Site: ${siteName}` : "",
       `Title: ${title}`,
       knownTags.length ? `Existing tag vocabulary (prefer reusing these when they fit): ${knownTags.join(", ")}` : "",
-      images.length
-        ? `Images needing alt text:\n${images
+      imagesTextOnly.length
+        ? `Images needing alt text (no photo attached — infer from placement/context only):\n${imagesTextOnly
             .map((i) => `- key=${i.key} | placement=${i.context || "unknown"} | current alt=${i.current || "(none)"}`)
             .join("\n")}`
+        : "",
+      imagesWithPhoto.length
+        ? "The images below are also attached as photos, each preceded by its key/placement/current-alt line — look at each one."
         : "",
       `\nBody:\n${content}`,
     ]
       .filter(Boolean)
       .join("\n");
+
+    // Multimodal content: the text context first, then each photographed
+    // image as its own "label line" + `image_url` part pair so the model
+    // can tie what it sees back to the right `key` in its response.
+    const userContent: Array<Record<string, unknown>> = [{ type: "text", text: userParts }];
+    for (const img of imagesWithPhoto) {
+      userContent.push({
+        type: "text",
+        text: `Image key=${img.key} | placement=${img.context || "unknown"} | current alt=${img.current || "(none)"}`,
+      });
+      userContent.push({ type: "image_url", image_url: { url: img.url } });
+    }
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -128,10 +165,15 @@ Deno.serve(async (req) => {
               "Read the supplied content and produce accurate, specific metadata grounded ONLY in that content. " +
               "No marketing fluff, no invented facts, no quotes, no markdown. " +
               "Meta title max 60 characters. Meta description 120-158 characters. AI summary 60-320 characters. " +
-              "Alt text describes what is visibly in / meant by the image in max 100 characters, never starting with 'image of'. " +
-              "Always call the emit_seo_suggestions function.",
+              "For any image attached as an actual photo, look at what is genuinely depicted and write alt text " +
+              "that describes it AND connects it to the page/article's topic where there's a real, honest " +
+              "connection to make (e.g. 'A candidate reading a rejection letter, illustrating the hiring-bias " +
+              "study below' rather than a generic 'person at a desk') — never invent a connection that isn't " +
+              "actually visible in the image. For images with no photo attached, infer alt text from the " +
+              "placement label and surrounding content only. Alt text max 100 characters, never starting with " +
+              "'image of'. Always call the emit_seo_suggestions function.",
           },
-          { role: "user", content: userParts },
+          { role: "user", content: userContent },
         ],
         tools: [SUGGESTION_TOOL],
         tool_choice: { type: "function", function: { name: "emit_seo_suggestions" } },

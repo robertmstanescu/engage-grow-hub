@@ -24,6 +24,7 @@ import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import { resolveImageAlt } from "@/services/imageAlt";
+import { transformImageUrl } from "@/services/mediaOptimization";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowSection } from "./typography";
 import RowNote from "./typography/RowNote";
@@ -66,7 +67,7 @@ const QuoteBandRow = ({
           >
             {c.avatar && (
               <img
-                src={c.avatar}
+                src={transformImageUrl(c.avatar, { width: 88 })}
                 alt={resolveImageAlt(c.avatar_alt, c.name || "Client portrait")}
                 loading="lazy"
                 className="w-11 h-11 rounded-full object-cover border border-current/20"
