@@ -234,37 +234,19 @@ const RowsManager = ({ rows, onChange }: Props) => {
   };
 
   const renderRowEditorForContent = (row: PageRow, content: Record<string, any>, onContentChange: (field: string, value: any) => void) => {
-    switch (row.type) {
-      case "hero":
-        return <HeroRowFields content={content} onChange={onContentChange} />;
-      case "text":
-        return <TextRowFields content={content} onChange={onContentChange} />;
-      case "service":
-        return (
-          <PillarEditor
-            pillarContent={content}
-            servicesContent={{ services: content.services || [] }}
-            onPillarChange={onContentChange}
-            onServicesChange={(svcs) => onContentChange("services", svcs)}
-          />
-        );
-      case "boxed":
-        return <BoxedRowFields content={content} onChange={onContentChange} />;
-      case "contact":
-        // ContactAdmin lives in `src/features/widgets/contact/` so the
-        // contact form is a self-contained, registry-driven widget
-        // (US 2.2). The legacy inline `ContactRowFields` further down
-        // this file is kept dormant for now to minimise diff risk.
-        return <ContactAdmin content={content} onChange={onContentChange} />;
-      case "image_text":
-        return <ImageTextEditor content={content} onChange={onContentChange} />;
-      case "profile":
-        return <ProfileEditor content={content} onChange={onContentChange} />;
-      case "grid":
-        return <GridEditor content={content} onChange={onContentChange} />;
-      default:
-        return null;
-    }
+    // Shared per-row-type editor dispatch — same switch the canvas
+    // InspectorPanel uses, so this list-style surface offers every row
+    // type (previously it silently rendered `null` for testimonial,
+    // logo_cloud, faq, proof_band, process_steps, quote_band, cta_band
+    // and lead_magnet).
+    return (
+      <RowTypeEditor
+        type={row.type}
+        content={content}
+        onChange={onContentChange}
+        legacySplitWidths={row.layout?.column_widths}
+      />
+    );
   };
 
   const sensors = useSensors(
