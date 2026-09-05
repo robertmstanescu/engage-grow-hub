@@ -72,7 +72,7 @@ const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
  *   never the <h1>'s own height — plus a hysteresis threshold, so tiny
  *   sub-pixel differences can't oscillate.
  */
-const useFitTitleLines = (lineCount: number) => {
+const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
   const h1Ref = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -159,7 +159,7 @@ const useFitTitleLines = (lineCount: number) => {
         h1.style.whiteSpace = "normal";
         /* Matches the container classes below: a foreground visual
            switches the wide-screen text column to left alignment. */
-        const leftAlign = Boolean(c.visual_image_url && c.visual_image_alt)
+        const leftAlign = leftAligned
           && window.matchMedia("(min-width: 1280px)").matches;
         h1.querySelectorAll<HTMLElement>("span.block").forEach((line, i) => {
           const r = ratios[i];
