@@ -149,7 +149,20 @@ const useFitTitleLines = (lineCount: number) => {
         h1.style.whiteSpace = "normal";
         h1.querySelectorAll<HTMLElement>("span.block").forEach((line, i) => {
           const r = ratios[i];
-          line.style.whiteSpace = Number.isFinite(r) && r < FLOOR ? "normal" : "nowrap";
+          const wraps = Number.isFinite(r) && r < FLOOR;
+          line.style.whiteSpace = wraps ? "normal" : "nowrap";
+          /* A line that must wrap would otherwise fill the whole box and
+             kiss the edges before breaking. Cap its width at ~60% of its
+             natural (scaled) width so it breaks near the middle into two
+             balanced lines with breathing room on both sides. */
+          if (wraps) {
+            const scaledW = widths[i] * scale;
+            line.style.maxWidth = `${Math.min(usable, Math.ceil(scaledW * 0.6))}px`;
+            line.style.marginInline = "auto";
+          } else {
+            line.style.maxWidth = "";
+            line.style.marginInline = "";
+          }
         });
 
 
