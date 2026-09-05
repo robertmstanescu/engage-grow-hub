@@ -7,6 +7,7 @@ I audited the cover-image feature across the site renderers, all three admin edi
 ## What already works
 
 - Every row type that should have one **does** render the photo-card treatment when a cover image is set, and renders completely unchanged when it's empty: text, service, boxed, grid, lead magnet, testimonial, logo cloud, FAQ, proof band, process steps, quote band, CTA band, contact. The hero uses its own side visual instead, as intended.
+- The fading banner spans the **full width** of the row's card, and its top corners match each row's own rounding (subtle / medium / dramatic), so it reads as one continuous card. The hero is intentionally excluded from this treatment.
 - Cover images **are** saved and do reach the live site — the picture and its description are stored with the row's own content, so nothing extra was needed there.
 - In the click-on-the-canvas editor (both the homepage editor and "Edit in Builder" on a page), the "Cover Image (optional)" picker with description box is present for every row type listed above, and the hero shows "Foreground Visual (optional)".
 
