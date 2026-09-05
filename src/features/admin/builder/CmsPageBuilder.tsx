@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { PageRow } from "@/types/rows";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
+import { deepEqual } from "@/lib/deepEqual";
 import {
   findMissingAltViolations,
   formatAltMissingMessage,
@@ -100,8 +101,8 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
   }, [load]);
 
   const initialSnapshot = useMemo(() => {
-    if (!record) return "";
-    return JSON.stringify({
+    if (!record) return null;
+    return {
       rows: record.draft_page_rows || record.page_rows || [],
       meta_title: record.meta_title || "",
       meta_description: record.meta_description || "",
@@ -110,11 +111,11 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
       visibility: contentState(record.status, record.publish_at),
       publish_at: record.publish_at,
       expiry_at: record.expiry_at,
-    });
+    };
   }, [record]);
 
   const currentSnapshot = useMemo(
-    () => JSON.stringify({
+    () => ({
       rows: draftRows,
       meta_title: seoTitle,
       meta_description: seoDescription,
@@ -127,7 +128,12 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
     [draftRows, seoTitle, seoDescription, pageTitle, pageSlug, visibility, publishAt, expiryAt],
   );
 
-  const hasChanges = !!record && initialSnapshot !== currentSnapshot;
+  // deepEqual, not JSON.stringify(a) !== JSON.stringify(b): the latter is
+  // key-order-sensitive, and `rows` here can come from two different code
+  // paths (a fresh DB read vs. locally-edited state) that don't guarantee
+  // identical key ordering even when the data is identical — which
+  // produced false "unsaved changes" prompts with no real edit behind them.
+  const hasChanges = !!record && !deepEqual(initialSnapshot, currentSnapshot);
 
   // Debug Story 4.2 — block tab close / reload while the local draft
   // hasn't been pushed to the database yet.

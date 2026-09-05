@@ -20,6 +20,7 @@ import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROWS } from "@/lib/constants/rowDefaults";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
+import { deepEqual } from "@/lib/deepEqual";
 import {
   findMissingAltViolations,
   formatAltMissingMessage,
@@ -125,7 +126,7 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
 
   const rowsSection = getSection("page_rows");
   const hasTimingChanges = visibility !== savedVisibility || publishAt !== (rowsSection?.publish_at ?? null) || expiryAt !== (rowsSection?.expiry_at ?? null);
-  const hasChanges = hasTimingChanges || sections.some((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
+  const hasChanges = hasTimingChanges || sections.some((s) => !deepEqual(s.draft_content, s.content));
   useEffect(() => { onDirtyChange?.(hasChanges); }, [hasChanges, onDirtyChange]);
   // Clear the parent's dirty flag on unmount so switching away from a
   // clean state never leaves a stale "unsaved changes" guard armed.
@@ -145,7 +146,7 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
    * single batch — the only path from in-memory edits to the database.
    */
   const onSaveDraft = useCallback(async () => {
-    const dirty = sections.filter((s) => JSON.stringify(s.draft_content) !== JSON.stringify(s.content));
+    const dirty = sections.filter((s) => !deepEqual(s.draft_content, s.content));
     if (dirty.length === 0 && !hasTimingChanges) {
       toast.info("Nothing to save");
       return;
