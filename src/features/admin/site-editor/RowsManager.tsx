@@ -9,12 +9,8 @@ import ColumnWidthControl from "./ColumnWidthControl";
 import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea, ColorField } from "./FieldComponents";
 import ImagePickerField from "../ImagePickerField";
 import TitleLineEditor from "./TitleLineEditor";
-import PillarEditor from "./PillarEditor";
 import SubtitleEditor from "./SubtitleEditor";
-import ImageTextEditor from "./ImageTextEditor";
-import ProfileEditor from "./ProfileEditor";
-import GridEditor from "./GridEditor";
-import ContactAdmin from "@/features/widgets/contact/ContactAdmin";
+import RowTypeEditor from "../editors/RowTypeEditor";
 import WidgetSettingsDrawer from "./WidgetSettingsDrawer";
 import {
   DndContext,
