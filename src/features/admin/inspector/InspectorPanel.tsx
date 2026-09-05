@@ -483,8 +483,9 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     const updateDesignField = (field: BoxField, value: number) =>
       writeDesign({ [field]: value } as Partial<typeof design>);
 
-    /* Resolve the per-widget admin editor — registry first, then a
-     * legacy switch for widgets that haven't been ported yet. The
+    /* Resolve the per-widget admin editor — registry first, then the
+     * shared per-row-type switch (RowTypeEditor, also used by the
+     * list-style RowsManager so both surfaces stay in lock-step). The
      * resulting node renders inside the Content tab. */
     const def = getWidget(widgetType as any);
     const contentEditor = def?.adminComponent
@@ -492,65 +493,16 @@ const InspectorPanel = (props: InspectorPanelProps) => {
           const Admin = def.adminComponent!;
           return <Admin content={widgetContent} onChange={updateWidgetField} />;
         })()
-      : (() => {
-          switch (widgetType) {
-            case "hero":
-              return <HeroRowFields content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-            case "service":
-              return (
-                <PillarEditor
-                  pillarContent={widgetContent}
-                  servicesContent={{ services: widgetContent.services || [] }}
-                  onPillarChange={updateWidgetField}
-                  onServicesChange={(svcs) => updateWidgetField("services", svcs)}
-                  bgColor={parentRowBg}
-                />
-              );
-            case "contact":
-              return <ContactAdmin content={widgetContent} onChange={updateWidgetField} />;
-            case "image_text":
-              return (
-                <ImageTextEditor
-                  content={widgetContent}
-                  onChange={updateWidgetField}
-                  bgColor={parentRowBg}
-                  legacySplitWidths={(pageRows[loc.rowIdx] as PageRow).layout?.column_widths}
-                />
-              );
-            case "profile":
-              return <ProfileEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-            case "grid":
-              return <GridEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-            case "text":
-              return <TextRowEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-            case "boxed":
-              return <BoxedRowEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-            case "lead_magnet":
-              return <LeadMagnetEditor content={widgetContent} onChange={replaceWidgetContent} />;
-            case "logo_cloud":
-              return <LogoCloudEditor content={widgetContent} onChange={updateWidgetField} />;
-            case "vows":
-              return <VowsEditor content={widgetContent} onChange={updateWidgetField} />;
-            case "testimonial":
-              return <TestimonialEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-            case "faq":
-              return <FaqEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-            case "proof_band":
-              return <ProofBandEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-            case "process_steps":
-              return <ProcessStepsEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-            case "quote_band":
-              return <QuoteBandEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-            case "cta_band":
-              return <CtaBandEditor content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-            case "image":
-              return <ImageRowAdmin content={widgetContent as any} onChange={updateWidgetField} />;
-            default:
-              /* Unknown / future row types still get the standard header
-                 fields rather than a dead end. */
-              return <BrandHeaderFields content={widgetContent} onChange={updateWidgetField} bgColor={parentRowBg} />;
-          }
-        })();
+      : (
+        <RowTypeEditor
+          type={widgetType}
+          content={widgetContent}
+          onChange={updateWidgetField}
+          onReplaceContent={replaceWidgetContent}
+          bgColor={parentRowBg}
+          legacySplitWidths={(pageRows[loc.rowIdx] as PageRow).layout?.column_widths}
+        />
+      );
 
     const widgetLabel = def?.label || widgetType;
 
