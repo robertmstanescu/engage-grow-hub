@@ -504,7 +504,7 @@ export const HeroView = ({
               <Field
                 fieldPath="subtitle"
                 as="p"
-                className="leading-tight max-w-[600px] mx-auto"
+                className={`leading-tight max-w-[600px] mx-auto ${hasVisual ? "xl:mx-0" : ""}`}
                 style={{
                   fontFamily: "'Architects Daughter', cursive",
                   color: c.subtitle_color || "hsl(var(--hero-body))",
@@ -525,7 +525,7 @@ export const HeroView = ({
                 fieldPath="body"
                 html
                 as="div"
-                className="font-body max-w-[640px] mx-auto leading-relaxed"
+                className={`font-body max-w-[640px] mx-auto leading-relaxed ${hasVisual ? "xl:mx-0" : ""}`}
                 style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "var(--fs-hero-body)" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
               />
