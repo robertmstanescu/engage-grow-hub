@@ -39,27 +39,7 @@ import RowStyleTab from "../editors/RowStyleTab";
 // `adminComponent` via the WidgetRegistry, that wins (US 16.1 dev note).
 // Otherwise we fall back to this map so older row types still get
 // usable settings until they're migrated to self-registering widgets.
-import HeroRowFields from "../site-editor/HeroEditor";
-import PillarEditor from "../site-editor/PillarEditor";
-import ImageTextEditor from "../site-editor/ImageTextEditor";
-import ProfileEditor from "../site-editor/ProfileEditor";
-import GridEditor from "../site-editor/GridEditor";
-import ContactAdmin from "@/features/widgets/contact/ContactAdmin";
-import TextRowEditor from "../site-editor/TextRowEditor";
-import BoxedRowEditor from "../site-editor/BoxedRowEditor";
-import LeadMagnetEditor from "../site-editor/LeadMagnetEditor";
-import VowsEditor from "../site-editor/VowsEditor";
-import {
-  LogoCloudEditor,
-  BrandHeaderFields,
-  TestimonialEditor,
-  FaqEditor,
-  ProofBandEditor,
-  ProcessStepsEditor,
-  QuoteBandEditor,
-  CtaBandEditor,
-} from "../editors/NewRowEditors";
-import { ImageRowAdmin } from "@/features/site/rows/ImageRow";
+import RowTypeEditor from "../editors/RowTypeEditor";
 
 /* ════════════════════════════════════════════════════════════════════
  * InspectorPanel — US 16.1
