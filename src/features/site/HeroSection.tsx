@@ -72,7 +72,7 @@ const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
  *   never the <h1>'s own height — plus a hysteresis threshold, so tiny
  *   sub-pixel differences can't oscillate.
  */
-const useFitTitleLines = (lineCount: number) => {
+const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
   const h1Ref = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -157,6 +157,10 @@ const useFitTitleLines = (lineCount: number) => {
            line switched the whole heading to wrapping, which let short
            key lines ("We bring the coffin.") break too. */
         h1.style.whiteSpace = "normal";
+        /* Matches the container classes below: a foreground visual
+           switches the wide-screen text column to left alignment. */
+        const leftAlign = leftAligned
+          && window.matchMedia("(min-width: 1280px)").matches;
         h1.querySelectorAll<HTMLElement>("span.block").forEach((line, i) => {
           const r = ratios[i];
           const wraps = Number.isFinite(r) && r < FLOOR;
@@ -168,7 +172,10 @@ const useFitTitleLines = (lineCount: number) => {
           if (wraps) {
             const scaledW = widths[i] * scale;
             line.style.maxWidth = `${Math.min(usable, Math.ceil(scaledW * 0.6))}px`;
-            line.style.marginInline = "auto";
+            /* Wide screens with a foreground visual left-align the text
+               column (see the container classes below) — a wrapped line
+               must hug the left edge there instead of centering. */
+            line.style.marginInline = leftAlign ? "0 auto" : "auto";
           } else {
             line.style.maxWidth = "";
             line.style.marginInline = "";
@@ -194,7 +201,7 @@ const useFitTitleLines = (lineCount: number) => {
       ro.disconnect();
       window.removeEventListener("resize", fit);
     };
-  }, [lineCount]);
+  }, [lineCount, leftAligned]);
 
   return h1Ref;
 };
@@ -276,7 +283,7 @@ export const HeroView = ({
 
   /* Per-line shrink-to-fit so no title line ever wraps unintentionally
      (see useFitTitleLines above). */
-  const titleRef = useFitTitleLines(titleLines.length);
+  const titleRef = useFitTitleLines(titleLines.length, hasVisual);
 
   /**
    * Cold-load guard — `isLoading` is an explicit prop the caller
@@ -440,7 +447,7 @@ export const HeroView = ({
           and consistent instead of vh-driven, keeping the layout clean at
           every breakpoint while the headline stays poster-sized.
         */}
-        <div className={`flex w-full min-w-0 flex-col items-center gap-6 ${hasVisual ? "xl:flex-1" : ""}`}>
+        <div className={`flex w-full min-w-0 flex-col items-center gap-6 ${hasVisual ? "xl:flex-1 xl:items-start xl:text-left" : ""}`}>
 
           {leading}
           {c.label && (
@@ -497,7 +504,7 @@ export const HeroView = ({
               <Field
                 fieldPath="subtitle"
                 as="p"
-                className="leading-tight max-w-[600px] mx-auto"
+                className={`leading-tight max-w-[600px] mx-auto ${hasVisual ? "xl:mx-0" : ""}`}
                 style={{
                   fontFamily: "'Architects Daughter', cursive",
                   color: c.subtitle_color || "hsl(var(--hero-body))",
@@ -518,7 +525,7 @@ export const HeroView = ({
                 fieldPath="body"
                 html
                 as="div"
-                className="font-body max-w-[640px] mx-auto leading-relaxed"
+                className={`font-body max-w-[640px] mx-auto leading-relaxed ${hasVisual ? "xl:mx-0" : ""}`}
                 style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "var(--fs-hero-body)" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
               />
