@@ -999,6 +999,18 @@ const HeroRowFields = ({ content, onChange }: { content: Record<string, any>; on
           <Field label="Video URL" value={content.bg_url || ""} onChange={(v) => onChange("bg_url", v)} />
         )}
       </SectionBox>
+      {/* Separate from the full-bleed Background above — a small
+          foreground photo card next to the text (HeroSection.tsx's
+          `hasVisual` layout). Both fields are required together. */}
+      <SectionBox label="Foreground Visual (optional)">
+        <ImagePickerField
+          label="Visual Image"
+          value={content.visual_image_url || ""}
+          onChange={(v) => onChange("visual_image_url", v)}
+          altValue={content.visual_image_alt || ""}
+          onAltChange={(v) => onChange("visual_image_alt", v)}
+        />
+      </SectionBox>
     </div>
   );
 };
@@ -1017,6 +1029,13 @@ const TextRowFields = ({ content, onChange }: { content: Record<string, any>; on
         onColorChange={(v) => onChange("subtitle_color", v)}
       />
       <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
+      <ImagePickerField
+        label="Cover Image (optional)"
+        value={content.cover_image || ""}
+        onChange={(v) => onChange("cover_image", v)}
+        altValue={content.cover_image_alt || ""}
+        onAltChange={(v) => onChange("cover_image_alt", v)}
+      />
     </div>
   );
 };
@@ -1044,6 +1063,13 @@ const BoxedRowFields = ({ content, onChange }: { content: Record<string, any>; o
       />
       <ColorField label="Card Title Color" description="Color of card titles in this section" value={content.color_card_title || ""} fallback="" onChange={(v) => onChange("color_card_title", v)} />
       <ColorField label="Card Body Color" description="Color of card body text" value={content.color_card_body || ""} fallback="" onChange={(v) => onChange("color_card_body", v)} />
+      <ImagePickerField
+        label="Cover Image (optional)"
+        value={content.cover_image || ""}
+        onChange={(v) => onChange("cover_image", v)}
+        altValue={content.cover_image_alt || ""}
+        onAltChange={(v) => onChange("cover_image_alt", v)}
+      />
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Cards (max 6)</label>
