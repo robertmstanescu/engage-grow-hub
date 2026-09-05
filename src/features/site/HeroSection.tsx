@@ -201,7 +201,7 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
       ro.disconnect();
       window.removeEventListener("resize", fit);
     };
-  }, [lineCount]);
+  }, [lineCount, leftAligned]);
 
   return h1Ref;
 };
