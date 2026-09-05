@@ -60,28 +60,43 @@ const useFitTitleLines = (lineCount: number) => {
     const h1 = h1Ref.current;
     if (!h1) return;
     let raf = 0;
-    /* Each line's natural (never-shrunk) font size + text width,
-       measured once and cached. CRITICAL: fit() must never reset a
-       line's fontSize before measuring it on every call — resetting to
-       the full fluid size briefly grows that line's height, which
-       changes the <h1>'s own rendered size, which re-triggers the
-       ResizeObserver watching the <h1> below. That produced an infinite
-       feedback loop — the title's font-size flickering between its
-       full and shrunk values dozens of times a second, forever, on any
-       page whose title needed shrinking at all. Measuring the natural
-       size once (before any shrink has ever been applied) and reusing
-       it, combined with only writing fontSize when the computed value
-       actually differs from what's already applied, keeps this
-       convergent: once a line's size stabilises, fit() becomes a
-       no-op read and the observer has nothing left to react to. */
-    let naturals = new WeakMap<HTMLElement, { base: number; need: number }>();
 
+    /* Measure a line's NATURAL (unshrunk) font size + text width via a
+       hidden clone, absolutely positioned INSIDE the real <h1> — never
+       the live line itself. Two failure modes this avoids:
+       1) Clearing the LIVE line's fontSize to measure it (the previous
+          approach) briefly grows that line's height, which changes the
+          <h1>'s own rendered size, which re-triggers the very
+          ResizeObserver watching the <h1> below: an infinite feedback
+          loop that visibly re-flowed the title dozens of times a
+          second, forever.
+       2) Caching that natural measurement once (the previous fix for
+          #1) stopped the loop but could go stale: --fs-hero-title is a
+          fluid clamp() driven by viewport width, so a measurement taken
+          moments after mount (e.g. before a webfont swap or a
+          sub-pixel layout settle) could permanently under-measure a
+          borderline line's width by a few px — which is exactly why
+          "We bring the coffin." stopped fitting on one line even
+          though the shrink math would have chosen to shrink it.
+       A clone positioned `absolute` is excluded from the <h1>'s own
+       size calculations (so it can't retrigger the observer), but as a
+       CHILD of the real <h1> it still inherits the same font classes
+       and the real --fs-hero-title value — so it's safe AND accurate
+       to remeasure on every call, same as the original always-fresh
+       behaviour, without the loop. */
     const measureNatural = (line: HTMLElement) => {
-      const prevWhiteSpace = line.style.whiteSpace;
-      line.style.whiteSpace = "nowrap";
-      const base = parseFloat(getComputedStyle(line).fontSize);
-      const need = line.scrollWidth;
-      line.style.whiteSpace = prevWhiteSpace;
+      const clone = line.cloneNode(true) as HTMLElement;
+      clone.style.position = "absolute";
+      clone.style.visibility = "hidden";
+      clone.style.pointerEvents = "none";
+      clone.style.whiteSpace = "nowrap";
+      clone.style.fontSize = "";
+      clone.style.top = "0";
+      clone.style.left = "0";
+      h1.appendChild(clone);
+      const base = parseFloat(getComputedStyle(clone).fontSize);
+      const need = clone.scrollWidth;
+      h1.removeChild(clone);
       return { base, need };
     };
 
@@ -91,20 +106,26 @@ const useFitTitleLines = (lineCount: number) => {
         const avail = h1.clientWidth;
         if (!avail) return;
         h1.querySelectorAll<HTMLElement>("span.block").forEach((line) => {
-          let natural = naturals.get(line);
-          if (!natural) {
-            natural = measureNatural(line);
-            naturals.set(line, natural);
-          }
-          const { base, need } = natural;
+          const { base, need } = measureNatural(line);
           /* Shrink to fit — but only if the line fits within a 70%
              floor. A line too long even at the floor (e.g. a long
              first sentence) stays at FULL size and wraps naturally;
              shorter lines like "We bring the coffin." shrink just
              enough to stay intact on one line. -1px guards against
-             sub-pixel rounding pushing us over. */
+             sub-pixel rounding pushing us over.
+             MARGIN below: a line sitting within a handful of px of
+             `avail` (e.g. 1042 vs. 1036) is a genuinely unstable
+             boundary — sub-pixel font rendering can measure it as
+             fitting on one pass and not on the next, since `avail`
+             changes on browser resize but the true, precise text width
+             from a font's hinting/kerning can shift by a couple of
+             px between renders even at the identical width. Treating
+             "within 8px of overflowing" the same as "overflowing"
+             means a borderline line reliably gets a barely-noticeable
+             nudge down instead of gambling on which side of the line
+             a given render lands on. */
           let target = "";
-          if (need > avail) {
+          if (need > avail - 8) {
             const scale = avail / need;
             if (scale >= 0.7) target = `${Math.floor(base * scale) - 1}px`;
           }
@@ -116,13 +137,8 @@ const useFitTitleLines = (lineCount: number) => {
     const ro = new ResizeObserver(fit);
     ro.observe(h1);
     /* Re-fit once webfonts finish loading — metrics change when the
-       display font swaps in. The cached natural measurements were taken
-       against the fallback font, so they're stale; drop them and
-       re-measure once against the real font. */
-    (document as any).fonts?.ready?.then(() => {
-      naturals = new WeakMap();
-      fit();
-    });
+       display font swaps in. */
+    (document as any).fonts?.ready?.then(fit);
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
