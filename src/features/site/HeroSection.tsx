@@ -124,13 +124,10 @@ const useFitTitleLines = (lineCount: number) => {
            to wrap instead of dragging the whole heading down to an
            illegible size; every other line stays on one line, and all
            lines share the single resulting size. */
-        const FLOOR = 0.62;
+        const FLOOR = 0.5;
         const ratios = widths.filter((w) => w > 0).map((w) => (avail - 4) / w);
         const feasible = ratios.filter((r) => r >= FLOOR);
-        /* If NO line can stay whole (very narrow screens), keep the full
-           poster size and let the copy wrap — shrinking would only make
-           it small AND wrapped. */
-        let scale = feasible.length ? Math.min(1, Math.min(...feasible)) : 1;
+        let scale = feasible.length ? Math.min(1, Math.min(...feasible)) : FLOOR;
         /* floor, never round up — rounding up re-introduces a 1-2px
            overflow that clips the last glyph. */
         scale = Math.max(FLOOR, Math.floor(scale * 100) / 100);
