@@ -22,6 +22,9 @@ The plain list editor used for a blog post's "rows above/below content" (and the
 **3. Duplicated editors.**
 The text row and boxed row each have two separate editor implementations (one in the list editor file, one shared). Both happen to have the cover field today, but they will drift.
 
+**4. Hero text stays centered when a side visual is set.**
+When a hero has a foreground visual, the text column still renders centered (`items-center text-center`) on wide screens. It should align left next to the visual.
+
 ## The fix
 
 1. Rewrite the publish check so it walks the current nested content format (reusing the existing helper the project already has for this), so it inspects every widget on the page regardless of which of the three historical formats a page was saved in. Keep it as a hard stop before anything is written, in all three publish flows (homepage, pages, blog posts).
