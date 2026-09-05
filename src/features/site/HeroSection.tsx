@@ -157,6 +157,10 @@ const useFitTitleLines = (lineCount: number) => {
            line switched the whole heading to wrapping, which let short
            key lines ("We bring the coffin.") break too. */
         h1.style.whiteSpace = "normal";
+        /* Matches the container classes below: a foreground visual
+           switches the wide-screen text column to left alignment. */
+        const leftAlign = Boolean(c.visual_image_url && c.visual_image_alt)
+          && window.matchMedia("(min-width: 1280px)").matches;
         h1.querySelectorAll<HTMLElement>("span.block").forEach((line, i) => {
           const r = ratios[i];
           const wraps = Number.isFinite(r) && r < FLOOR;
