@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
-import Icon from "@/features/icons/Icon";
 import {
   buildImageSrcSet,
   buildPosterUrl,
@@ -555,7 +554,7 @@ export const HeroView = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.65, ease }}
-            className="relative mx-auto w-full max-w-sm xl:mx-0 xl:w-[340px] xl:flex-shrink-0"
+            className="relative hidden xl:block w-full xl:w-[340px] xl:flex-shrink-0"
           >
             <div
               className="relative w-full overflow-hidden"
@@ -574,20 +573,6 @@ export const HeroView = ({
                 loading="eager"
                 decoding="async"
               />
-            </div>
-            {/* Decorative mark, overlapping the frame's top-right corner. */}
-            <div
-              className="absolute flex items-center justify-center rounded-full"
-              style={{
-                top: "-0.75rem",
-                right: "-0.75rem",
-                width: "2.75rem",
-                height: "2.75rem",
-                backgroundColor: "hsl(var(--background))",
-                boxShadow: "var(--shadow-soft)",
-              }}
-            >
-              <Icon value="lucide:Sparkles" size={20} color="#E5C54F" />
             </div>
           </motion.div>
         )}

@@ -220,7 +220,7 @@ const Blog = () => {
         <RowsRenderer rows={pageData.rows_above} promoteHeading={false} />
       )}
 
-      <section className="grain relative pt-36 pb-16 text-center">
+      <section className="grain relative pt-36 pb-8 text-center">
         <div className="relative z-10 max-w-[800px] mx-auto px-8">
           <h1
             className="font-display text-3xl md:text-5xl font-black leading-tight mb-5"
@@ -237,7 +237,7 @@ const Blog = () => {
         </div>
       </section>
 
-      <section className="py-20 px-8">
+      <section className="pt-6 pb-20 px-8">
         <div className="max-w-[1200px] mx-auto">
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
             <div className="flex-1 min-w-0">
@@ -357,7 +357,7 @@ const CategoryButton = ({
 }) => (
   <button
     onClick={onClick}
-    className="w-full flex items-center justify-between px-3 py-2 rounded-lg font-body text-sm transition-all"
+    className="w-full flex items-start justify-between gap-3 px-3 py-2 rounded-lg font-body text-sm transition-all"
     style={{
       opacity: selected ? 1 : 0.55,
       fontWeight: selected ? 700 : 400,
@@ -365,9 +365,9 @@ const CategoryButton = ({
       color: selected ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
     }}
   >
-    <span>{label}</span>
+    <span className="text-left leading-snug">{label}</span>
     <span
-      className="text-xs px-2 py-0.5 rounded-full"
+      className="text-xs px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5"
       style={{
         backgroundColor: selected ? "hsl(var(--accent) / 0.2)" : "hsl(var(--muted) / 0.5)",
         color: selected ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
