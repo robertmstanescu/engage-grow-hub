@@ -10,6 +10,7 @@
 import { useEffect, useState } from "react";
 import { fetchAllAssets, type MediaAsset, isImageMime } from "@/services/mediaLibrary";
 import { DeferredInput, DeferredTextarea } from "./DeferredInput";
+import ImagePickerField from "../ImagePickerField";
 
 interface Props {
   content: Record<string, any>;
@@ -108,6 +109,18 @@ const LeadMagnetEditor = ({ content, onChange }: Props) => {
           placeholder="Defaults to asset description"
         />
       </div>
+
+      {/* Distinct from "Cover image" above — that one is the resource
+          widget's own cover art. This is the row-level photo-card
+          treatment (RowCoverCard, src/features/site/RowCoverCard.tsx)
+          that wraps the whole widget when set. */}
+      <ImagePickerField
+        label="Row Cover Image (optional)"
+        value={content.cover_image || ""}
+        onChange={(v) => update({ cover_image: v })}
+        altValue={content.cover_image_alt || ""}
+        onAltChange={(v) => update({ cover_image_alt: v })}
+      />
     </div>
   );
 };

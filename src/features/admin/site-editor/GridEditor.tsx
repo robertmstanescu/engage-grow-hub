@@ -3,6 +3,7 @@ import { SectionBox, Field, RichField, ColorField } from "./FieldComponents";
 import { DeferredTextarea } from "./DeferredInput";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
+import ImagePickerField from "../ImagePickerField";
 
 interface Props {
   content: Record<string, any>;
@@ -63,6 +64,16 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
         </div>
         <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onChange("subtitle", v)} onColorChange={(v) => onChange("subtitle_color", v)} />
         <RichField label="Description" value={content.description || ""} onChange={(v) => onChange("description", v)} bgColor={bgColor} />
+      </SectionBox>
+
+      <SectionBox label="Cover Image">
+        <ImagePickerField
+          label="Cover Image (optional)"
+          value={content.cover_image || ""}
+          onChange={(v) => onChange("cover_image", v)}
+          altValue={content.cover_image_alt || ""}
+          onAltChange={(v) => onChange("cover_image_alt", v)}
+        />
       </SectionBox>
 
       {/* Stats (fixed 3) */}

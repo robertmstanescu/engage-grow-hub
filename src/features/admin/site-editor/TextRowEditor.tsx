@@ -9,6 +9,7 @@
 import { Field, RichField } from "./FieldComponents";
 import SubtitleEditor from "./SubtitleEditor";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
+import ImagePickerField from "../ImagePickerField";
 
 interface Props {
   content: Record<string, any>;
@@ -34,6 +35,13 @@ const TextRowEditor = ({ content, onChange, bgColor }: Props) => {
       />
       <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
       <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
+      <ImagePickerField
+        label="Cover Image (optional)"
+        value={content.cover_image || ""}
+        onChange={(v) => onChange("cover_image", v)}
+        altValue={content.cover_image_alt || ""}
+        onAltChange={(v) => onChange("cover_image_alt", v)}
+      />
     </div>
   );
 };

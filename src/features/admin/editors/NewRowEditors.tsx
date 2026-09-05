@@ -99,6 +99,16 @@ export const BrandHeaderFields = ({
           onChange={(v) => onChange("color_note", v)}
         />
       </div>
+      {/* Optional cover image (RowCoverCard, src/features/site/RowCoverCard.tsx)
+          — wraps this section's header + content in a photo-card treatment
+          when set. Leave empty and the row renders exactly as before. */}
+      <ImagePickerField
+        label="Cover Image (optional)"
+        value={content.cover_image || ""}
+        onChange={(v) => onChange("cover_image", v)}
+        altValue={content.cover_image_alt || ""}
+        onAltChange={(v) => onChange("cover_image_alt", v)}
+      />
     </SectionBox>
   );
 };
@@ -394,6 +404,15 @@ export const QuoteBandEditor = ({
         onChange={(v) => onChange("avatar", v)}
         altValue={content.avatar_alt || ""}
         onAltChange={(v) => onChange("avatar_alt", v)}
+      />
+    </SectionBox>
+    <SectionBox label="Cover Image">
+      <ImagePickerField
+        label="Cover Image (optional)"
+        value={content.cover_image || ""}
+        onChange={(v) => onChange("cover_image", v)}
+        altValue={content.cover_image_alt || ""}
+        onAltChange={(v) => onChange("cover_image_alt", v)}
       />
     </SectionBox>
   </div>

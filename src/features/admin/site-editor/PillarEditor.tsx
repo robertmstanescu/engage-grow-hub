@@ -2,6 +2,7 @@ import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Field, TextArea, RichField, ArrayField, SelectField, SectionBox, ColorField } from "./FieldComponents";
+import ImagePickerField from "../ImagePickerField";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 interface Service {
@@ -152,6 +153,16 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
         <Field label="Eyebrow" value={pillarContent.eyebrow || pillarContent.pillar_number || ""} onChange={(v) => onPillarChange("eyebrow", v)} />
         <Field label="Title" value={pillarContent.title || ""} onChange={(v) => onPillarChange("title", v)} />
         <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} bgColor={pillarContent.color_section_bg || bgColor} />
+      </SectionBox>
+
+      <SectionBox label="Cover Image">
+        <ImagePickerField
+          label="Cover Image (optional)"
+          value={pillarContent.cover_image || ""}
+          onChange={(v) => onPillarChange("cover_image", v)}
+          altValue={pillarContent.cover_image_alt || ""}
+          onAltChange={(v) => onPillarChange("cover_image_alt", v)}
+        />
       </SectionBox>
 
       <SectionBox label="Carousel Content Alignment">

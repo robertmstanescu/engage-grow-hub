@@ -4,6 +4,7 @@ import { Field, RichField, SectionBox, ColorField } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImageAltInput from "../ImageAltInput";
+import ImagePickerField from "../ImagePickerField";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { runDbAction } from "@/services/db-helpers";
@@ -171,6 +172,20 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
             </>
           )}
         </div>
+      </SectionBox>
+
+      {/* Separate from the full-bleed Background Media above — a small
+          foreground photo card next to the text (HeroSection.tsx's
+          `hasVisual` layout). Not mutually exclusive with bg_type in the
+          data model; both fields are required together for publish. */}
+      <SectionBox label="Foreground Visual (optional)">
+        <ImagePickerField
+          label="Visual Image"
+          value={content.visual_image_url || ""}
+          onChange={(v) => onChange("visual_image_url", v)}
+          altValue={content.visual_image_alt || ""}
+          onAltChange={(v) => onChange("visual_image_alt", v)}
+        />
       </SectionBox>
 
       <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleImageUpload(file); e.target.value = ""; }} />

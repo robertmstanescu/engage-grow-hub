@@ -10,6 +10,7 @@ import { Field, ColorField } from "./FieldComponents";
 import SubtitleEditor from "./SubtitleEditor";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
 import BoxedArrayField from "../editors/BoxedArrayField";
+import ImagePickerField from "../ImagePickerField";
 
 interface Props {
   content: Record<string, any>;
@@ -35,6 +36,16 @@ const BoxedRowEditor = ({ content, onChange, bgColor }: Props) => {
       <BoxedArrayField content={content} onChange={onChange} bgColor={bgColor} />
       <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
       <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
+      {/* Optional cover image (RowCoverCard, src/features/site/RowCoverCard.tsx)
+          — wraps eyebrow/title/subtitle/cards in a photo-card treatment
+          when set. Leave empty and the row renders exactly as before. */}
+      <ImagePickerField
+        label="Cover Image (optional)"
+        value={content.cover_image || ""}
+        onChange={(v) => onChange("cover_image", v)}
+        altValue={content.cover_image_alt || ""}
+        onAltChange={(v) => onChange("cover_image_alt", v)}
+      />
       <div className="grid grid-cols-2 gap-3">
         <ColorField
           label="Eyebrow colour"

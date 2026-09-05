@@ -21,6 +21,7 @@ import {
   RichField,
 } from "@/features/admin/site-editor/FieldComponents";
 import TitleLineEditor from "@/features/admin/site-editor/TitleLineEditor";
+import ImagePickerField from "@/features/admin/ImagePickerField";
 
 interface Props {
   content: Record<string, any>;
@@ -224,6 +225,14 @@ const ContactAdmin = ({ content, onChange }: Props) => {
           Show social media links below form
         </span>
       </label>
+
+      <ImagePickerField
+        label="Cover Image (optional)"
+        value={content.cover_image || ""}
+        onChange={(v) => onChange("cover_image", v)}
+        altValue={content.cover_image_alt || ""}
+        onAltChange={(v) => onChange("cover_image_alt", v)}
+      />
     </div>
   );
 };
