@@ -31,7 +31,8 @@ When a hero has a foreground visual, the text column still renders centered (`it
 2. Add a small test that a nested page with an image and no description is refused, and that a page with descriptions passes.
 3. Point the list-style editor at the same shared per-row-type editors the canvas uses, so all row types (and their cover-image field) appear there too.
 4. Delete the duplicated text/boxed editors in the list file in favour of the shared ones.
-5. Verify in the browser: set a cover image on a couple of row types, confirm the card appears on the page, clear it and confirm the row looks exactly as before, and confirm publish is refused when a description is missing.
+5. Left-align hero text (heading, label, tagline, body) on wide screens when a foreground visual is set; keep mobile centered.
+6. Verify in the browser: set a cover image on a couple of row types, confirm the card appears on the page, clear it and confirm the row looks exactly as before, and confirm publish is refused when a description is missing.
 
 ## About publishing to your domain
 
