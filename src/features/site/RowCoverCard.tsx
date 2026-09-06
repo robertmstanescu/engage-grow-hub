@@ -25,9 +25,16 @@ const ROUNDED_PX = { subtle: 24, medium: 48, dramatic: 80 } as const;
 interface RowCoverCardProps {
   row: PageRow;
   children: React.ReactNode;
+  /**
+   * "flush" (default): the picture dissolves straight into the row's own
+   * surface — no card, no shadow, no padding.
+   * "card": the legacy treatment — the picture and content sit inside a
+   * padded light card with a soft shadow. FAQ rows opted back into this.
+   */
+  variant?: "flush" | "card";
 }
 
-const RowCoverCard = ({ row, children }: RowCoverCardProps) => {
+const RowCoverCard = ({ row, children, variant = "flush" }: RowCoverCardProps) => {
   const coverImage = row.content?.cover_image?.trim() || undefined;
   const coverImageAlt = row.content?.cover_image_alt || "";
 
@@ -37,11 +44,16 @@ const RowCoverCard = ({ row, children }: RowCoverCardProps) => {
     (row.layout?.shapeTop as any)?.size || (row.layout?.shapeBottom as any)?.size || "medium";
   const radiusPx = `${ROUNDED_PX[(shapeSize as keyof typeof ROUNDED_PX) || "medium"]}px`;
 
+  const isCard = variant === "card";
+
   return (
     <div
       style={{
         borderRadius: radiusPx,
         overflow: "hidden",
+        ...(isCard
+          ? { boxShadow: "var(--shadow-soft)", background: "var(--gradient-card)" }
+          : null),
       }}
     >
       <div className="aspect-[3/2] md:aspect-[21/6]">
@@ -56,8 +68,13 @@ const RowCoverCard = ({ row, children }: RowCoverCardProps) => {
       </div>
       {/* Negative margin pulls the content up into the image's own fade
           zone (its top ~45% stays fully opaque) so the picture dissolves
-          straight into the row's own colour — no card, no shadow. */}
-      <div className="relative z-10 -mt-16 md:-mt-20">{children}</div>
+          straight into the row's own colour — no card, no shadow. In the
+          "card" variant the content keeps the legacy padding instead. */}
+      <div
+        className={`relative z-10 -mt-16 md:-mt-20 ${isCard ? "p-6 md:p-8 lg:p-10" : ""}`}
+      >
+        {children}
+      </div>
     </div>
   );
 };
