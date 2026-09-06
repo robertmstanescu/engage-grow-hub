@@ -505,7 +505,9 @@ export const HeroView = ({
                 as="p"
                 className={`leading-tight max-w-[600px] mx-auto ${hasVisual ? "xl:mx-0" : ""}`}
                 style={{
-                  fontFamily: "'Architects Daughter', cursive",
+                  // Opt-in only: the script font is reserved for genuine
+                  // handwritten annotations, not ordinary subtitle copy.
+                  ...(c.subtitle_handwritten ? { fontFamily: "'Architects Daughter', cursive" } : {}),
                   color: c.subtitle_color || "hsl(var(--hero-body))",
                   fontSize: "var(--fs-hero-subtitle)",
                 }}>
