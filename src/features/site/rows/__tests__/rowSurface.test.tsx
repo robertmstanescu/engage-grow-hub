@@ -6,6 +6,7 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { MemoryRouter } from "react-router-dom";
+import "@/widgets";
 import RowRenderer from "../RowRenderer";
 import type { PageRowV3 } from "@/types/rows";
 
@@ -45,7 +46,6 @@ describe("row-level surface", () => {
         widget("w2", "text", { title: "Two", body: "<p>b</p>" }),
       ]),
     );
-    console.log(container.innerHTML.slice(0, 1500));
     expect(container.querySelectorAll("section").length).toBe(1);
   });
 
