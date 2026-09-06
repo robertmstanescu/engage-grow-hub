@@ -157,28 +157,16 @@ const RowSection = ({
    *  Decorative curved / angled edges, off by default. The shape is
    *  painted in THIS row's own colour and sits OUTSIDE the section, so
    *  the row's surface bleeds up over the section above (top edge) or
-   *  down over the section below (bottom edge). A transparent row has
-   *  no surface to extend, so it renders no shape. */
-  const shapeTop = hasOwnPaint && !maskShapes ? row.layout?.shapeTop : undefined;
-  const shapeBottom = hasOwnPaint && !maskShapes ? row.layout?.shapeBottom : undefined;
+   *  down over the section below (bottom edge). A transparent row spills
+   *  the page mesh instead, so it can curve over its neighbours too. */
+  const shapeTop = !maskShapes ? row.layout?.shapeTop : undefined;
+  const shapeBottom = !maskShapes ? row.layout?.shapeBottom : undefined;
   /* A row that spills an edge must always paint ABOVE its neighbours —
    * including the footer — otherwise the overhang gets covered. */
-  const hasShape = Boolean(shapeTop || shapeBottom);
-
-  /* A transparent row has no surface to spill, so a "Rounded" edge is
-     applied to its CONTENT instead (rounds the image of an image row,
-     for example) rather than silently rendering nothing. */
-  const ROUNDED_PX = { subtle: 24, medium: 48, dramatic: 80 } as const;
-  const roundKind = (cfg?: { kind?: string; size?: string }) =>
-    !hasOwnPaint && !maskShapes && cfg?.kind === "rounded"
-      ? ROUNDED_PX[(cfg.size as keyof typeof ROUNDED_PX) || "medium"]
-      : 0;
-  const contentRoundTop = roundKind(row.layout?.shapeTop as any);
-  const contentRoundBottom = roundKind(row.layout?.shapeBottom as any);
-  const contentRadius =
-    contentRoundTop || contentRoundBottom
-      ? `${contentRoundTop}px ${contentRoundTop}px ${contentRoundBottom}px ${contentRoundBottom}px`
-      : undefined;
+  const hasShape = Boolean(
+    (shapeTop && shapeTop.kind !== "none") || (shapeBottom && shapeBottom.kind !== "none"),
+  );
+  const contentRadius = undefined;
 
   /* ── Optical centring ──
    *  A cap paints OUTSIDE the section, so a row with only a bottom edge
