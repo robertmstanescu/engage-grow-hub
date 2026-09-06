@@ -163,10 +163,9 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
            line switched the whole heading to wrapping, which let short
            key lines ("We bring the coffin.") break too. */
         h1.style.whiteSpace = "normal";
-        /* Matches the container classes below: a foreground visual
-           switches the wide-screen text column to left alignment. */
-        const leftAlign = leftAligned
-          && window.matchMedia("(min-width: 1024px)").matches;
+        /* Matches the container classes below: a left-aligned hero must
+           hug the left edge when a long line wraps. */
+        const leftAlign = leftAligned;
         h1.querySelectorAll<HTMLElement>("span.block").forEach((line, i) => {
           const r = ratios[i];
           const wraps = Number.isFinite(r) && r < FLOOR;
