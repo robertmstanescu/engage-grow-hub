@@ -444,18 +444,13 @@ export const HeroView = ({
       <div
         className={
           hasVisual
-            ? // A fixed (not fr-based) width for the visual, and `xl:` rather
-              // than `md:` for the breakpoint — both deliberate. The title
-              // uses the same shrink-to-fit floor as the single-column hero
-              // (max 30% shrink before it gives up and lets a line wrap), so
-              // the text side needs real room: a 50/50 split at `md:`
-              // (768px) leaves so little width that a long word like
-              // "organisation" overflows past the 30%-shrink floor with
-              // nowhere to wrap to. A fixed ~340px visual plus a wider
-              // activation point keeps the text column comfortably above
-              // that floor at every width the grid is actually active.
-              "relative z-10 w-full max-w-[1280px] mx-auto px-6 sm:px-8 py-20 flex flex-col items-center text-center xl:flex-row xl:items-center gap-10 xl:gap-16"
-            : "relative z-10 w-full max-w-[1100px] mx-auto px-6 sm:px-8 py-20 flex min-h-0 flex-1 flex-col justify-center items-center text-center"
+            ? // A fixed (not fr-based) width for the visual, and `lg:` for
+              // the breakpoint. The title uses a shrink-to-fit floor, so
+              // the text side needs real room: a fixed ~340px visual keeps
+              // the text column comfortably above that floor at every
+              // width the two-column layout is active.
+              "relative z-10 w-full max-w-[1280px] mx-auto px-6 sm:px-8 py-20 flex flex-col items-center lg:flex-row lg:items-center gap-10 lg:gap-16"
+            : "relative z-10 w-full max-w-[1100px] mx-auto px-6 sm:px-8 py-20 flex min-h-0 flex-1 flex-col justify-center items-center"
         }
       >
         {/*
@@ -464,7 +459,7 @@ export const HeroView = ({
           and consistent instead of vh-driven, keeping the layout clean at
           every breakpoint while the headline stays poster-sized.
         */}
-        <div className={`flex w-full min-w-0 flex-col items-center gap-6 ${hasVisual ? "xl:flex-1 xl:items-start xl:text-left" : ""}`}>
+        <div className={`flex w-full min-w-0 flex-col gap-6 ${alignClass} ${hasVisual ? "lg:flex-1" : ""}`}>
 
           {leading}
           {c.label && (
@@ -473,7 +468,7 @@ export const HeroView = ({
               animate={{ opacity: 1 }}
               transition={{ duration: 1, delay: 0.2, ease }}
               className="font-body tracking-[0.32em] uppercase flex-shrink-0"
-              style={{ color: "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
+              style={{ color: c.color_label || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
               <Field fieldPath="label" as="span">
                 {c.label}
               </Field>
