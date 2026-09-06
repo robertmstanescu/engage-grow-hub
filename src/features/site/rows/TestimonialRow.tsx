@@ -101,7 +101,7 @@ const TestimonialRow = ({
           </RowTitle>
         )}
         {c.subtitle && (
-          <RowSubtitle color={c.subtitle_color || ""} style={revealStyle(isVisible, 0.3)}>
+          <RowSubtitle handwritten={!!c.subtitle_handwritten} color={c.subtitle_color || ""} style={revealStyle(isVisible, 0.3)}>
             {c.subtitle}
           </RowSubtitle>
         )}
