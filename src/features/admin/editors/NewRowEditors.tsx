@@ -70,6 +70,8 @@ export const BrandHeaderFields = ({
         subtitleColor={content.subtitle_color || ""}
         onSubtitleChange={(v) => onChange("subtitle", v)}
         onColorChange={(v) => onChange("subtitle_color", v)}
+        handwritten={!!content.subtitle_handwritten}
+        onHandwrittenChange={(v) => onChange("subtitle_handwritten", v)}
         bgColor={bgColor}
       />
       <RichField

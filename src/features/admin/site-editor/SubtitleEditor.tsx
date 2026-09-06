@@ -35,12 +35,15 @@ interface Props {
   subtitleColor: string;
   onSubtitleChange: (v: string) => void;
   onColorChange: (v: string) => void;
+  /** Opt-in handwritten (Architects Daughter) styling for the subtitle. */
+  handwritten?: boolean;
+  onHandwrittenChange?: (v: boolean) => void;
   /** Live row background — when supplied, the input mirrors it and
    *  text auto-switches to a readable foreground via `pickForeground`. */
   bgColor?: string;
 }
 
-const SubtitleEditor = ({ subtitle, subtitleColor, onSubtitleChange, onColorChange, bgColor }: Props) => {
+const SubtitleEditor = ({ subtitle, subtitleColor, onSubtitleChange, onColorChange, handwritten, onHandwrittenChange, bgColor }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const brandColors = useBrandColors();
 
@@ -84,7 +87,7 @@ const SubtitleEditor = ({ subtitle, subtitleColor, onSubtitleChange, onColorChan
       style={{ backgroundColor: surfaceBg, border: "1px solid hsl(var(--border) / 0.5)" }}
     >
       <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: pickForeground(surfaceBg), opacity: 0.7 }}>
-        Subtitle <span className="opacity-60">(Architects Daughter font)</span>
+        Subtitle
       </label>
       <div className="flex gap-2">
         <input
@@ -104,11 +107,24 @@ const SubtitleEditor = ({ subtitle, subtitleColor, onSubtitleChange, onColorChan
           className="flex-1 px-3 py-2 rounded-lg text-sm border bg-transparent"
           style={{
             borderColor: "hsl(var(--border))",
-            fontFamily: "'Architects Daughter', cursive",
+            ...(handwritten ? { fontFamily: "'Architects Daughter', cursive" } : {}),
             color: surfaceFg,
           }}
         />
       </div>
+      {onHandwrittenChange && (
+        <label className="flex items-center gap-2 cursor-pointer" style={{ color: pickForeground(surfaceBg) }}>
+          <input
+            type="checkbox"
+            checked={!!handwritten}
+            onChange={(e) => onHandwrittenChange(e.target.checked)}
+            className="accent-current"
+          />
+          <span className="font-body text-[10px] uppercase tracking-wider opacity-80">
+            Handwritten style (Architects Daughter)
+          </span>
+        </label>
+      )}
       {localValue && (
         <div className="flex items-center gap-1 mt-1.5 flex-wrap">
           <span className="font-body text-[9px] uppercase tracking-wider mr-1" style={{ color: pickForeground(surfaceBg), opacity: 0.7 }}>

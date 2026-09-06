@@ -215,6 +215,8 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                   subtitleColor={content.subtitle_color || ""}
                   onSubtitleChange={(v) => onContentChange("subtitle", v)}
                   onColorChange={(v) => onContentChange("subtitle_color", v)}
+                  handwritten={!!content.subtitle_handwritten}
+                  onHandwrittenChange={(v) => onContentChange("subtitle_handwritten", v)}
                   bgColor={bg}
                 />
                 <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
@@ -297,6 +299,8 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                   subtitleColor={content.subtitle_color || ""}
                   onSubtitleChange={(v) => onContentChange("subtitle", v)}
                   onColorChange={(v) => onContentChange("subtitle_color", v)}
+                  handwritten={!!content.subtitle_handwritten}
+                  onHandwrittenChange={(v) => onContentChange("subtitle_handwritten", v)}
                   bgColor={bg}
                 />
                 <BoxedArrayField content={content} onChange={onContentChange} bgColor={bg} />
@@ -353,6 +357,8 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                   subtitleColor={content.subtitle_color || ""}
                   onSubtitleChange={(v) => onContentChange("subtitle", v)}
                   onColorChange={(v) => onContentChange("subtitle_color", v)}
+                  handwritten={!!content.subtitle_handwritten}
+                  onHandwrittenChange={(v) => onContentChange("subtitle_handwritten", v)}
                   bgColor={bg}
                 />
                 <RichField label="Body" value={content.body || ""} onChange={(v) => onContentChange("body", v)} bgColor={bg} />
