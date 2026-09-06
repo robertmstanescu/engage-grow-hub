@@ -106,12 +106,20 @@ const FaqRow = ({
               value={`item-${i}`}
               className="border-b row-border"
             >
-              <AccordionTrigger className="font-display text-base md:text-lg row-fg hover:no-underline py-5">
-                {item.question}
+              {/* Questions and answers ALWAYS read left — the row's own
+                  alignment setting only moves the heading block. */}
+              <AccordionTrigger
+                className="font-display row-fg hover:no-underline py-5 text-left"
+                style={{ fontSize: "var(--fs-card-title)" }}
+              >
+                <span className="text-left w-full">{item.question}</span>
               </AccordionTrigger>
-              <AccordionContent className="font-body text-sm md:text-base row-fg-muted leading-relaxed pb-5">
+              <AccordionContent
+                className="font-body row-fg-muted leading-relaxed pb-5 text-left"
+                style={{ fontSize: "var(--fs-card-body)" }}
+              >
                 <div
-                  className="[&>p]:my-1"
+                  className="[&>p]:my-1 text-left"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.answer || "") }}
                 />
               </AccordionContent>

@@ -50,9 +50,22 @@ interface Props {
   config?: SectionShapeConfig;
   /** The section's own surface colour (CSS colour string). */
   color: string;
+  /**
+   * Transparent rows have no colour of their own — they spill the fixed
+   * page mesh instead, so the cap is painted with the mesh gradient
+   * (masked into the shape) rather than a flat fill.
+   */
+  useMesh?: boolean;
 }
 
-const SectionShape = ({ edge, config, color }: Props) => {
+/** Background used when a transparent row spills the page mesh. */
+const MESH_BG: React.CSSProperties = {
+  background: "var(--gradient-mesh-page)",
+  backgroundAttachment: "fixed",
+  backgroundSize: "cover",
+};
+
+const SectionShape = ({ edge, config, color, useMesh = false }: Props) => {
   const kind = config?.kind ?? "none";
   if (!kind || kind === "none") return null;
 
@@ -74,7 +87,7 @@ const SectionShape = ({ edge, config, color }: Props) => {
         data-kind="rounded"
         style={{
           height: radius,
-          backgroundColor: color,
+          ...(useMesh ? MESH_BG : { backgroundColor: color }),
           borderTopLeftRadius: edge === "top" ? radius : undefined,
           borderTopRightRadius: edge === "top" ? radius : undefined,
           borderBottomLeftRadius: edge === "bottom" ? radius : undefined,
@@ -87,6 +100,31 @@ const SectionShape = ({ edge, config, color }: Props) => {
   const path = PATHS[kind];
   if (!path) return null;
 
+  /* Mesh-filled shapes can't use an SVG `fill` (a CSS gradient isn't a
+     paint server), so we paint the mesh on a div and mask it with the
+     same path. */
+  if (useMesh) {
+    const raw = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="${path}" fill="#000"/></svg>`;
+    const maskUrl = `url("data:image/svg+xml,${encodeURIComponent(raw)}")`;
+    return (
+      <div
+        aria-hidden
+        className="section-shape"
+        data-edge={edge}
+        data-flip={config?.flip ? "true" : undefined}
+        style={{
+          height: SIZE_PX[size],
+          ...MESH_BG,
+          maskImage: maskUrl,
+          WebkitMaskImage: maskUrl,
+          maskSize: "100% 100%",
+          WebkitMaskSize: "100% 100%",
+          maskRepeat: "no-repeat",
+          WebkitMaskRepeat: "no-repeat",
+        }}
+      />
+    );
+  }
 
   return (
     <svg

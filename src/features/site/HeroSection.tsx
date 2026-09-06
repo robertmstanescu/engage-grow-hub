@@ -15,8 +15,14 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 interface HeroContent {
   label: string;
+  /** Admin-picked eyebrow (label) colour. Falls back to the theme token. */
+  color_label?: string;
   tagline?: string;
   tagline_color?: string;
+  /** Admin-picked tagline colour (editor field name). */
+  color_tagline?: string;
+  /** Horizontal alignment of the whole hero text stack. Default centre. */
+  align?: "left" | "center" | "right";
   title_lines?: any[];
   subtitle?: string;
   subtitle_color?: string;
@@ -33,10 +39,9 @@ interface HeroContent {
   title_line2?: string;
   /**
    * Optional small foreground photo card next to the text — separate
-   * from `bg_type`/`bg_url` (the full-bleed background). Not mutually
-   * exclusive in the data model, but only one is expected in use on any
-   * given hero at a time. Both fields are required together: there is
-   * no rendering path that shows the image without its alt text.
+   * from `bg_type`/`bg_url` (the full-bleed background). Alt text is
+   * enforced at publish time, not at render time, so an image shows as
+   * soon as it's picked.
    */
   visual_image_url?: string;
   visual_image_alt?: string;
@@ -158,10 +163,9 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
            line switched the whole heading to wrapping, which let short
            key lines ("We bring the coffin.") break too. */
         h1.style.whiteSpace = "normal";
-        /* Matches the container classes below: a foreground visual
-           switches the wide-screen text column to left alignment. */
-        const leftAlign = leftAligned
-          && window.matchMedia("(min-width: 1280px)").matches;
+        /* Matches the container classes below: a left-aligned hero must
+           hug the left edge when a long line wraps. */
+        const leftAlign = leftAligned;
         h1.querySelectorAll<HTMLElement>("span.block").forEach((line, i) => {
           const r = ratios[i];
           const wraps = Number.isFinite(r) && r < FLOOR;
@@ -280,11 +284,22 @@ export const HeroView = ({
   // Independent of hasBg/bg_type — a small foreground photo card next to
   // the text, not a full-bleed background. When absent, the layout below
   // renders exactly as it always has (single centred column, no grid).
-  const hasVisual = Boolean(c.visual_image_url && c.visual_image_alt);
+  /* Alt text is enforced by the publish gate, so the picture renders as
+     soon as an admin picks one. */
+  const hasVisual = Boolean(c.visual_image_url);
+
+  /* Admin alignment (Style ▸ Hero alignment). A hero with a foreground
+     visual defaults to left, matching the side-by-side layout. */
+  const align: "left" | "center" | "right" = c.align || (hasVisual ? "left" : "center");
+  const alignClass =
+    align === "left" ? "items-start text-left"
+    : align === "right" ? "items-end text-right"
+    : "items-center text-center";
+  const marginClass = align === "center" ? "mx-auto" : align === "right" ? "ml-auto" : "mr-auto";
 
   /* Per-line shrink-to-fit so no title line ever wraps unintentionally
      (see useFitTitleLines above). */
-  const titleRef = useFitTitleLines(titleLines.length, hasVisual);
+  const titleRef = useFitTitleLines(titleLines.length, align === "left");
 
   /**
    * Cold-load guard — `isLoading` is an explicit prop the caller
@@ -428,18 +443,13 @@ export const HeroView = ({
       <div
         className={
           hasVisual
-            ? // A fixed (not fr-based) width for the visual, and `xl:` rather
-              // than `md:` for the breakpoint — both deliberate. The title
-              // uses the same shrink-to-fit floor as the single-column hero
-              // (max 30% shrink before it gives up and lets a line wrap), so
-              // the text side needs real room: a 50/50 split at `md:`
-              // (768px) leaves so little width that a long word like
-              // "organisation" overflows past the 30%-shrink floor with
-              // nowhere to wrap to. A fixed ~340px visual plus a wider
-              // activation point keeps the text column comfortably above
-              // that floor at every width the grid is actually active.
-              "relative z-10 w-full max-w-[1280px] mx-auto px-6 sm:px-8 py-20 flex flex-col items-center text-center xl:flex-row xl:items-center gap-10 xl:gap-16"
-            : "relative z-10 w-full max-w-[1100px] mx-auto px-6 sm:px-8 py-20 flex min-h-0 flex-1 flex-col justify-center items-center text-center"
+            ? // A fixed (not fr-based) width for the visual, and `lg:` for
+              // the breakpoint. The title uses a shrink-to-fit floor, so
+              // the text side needs real room: a fixed ~340px visual keeps
+              // the text column comfortably above that floor at every
+              // width the two-column layout is active.
+              "relative z-10 w-full max-w-[1280px] mx-auto px-6 sm:px-8 py-20 flex flex-col items-center lg:flex-row lg:items-center gap-10 lg:gap-16"
+            : "relative z-10 w-full max-w-[1100px] mx-auto px-6 sm:px-8 py-20 flex min-h-0 flex-1 flex-col justify-center items-center"
         }
       >
         {/*
@@ -448,7 +458,7 @@ export const HeroView = ({
           and consistent instead of vh-driven, keeping the layout clean at
           every breakpoint while the headline stays poster-sized.
         */}
-        <div className={`flex w-full min-w-0 flex-col items-center gap-6 ${hasVisual ? "xl:flex-1 xl:items-start xl:text-left" : ""}`}>
+        <div className={`flex w-full min-w-0 flex-col gap-6 ${alignClass} ${hasVisual ? "lg:flex-1" : ""}`}>
 
           {leading}
           {c.label && (
@@ -457,7 +467,7 @@ export const HeroView = ({
               animate={{ opacity: 1 }}
               transition={{ duration: 1, delay: 0.2, ease }}
               className="font-body tracking-[0.32em] uppercase flex-shrink-0"
-              style={{ color: "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
+              style={{ color: c.color_label || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
               <Field fieldPath="label" as="span">
                 {c.label}
               </Field>
@@ -489,7 +499,7 @@ export const HeroView = ({
               animate={{ opacity: 0.4 }}
               transition={{ duration: 1, delay: 0.8, ease }}
               className="font-body tracking-[0.28em] uppercase flex-shrink-0"
-              style={{ color: c.tagline_color || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
+              style={{ color: c.tagline_color || c.color_tagline || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
               <Field fieldPath="tagline" as="span">
                 {c.tagline}
               </Field>
@@ -505,7 +515,7 @@ export const HeroView = ({
               <Field
                 fieldPath="subtitle"
                 as="p"
-                className={`leading-tight max-w-[600px] mx-auto ${hasVisual ? "xl:mx-0" : ""}`}
+                className={`leading-tight max-w-[600px] ${marginClass}`}
                 style={{
                   // Opt-in only: the script font is reserved for genuine
                   // handwritten annotations, not ordinary subtitle copy.
@@ -528,7 +538,7 @@ export const HeroView = ({
                 fieldPath="body"
                 html
                 as="div"
-                className={`font-body max-w-[640px] mx-auto leading-relaxed ${hasVisual ? "xl:mx-0" : ""}`}
+                className={`font-body max-w-[640px] leading-relaxed ${marginClass}`}
                 style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "var(--fs-hero-body)" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
               />
@@ -558,7 +568,7 @@ export const HeroView = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.65, ease }}
-            className="relative hidden xl:block w-full xl:w-[340px] xl:flex-shrink-0"
+            className="relative hidden lg:block w-full lg:w-[340px] lg:flex-shrink-0"
           >
             <div
               className="relative w-full overflow-hidden"

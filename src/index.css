@@ -162,16 +162,17 @@
        another's (that's how the contact row ended up smaller than the
        vows row). Add a variable here instead.
        ────────────────────────────────────────────────────────────── */
-    --fs-eyebrow: clamp(9px, 0.4vh + 0.5vw, 11px);
-    --fs-title: clamp(1.5rem, 1.6vh + 1.5vw, 3rem);
-    --fs-subtitle: clamp(0.95rem, 1vh + 0.85vw, 1.35rem);
-    --fs-body: clamp(0.9rem, 0.8vh + 0.6vw, 1.1rem);
+    --fs-eyebrow: clamp(12px, 0.4vh + 0.5vw, 14px);
+    --fs-title: clamp(1.875rem, 1.6vh + 1.6vw, 3.25rem);
+    --fs-subtitle: clamp(1.125rem, 1vh + 0.85vw, 1.5rem);
+    --fs-body: clamp(1.0625rem, 0.8vh + 0.6vw, 1.25rem);
 
     /* Card-scale (secondary surfaces: service, boxed, vows, forms) */
-    --fs-card-title: clamp(0.95rem, 0.4vh + 0.5vw, 1.1rem);
-    --fs-card-body: clamp(0.85rem, 0.35vh + 0.55vw, 1rem);
-    --fs-card-label: clamp(10px, 0.3vh + 0.55vw, 12px);
-    --fs-card-input: clamp(13px, 0.4vh + 0.7vw, 15px);
+    --fs-card-title: clamp(1.1875rem, 0.4vh + 0.6vw, 1.375rem);
+    --fs-card-body: clamp(1rem, 0.35vh + 0.55vw, 1.125rem);
+    --fs-card-label: clamp(12px, 0.3vh + 0.55vw, 14px);
+    --fs-card-input: clamp(15px, 0.4vh + 0.7vw, 16px);
+
 
     /* Feature moments */
     --fs-stat: clamp(2rem, 3.4vw, 3.5rem);
@@ -483,9 +484,24 @@
     transform: none !important;
   }
 
+  /* ── Row decorative image layer ──
+     Overlay PNGs sit ABOVE the row's own colour but below its content.
+     (They used to be at z-index:-1, which put them behind the section's
+     own background — invisible on any row with a colour.) */
+  .row-overlay-layer {
+    z-index: 0;
+  }
+  /* Static children need a stacking position to sit above the overlay
+     layer; already-positioned ones (absolute/fixed/sticky) are left
+     alone so their own layout isn't broken. */
+  .snap-section > *:not(.row-overlay-layer):not(.section-shape):not(.absolute):not(.fixed):not(.sticky) {
+    position: relative;
+    z-index: 1;
+  }
+
   /* Dramatic curves eat vertical space on phones — flatten them. */
   @media (max-width: 767px) {
-    svg.section-shape {
+    .section-shape:not([data-kind="rounded"]) {
       height: 28px !important;
     }
     .section-shape[data-kind="rounded"] {

@@ -69,6 +69,26 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
 
   return (
     <div className="space-y-4">
+      <div>
+        <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Text Alignment</label>
+        <div className="flex gap-2 mt-1">
+          {(["left", "center", "right"] as const).map((a) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => onChange("align", a)}
+              className="font-body text-[10px] uppercase tracking-wider px-3 py-1 rounded-full transition-all"
+              style={{
+                backgroundColor: (content.align || "center") === a ? "hsl(var(--primary))" : "transparent",
+                color: (content.align || "center") === a ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                border: (content.align || "center") === a ? "none" : "1px solid hsl(var(--border))",
+              }}
+            >
+              {a === "center" ? "centre" : a}
+            </button>
+          ))}
+        </div>
+      </div>
       <Field label="Label (above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
       <ColorField label="Label Color" description="Color of the small label text above the title" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
       <Field label="Tagline (below title)" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />

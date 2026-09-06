@@ -41,22 +41,7 @@ const RowCoverCard = ({ row, children }: RowCoverCardProps) => {
     <div
       style={{
         borderRadius: radiusPx,
-        boxShadow: "var(--shadow-soft)",
-        background: "var(--gradient-card)",
         overflow: "hidden",
-        // Reset the row-level readable-text-colour override: --row-fg was
-        // set by the ancestor RowSection for the ROW's own background
-        // (e.g. a dark bg_color, giving light text) and would otherwise
-        // cascade in here uncontested, making title/subtitle/eyebrow text
-        // render in a colour meant for a dark background on top of THIS
-        // container's light --gradient-card instead. CUSTOM properties
-        // are inherited by default, so `unset` on one means "inherit the
-        // parent's value" — a no-op. `initial` is what actually resets to
-        // the guaranteed-invalid value that makes every descendant's own
-        // `var(--row-fg, fallback)` correctly fall through to its own
-        // default instead.
-        ["--row-fg" as string]: "initial",
-        ["--row-fg-muted" as string]: "initial",
       }}
     >
       <div className="aspect-[3/2] md:aspect-[21/6]">
@@ -69,10 +54,10 @@ const RowCoverCard = ({ row, children }: RowCoverCardProps) => {
           radius={radiusPx}
         />
       </div>
-      {/* Negative margin pulls the title up into the image's own fade zone
-          (its top ~45% stays fully opaque, so text landing just past that
-          edge is still on solid ground) instead of starting flush below it. */}
-      <div className="relative z-10 p-6 md:p-8 lg:p-10 -mt-16 md:-mt-20">{children}</div>
+      {/* Negative margin pulls the content up into the image's own fade
+          zone (its top ~45% stays fully opaque) so the picture dissolves
+          straight into the row's own colour — no card, no shadow. */}
+      <div className="relative z-10 -mt-16 md:-mt-20">{children}</div>
     </div>
   );
 };
