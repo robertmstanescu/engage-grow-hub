@@ -86,8 +86,14 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
     if (!h1) return;
     let raf = 0;
     let applied = 1;
+    /* Last WIDTH we actually fitted against. A ResizeObserver reports
+       height changes too, and rescaling the heading changes its height —
+       so without this guard every fit re-triggers the observer and the
+       hero visibly flickers (worse once a foreground image is added,
+       because the image load kicks off the first cycle). */
+    let lastAvail = -1;
 
-    const fit = () => {
+    const fit = (force = false) => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         /* Measure the CONSTRAINING box (the parent), not the <h1>:
@@ -99,6 +105,8 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
           h1.parentElement?.clientWidth || Infinity,
         );
         if (!Number.isFinite(avail)) return;
+        if (!force && Math.abs(avail - lastAvail) < 1) return;
+        lastAvail = avail;
         if (!avail) return;
 
         const cs = getComputedStyle(h1);
