@@ -128,6 +128,10 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           blue ring just around that text. The path extends the row's
           path with a `field` segment.
         */}
+        {/* The old "pillar number" is only a FALLBACK for content that
+            never had an eyebrow. An eyebrow the admin explicitly cleared
+            (empty string) means: show nothing at all. */}
+        {resolvedEyebrow ? (
         <SelectableWrapper
           path={["row", row.id, "widget", row.id, "field", "eyebrow"]}
           label="Eyebrow"
@@ -137,15 +141,16 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           <RowEyebrow color={pillarLabelColor} style={revealStyle(isVisible, 0)}>
             <CanvasEditable
               path={["row", row.id, "widget", row.id, "field", "eyebrow"]}
-              value={c.eyebrow || c.pillar_number || ""}
+              value={resolvedEyebrow}
               as="span"
             >
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
-                {c.eyebrow || c.pillar_number}
+                {resolvedEyebrow}
               </EditableText>
             </CanvasEditable>
           </RowEyebrow>
         </SelectableWrapper>
+        ) : null}
 
         <SelectableWrapper
           path={["row", row.id, "widget", row.id, "field", "title"]}
