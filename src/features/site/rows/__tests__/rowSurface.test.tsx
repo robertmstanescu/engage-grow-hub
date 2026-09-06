@@ -45,6 +45,7 @@ describe("row-level surface", () => {
         widget("w2", "text", { title: "Two", body: "<p>b</p>" }),
       ]),
     );
+    console.log(container.innerHTML.slice(0, 1500));
     expect(container.querySelectorAll("section").length).toBe(1);
   });
 
