@@ -32,35 +32,40 @@ interface Props {
   paddingBottom: number;
   paddingLeft: number;
   onChange: (field: BoxField, value: number) => void;
-  /** Optional clamp — defaults to 0..999. */
+  /** Optional clamp — defaults to 999. */
   max?: number;
+  /** Lowest value allowed for MARGIN slots — defaults to -400 so
+   *  widgets can be pulled up/over neighbours. Padding stays ≥ 0. */
+  minMargin?: number;
 }
 
-const clamp = (n: number, max: number) =>
-  Number.isFinite(n) ? Math.max(0, Math.min(max, n)) : 0;
+const clamp = (n: number, min: number, max: number) =>
+  Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : 0;
 
 /** Tiny borderless number input used at each TRBL slot. */
 const SlotInput = ({
   field,
   value,
   onChange,
+  min,
   max,
   ariaLabel,
 }: {
   field: BoxField;
   value: number;
   onChange: (field: BoxField, value: number) => void;
+  min: number;
   max: number;
   ariaLabel: string;
 }) => (
   <input
     type="number"
-    min={0}
+    min={min}
     max={max}
     value={Number.isFinite(value) ? value : 0}
     aria-label={ariaLabel}
     data-inspector-field={field}
-    onChange={(e) => onChange(field, clamp(Number(e.target.value), max))}
+    onChange={(e) => onChange(field, clamp(Number(e.target.value), min, max))}
     className="w-10 text-center bg-transparent border-0 outline-none font-body text-[11px] font-semibold focus:ring-1 focus:ring-primary rounded"
     style={{ color: "hsl(var(--foreground))", padding: "1px 2px" }}
   />
