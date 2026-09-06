@@ -44,11 +44,16 @@ const RowCoverCard = ({ row, children, variant = "flush" }: RowCoverCardProps) =
     (row.layout?.shapeTop as any)?.size || (row.layout?.shapeBottom as any)?.size || "medium";
   const radiusPx = `${ROUNDED_PX[(shapeSize as keyof typeof ROUNDED_PX) || "medium"]}px`;
 
+  const isCard = variant === "card";
+
   return (
     <div
       style={{
         borderRadius: radiusPx,
         overflow: "hidden",
+        ...(isCard
+          ? { boxShadow: "var(--shadow-soft)", background: "var(--gradient-card)" }
+          : null),
       }}
     >
       <div className="aspect-[3/2] md:aspect-[21/6]">
