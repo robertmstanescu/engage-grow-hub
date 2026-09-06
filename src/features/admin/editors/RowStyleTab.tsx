@@ -173,17 +173,25 @@ export const ShapePicker = ({
 
 const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   // ── Column count derivation ────────────────────────────────────────
-  // image_text & profile rows have an INHERENT 2-zone split (image + text)
-  // even when columns_data is empty, so we always show the width control
-  // for them with at least 2 zones.
-  const colCount = 1 + (row.columns_data?.length || 0);
+  // v3 builder rows keep their real columns on `row.columns`; older rows
+  // stored extra columns in `columns_data`. image_text & profile rows have
+  // an INHERENT 2-zone split (image + text) even when both are empty.
+  const builderColCount = Array.isArray((row as { columns?: unknown[] }).columns)
+    ? ((row as { columns?: unknown[] }).columns as unknown[]).length
+    : 0;
+  const legacyColCount = 1 + (row.columns_data?.length || 0);
+  const colCount = Math.max(builderColCount, legacyColCount);
   // Image+Text owns its internal Image/Text split in its Content editor.
   // Row-level widths must describe real builder columns only.
   const hasInherentSplit = row.type === "profile";
   const showWidthControl = colCount > 1 || hasInherentSplit;
   const widthColCount = hasInherentSplit && colCount === 1 ? 2 : colCount;
+  const storedWidths = row.layout?.column_widths;
   const columnWidths =
-    row.layout?.column_widths || Array(widthColCount).fill(Math.round(100 / widthColCount));
+    Array.isArray(storedWidths) && storedWidths.length === widthColCount
+      ? storedWidths
+      : Array(widthColCount).fill(Math.round(100 / widthColCount));
+
 
   const currentOverlays = row.layout?.overlays || [];
 
