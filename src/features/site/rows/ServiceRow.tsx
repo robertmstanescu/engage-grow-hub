@@ -73,6 +73,11 @@ const buildColorOverrides = (content: Record<string, any>): Record<string, strin
 // PageRows dispatcher can pass props uniformly.
 const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
+  /* Empty string = deliberately cleared → no eyebrow. Undefined = never
+     set → fall back to the legacy pillar number. */
+  const resolvedEyebrow = (
+    c.eyebrow === undefined ? (c.pillar_number ?? "") : c.eyebrow
+  ) as string;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
   const [current, setCurrent] = useState(0);
@@ -128,6 +133,10 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           blue ring just around that text. The path extends the row's
           path with a `field` segment.
         */}
+        {/* The old "pillar number" is only a FALLBACK for content that
+            never had an eyebrow. An eyebrow the admin explicitly cleared
+            (empty string) means: show nothing at all. */}
+        {resolvedEyebrow ? (
         <SelectableWrapper
           path={["row", row.id, "widget", row.id, "field", "eyebrow"]}
           label="Eyebrow"
@@ -137,15 +146,16 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           <RowEyebrow color={pillarLabelColor} style={revealStyle(isVisible, 0)}>
             <CanvasEditable
               path={["row", row.id, "widget", row.id, "field", "eyebrow"]}
-              value={c.eyebrow || c.pillar_number || ""}
+              value={resolvedEyebrow}
               as="span"
             >
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.eyebrow`} as="span">
-                {c.eyebrow || c.pillar_number}
+                {resolvedEyebrow}
               </EditableText>
             </CanvasEditable>
           </RowEyebrow>
         </SelectableWrapper>
+        ) : null}
 
         <SelectableWrapper
           path={["row", row.id, "widget", row.id, "field", "title"]}

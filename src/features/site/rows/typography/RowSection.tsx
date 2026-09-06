@@ -6,6 +6,7 @@ import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
 import SectionShape, { shapeHeightPx, shapeMaskStyle } from "../SectionShape";
 import { resolveRowMinHeight } from "@/lib/rowHeight";
+import { useInsideRowSurface } from "../RowSurfaceContext";
 
 /** Tracks the same breakpoint index.css uses to flatten shapes. */
 const useFlatShapes = () => {
@@ -116,6 +117,7 @@ const RowSection = ({
   dataRowType,
   dataRowTitle,
 }: Props) => {
+  const insideRowSurface = useInsideRowSurface();
   const vAlignClass =
     vAlign === "top" ? "items-start"
     : vAlign === "bottom" ? "items-end"
@@ -198,6 +200,33 @@ const RowSection = ({
     ? shapeMaskStyle(row.layout?.shapeTop, row.layout?.shapeBottom, flatShapes)
     : {};
 
+  /* The row already painted its own surface around every widget: render
+     as a bare, transparent content block (no colour, no shapes, no
+     height, no vertical padding) so a multi-widget row reads as ONE
+     continuous band with a single rounded edge. */
+  if (insideRowSurface) {
+    return (
+      <>
+        {scopedCss && <style dangerouslySetInnerHTML={{ __html: scopedCss }} />}
+        <div
+          ref={innerRef}
+          id={rowDomId}
+          data-row-id={dataRowId ?? row.id}
+          data-row-type={dataRowType ?? row.type}
+          data-row-title={dataRowTitle ?? row.strip_title}
+          className={`relative w-full flex flex-col justify-center ${vAlignClass} ${className}`}
+          style={style}
+        >
+          {row.layout?.overlays?.length ? (
+            <div className="row-overlay-layer absolute inset-0 pointer-events-none overflow-hidden">
+              {renderOverlayElements(row.layout.overlays)}
+            </div>
+          ) : null}
+          {children}
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
