@@ -351,6 +351,44 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
         </AccordionContent>
       </AccordionItem>
 
+      {/* ═══ CORNERS ═══
+          Rounding of the band this row paints around all of its blocks. */}
+      <AccordionItem value="corners" className="border-none">
+        <AccordionTrigger className={TRIGGER_CLASS}>Corners</AccordionTrigger>
+        <AccordionContent className={CONTENT_CLASS}>
+          <div className="grid grid-cols-4 gap-1">
+            {([
+              ["none", "Square"],
+              ["subtle", "Subtle"],
+              ["medium", "Medium"],
+              ["dramatic", "Large"],
+            ] as const).map(([value, label]) => {
+              const active = (row.layout?.surfaceRadius || "medium") === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => patchLayout({ surfaceRadius: value })}
+                  className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+                    active
+                      ? "bg-secondary/15 border-secondary/40 text-foreground"
+                      : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <p className="font-body text-[10px] text-muted-foreground leading-snug mt-2">
+            Applies to the band a row paints around several blocks (or around a
+            row cover image). An edge with a decorative shape keeps its own curve.
+          </p>
+        </AccordionContent>
+      </AccordionItem>
+
+
+
       {/* ═══ ROW COVER IMAGE ═══
           One picture for the WHOLE row (all of its blocks), spanning the
           full width and inheriting the row's corner curve. */}
