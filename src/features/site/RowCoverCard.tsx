@@ -68,8 +68,13 @@ const RowCoverCard = ({ row, children, variant = "flush" }: RowCoverCardProps) =
       </div>
       {/* Negative margin pulls the content up into the image's own fade
           zone (its top ~45% stays fully opaque) so the picture dissolves
-          straight into the row's own colour — no card, no shadow. */}
-      <div className="relative z-10 -mt-16 md:-mt-20">{children}</div>
+          straight into the row's own colour — no card, no shadow. In the
+          "card" variant the content keeps the legacy padding instead. */}
+      <div
+        className={`relative z-10 -mt-16 md:-mt-20 ${isCard ? "p-6 md:p-8 lg:p-10" : ""}`}
+      >
+        {children}
+      </div>
     </div>
   );
 };
