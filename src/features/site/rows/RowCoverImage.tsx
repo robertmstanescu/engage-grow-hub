@@ -9,13 +9,13 @@
  * single-widget rows such as FAQ, which deliberately keeps its padded
  * card treatment.
  */
-import type { PageRowLayout } from "@/types/rows";
+import type { RowLayout } from "@/types/rows";
 import CoverFadeImage from "../CoverFadeImage";
 import { transformImageUrl } from "@/services/mediaOptimization";
 
 const ROUNDED_PX = { subtle: 24, medium: 48, dramatic: 80 } as const;
 
-export const rowCoverRadius = (layout?: PageRowLayout) => {
+export const rowCoverRadius = (layout?: RowLayout) => {
   const size =
     (layout?.shapeTop as { size?: keyof typeof ROUNDED_PX } | undefined)?.size ||
     (layout?.shapeBottom as { size?: keyof typeof ROUNDED_PX } | undefined)?.size ||
@@ -26,7 +26,7 @@ export const rowCoverRadius = (layout?: PageRowLayout) => {
 interface Props {
   src: string;
   alt: string;
-  layout?: PageRowLayout;
+  layout?: RowLayout;
 }
 
 const RowCoverImage = ({ src, alt, layout }: Props) => {
