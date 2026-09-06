@@ -351,6 +351,25 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
         </AccordionContent>
       </AccordionItem>
 
+      {/* ═══ LAYOUT RATIOS ═══
+          How wide each block sits next to the others in this row. */}
+      {showWidthControl ? (
+        <AccordionItem value="ratios" className="border-none">
+          <AccordionTrigger className={TRIGGER_CLASS}>Layout ratios</AccordionTrigger>
+          <AccordionContent className={CONTENT_CLASS}>
+            <ColumnWidthControl
+              columnCount={widthColCount}
+              widths={columnWidths}
+              onChange={onUpdateColumnWidths}
+              labels={hasInherentSplit ? ["Image side", "Text side"] : undefined}
+              defaultOpen
+            />
+          </AccordionContent>
+        </AccordionItem>
+      ) : null}
+
+
+
       {/* ═══ CORNERS ═══
           Rounding of the band this row paints around all of its blocks. */}
       <AccordionItem value="corners" className="border-none">
