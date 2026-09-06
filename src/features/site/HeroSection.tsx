@@ -15,8 +15,14 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 interface HeroContent {
   label: string;
+  /** Admin-picked eyebrow (label) colour. Falls back to the theme token. */
+  color_label?: string;
   tagline?: string;
   tagline_color?: string;
+  /** Admin-picked tagline colour (editor field name). */
+  color_tagline?: string;
+  /** Horizontal alignment of the whole hero text stack. Default centre. */
+  align?: "left" | "center" | "right";
   title_lines?: any[];
   subtitle?: string;
   subtitle_color?: string;
@@ -33,10 +39,9 @@ interface HeroContent {
   title_line2?: string;
   /**
    * Optional small foreground photo card next to the text — separate
-   * from `bg_type`/`bg_url` (the full-bleed background). Not mutually
-   * exclusive in the data model, but only one is expected in use on any
-   * given hero at a time. Both fields are required together: there is
-   * no rendering path that shows the image without its alt text.
+   * from `bg_type`/`bg_url` (the full-bleed background). Alt text is
+   * enforced at publish time, not at render time, so an image shows as
+   * soon as it's picked.
    */
   visual_image_url?: string;
   visual_image_alt?: string;
