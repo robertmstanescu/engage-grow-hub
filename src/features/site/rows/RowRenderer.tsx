@@ -110,14 +110,16 @@ const RowRenderer = ({
   );
 
   const body = paintsSurface ? (
-    <RowSurfaceProvider value>
-      <RowSection
-        row={row as unknown as PageRow}
-        vAlign={vAlign}
-        className=""
-        grain={false}
-        dataRowId={row.id}
-      >
+    <RowSection
+      row={row as unknown as PageRow}
+      vAlign={vAlign}
+      className=""
+      grain={false}
+      dataRowId={row.id}
+    >
+      {/* The provider sits INSIDE the section so only the widgets' own
+          nested RowSections render bare — this one still paints. */}
+      <RowSurfaceProvider value>
         {coverImage ? (
           <>
             <RowCoverImage
@@ -135,8 +137,8 @@ const RowRenderer = ({
         ) : (
           grid
         )}
-      </RowSection>
-    </RowSurfaceProvider>
+      </RowSurfaceProvider>
+    </RowSection>
   ) : (
     grid
   );
