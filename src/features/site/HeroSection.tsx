@@ -86,8 +86,14 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
     if (!h1) return;
     let raf = 0;
     let applied = 1;
+    /* Last WIDTH we actually fitted against. A ResizeObserver reports
+       height changes too, and rescaling the heading changes its height —
+       so without this guard every fit re-triggers the observer and the
+       hero visibly flickers (worse once a foreground image is added,
+       because the image load kicks off the first cycle). */
+    let lastAvail = -1;
 
-    const fit = () => {
+    const fit = (force = false) => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         /* Measure the CONSTRAINING box (the parent), not the <h1>:
@@ -99,6 +105,8 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
           h1.parentElement?.clientWidth || Infinity,
         );
         if (!Number.isFinite(avail)) return;
+        if (!force && Math.abs(avail - lastAvail) < 1) return;
+        lastAvail = avail;
         if (!avail) return;
 
         const cs = getComputedStyle(h1);
@@ -191,20 +199,23 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
       });
     };
 
-    fit();
+    const onFit = () => fit(false);
+    const forceFit = () => fit(true);
+
+    forceFit();
     /* Observe the PARENT's width (what actually constrains the title),
        never the <h1>'s own box — the <h1>'s height changes when we
        rescale, which is what created the old feedback loop. */
-    const ro = new ResizeObserver(fit);
+    const ro = new ResizeObserver(onFit);
     if (h1.parentElement) ro.observe(h1.parentElement);
-    window.addEventListener("resize", fit);
+    window.addEventListener("resize", onFit);
     /* Re-fit once webfonts finish loading — metrics change when the
        display font swaps in. */
-    (document as any).fonts?.ready?.then(fit);
+    (document as any).fonts?.ready?.then(forceFit);
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      window.removeEventListener("resize", fit);
+      window.removeEventListener("resize", onFit);
     };
   }, [lineCount, leftAligned]);
 
