@@ -110,16 +110,18 @@ const RowRenderer = ({
   );
 
   /* Round the shared surface's corners to match every other box on the
-     * site (the global --radius, 24px). Skipped when the row has edge
-     * shapes assigned — SectionShape caps paint OUTSIDE the section and
-     * an overflow clip would cut them off. */
-  const hasEdgeShapes = ["shapeTop", "shapeBottom"].some((key) => {
-    const shape = row.layout?.[key as "shapeTop" | "shapeBottom"];
-    return shape && shape.kind !== "none";
-  });
-  const surfaceStyle = hasEdgeShapes
-    ? undefined
-    : { borderRadius: "var(--radius)", overflow: "hidden" as const };
+     * site (the global --radius, 24px). Per edge: a corner next to an
+     * assigned edge shape keeps 0 radius because the SectionShape cap
+     * already curves that edge; the remaining corners get the standard
+     * radius. No overflow clip — the caps paint OUTSIDE the section and
+     * must not be cut off. */
+  const hasShapeTop = Boolean(row.layout?.shapeTop && row.layout.shapeTop.kind !== "none");
+  const hasShapeBottom = Boolean(row.layout?.shapeBottom && row.layout.shapeBottom.kind !== "none");
+  const r = "var(--radius)";
+  const z = "0px";
+  const surfaceStyle = {
+    borderRadius: `${hasShapeTop ? z : r} ${hasShapeTop ? z : r} ${hasShapeBottom ? z : r} ${hasShapeBottom ? z : r}`,
+  };
 
   const body = paintsSurface ? (
     <RowSection
