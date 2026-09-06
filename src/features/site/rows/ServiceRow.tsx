@@ -73,6 +73,11 @@ const buildColorOverrides = (content: Record<string, any>): Record<string, strin
 // PageRows dispatcher can pass props uniformly.
 const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
+  /* Empty string = deliberately cleared → no eyebrow. Undefined = never
+     set → fall back to the legacy pillar number. */
+  const resolvedEyebrow = (
+    c.eyebrow === undefined ? (c.pillar_number ?? "") : c.eyebrow
+  ) as string;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const services = c.services || [];
   const [current, setCurrent] = useState(0);
