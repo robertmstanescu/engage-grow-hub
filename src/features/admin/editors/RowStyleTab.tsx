@@ -45,6 +45,7 @@
  */
 
 import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
+import ImagePickerField from "../ImagePickerField";
 import ColumnWidthControl from "../site-editor/ColumnWidthControl";
 
 import OverlayEditor from "../site-editor/OverlayEditor";
