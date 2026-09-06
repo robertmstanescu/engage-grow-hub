@@ -500,7 +500,7 @@ export const HeroView = ({
               animate={{ opacity: 0.4 }}
               transition={{ duration: 1, delay: 0.8, ease }}
               className="font-body tracking-[0.28em] uppercase flex-shrink-0"
-              style={{ color: c.tagline_color || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
+              style={{ color: c.tagline_color || c.color_tagline || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
               <Field fieldPath="tagline" as="span">
                 {c.tagline}
               </Field>
@@ -516,7 +516,7 @@ export const HeroView = ({
               <Field
                 fieldPath="subtitle"
                 as="p"
-                className={`leading-tight max-w-[600px] mx-auto ${hasVisual ? "xl:mx-0" : ""}`}
+                className={`leading-tight max-w-[600px] ${marginClass}`}
                 style={{
                   // Opt-in only: the script font is reserved for genuine
                   // handwritten annotations, not ordinary subtitle copy.
@@ -539,7 +539,7 @@ export const HeroView = ({
                 fieldPath="body"
                 html
                 as="div"
-                className={`font-body max-w-[640px] mx-auto leading-relaxed ${hasVisual ? "xl:mx-0" : ""}`}
+                className={`font-body max-w-[640px] leading-relaxed ${marginClass}`}
                 style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "var(--fs-hero-body)" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
               />
@@ -569,7 +569,7 @@ export const HeroView = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.65, ease }}
-            className="relative hidden xl:block w-full xl:w-[340px] xl:flex-shrink-0"
+            className="relative hidden lg:block w-full lg:w-[340px] lg:flex-shrink-0"
           >
             <div
               className="relative w-full overflow-hidden"
