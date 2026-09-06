@@ -266,13 +266,13 @@ const RowSection = ({
           </div>
         ) : null}
         {shapeTop ? (
-          <SectionShape edge="top" config={shapeTop} color={surfaceColor || "transparent"} />
+          <SectionShape edge="top" config={shapeTop} color={surfaceColor || "transparent"} useMesh={!hasOwnPaint} />
         ) : null}
         {shapeBottom ? (
-          <SectionShape edge="bottom" config={shapeBottom} color={surfaceColor || "transparent"} />
+          <SectionShape edge="bottom" config={shapeBottom} color={surfaceColor || "transparent"} useMesh={!hasOwnPaint} />
         ) : null}
         {row.layout?.overlays?.length ? (
-          <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden">
+          <div className="row-overlay-layer absolute inset-0 pointer-events-none overflow-hidden">
             {renderOverlayElements(row.layout.overlays)}
           </div>
         ) : null}
