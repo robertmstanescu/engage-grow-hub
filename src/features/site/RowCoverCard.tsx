@@ -25,9 +25,16 @@ const ROUNDED_PX = { subtle: 24, medium: 48, dramatic: 80 } as const;
 interface RowCoverCardProps {
   row: PageRow;
   children: React.ReactNode;
+  /**
+   * "flush" (default): the picture dissolves straight into the row's own
+   * surface — no card, no shadow, no padding.
+   * "card": the legacy treatment — the picture and content sit inside a
+   * padded light card with a soft shadow. FAQ rows opted back into this.
+   */
+  variant?: "flush" | "card";
 }
 
-const RowCoverCard = ({ row, children }: RowCoverCardProps) => {
+const RowCoverCard = ({ row, children, variant = "flush" }: RowCoverCardProps) => {
   const coverImage = row.content?.cover_image?.trim() || undefined;
   const coverImageAlt = row.content?.cover_image_alt || "";
 
