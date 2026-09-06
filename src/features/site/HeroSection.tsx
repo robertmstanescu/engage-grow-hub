@@ -166,7 +166,7 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
         /* Matches the container classes below: a foreground visual
            switches the wide-screen text column to left alignment. */
         const leftAlign = leftAligned
-          && window.matchMedia("(min-width: 1280px)").matches;
+          && window.matchMedia("(min-width: 1024px)").matches;
         h1.querySelectorAll<HTMLElement>("span.block").forEach((line, i) => {
           const r = ratios[i];
           const wraps = Number.isFinite(r) && r < FLOOR;
