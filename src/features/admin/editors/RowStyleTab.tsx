@@ -173,17 +173,25 @@ export const ShapePicker = ({
 
 const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   // ── Column count derivation ────────────────────────────────────────
-  // image_text & profile rows have an INHERENT 2-zone split (image + text)
-  // even when columns_data is empty, so we always show the width control
-  // for them with at least 2 zones.
-  const colCount = 1 + (row.columns_data?.length || 0);
+  // v3 builder rows keep their real columns on `row.columns`; older rows
+  // stored extra columns in `columns_data`. image_text & profile rows have
+  // an INHERENT 2-zone split (image + text) even when both are empty.
+  const builderColCount = Array.isArray((row as { columns?: unknown[] }).columns)
+    ? ((row as { columns?: unknown[] }).columns as unknown[]).length
+    : 0;
+  const legacyColCount = 1 + (row.columns_data?.length || 0);
+  const colCount = Math.max(builderColCount, legacyColCount);
   // Image+Text owns its internal Image/Text split in its Content editor.
   // Row-level widths must describe real builder columns only.
   const hasInherentSplit = row.type === "profile";
   const showWidthControl = colCount > 1 || hasInherentSplit;
   const widthColCount = hasInherentSplit && colCount === 1 ? 2 : colCount;
+  const storedWidths = row.layout?.column_widths;
   const columnWidths =
-    row.layout?.column_widths || Array(widthColCount).fill(Math.round(100 / widthColCount));
+    Array.isArray(storedWidths) && storedWidths.length === widthColCount
+      ? storedWidths
+      : Array(widthColCount).fill(Math.round(100 / widthColCount));
+
 
   const currentOverlays = row.layout?.overlays || [];
 
@@ -342,6 +350,63 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
           </div>
         </AccordionContent>
       </AccordionItem>
+
+      {/* ═══ LAYOUT RATIOS ═══
+          How wide each block sits next to the others in this row. */}
+      {showWidthControl ? (
+        <AccordionItem value="ratios" className="border-none">
+          <AccordionTrigger className={TRIGGER_CLASS}>Layout ratios</AccordionTrigger>
+          <AccordionContent className={CONTENT_CLASS}>
+            <ColumnWidthControl
+              columnCount={widthColCount}
+              widths={columnWidths}
+              onChange={onUpdateColumnWidths}
+              labels={hasInherentSplit ? ["Image side", "Text side"] : undefined}
+              defaultOpen
+            />
+          </AccordionContent>
+        </AccordionItem>
+      ) : null}
+
+
+
+      {/* ═══ CORNERS ═══
+          Rounding of the band this row paints around all of its blocks. */}
+      <AccordionItem value="corners" className="border-none">
+        <AccordionTrigger className={TRIGGER_CLASS}>Corners</AccordionTrigger>
+        <AccordionContent className={CONTENT_CLASS}>
+          <div className="grid grid-cols-4 gap-1">
+            {([
+              ["none", "Square"],
+              ["subtle", "Subtle"],
+              ["medium", "Medium"],
+              ["dramatic", "Large"],
+            ] as const).map(([value, label]) => {
+              const active = (row.layout?.surfaceRadius || "medium") === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => patchLayout({ surfaceRadius: value })}
+                  className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+                    active
+                      ? "bg-secondary/15 border-secondary/40 text-foreground"
+                      : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <p className="font-body text-[10px] text-muted-foreground leading-snug mt-2">
+            Applies to the band a row paints around several blocks (or around a
+            row cover image). An edge with a decorative shape keeps its own curve.
+          </p>
+        </AccordionContent>
+      </AccordionItem>
+
+
 
       {/* ═══ ROW COVER IMAGE ═══
           One picture for the WHOLE row (all of its blocks), spanning the
@@ -635,14 +700,8 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               </p>
             </div>
 
-            <ColumnWidthControl
-              columnCount={widthColCount}
-              widths={columnWidths}
-              onChange={onUpdateColumnWidths}
-              disabled={!showWidthControl}
-              labels={hasInherentSplit ? ["Image side", "Text side"] : undefined}
-              defaultOpen={hasInherentSplit}
-            />
+
+
 
             <OverlayEditor
               overlays={currentOverlays}

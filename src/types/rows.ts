@@ -146,7 +146,14 @@ export interface RowLayout {
    * image. Defaults to 64. Halved on small screens.
    */
   coverTextOverlap?: number;
+  /**
+   * Corner rounding of the row's own painted surface (multi-widget rows
+   * and rows with a cover image). Defaults to "medium". Corners next to
+   * an assigned edge shape stay square — the shape cap curves them.
+   */
+  surfaceRadius?: "none" | "subtle" | "medium" | "dramatic";
 }
+
 
 
 /* ─── Section shapes ───────────────────────────────────────────────── */

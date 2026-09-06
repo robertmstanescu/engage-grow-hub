@@ -109,19 +109,22 @@ const RowRenderer = ({
     </div>
   );
 
-  /* Round the shared surface's corners to match every other box on the
-     * site (the global --radius, 24px). Per edge: a corner next to an
-     * assigned edge shape keeps 0 radius because the SectionShape cap
-     * already curves that edge; the remaining corners get the standard
-     * radius. No overflow clip — the caps paint OUTSIDE the section and
-     * must not be cut off. */
+  /* Round the shared surface's corners. Admins pick the size in
+     * Style ▸ Surface ▸ Corners (default 24px, the site's box radius).
+     * A corner next to an assigned edge shape keeps 0 radius because the
+     * SectionShape cap already curves that edge. No overflow clip — the
+     * caps paint OUTSIDE the section and must not be cut off. */
   const hasShapeTop = Boolean(row.layout?.shapeTop && row.layout.shapeTop.kind !== "none");
   const hasShapeBottom = Boolean(row.layout?.shapeBottom && row.layout.shapeBottom.kind !== "none");
-  const r = "var(--radius)";
+  const radiusPx = { none: 0, subtle: 16, medium: 24, dramatic: 48 }[
+    row.layout?.surfaceRadius || "medium"
+  ];
+  const r = `${radiusPx}px`;
   const z = "0px";
   const surfaceStyle = {
     borderRadius: `${hasShapeTop ? z : r} ${hasShapeTop ? z : r} ${hasShapeBottom ? z : r} ${hasShapeBottom ? z : r}`,
   };
+
 
   const body = paintsSurface ? (
     <RowSection
