@@ -167,9 +167,16 @@ const CellRenderer = ({ rowId, column, cell, renderWidgets }: CellRendererProps)
   ) : (
     <>
       {renderWidgets(cell, widgetBasePath)}
-      {/* Inline AddWidgetButton removed — drag a widget from the Elements tray to add. */}
+      {/* A cell that already holds widgets still needs to be a drop
+          target, otherwise a widget dragged from another cell (or a new
+          one from the tray) could only ever land in EMPTY cells. The
+          strip has zero height at rest and only opens up mid-drag. */}
+      {builderEnabled && (
+        <CellAppendDropZone rowId={rowId} colId={column.id} cellId={cell.id} />
+      )}
     </>
   );
+
 
   return (
     <SelectableWrapper path={path} label="Cell" variant="widget">
@@ -187,6 +194,35 @@ const CellRenderer = ({ rowId, column, cell, renderWidgets }: CellRendererProps)
         {inner}
       </div>
     </SelectableWrapper>
+  );
+};
+
+/* ─── append-drop strip for non-empty cells ──────────────────────── */
+
+const CellAppendDropZone = ({ rowId, colId, cellId }: { rowId: string; colId: string; cellId: string }) => {
+  const dropId = buildDropZoneId({ kind: "cell", rowId, colId, cellId });
+  const { setNodeRef, isOver, active } = useDroppable({ id: dropId });
+  const dragging = !!active;
+
+  return (
+    <div
+      ref={setNodeRef}
+      data-canvas-drop-zone={dropId}
+      aria-hidden
+      style={{
+        width: "100%",
+        height: dragging ? 28 : 0,
+        marginTop: dragging ? 4 : 0,
+        borderRadius: 6,
+        border: dragging
+          ? isOver
+            ? "2px solid hsl(var(--accent))"
+            : "1px dashed hsl(var(--accent) / 0.6)"
+          : "none",
+        backgroundColor: isOver ? "hsl(var(--accent) / 0.12)" : "transparent",
+        transition: "height 120ms ease, background-color 120ms ease",
+      }}
+    />
   );
 };
 

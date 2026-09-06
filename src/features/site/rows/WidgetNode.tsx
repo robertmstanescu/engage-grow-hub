@@ -21,11 +21,12 @@
 
 import type { PageRow, PageRowV3, PageWidget } from "@/types/rows";
 import { readDesignSettings, readGlobalRef } from "@/lib/constants/rowDefaults";
-import { renderWidget } from "@/lib/WidgetRegistry";
+import { renderWidget, getWidget } from "@/lib/WidgetRegistry";
 import WidgetWrapper from "@/components/widgets/WidgetWrapper";
 import type { GlobalWidget } from "@/hooks/useGlobalWidgets";
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
-import { type NodePath } from "@/features/admin/builder/BuilderContext";
+import { type NodePath, useBuilder } from "@/features/admin/builder/BuilderContext";
+import WidgetDragHandle from "@/features/admin/builder/CanvasWidgetDrag";
 import type { Alignment, VAlign } from "@/lib/layoutUtils";
 import { CurrentWidgetProvider } from "./PrimaryHeadingContext";
 
@@ -46,6 +47,7 @@ const WidgetNode = ({
   vAlign,
   globalMap,
 }: WidgetNodeProps) => {
+  const { enabled: builderEnabled } = useBuilder();
   // Synthesize a legacy-shaped PageRow so the existing widget registry
   // (which expects `{ row, rowIndex, align, vAlign }`) can paint it.
   const adapterRow: PageRow = {
@@ -84,10 +86,36 @@ const WidgetNode = ({
   }
 
   const rendered = renderWidget({ row: renderRow, rowIndex, align, vAlign });
-  if (rendered === null) return null;
 
   const design = readDesignSettings(renderRow.content);
   const widgetPath: NodePath = ["row", parentRow.id, "widget", widget.id];
+
+  /* Many widgets deliberately paint NOTHING while they're still empty
+     (Quote Band with no quote, How We Work with no steps, …). Correct
+     on the live site — fatal in the editor, where an invisible widget
+     can't be clicked, so its settings can never be opened. In the
+     builder we swap the null for a labelled, selectable placeholder. */
+  if (rendered === null) {
+    if (!builderEnabled) return null;
+    const def = getWidget(renderRow.type as string);
+    return (
+      <SelectableWrapper path={widgetPath} label={renderRow.type} variant="widget">
+        <div className="group relative w-full rounded-md border border-dashed border-blue-300 bg-blue-50/40 px-4 py-6 text-center">
+          <WidgetDragHandle
+            widgetId={widget.id}
+            type={renderRow.type as string}
+            className="opacity-0 group-hover:opacity-100 focus:opacity-100"
+          />
+          <p className="font-body text-xs font-semibold uppercase tracking-wider text-blue-700">
+            {def?.label || renderRow.type}
+          </p>
+          <p className="mt-1 font-body text-xs text-blue-700/70">
+            Empty — click to add content in the settings panel
+          </p>
+        </div>
+      </SelectableWrapper>
+    );
+  }
 
   /* Optional per-widget slug → DOM id, so any widget can be deep-linked
      (`/#pricing-cards`) exactly like a row. */
@@ -98,7 +126,17 @@ const WidgetNode = ({
   return (
     <CurrentWidgetProvider value={widget.id}>
       <SelectableWrapper path={widgetPath} label={renderRow.type} variant="widget">
-        <div id={slug || undefined} className={slug ? "scroll-mt-16" : undefined}>
+        <div
+          id={slug || undefined}
+          className={`${builderEnabled ? "group relative " : ""}${slug ? "scroll-mt-16" : ""}`.trim() || undefined}
+        >
+          {builderEnabled && (
+            <WidgetDragHandle
+              widgetId={widget.id}
+              type={renderRow.type as string}
+              className="opacity-0 group-hover:opacity-100 focus:opacity-100"
+            />
+          )}
           <WidgetWrapper design={design}>{rendered}</WidgetWrapper>
         </div>
       </SelectableWrapper>
@@ -107,5 +145,6 @@ const WidgetNode = ({
 
 
 };
+
 
 export default WidgetNode;
