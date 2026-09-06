@@ -76,6 +76,15 @@ export const designToStyle = (d: WidgetDesignSettings): CSSProperties => {
   // Only set bg when explicitly provided — empty string == "transparent
   // / inherit from row", which is the safest fallback for legacy rows.
   if (d.bgColor) style.backgroundColor = d.bgColor;
+  /* NEGATIVE MARGINS: a negatively-margined widget intentionally
+   * overlaps its neighbours. Without a stacking context the neighbour
+   * that comes LATER in the DOM paints on top and "deletes" the
+   * overlapping text. `position: relative` + zIndex promotes the
+   * overlapping widget so its (transparent) chrome paints above. */
+  if (d.marginTop < 0 || d.marginBottom < 0 || d.marginLeft < 0 || d.marginRight < 0) {
+    style.position = "relative";
+    style.zIndex = 1;
+  }
   return style;
 };
 
