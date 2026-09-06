@@ -73,6 +73,12 @@ const HeroRowFieldsInline = ({ content, onChange, bgColor }: Props) => {
 
   return (
     <div className="space-y-3">
+      <SelectField
+        label="Text Alignment"
+        value={content.align || "center"}
+        options={ALIGNS}
+        onChange={(v) => onChange("align", v)}
+      />
       <Field label="Eyebrow" value={content.label || ""} onChange={(v) => onChange("label", v)} />
       <ColorField label="Eyebrow Color" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
       <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
