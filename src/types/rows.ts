@@ -132,6 +132,20 @@ export interface RowLayout {
   fullBleed?: boolean;
   /** Which part of a cropped image stays visible when a height is set. */
   focalPoint?: "top" | "center" | "bottom" | "left" | "right";
+  /**
+   * Optional cover picture for the WHOLE row (all widgets), painted by
+   * the row-level surface — full width, row corner radius.
+   */
+  coverImage?: string;
+  /** Alt text for `coverImage`. */
+  coverImageAlt?: string;
+  /** "fade" (default) dissolves into the row colour; "fill" is a plain banner. */
+  coverMode?: "fade" | "fill";
+  /**
+   * How far (px) the row's content is pulled UP over a fading cover
+   * image. Defaults to 64. Halved on small screens.
+   */
+  coverTextOverlap?: number;
 }
 
 
