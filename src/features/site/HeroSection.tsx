@@ -20,6 +20,8 @@ interface HeroContent {
   title_lines?: any[];
   subtitle?: string;
   subtitle_color?: string;
+  /** Opt-in handwritten (Architects Daughter) styling for the subtitle. */
+  subtitle_handwritten?: boolean;
   body: string;
   bg_type?: "none" | "image" | "video";
   bg_url?: string;
