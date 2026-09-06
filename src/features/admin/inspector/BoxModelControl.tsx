@@ -91,6 +91,7 @@ const BoxModelControl = ({
   paddingTop, paddingRight, paddingBottom, paddingLeft,
   onChange,
   max = 999,
+  minMargin = -400,
 }: Props) => {
   // Colour tokens: keep the rings cohesive with the shadcn palette so
   // the control reads correctly under any future theme tweak.
@@ -120,28 +121,28 @@ const BoxModelControl = ({
         {/* Top margin */}
         <div className="absolute top-1 left-1/2 -translate-x-1/2">
           <SlotInput
-            field="marginTop" value={marginTop} onChange={onChange} max={max}
+            field="marginTop" value={marginTop} onChange={onChange} min={minMargin} max={max}
             ariaLabel="Margin top"
           />
         </div>
         {/* Bottom margin */}
         <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
           <SlotInput
-            field="marginBottom" value={marginBottom} onChange={onChange} max={max}
+            field="marginBottom" value={marginBottom} onChange={onChange} min={minMargin} max={max}
             ariaLabel="Margin bottom"
           />
         </div>
         {/* Left margin */}
         <div className="absolute left-1 top-1/2 -translate-y-1/2">
           <SlotInput
-            field="marginLeft" value={marginLeft} onChange={onChange} max={max}
+            field="marginLeft" value={marginLeft} onChange={onChange} min={minMargin} max={max}
             ariaLabel="Margin left"
           />
         </div>
         {/* Right margin */}
         <div className="absolute right-1 top-1/2 -translate-y-1/2">
           <SlotInput
-            field="marginRight" value={marginRight} onChange={onChange} max={max}
+            field="marginRight" value={marginRight} onChange={onChange} min={minMargin} max={max}
             ariaLabel="Margin right"
           />
         </div>
@@ -160,28 +161,28 @@ const BoxModelControl = ({
           {/* Top padding */}
           <div className="absolute top-1 left-1/2 -translate-x-1/2">
             <SlotInput
-              field="paddingTop" value={paddingTop} onChange={onChange} max={max}
+              field="paddingTop" value={paddingTop} onChange={onChange} min={0} max={max}
               ariaLabel="Padding top"
             />
           </div>
           {/* Bottom padding */}
           <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
             <SlotInput
-              field="paddingBottom" value={paddingBottom} onChange={onChange} max={max}
+              field="paddingBottom" value={paddingBottom} onChange={onChange} min={0} max={max}
               ariaLabel="Padding bottom"
             />
           </div>
           {/* Left padding */}
           <div className="absolute left-1 top-1/2 -translate-y-1/2">
             <SlotInput
-              field="paddingLeft" value={paddingLeft} onChange={onChange} max={max}
+              field="paddingLeft" value={paddingLeft} onChange={onChange} min={0} max={max}
               ariaLabel="Padding left"
             />
           </div>
           {/* Right padding */}
           <div className="absolute right-1 top-1/2 -translate-y-1/2">
             <SlotInput
-              field="paddingRight" value={paddingRight} onChange={onChange} max={max}
+              field="paddingRight" value={paddingRight} onChange={onChange} min={0} max={max}
               ariaLabel="Padding right"
             />
           </div>
@@ -205,7 +206,7 @@ const BoxModelControl = ({
         className="mt-2 font-body text-[10px] leading-snug"
         style={{ color: labelMuted }}
       >
-        All values in <span className="font-semibold">px</span>. Click any side and type to set the spacing.
+        All values in <span className="font-semibold">px</span>. Margins may go negative (to pull the block up or over its neighbour); padding stays at zero or above.
       </p>
     </div>
   );
