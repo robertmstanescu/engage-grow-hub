@@ -285,11 +285,22 @@ export const HeroView = ({
   // Independent of hasBg/bg_type — a small foreground photo card next to
   // the text, not a full-bleed background. When absent, the layout below
   // renders exactly as it always has (single centred column, no grid).
-  const hasVisual = Boolean(c.visual_image_url && c.visual_image_alt);
+  /* Alt text is enforced by the publish gate, so the picture renders as
+     soon as an admin picks one. */
+  const hasVisual = Boolean(c.visual_image_url);
+
+  /* Admin alignment (Style ▸ Hero alignment). A hero with a foreground
+     visual defaults to left, matching the side-by-side layout. */
+  const align: "left" | "center" | "right" = c.align || (hasVisual ? "left" : "center");
+  const alignClass =
+    align === "left" ? "items-start text-left"
+    : align === "right" ? "items-end text-right"
+    : "items-center text-center";
+  const marginClass = align === "center" ? "mx-auto" : align === "right" ? "ml-auto" : "mr-auto";
 
   /* Per-line shrink-to-fit so no title line ever wraps unintentionally
      (see useFitTitleLines above). */
-  const titleRef = useFitTitleLines(titleLines.length, hasVisual);
+  const titleRef = useFitTitleLines(titleLines.length, align === "left");
 
   /**
    * Cold-load guard — `isLoading` is an explicit prop the caller
