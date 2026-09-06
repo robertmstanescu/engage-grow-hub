@@ -83,20 +83,21 @@ const stripReservedKeys = (data: Record<string, any>): Record<string, any> => {
 };
 
 const NumberField = ({
-  label, value, onChange, max = 200,
-}: { label: string; value: number; onChange: (n: number) => void; max?: number }) => (
+  label, value, onChange, max = 200, min = 0,
+}: { label: string; value: number; onChange: (n: number) => void; max?: number; min?: number }) => (
   <div>
     <label className={FIELD_LABEL}>{label}</label>
     <input
       type="number"
-      min={0}
+      min={min}
       max={max}
       value={Number.isFinite(value) ? value : 0}
       onChange={(e) => {
         // WHY clamp on read: a stray non-numeric paste would otherwise
         // propagate `NaN` into the JSON and break inline-style serialisation.
+        // `min` is a prop so margins can go negative while padding stays ≥ 0.
         const n = Number(e.target.value);
-        onChange(Number.isFinite(n) ? Math.max(0, Math.min(max, n)) : 0);
+        onChange(Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : 0);
       }}
       className={NUM_INPUT}
       style={{
@@ -364,10 +365,10 @@ const WidgetSettingsDrawer = ({
               Margin (px)
             </h3>
             <div className="grid grid-cols-2 gap-2">
-              <NumberField label="Top"    value={design.marginTop}    onChange={(n) => update("marginTop", n)} />
-              <NumberField label="Right"  value={design.marginRight}  onChange={(n) => update("marginRight", n)} />
-              <NumberField label="Bottom" value={design.marginBottom} onChange={(n) => update("marginBottom", n)} />
-              <NumberField label="Left"   value={design.marginLeft}   onChange={(n) => update("marginLeft", n)} />
+              <NumberField label="Top"    value={design.marginTop} min={-400}    onChange={(n) => update("marginTop", n)} />
+              <NumberField label="Right"  value={design.marginRight} min={-400}  onChange={(n) => update("marginRight", n)} />
+              <NumberField label="Bottom" value={design.marginBottom} min={-400} onChange={(n) => update("marginBottom", n)} />
+              <NumberField label="Left"   value={design.marginLeft} min={-400}   onChange={(n) => update("marginLeft", n)} />
             </div>
           </section>
 
