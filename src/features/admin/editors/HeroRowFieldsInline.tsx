@@ -54,6 +54,13 @@ const BG_TYPES = [
   { label: "Video", value: "video" },
 ];
 
+/** Horizontal alignment of the hero text stack. */
+const ALIGNS = [
+  { label: "Centre", value: "center" },
+  { label: "Left", value: "left" },
+  { label: "Right", value: "right" },
+];
+
 const HeroRowFieldsInline = ({ content, onChange, bgColor }: Props) => {
   /**
    * Title lines may have been saved as plain strings in older rows. We
