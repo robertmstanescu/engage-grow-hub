@@ -6,6 +6,7 @@ import type { VAlign } from "../PageRows";
 import { resolveRowForeground } from "@/lib/rowForeground";
 import SectionShape, { shapeHeightPx, shapeMaskStyle } from "../SectionShape";
 import { resolveRowMinHeight } from "@/lib/rowHeight";
+import { useInsideRowSurface } from "../RowSurfaceContext";
 
 /** Tracks the same breakpoint index.css uses to flatten shapes. */
 const useFlatShapes = () => {
@@ -116,6 +117,7 @@ const RowSection = ({
   dataRowType,
   dataRowTitle,
 }: Props) => {
+  const insideRowSurface = useInsideRowSurface();
   const vAlignClass =
     vAlign === "top" ? "items-start"
     : vAlign === "bottom" ? "items-end"
