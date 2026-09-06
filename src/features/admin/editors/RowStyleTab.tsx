@@ -342,6 +342,79 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
         </AccordionContent>
       </AccordionItem>
 
+      {/* ═══ ROW COVER IMAGE ═══
+          One picture for the WHOLE row (all of its blocks), spanning the
+          full width and inheriting the row's corner curve. */}
+      <AccordionItem value="cover" className="border-none">
+        <AccordionTrigger className={TRIGGER_CLASS}>Row cover image</AccordionTrigger>
+        <AccordionContent className={CONTENT_CLASS}>
+          <div className="flex flex-col gap-3">
+            <ImagePickerField
+              label="Cover image (optional)"
+              value={row.layout?.coverImage || ""}
+              onChange={(v) => patchLayout({ coverImage: v })}
+              altValue={row.layout?.coverImageAlt || ""}
+              onAltChange={(v) => patchLayout({ coverImageAlt: v })}
+            />
+            {row.layout?.coverImage ? (
+              <>
+                <div>
+                  <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                    Style
+                  </label>
+                  <div className="grid grid-cols-2 gap-1">
+                    {([
+                      ["fade", "Fade into row"],
+                      ["fill", "Plain banner"],
+                    ] as const).map(([value, label]) => {
+                      const active = (row.layout?.coverMode || "fade") === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => patchLayout({ coverMode: value })}
+                          className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+                            active
+                              ? "bg-secondary/15 border-secondary/40 text-foreground"
+                              : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[70px]">
+                      Text overlap
+                    </span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={160}
+                      step={4}
+                      value={row.layout?.coverTextOverlap ?? 64}
+                      onChange={(e) => patchLayout({ coverTextOverlap: Number(e.target.value) })}
+                      className="flex-1"
+                      style={{ accentColor: "hsl(var(--secondary))" }}
+                    />
+                    <span className="font-body text-[10px] text-foreground min-w-[36px] text-right">
+                      {row.layout?.coverTextOverlap ?? 64}px
+                    </span>
+                  </div>
+                  <p className="font-body text-[10px] text-muted-foreground leading-snug mt-1">
+                    Pulls the text up over the picture's fading tail. Reduced
+                    automatically on phones.
+                  </p>
+                </div>
+              </>
+            ) : null}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
       {/* ═══ HEIGHT ═══ */}
       <AccordionItem value="height" className="border-none">
         <AccordionTrigger className={TRIGGER_CLASS}>Height</AccordionTrigger>
