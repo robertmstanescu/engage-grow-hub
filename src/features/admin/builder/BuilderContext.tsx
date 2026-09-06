@@ -204,6 +204,21 @@ export interface BuilderContextValue {
   /** Click/keyboard entry point for Snippet cards — see insertWidgetAtSelection. */
   insertSnippetAtSelection: (row: PageRowV3) => void;
   /**
+   * Move an EXISTING widget from wherever it currently lives into
+   * another cell (or into a brand-new single-column row). The widget
+   * object — id, type, data and per-instance design — is preserved
+   * verbatim; nothing is re-seeded from the registry.
+   *
+   * Returns true when the tree changed.
+   */
+  moveWidget: (
+    widgetId: string,
+    target:
+      | { kind: "cell"; rowId: string; colId: string; cellId: string; insertIndex?: number }
+      | { kind: "row"; insertAt: number },
+  ) => boolean;
+
+  /**
    * EPIC 1 / US 1.5 — Breadcrumb Navigation
    * Read-only access to the rows tree so the breadcrumb can resolve
    * human-readable labels (row type, widget kind, item title, etc.)
@@ -231,6 +246,8 @@ const DISABLED: BuilderContextValue = {
   insertLayoutAtSelection: () => {},
   insertPrebuiltRow: () => null,
   insertSnippetAtSelection: () => {},
+  moveWidget: () => false,
+
   pageRows: undefined,
 };
 
@@ -499,19 +516,28 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       const def = getWidget(widgetType);
       if (!def) return null;
       const seed = (def.defaultData ?? {}) as Record<string, any>;
-      const newRow: PageRow = {
-        id: generateRowId(),
-        type: widgetType as PageRow["type"],
-        strip_title: def.label || widgetType,
-        bg_color: "#FFFFFF",
-        content: { ...seed },
-        layout: { ...DEFAULT_ROW_LAYOUT },
-      };
+      /* MUST be a v3 row (column → cell → widget). A flat v1 row
+         (`{ id, type, content }`) still RENDERS fine (normalizeRowsToV3
+         runs at the render boundary) but the inspector resolves the
+         selection against the RAW rows array — so a v1 row made the
+         freshly-inserted widget unfindable and the settings panel said
+         "The selected widget no longer exists", i.e. the widget could
+         never be filled in. */
+      const shell = buildEmptyV3Row(1) as any;
+      const newWidgetId = generateRowId();
+      shell.strip_title = def.label || widgetType;
+      shell.bg_color = shell.bg_color ?? "#FFFFFF";
+      shell.layout = { ...DEFAULT_ROW_LAYOUT, ...(shell.layout || {}) };
+      shell.columns[0].cells[0].widgets = [
+        { id: newWidgetId, type: widgetType, data: { ...seed } },
+      ];
+      const newRow = shell as PageRow;
       const at = Math.max(0, Math.min(insertAt, rows.length));
       setter([...rows.slice(0, at), newRow, ...rows.slice(at)]);
-      setActiveNodePathState(["row", newRow.id, "widget", newRow.id]);
+      setActiveNodePathState(["row", newRow.id, "widget", newWidgetId]);
       setEditingPathState(null);
       return newRow.id;
+
     },
     [],
   );
@@ -624,7 +650,82 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
     [resolveSelectionInsertion, insertPrebuiltRow],
   );
 
+  /* ── Move an existing widget (drag from canvas → another cell/row) ──
+   * Surgical, sibling-safe: the source cell keeps every other widget,
+   * and the moved widget object is carried over untouched so its data,
+   * design overrides and id all survive the trip. */
+  const moveWidget = useCallback<BuilderContextValue["moveWidget"]>(
+    (widgetId, target) => {
+      const rows = rowsRef.current;
+      const setter = onRowsChangeRef.current;
+      if (!rows || !setter || !widgetId) return false;
+
+      // 1 — locate + lift the widget out of its current cell.
+      let moved: any = null;
+      const stripped = rows.map((r: any) => {
+        if (moved || !Array.isArray(r.columns)) return r;
+        let rowTouched = false;
+        const columns = r.columns.map((col: any) => {
+          if (moved || !Array.isArray(col.cells)) return col;
+          let colTouched = false;
+          const cells = col.cells.map((cell: any) => {
+            if (moved || !Array.isArray(cell.widgets)) return cell;
+            const idx = cell.widgets.findIndex((w: any) => w?.id === widgetId);
+            if (idx === -1) return cell;
+            moved = cell.widgets[idx];
+            colTouched = true;
+            rowTouched = true;
+            return { ...cell, widgets: [...cell.widgets.slice(0, idx), ...cell.widgets.slice(idx + 1)] };
+          });
+          return colTouched ? { ...col, cells } : col;
+        });
+        return rowTouched ? { ...r, columns } : r;
+      });
+      if (!moved) return false;
+
+      // 2 — drop it at the destination.
+      if (target.kind === "cell") {
+        let landed = false;
+        const next = stripped.map((r: any) => {
+          if (r.id !== target.rowId || !Array.isArray(r.columns)) return r;
+          return {
+            ...r,
+            columns: r.columns.map((col: any) => {
+              if (col.id !== target.colId || !Array.isArray(col.cells)) return col;
+              return {
+                ...col,
+                cells: col.cells.map((cell: any) => {
+                  if (cell.id !== target.cellId) return cell;
+                  const widgets = [...(cell.widgets || [])];
+                  const at = typeof target.insertIndex === "number"
+                    ? Math.max(0, Math.min(target.insertIndex, widgets.length))
+                    : widgets.length;
+                  widgets.splice(at, 0, moved);
+                  landed = true;
+                  return { ...cell, widgets };
+                }),
+              };
+            }),
+          };
+        });
+        if (!landed) return false;
+        setter(next as PageRow[]);
+      } else {
+        const shell = buildEmptyV3Row(1) as any;
+        shell.columns[0].cells[0].widgets = [moved];
+        const at = Math.max(0, Math.min(target.insertAt, stripped.length));
+        setter([...stripped.slice(0, at), shell as PageRow, ...stripped.slice(at)] as PageRow[]);
+      }
+
+      setActiveElement(`widget:${widgetId}`);
+      setEditingPathState(null);
+      return true;
+    },
+    [setActiveElement],
+  );
+
   const value = useMemo<BuilderContextValue>(
+
     () => ({
       enabled: true,
       activeNodePath,
@@ -643,6 +744,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       insertLayoutAtSelection,
       insertPrebuiltRow,
       insertSnippetAtSelection,
+      moveWidget,
       pageRows,
     }),
     [
@@ -661,6 +763,7 @@ export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderPro
       insertLayoutAtSelection,
       insertPrebuiltRow,
       insertSnippetAtSelection,
+      moveWidget,
       pageRows,
     ],
   );

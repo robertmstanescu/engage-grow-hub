@@ -39,6 +39,7 @@ import {
   type DragStartEvent,
   type DragEndEvent,
   type DropAnimation,
+  MeasuringStrategy,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import type { ImperativePanelGroupHandle } from "react-resizable-panels";
@@ -59,6 +60,11 @@ import ElementsTray, {
   type TrayDragData,
 } from "./ElementsTray";
 import { parseDropZoneId } from "./CanvasDropZone";
+import {
+  isCanvasWidgetDragData,
+  CanvasWidgetDragPreview,
+  type CanvasWidgetDragData,
+} from "./CanvasWidgetDrag";
 import type { PageRow } from "@/types/rows";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import InspectorPanel from "../inspector/InspectorPanel";
@@ -85,8 +91,8 @@ const pointerThenClosestCenter: CollisionDetection = (args) => {
  * ------------------------------------------------------------------ */
 interface BuilderDndShellProps {
   sensors: ReturnType<typeof useSensors>;
-  activeDrag: TrayDragData | null;
-  setActiveDrag: (d: TrayDragData | null) => void;
+  activeDrag: TrayDragData | CanvasWidgetDragData | null;
+  setActiveDrag: (d: TrayDragData | CanvasWidgetDragData | null) => void;
   onDragStart: (e: DragStartEvent) => void;
   pageRows: PageRow[];
   onRowsChange: (rows: PageRow[]) => void;
@@ -102,7 +108,7 @@ const BuilderDndShell = ({
   onRowsChange,
   children,
 }: BuilderDndShellProps) => {
-  const { insertWidgetRow, insertLayoutRow, addWidgetToCell, insertPrebuiltRow, setActiveElement } = useBuilder();
+  const { insertWidgetRow, insertLayoutRow, addWidgetToCell, insertPrebuiltRow, setActiveElement, moveWidget } = useBuilder();
 
   const handleDragEnd = (e: DragEndEvent) => {
     const data = e.active.data.current;
@@ -129,6 +135,31 @@ const BuilderDndShell = ({
     // In every case we MUST bail before mutating the rows array OR the
     // active-element selection. The DragOverlay snaps back to origin via
     // `dropAnimation` so the editor sees clear "rejected" feedback.
+
+    // ── Existing-widget branch ───────────────────────────────────
+    // A widget already on the canvas was picked up by its grip handle.
+    // Same drop zones as a tray drag, but the widget is MOVED (data,
+    // design and id preserved) instead of created from defaults.
+    if (isCanvasWidgetDragData(data)) {
+      if (overId == null) return;
+      const dropTarget = parseDropZoneId(overId);
+      if (!dropTarget) return;
+      if (dropTarget.kind === "cell") {
+        moveWidget(data.widgetId, {
+          kind: "cell",
+          rowId: dropTarget.rowId,
+          colId: dropTarget.colId,
+          cellId: dropTarget.cellId,
+        });
+        return;
+      }
+      const at = dropTarget.kind === "before"
+        ? (() => { const i = pageRows.findIndex((r) => r.id === dropTarget.rowId); return i >= 0 ? i : pageRows.length; })()
+        : pageRows.length;
+      moveWidget(data.widgetId, { kind: "row", insertAt: at });
+      return;
+    }
+
     if (!isTrayDragData(data) || overId == null) return;
     const drop = parseDropZoneId(overId);
     if (!drop) return;
@@ -187,6 +218,11 @@ const BuilderDndShell = ({
   return (
     <DndContext
       sensors={sensors}
+      /* Drop zones only materialise once a drag starts, which shifts every
+         row below them down by ~30px. With dnd-kit's default one-shot
+         measurement those stale rects make drops land one zone off, so we
+         re-measure continuously while dragging. */
+      measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       collisionDetection={pointerThenClosestCenter}
       onDragStart={onDragStart}
       onDragEnd={handleDragEnd}
@@ -198,7 +234,11 @@ const BuilderDndShell = ({
           of vanishing at the cursor, giving the editor explicit visual
           confirmation that the drop was rejected. */}
       <DragOverlay dropAnimation={SNAP_BACK_ANIMATION}>
-        {activeDrag ? <TrayDragPreview data={activeDrag} /> : null}
+        {activeDrag
+          ? isCanvasWidgetDragData(activeDrag)
+            ? <CanvasWidgetDragPreview data={activeDrag} />
+            : <TrayDragPreview data={activeDrag} />
+          : null}
       </DragOverlay>
     </DndContext>
   );
@@ -320,10 +360,10 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
     // insertion logic to keep in sync.
     useSensor(KeyboardSensor),
   );
-  const [activeDrag, setActiveDrag] = useState<TrayDragData | null>(null);
+  const [activeDrag, setActiveDrag] = useState<TrayDragData | CanvasWidgetDragData | null>(null);
   const handleDragStart = (e: DragStartEvent) => {
     const data = e.active.data.current;
-    if (isTrayDragData(data)) setActiveDrag(data);
+    if (isTrayDragData(data) || isCanvasWidgetDragData(data)) setActiveDrag(data);
   };
 
   // Debug Story 1.1 — pixel-anchored panel limits.
