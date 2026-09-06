@@ -130,14 +130,28 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
 
         h1.querySelectorAll<HTMLElement>("span.block").forEach((line) => {
           const clone = line.cloneNode(true) as HTMLElement;
-          clone.style.display = "block";
+          /* Clones inherit the LIVE line's inline styles — including the
+             wrap state and max-width a previous fit pass applied. If those
+             leak into the probe, the next pass measures the WRAPPED width,
+             concludes everything fits, and resets the scale to 1 (the
+             wide-screen overflow / flicker report). Strip every style the
+             fit itself may have written, so the probe always measures the
+             natural single-line width. */
+          clone.style.display = "inline-block";
           clone.style.fontSize = "";
+          clone.style.whiteSpace = "nowrap";
+          clone.style.maxWidth = "none";
+          clone.style.marginInline = "0";
           probe.appendChild(clone);
         });
         document.body.appendChild(probe);
         const widths: number[] = [];
         probe.querySelectorAll<HTMLElement>(":scope > *").forEach((el) => {
-          widths.push(el.scrollWidth);
+          /* inline-block + nowrap: offsetWidth is the true natural width
+             (block-level scrollWidth would be capped to the probe's own
+             shrink-to-fit width, making every line report the widest
+             line's width). */
+          widths.push(el.offsetWidth);
         });
         document.body.removeChild(probe);
 
@@ -154,7 +168,11 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
            (a long opening sentence) is excluded from the calculation and
            wraps on its own; every other line stays unbroken and ALL
            lines share the single resulting size. */
-        const FLOOR = avail < 640 ? 0.35 : 0.42;
+        /* 0.35 everywhere: at the clamp's 132px ceiling that's still a
+           ~46px headline — plenty legible, and it keeps long sentences
+           whole next to a foreground visual on very wide screens instead
+           of wrapping them unnecessarily. */
+        const FLOOR = 0.35;
         const ratios = widths.map((w) => (w > 0 ? usable / w : Infinity));
         const feasible = ratios.filter((r) => Number.isFinite(r) && r >= FLOOR);
         let scale = feasible.length ? Math.min(1, Math.min(...feasible)) : FLOOR;
