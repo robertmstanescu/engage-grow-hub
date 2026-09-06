@@ -122,7 +122,8 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
           className="relative w-full overflow-hidden"
           style={{
             aspectRatio: "4/5",
-            borderRadius: shape === "default" ? 4 : 0,
+            /* Match every other box on the site rather than a 4px sliver. */
+            borderRadius: shape === "default" ? "var(--radius)" : 0,
             clipPath: obbPath ? `url(#img-clip-${clipId})` : CLIP_PATHS[shape] || undefined,
             backfaceVisibility: "hidden",
             transform: "translateZ(0)",
