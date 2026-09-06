@@ -109,12 +109,25 @@ const RowRenderer = ({
     </div>
   );
 
+  /* Round the shared surface's corners to match every other box on the
+     * site (the global --radius, 24px). Skipped when the row has edge
+     * shapes assigned — SectionShape caps paint OUTSIDE the section and
+     * an overflow clip would cut them off. */
+  const hasEdgeShapes = ["shapeTop", "shapeBottom"].some((key) => {
+    const shape = row.layout?.[key as "shapeTop" | "shapeBottom"];
+    return shape && shape.kind !== "none";
+  });
+  const surfaceStyle = hasEdgeShapes
+    ? undefined
+    : { borderRadius: "var(--radius)", overflow: "hidden" as const };
+
   const body = paintsSurface ? (
     <RowSection
       row={row as unknown as PageRow}
       vAlign={vAlign}
       className=""
       grain={false}
+      style={surfaceStyle}
       dataRowId={row.id}
     >
       {/* The provider sits INSIDE the section so only the widgets' own
