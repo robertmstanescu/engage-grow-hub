@@ -142,7 +142,9 @@ const FaqRow = ({
     <RowSection row={row}>
       {coverImage ? (
         <div className={`${maxW} w-full mx-auto`}>
-          <RowCoverCard row={row}>
+          {/* FAQ is the one row that keeps the legacy padded photo-card
+              look — every other row type uses the flush fade. */}
+          <RowCoverCard row={row} variant="card">
             <div ref={ref as any} className={contentAlign}>{innerContent}</div>
           </RowCoverCard>
         </div>
