@@ -63,7 +63,7 @@ const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Prop
             </div>
           ))}
         </div>
-        <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onChange("subtitle", v)} onColorChange={(v) => onChange("subtitle_color", v)} />
+        <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onChange("subtitle", v)} onColorChange={(v) => onChange("subtitle_color", v)} handwritten={!!content.subtitle_handwritten} onHandwrittenChange={(v) => onChange("subtitle_handwritten", v)} />
         <RichField label="Description" value={content.description || ""} onChange={(v) => onChange("description", v)} bgColor={bgColor} />
       </SectionBox>
 

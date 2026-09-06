@@ -76,6 +76,8 @@ const HeroRowFieldsInline = ({ content, onChange, bgColor }: Props) => {
         subtitleColor={content.subtitle_color || ""}
         onSubtitleChange={(v) => onChange("subtitle", v)}
         onColorChange={(v) => onChange("subtitle_color", v)}
+        handwritten={!!content.subtitle_handwritten}
+        onHandwrittenChange={(v) => onChange("subtitle_handwritten", v)}
         bgColor={bgColor}
       />
       <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />

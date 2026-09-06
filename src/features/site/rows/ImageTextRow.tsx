@@ -205,7 +205,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
       ) : null}
       {c.subtitle && (
         <SelectableWrapper path={[...basePath, "subtitle"]} label="Subtitle" variant="atom" inline>
-          <RowSubtitle color={c.subtitle_color}>
+          <RowSubtitle handwritten={!!c.subtitle_handwritten} color={c.subtitle_color}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
           </RowSubtitle>
         </SelectableWrapper>

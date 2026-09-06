@@ -90,7 +90,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
 
         {c.subtitle && (
           <SelectableWrapper path={[...basePath, "subtitle"]} label="Subtitle" variant="atom" inline>
-            <RowSubtitle color={c.subtitle_color || "inherit"} style={revealStyle(isVisible, 1)}>
+            <RowSubtitle handwritten={!!c.subtitle_handwritten} color={c.subtitle_color || "inherit"} style={revealStyle(isVisible, 1)}>
               <CanvasEditable path={[...basePath, "subtitle"]} value={c.subtitle} as="span">
                 <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
               </CanvasEditable>

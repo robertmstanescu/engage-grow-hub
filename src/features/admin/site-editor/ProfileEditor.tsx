@@ -34,7 +34,7 @@ const ProfileEditor = ({ content, onChange, bgColor }: Props) => {
             </div>
           ))}
         </div>
-        <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onChange("subtitle", v)} onColorChange={(v) => onChange("subtitle_color", v)} />
+        <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onChange("subtitle", v)} onColorChange={(v) => onChange("subtitle_color", v)} handwritten={!!content.subtitle_handwritten} onHandwrittenChange={(v) => onChange("subtitle_handwritten", v)} />
       </SectionBox>
 
       <SectionBox label="Image & Name Tag">

@@ -194,7 +194,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
           ) : null}
 
           {c.subtitle && (
-            <RowSubtitle color={c.subtitle_color} style={revealStyle(isVisible, 1.5)}>
+            <RowSubtitle handwritten={!!c.subtitle_handwritten} color={c.subtitle_color} style={revealStyle(isVisible, 1.5)}>
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
             </RowSubtitle>
           )}

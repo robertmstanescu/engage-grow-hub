@@ -5,22 +5,27 @@ interface Props {
   color?: string;
   style?: CSSProperties;
   className?: string;
+  /**
+   * Opt-in handwritten treatment. The "Architects Daughter" script font is
+   * reserved for genuine human-touch annotations — ordinary marketing
+   * subtitles render in the normal body font. Defaults to false.
+   */
+  handwritten?: boolean;
 }
 
 /**
- * <RowSubtitle/> — the handwritten "Architects Daughter" line that sits
- * between a title and the body copy on most rows.
+ * <RowSubtitle/> — the line that sits between a title and the body copy
+ * on most rows.
  *
  * ## Why a separate component
- * The subtitle is the ONLY place on the site where we use a script font.
- * That makes it a strong brand signal — and a strong drift risk if every
- * row hardcodes the font-family inline. Centralising avoids "one row says
- * Architects Daughter, another says Caveat" bugs.
+ * Centralising the subtitle keeps sizing/rhythm consistent across rows and
+ * gives us ONE place that decides when the script font applies.
  *
  * ## Design choices (the "why")
  *
- * - **`Architects Daughter`**: the script font adds warmth/humanity to an
- *   otherwise sharp typography system. Used sparingly — a punctuation mark.
+ * - **`Architects Daughter` (opt-in)**: the script font adds warmth, but it
+ *   only reads well as an occasional annotation. It is applied ONLY when
+ *   the row/widget sets `subtitle_handwritten: true`.
  *
  * - **`leading-tight` (1.25)**: script fonts have tall ascenders/descenders;
  *   relaxed leading creates ugly gaps. Tight leading keeps lines close.
@@ -31,11 +36,11 @@ interface Props {
  *
  * - **`mb-rhythm-base`**: shares the standard 24px rhythm gap.
  */
-const RowSubtitle = ({ children, color, style, className }: Props) => (
+const RowSubtitle = ({ children, color, style, className, handwritten }: Props) => (
   <p
     className={`leading-tight mb-rhythm-base ${className ?? ""}`}
     style={{
-      fontFamily: "'Architects Daughter', cursive",
+      ...(handwritten ? { fontFamily: "'Architects Daughter', cursive" } : {}),
       fontSize: "var(--fs-subtitle)",
       // Inherit the row's auto-resolved foreground unless the admin
       // set a per-row override. `--row-fg` is published by RowSection.

@@ -77,7 +77,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         )}
 
         {c.subtitle && (
-          <RowSubtitle color={c.subtitle_color} style={revealStyle(isVisible, 1)}>
+          <RowSubtitle handwritten={!!c.subtitle_handwritten} color={c.subtitle_color} style={revealStyle(isVisible, 1)}>
             <EditableText sectionKey="page_rows" fieldPath={`${prefix}.subtitle`} as="span">{c.subtitle}</EditableText>
           </RowSubtitle>
         )}

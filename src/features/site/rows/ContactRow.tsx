@@ -113,7 +113,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
             </RowTitle>
           )}
           {c.subtitle && (
-            <RowSubtitle color={c.subtitle_color || ""}>{c.subtitle}</RowSubtitle>
+            <RowSubtitle handwritten={!!c.subtitle_handwritten} color={c.subtitle_color || ""}>{c.subtitle}</RowSubtitle>
           )}
           {c.body && <RowBody html={sanitizeHtml(c.body)} data-rte-fit="" />}
         </div>
