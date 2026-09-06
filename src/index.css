@@ -483,9 +483,21 @@
     transform: none !important;
   }
 
+  /* ── Row decorative image layer ──
+     Overlay PNGs sit ABOVE the row's own colour but below its content.
+     (They used to be at z-index:-1, which put them behind the section's
+     own background — invisible on any row with a colour.) */
+  .row-overlay-layer {
+    z-index: 0;
+  }
+  .snap-section > *:not(.row-overlay-layer):not(.section-shape) {
+    position: relative;
+    z-index: 1;
+  }
+
   /* Dramatic curves eat vertical space on phones — flatten them. */
   @media (max-width: 767px) {
-    svg.section-shape {
+    .section-shape:not([data-kind="rounded"]) {
       height: 28px !important;
     }
     .section-shape[data-kind="rounded"] {
