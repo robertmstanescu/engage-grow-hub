@@ -199,20 +199,23 @@ const useFitTitleLines = (lineCount: number, leftAligned: boolean) => {
       });
     };
 
-    fit();
+    const onFit = () => fit(false);
+    const forceFit = () => fit(true);
+
+    forceFit();
     /* Observe the PARENT's width (what actually constrains the title),
        never the <h1>'s own box — the <h1>'s height changes when we
        rescale, which is what created the old feedback loop. */
-    const ro = new ResizeObserver(fit);
+    const ro = new ResizeObserver(onFit);
     if (h1.parentElement) ro.observe(h1.parentElement);
-    window.addEventListener("resize", fit);
+    window.addEventListener("resize", onFit);
     /* Re-fit once webfonts finish loading — metrics change when the
        display font swaps in. */
-    (document as any).fonts?.ready?.then(fit);
+    (document as any).fonts?.ready?.then(forceFit);
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      window.removeEventListener("resize", fit);
+      window.removeEventListener("resize", onFit);
     };
   }, [lineCount, leftAligned]);
 
