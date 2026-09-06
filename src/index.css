@@ -491,7 +491,10 @@
   .row-overlay-layer {
     z-index: 0;
   }
-  .snap-section > *:not(.row-overlay-layer):not(.section-shape) {
+  /* Static children need a stacking position to sit above the overlay
+     layer; already-positioned ones (absolute/fixed/sticky) are left
+     alone so their own layout isn't broken. */
+  .snap-section > *:not(.row-overlay-layer):not(.section-shape):not(.absolute):not(.fixed):not(.sticky) {
     position: relative;
     z-index: 1;
   }
