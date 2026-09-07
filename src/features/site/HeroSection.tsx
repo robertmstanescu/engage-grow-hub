@@ -10,6 +10,7 @@ import {
   transformImageUrl,
   HERO_SRCSET_WIDTHS,
 } from "@/services/mediaOptimization";
+import { resolveAspectRatio, focalObjectPosition } from "@/lib/imageShape";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -45,6 +46,10 @@ interface HeroContent {
    */
   visual_image_url?: string;
   visual_image_alt?: string;
+  /** Shared shape preset + focal point — see src/lib/imageShape.ts. */
+  visual_image_ratio?: string;
+  visual_image_focal_x?: number;
+  visual_image_focal_y?: number;
 }
 
 // No hardcoded copy — DB is the single source of truth. The hero is
@@ -316,6 +321,7 @@ export const HeroView = ({
   /* Alt text is enforced by the publish gate, so the picture renders as
      soon as an admin picks one. */
   const hasVisual = Boolean(c.visual_image_url);
+  const visualAspect = resolveAspectRatio(c.visual_image_ratio, 3 / 4) ?? 3 / 4;
 
   /* Admin alignment (Style ▸ Hero alignment). A hero with a foreground
      visual defaults to left, matching the side-by-side layout. */
@@ -602,17 +608,18 @@ export const HeroView = ({
             <div
               className="relative w-full overflow-hidden"
               style={{
-                aspectRatio: "3/4",
+                aspectRatio: String(visualAspect),
                 borderRadius: "var(--radius)",
                 boxShadow: "var(--shadow-soft)",
               }}
             >
               <img
-                src={transformImageUrl(c.visual_image_url!, { width: 800, aspectRatio: 3 / 4 })}
-                srcSet={buildImageSrcSet(c.visual_image_url, undefined, 75, 3 / 4)}
+                src={transformImageUrl(c.visual_image_url!, { width: 800, aspectRatio: visualAspect })}
+                srcSet={buildImageSrcSet(c.visual_image_url, undefined, 75, visualAspect)}
                 sizes="(min-width: 768px) 40vw, 80vw"
                 alt={c.visual_image_alt || ""}
                 className="w-full h-full object-cover"
+                style={{ objectPosition: focalObjectPosition(c.visual_image_focal_x, c.visual_image_focal_y) }}
                 loading="eager"
                 decoding="async"
               />

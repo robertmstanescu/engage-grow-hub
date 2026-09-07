@@ -39,6 +39,7 @@
 import { Field, RichField, ColorField, SelectField, SectionBox } from "../site-editor/FieldComponents";
 import SubtitleEditor from "../site-editor/SubtitleEditor";
 import ImagePickerField from "../ImagePickerField";
+import ImageShapeControl from "../ImageShapeControl";
 import TitleLinesEditor from "./TitleLinesEditor";
 
 interface Props {
@@ -113,6 +114,15 @@ const HeroRowFieldsInline = ({ content, onChange, bgColor }: Props) => {
           onChange={(v) => onChange("visual_image_url", v)}
           altValue={content.visual_image_alt || ""}
           onAltChange={(v) => onChange("visual_image_alt", v)}
+        />
+        <ImageShapeControl
+          imageUrl={content.visual_image_url || ""}
+          ratio={content.visual_image_ratio}
+          focalX={content.visual_image_focal_x}
+          focalY={content.visual_image_focal_y}
+          onRatioChange={(v) => onChange("visual_image_ratio", v)}
+          onFocalChange={(x, y) => { onChange("visual_image_focal_x", x); onChange("visual_image_focal_y", y); }}
+          fallbackRatio={3 / 4}
         />
       </SectionBox>
     </div>
