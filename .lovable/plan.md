@@ -43,6 +43,8 @@ Make every row render identically in the editor and on the public site, with row
 - Ensure drag-and-drop preserves ratios, spans, widget IDs, and content when widgets move between cells.
 - Support balanced side-by-side blocks in the style of the Ruul reference: several blocks can share one row, and in text-and-image pairings the picture fills its whole half so both sides align top and bottom for a symmetrical result.
 - Make that balance an option, not a rule: each row can switch between matched-height symmetry and a looser, deliberately uneven arrangement.
+- Allow a small numbered eyebrow ("01", "02"…) above each block heading, and keep the block body short and readable with the accessible line spacing and length rules from step 7.
+
 
 
 ### 5. Add shared image shape and focal-point controls
