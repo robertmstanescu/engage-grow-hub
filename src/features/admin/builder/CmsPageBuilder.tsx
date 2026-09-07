@@ -343,6 +343,7 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
   return (
     <PageBuilderShell
       title={pageTitle || pageSlug || "Untitled page"}
+      contentState={contentState(record.status, record.publish_at)}
       onExit={onExit ? handleExit : undefined}
       pageTitle={pageTitle}
       onPageTitleChange={setPageTitle}

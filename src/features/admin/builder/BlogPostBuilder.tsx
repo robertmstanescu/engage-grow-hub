@@ -317,6 +317,7 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
   return (
     <PageBuilderShell
       title={pageTitle || pageSlug || "Untitled post"}
+      contentState={contentState(record.status, record.publish_at)}
       onExit={onExit ? handleExit : undefined}
       pageTitle={pageTitle}
       onPageTitleChange={setPageTitle}

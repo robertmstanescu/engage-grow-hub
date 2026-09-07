@@ -10,6 +10,7 @@ import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { SpinnerButton } from "@/components/ui/spinner-button";
 import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
 import {
+  type CmsPage,
   fetchAllCmsPages, createCmsPage, deleteCmsPage,
   saveCmsPageDraft, saveCmsPageRows, togglePublishCmsPage,
   updateCmsPageMeta, duplicateCmsPage, RESERVED_SLUGS,
@@ -20,6 +21,8 @@ import { useListFilters } from "@/hooks/useListFilters";
 import { createRedirect } from "@/services/redirects";
 import ListFilters from "@/components/ui/list-filters";
 import { ListPager } from "@/components/ui/list-pager";
+import StatusBadge from "./ui/StatusBadge";
+import { contentState } from "./naming";
 
 /**
  * ════════════════════════════════════════════════════════════════════
@@ -65,22 +68,6 @@ const ERROR_BOUNDARY_DEFAULTS: ErrorBoundaryContent = {
   row_fallback_label: "Section unavailable",
   row_fallback_retry_label: "Retry",
 };
-
-interface CmsPage {
-  id: string;
-  slug: string;
-  title: string;
-  template_type: string;
-  page_rows: PageRow[];
-  draft_page_rows: PageRow[] | null;
-  status: string;
-  created_at: string;
-  /** Last edited timestamp — surfaced in the Pages table view (US 3.2). */
-  updated_at: string;
-  meta_title?: string;
-  meta_description?: string;
-  ai_summary?: string;
-}
 
 interface CmsPageRef {
   id: string;
@@ -461,9 +448,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
             ← Back to Pages
           </button>
           <div className="flex items-center gap-2">
-            <span className={`font-body text-[9px] uppercase tracking-wider px-2 py-1 rounded-full ${editingPage.status === "published" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
-              {editingPage.status}
-            </span>
+            <StatusBadge state={contentState(editingPage.status, editingPage.publish_at)} />
             <button
               onClick={() => saveDraft(editingPage, draftRows)}
               className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
@@ -770,15 +755,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
                           </code>
                         </td>
                         <td className="px-4 py-3">
-                          <span
-                            className={`inline-block font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                              isPublished
-                                ? "bg-green-100 text-green-700"
-                                : "bg-yellow-100 text-yellow-700"
-                            }`}
-                          >
-                            {page.status}
-                          </span>
+                          <StatusBadge state={contentState(page.status, page.publish_at)} />
                         </td>
                         <td className="px-4 py-3 font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
                           {lastEditedLabel}
