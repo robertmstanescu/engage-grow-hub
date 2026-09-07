@@ -8,7 +8,7 @@
  * is delegated to `WidgetNode`.
  */
 
-import type { PageCell, PageRow, PageRowV3 } from "@/types/rows";
+import type { PageCell, PageRow, PageRowV3, RowLayout } from "@/types/rows";
 import type { GlobalWidget } from "@/hooks/useGlobalWidgets";
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 import CellRenderer from "./CellRenderer";
@@ -118,7 +118,9 @@ const RowRenderer = ({
     Math.min(160, row.layout?.coverTextOverlap ?? 64),
   );
 
-  const gapMap: Record<NonNullable<PageRowV3["layout"]["columnGap"]>, string> = {
+  // `layout` is optional on the row, so index the field type via RowLayout
+  // rather than PageRowV3["layout"] (which is `RowLayout | undefined`).
+  const gapMap: Record<NonNullable<RowLayout["columnGap"]>, string> = {
     tight: "1rem",
     normal: "2rem",
     wide: "4rem",

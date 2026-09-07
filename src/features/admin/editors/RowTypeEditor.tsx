@@ -18,8 +18,8 @@ import ContactAdmin from "@/features/widgets/contact/ContactAdmin";
 import TextRowEditor from "../site-editor/TextRowEditor";
 import BoxedRowEditor from "../site-editor/BoxedRowEditor";
 import LeadMagnetEditor from "../site-editor/LeadMagnetEditor";
-import VowsEditor from "../site-editor/VowsEditor";
 import { ImageRowAdmin } from "@/features/site/rows/ImageRow";
+import type { RowType } from "@/types/rows";
 import {
   BrandHeaderFields,
   TestimonialEditor,
@@ -44,78 +44,85 @@ interface RowTypeEditorProps {
   legacySplitWidths?: number[];
 }
 
-const RowTypeEditor = ({
-  type,
-  content,
-  onChange,
-  onReplaceContent,
-  bgColor,
-  legacySplitWidths,
-}: RowTypeEditorProps) => {
-  switch (type) {
-    case "hero":
-      return <HeroRowFields content={content} onChange={onChange} bgColor={bgColor} />;
-    case "service":
-      return (
-        <PillarEditor
-          pillarContent={content}
-          servicesContent={{ services: content.services || [] }}
-          onPillarChange={onChange}
-          onServicesChange={(svcs) => onChange("services", svcs)}
-          bgColor={bgColor}
-        />
-      );
-    case "contact":
-      return <ContactAdmin content={content} onChange={onChange} />;
-    case "image_text":
-      return (
-        <ImageTextEditor
-          content={content}
-          onChange={onChange}
-          bgColor={bgColor}
-          legacySplitWidths={legacySplitWidths}
-        />
-      );
-    case "profile":
-      return <ProfileEditor content={content} onChange={onChange} bgColor={bgColor} />;
-    case "grid":
-      return <GridEditor content={content} onChange={onChange} bgColor={bgColor} />;
-    case "text":
-      return <TextRowEditor content={content} onChange={onChange} bgColor={bgColor} />;
-    case "boxed":
-      return <BoxedRowEditor content={content} onChange={onChange} bgColor={bgColor} />;
-    case "lead_magnet":
-      return (
-        <LeadMagnetEditor
-          content={content}
-          onChange={(next: Record<string, any>) =>
-            onReplaceContent ? onReplaceContent(next) : Object.entries(next).forEach(([k, v]) => onChange(k, v))
-          }
-        />
-      );
-    case "logo_cloud":
-      return <LogoCloudEditor content={content} onChange={onChange} />;
-    case "vows":
-      return <VowsEditor content={content} onChange={onChange} />;
-    case "testimonial":
-      return <TestimonialEditor content={content} onChange={onChange} bgColor={bgColor} />;
-    case "faq":
-      return <FaqEditor content={content} onChange={onChange} bgColor={bgColor} />;
-    case "proof_band":
-      return <ProofBandEditor content={content} onChange={onChange} bgColor={bgColor} />;
-    case "process_steps":
-      return <ProcessStepsEditor content={content} onChange={onChange} bgColor={bgColor} />;
-    case "quote_band":
-      return <QuoteBandEditor content={content} onChange={onChange} bgColor={bgColor} />;
-    case "cta_band":
-      return <CtaBandEditor content={content} onChange={onChange} bgColor={bgColor} />;
-    case "image":
-      return <ImageRowAdmin content={content as any} onChange={onChange} />;
-    default:
-      /* Unknown / future row types still get the standard header
-         fields rather than a dead end. */
-      return <BrandHeaderFields content={content} onChange={onChange} bgColor={bgColor} />;
-  }
+/**
+ * One editor per row type, keyed by `RowType`.
+ *
+ * A `Record<RowType, …>` rather than a `switch` so that (a) forgetting
+ * a type is a compile error, (b) a key that is not a real row type is a
+ * compile error (a stale `"vows"` case lived here for months with no
+ * such row type), and (c) `rowRegistry.test.ts` can compare these keys
+ * against the renderer registry without parsing source.
+ */
+export const ROW_TYPE_EDITORS: Record<RowType, (p: RowTypeEditorProps) => JSX.Element> = {
+  hero: ({ content, onChange, bgColor }) => (
+    <HeroRowFields content={content} onChange={onChange} bgColor={bgColor} />
+  ),
+  service: ({ content, onChange, bgColor }) => (
+    <PillarEditor
+      pillarContent={content}
+      servicesContent={{ services: content.services || [] }}
+      onPillarChange={onChange}
+      onServicesChange={(svcs) => onChange("services", svcs)}
+      bgColor={bgColor}
+    />
+  ),
+  contact: ({ content, onChange }) => <ContactAdmin content={content} onChange={onChange} />,
+  image_text: ({ content, onChange, bgColor, legacySplitWidths }) => (
+    <ImageTextEditor
+      content={content}
+      onChange={onChange}
+      bgColor={bgColor}
+      legacySplitWidths={legacySplitWidths}
+    />
+  ),
+  profile: ({ content, onChange, bgColor }) => (
+    <ProfileEditor content={content} onChange={onChange} bgColor={bgColor} />
+  ),
+  grid: ({ content, onChange, bgColor }) => (
+    <GridEditor content={content} onChange={onChange} bgColor={bgColor} />
+  ),
+  text: ({ content, onChange, bgColor }) => (
+    <TextRowEditor content={content} onChange={onChange} bgColor={bgColor} />
+  ),
+  boxed: ({ content, onChange, bgColor }) => (
+    <BoxedRowEditor content={content} onChange={onChange} bgColor={bgColor} />
+  ),
+  lead_magnet: ({ content, onChange, onReplaceContent }) => (
+    <LeadMagnetEditor
+      content={content}
+      onChange={(next: Record<string, any>) =>
+        onReplaceContent ? onReplaceContent(next) : Object.entries(next).forEach(([k, v]) => onChange(k, v))
+      }
+    />
+  ),
+  logo_cloud: ({ content, onChange }) => <LogoCloudEditor content={content} onChange={onChange} />,
+  testimonial: ({ content, onChange, bgColor }) => (
+    <TestimonialEditor content={content} onChange={onChange} bgColor={bgColor} />
+  ),
+  faq: ({ content, onChange, bgColor }) => (
+    <FaqEditor content={content} onChange={onChange} bgColor={bgColor} />
+  ),
+  proof_band: ({ content, onChange, bgColor }) => (
+    <ProofBandEditor content={content} onChange={onChange} bgColor={bgColor} />
+  ),
+  process_steps: ({ content, onChange, bgColor }) => (
+    <ProcessStepsEditor content={content} onChange={onChange} bgColor={bgColor} />
+  ),
+  quote_band: ({ content, onChange, bgColor }) => (
+    <QuoteBandEditor content={content} onChange={onChange} bgColor={bgColor} />
+  ),
+  cta_band: ({ content, onChange, bgColor }) => (
+    <CtaBandEditor content={content} onChange={onChange} bgColor={bgColor} />
+  ),
+  image: ({ content, onChange }) => <ImageRowAdmin content={content as any} onChange={onChange} />,
+};
+
+const RowTypeEditor = (props: RowTypeEditorProps) => {
+  const editor = (ROW_TYPE_EDITORS as Record<string, (p: RowTypeEditorProps) => JSX.Element>)[props.type];
+  if (editor) return editor(props);
+  /* Unknown / future row types still get the standard header fields
+     rather than a dead end. */
+  return <BrandHeaderFields content={props.content} onChange={props.onChange} bgColor={props.bgColor} />;
 };
 
 export default RowTypeEditor;

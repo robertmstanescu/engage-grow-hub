@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Lovable builds from bun.lock; npm users get a local package-lock that must not be tracked.
+package-lock.json
+
+# Playwright output
+test-results
+playwright-report

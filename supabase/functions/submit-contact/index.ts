@@ -265,7 +265,7 @@ Deno.serve(async (req) => {
         console.error('Enrichment webhook failed (non-fatal):', err)
       })
     try {
-      // @ts-ignore - EdgeRuntime is provided by the Supabase Edge runtime.
+      // @ts-expect-error - EdgeRuntime is provided by the Supabase Edge runtime.
       EdgeRuntime.waitUntil(enrichmentTask)
     } catch {
       // EdgeRuntime not available (e.g. local dev); the promise still runs,

@@ -251,8 +251,10 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     onRowsChange(pageRows.map((r) => (r.id === rowId ? { ...r, ...patch } : r)));
   };
 
-  /* ─── State 2 — Row selected → layout / spacing / bg colour ──── */
-  if (kind === "row") {
+  /* ─── State 2 — Row selected → layout / spacing / bg colour ────
+   * `&& row` repeats the guard above so TypeScript narrows `row` to
+   * `PageRow` for the whole branch (strictNullChecks). */
+  if (kind === "row" && row) {
     /* ─── Debug Story 4.1 — destructive action guard ─────────────
      * Counts configured widget cells in the row and shows a modal
      * confirmation before mutating `pageRows`. Cancel leaves state

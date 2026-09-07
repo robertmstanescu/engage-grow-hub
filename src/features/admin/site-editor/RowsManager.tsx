@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Briefcase, LayoutGrid, Mail, Sparkles, Image, User, Grid3X3, Columns, Square, Columns2, Columns3, Columns4, Grip, Settings, Layers, Link2 } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Type, Columns, Square, Columns2, Columns3, Columns4, Grip, Settings, Layers, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import type { PageRow, WidgetDesignSettings } from "@/types/rows";
 import { generateRowId, DEFAULT_CONTACT_FIELDS, DEFAULT_ROW_LAYOUT, DEFAULT_DESIGN_SETTINGS, readDesignSettings, readGlobalRef, GLOBAL_REF_KEY } from "@/lib/constants/rowDefaults";
+import { getWidget } from "@/lib/WidgetRegistry";
 import { useGlobalWidgets } from "@/hooks/useGlobalWidgets";
 import RowAlignmentSettings from "./RowAlignmentSettings";
 import ColumnWidthControl from "./ColumnWidthControl";
@@ -36,16 +37,16 @@ import { CSS } from "@dnd-kit/utilities";
 import { confirmDestructive } from "@/components/ConfirmDialog";
 import { countRowWidgets } from "../builder/rowWidgetCount";
 
-const ROW_TYPES = [
-  { type: "hero" as const, label: "Hero", icon: Sparkles, defaultContent: { label: "", title_lines: [], subtitle: "", subtitle_color: "", body: "", body_color: "", title_color: "", label_color: "", bg_type: "none", bg_url: "" } },
-  { type: "text" as const, label: "Text", icon: Type, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", body: "" } },
-  { type: "service" as const, label: "Service", icon: Briefcase, defaultContent: { eyebrow: "", title: "", description: "", services: [] } },
-  { type: "boxed" as const, label: "Boxed (max 6)", icon: LayoutGrid, defaultContent: { title_lines: [], subtitle: "", subtitle_color: "", cards: [] } },
-  { type: "contact" as const, label: "Contact", icon: Mail, defaultContent: { title_lines: [], body: "", button_text: "Request a discovery call", success_heading: "Message received.", success_body: "We respond within 24 hours.", success_button: "Send another message", show_social: false, fields: DEFAULT_CONTACT_FIELDS } },
-  { type: "image_text" as const, label: "Image & Text", icon: Image, defaultContent: { eyebrow: "", title: "", description: "", image_url: "", image_position: "right", image_shape: "default", floating_caption: "", caption_position: "bottom-left", color_eyebrow: "", color_title: "", color_description: "", color_caption_bg: "", color_caption_text: "" } },
-  { type: "profile" as const, label: "Profile Feature", icon: User, defaultContent: { eyebrow: "", image_url: "", name: "", role: "", credentials: [], body: "", color_eyebrow: "", color_name: "", color_role: "", color_credential_bg: "", color_credential_text: "", color_body: "" } },
-  { type: "grid" as const, label: "Grid", icon: Grid3X3, defaultContent: { eyebrow: "", title: "", description: "", items: [], color_eyebrow: "", color_title: "", color_description: "", color_card_border: "", color_card_border_hover: "", color_card_title: "", color_card_description: "", color_stat_number: "", color_stat_label: "" } },
-];
+/**
+ * Per-type icon and default content come from the widget registry
+ * (`src/widgets/index.tsx`) — the same source the canvas and Elements
+ * Tray use. This file used to keep its own 8-entry copy, so `addColumn`
+ * on any of the other 8 row types dereferenced `undefined` and threw.
+ */
+const rowTypeIcon = (type: string) => getWidget(type)?.icon || Type;
+const rowTypeDefaultContent = (type: string): Record<string, any> => ({
+  ...((getWidget(type)?.defaultData as Record<string, any> | undefined) ?? {}),
+});
 
 /**
  * Layout presets exposed by the "Add Row" menu.
@@ -173,8 +174,7 @@ const RowsManager = ({ rows, onChange }: Props) => {
   const addColumn = (rowId: string) => {
     const row = rows.find((r) => r.id === rowId);
     if (!row) return;
-    const template = ROW_TYPES.find((t) => t.type === row.type)!;
-    const newColContent = { ...template.defaultContent };
+    const newColContent = rowTypeDefaultContent(row.type);
     const existingExtra = row.columns_data || [];
     const newColumnsData = [...existingExtra, newColContent];
     const colCount = 1 + newColumnsData.length;
@@ -413,7 +413,7 @@ const RowsManager = ({ rows, onChange }: Props) => {
           strategy={verticalListSortingStrategy}
         >
           {rows.map((row) => {
-            const TypeIcon = ROW_TYPES.find((t) => t.type === row.type)?.icon || Type;
+            const TypeIcon = rowTypeIcon(row.type);
             return (
               <SortableRowItem
                 key={row.id}

@@ -204,26 +204,41 @@ export interface SectionShapeConfig {
  * `columns_data`). All renderers and editors operate on the v3 shape;
  * this type is still exported so historical JSON deserialises.
  */
+/**
+ * Every row / widget type the page builder knows about — the ONE list.
+ *
+ * A type must be wired in three places to work end to end: a renderer
+ * in the widget registry (`src/widgets/index.tsx`), an editor in
+ * `RowTypeEditor`, and this list. `rowRegistry.test.ts` asserts all
+ * three agree, so adding a type here without the other two (or the
+ * other way round) fails `npm run check` instead of shipping a row that
+ * renders blank or has no editor.
+ */
+export const ROW_TYPES = [
+  "hero",
+  "text",
+  "service",
+  "boxed",
+  "contact",
+  "image_text",
+  "image",
+  "profile",
+  "grid",
+  "lead_magnet",
+  "testimonial",
+  "logo_cloud",
+  "faq",
+  "proof_band",
+  "process_steps",
+  "quote_band",
+  "cta_band",
+] as const;
+
+export type RowType = (typeof ROW_TYPES)[number];
+
 export interface PageRow {
   id: string;
-  type:
-    | "hero"
-    | "text"
-    | "service"
-    | "boxed"
-    | "contact"
-    | "image_text"
-    | "image"
-    | "profile"
-    | "grid"
-    | "lead_magnet"
-    | "testimonial"
-    | "logo_cloud"
-    | "faq"
-    | "proof_band"
-    | "process_steps"
-    | "quote_band"
-    | "cta_band";
+  type: RowType;
   strip_title: string;
   bg_color: string;
   scope?: string;

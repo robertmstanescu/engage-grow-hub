@@ -160,6 +160,7 @@ serve(async (req) => {
         htmlContent = blocksToHtml(blocks);
       }
     } catch {
+      // Not block JSON — legacy raw HTML is sent as-is.
     }
 
     console.log(`Sending campaign to ${uniqueSubscribers.length} subscribers`);
