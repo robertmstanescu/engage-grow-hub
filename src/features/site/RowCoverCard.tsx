@@ -1,26 +1,30 @@
 /**
- * RowCoverCard — wraps a row's content in an optional "photo card" shell:
- * a CoverFadeImage banner (see CoverFadeImage.tsx) dissolving into a
- * light --gradient-card surface, with the wrapped content's title
- * overlapping the fade's tail end.
+ * RowCoverCard — wraps a single-widget row's content in an optional
+ * cover picture.
  *
- * Extracted from BoxedRow.tsx so any row type can opt into the same
- * treatment by reading `cover_image`/`cover_image_alt` off its own
- * content and wrapping its existing render output in this component —
- * no new row-type-specific styling to invent each time.
+ * - "flush" (default): the picture sits flush at the top of the row,
+ *   clipped to the row's corner curve, and dissolves into the row's
+ *   own background. No card, no shadow, no padding.
+ * - "card": the legacy FAQ treatment — padded light card with a soft
+ *   shadow and the content overlapping the fade.
  *
- * When `coverImage` is falsy, renders `children` completely unwrapped —
- * a row with no cover image set must render EXACTLY as it did before
- * this component existed.
+ * The picture's display ratio is driven by `content.cover_image_ratio`
+ * (defaulting to the file's natural proportions). The focal point is
+ * read from `content.cover_image_focal_x/y`. The band height is a
+ * row-level choice from `layout.coverHeight`.
  */
 import type { PageRow } from "@/types/rows";
 import CoverFadeImage from "./CoverFadeImage";
+import { transformImageUrl } from "@/services/mediaOptimization";
+import { focalObjectPosition, resolveAspectRatio } from "@/lib/imageShape";
 
-// Mirrors RowSection.tsx's own ROUNDED_PX scale exactly (not exported,
-// so duplicated here) — the photo-card's corners should read as part of
-// the SAME curve system as the row's own shapeTop/shapeBottom, not an
-// arbitrary different radius.
-const ROUNDED_PX = { subtle: 24, medium: 48, dramatic: 80 } as const;
+const ROUNDED_PX = { none: 0, subtle: 16, medium: 24, dramatic: 48 } as const;
+
+const COVER_HEIGHTS: Record<"small" | "medium" | "large", { maxH: string }> = {
+  small: { maxH: "clamp(180px, 22vh, 260px)" },
+  medium: { maxH: "clamp(260px, 32vh, 380px)" },
+  large: { maxH: "clamp(360px, 42vh, 520px)" },
+};
 
 interface RowCoverCardProps {
   row: PageRow;
@@ -40,10 +44,15 @@ const RowCoverCard = ({ row, children, variant = "flush" }: RowCoverCardProps) =
 
   if (!coverImage) return <>{children}</>;
 
-  const shapeSize =
-    (row.layout?.shapeTop as any)?.size || (row.layout?.shapeBottom as any)?.size || "medium";
-  const radiusPx = `${ROUNDED_PX[(shapeSize as keyof typeof ROUNDED_PX) || "medium"]}px`;
-
+  const radiusKey = row.layout?.surfaceRadius || "none";
+  const radiusPx = `${ROUNDED_PX[radiusKey] ?? 0}px`;
+  const heightKey = row.layout?.coverHeight || "small";
+  const maxHeight = COVER_HEIGHTS[heightKey]?.maxH || COVER_HEIGHTS.small.maxH;
+  const objectPosition = focalObjectPosition(
+    row.content?.cover_image_focal_x,
+    row.content?.cover_image_focal_y,
+  );
+  const aspectRatio = resolveAspectRatio(row.content?.cover_image_ratio);
   const isCard = variant === "card";
 
   return (
@@ -56,22 +65,26 @@ const RowCoverCard = ({ row, children, variant = "flush" }: RowCoverCardProps) =
           : null),
       }}
     >
-      <div className="aspect-[3/2] md:aspect-[21/6]">
+      <div
+        className="w-full overflow-hidden"
+        style={{
+          borderRadius: `${radiusPx} ${radiusPx} 0 0`,
+          maxHeight,
+          aspectRatio: aspectRatio ? String(aspectRatio) : undefined,
+        }}
+      >
         <CoverFadeImage
           src={coverImage}
           alt={coverImageAlt}
-          roundedTop
+          roundedTop={false}
           fillParent
-          aspectRatio={3 / 2}
-          radius={radiusPx}
+          aspectRatio={aspectRatio ?? 16 / 9}
+          className="h-auto"
+          style={{ objectPosition }}
         />
       </div>
-      {/* Negative margin pulls the content up into the image's own fade
-          zone (its top ~45% stays fully opaque) so the picture dissolves
-          straight into the row's own colour — no card, no shadow. In the
-          "card" variant the content keeps the legacy padding instead. */}
       <div
-        className={`relative z-10 -mt-16 md:-mt-20 ${isCard ? "px-8 py-6 md:p-8 lg:p-10" : "px-6 md:px-8 lg:px-10"}`}
+        className={`relative z-10 ${isCard ? "px-8 py-6 md:p-8 lg:p-10" : "px-6 md:px-8 lg:px-10 pt-6 md:pt-8"}`}
       >
         {children}
       </div>

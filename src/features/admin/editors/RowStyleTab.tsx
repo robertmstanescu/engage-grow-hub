@@ -401,6 +401,34 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                   })}
                 </div>
               </div>
+              <div>
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                  Column gap
+                </label>
+                <div className="grid grid-cols-3 gap-1">
+                  {([
+                    ["tight", "Tight"],
+                    ["normal", "Normal"],
+                    ["wide", "Wide"],
+                  ] as const).map(([value, label]) => {
+                    const active = (row.layout?.columnGap || "normal") === value;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => patchLayout({ columnGap: value })}
+                        className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+                          active
+                            ? "bg-secondary/15 border-secondary/40 text-foreground"
+                            : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <label className="flex items-center gap-2 font-body text-[11px] text-muted-foreground">
                 <input
                   type="checkbox"
@@ -468,6 +496,16 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               onChange={(v) => patchLayout({ coverImage: v })}
               altValue={row.layout?.coverImageAlt || ""}
               onAltChange={(v) => patchLayout({ coverImageAlt: v })}
+              ratio={row.layout?.coverImageRatio || "original"}
+              focalX={row.layout?.coverFocalX}
+              focalY={row.layout?.coverFocalY}
+              onShapeChange={(patch) => {
+                const next: Record<string, unknown> = {};
+                if (patch.ratio !== undefined) next.coverImageRatio = patch.ratio;
+                if (patch.focalX !== undefined) next.coverFocalX = patch.focalX;
+                if (patch.focalY !== undefined) next.coverFocalY = patch.focalY;
+                patchLayout(next);
+              }}
             />
             {row.layout?.coverImage ? (
               <>
@@ -496,6 +534,69 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+                <div>
+                  <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                    Cover height
+                  </label>
+                  <div className="grid grid-cols-3 gap-1">
+                    {([
+                      ["small", "Small"],
+                      ["medium", "Medium"],
+                      ["large", "Large"],
+                    ] as const).map(([value, label]) => {
+                      const active = (row.layout?.coverHeight || "small") === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => patchLayout({ coverHeight: value })}
+                          className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
+                            active
+                              ? "bg-secondary/15 border-secondary/40 text-foreground"
+                              : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                    Focal point
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground block mb-1">
+                        Horizontal
+                      </span>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={row.layout?.coverFocalX ?? 50}
+                        onChange={(e) => patchLayout({ coverFocalX: Number(e.target.value) })}
+                        className="w-full"
+                        style={{ accentColor: "hsl(var(--secondary))" }}
+                      />
+                    </div>
+                    <div>
+                      <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground block mb-1">
+                        Vertical
+                      </span>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={row.layout?.coverFocalY ?? 50}
+                        onChange={(e) => patchLayout({ coverFocalY: Number(e.target.value) })}
+                        className="w-full"
+                        style={{ accentColor: "hsl(var(--secondary))" }}
+                      />
+                    </div>
                   </div>
                 </div>
                 <div>

@@ -120,6 +120,16 @@ const LeadMagnetEditor = ({ content, onChange }: Props) => {
         onChange={(v) => update({ cover_image: v })}
         altValue={content.cover_image_alt || ""}
         onAltChange={(v) => update({ cover_image_alt: v })}
+        ratio={content.cover_image_ratio || "original"}
+        focalX={content.cover_image_focal_x}
+        focalY={content.cover_image_focal_y}
+        onShapeChange={(patch) => {
+          const next: Record<string, any> = {};
+          if (patch.ratio !== undefined) next.cover_image_ratio = patch.ratio;
+          if (patch.focalX !== undefined) next.cover_image_focal_x = patch.focalX;
+          if (patch.focalY !== undefined) next.cover_image_focal_y = patch.focalY;
+          update(next);
+        }}
       />
     </div>
   );

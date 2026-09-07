@@ -70,6 +70,7 @@ const RowBody = ({ children, html, color, style, className, ...rest }: Props) =>
     return (
       <div
         {...rest}
+        data-row-part="body"
         className={baseClass}
         style={baseStyle}
         dangerouslySetInnerHTML={{ __html: html }}
@@ -78,7 +79,7 @@ const RowBody = ({ children, html, color, style, className, ...rest }: Props) =>
   }
 
   return (
-    <div {...rest} className={baseClass} style={baseStyle}>
+    <div {...rest} data-row-part="body" className={baseClass} style={baseStyle}>
       {children}
     </div>
   );

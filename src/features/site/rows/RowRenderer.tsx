@@ -15,6 +15,7 @@ import CellRenderer from "./CellRenderer";
 import WidgetNode from "./WidgetNode";
 import RowSection from "./typography/RowSection";
 import RowCoverImage from "./RowCoverImage";
+import SemanticAligner from "./SemanticAligner";
 import { RowSurfaceProvider } from "./RowSurfaceContext";
 import type { Alignment, VAlign } from "@/lib/layoutUtils";
 
@@ -117,16 +118,20 @@ const RowRenderer = ({
     Math.min(160, row.layout?.coverTextOverlap ?? 64),
   );
 
+  const gapMap: Record<NonNullable<PageRowV3["layout"]["columnGap"]>, string> = {
+    tight: "1rem",
+    normal: "2rem",
+    wide: "4rem",
+  };
+  const gap = gapMap[row.layout?.columnGap || "normal"];
   const grid = (
-    <div
-      className="grid gap-8"
-      style={{
-        gridTemplateColumns: widths.map((w) => `${w}fr`).join(" "),
-        alignItems: blockAlign === "stretch" ? "stretch" : "start",
-      }}
-    >
-      {renderedColumns}
-    </div>
+    <SemanticAligner
+      columns={renderedColumns}
+      widths={widths}
+      gap={gap}
+      alignItems={blockAlign === "stretch" ? "stretch" : "start"}
+      disabled={row.columns.length < 2}
+    />
   );
 
   /* RowSection now owns the surface radius/clipping logic, so no
@@ -138,6 +143,7 @@ const RowRenderer = ({
       vAlign={vAlign}
       className=""
       grain={false}
+      flushTop={Boolean(coverImage)}
       dataRowId={row.id}
     >
       {/* The provider sits INSIDE the section so only the widgets' own
