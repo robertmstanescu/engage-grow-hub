@@ -62,15 +62,20 @@ const SemanticAligner = ({ columns, widths, disabled, gap = "2rem", alignItems =
   useLayoutEffect(() => {
     if (disabled || columns.length < 2) return;
 
-    let columnEls: HTMLElement[] = [];
+    let innerEls: HTMLElement[] = [];
 
     const measure = () => {
       const container = containerRef.current;
       if (!container) return;
-      columnEls = Array.from(container.children) as HTMLElement[];
-      if (columnEls.length < 2) return;
+      // Measure the INNER wrapper, which never carries the alignment
+      // padding — measuring the padded outer column would feed the
+      // applied offset back into the next measurement and oscillate.
+      innerEls = (Array.from(container.children) as HTMLElement[])
+        .map((col) => col.firstElementChild as HTMLElement | null)
+        .filter(Boolean) as HTMLElement[];
+      if (innerEls.length < 2) return;
 
-      const allParts = columnEls.map(collectParts);
+      const allParts = innerEls.map(collectParts);
 
       // No structure at all → leave natural alignment.
       if (allParts.every((p) => !p)) return;
@@ -83,19 +88,34 @@ const SemanticAligner = ({ columns, widths, disabled, gap = "2rem", alignItems =
           break;
         }
       }
+
+      // Nothing shared by all columns: fall back to the FIRST part that
+      // exists anywhere, so a body-only widget still starts level with
+      // its neighbour's body line.
+      if (!target) {
+        for (const candidate of PARTS) {
+          if (allParts.some((p) => p && typeof p[candidate] === "number")) {
+            target = candidate;
+            break;
+          }
+        }
+      }
       if (!target) return;
 
-      const targetOffsets = allParts.map((p) => p![target!] ?? 0);
+      // A column missing the target part starts at its own top (0).
+      const targetOffsets = allParts.map((p) => (p && typeof p[target!] === "number" ? p[target!]! : 0));
       const maxOffset = Math.max(...targetOffsets);
       const nextOffsets = targetOffsets.map((o) => Math.round(maxOffset - o));
-      setOffsets(nextOffsets);
+      setOffsets((prev) =>
+        prev.length === nextOffsets.length && prev.every((v, i) => v === nextOffsets[i]) ? prev : nextOffsets,
+      );
     };
 
     measure();
 
     const ro = new ResizeObserver(measure);
     if (containerRef.current) ro.observe(containerRef.current);
-    columnEls.forEach((c) => ro.observe(c));
+    innerEls.forEach((c) => ro.observe(c));
 
     document.fonts?.addEventListener?.("loadingdone", measure);
 
@@ -117,7 +137,7 @@ const SemanticAligner = ({ columns, widths, disabled, gap = "2rem", alignItems =
     >
       {columns.map((child, i) => (
         <div key={i} className="min-w-0" style={{ paddingTop: offsets[i] || 0 }}>
-          {child}
+          <div className="min-w-0">{child}</div>
         </div>
       ))}
     </div>

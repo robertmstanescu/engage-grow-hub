@@ -1212,6 +1212,46 @@
   margin-bottom: 8px;
 }
 
+/* Rich-text lists — Tailwind's preflight removes markers, so CMS copy
+   pasted with bullets/numbers rendered as plain lines. Restore them for
+   every CMS-rendered surface and inside the editor itself. */
+[data-row-part="body"] ul,
+[data-rte-fit] ul,
+.rich-text ul,
+.prose ul,
+[contenteditable] ul {
+  list-style: disc outside;
+  padding-left: 1.35em;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+[data-row-part="body"] ol,
+[data-rte-fit] ol,
+.rich-text ol,
+.prose ol,
+[contenteditable] ol {
+  list-style: decimal outside;
+  padding-left: 1.35em;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+[data-row-part="body"] li,
+[data-rte-fit] li,
+.rich-text li,
+.prose li,
+[contenteditable] li {
+  display: list-item;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+/* Nested levels get their own marker style, like a document would. */
+[data-row-part="body"] ul ul,
+[data-rte-fit] ul ul,
+.rich-text ul ul,
+[contenteditable] ul ul {
+  list-style-type: circle;
+}
+
 /* Drop cap / Initial letter styling */
 .drop-cap {
   float: left;
