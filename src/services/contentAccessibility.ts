@@ -39,33 +39,56 @@ type ImageFieldDescriptor = {
   altPath: string;
   /** Friendly label shown in the toast, e.g. "Image", "Hero background". */
   label: string;
+  /**
+   * Optional: path to an ARRAY of items (cards, logos, testimonials…).
+   * When set, `urlPath`/`altPath` are resolved inside EACH item instead
+   * of on the widget's own data — that's how repeated images (logo
+   * clouds, testimonial avatars, proof-band logos) get checked too.
+   */
+  listPath?: string;
+};
+
+/** Cover image pair carried by (almost) every row type — see RowCoverCard. */
+const COVER: ImageFieldDescriptor = {
+  urlPath: "cover_image",
+  altPath: "cover_image_alt",
+  label: "Cover image",
 };
 
 const IMAGE_FIELDS_BY_TYPE: Partial<Record<PageRow["type"], ImageFieldDescriptor[]>> = {
   // Standalone Image widget — the canonical case.
-  image: [{ urlPath: "url", altPath: "alt_text", label: "Image" }],
+  image: [COVER, { urlPath: "url", altPath: "alt_text", label: "Image" }],
   // Image + Text composite — the image half must still meet WCAG.
-  image_text: [{ urlPath: "image_url", altPath: "image_alt", label: "Image + Text" }],
+  image_text: [COVER, { urlPath: "image_url", altPath: "image_alt", label: "Image + Text" }],
   // Boxed row's optional cover image (flat, row-level field — not per-card).
-  boxed: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  // Hero row's optional foreground visual, alongside the existing bg_url.
-  hero: [{ urlPath: "visual_image_url", altPath: "visual_image_alt", label: "Hero visual" }],
+  boxed: [COVER],
+  // Hero: full-bleed background AND the optional foreground visual.
+  hero: [
+    { urlPath: "visual_image_url", altPath: "visual_image_alt", label: "Hero visual" },
+    { urlPath: "bg_url", altPath: "bg_alt", label: "Hero background" },
+  ],
+  // Profile row's portrait.
+  profile: [COVER, { urlPath: "image_url", altPath: "image_alt", label: "Profile photo" }],
   // Every other row type also carries the same optional cover-image
   // capability (RowCoverCard, src/features/site/RowCoverCard.tsx) — one
   // flat, row-level field pair, same convention as `boxed` above.
-  text: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  service: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  grid: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  lead_magnet: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  testimonial: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  logo_cloud: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  faq: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  proof_band: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  process_steps: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  quote_band: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  cta_band: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
-  contact: [{ urlPath: "cover_image", altPath: "cover_image_alt", label: "Cover image" }],
+  text: [COVER],
+  service: [COVER],
+  grid: [COVER],
+  lead_magnet: [COVER],
+  testimonial: [
+    COVER,
+    { listPath: "items", urlPath: "avatar", altPath: "avatar_alt", label: "Testimonial portrait" },
+  ],
+  logo_cloud: [COVER, { listPath: "logos", urlPath: "url", altPath: "alt", label: "Logo" }],
+  faq: [COVER],
+  proof_band: [COVER, { listPath: "items", urlPath: "logo", altPath: "logo_alt", label: "Proof logo" }],
+  process_steps: [COVER],
+  quote_band: [COVER, { urlPath: "avatar", altPath: "avatar_alt", label: "Quote portrait" }],
+  cta_band: [COVER],
+  contact: [COVER],
 };
+
 
 /* ─────────────────────────────────────────────────────────────── */
 
