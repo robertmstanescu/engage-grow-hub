@@ -9,6 +9,7 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { resolveImageAlt } from "@/services/imageAlt";
 import { transformImageUrl, buildImageSrcSet } from "@/services/mediaOptimization";
+import { resolveAspectRatio, focalObjectPosition } from "@/lib/imageShape";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 // EPIC 1 / US 1.1 — atomic-node selection.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
@@ -75,6 +76,11 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
   const clipId = useId().replace(/:/g, "");
   const obbPath = OBB_PATHS[shape];
 
+  /* Shape preset + focal point (shared vocabulary — see src/lib/imageShape.ts).
+     Falls back to the historic 4:5 frame so untouched rows don't move. */
+  const imgAspect = resolveAspectRatio(c.image_ratio, 4 / 5) ?? 4 / 5;
+  const imgFocal = focalObjectPosition(c.image_focal_x, c.image_focal_y);
+
   const captionBg = c.color_caption_bg || "hsl(var(--card) / 0.9)";
   const captionText = c.color_caption_text || "var(--row-fg, hsl(var(--foreground)))";
   const noteColor = c.color_note || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 55%, transparent)";
@@ -121,7 +127,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
         <div
           className="relative w-full overflow-hidden"
           style={{
-            aspectRatio: "4/5",
+            aspectRatio: String(imgAspect),
             /* Match every other box on the site rather than a 4px sliver. */
             borderRadius: shape === "default" ? "var(--radius)" : 0,
             clipPath: obbPath ? `url(#img-clip-${clipId})` : CLIP_PATHS[shape] || undefined,
@@ -147,11 +153,12 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             // first paint. The browser only fetches them when the user
             // scrolls close, saving bandwidth on bounce visits.
             <img
-              src={transformImageUrl(c.image_url, { width: 1200, aspectRatio: 4 / 5 })}
-              srcSet={buildImageSrcSet(c.image_url, undefined, 75, 4 / 5)}
+              src={transformImageUrl(c.image_url, { width: 1200, aspectRatio: imgAspect })}
+              srcSet={buildImageSrcSet(c.image_url, undefined, 75, imgAspect)}
               sizes="(min-width: 768px) 50vw, 100vw"
               alt={resolveImageAlt(c.image_alt, c.title || row.strip_title, "section image")}
               className="w-full h-full object-cover"
+              style={{ objectPosition: imgFocal }}
               loading="lazy"
               decoding="async"
             />
