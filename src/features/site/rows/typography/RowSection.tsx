@@ -165,10 +165,20 @@ const RowSection = ({
   const shapeBottom = !maskShapes ? row.layout?.shapeBottom : undefined;
   /* A row that spills an edge must always paint ABOVE its neighbours —
    * including the footer — otherwise the overhang gets covered. */
-  const hasShape = Boolean(
+  const hasExternalShape = Boolean(
     (shapeTop && shapeTop.kind !== "none") || (shapeBottom && shapeBottom.kind !== "none"),
   );
-  const contentRadius = undefined;
+
+  /* ── Surface corner radius ──
+   *  One curve scale for every row surface. Admins pick the size in
+   *  Style ▸ Surface ▸ Corners. When no external edge shape is assigned
+   *  we clip the content so the rounded corners stay visible; when a
+   *  shape cap paints outside the section we keep overflow visible. */
+  const radiusValue = { none: 0, subtle: 16, medium: 24, dramatic: 48 }[
+    row.layout?.surfaceRadius || "medium"
+  ];
+  const applyRadius = radiusValue > 0 && !maskShapes;
+  const clipToRadius = applyRadius && !hasExternalShape;
 
   /* ── Optical centring ──
    *  A cap paints OUTSIDE the section, so a row with only a bottom edge
