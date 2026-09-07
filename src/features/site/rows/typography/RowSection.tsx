@@ -48,6 +48,11 @@ interface Props {
    */
   bleed?: boolean;
   /**
+   * Removes top padding so a row-level cover image can sit flush with
+   * the section's top edge and the content follows underneath.
+   */
+  flushTop?: boolean;
+  /**
    * The row's CONTENT is its surface (image page-breakers): edge shapes
    * mask the section itself and pull it over the neighbouring rows, so
    * the picture spills instead of a colour cap.
@@ -110,6 +115,7 @@ const RowSection = ({
   grain = true,
   fullHeight = true,
   bleed = false,
+  flushTop = false,
   maskShapes = false,
   exactHeight = false,
 
@@ -269,6 +275,7 @@ const RowSection = ({
           ...(bleed
             ? { paddingTop: 0, paddingBottom: 0 }
             : {
+                ...(flushTop ? { paddingTop: 0 } : null),
                 ...(bottomShapeH ? { paddingTop: `calc(${basePad} + ${bottomShapeH}px)` } : null),
                 ...(topShapeH ? { paddingBottom: `calc(${basePad} + ${topShapeH}px)` } : null),
               }),

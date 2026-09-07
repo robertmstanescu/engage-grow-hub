@@ -56,6 +56,8 @@ interface CoverFadeImageProps {
   radius?: string;
   /** Extra classes on the outer container (e.g. a max-height clamp, or a responsive aspect-ratio when `fillParent` is set). */
   className?: string;
+  /** Inline styles applied to the inner <img> element. */
+  style?: React.CSSProperties;
 }
 
 const CoverFadeImage = ({
@@ -66,6 +68,7 @@ const CoverFadeImage = ({
   roundedTop = false,
   radius = "var(--radius)",
   className = "",
+  style,
 }: CoverFadeImageProps) => (
   <div
     className={`relative w-full overflow-hidden ${fillParent ? "h-full" : ""} ${className}`}
@@ -83,6 +86,7 @@ const CoverFadeImage = ({
       style={{
         WebkitMaskImage: FADE_GRADIENT,
         maskImage: FADE_GRADIENT,
+        ...style,
       }}
     />
   </div>

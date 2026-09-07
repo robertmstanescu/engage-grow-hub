@@ -46,6 +46,7 @@ interface Props {
  */
 const RowEyebrow = ({ children, color, style, className }: Props) => (
   <span
+    data-row-part="eyebrow"
     className={`font-body uppercase block mb-rhythm-tight ${className ?? ""}`}
     style={{
       fontSize: "var(--fs-eyebrow)",

@@ -1,59 +1,71 @@
 # Cover images, cropping, column spacing and cross-widget alignment
 
-Four fixes to the row system, based on your answers.
+Carries over the plan you cancelled, plus the new corner/top-gap fix.
 
-## 1. Cover images: shorter, shaped by the photo, focal point everywhere
+## 1. Row cover images: flush, clipped by the row's curve, and much shorter
 
-Today every row cover is forced into a fixed letterbox band (3:2 on phones, 21:6 on desktop), which crops
-your picture, stretches the row and makes the page long.
+Today a cover sits in a fixed letterbox band (3:2 on phones, 21:6 on desktop), begins *below* the row's
+top padding, and its square top corners cut across the row's rounded corners — the white band and the
+straight-edged photo in your About Us screenshot.
 
-- The cover keeps the uploaded picture's own proportions instead of a forced band.
-- A default maximum height caps it at roughly 40% of the current band (about 60% shorter), so rows stay
-  compact and images are no longer blown up and blurred.
-- A focal-point picker is added next to every cover image field, so you choose what stays in view when
-  the cap does crop.
-- FAQ covers and blog covers keep their current treatment, untouched.
+- The cover moves to the very top of the row, flush with its edges, with the row's top padding removed
+  whenever a cover is present. The FAQ padded card keeps its current spacing, unchanged.
+- The picture's top corners are clipped to exactly the row's own corner curve, so photo and row share
+  one silhouette.
+- The cover keeps the uploaded photo's own proportions instead of a forced band.
+- New per-row height control: Small / Medium / Large. Small (the new default) is about 60% shorter than
+  today's band; Medium and Large step up from there, and none of them exceed the photo's natural height.
+- A focal-point picker sits next to every cover image field, so you choose what stays in view when the
+  height cap does crop.
 
 Applies to the row-level cover (Style tab) and the per-row cover fields on Text, Boxed, Grid, Service,
-Contact, CTA band, Quote band, Proof band, Process, Logo cloud, Testimonial and Lead magnet rows.
+Contact, CTA band, Quote band, Proof band, Process, Logo cloud, Testimonial and Lead magnet rows. Blog
+covers are untouched.
 
-## 2. A real crop tool, plus presets everywhere
+## 2. A real crop tool, plus shape presets everywhere
 
-- Every image field in the admin gets the shape preset dropdown (Original / Square / Portrait /
-  Landscape / Wide / Banner) and the click-to-focus point — the ones that have it today keep it, the
-  rest gain it (cover images, gallery picks, pasted URLs).
-- New "Crop" button on the image picker: drag a box over the picture, optionally lock it to the chosen
-  shape, and save. This writes a genuinely cropped copy back to the media library as a new file, so the
-  original stays intact and the page only loads the smaller cropped image.
+- Every image field in the admin gets the shape dropdown (Original / Square / Portrait / Landscape /
+  Wide / Banner) and the click-to-focus point — the fields that have it keep it, the rest gain it
+  (cover images, gallery picks, pasted URLs).
+- New "Crop" button on the image picker: drag a box over the picture, optionally locked to the chosen
+  shape, and save. It writes a genuinely cropped copy into the media library as a new file, so the
+  original stays intact and pages load the smaller image (better quality per pixel, less scrolling).
 
 ## 3. Per-row column spacing
 
-New "Column gap" control in the row's Design/Layout settings: Tight / Normal / Wide (plus the current
-value as the default so nothing shifts unless you change it). Applies to the space between side-by-side
-columns and stacks down sensibly on phones.
+New "Column gap" control in the row's Design settings: Tight / Normal / Wide. Two-column rows currently
+sit at the widest setting; the default becomes the tighter one so side-by-side blocks read as a pair.
+Columns still stack with sensible spacing on phones.
 
 ## 4. Side-by-side widgets line up part by part
 
-Right now every widget starts at the top of the column, so a widget with only body text sits level with
+Right now every widget starts at the top of its column, so a widget with only body text sits level with
 its neighbour's eyebrow.
 
-New behaviour: within a row, eyebrows line up with eyebrows, titles with titles, body with body. A
-widget that has no eyebrow starts at the title line; one with neither starts at the body line. Widgets
-that share no parts at all fall back to today's top alignment.
+New behaviour: within a row, widgets share a single implicit baseline grid made of eyebrow, title and
+body lines. The first line that exists in either widget becomes the starting line for both widgets. If
+both widgets have an eyebrow, those eyebrows align; if only one has an eyebrow, the other widget starts
+level with that eyebrow. If neither has an eyebrow but both have titles, the titles align; if only one
+has a title, the other widget starts level with that title. Only when both widgets are missing both eyebrow
+and title do they fall back to today's top alignment.
 
 ## Technical notes
 
-- `RowCoverImage.tsx`: drop the fixed `aspect-[3/2] md:aspect-[21/6]`; render at natural ratio with
-  `max-height` from a new token (~40% of current effective band height) and `object-position` from
-  `layout.coverFocalX/Y`. New optional layout fields: `coverFocalX`, `coverFocalY`, `coverMaxHeight`.
-- `ImagePickerField.tsx`: absorbs `ImageShapeControl` (optional `shape` props) so every call site can
-  opt in with two props, and gains a crop modal (canvas-based crop → upload to `editor-images` →
-  `onChange` with the new public URL). `src/lib/imageShape.ts` stays the single source of ratios.
-- `RowStyleTab.tsx`: focal picker for the row cover + the new Column gap control writing
-  `layout.columnGap: "tight" | "normal" | "wide"`.
-- `RowRenderer.tsx`: `gap-8` becomes a token driven by `layout.columnGap`.
-- Alignment: switch the row grid to CSS subgrid rows (eyebrow / title / body / rest). Each single-widget
-  column places its `RowEyebrow` / `RowTitle` / `RowBody` into the matching subgrid track, with empty
-  tracks collapsing. Implemented behind a shared context so widgets that don't use the typography parts
-  render exactly as today. Fallback for browsers without subgrid: current top alignment.
-- Tests: extend `rowSurface`/`rowCorners` suites with cover-height, column-gap and part-alignment cases.
+- `RowCoverImage.tsx` / `RowCoverCard.tsx`: drop the fixed `aspect-[3/2] md:aspect-[21/6]`; render at
+  natural ratio with `max-height` from a new `coverHeight` token (`small` ≈ 40% of today, `medium`,
+  `large`) and `object-position` from `layout.coverFocalX/Y`. Top corners take the row's resolved
+  surface radius via `overflow:hidden` on the cover frame; the frame is hoisted above the row's padded
+  container in `RowRenderer.tsx` (and in the per-row cover call sites) so it is flush. FAQ keeps
+  `variant="card"` behaviour.
+- New optional `RowLayout` fields: `coverFocalX`, `coverFocalY`, `coverHeight`, `columnGap`.
+- `ImagePickerField.tsx`: absorbs `ImageShapeControl` (optional props) so any call site opts in, and
+  gains a canvas-based crop modal that uploads the cropped result to `editor-images` and returns the new
+  public URL. `src/lib/imageShape.ts` stays the single source of ratios.
+- `RowStyleTab.tsx`: focal picker + height control for the row cover, and the Column gap control.
+- `RowRenderer.tsx`: `gap-8` becomes a token driven by `layout.columnGap` (default tighter).
+- Alignment: row grid switches to CSS subgrid tracks (eyebrow / title / body / rest); each column places
+  its `RowEyebrow` / `RowTitle` / `RowBody` into the matching track, empty tracks collapsing. Behind a
+  shared context so widgets not using those parts render exactly as today; browsers without subgrid keep
+  top alignment.
+- Tests: extend the `rowSurface` / `rowCorners` suites with cover height, flush-top corner clipping,
+  column gap and part-alignment cases.

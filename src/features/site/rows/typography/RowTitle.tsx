@@ -45,6 +45,7 @@ const RowTitle = ({ children, as, color, style, className, icon, iconSize = 32 }
         </div>
       )}
       <Tag
+        data-row-part="title"
         className={`font-display ${weightClass} mb-rhythm-base ${className ?? ""}`}
         style={{
           fontSize: "var(--fs-title)",

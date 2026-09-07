@@ -43,6 +43,14 @@ const TextRowEditor = ({ content, onChange, bgColor }: Props) => {
         onChange={(v) => onChange("cover_image", v)}
         altValue={content.cover_image_alt || ""}
         onAltChange={(v) => onChange("cover_image_alt", v)}
+        ratio={content.cover_image_ratio || "original"}
+        focalX={content.cover_image_focal_x}
+        focalY={content.cover_image_focal_y}
+        onShapeChange={(patch) => {
+          if (patch.ratio !== undefined) onChange("cover_image_ratio", patch.ratio);
+          if (patch.focalX !== undefined) onChange("cover_image_focal_x", patch.focalX);
+          if (patch.focalY !== undefined) onChange("cover_image_focal_y", patch.focalY);
+        }}
       />
     </div>
   );

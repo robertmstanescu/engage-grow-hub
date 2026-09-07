@@ -146,6 +146,13 @@ export interface RowLayout {
    * image. Defaults to 64. Halved on small screens.
    */
   coverTextOverlap?: number;
+  /** Display ratio for the row-level cover image. */
+  coverImageRatio?: string;
+  /** Focal point for the row-level cover image (0-100). */
+  coverFocalX?: number;
+  coverFocalY?: number;
+  /** Cover image height: small ≈ 40% of the old band, medium, large. */
+  coverHeight?: "small" | "medium" | "large";
   /**
    * Corner rounding of the row's own painted surface (multi-widget rows
    * and rows with a cover image). Defaults to "medium". Corners next to
@@ -161,6 +168,8 @@ export interface RowLayout {
   blockAlign?: "stretch" | "top";
   /** Show a small "01", "02"… label above each block in this row. */
   numberBlocks?: boolean;
+  /** Space between side-by-side columns. */
+  columnGap?: "tight" | "normal" | "wide";
 }
 
 
