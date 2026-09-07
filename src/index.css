@@ -994,7 +994,7 @@
   .snap-section > .footer-dark,
   .snap-section > footer.footer-dark {
     position: relative;
-    z-index: 0;
+    z-index: 0 !important;
   }
 
   .footer-dark .hover\:text-foreground:hover { color: hsl(0 0% 100%); }
