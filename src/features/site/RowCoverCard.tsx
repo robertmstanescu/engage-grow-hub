@@ -71,7 +71,7 @@ const RowCoverCard = ({ row, children, variant = "flush" }: RowCoverCardProps) =
           straight into the row's own colour — no card, no shadow. In the
           "card" variant the content keeps the legacy padding instead. */}
       <div
-        className={`relative z-10 -mt-16 md:-mt-20 ${isCard ? "p-6 md:p-8 lg:p-10" : "px-6 md:px-8 lg:px-10"}`}
+        className={`relative z-10 -mt-16 md:-mt-20 ${isCard ? "px-8 py-6 md:p-8 lg:p-10" : "px-6 md:px-8 lg:px-10"}`}
       >
         {children}
       </div>
