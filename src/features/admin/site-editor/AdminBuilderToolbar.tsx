@@ -1,4 +1,6 @@
-import { Monitor, Tablet, Smartphone, Eye, Pencil, Save, Send, FileText, ExternalLink, EyeOff, ArrowLeft } from "lucide-react";
+import { Monitor, Tablet, Smartphone, Eye, Pencil, Save, Send, ExternalLink, EyeOff, ArrowLeft, CircleDot } from "lucide-react";
+import StatusBadge from "../ui/StatusBadge";
+import type { ContentState } from "../naming";
 
 /**
  * Viewport modes drive the Canvas wrapper width in SiteEditor.
@@ -34,6 +36,21 @@ interface AdminBuilderToolbarProps {
    * while editing. Omit to hide the button entirely.
    */
   onExit?: () => void;
+
+  /**
+   * What is being edited — the page/post title (e.g. "About us",
+   * "Main Page"). Rendered verbatim; the adapter owns the wording.
+   */
+  title: string;
+
+  /**
+   * SAVED visibility of the item (Draft / Live / Scheduled), rendered as a
+   * StatusBadge next to the title. This is what the database currently
+   * says — not the pending choice in the schedule panel — so it only
+   * changes after a successful save/publish. Omit for items without a
+   * lifecycle.
+   */
+  contentState?: ContentState;
 
   viewport: ViewportMode;
   onViewportChange: (v: ViewportMode) => void;
@@ -81,6 +98,8 @@ const MODES: { key: PreviewMode; label: string; Icon: typeof Pencil }[] = [
 
 const AdminBuilderToolbar = ({
   onExit,
+  title,
+  contentState,
   viewport,
   onViewportChange,
   previewMode,
@@ -140,9 +159,16 @@ const AdminBuilderToolbar = ({
         <h2
           className="font-display text-sm font-bold truncate"
           style={{ color: "hsl(var(--secondary))" }}
+          title={title}
         >
-          Edit Main Page
+          {title}
         </h2>
+        {contentState && <StatusBadge state={contentState} className="hidden md:inline-flex" />}
+        {/* Two different facts, two different pills: the StatusBadge above
+            is the item's saved visibility; this one means "you have edits
+            in this session that are not saved yet". They used to be one
+            pill labelled "Unpublished", which read as a visibility state
+            even when the page was live. */}
         {hasChanges && (
           <span
             className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-body text-[10px] uppercase tracking-wider"
@@ -150,8 +176,9 @@ const AdminBuilderToolbar = ({
               backgroundColor: "hsl(var(--accent) / 0.15)",
               color: "hsl(var(--accent-foreground))",
             }}
+            aria-live="polite"
           >
-            <FileText size={11} /> Unpublished
+            <CircleDot size={11} /> Unsaved changes
           </span>
         )}
       </div>

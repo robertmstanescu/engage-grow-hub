@@ -304,6 +304,7 @@ const SiteEditor = ({ onExit, onDirtyChange, onRegisterSave }: Props) => {
   return (
     <PageBuilderShell
       title="Main Page"
+      contentState={savedVisibility}
       onExit={onExit ? handleExit : undefined}
       // Homepage's slug is fixed at "/" — the page title mirrors
       // main_page_seo.meta_title so editors edit it in one place.

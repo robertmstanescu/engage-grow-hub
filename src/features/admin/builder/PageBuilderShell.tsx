@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/resizable";
 import { usePanelLimits } from "./usePanelLimits";
 import AdminBuilderToolbar, { type ViewportMode } from "../site-editor/AdminBuilderToolbar";
+import type { ContentState } from "../naming";
 import CanvasViewport from "../site-editor/CanvasViewport";
 import { BuilderProvider, useBuilder } from "./BuilderContext";
 import ElementsTray, {
@@ -278,8 +279,15 @@ const CanvasSelectionSurface = ({ children }: { children: React.ReactNode }) => 
  * PageBuilderShell — the public component
  * ════════════════════════════════════════════════════════════════════ */
 export interface PageBuilderShellProps {
-  /** Header label for the toolbar (e.g. "Edit Blog Post · Hello World"). */
+  /** Header label for the toolbar — the page/post title (e.g. "About us"). */
   title: string;
+
+  /**
+   * SAVED visibility (Draft / Live / Scheduled) shown as a badge beside
+   * the title. Pass the value the database holds, not the pending pick
+   * in the schedule panel. See AdminBuilderToolbarProps.contentState.
+   */
+  contentState?: ContentState;
 
   /**
    * Exit the full-screen builder back to the admin dashboard. Rendered
@@ -396,6 +404,8 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
         <div className="fixed inset-0 z-50 bg-background flex flex-col h-screen w-screen overflow-hidden">
           <AdminBuilderToolbar
             onExit={props.onExit}
+            title={props.title}
+            contentState={props.contentState}
             viewport={viewport}
             onViewportChange={setViewport}
             previewMode={previewMode}

@@ -25,6 +25,7 @@ import AdminSection from "./ui/AdminSection";
 import AdminField, { adminInputClass } from "./ui/AdminField";
 import AdminStickyBar from "./ui/AdminStickyBar";
 import AdminStatusControl from "./ui/AdminStatusControl";
+import StatusBadge from "./ui/StatusBadge";
 import { contentState, stateToStatus, type ContentState } from "./naming";
 
 const generateSlug = (title: string) =>
@@ -766,14 +767,7 @@ const BlogEditor = () => {
                 )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full"
-                      style={{
-                        backgroundColor: post.status === "published" ? "hsl(var(--accent) / 0.15)" : "hsl(var(--muted))",
-                        color: post.status === "published" ? "hsl(var(--accent-foreground))" : "hsl(var(--muted-foreground))",
-                      }}>
-                      {post.status}
-                    </span>
+                    <StatusBadge state={contentState(post.status, post.publish_at)} />
                     <span className="font-body text-[10px] text-muted-foreground">{post.category}</span>
                   </div>
                   <p className="font-body text-sm font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>{post.title}</p>
