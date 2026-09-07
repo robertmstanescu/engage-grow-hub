@@ -111,18 +111,15 @@ const RowRenderer = ({
 
   /* Round the shared surface's corners. Admins pick the size in
      * Style ▸ Surface ▸ Corners (default 24px, the site's box radius).
-     * A corner next to an assigned edge shape keeps 0 radius because the
-     * SectionShape cap already curves that edge. No overflow clip — the
-     * caps paint OUTSIDE the section and must not be cut off. */
-  const hasShapeTop = Boolean(row.layout?.shapeTop && row.layout.shapeTop.kind !== "none");
-  const hasShapeBottom = Boolean(row.layout?.shapeBottom && row.layout.shapeBottom.kind !== "none");
+     * Keep all four corners visible even when an external edge shape is
+     * assigned: the shape paints outside the section and should not cancel
+     * the corner treatment selected for the row itself. No overflow clip —
+     * the external caps must remain free to paint beyond the section. */
   const radiusPx = { none: 0, subtle: 16, medium: 24, dramatic: 48 }[
     row.layout?.surfaceRadius || "medium"
   ];
-  const r = `${radiusPx}px`;
-  const z = "0px";
   const surfaceStyle = {
-    borderRadius: `${hasShapeTop ? z : r} ${hasShapeTop ? z : r} ${hasShapeBottom ? z : r} ${hasShapeBottom ? z : r}`,
+    borderRadius: `${radiusPx}px`,
   };
 
 
