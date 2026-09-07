@@ -55,10 +55,13 @@ Make every row render identically in the editor and on the public site, with row
 - Replace the separate hero/body fitting implementations with one width-aware fitting utility that measures the real container, respects minimum legible sizes, refits after fonts/images load, and does not create resize loops.
 - Use natural wrapping for prose and controlled shared scaling only for display headings; preserve the rule that all lines of a hero heading use the same size.
 
-### 7. Whitespace and contrast audit without recolouring
+### 7. Whitespace, reading comfort, and contrast without recolouring
 - Do not alter brand colours or introduce a new palette.
 - Standardise row gutters, max-widths, vertical rhythm, heading measures, and content density so rows have clearer separation and more deliberate open space.
+- Set accessible reading defaults for text inside rows: comfortable line spacing (roughly 1.5–1.7 for body copy, tighter for large headings), deliberate letter spacing (slightly open for small uppercase labels, neutral for body, slightly tight for display headings), consistent paragraph spacing, and a capped line length of about 60–75 characters for prose.
+- Apply those text settings through shared typography tokens so every row, card, and rich-text block inherits them instead of setting its own values.
 - Use only the colours already assigned to each row, but improve contrast through placement, spacing, typography weight, and surface boundaries.
+
 
 ### 8. Validation
 - Add focused unit tests for row ownership, legacy normalization, ratios/spans, image presets/focal points, and text fitting.
