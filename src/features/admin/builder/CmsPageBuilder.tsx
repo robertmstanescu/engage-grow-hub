@@ -12,7 +12,7 @@
  *   • `cms_pages.page_rows` is the live copy that the public site
  *     reads. Publish copies draft → live.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { PageRow } from "@/types/rows";
@@ -53,9 +53,11 @@ interface Props {
    * are local state here, not lifted into AdminDashboard's props.
    */
   onDirtyChange?: (dirty: boolean) => void;
+  /** Lets the parent save this page (the guard's "Save all & leave"). */
+  onRegisterSave?: (save: (() => Promise<boolean>) | null) => void;
 }
 
-const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
+const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props) => {
   const [record, setRecord] = useState<CmsPageRecord | null>(null);
   const [draftRows, setDraftRows] = useState<PageRow[]>([]);
   const [seoTitle, setSeoTitle] = useState("");
@@ -139,6 +141,12 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
   // hasn't been pushed to the database yet.
   useUnloadGuard(hasChanges);
   useEffect(() => { onDirtyChange?.(hasChanges); }, [hasChanges, onDirtyChange]);
+  // Give the parent (AdminDashboard's navigation guard) a way to save.
+  const saveRef = useRef<() => Promise<boolean>>(async () => true);
+  useEffect(() => {
+    onRegisterSave?.(() => saveRef.current());
+    return () => onRegisterSave?.(null);
+  }, [onRegisterSave]);
   // Clear the parent's dirty flag on unmount so switching away from a
   // clean page never leaves a stale "unsaved changes" guard armed.
   useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
@@ -147,7 +155,7 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
    *  elsewhere (Debug Story 4.1) before handing off to the dashboard's
    *  own navigation logic. */
   const handleExit = useCallback(async () => {
-    if (hasChanges && !(await confirmUnsavedExit())) return;
+    if (hasChanges && !(await confirmUnsavedExit(() => saveRef.current()))) return;
     onExit?.();
   }, [hasChanges, onExit]);
 
@@ -174,18 +182,18 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
     return true;
   }, [record, pageSlug]);
 
-  const onSaveDraft = useCallback(async () => {
-    if (!record) return;
+  const onSaveDraft = useCallback(async (): Promise<boolean> => {
+    if (!record) return false;
     const slugOk = await checkSlugAvailable();
-    if (!slugOk) return;
+    if (!slugOk) return false;
     if (visibility === "scheduled") {
       if (!publishAt || new Date(publishAt).getTime() <= Date.now()) {
         toast.error("Choose a future date and time for this page to go live.");
-        return;
+        return false;
       }
       if (expiryAt && new Date(expiryAt).getTime() <= new Date(publishAt).getTime()) {
         toast.error("The stop date must be after the go-live date.");
-        return;
+        return false;
       }
     }
     setSaving(true);
@@ -208,7 +216,8 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
         expiry_at: visibility === "scheduled" ? expiryAt : null,
       } as any)
       .eq("id", record.id);
-    if (error) toast.error(error.message);
+    let ok = true;
+    if (error) { toast.error(error.message); ok = false; }
     else {
       toast.success(
         goingLive ? "Page published" : visibility === "scheduled" ? "Page scheduled" : "Draft saved",
@@ -228,7 +237,10 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange }: Props) => {
       });
     }
     setSaving(false);
+    return ok;
   }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, visibility, publishAt, expiryAt, checkSlugAvailable]);
+
+  saveRef.current = onSaveDraft;
 
   const onPublish = useCallback(async () => {
     if (!record) return;
