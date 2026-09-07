@@ -162,7 +162,7 @@ const BlogPost = () => {
           )}
 
 
-          <header className={`relative z-10 px-8 ${article.cover_image ? "-mt-24 md:-mt-32 pb-6" : "pt-36 pb-12"}`}>
+          <header className={`relative z-10 px-8 ${article.cover_image ? "-mt-24 md:-mt-32 pb-6" : "pt-10 pb-12"}`}>
             <div className="relative z-10 max-w-[700px] mx-auto">
               <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-4 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
                 <ArrowLeft size={14} /> All articles

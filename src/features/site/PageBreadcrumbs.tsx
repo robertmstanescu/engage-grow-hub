@@ -31,7 +31,9 @@ const PageBreadcrumbs = ({ trail }: { trail: BreadcrumbEntry[] }) => {
   if (trail.length < 2) return null;
 
   return (
-    <div className="row-container pt-6 md:pt-8">
+    // pt-24/pt-28 clears the fixed floating navbar (mobile bar ≈64px,
+    // desktop pill ≈72px tall) so the trail is never hidden beneath it.
+    <div className="row-container pt-24 md:pt-28">
       <Breadcrumb>
         <BreadcrumbList>
           {trail.map((entry, i) => (
