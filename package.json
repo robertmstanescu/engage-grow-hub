@@ -4,16 +4,18 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predev": "node scripts/prerender-seo.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/prerender-seo.mjs",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 552",
     "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:visual": "playwright test -c playwright.visual.config.ts",
+    "test:visual:update": "playwright test -c playwright.visual.config.ts --update-snapshots",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
     "postbuild": "node scripts/prerender-seo.mjs"
   },
   "dependencies": {

@@ -319,8 +319,8 @@ export const fetchPageStats = async (filters: AnalyticsRangeFilter) => {
     p_since: filters.since,
     p_until: filters.until,
     p_traffic: filters.trafficType,
-    p_country: filters.country ?? null,
-    p_category: filters.category ?? null,
+    p_country: filters.country ?? undefined,
+    p_category: filters.category ?? undefined,
   });
   return { data: (data ?? []) as PageStatRow[], error };
 };

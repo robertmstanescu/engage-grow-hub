@@ -101,7 +101,9 @@ const EmailCampaigns = () => {
         setBlocks(parsed);
         return;
       }
-    } catch {}
+    } catch {
+      // Not block JSON — legacy raw HTML; fall through to a single text block.
+    }
     const textBlock = createBlock("text");
     textBlock.content = campaign.html_content;
     setBlocks([textBlock]);

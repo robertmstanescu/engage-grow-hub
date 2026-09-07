@@ -1,0 +1,60 @@
+name: check
+
+# The only gate this repo has. Lovable's agent pushes straight to `main`,
+# so every push (not only PRs) is checked. `check` = typecheck + lint
+# (with a warning cap that can only go down) + unit tests + production
+# build; `visual` then screenshots every row on every public page and
+# diffs against the committed baseline.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+# No `env:` block on purpose. `.env` is tracked (it holds only the public
+# Supabase URL, project id and publishable key — the same values every
+# browser receives), so Vite, Vitest and the postbuild prerender all read
+# it directly. Setting these from `secrets.*` here BROKE that: an empty
+# secret becomes an empty process-env value, which Vite prefers over
+# `.env`, and the tests/prerender then saw no Supabase URL at all.
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 3
+
+  visual:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run test:visual
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diff
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7

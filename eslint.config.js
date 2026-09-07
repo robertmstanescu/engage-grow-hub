@@ -21,6 +21,10 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      // Ratchet, not a free pass: `lint` runs with `--max-warnings` pinned
+      // at the current count (see package.json), so this number can only
+      // go down. Flip back to "error" once the count is under ~50.
+      "@typescript-eslint/no-explicit-any": "warn",
     },
   },
 );
