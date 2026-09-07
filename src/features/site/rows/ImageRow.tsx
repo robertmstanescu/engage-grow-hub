@@ -22,6 +22,8 @@ import type { PageRow } from "@/types/rows";
 import ImagePickerField from "@/features/admin/ImagePickerField";
 import RowSection from "./typography/RowSection";
 import { transformImageUrl, buildImageSrcSet } from "@/services/mediaOptimization";
+import ImageShapeControl from "@/features/admin/ImageShapeControl";
+import { resolveAspectRatio, focalObjectPosition } from "@/lib/imageShape";
 
 /* ---------- shared content shape -------------------------------- */
 export interface ImageRowContent {
@@ -29,6 +31,11 @@ export interface ImageRowContent {
   alt_text: string;
   asset_id?: string | null;
   caption?: string;
+  /** Shared shape preset — see src/lib/imageShape.ts. */
+  ratio?: string;
+  /** Focal point as percentages (0–100); defaults to the centre. */
+  focal_x?: number;
+  focal_y?: number;
 }
 
 export const IMAGE_ROW_DEFAULT: ImageRowContent = {
@@ -60,7 +67,13 @@ const ImageRow = ({ row }: FrontendProps) => {
   /* With an admin-chosen height the picture fills the band and crops;
      on auto height it keeps its natural ratio. */
   const cropped = Boolean(row.layout?.heightMode && row.layout.heightMode !== "auto");
-  const objectPosition = FOCAL[row.layout?.focalPoint || "center"];
+  /* Percentage focal point wins when the admin picked one; otherwise we
+     fall back to the legacy top/center/bottom/left/right layout value. */
+  const hasPercentFocal = typeof data.focal_x === "number" || typeof data.focal_y === "number";
+  const objectPosition = hasPercentFocal
+    ? focalObjectPosition(data.focal_x, data.focal_y)
+    : FOCAL[row.layout?.focalPoint || "center"];
+  const presetAspect = resolveAspectRatio(data.ratio);
 
   return (
     <RowSection row={row as any} bleed={bleed} maskShapes exactHeight={cropped}>
@@ -77,8 +90,11 @@ const ImageRow = ({ row }: FrontendProps) => {
           srcSet={buildImageSrcSet(data.url)}
           sizes={bleed ? "100vw" : "(min-width: 1280px) 1280px, 100vw"}
           alt={data.alt_text || ""}
-          className={cropped ? "w-full h-full flex-1 min-h-0 object-cover" : "w-full h-auto"}
-          style={cropped ? { objectPosition } : undefined}
+          className={cropped || presetAspect ? "w-full h-full flex-1 min-h-0 object-cover" : "w-full h-auto"}
+          style={{
+            objectPosition,
+            ...(presetAspect && !cropped ? { aspectRatio: String(presetAspect), height: "auto" } : null),
+          }}
           loading="lazy"
         />
         {data.caption ? (
@@ -116,6 +132,15 @@ export const ImageRowAdmin = ({ content, onChange }: AdminProps) => {
         onChange={(url) => onChange("url", url)}
         altValue={data.alt_text}
         onAltChange={(alt) => onChange("alt_text", alt)}
+      />
+
+      <ImageShapeControl
+        imageUrl={data.url}
+        ratio={data.ratio}
+        focalX={data.focal_x}
+        focalY={data.focal_y}
+        onRatioChange={(v) => onChange("ratio", v)}
+        onFocalChange={(x, y) => { onChange("focal_x", x); onChange("focal_y", y); }}
       />
 
       {altMissing && (
