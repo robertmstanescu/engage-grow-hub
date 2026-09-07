@@ -52,9 +52,13 @@ const RowBody = ({ children, html, color, style, className, ...rest }: Props) =>
   // `.measure` caps the line length at ~65 characters so paragraphs break
   // around the middle of a wide page instead of running edge to edge.
   // Rows that genuinely need full-bleed copy can pass `max-w-none`.
-  const baseClass = `font-body leading-[1.55] measure [&_p]:mb-4 [&_p]:mt-4 ${className ?? ""}`;
+  const baseClass = `font-body measure [&_p]:mb-[var(--para-space)] [&_p]:mt-[var(--para-space)] ${className ?? ""}`;
   const baseStyle: CSSProperties = {
     fontSize: "var(--fs-body)",
+    // Shared reading-comfort tokens (see index.css) — one place decides
+    // line-height, tracking and line length for all prose.
+    lineHeight: "var(--lh-body, 1.6)",
+    letterSpacing: "var(--ls-body, 0)",
     // Default to the row's auto-resolved foreground (`--row-fg`,
     // published by RowSection). Per-row admin colour pickers still
     // win via the `color` prop.

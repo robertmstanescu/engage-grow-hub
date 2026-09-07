@@ -1,4 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Inter:wght@100..900&display=swap");
+/* Fonts are loaded non-blocking from index.html (preload + onload swap).
+   Keeping an @import here would re-introduce a render-blocking request. */
 
 @tailwind base;
 @tailwind components;
@@ -184,6 +185,23 @@
     --fs-hero-label: clamp(11px, 0.9vw, 14px);
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
     --fs-hero-body: clamp(15px, 1.15vw, 19px);
+
+    /* ──────────────────────────────────────────────────────────────
+       READING COMFORT — line-height, letter-spacing and line length.
+       Shared so every row, card and rich-text block inherits the same
+       accessible defaults instead of inventing its own.
+       ────────────────────────────────────────────────────────────── */
+    --lh-body: 1.6;          /* 1.5–1.7 is the accessible band for prose */
+    --lh-card-body: 1.55;
+    --lh-subtitle: 1.45;
+    --lh-title: 1.05;        /* headings breathe less than prose */
+    --lh-display: 0.95;      /* hero-scale display type */
+    --ls-label: 0.28em;      /* small uppercase labels need open tracking */
+    --ls-body: 0;            /* prose stays neutral */
+    --ls-title: -0.015em;    /* large headings tighten slightly */
+    --ls-display: -0.025em;
+    --measure-prose: 68ch;   /* ~60–75 characters per line */
+    --para-space: 1em;
   }
 
 
@@ -617,7 +635,7 @@
   /* Editorial measure — body copy stops around 65 characters so lines
      break near the middle of a wide page instead of running edge to edge. */
   .measure {
-    max-width: 65ch;
+    max-width: var(--measure-prose, 68ch);
   }
   .text-center > .measure,
   .measure.mx-auto {
