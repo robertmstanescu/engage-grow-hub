@@ -148,7 +148,7 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen page-shell">
       <Navbar />
-      <article>
+      <article className="pt-24 md:pt-28">
         <div className="relative">
           {article.cover_image && (
             <CoverFadeImage
