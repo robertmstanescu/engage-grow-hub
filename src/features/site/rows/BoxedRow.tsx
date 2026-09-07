@@ -70,7 +70,12 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       // pillar-matching link_url, so pillarColor is always
       // undefined there and behavior is unchanged.
       const pillarColor = pillarColorFromLink(cardLink);
-      const titleColor = pillarColor || c.color_card_title || "hsl(var(--vows-card-title))";
+      // A per-card accent set directly in the card's own content (e.g. the
+      // "Why The Magic Coffin" cards), distinct from pillar-matching.
+      // Pillar identity still wins when both are present, since it's tied
+      // to actual navigation and is the older of the two mechanisms.
+      const cardAccent = pillarColor || card.accent_color || undefined;
+      const titleColor = cardAccent || c.color_card_title || "hsl(var(--vows-card-title))";
       const bodyColor = c.color_card_body || "hsl(var(--vows-card-body))";
       const cardCtaUrl: string | undefined = card.cta_url?.trim() || undefined;
       const cardCtaLabel: string | undefined = card.cta_label?.trim() || undefined;
@@ -139,7 +144,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       const cardClass = `${coverImage ? "" : "surface-card"} p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
       const cardStyle = {
         ...revealStyle(isVisible, i + 2),
-        ...(pillarColor ? { borderTop: `3px solid ${pillarColor}` } : {}),
+        ...(cardAccent ? { borderTop: `3px solid ${cardAccent}` } : {}),
         ...(coverImage
           ? {
               backgroundColor: "hsl(var(--primary) / 0.045)",
