@@ -1,5 +1,6 @@
 import { SectionBox, Field, RichField, SelectField, ColorField } from "./FieldComponents";
 import ImagePickerField from "../ImagePickerField";
+import ImageShapeControl from "../ImageShapeControl";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ColumnWidthControl from "./ColumnWidthControl";
@@ -81,7 +82,16 @@ const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Prop
           onAltChange={(v) => onChange("image_alt", v)}
         />
         <SelectField label="Image Position" value={content.image_position || "right"} options={IMAGE_POSITIONS} onChange={(v) => onChange("image_position", v)} />
-        <SelectField label="Image Shape" value={content.image_shape || "default"} options={IMAGE_SHAPES} onChange={(v) => onChange("image_shape", v)} />
+        <SelectField label="Image Mask" value={content.image_shape || "default"} options={IMAGE_SHAPES} onChange={(v) => onChange("image_shape", v)} />
+        <ImageShapeControl
+          imageUrl={content.image_url || ""}
+          ratio={content.image_ratio}
+          focalX={content.image_focal_x}
+          focalY={content.image_focal_y}
+          onRatioChange={(v) => onChange("image_ratio", v)}
+          onFocalChange={(x, y) => { onChange("image_focal_x", x); onChange("image_focal_y", y); }}
+          fallbackRatio={4 / 5}
+        />
         <ColumnWidthControl
           columnCount={2}
           widths={splitWidths}
