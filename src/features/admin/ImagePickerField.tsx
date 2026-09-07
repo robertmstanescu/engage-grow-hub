@@ -268,8 +268,8 @@ function CropModal({
       const file = new File([blob], `cropped-${Date.now()}.jpg`, { type: "image/jpeg" });
       onCrop(file);
       onClose();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Crop failed");
+    } catch {
+      toast.error("Could not crop this picture. Try re-uploading it and cropping again.");
     } finally {
       setLoading(false);
     }
