@@ -98,6 +98,68 @@ const plain = (v, max = 200) => {
   return s.length > max ? `${s.slice(0, max - 1).trimEnd()}…` : s;
 };
 
+/* ── Row content walking (v1 / v2 / v3 shapes) ──────────────────────── */
+
+/**
+ * Flatten a page's `page_rows` into widgets, whichever of the three
+ * historical shapes they were saved in:
+ *   v1 the row IS the widget · v2 row.columns[].widgets[] ·
+ *   v3 row.columns[].cells[].widgets[]  (canonical)
+ * Mirrors `normalizeRowsToV3` / `flattenWidgets` on the client — kept in
+ * plain JS here because this script runs under bare node at postbuild.
+ */
+function flattenWidgets(rows) {
+  const out = [];
+  for (const row of Array.isArray(rows) ? rows : []) {
+    if (!row || typeof row !== "object") continue;
+    if (row.type) out.push({ type: row.type, data: row.data || row.content || {} }); // v1
+    for (const column of row.columns || []) {
+      for (const widget of column.widgets || []) {
+        out.push({ type: widget.type, data: widget.data || widget.content || {} }); // v2
+      }
+      for (const cell of column.cells || []) {
+        for (const widget of cell.widgets || []) {
+          out.push({ type: widget.type, data: widget.data || widget.content || {} }); // v3
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/** Question/answer pairs from every FAQ widget, in document order. */
+function extractFaqItems(rows) {
+  const items = [];
+  for (const widget of flattenWidgets(rows)) {
+    if (widget.type !== "faq") continue;
+    for (const raw of Array.isArray(widget.data?.items) ? widget.data.items : []) {
+      const question = plain(raw?.question, 300);
+      const answer = plain(raw?.answer, 1200);
+      if (question && answer) items.push({ question, answer });
+    }
+  }
+  return items;
+}
+
+/** The page's headline + a few paragraphs of real copy, for crawlers. */
+function extractReadableContent(rows) {
+  const widgets = flattenWidgets(rows);
+  let heading = "";
+  const paragraphs = [];
+  for (const { type, data } of widgets) {
+    if (!data || typeof data !== "object") continue;
+    const lines = Array.isArray(data.title_lines) ? data.title_lines.map((l) => plain(l, 120)) : [];
+    const title = plain(data.title || data.heading, 160) || lines.filter(Boolean).join(" ");
+    if (!heading && title) heading = title;
+    else if (title && type !== "hero") paragraphs.push(title);
+    for (const key of ["subtitle", "body", "intro", "text", "description"]) {
+      const value = plain(data[key], 400);
+      if (value) paragraphs.push(value);
+    }
+  }
+  return { heading, paragraphs: paragraphs.slice(0, 12) };
+}
+
 /* ── Head rewriting ─────────────────────────────────────────────────── */
 
 /**
@@ -105,7 +167,7 @@ const plain = (v, max = 200) => {
  * runtime `usePageMeta` would set is set here statically instead.
  */
 function renderPage(shell, meta) {
-  const { title, description, url, image, ogType = "website", jsonLd } = meta;
+  const { title, description, url, image, ogType = "website", jsonLd, readable } = meta;
   const t = escapeHtml(title);
   const d = escapeHtml(description);
   const u = escapeHtml(url);
@@ -135,14 +197,34 @@ function renderPage(shell, meta) {
     html = html.replace(/<meta\s+property="og:image:alt"[^>]*>\s*/i, "");
   }
 
-  if (jsonLd) {
+  // JSON-LD: one object or several (Organization + Person + FAQPage…).
+  const blocks = (Array.isArray(jsonLd) ? jsonLd : [jsonLd]).filter(Boolean);
+  if (blocks.length) {
     html = html.replace(
       "</head>",
-      `  <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>\n  </head>`,
+      `${blocks
+        .map((b) => `  <script type="application/ld+json">${JSON.stringify(b)}</script>`)
+        .join("\n")}\n  </head>`,
+    );
+  }
+
+  // Real copy for crawlers that never run the app. Sits in <noscript> so
+  // it never conflicts with React taking over #root for real visitors.
+  if (readable && (readable.heading || readable.paragraphs.length)) {
+    const body = [
+      readable.heading ? `<h1>${escapeHtml(readable.heading)}</h1>` : "",
+      ...readable.paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`),
+    ]
+      .filter(Boolean)
+      .join("\n      ");
+    html = html.replace(
+      /<\/body>/i,
+      `  <noscript>\n    <main>\n      ${body}\n    </main>\n  </noscript>\n  </body>`,
     );
   }
   return html;
 }
+
 
 function writePage(routePath, html) {
   const target = resolve(DIST, `.${trailing(routePath)}index.html`);
@@ -159,11 +241,14 @@ async function main() {
   }
   const [siteRows, cmsPages, blogPosts] = await Promise.all([
     rest("site_content?select=section_key,content,updated_at"),
-    rest("cms_pages?status=eq.published&select=slug,title,meta_title,meta_description,og_image,updated_at"),
+    rest(
+      "cms_pages?status=eq.published&select=slug,title,meta_title,meta_description,og_image,page_rows,updated_at",
+    ),
     rest(
       "blog_posts?status=eq.published&select=slug,title,excerpt,content,meta_title,meta_description,og_image,cover_image,author_name,published_at,updated_at&order=published_at.desc",
     ),
   ]);
+
 
   const section = (key) => siteRows.find((r) => r.section_key === key)?.content || {};
   const sectionUpdatedAt = (key) => siteRows.find((r) => r.section_key === key)?.updated_at;
@@ -202,10 +287,81 @@ async function main() {
     [pageTitle, defaultSuffix || brandName].filter(Boolean).join(" | ") ||
     brandName;
 
+  /* ── Sitewide entities ───────────────────────────────────────────── */
+
+  /** Organization — only fields we can verify from CMS data. */
+  const organizationLd = brandName
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": `${origin}/#organization`,
+        name: brandName,
+        url: `${origin}/`,
+        logo: defaultImage,
+        ...(homeSeo.meta_description || tagline
+          ? { description: homeSeo.meta_description || tagline }
+          : {}),
+        ...(serviceAreas.length
+          ? { areaServed: serviceAreas.map((name) => ({ "@type": "Place", name })) }
+          : {}),
+      }
+    : null;
+
+  /**
+   * Person — the founder, taken from the About page's own content rather
+   * than hardcoded here. No address or geography is asserted.
+   */
+  const aboutPage = cmsPages.find((p) => p.slug === "about-us");
+  const founderName = (() => {
+    const raw = JSON.stringify(aboutPage?.page_rows || "");
+    const match = raw.match(/Robert\s+St[^\s"<,.|]{0,12}/);
+    return match ? match[0] : "";
+  })();
+  const personLd =
+    aboutPage && founderName
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Person",
+          "@id": `${origin}/#founder`,
+          name: founderName,
+          jobTitle: "Founder",
+          url: abs(cmsPagePath(aboutPage.slug)),
+          ...(brandName ? { worksFor: { "@id": `${origin}/#organization` } } : {}),
+        }
+      : null;
+
+  /** BreadcrumbList from a list of [name, url] pairs. */
+  const breadcrumbLd = (crumbs) => ({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map(([name, url], i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name,
+      item: url,
+    })),
+  });
+
+  /** FAQPage from a page's rows, or null when the page has no FAQ. */
+  const faqLd = (rows) => {
+    const items = extractFaqItems(rows);
+    if (!items.length) return null;
+    return {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: items.map(({ question, answer }) => ({
+        "@type": "Question",
+        name: question,
+        acceptedAnswer: { "@type": "Answer", text: answer },
+      })),
+    };
+  };
+
   /** Every route we emit: { path, meta, sitemap } */
   const routes = [];
 
-  // Homepage
+  // Homepage — its rows live in the site_content `page_rows` row.
+  const homeRows = section("page_rows").rows || [];
   routes.push({
     path: "/",
     meta: {
@@ -213,6 +369,8 @@ async function main() {
       description: homeSeo.meta_description || tagline,
       url: abs("/"),
       image: defaultImage,
+      jsonLd: [organizationLd, faqLd(homeRows)].filter(Boolean),
+      readable: extractReadableContent(homeRows),
     },
     sitemap: { lastmod: sectionUpdatedAt("main_page_seo"), changefreq: "weekly", priority: "1.0" },
   });
@@ -225,6 +383,10 @@ async function main() {
       description: blogSeo.meta_description || plain(blogSeo.header_subtitle),
       url: abs("/blog/"),
       image: defaultImage,
+      jsonLd: breadcrumbLd([
+        ["Home", `${origin}/`],
+        [blogSeo.header_title || "Blog", abs("/blog/")],
+      ]),
     },
     sitemap: { lastmod: latestPostTimestamp, changefreq: "weekly", priority: "0.8" },
   });
@@ -245,20 +407,28 @@ async function main() {
     if (!page.slug) continue;
     const path = cmsPagePath(page.slug);
     const description = page.meta_description || "";
+    const rows = Array.isArray(page.page_rows) ? page.page_rows : [];
     // Individual service pages (not the /services/ index itself) get a
     // Service schema block — mirrors the client-side version usePageMeta
     // emits in CmsPage.tsx, so bots and real users see the same markup.
     // Deliberately carries only fields we know are true (no fabricated
     // address, phone or price).
     const isServicePage = page.slug === "services" ? false : page.slug.startsWith("services/");
+
+    // Breadcrumbs mirror the visible trail: Home › Services › Page.
+    const crumbs = [["Home", `${origin}/`]];
+    if (isServicePage) crumbs.push(["Services", abs("/services/")]);
+    crumbs.push([page.title, abs(path)]);
+
     const meta = {
       title: titleFor(page.meta_title, page.title),
       description,
       url: abs(path),
       image: absImage(page.og_image),
-      ...(isServicePage
-        ? {
-            jsonLd: {
+      readable: extractReadableContent(rows),
+      jsonLd: [
+        isServicePage
+          ? {
               "@context": "https://schema.org",
               "@type": "Service",
               name: page.title,
@@ -268,9 +438,12 @@ async function main() {
               ...(serviceAreas.length
                 ? { areaServed: serviceAreas.map((name) => ({ "@type": "Place", name })) }
                 : {}),
-            },
-          }
-        : {}),
+            }
+          : null,
+        page.slug === "about-us" ? personLd : null,
+        faqLd(rows),
+        breadcrumbLd(crumbs),
+      ].filter(Boolean),
     };
     routes.push({
       path,
@@ -281,6 +454,7 @@ async function main() {
       fallbackRoutes.push({ path: `/${trailing(page.slug)}`, meta });
     }
   }
+
 
   // Blog posts
   for (const post of blogPosts) {
@@ -296,24 +470,39 @@ async function main() {
         url: abs(path),
         image,
         ogType: "article",
-        jsonLd: {
-          "@context": "https://schema.org",
-          "@type": "Article",
-          headline: post.title,
-          description,
-          image,
-          url: abs(path),
-          datePublished: post.published_at || undefined,
-          dateModified: post.updated_at || post.published_at || undefined,
-          ...(post.author_name ? { author: { "@type": "Person", name: post.author_name } } : {}),
-          ...(brandName ? { publisher: { "@type": "Organization", name: brandName } } : {}),
+        jsonLd: [
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: post.title,
+            description,
+            image,
+            url: abs(path),
+            datePublished: post.published_at || undefined,
+            dateModified: post.updated_at || post.published_at || undefined,
+            ...(post.author_name ? { author: { "@type": "Person", name: post.author_name } } : {}),
+            ...(brandName ? { publisher: { "@type": "Organization", name: brandName } } : {}),
+          },
+          breadcrumbLd([
+            ["Home", `${origin}/`],
+            [blogSeo.header_title || "Blog", abs("/blog/")],
+            [post.title, abs(path)],
+          ]),
+        ],
+        readable: {
+          heading: post.title,
+          paragraphs: [plain(post.excerpt, 300), plain(post.content, 1500)].filter(Boolean),
         },
       },
+
       sitemap: {
-        lastmod: post.published_at || post.updated_at,
+        // Real last-modified date: an edited post must report the edit,
+        // not its original publication date.
+        lastmod: post.updated_at || post.published_at,
         changefreq: "monthly",
         priority: "0.6",
       },
+
     });
   }
 
