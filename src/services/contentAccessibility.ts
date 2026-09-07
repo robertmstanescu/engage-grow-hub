@@ -62,11 +62,11 @@ const IMAGE_FIELDS_BY_TYPE: Partial<Record<PageRow["type"], ImageFieldDescriptor
   image_text: [COVER, { urlPath: "image_url", altPath: "image_alt", label: "Image + Text" }],
   // Boxed row's optional cover image (flat, row-level field — not per-card).
   boxed: [COVER],
-  // Hero: full-bleed background AND the optional foreground visual.
-  hero: [
-    { urlPath: "visual_image_url", altPath: "visual_image_alt", label: "Hero visual" },
-    { urlPath: "bg_url", altPath: "bg_alt", label: "Hero background" },
-  ],
+  // Hero: the optional foreground visual. The full-bleed `bg_url`
+  // background is decorative (rendered with an empty alt), so it is
+  // deliberately not gated here.
+  hero: [{ urlPath: "visual_image_url", altPath: "visual_image_alt", label: "Hero visual" }],
+
   // Profile row's portrait.
   profile: [COVER, { urlPath: "image_url", altPath: "image_alt", label: "Profile photo" }],
   // Every other row type also carries the same optional cover-image
