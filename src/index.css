@@ -988,6 +988,15 @@
     position: relative;
     z-index: 0;
   }
+  /* The generic `.snap-section > *` stacking rule below also matches the
+     footer and lifted it to z-index 1, which covered the last row's
+     bottom edge cap. Keep the footer underneath. */
+  .snap-section > .footer-dark,
+  .snap-section > footer.footer-dark {
+    position: relative;
+    z-index: 0 !important;
+  }
+
   .footer-dark .hover\:text-foreground:hover { color: hsl(0 0% 100%); }
 
   /* Whiten a dark logo asset when no light variant is uploaded. */
