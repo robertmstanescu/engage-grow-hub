@@ -12,7 +12,7 @@
  * (site_content's draft/live split across two rows, instead of one
  * cms_pages row) differs now — everything else is shared.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { confirmUnsavedExit } from "@/components/ConfirmDialog";
@@ -48,10 +48,25 @@ interface Props {
    * local state, not lifted into AdminDashboard's props.
    */
   onDirtyChange?: (dirty: boolean) => void;
+  /**
+   * Hands the parent a way to persist this editor's pending work (used by
+   * the "Save all & leave" action in the navigation guard). Called with
+   * null on unmount so the parent never holds a stale saver.
+   */
+  onRegisterSave?: (save: (() => Promise<boolean>) | null) => void;
 }
 
-const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
+const SiteEditor = ({ onExit, onDirtyChange, onRegisterSave }: Props) => {
   const [sections, setSections] = useState<SectionData[]>([]);
+  /**
+   * What the DATABASE currently holds in each section's draft column.
+   * "Unsaved changes" means the in-memory draft differs from THIS —
+   * NOT that the draft differs from the published content. Comparing
+   * against published content made the navigation guard fire forever
+   * whenever a saved-but-unpublished draft existed, even in a brand new
+   * session with no edits.
+   */
+  const [savedDrafts, setSavedDrafts] = useState<Record<string, any>>({});
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [visibility, setVisibility] = useState<ContentState>("live");
@@ -74,6 +89,7 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
         expiry_at: s.expiry_at,
       }));
       setSections(mapped);
+      setSavedDrafts(Object.fromEntries(mapped.map((s: SectionData) => [s.section_key, s.draft_content])));
       const rows = mapped.find((s: SectionData) => s.section_key === "page_rows");
       setPublishAt(rows?.publish_at ?? null);
       setExpiryAt(rows?.expiry_at ?? null);
@@ -126,8 +142,13 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
 
   const rowsSection = getSection("page_rows");
   const hasTimingChanges = visibility !== savedVisibility || publishAt !== (rowsSection?.publish_at ?? null) || expiryAt !== (rowsSection?.expiry_at ?? null);
+  /** Draft differs from what's live — drives the Publish button. */
   const hasChanges = hasTimingChanges || sections.some((s) => !deepEqual(s.draft_content, s.content));
-  useEffect(() => { onDirtyChange?.(hasChanges); }, [hasChanges, onDirtyChange]);
+  /** Draft differs from what's stored — the only thing worth guarding. */
+  const hasUnsavedChanges =
+    hasTimingChanges ||
+    sections.some((s) => !deepEqual(s.draft_content, savedDrafts[s.section_key] ?? s.content));
+  useEffect(() => { onDirtyChange?.(hasUnsavedChanges); }, [hasUnsavedChanges, onDirtyChange]);
   // Clear the parent's dirty flag on unmount so switching away from a
   // clean state never leaves a stale "unsaved changes" guard armed.
   useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
@@ -136,31 +157,31 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
    *  elsewhere (Debug Story 4.1) before handing off to the dashboard's
    *  own navigation logic. */
   const handleExit = useCallback(async () => {
-    if (hasChanges && !(await confirmUnsavedExit())) return;
+    if (hasUnsavedChanges && !(await confirmUnsavedExit(() => saveRef.current()))) return;
     onExit?.();
-  }, [hasChanges, onExit]);
+  }, [hasUnsavedChanges, onExit]);
 
   /**
    * US 16.2 — Global Save Draft. There is one save action in the
    * toolbar. It writes draft_content for EVERY dirty section in a
    * single batch — the only path from in-memory edits to the database.
    */
-  const onSaveDraft = useCallback(async () => {
+  const onSaveDraft = useCallback(async (): Promise<boolean> => {
     const dirty = sections.filter((s) => !deepEqual(s.draft_content, s.content));
     if (dirty.length === 0 && !hasTimingChanges) {
       toast.info("Nothing to save");
-      return;
+      return true;
     }
     setSaving(true);
     if (visibility === "scheduled" && (!publishAt || new Date(publishAt).getTime() <= Date.now())) {
       toast.error("Choose a future date and time for the homepage to go live.");
       setSaving(false);
-      return;
+      return false;
     }
     if (visibility === "scheduled" && expiryAt && publishAt && new Date(expiryAt).getTime() <= new Date(publishAt).getTime()) {
       toast.error("The stop date must be after the go-live date.");
       setSaving(false);
-      return;
+      return false;
     }
     const targets = sections.filter(
       (s) => dirty.includes(s) || (hasTimingChanges && s.section_key === "page_rows"),
@@ -187,7 +208,8 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
     });
     const results = await Promise.all(updates);
     const err = results.find((r) => r.error);
-    if (err?.error) toast.error((err.error as any).message);
+    let ok = true;
+    if (err?.error) { toast.error((err.error as any).message); ok = false; }
     else {
       setSections((prev) => prev.map((s) => targets.includes(s)
         ? {
@@ -198,6 +220,7 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
           }
         : s));
       setSavedVisibility(visibility);
+      setSavedDrafts(Object.fromEntries(sections.map((s) => [s.section_key, s.draft_content ?? s.content])));
       toast.success(
         goingLive
           ? "Homepage published"
@@ -207,7 +230,17 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
       );
     }
     setSaving(false);
+    return ok;
   }, [sections, hasTimingChanges, visibility, publishAt, expiryAt]);
+
+  // Stable handle so the exit guard / parent always calls the LATEST
+  // save implementation without re-registering on every keystroke.
+  const saveRef = useRef<() => Promise<boolean>>(async () => true);
+  saveRef.current = onSaveDraft;
+  useEffect(() => {
+    onRegisterSave?.(() => saveRef.current());
+    return () => onRegisterSave?.(null);
+  }, [onRegisterSave]);
 
   const onPublish = useCallback(async () => {
     // EPIC 13 / US 13.1 — gate publish on accessibility (alt text). Pull
@@ -239,6 +272,7 @@ const SiteEditor = ({ onExit, onDirtyChange }: Props) => {
       toast.error((err.error as any).message);
     } else {
       setSections((prev) => prev.map((s) => ({ ...s, content: s.draft_content || s.content })));
+      setSavedDrafts(Object.fromEntries(sections.map((s) => [s.section_key, s.draft_content ?? s.content])));
       setVisibility("live");
       setSavedVisibility("live");
       setPublishAt(null);

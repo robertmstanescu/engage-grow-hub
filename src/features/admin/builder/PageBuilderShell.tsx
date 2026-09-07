@@ -303,7 +303,7 @@ export interface PageBuilderShellProps {
 
   /** Save / publish actions. The shell renders the buttons; the adapter
    * implements the actual DB writes. */
-  onSaveDraft: () => Promise<void> | void;
+  onSaveDraft: () => Promise<unknown> | void;
   onPublish: () => Promise<void> | void;
   onPreview: () => void;
   saving: boolean;

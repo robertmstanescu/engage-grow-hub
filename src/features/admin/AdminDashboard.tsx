@@ -407,6 +407,15 @@ const AdminDashboard = ({ session }: Props) => {
    * The boolean below is the single source of truth the topbar reads.
    */
   const [cmsPageDirty, setCmsPageDirty] = useState(false);
+  /**
+   * NOTE — "unsaved" vs "unpublished". This flag means the draft differs
+   * from the LIVE content, i.e. there is something left to publish. It
+   * must NOT be used to guard navigation: a draft that was saved but
+   * never published would then block every single navigation forever,
+   * even in a fresh session where nothing was edited (the bug this
+   * comment exists to prevent). `hasUnpersistedEdits` below is the flag
+   * the navigation guard uses.
+   */
   const hasUnsavedChanges = useMemo(() => {
     if (cmsPage) return cmsPageDirty;
     return sections.some((s) => {
@@ -431,14 +440,34 @@ const AdminDashboard = ({ session }: Props) => {
   // (Passed inline, not via useCallback, so TS infers the param types
   // from useBlocker's own signature — react-router reads the latest
   // closure on every check, so a fresh function each render is fine.)
+  //
+  // The dirty flag here is "there are edits that have NOT been written to
+  // the database yet" — computed against the last persisted draft
+  // snapshot (see `lastAutoSavedRef` below), plus whatever the mounted
+  // builder reports through onDirtyChange. Anything already saved as a
+  // draft is safe on the server, so leaving the screen loses nothing.
+  const builderSaveRef = useRef<(() => Promise<boolean>) | null>(null);
+  const registerBuilderSave = useCallback((fn: (() => Promise<boolean>) | null) => {
+    builderSaveRef.current = fn;
+  }, []);
+  const hasUnpersistedEditsRef = useRef(false);
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      (hasUnsavedChanges || builderDirty) && currentLocation.pathname !== nextLocation.pathname,
+      (hasUnpersistedEditsRef.current || builderDirty) &&
+      currentLocation.pathname !== nextLocation.pathname,
   );
   useEffect(() => {
     if (blocker.state !== "blocked") return;
     (async () => {
-      const ok = await confirmUnsavedExit();
+      const saver = builderSaveRef.current;
+      const ok = await confirmUnsavedExit(
+        saver
+          ? async () => {
+              const saved = await saver();
+              return saved;
+            }
+          : undefined,
+      );
       if (ok) blocker.proceed();
       else blocker.reset();
     })();
@@ -573,6 +602,12 @@ const AdminDashboard = ({ session }: Props) => {
     }
   }, 500);
 
+  // Edits exist locally that the auto-save hasn't persisted yet.
+  const hasUnpersistedEdits =
+    !isInitialLoadRef.current &&
+    (currentDraftSnapshot !== lastAutoSavedRef.current || autoSaveStatus === "saving");
+  hasUnpersistedEditsRef.current = hasUnpersistedEdits;
+
   useEffect(() => {
     // Skip the very first render after a load — we don't want to "save"
     // data we just fetched.
@@ -596,7 +631,7 @@ const AdminDashboard = ({ session }: Props) => {
    * 500ms and the silent save hasn't completed yet). Both windows count
    * as "unsaved" from the user's perspective. Lives DOWN HERE because
    * `autoSaveStatus` is declared after `hasUnsavedChanges`. */
-  useUnloadGuard(hasUnsavedChanges || autoSaveStatus === "saving");
+  useUnloadGuard(hasUnpersistedEdits);
 
   // Load main page data
   useEffect(() => {
@@ -1504,8 +1539,8 @@ const AdminDashboard = ({ session }: Props) => {
             // both the main page (SiteEditor) and CMS pages (CmsPageBuilder).
             <div className="flex-1 overflow-hidden">
               {cmsPage
-                ? <CmsPageBuilder pageId={cmsPage.id} onExit={handleExitBuilder} onDirtyChange={setBuilderDirty} />
-                : <SiteEditor onExit={handleExitBuilder} onDirtyChange={setBuilderDirty} />}
+                ? <CmsPageBuilder pageId={cmsPage.id} onExit={handleExitBuilder} onDirtyChange={setBuilderDirty} onRegisterSave={registerBuilderSave} />
+                : <SiteEditor onExit={handleExitBuilder} onDirtyChange={setBuilderDirty} onRegisterSave={registerBuilderSave} />}
             </div>
           ) : isSiteTab ? (
             <div className="flex-1 bg-card overflow-hidden flex flex-col">

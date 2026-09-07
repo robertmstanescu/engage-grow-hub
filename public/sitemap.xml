@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://themagiccoffin.com/</loc>
-    <lastmod>2026-03-27</lastmod>
+    <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -13,13 +13,13 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://themagiccoffin.com/services/internal-communications/</loc>
+    <loc>https://themagiccoffin.com/services/employee-experience/</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://themagiccoffin.com/services/employee-experience/</loc>
+    <loc>https://themagiccoffin.com/services/internal-communications/</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -37,7 +37,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://themagiccoffin.com/services/</loc>
+    <loc>https://themagiccoffin.com/p/about-us/</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -49,7 +49,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://themagiccoffin.com/p/about-us/</loc>
+    <loc>https://themagiccoffin.com/services/</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
