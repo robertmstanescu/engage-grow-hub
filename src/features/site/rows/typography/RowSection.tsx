@@ -165,10 +165,20 @@ const RowSection = ({
   const shapeBottom = !maskShapes ? row.layout?.shapeBottom : undefined;
   /* A row that spills an edge must always paint ABOVE its neighbours —
    * including the footer — otherwise the overhang gets covered. */
-  const hasShape = Boolean(
+  const hasExternalShape = Boolean(
     (shapeTop && shapeTop.kind !== "none") || (shapeBottom && shapeBottom.kind !== "none"),
   );
-  const contentRadius = undefined;
+
+  /* ── Surface corner radius ──
+   *  One curve scale for every row surface. Admins pick the size in
+   *  Style ▸ Surface ▸ Corners. When no external edge shape is assigned
+   *  we clip the content so the rounded corners stay visible; when a
+   *  shape cap paints outside the section we keep overflow visible. */
+  const radiusValue = { none: 0, subtle: 16, medium: 24, dramatic: 48 }[
+    row.layout?.surfaceRadius || "medium"
+  ];
+  const applyRadius = radiusValue > 0 && !maskShapes;
+  const clipToRadius = applyRadius && !hasExternalShape;
 
   /* ── Optical centring ──
    *  A cap paints OUTSIDE the section, so a row with only a bottom edge
@@ -241,7 +251,7 @@ const RowSection = ({
         className={`snap-section ${grain && !hasOwnPaint ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} ${bleed ? "" : "py-row-fluid"} ${className}`}
         style={{
           backgroundColor: surfaceColor,
-          zIndex: hasShape ? 2 : undefined,
+          zIndex: hasExternalShape ? 2 : undefined,
           ...heightStyle,
           ...(bleed
             ? { paddingTop: 0, paddingBottom: 0 }
@@ -269,7 +279,10 @@ const RowSection = ({
              lifted slightly toward its foreground, so cards stay light
              on light rows and dark on dark ones. */
           ["--row-surface" as string]: `color-mix(in srgb, ${surfaceColor || "hsl(var(--background))"} 94%, ${bandFg})`,
-          ...(contentRadius ? { borderRadius: contentRadius, overflow: "hidden" } : null),
+          /* Surface corners — shared scale, clipped unless an external
+             shape cap needs to paint beyond the section boundary. */
+          ...(applyRadius ? { borderRadius: `${radiusValue}px` } : null),
+          ...(clipToRadius ? { overflow: "hidden" } : null),
           ...style,
         }}
       >

@@ -109,19 +109,8 @@ const RowRenderer = ({
     </div>
   );
 
-  /* Round the shared surface's corners. Admins pick the size in
-     * Style ▸ Surface ▸ Corners (default 24px, the site's box radius).
-     * Keep all four corners visible even when an external edge shape is
-     * assigned: the shape paints outside the section and should not cancel
-     * the corner treatment selected for the row itself. No overflow clip —
-     * the external caps must remain free to paint beyond the section. */
-  const radiusPx = { none: 0, subtle: 16, medium: 24, dramatic: 48 }[
-    row.layout?.surfaceRadius || "medium"
-  ];
-  const surfaceStyle = {
-    borderRadius: `${radiusPx}px`,
-  };
-
+  /* RowSection now owns the surface radius/clipping logic, so no
+     duplicate borderRadius needs to be injected here. */
 
   const body = paintsSurface ? (
     <RowSection
@@ -129,7 +118,6 @@ const RowRenderer = ({
       vAlign={vAlign}
       className=""
       grain={false}
-      style={surfaceStyle}
       dataRowId={row.id}
     >
       {/* The provider sits INSIDE the section so only the widgets' own
