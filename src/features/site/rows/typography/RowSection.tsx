@@ -170,15 +170,28 @@ const RowSection = ({
   );
 
   /* ── Surface corner radius ──
-   *  One curve scale for every row surface. Admins pick the size in
-   *  Style ▸ Surface ▸ Corners. When no external edge shape is assigned
-   *  we clip the content so the rounded corners stay visible; when a
-   *  shape cap paints outside the section we keep overflow visible. */
+   *  One curve scale for every row surface, OFF unless an admin picks a
+   *  size in Style ▸ Corners. Corners are applied per edge: an edge that
+   *  already carries a decorative shape stays square, so the shape's cap
+   *  and the section's own box never draw two mismatched curves (the
+   *  visible "cut" at the seam). Clipping is only safe when neither edge
+   *  paints a cap outside the section. */
   const radiusValue = { none: 0, subtle: 16, medium: 24, dramatic: 48 }[
-    row.layout?.surfaceRadius || "medium"
+    row.layout?.surfaceRadius || "none"
   ];
+  const topHasShape = Boolean(shapeTop && shapeTop.kind !== "none");
+  const bottomHasShape = Boolean(shapeBottom && shapeBottom.kind !== "none");
   const applyRadius = radiusValue > 0 && !maskShapes;
   const clipToRadius = applyRadius && !hasExternalShape;
+  const radiusStyle: CSSProperties | null = applyRadius
+    ? {
+        borderTopLeftRadius: topHasShape ? 0 : radiusValue,
+        borderTopRightRadius: topHasShape ? 0 : radiusValue,
+        borderBottomLeftRadius: bottomHasShape ? 0 : radiusValue,
+        borderBottomRightRadius: bottomHasShape ? 0 : radiusValue,
+      }
+    : null;
+
 
   /* ── Optical centring ──
    *  A cap paints OUTSIDE the section, so a row with only a bottom edge

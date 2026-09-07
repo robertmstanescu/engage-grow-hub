@@ -426,7 +426,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               ["medium", "Medium"],
               ["dramatic", "Large"],
             ] as const).map(([value, label]) => {
-              const active = (row.layout?.surfaceRadius || "medium") === value;
+              const active = (row.layout?.surfaceRadius || "none") === value;
               return (
                 <button
                   key={value}
@@ -444,9 +444,12 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
             })}
           </div>
           <p className="font-body text-[10px] text-muted-foreground leading-snug mt-2">
-            Applies to the band a row paints around several blocks (or around a
-            row cover image). An edge with a decorative shape keeps its own curve.
+            Corners round this row's own box — they stay inside the row. Edges
+            (below) are curves that spill over the row above or below. An edge
+            with a shape keeps its own curve and ignores the corner setting, so
+            the two never clash.
           </p>
+
         </AccordionContent>
       </AccordionItem>
 
