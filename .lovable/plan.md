@@ -3,8 +3,9 @@
 ## What will change
 
 1. **Restore bullet and numbered lists in every row body**
-   - Route the Profile and Image & Text body content through the shared row-body treatment, or add the same semantic body marker where their editable wrapper must remain.
-   - Keep the existing rich-text content and styling intact while ensuring unordered and ordered lists receive visible markers, indentation, and nested-list styling on both the live page and admin canvas.
+   - Audit every widget that renders rich-text body copy (Text, Image & Text, Profile, Boxed, Service, Grid, FAQ, Contact, CTA band, Proof band, Testimonial, Process steps, Logo cloud, Quote band and any other) and list which ones currently miss the shared body treatment.
+   - Route each of those bodies through the shared row-body treatment, or add the same semantic body marker where their editable wrapper must remain.
+   - Keep the existing rich-text content and styling intact while ensuring unordered and ordered lists receive visible markers, indentation, and nested-list styling on both the live page and admin canvas, across all of those widgets.
 
 2. **Make cross-column body alignment use the real body line**
    - Add the shared `body` semantic marker to the legacy Text, Image & Text, Profile, Boxed, Service, Grid, and other applicable row renderers that currently expose body copy without it.
