@@ -496,10 +496,13 @@ async function main() {
       },
 
       sitemap: {
-        lastmod: post.published_at || post.updated_at,
+        // Real last-modified date: an edited post must report the edit,
+        // not its original publication date.
+        lastmod: post.updated_at || post.published_at,
         changefreq: "monthly",
         priority: "0.6",
       },
+
     });
   }
 
