@@ -41,6 +41,9 @@ Make every row render identically in the editor and on the public site, with row
 - Extend the model for structured mixed-size grids: configurable column ratios plus cell spans, with predictable stacking on small screens.
 - Add safe defaults and validation when stored ratio counts no longer match the number of columns.
 - Ensure drag-and-drop preserves ratios, spans, widget IDs, and content when widgets move between cells.
+- Support balanced side-by-side blocks in the style of the Ruul reference: several blocks can share one row, and in text-and-image pairings the picture fills its whole half so both sides align top and bottom for a symmetrical result.
+- Make that balance an option, not a rule: each row can switch between matched-height symmetry and a looser, deliberately uneven arrangement.
+
 
 ### 5. Add shared image shape and focal-point controls
 - Create one image-display model used by every image picker: **Original, Square (1:1), Portrait (3:4), Landscape (4:3), Wide (16:9), Banner**.
