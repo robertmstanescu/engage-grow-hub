@@ -41,7 +41,7 @@ const PageBreadcrumbs = ({
       <Breadcrumb>
         <BreadcrumbList
           className={placement === "footer" ? "font-body text-micro gap-1.5 sm:gap-2" : undefined}
-          style={placement === "footer" ? { color: "hsl(var(--foreground) / 0.5)" } : undefined}
+          style={placement === "footer" ? { color: "hsl(var(--foreground) / 0.5)", fontSize: "11px" } : undefined}
         >
           {trail.map((entry, i) => (
             <Fragment key={`${entry.name}-${i}`}>
