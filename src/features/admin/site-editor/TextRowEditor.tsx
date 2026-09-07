@@ -6,7 +6,7 @@
  * widget-level Inspector panel.
  */
 
-import { Field, RichField } from "./FieldComponents";
+import { Field, RichField, EyebrowField } from "./FieldComponents";
 import SubtitleEditor from "./SubtitleEditor";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
 import ImagePickerField from "../ImagePickerField";
@@ -24,7 +24,7 @@ const TextRowEditor = ({ content, onChange, bgColor }: Props) => {
 
   return (
     <div className="space-y-3">
-      <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
+      <EyebrowField value={content.eyebrow || ""} color={content.color_eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} onColorChange={(v) => onChange("color_eyebrow", v)} />
       <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
       <SubtitleEditor
         subtitle={content.subtitle || ""}

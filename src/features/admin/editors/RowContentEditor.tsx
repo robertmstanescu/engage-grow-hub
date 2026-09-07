@@ -49,7 +49,7 @@
  * ─────────────────────────────────────────────────────────────────────────
  */
 
-import { Field, RichField, ColorField, SectionBox } from "../site-editor/FieldComponents";
+import { Field, RichField, ColorField, SectionBox, EyebrowField } from "../site-editor/FieldComponents";
 import { resolveRowBgColor } from "@/lib/rowForeground";
 import SubtitleEditor from "../site-editor/SubtitleEditor";
 import PillarEditor from "../site-editor/PillarEditor";
@@ -233,7 +233,7 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
             <AccordionItem value="text" className="border-none">
               <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
-                <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
+                <EyebrowField value={content.eyebrow || ""} color={content.color_eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} onColorChange={(v) => onContentChange("color_eyebrow", v)} />
                 <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} bgColor={bg} />
                 <SubtitleEditor
                   subtitle={content.subtitle || ""}
@@ -317,7 +317,7 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
                   bgColor={bg}
                 />
                 <BoxedArrayField content={content} onChange={onContentChange} bgColor={bg} />
-                <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
+                <EyebrowField value={content.eyebrow || ""} color={content.color_eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} onColorChange={(v) => onContentChange("color_eyebrow", v)} />
                 <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onContentChange("note", v)} />
               </AccordionContent>
             </AccordionItem>
@@ -357,7 +357,7 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
             <AccordionItem value="text" className="border-none">
               <AccordionTrigger className={TRIGGER_CLASS}>Text &amp; Content</AccordionTrigger>
               <AccordionContent className={CONTENT_CLASS}>
-                <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} />
+                <EyebrowField value={content.eyebrow || ""} color={content.color_eyebrow || ""} onChange={(v) => onContentChange("eyebrow", v)} onColorChange={(v) => onContentChange("color_eyebrow", v)} />
                 <TitleLinesEditor titleLines={titleLines} onChange={(v) => onContentChange("title_lines", v)} bgColor={bg} />
                 <SubtitleEditor
                   subtitle={content.subtitle || ""}
@@ -386,8 +386,7 @@ const RowContentEditor = ({ row, onContentChange, onRowMetaChange }: Props) => {
               <AccordionContent className={CONTENT_CLASS}>
                 <SectionBox label="Colors">
                   <div className="grid grid-cols-2 gap-3">
-                    <ColorField label="Eyebrow" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onContentChange("color_eyebrow", v)} />
-                  </div>
+                                      </div>
                 </SectionBox>
               </AccordionContent>
             </AccordionItem>
