@@ -42,9 +42,12 @@ Columns still stack with sensible spacing on phones.
 Right now every widget starts at the top of its column, so a widget with only body text sits level with
 its neighbour's eyebrow.
 
-New behaviour: within a row, eyebrows line up with eyebrows, titles with titles, body with body. A
-widget with no eyebrow starts at the title line; one with neither starts at the body line. Widgets that
-share no parts fall back to today's top alignment.
+New behaviour: within a row, widgets share a single implicit baseline grid made of eyebrow, title and
+body lines. The first line that exists in either widget becomes the starting line for both widgets. If
+both widgets have an eyebrow, those eyebrows align; if only one has an eyebrow, the other widget starts
+level with that eyebrow. If neither has an eyebrow but both have titles, the titles align; if only one
+has a title, the other widget starts level with that title. Only when both widgets are missing both eyebrow
+and title do they fall back to today's top alignment.
 
 ## Technical notes
 
