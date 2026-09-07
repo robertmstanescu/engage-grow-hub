@@ -98,6 +98,68 @@ const plain = (v, max = 200) => {
   return s.length > max ? `${s.slice(0, max - 1).trimEnd()}…` : s;
 };
 
+/* ── Row content walking (v1 / v2 / v3 shapes) ──────────────────────── */
+
+/**
+ * Flatten a page's `page_rows` into widgets, whichever of the three
+ * historical shapes they were saved in:
+ *   v1 the row IS the widget · v2 row.columns[].widgets[] ·
+ *   v3 row.columns[].cells[].widgets[]  (canonical)
+ * Mirrors `normalizeRowsToV3` / `flattenWidgets` on the client — kept in
+ * plain JS here because this script runs under bare node at postbuild.
+ */
+function flattenWidgets(rows) {
+  const out = [];
+  for (const row of Array.isArray(rows) ? rows : []) {
+    if (!row || typeof row !== "object") continue;
+    if (row.type) out.push({ type: row.type, data: row.data || row.content || {} }); // v1
+    for (const column of row.columns || []) {
+      for (const widget of column.widgets || []) {
+        out.push({ type: widget.type, data: widget.data || widget.content || {} }); // v2
+      }
+      for (const cell of column.cells || []) {
+        for (const widget of cell.widgets || []) {
+          out.push({ type: widget.type, data: widget.data || widget.content || {} }); // v3
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/** Question/answer pairs from every FAQ widget, in document order. */
+function extractFaqItems(rows) {
+  const items = [];
+  for (const widget of flattenWidgets(rows)) {
+    if (widget.type !== "faq") continue;
+    for (const raw of Array.isArray(widget.data?.items) ? widget.data.items : []) {
+      const question = plain(raw?.question, 300);
+      const answer = plain(raw?.answer, 1200);
+      if (question && answer) items.push({ question, answer });
+    }
+  }
+  return items;
+}
+
+/** The page's headline + a few paragraphs of real copy, for crawlers. */
+function extractReadableContent(rows) {
+  const widgets = flattenWidgets(rows);
+  let heading = "";
+  const paragraphs = [];
+  for (const { type, data } of widgets) {
+    if (!data || typeof data !== "object") continue;
+    const lines = Array.isArray(data.title_lines) ? data.title_lines.map((l) => plain(l, 120)) : [];
+    const title = plain(data.title || data.heading, 160) || lines.filter(Boolean).join(" ");
+    if (!heading && title) heading = title;
+    else if (title && type !== "hero") paragraphs.push(title);
+    for (const key of ["subtitle", "body", "intro", "text", "description"]) {
+      const value = plain(data[key], 400);
+      if (value) paragraphs.push(value);
+    }
+  }
+  return { heading, paragraphs: paragraphs.slice(0, 12) };
+}
+
 /* ── Head rewriting ─────────────────────────────────────────────────── */
 
 /**
@@ -105,7 +167,7 @@ const plain = (v, max = 200) => {
  * runtime `usePageMeta` would set is set here statically instead.
  */
 function renderPage(shell, meta) {
-  const { title, description, url, image, ogType = "website", jsonLd } = meta;
+  const { title, description, url, image, ogType = "website", jsonLd, readable } = meta;
   const t = escapeHtml(title);
   const d = escapeHtml(description);
   const u = escapeHtml(url);
@@ -135,14 +197,34 @@ function renderPage(shell, meta) {
     html = html.replace(/<meta\s+property="og:image:alt"[^>]*>\s*/i, "");
   }
 
-  if (jsonLd) {
+  // JSON-LD: one object or several (Organization + Person + FAQPage…).
+  const blocks = (Array.isArray(jsonLd) ? jsonLd : [jsonLd]).filter(Boolean);
+  if (blocks.length) {
     html = html.replace(
       "</head>",
-      `  <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>\n  </head>`,
+      `${blocks
+        .map((b) => `  <script type="application/ld+json">${JSON.stringify(b)}</script>`)
+        .join("\n")}\n  </head>`,
+    );
+  }
+
+  // Real copy for crawlers that never run the app. Sits in <noscript> so
+  // it never conflicts with React taking over #root for real visitors.
+  if (readable && (readable.heading || readable.paragraphs.length)) {
+    const body = [
+      readable.heading ? `<h1>${escapeHtml(readable.heading)}</h1>` : "",
+      ...readable.paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`),
+    ]
+      .filter(Boolean)
+      .join("\n      ");
+    html = html.replace(
+      /<\/body>/i,
+      `  <noscript>\n    <main>\n      ${body}\n    </main>\n  </noscript>\n  </body>`,
     );
   }
   return html;
 }
+
 
 function writePage(routePath, html) {
   const target = resolve(DIST, `.${trailing(routePath)}index.html`);
