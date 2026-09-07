@@ -166,8 +166,32 @@ function CropModal({
   const [crop, setCrop] = useState({ x: 0, y: 0, w: 0, h: 0 });
   const [imgSize, setImgSize] = useState({ w: 0, h: 0 });
   const [loading, setLoading] = useState(false);
+  /* The crop canvas must not be tainted: fetch the picture ourselves and
+     draw from a same-origin blob URL instead of the remote address. */
+  const [localSrc, setLocalSrc] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(imageUrl, { mode: "cors" });
+        if (!res.ok) throw new Error("fetch failed");
+        const blob = await res.blob();
+        if (cancelled) return;
+        objectUrl = URL.createObjectURL(blob);
+        setLocalSrc(objectUrl);
+      } catch {
+        if (!cancelled) setLocalSrc(imageUrl); // fall back to crossOrigin attempt
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [imageUrl]);
 
   const resetCrop = useCallback(() => {
     const img = imgRef.current;
