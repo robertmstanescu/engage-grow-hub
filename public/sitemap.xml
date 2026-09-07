@@ -19,12 +19,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://themagiccoffin.com/services/internal-communications/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://themagiccoffin.com/services/people-operations/</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
@@ -32,12 +26,18 @@
   </url>
   <url>
     <loc>https://themagiccoffin.com/p/privacy-policy/</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://themagiccoffin.com/p/about-us/</loc>
+    <loc>https://themagiccoffin.com/services/internal-communications/</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://themagiccoffin.com/services/</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -49,7 +49,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://themagiccoffin.com/services/</loc>
+    <loc>https://themagiccoffin.com/p/about-us/</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
