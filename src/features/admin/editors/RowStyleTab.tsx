@@ -370,6 +370,50 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
 
 
 
+      {/* ═══ BLOCK ALIGNMENT ═══
+          Symmetry between blocks sitting side by side, plus optional
+          numbered labels above each block. */}
+      {colCount > 1 ? (
+        <AccordionItem value="blocks" className="border-none">
+          <AccordionTrigger className={TRIGGER_CLASS}>Blocks side by side</AccordionTrigger>
+          <AccordionContent className={CONTENT_CLASS}>
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
+                  Vertical alignment
+                </label>
+                <div className="grid grid-cols-2 gap-1">
+                  {([
+                    { value: "stretch", label: "Matched heights" },
+                    { value: "top", label: "Uneven" },
+                  ] as const).map(({ value, label }) => {
+                    const active = (row.layout?.blockAlign || "stretch") === value;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => patchLayout({ blockAlign: value })}
+                        className={`px-2 py-1.5 rounded-md font-body text-[11px] border ${active ? "border-primary text-primary" : "border-border text-muted-foreground"}`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <label className="flex items-center gap-2 font-body text-[11px] text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={row.layout?.numberBlocks === true}
+                  onChange={(e) => patchLayout({ numberBlocks: e.target.checked })}
+                />
+                Number the blocks (01, 02, 03…)
+              </label>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      ) : null}
+
       {/* ═══ CORNERS ═══
           Rounding of the band this row paints around all of its blocks. */}
       <AccordionItem value="corners" className="border-none">
