@@ -25,6 +25,8 @@ const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
  */
 const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
+  /* Shared shape preset + focal point; 3:4 keeps historic content identical. */
+  const portraitAspect = resolveAspectRatio(c.image_ratio, 3 / 4) ?? 3 / 4;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
