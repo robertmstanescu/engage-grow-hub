@@ -52,6 +52,11 @@ describe("row bodies expose the shared body marker", () => {
 
 describe("SemanticAligner", () => {
   it("renders both columns and keeps body content intact", async () => {
+    (globalThis as any).ResizeObserver ||= class {
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+    };
     const { default: SemanticAligner } = await import("../SemanticAligner");
     render(
       <SemanticAligner
