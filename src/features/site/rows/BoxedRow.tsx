@@ -59,6 +59,118 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
     const cards: { title: string; body: string }[] = c.cards || [];
     const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
 
+    const renderCard = (card: any, i: number) => {
+      const cardLink: string | undefined = card.link_url?.trim() || undefined;
+      // A card linking to one of the 4 service pillars gets that
+      // pillar's own brand color for its icon/title (and a matching
+      // top-accent border below) instead of the row's one shared
+      // color — so e.g. the homepage "Our Services" grid reads as 4
+      // distinct pillars, not 4 identical purple cards. Any other
+      // boxed-card row (testimonials, "Our Vows", etc.) has no
+      // pillar-matching link_url, so pillarColor is always
+      // undefined there and behavior is unchanged.
+      const pillarColor = pillarColorFromLink(cardLink);
+      const titleColor = pillarColor || c.color_card_title || "hsl(var(--vows-card-title))";
+      const bodyColor = c.color_card_body || "hsl(var(--vows-card-body))";
+      const cardCtaUrl: string | undefined = card.cta_url?.trim() || undefined;
+      const cardCtaLabel: string | undefined = card.cta_label?.trim() || undefined;
+
+      const innerCard = (
+        <>
+          {card.icon && (
+            <div className="mb-3" style={{ color: titleColor }}>
+              <Icon value={card.icon} size={28} />
+            </div>
+          )}
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
+            className="font-body-heading font-bold mb-3 text-lg leading-[1.6]" style={{ color: titleColor }}>{card.title}</EditableText>
+          <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
+            data-rte-fit=""
+            className="font-body text-xs leading-[1.6] [&_p]:mb-3 [&_p]:mt-3" style={{ color: bodyColor, overflow: "visible", height: "auto" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
+
+          {cardCtaUrl && cardCtaLabel && (
+            <div className="mt-rhythm-base">
+              {cardLink ? (
+                // The card itself is already an <a> (cardLink below), so this
+                // CTA can't also be an <a> without nesting anchors — invalid
+                // HTML5 and inconsistent click targets across browsers. A
+                // button that stops propagation and navigates manually keeps
+                // the same click behavior without the nesting.
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    trackConversion("cta_click", cardCtaLabel);
+                    if (isExternal(cardCtaUrl)) {
+                      window.open(cardCtaUrl, "_blank", "noopener,noreferrer");
+                    } else {
+                      window.location.href = cardCtaUrl;
+                    }
+                  }}
+                  className="btn-ink"
+                >
+                  {cardCtaLabel}
+                </button>
+              ) : (
+                <a
+                  href={cardCtaUrl}
+                  target={isExternal(cardCtaUrl) ? "_blank" : undefined}
+                  rel={isExternal(cardCtaUrl) ? "noopener noreferrer" : undefined}
+                  className="btn-ink"
+                  onClick={() => trackConversion("cta_click", cardCtaLabel)}
+                >
+                  {cardCtaLabel}
+                </a>
+              )}
+            </div>
+          )}
+        </>
+      );
+
+      // Clean, structured card enclosure: solid card surface, crisp
+      // 1px border, uniform padding and a subtle shadow. `boxed-lift`
+      // keeps the GPU-friendly hover transform (no icon shake).
+      // When the row has a cover image, cards restyle as lighter,
+      // smaller-radius tiles nested inside that photo-card container
+      // — `surface-card`'s own border-radius (var(--radius), 1.5rem)
+      // would look wrong repeated at the same size one level down.
+      const cardClass = `${coverImage ? "" : "surface-card"} p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
+      const cardStyle = {
+        ...revealStyle(isVisible, i + 2),
+        ...(pillarColor ? { borderTop: `3px solid ${pillarColor}` } : {}),
+        ...(coverImage
+          ? {
+              backgroundColor: "hsl(var(--primary) / 0.045)",
+              border: "1px solid hsl(var(--border))",
+              borderRadius: "1rem",
+            }
+          : {}),
+      } as React.CSSProperties;
+
+      if (cardLink) {
+        return (
+          <a
+            key={i}
+            href={cardLink}
+            target={isExternal(cardLink) ? "_blank" : undefined}
+            rel={isExternal(cardLink) ? "noopener noreferrer" : undefined}
+            className={cardClass}
+            style={{ ...cardStyle, textDecoration: "none" }}
+          >
+            {innerCard}
+          </a>
+        );
+      }
+
+      return (
+        <div key={i} className={cardClass} style={cardStyle}>
+          {innerCard}
+        </div>
+      );
+    };
+
     return (
       <div key={colIndex}>
         {c.eyebrow && (
@@ -83,119 +195,26 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         )}
 
 
-        <div className={`grid ${getGridCols(cards.length)} gap-6 lg:gap-8 items-stretch ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
-          {cards.slice(0, 6).map((card: any, i: number) => {
-            const cardLink: string | undefined = card.link_url?.trim() || undefined;
-            // A card linking to one of the 4 service pillars gets that
-            // pillar's own brand color for its icon/title (and a matching
-            // top-accent border below) instead of the row's one shared
-            // color — so e.g. the homepage "Our Services" grid reads as 4
-            // distinct pillars, not 4 identical purple cards. Any other
-            // boxed-card row (testimonials, "Our Vows", etc.) has no
-            // pillar-matching link_url, so pillarColor is always
-            // undefined there and behavior is unchanged.
-            const pillarColor = pillarColorFromLink(cardLink);
-            const titleColor = pillarColor || c.color_card_title || "hsl(var(--vows-card-title))";
-            const bodyColor = c.color_card_body || "hsl(var(--vows-card-body))";
-            const cardCtaUrl: string | undefined = card.cta_url?.trim() || undefined;
-            const cardCtaLabel: string | undefined = card.cta_label?.trim() || undefined;
-
-            const innerCard = (
-              <>
-                {card.icon && (
-                  <div className="mb-3" style={{ color: titleColor }}>
-                    <Icon value={card.icon} size={28} />
-                  </div>
-                )}
-                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
-                  className="font-body-heading font-bold mb-3 text-lg leading-[1.6]" style={{ color: titleColor }}>{card.title}</EditableText>
-                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
-                  data-rte-fit=""
-                  className="font-body text-xs leading-[1.6] [&_p]:mb-3 [&_p]:mt-3" style={{ color: bodyColor, overflow: "visible", height: "auto" }}
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
-
-                {cardCtaUrl && cardCtaLabel && (
-                  <div className="mt-rhythm-base">
-                    {cardLink ? (
-                      // The card itself is already an <a> (cardLink below), so this
-                      // CTA can't also be an <a> without nesting anchors — invalid
-                      // HTML5 and inconsistent click targets across browsers. A
-                      // button that stops propagation and navigates manually keeps
-                      // the same click behavior without the nesting.
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          trackConversion("cta_click", cardCtaLabel);
-                          if (isExternal(cardCtaUrl)) {
-                            window.open(cardCtaUrl, "_blank", "noopener,noreferrer");
-                          } else {
-                            window.location.href = cardCtaUrl;
-                          }
-                        }}
-                        className="btn-ink"
-                      >
-                        {cardCtaLabel}
-                      </button>
-                    ) : (
-                      <a
-                        href={cardCtaUrl}
-                        target={isExternal(cardCtaUrl) ? "_blank" : undefined}
-                        rel={isExternal(cardCtaUrl) ? "noopener noreferrer" : undefined}
-                        className="btn-ink"
-                        onClick={() => trackConversion("cta_click", cardCtaLabel)}
-                      >
-                        {cardCtaLabel}
-                      </a>
-                    )}
-                  </div>
-                )}
-              </>
-            );
-
-            // Clean, structured card enclosure: solid card surface, crisp
-            // 1px border, uniform padding and a subtle shadow. `boxed-lift`
-            // keeps the GPU-friendly hover transform (no icon shake).
-            // When the row has a cover image, cards restyle as lighter,
-            // smaller-radius tiles nested inside that photo-card container
-            // — `surface-card`'s own border-radius (var(--radius), 1.5rem)
-            // would look wrong repeated at the same size one level down.
-            const cardClass = `${coverImage ? "" : "surface-card"} p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
-            const cardStyle = {
-              ...revealStyle(isVisible, i + 2),
-              ...(pillarColor ? { borderTop: `3px solid ${pillarColor}` } : {}),
-              ...(coverImage
-                ? {
-                    backgroundColor: "hsl(var(--primary) / 0.045)",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "1rem",
-                  }
-                : {}),
-            } as React.CSSProperties;
-
-            if (cardLink) {
-              return (
-                <a
-                  key={i}
-                  href={cardLink}
-                  target={isExternal(cardLink) ? "_blank" : undefined}
-                  rel={isExternal(cardLink) ? "noopener noreferrer" : undefined}
-                  className={cardClass}
-                  style={{ ...cardStyle, textDecoration: "none" }}
-                >
-                  {innerCard}
-                </a>
-              );
-            }
-
-            return (
-              <div key={i} className={cardClass} style={cardStyle}>
-                {innerCard}
-              </div>
-            );
-          })}
-        </div>
+        {cards.length === 5 ? (
+          // A single grid can't split 5 cards as 2-then-3 with each row's
+          // cards stretching to fill the full row width — the column count
+          // is fixed for the whole grid, so a short final row leaves a dead
+          // empty track instead of redistributing width. Two independent
+          // full-width sub-grids (2-col, then 3-col) each stretch their own
+          // cards to fill their own row.
+          <div className={`flex flex-col gap-6 lg:gap-8 ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-stretch">
+              {cards.slice(0, 2).map((card: any, i: number) => renderCard(card, i))}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+              {cards.slice(2, 5).map((card: any, i: number) => renderCard(card, i + 2))}
+            </div>
+          </div>
+        ) : (
+          <div className={`grid ${getGridCols(cards.length)} gap-6 lg:gap-8 items-stretch ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
+            {cards.slice(0, 6).map((card: any, i: number) => renderCard(card, i))}
+          </div>
+        )}
 
 
         {c.note && (
