@@ -176,18 +176,29 @@ export const findMissingAltViolations = (rows: PageRow[]): AccessibilityViolatio
     if (!fields) continue;
 
     for (const field of fields) {
-      const url = getPath(widget.data, field.urlPath);
-      if (typeof url !== "string" || url.trim().length === 0) continue; // no image, nothing to validate
-      const alt = getPath(widget.data, field.altPath);
-      if (isMissingAlt(alt)) {
-        violations.push({
-          rowId: widget.id,
-          rowType: widget.type as PageRow["type"],
-          label: field.label,
-          stripTitle: widget.stripTitle || field.label,
-        });
-      }
+      // A list field checks the same url/alt pair inside every item.
+      const scopes: unknown[] = field.listPath
+        ? (Array.isArray(getPath(widget.data, field.listPath))
+            ? (getPath(widget.data, field.listPath) as unknown[])
+            : [])
+        : [widget.data];
+
+      scopes.forEach((scope, index) => {
+        const url = getPath(scope, field.urlPath);
+        if (typeof url !== "string" || url.trim().length === 0) return; // no image, nothing to validate
+        const alt = getPath(scope, field.altPath);
+        if (isMissingAlt(alt)) {
+          const label = field.listPath ? `${field.label} ${index + 1}` : field.label;
+          violations.push({
+            rowId: widget.id,
+            rowType: widget.type as PageRow["type"],
+            label,
+            stripTitle: widget.stripTitle || label,
+          });
+        }
+      });
     }
+
   }
 
   return violations;
