@@ -5,7 +5,7 @@ import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import { rowsProvideHeading, extractFaqItems } from "@/features/site/rows/PrimaryHeadingContext";
-import PageBreadcrumbs, { type BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
+import type { BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import type { PageRow } from "@/types/rows";
 import NotFound from "./NotFound";
@@ -153,17 +153,16 @@ const CmsPageBody = ({
         </div>
       )}
       {needsFallbackHeading && <h1 className="sr-only">{pageTitle}</h1>}
-      <PageBreadcrumbs trail={breadcrumbTrail} />
       <div>
         {rows.length === 0 ? (
           <>
             <div className="py-32 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
               This page has no content yet. Add rows in the admin panel.
             </div>
-            <Footer />
+            <Footer breadcrumbTrail={breadcrumbTrail} />
           </>
         ) : (
-          <RowsRenderer rows={rows} footerSlot={<Footer />} />
+          <RowsRenderer rows={rows} footerSlot={<Footer breadcrumbTrail={breadcrumbTrail} />} />
         )}
       </div>
     </div>

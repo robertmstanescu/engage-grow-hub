@@ -9,7 +9,6 @@ import { useTagColors } from "@/hooks/useTagColors";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
-import PageBreadcrumbs from "@/features/site/PageBreadcrumbs";
 import CoverFadeImage from "@/features/site/CoverFadeImage";
 import { transformImageUrl } from "@/services/mediaOptimization";
 import { useRedirectLookup } from "@/hooks/useRedirectLookup";
@@ -149,7 +148,6 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen page-shell">
       <Navbar />
-      <PageBreadcrumbs trail={[{ name: "Home", path: "/" }, { name: "Blog", path: "/blog/" }, { name: article.title }]} />
       <article>
         <div className="relative">
           {article.cover_image && (
@@ -257,7 +255,7 @@ const BlogPost = () => {
           </div>
         </div>
       </article>
-      <Footer />
+      <Footer breadcrumbTrail={[{ name: "Home", path: "/" }, { name: "Blog", path: "/blog/" }, { name: article.title }]} />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 /**
- * PageBreadcrumbs — the visible "Home / Services / X" trail shown near
- * the top of service, CMS and blog pages.
+ * PageBreadcrumbs — the visible "Home / Services / X" trail shown in
+ * the footer of service, CMS and blog pages.
  *
  * Kept as a real, visible element (not just a JSON-LD block) on purpose:
  * Google's breadcrumb rich result is meant to reflect what a user
@@ -26,26 +26,37 @@ export interface BreadcrumbEntry {
   path?: string;
 }
 
-const PageBreadcrumbs = ({ trail }: { trail: BreadcrumbEntry[] }) => {
+const PageBreadcrumbs = ({
+  trail,
+  placement = "page",
+}: {
+  trail: BreadcrumbEntry[];
+  placement?: "page" | "footer";
+}) => {
   // A single entry ("Home" alone) isn't a breadcrumb trail.
   if (trail.length < 2) return null;
 
   return (
-    // pt-24/pt-28 clears the fixed floating navbar (mobile bar ≈64px,
-    // desktop pill ≈72px tall) so the trail is never hidden beneath it.
-    <div className="row-container pt-24 md:pt-28">
+    <div className={placement === "footer" ? "mb-8" : "row-container pt-24 md:pt-28"}>
       <Breadcrumb>
-        <BreadcrumbList>
+        <BreadcrumbList
+          className={placement === "footer" ? "font-body text-micro gap-1.5 sm:gap-2" : undefined}
+          style={placement === "footer" ? { color: "hsl(var(--foreground) / 0.5)" } : undefined}
+        >
           {trail.map((entry, i) => (
             <Fragment key={`${entry.name}-${i}`}>
               {i > 0 && <BreadcrumbSeparator />}
               <BreadcrumbItem>
                 {entry.path ? (
                   <BreadcrumbLink asChild>
-                    <Link to={entry.path}>{entry.name}</Link>
+                    <Link className={placement === "footer" ? "hover:text-foreground" : undefined} to={entry.path}>{entry.name}</Link>
                   </BreadcrumbLink>
                 ) : (
-                  <BreadcrumbPage>{entry.name}</BreadcrumbPage>
+                  <BreadcrumbPage
+                    className={placement === "footer" ? "text-inherit" : undefined}
+                  >
+                    {entry.name}
+                  </BreadcrumbPage>
                 )}
               </BreadcrumbItem>
             </Fragment>
