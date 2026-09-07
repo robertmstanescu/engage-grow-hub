@@ -214,6 +214,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
             >
               <EditableText sectionKey="page_rows" fieldPath={`${prefix}.description`} html as="div"
                 data-rte-fit=""
+                data-row-part="body"
                 className="font-body leading-[1.6] [&_p]:mb-3 [&_p]:mt-3"
                 style={{
                   color: pillarDescriptionColor,

@@ -111,6 +111,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
               >
                 <EditableText sectionKey="page_rows" fieldPath={`${prefix}.body`} html as="div"
                   data-rte-fit=""
+                  data-row-part="body"
                   className={`font-body font-medium leading-[1.6] ${isMultiCol ? "" : "max-w-[700px]"} mt-rhythm-tight [&_p]:mb-3 [&_p]:mt-3 ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
                   style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)"), fontSize: "var(--fs-body)" }}
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />

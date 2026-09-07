@@ -140,7 +140,7 @@ const TestimonialRow = ({
                   style={{ ...revealStyle(isVisible, 0.4 + i * 0.1), background: "var(--row-surface, hsl(var(--card) / 0.6))" }}
                 >
                   <div
-                    className="font-body row-fg text-base md:text-lg leading-relaxed [&>p]:my-1"
+                    className="rich-text font-body row-fg text-base md:text-lg leading-relaxed [&>p]:my-1"
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.quote || "") }}
                   />
                   <div className="flex items-center gap-3 mt-auto">

@@ -206,6 +206,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
               html
               as="div"
               data-rte-fit=""
+              data-row-part="body"
               className={`font-body leading-[1.6] max-w-[600px] [&_p]:mb-3 [&_p]:mt-3 ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
               style={{ ...revealStyle(isVisible, 2), fontSize: "var(--fs-body)", color: c.color_description || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 80%, transparent)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }}

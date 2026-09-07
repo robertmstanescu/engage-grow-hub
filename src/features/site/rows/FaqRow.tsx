@@ -119,7 +119,7 @@ const FaqRow = ({
                 style={{ fontSize: "var(--fs-card-body)" }}
               >
                 <div
-                  className="[&>p]:my-1 text-left"
+                  className="rich-text [&>p]:my-1 text-left"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.answer || "") }}
                 />
               </AccordionContent>
