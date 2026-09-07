@@ -306,7 +306,8 @@ function CropModal({
           >
             <img
               ref={imgRef}
-              src={imageUrl}
+              src={localSrc || imageUrl}
+              crossOrigin={localSrc && localSrc.startsWith("blob:") ? undefined : "anonymous"}
               alt="Crop preview"
               className="w-full h-full object-contain"
               onLoad={(e) => {
