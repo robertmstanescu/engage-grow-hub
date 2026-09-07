@@ -2,6 +2,7 @@ import { Instagram, Linkedin, Twitter, Facebook, Youtube } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import SectionShape from "@/features/site/rows/SectionShape";
+import PageBreadcrumbs, { type BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
 import type { SectionShapeConfig } from "@/types/rows";
 
 
@@ -40,7 +41,7 @@ interface FooterContent {
   shapeTop?: SectionShapeConfig;
 }
 
-const Footer = () => {
+const Footer = ({ breadcrumbTrail }: { breadcrumbTrail?: BreadcrumbEntry[] }) => {
   const { pathname } = useLocation();
   /* Footer hash links (#vows, #contact) point at rows that only exist
      on the homepage. When the footer renders on /blog or a CMS page we
@@ -82,6 +83,9 @@ const Footer = () => {
       ) : null}
 
       <div className="relative z-10 max-w-[1280px] mx-auto row-container pt-16 md:pt-20 pb-2">
+        {breadcrumbTrail && breadcrumbTrail.length > 1 ? (
+          <PageBreadcrumbs trail={breadcrumbTrail} placement="footer" />
+        ) : null}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">
           {/* Logo column — emblem */}
           <div className="col-span-2 md:col-span-1">

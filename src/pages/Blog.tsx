@@ -7,7 +7,6 @@ import Footer from "@/features/site/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
-import PageBreadcrumbs from "@/features/site/PageBreadcrumbs";
 import { useImageTone } from "@/hooks/useImageTone";
 import type { PageRow } from "@/types/rows";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
@@ -215,12 +214,11 @@ const Blog = () => {
   return (
     <div className="min-h-screen page-shell">
       <Navbar />
-      <PageBreadcrumbs trail={[{ name: "Home", path: "/" }, { name: "Blog" }]} />
       {pageData.rows_above && pageData.rows_above.length > 0 && (
         <RowsRenderer rows={pageData.rows_above} promoteHeading={false} />
       )}
 
-      <section className="grain relative pt-8 pb-8 text-center">
+      <section className="grain relative pt-28 pb-8 text-center">
         <div className="relative z-10 max-w-[800px] mx-auto px-8">
           <h1
             className="font-display text-3xl md:text-5xl font-black leading-tight mb-5"
@@ -339,7 +337,7 @@ const Blog = () => {
       {pageData.rows_below && pageData.rows_below.length > 0 && (
         <RowsRenderer rows={pageData.rows_below} promoteHeading={false} />
       )}
-      <Footer />
+      <Footer breadcrumbTrail={[{ name: "Home", path: "/" }, { name: "Blog" }]} />
     </div>
   );
 };
