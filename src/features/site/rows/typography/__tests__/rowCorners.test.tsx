@@ -47,8 +47,8 @@ describe("row surface corners", () => {
       surfaceRadius: "medium",
       shapeTop: { kind: "rounded", size: "medium" },
     });
-    expect(s.style.borderTopLeftRadius).toBe("0px");
-    expect(s.style.borderTopRightRadius).toBe("0px");
+    expect(s.style.borderTopLeftRadius).toBe("0");
+    expect(s.style.borderTopRightRadius).toBe("0");
     expect(s.style.borderBottomLeftRadius).toBe("24px");
     expect(s.style.borderBottomRightRadius).toBe("24px");
   });
