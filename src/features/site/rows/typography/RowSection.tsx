@@ -251,7 +251,7 @@ const RowSection = ({
         className={`snap-section ${grain && !hasOwnPaint ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} ${bleed ? "" : "py-row-fluid"} ${className}`}
         style={{
           backgroundColor: surfaceColor,
-          zIndex: hasShape ? 2 : undefined,
+          zIndex: hasExternalShape ? 2 : undefined,
           ...heightStyle,
           ...(bleed
             ? { paddingTop: 0, paddingBottom: 0 }
@@ -279,7 +279,10 @@ const RowSection = ({
              lifted slightly toward its foreground, so cards stay light
              on light rows and dark on dark ones. */
           ["--row-surface" as string]: `color-mix(in srgb, ${surfaceColor || "hsl(var(--background))"} 94%, ${bandFg})`,
-          ...(contentRadius ? { borderRadius: contentRadius, overflow: "hidden" } : null),
+          /* Surface corners — shared scale, clipped unless an external
+             shape cap needs to paint beyond the section boundary. */
+          ...(applyRadius ? { borderRadius: `${radiusValue}px` } : null),
+          ...(clipToRadius ? { overflow: "hidden" } : null),
           ...style,
         }}
       >
