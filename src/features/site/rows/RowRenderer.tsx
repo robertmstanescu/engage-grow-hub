@@ -61,7 +61,12 @@ const RowRenderer = ({
       />
     ));
 
-  const renderedColumns = row.columns.map((column) => {
+  /* Symmetry: by default side-by-side blocks stretch to a shared height
+     (tops and bottoms line up); "top" opts into a looser arrangement. */
+  const blockAlign = row.layout?.blockAlign || "stretch";
+  const numberBlocks = row.layout?.numberBlocks === true;
+
+  const renderedColumns = row.columns.map((column, columnIndex) => {
     // v3 invariant: every column owns at least one cell. Normalization
     // at the entry point guarantees this.
     const cells: PageCell[] = column.cells || [];
@@ -69,8 +74,20 @@ const RowRenderer = ({
     return (
       <div
         key={column.id}
-        className={`min-w-0 flex gap-6 ${isHorizontal ? "flex-row" : "flex-col"}`}
+        className={`min-w-0 flex gap-6 ${isHorizontal ? "flex-row" : "flex-col"} ${blockAlign === "stretch" ? "h-full" : ""}`}
       >
+        {numberBlocks && (
+          <span
+            className="font-body uppercase block"
+            style={{
+              fontSize: "var(--fs-eyebrow)",
+              letterSpacing: "var(--ls-label, 0.28em)",
+              color: "color-mix(in srgb, var(--row-fg, hsl(var(--muted-foreground))) 70%, transparent)",
+            }}
+          >
+            {String(columnIndex + 1).padStart(2, "0")}
+          </span>
+        )}
         {cells.map((cell) => (
           <CellRenderer
             key={cell.id}
@@ -103,7 +120,10 @@ const RowRenderer = ({
   const grid = (
     <div
       className="grid gap-8"
-      style={{ gridTemplateColumns: widths.map((w) => `${w}fr`).join(" ") }}
+      style={{
+        gridTemplateColumns: widths.map((w) => `${w}fr`).join(" "),
+        alignItems: blockAlign === "stretch" ? "stretch" : "start",
+      }}
     >
       {renderedColumns}
     </div>

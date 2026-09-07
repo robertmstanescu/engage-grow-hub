@@ -152,6 +152,15 @@ export interface RowLayout {
    * an assigned edge shape stay square — the shape cap curves them.
    */
   surfaceRadius?: "none" | "subtle" | "medium" | "dramatic";
+  /**
+   * How blocks sitting side by side in one row line up vertically.
+   * "stretch" (default) gives the Ruul-style symmetry — every block,
+   * picture included, fills the full row height so tops and bottoms
+   * align. "top" keeps a looser, deliberately uneven arrangement.
+   */
+  blockAlign?: "stretch" | "top";
+  /** Show a small "01", "02"… label above each block in this row. */
+  numberBlocks?: boolean;
 }
 
 

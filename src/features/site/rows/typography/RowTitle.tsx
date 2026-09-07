@@ -45,9 +45,11 @@ const RowTitle = ({ children, as, color, style, className, icon, iconSize = 32 }
         </div>
       )}
       <Tag
-        className={`font-display ${weightClass} leading-[0.95] tracking-tight mb-rhythm-base ${className ?? ""}`}
+        className={`font-display ${weightClass} mb-rhythm-base ${className ?? ""}`}
         style={{
           fontSize: "var(--fs-title)",
+          lineHeight: "var(--lh-title, 1.05)",
+          letterSpacing: "var(--ls-title, -0.015em)",
           color: resolvedColor,
           ...style,
         }}

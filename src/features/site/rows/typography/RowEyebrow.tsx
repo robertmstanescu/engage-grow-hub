@@ -36,7 +36,7 @@ interface Props {
  *   size at which Inter remains comfortably legible on a retina display
  *   without inducing eye strain.
  *
- * - **`font-body` (Inter)**: the title above uses the display font (Unbounded);
+ * - **`font-body` (Inter)**: the title above uses the display font (Bricolage Grotesque);
  *   the eyebrow uses the body font for typographic CONTRAST. Same font for
  *   both would look monotonous.
  *
@@ -46,9 +46,10 @@ interface Props {
  */
 const RowEyebrow = ({ children, color, style, className }: Props) => (
   <span
-    className={`font-body tracking-[0.35em] uppercase block mb-rhythm-tight ${className ?? ""}`}
+    className={`font-body uppercase block mb-rhythm-tight ${className ?? ""}`}
     style={{
       fontSize: "var(--fs-eyebrow)",
+      letterSpacing: "var(--ls-label, 0.28em)",
       // Eyebrow defaults to the row's auto-resolved foreground at 70%
       // alpha — quieter than the title but still on-palette. Per-row
       // admin overrides win via the `color` prop.

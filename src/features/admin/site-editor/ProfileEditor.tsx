@@ -2,6 +2,7 @@ import { SectionBox, Field, RichField, ArrayField, ColorField } from "./FieldCom
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImagePickerField from "../ImagePickerField";
+import ImageShapeControl from "../ImageShapeControl";
 import { Plus, Trash2 } from "lucide-react";
 
 interface Props {
@@ -46,6 +47,15 @@ const ProfileEditor = ({ content, onChange, bgColor }: Props) => {
           onChange={(v) => onChange("image_url", v)}
           altValue={content.image_alt || ""}
           onAltChange={(v) => onChange("image_alt", v)}
+        />
+        <ImageShapeControl
+          imageUrl={content.image_url || ""}
+          ratio={content.image_ratio}
+          focalX={content.image_focal_x}
+          focalY={content.image_focal_y}
+          onRatioChange={(v) => onChange("image_ratio", v)}
+          onFocalChange={(x, y) => { onChange("image_focal_x", x); onChange("image_focal_y", y); }}
+          fallbackRatio={3 / 4}
         />
         <Field label="Name" value={content.name || ""} onChange={(v) => onChange("name", v)} />
         <Field label="Role" value={content.role || ""} onChange={(v) => onChange("role", v)} />

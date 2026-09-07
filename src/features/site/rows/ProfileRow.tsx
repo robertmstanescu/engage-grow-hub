@@ -9,6 +9,7 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { resolveImageAlt } from "@/services/imageAlt";
 import { transformImageUrl, buildImageSrcSet } from "@/services/mediaOptimization";
+import { resolveAspectRatio, focalObjectPosition } from "@/lib/imageShape";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 // EPIC 1 / US 1.1 — atomic-node selection.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
@@ -24,6 +25,8 @@ const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
  */
 const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
+  /* Shared shape preset + focal point; 3:4 keeps historic content identical. */
+  const portraitAspect = resolveAspectRatio(c.image_ratio, 3 / 4) ?? 3 / 4;
   const prefix = rowIndex !== undefined ? `rows.${rowIndex}.content` : "";
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
@@ -69,7 +72,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
               style={{
                 width: "100%",
                 maxWidth: 340,
-                aspectRatio: "3/4",
+                aspectRatio: String(portraitAspect),
                 padding: 4,
                 background: "linear-gradient(135deg, hsl(280 55% 35% / 0.4), hsl(46 75% 60% / 0.15))",
                 boxShadow:
@@ -85,11 +88,12 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                   // Profile photos sit below the fold on most pages —
                   // lazy-load + async decode keeps initial paint snappy.
                   <img
-                    src={transformImageUrl(c.image_url, { width: 800, aspectRatio: 3 / 4 })}
-                    srcSet={buildImageSrcSet(c.image_url, undefined, 75, 3 / 4)}
+                    src={transformImageUrl(c.image_url, { width: 800, aspectRatio: portraitAspect })}
+                    srcSet={buildImageSrcSet(c.image_url, undefined, 75, portraitAspect)}
                     sizes="(min-width: 768px) 40vw, 100vw"
                     alt={resolveImageAlt(c.image_alt, c.name || row.strip_title, "profile photo")}
                     className="w-full h-full object-cover"
+                    style={{ objectPosition: focalObjectPosition(c.image_focal_x, c.image_focal_y) }}
                     loading="lazy"
                     decoding="async"
                   />
