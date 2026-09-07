@@ -470,19 +470,31 @@ async function main() {
         url: abs(path),
         image,
         ogType: "article",
-        jsonLd: {
-          "@context": "https://schema.org",
-          "@type": "Article",
-          headline: post.title,
-          description,
-          image,
-          url: abs(path),
-          datePublished: post.published_at || undefined,
-          dateModified: post.updated_at || post.published_at || undefined,
-          ...(post.author_name ? { author: { "@type": "Person", name: post.author_name } } : {}),
-          ...(brandName ? { publisher: { "@type": "Organization", name: brandName } } : {}),
+        jsonLd: [
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: post.title,
+            description,
+            image,
+            url: abs(path),
+            datePublished: post.published_at || undefined,
+            dateModified: post.updated_at || post.published_at || undefined,
+            ...(post.author_name ? { author: { "@type": "Person", name: post.author_name } } : {}),
+            ...(brandName ? { publisher: { "@type": "Organization", name: brandName } } : {}),
+          },
+          breadcrumbLd([
+            ["Home", `${origin}/`],
+            [blogSeo.header_title || "Blog", abs("/blog/")],
+            [post.title, abs(path)],
+          ]),
+        ],
+        readable: {
+          heading: post.title,
+          paragraphs: [plain(post.excerpt, 300), plain(post.content, 1500)].filter(Boolean),
         },
       },
+
       sitemap: {
         lastmod: post.published_at || post.updated_at,
         changefreq: "monthly",
