@@ -294,7 +294,7 @@ const RowSection = ({
           ["--row-surface" as string]: `color-mix(in srgb, ${surfaceColor || "hsl(var(--background))"} 94%, ${bandFg})`,
           /* Surface corners — shared scale, clipped unless an external
              shape cap needs to paint beyond the section boundary. */
-          ...(applyRadius ? { borderRadius: `${radiusValue}px` } : null),
+          ...(radiusStyle ?? null),
           ...(clipToRadius ? { overflow: "hidden" } : null),
           ...style,
         }}
