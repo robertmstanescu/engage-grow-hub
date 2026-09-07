@@ -84,7 +84,7 @@ const ProcessStepsRow = ({
               </h3>
               {step.description && (
                 <div
-                  className="font-body text-sm leading-relaxed row-fg-muted measure [&_p]:my-1"
+                  className="rich-text font-body text-sm leading-relaxed row-fg-muted measure [&_p]:my-1"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(step.description) }}
                 />
               )}
