@@ -241,11 +241,14 @@ async function main() {
   }
   const [siteRows, cmsPages, blogPosts] = await Promise.all([
     rest("site_content?select=section_key,content,updated_at"),
-    rest("cms_pages?status=eq.published&select=slug,title,meta_title,meta_description,og_image,updated_at"),
+    rest(
+      "cms_pages?status=eq.published&select=slug,title,meta_title,meta_description,og_image,page_rows,updated_at",
+    ),
     rest(
       "blog_posts?status=eq.published&select=slug,title,excerpt,content,meta_title,meta_description,og_image,cover_image,author_name,published_at,updated_at&order=published_at.desc",
     ),
   ]);
+
 
   const section = (key) => siteRows.find((r) => r.section_key === key)?.content || {};
   const sectionUpdatedAt = (key) => siteRows.find((r) => r.section_key === key)?.updated_at;
