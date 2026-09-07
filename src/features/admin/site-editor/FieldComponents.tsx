@@ -313,3 +313,28 @@ export const ColorField = ({
     </div>
   );
 };
+
+/**
+ * EyebrowField — the small label above a row title, paired with its own
+ * colour picker so every widget offers the same control. Keeps the text
+ * and its colour side by side instead of scattering the colour into a
+ * distant "Colors" block.
+ */
+export const EyebrowField = ({
+  value,
+  color,
+  onChange,
+  onColorChange,
+  label = "Eyebrow",
+}: {
+  value: string;
+  color: string;
+  onChange: (v: string) => void;
+  onColorChange: (v: string) => void;
+  label?: string;
+}) => (
+  <div className="space-y-1.5">
+    <Field label={label} value={value} onChange={onChange} />
+    <ColorField label="Eyebrow Colour" value={color} fallback="#7B3A91" onChange={onColorChange} />
+  </div>
+);

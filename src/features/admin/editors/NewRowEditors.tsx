@@ -29,7 +29,7 @@
  * so the heading hierarchy stays consistent across the site.
  * ───────────────────────────────────────────────────────────────────── */
 
-import { Field, RichField, SectionBox, ColorField } from "../site-editor/FieldComponents";
+import { Field, RichField, SectionBox, ColorField, EyebrowField } from "../site-editor/FieldComponents";
 import ImagePickerField from "../ImagePickerField";
 import TitleLinesEditor from "./TitleLinesEditor";
 import SubtitleEditor from "../site-editor/SubtitleEditor";
@@ -391,7 +391,7 @@ export const QuoteBandEditor = ({
 }) => (
   <div className="space-y-3">
     <SectionBox label="Quote">
-      <Field label="Eyebrow (optional)" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
+      <EyebrowField label="Eyebrow (optional)" value={content.eyebrow || ""} color={content.color_eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} onColorChange={(v) => onChange("color_eyebrow", v)} />
       <RichField
         label="Quote"
         value={content.quote || ""}
