@@ -3,8 +3,8 @@ import {
   meshSpeed,
   parseCssColor,
   readMeshPalette,
-  startBlooms,
-} from "../meshBlooms";
+  startLiquid,
+} from "../meshLiquid";
 import { buildPageMeshVars, DEFAULT_PAGE_MESH } from "../pageMesh";
 
 describe("parseCssColor", () => {
@@ -52,7 +52,7 @@ describe("meshSpeed", () => {
   });
 });
 
-describe("startBlooms", () => {
+describe("startLiquid", () => {
   it("does nothing without WebGL so the blob fallback stays visible", () => {
     const layer = document.createElement("div");
     const canvas = {
@@ -65,7 +65,7 @@ describe("startBlooms", () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     };
-    const stop = startBlooms(canvas as never);
+    const stop = startLiquid(canvas as never);
     expect(layer.getAttribute("data-mesh-gl")).toBeNull();
     expect(canvas.getContext).toHaveBeenCalledWith("webgl", expect.objectContaining({ alpha: true }));
     expect(() => stop()).not.toThrow();

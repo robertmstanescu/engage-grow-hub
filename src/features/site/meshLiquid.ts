@@ -1,11 +1,12 @@
 /**
- * meshBlooms — the animated page background.
+ * meshLiquid — the animated page background.
  *
- * A single full-screen WebGL fragment shader: the brand's static mesh
- * backgrounds set in motion. Big soft radial blooms wander across the
- * page on looping paths, crossing each other so the colours keep
- * changing places, with a gentle liquid warp on their edges. The four
- * colours are chosen per page in the hero's Page background panel.
+ * A single full-screen WebGL fragment shader: the page's four colours
+ * as slow liquid silk. A domain-warped noise field folds them into
+ * large sweeping bands that flow and undulate into one another, with
+ * a soft sheen along the creases. The whole page is colour; the page's
+ * Intensity sets how much of the cream ground shows through. Colours
+ * are chosen per page in the Page background panel.
  * It reads the same CSS variables the blob fallback uses (`--mesh-c*`,
  * `--mesh-d*`, `--mesh-motion`, set on :root by PageRows), so the
  * admin's Page background panel drives both. Where WebGL is unavailable nothing is stamped and the
@@ -18,12 +19,12 @@
  */
 import { buildPageMeshVars } from "./pageMesh";
 
-export const BLOOMS_VERT = `
+export const LIQUID_VERT = `
 attribute vec2 a_pos;
 void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
 `;
 
-export const BLOOMS_FRAG = `
+export const LIQUID_FRAG = `
 precision mediump float;
 uniform vec2 u_res;
 uniform float u_time;
@@ -56,51 +57,49 @@ float fbm(vec2 p) {
   return v;
 }
 
-/* ── Blooms ──
-   The brand's static backgrounds, set in motion: big soft radial blooms
-   (linear falloff, like the site's --gradient-mesh-page ellipses) that
-   wander across the page on slow looping paths, so they cross each other
-   and the colours keep changing places. A gentle liquid warp bends their
-   edges so the blend stays organic. Eight blooms: the four hero colours
-   at full strength plus their four drift hues a little fainter. */
-vec4 blooms(vec2 uv, float aspect) {
-  float T = u_time * 0.2;
-  vec2 warp = vec2(
-    fbm(uv * 2.2 + vec2(T * 0.35, 1.3)),
-    fbm(uv * 2.2 + vec2(4.1, T * 0.3))
-  ) - 0.5;
-  vec2 wp = uv + warp * 0.24;
-  vec3 acc = vec3(0.0);
-  float aacc = 0.0;
-  for (int i = 0; i < 8; i++) {
-    float fi = float(i);
-    vec4 c = vec4(0.0);
-    float weight = 1.0;
-    for (int j = 0; j < 4; j++) {
-      if (j == i) c = u_base[j];
-      if (j + 4 == i) { c = u_drift[j]; weight = 0.72; }
-    }
-    /* Lissajous path with incommensurate rates: never visibly repeats. */
-    float sx = 0.31 + 0.052 * fi;
-    float sy = 0.24 + 0.067 * fi;
-    vec2 centre = vec2(
-      0.5 + 0.48 * cos(T * sx + fi * 1.71),
-      0.5 + 0.46 * sin(T * sy + fi * 2.37)
-    );
-    vec2 d = (wp - centre) * vec2(aspect, 1.0) / vec2(0.62 * aspect, 0.54);
-    float r = length(d) / (0.70 + 0.08 * sin(T * 0.7 + fi));
-    float fall = pow(clamp(1.0 - r, 0.0, 1.0), 1.15);
-    float a = fall * c.a * weight;
-    acc = acc * (1.0 - a) + c.rgb * a;
-    aacc = aacc + a * (1.0 - aacc);
-  }
-  return vec4(acc, aacc);
+/* ── Liquid ──
+   The whole page is colour, like silk or a slow liquid: a domain-warped
+   noise field folds the four page colours (and their drift hues) into
+   large sweeping bands that flow and undulate into one another. No cream
+   gaps; strength sets how much of the page ground shows through. */
+vec3 breathe(vec4 base, vec4 drift, float phase) {
+  return mix(base.rgb, drift.rgb, 0.5 + 0.5 * sin(phase));
+}
+vec4 liquid(vec2 uv, float aspect) {
+  vec2 p = vec2(uv.x * aspect, uv.y) * 0.9;
+  float T = u_time * 0.09;
+  /* Two rounds of warping: q bends space, r bends it again, so the
+     field flows in slow sweeping folds rather than boiling in place. */
+  vec2 q = vec2(
+    fbm(p + vec2(T * 0.55, T * 0.25)),
+    fbm(p + vec2(2.3 - T * 0.4, 1.7 + T * 0.45))
+  );
+  vec2 r = vec2(
+    fbm(p + 2.6 * q + vec2(1.7, 9.2) + T * 0.6),
+    fbm(p + 2.6 * q + vec2(8.3, 2.8) - T * 0.5)
+  );
+  float f = fbm(p + 3.0 * r);
+  /* Silky creases: a gentle sine over the warped field. */
+  float fold = 0.5 + 0.5 * sin(f * 7.0 + r.x * 5.0 + u_time * 0.3);
+
+  vec3 c0 = breathe(u_base[0], u_drift[0], u_time * 0.21);
+  vec3 c1 = breathe(u_base[1], u_drift[1], u_time * 0.17 + 1.9);
+  vec3 c2 = breathe(u_base[2], u_drift[2], u_time * 0.23 + 3.7);
+  vec3 c3 = breathe(u_base[3], u_drift[3], u_time * 0.19 + 5.1);
+
+  vec3 warm = mix(c0, c1, smoothstep(0.25, 0.75, f));
+  vec3 cool = mix(c2, c3, smoothstep(0.25, 0.75, r.y));
+  vec3 col = mix(warm, cool, smoothstep(0.3, 0.7, q.x * 0.7 + fold * 0.3));
+  /* A soft sheen along the creases, like light on silk. */
+  col += 0.09 * (fold - 0.5);
+  float a = u_base[0].a;
+  return vec4(col * a, a);
 }
 
 void main() {
   vec2 uv = gl_FragCoord.xy / u_res;
   float aspect = u_res.x / u_res.y;
-  gl_FragColor = blooms(uv, aspect);
+  gl_FragColor = liquid(uv, aspect);
 }
 `;
 
@@ -147,7 +146,7 @@ export const meshSpeed = (motion: string | undefined, reducedMotion: boolean): n
 };
 
 /** Where the clock starts — well into the noise so frame one already flows. */
-export const BLOOMS_T0 = 90;
+export const LIQUID_T0 = 90;
 const FRAME_MS = 1000 / 30;
 
 type MinimalCanvas = Pick<HTMLCanvasElement, "getContext" | "parentElement" | "clientWidth" | "clientHeight" | "addEventListener" | "removeEventListener"> & {
@@ -156,10 +155,10 @@ type MinimalCanvas = Pick<HTMLCanvasElement, "getContext" | "parentElement" | "c
 };
 
 /**
- * Start painting the blooms on `canvas`. Returns a stop function. If
+ * Start painting the liquid on `canvas`. Returns a stop function. If
  * WebGL is unavailable nothing happens and the CSS blobs stay in view.
  */
-export const startBlooms = (canvas: MinimalCanvas, doc: Document = document): (() => void) => {
+export const startLiquid = (canvas: MinimalCanvas, doc: Document = document): (() => void) => {
   const gl = canvas.getContext("webgl", {
     alpha: true,
     premultipliedAlpha: true,
@@ -182,8 +181,8 @@ export const startBlooms = (canvas: MinimalCanvas, doc: Document = document): ((
     }
     return s;
   };
-  const vs = compile(gl.VERTEX_SHADER, BLOOMS_VERT);
-  const fs = compile(gl.FRAGMENT_SHADER, BLOOMS_FRAG);
+  const vs = compile(gl.VERTEX_SHADER, LIQUID_VERT);
+  const fs = compile(gl.FRAGMENT_SHADER, LIQUID_FRAG);
   const program = gl.createProgram();
   if (!vs || !fs || !program) return () => {};
   gl.attachShader(program, vs);
@@ -237,7 +236,7 @@ export const startBlooms = (canvas: MinimalCanvas, doc: Document = document): ((
 
   const start = doc.defaultView?.performance?.now() ?? 0;
   const draw = (nowMs: number) => {
-    gl.uniform1f(uTime, BLOOMS_T0 + ((nowMs - start) / 1000) * speed);
+    gl.uniform1f(uTime, LIQUID_T0 + ((nowMs - start) / 1000) * speed);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   };
 
