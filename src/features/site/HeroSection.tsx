@@ -12,6 +12,15 @@ import {
 } from "@/services/mediaOptimization";
 import { resolveAspectRatio, focalObjectPosition } from "@/lib/imageShape";
 import { useInsideRowSurface } from "@/features/site/rows/RowSurfaceContext";
+import { hasText } from "@/features/site/rows/textRowContent";
+
+/** The row-fluid padding token (tailwind.config.ts, RowSection basePad). */
+const HERO_ROW_PADDING = "clamp(72px, 8vw, 128px)";
+/**
+ * The one hero height every page shares. ~774px at a 900px-tall window:
+ * what the About page measured when it was picked as the reference.
+ */
+const HERO_STANDARD_HEIGHT = "clamp(600px, 86vh, 800px)";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -290,7 +299,16 @@ export const HeroView = ({
    * has identical dimensions. The token matches tailwind's `row-fluid`
    * and RowSection's basePad. */
   const insideRowSurface = useInsideRowSurface();
-  const standardRowPadding = insideRowSurface ? null : { paddingBlock: "clamp(72px, 8vw, 128px)" };
+  const standardRowPadding = insideRowSurface ? null : { paddingBlock: HERO_ROW_PADDING };
+  /* One standard hero height on every page, content centred inside it
+   * (the section is a flex column with justify-center). Derived from
+   * the content, heroes came out anywhere between 585 and 846px tall
+   * depending on how long the subtitle was. Inside a row surface the
+   * wrapper adds the row padding, so the inner target is reduced by it
+   * to land on the same total. Style ▸ Height still overrides. */
+  const standardMinHeight = insideRowSurface
+    ? `calc(${HERO_STANDARD_HEIGHT} - 2 * ${HERO_ROW_PADDING})`
+    : HERO_STANDARD_HEIGHT;
 
   /* Inline-edit wrapper. On CMS hero rows we render the plain element so
      the markup, spacing and type scale stay byte-identical. */
@@ -377,7 +395,7 @@ export const HeroView = ({
          on a hero row still wins through `sectionStyle`: "Full screen"
          restores the viewport-filling opener. The inline 0 also beats the
          `.snap-section[data-snap-enabled]` min-height rule in index.css. */
-      style={{ minHeight: 0, ...standardRowPadding, ...sectionStyle }}
+      style={{ minHeight: standardMinHeight, ...standardRowPadding, ...sectionStyle }}
     >
       {/*
         LAYERING ORDER (bottom → top):
@@ -576,7 +594,10 @@ export const HeroView = ({
             </motion.div>
           )}
 
-          {c.body && (
+          {/* The editor stores an empty body as "<p></p>", which is truthy;
+              rendering it added a blank block plus the column gap under
+              the title and pushed the hero off centre (About page). */}
+          {hasText(c.body) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
