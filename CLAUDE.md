@@ -28,6 +28,13 @@ Rules that are easy to get wrong:
   old URLs). Do not add sidebar entries elsewhere. Every page opens in
   the canvas builder; there is no second list-based row editor. List
   rows get their actions from `ui/ActionMenu.tsx`.
+- A row's Style tab opens with a Look (Plain/Card/Band/Cover, derived by
+  `editors/rowLooks.ts`, never stored) and five controls; everything
+  else lives under "Show all". Text colour is `layout.textTone`
+  (Auto/Light/Dark/Accent, applied in RowSection); per-part colour
+  pickers stay but every `ColorField` inside a row editor collects into
+  the "Custom colours" group automatically (`site-editor/customColours`).
+  Do not add colour pickers beside copy fields, and do not store a Look.
 - Supabase changes (schema, RLS, edge functions) go through Lovable.
 - `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
   dependency changes so CI's `--frozen-lockfile` install passes.

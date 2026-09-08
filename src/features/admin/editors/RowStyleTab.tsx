@@ -60,6 +60,8 @@ import type { PageRow, SectionShapeConfig, SectionShapeKind, SectionShapeSize } 
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { ROW_HEIGHT_MODES } from "@/lib/rowHeight";
 import PageBackgroundPanel from "./PageBackgroundPanel";
+import { ROW_LOOKS, applyLook, deriveLook, hasRoundedTop } from "./rowLooks";
+import { useBrandColors } from "@/hooks/useBrandSettings";
 
 interface Props {
   row: PageRow;
@@ -211,11 +213,145 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   const patchLayout = (patch: Record<string, unknown>) =>
     onRowMetaChange({ layout: { ...layout, ...patch } });
 
+  /* ── The everyday five ───────────────────────────────────────────
+     Look · Background · Text · Rounded top · Edge · Height. Everything
+     else is still here, under "Show all", unchanged. */
+  const look = deriveLook(row);
+  const brandColors = useBrandColors();
+  const setLook = (next: typeof look) => {
+    const patch = applyLook(row, next);
+    onRowMetaChange({ ...(patch.bg_color !== undefined ? { bg_color: patch.bg_color } : {}), layout: { ...layout, ...patch.layout } });
+  };
+  const tone = row.layout?.textTone || "auto";
+  const edgeKind = row.layout?.shapeTop?.kind ?? "none";
+  const SEG = (active: boolean) =>
+    `font-body text-[10px] py-1.5 rounded-md border transition-colors ${
+      active ? "bg-secondary/15 border-secondary/40 text-foreground" : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+    }`;
+  const LABEL = "font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground";
+
   return (
-    /* Two everyday groups (Surface, Edges) + everything else collapsed
-       under Advanced, so the panel stops overwhelming non-technical
-       editors who only ever change the band and the edge shape. */
-    <Accordion type="multiple" defaultValue={["surface"]} className="space-y-2">
+    <div className="space-y-4">
+      {/* Look */}
+      <div>
+        <label className={LABEL}>Look</label>
+        <div className="grid grid-cols-4 gap-1" role="radiogroup" aria-label="Look">
+          {ROW_LOOKS.map((l) => (
+            <button
+              key={l.key}
+              type="button"
+              role="radio"
+              aria-checked={look === l.key}
+              title={l.hint}
+              onClick={() => setLook(l.key)}
+              className={`flex flex-col items-center gap-1 pt-1.5 pb-1 ${SEG(look === l.key)}`}
+            >
+              <span className={`row-look-swatch ${l.key}`} aria-hidden />
+              {l.label}
+            </button>
+          ))}
+        </div>
+        {look === "cover" && !row.layout?.coverImage && (
+          <p className="font-body text-[10px] text-muted-foreground mt-1">Choose the picture under Show all › Cover picture.</p>
+        )}
+      </div>
+
+      {/* Background */}
+      <div>
+        <label className={LABEL}>Background</label>
+        <div className="flex flex-wrap gap-1.5 items-center">
+          <button
+            type="button"
+            title="None — the page background shows through"
+            aria-label="No background"
+            aria-pressed={!row.bg_color}
+            onClick={() => setLook("plain")}
+            className="w-6 h-6 rounded-md border"
+            style={{ background: "linear-gradient(135deg,#F6EFF7,#FBF6EA)", borderColor: !row.bg_color ? "hsl(var(--primary))" : "hsl(var(--border))", outline: !row.bg_color ? "2px solid hsl(var(--primary))" : "none", outlineOffset: 1 }}
+          />
+          {[{ id: "white", name: "White", hex: "#FFFFFF" }, ...brandColors].map((c) => {
+            const active = (row.bg_color || "").toLowerCase() === c.hex.toLowerCase();
+            return (
+              <button
+                key={c.id}
+                type="button"
+                title={c.name}
+                aria-label={c.name}
+                aria-pressed={active}
+                onClick={() => onRowMetaChange({ bg_color: c.hex, layout: look === "plain" ? { ...layout, surfaceRadius: "none" } : layout })}
+                className="w-6 h-6 rounded-md border"
+                style={{ backgroundColor: c.hex, borderColor: active ? "hsl(var(--primary))" : "hsl(var(--border))", outline: active ? "2px solid hsl(var(--primary))" : "none", outlineOffset: 1 }}
+              />
+            );
+          })}
+        </div>
+        <p className="font-body text-[10px] text-muted-foreground mt-1">Brand palette. Any other colour and opacity: Show all › Surface.</p>
+      </div>
+
+      {/* Text tone */}
+      <div>
+        <label className={LABEL}>Text</label>
+        <div className="grid grid-cols-4 gap-1" role="radiogroup" aria-label="Text tone">
+          {([["auto", "Auto"], ["light", "Light"], ["dark", "Dark"], ["accent", "Accent"]] as const).map(([v, l]) => (
+            <button key={v} type="button" role="radio" aria-checked={tone === v} onClick={() => patchLayout({ textTone: v })} className={SEG(tone === v)}>{l}</button>
+          ))}
+        </div>
+        <p className="font-body text-[10px] text-muted-foreground mt-1">Auto picks light or dark from the background. Hand-set colours on parts of the block live in the Content tab under Custom colours.</p>
+      </div>
+
+      {/* Rounded top */}
+      <div className="flex items-center justify-between gap-2">
+        <span className={LABEL} style={{ margin: 0 }}>Rounded top corners</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={hasRoundedTop(row)}
+          aria-label="Rounded top corners"
+          onClick={() => patchLayout({ surfaceRadius: hasRoundedTop(row) ? "none" : "medium" })}
+          className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${hasRoundedTop(row) ? "bg-secondary" : "bg-muted-foreground/30"}`}
+        >
+          <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-card shadow transition-transform ${hasRoundedTop(row) ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+        </button>
+      </div>
+
+      {/* Edge */}
+      <div>
+        <label className={LABEL}>Edge shape (top)</label>
+        <select
+          value={edgeKind}
+          onChange={(e) => {
+            const kind = e.target.value as SectionShapeKind;
+            patchLayout({ shapeTop: kind === "none" ? undefined : { ...(row.layout?.shapeTop || {}), kind, size: row.layout?.shapeTop?.size || "medium" } });
+          }}
+          className="w-full px-2 py-1.5 rounded-md border border-border bg-background font-body text-xs"
+          aria-label="Edge shape"
+        >
+          {SHAPE_KINDS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+        </select>
+      </div>
+
+      {/* Height */}
+      <div>
+        <label className={LABEL}>Height</label>
+        <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label="Height">
+          {ROW_HEIGHT_MODES.filter(([v]) => v === "auto" || v === "medium" || v === "full").map(([value, label]) => {
+            const active = (row.layout?.heightMode || "auto") === value;
+            return <button key={value} type="button" role="radio" aria-checked={active} onClick={() => patchLayout({ heightMode: value })} className={SEG(active)}>{value === "auto" ? "Fit content" : value === "medium" ? "Tall" : label}</button>;
+          })}
+        </div>
+      </div>
+
+      {isHero && (
+        <div className="pt-3 border-t border-border">
+          <label className={LABEL}>Page background (whole page)</label>
+          <PageBackgroundPanel mesh={row.layout?.mesh} onChange={(mesh) => patchLayout({ mesh })} />
+        </div>
+      )}
+
+      {/* ── Everything else, unchanged ── */}
+      <details className="admin-details" data-style-show-all>
+        <summary>Show all</summary>
+    <Accordion type="multiple" defaultValue={[]} className="space-y-2 mt-2">
       {/* ═══ SURFACE ═══ */}
       <AccordionItem value="surface" className="border-none">
         <AccordionTrigger className={TRIGGER_CLASS}>Surface</AccordionTrigger>
@@ -292,21 +428,6 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               </div>
             </div>
 
-            {/* ── Page background (hero rows only) ──
-                The hero stores the ONE background behind the whole page.
-                The same panel is offered at page level in the inspector
-                (nothing selected) so editors find it without digging. */}
-            {isHero && (
-              <div className="pt-1 border-t border-border">
-                <label className="font-body text-[10px] uppercase tracking-wider mb-1 mt-3 block text-muted-foreground">
-                  Page background (whole page)
-                </label>
-                <PageBackgroundPanel
-                  mesh={row.layout?.mesh}
-                  onChange={(mesh) => patchLayout({ mesh })}
-                />
-              </div>
-            )}
           </div>
         </AccordionContent>
       </AccordionItem>
@@ -315,7 +436,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
           How wide each block sits next to the others in this row. */}
       {showWidthControl ? (
         <AccordionItem value="ratios" className="border-none">
-          <AccordionTrigger className={TRIGGER_CLASS}>Layout ratios</AccordionTrigger>
+          <AccordionTrigger className={TRIGGER_CLASS}>Column widths</AccordionTrigger>
           <AccordionContent className={CONTENT_CLASS}>
             <ColumnWidthControl
               columnCount={widthColCount}
@@ -335,7 +456,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
           numbered labels above each block. */}
       {colCount > 1 ? (
         <AccordionItem value="blocks" className="border-none">
-          <AccordionTrigger className={TRIGGER_CLASS}>Blocks side by side</AccordionTrigger>
+          <AccordionTrigger className={TRIGGER_CLASS}>Columns</AccordionTrigger>
           <AccordionContent className={CONTENT_CLASS}>
             <div className="flex flex-col gap-3">
               <div>
@@ -483,7 +604,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
           One picture for the WHOLE row (all of its blocks), spanning the
           full width and inheriting the row's corner curve. */}
       <AccordionItem value="cover" className="border-none">
-        <AccordionTrigger className={TRIGGER_CLASS}>Row cover image</AccordionTrigger>
+        <AccordionTrigger className={TRIGGER_CLASS}>Cover picture</AccordionTrigger>
         <AccordionContent className={CONTENT_CLASS}>
           <div className="flex flex-col gap-3">
             <ImagePickerField
@@ -737,7 +858,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
 
       {/* ═══ EDGES ═══ */}
       <AccordionItem value="edges" className="border-none">
-        <AccordionTrigger className={TRIGGER_CLASS}>Edges &amp; separators</AccordionTrigger>
+        <AccordionTrigger className={TRIGGER_CLASS}>Edge shapes &amp; lines</AccordionTrigger>
         <AccordionContent className={CONTENT_CLASS}>
           <div className="flex flex-col gap-3">
             <div>
@@ -856,6 +977,8 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
         </AccordionContent>
       </AccordionItem>
     </Accordion>
+      </details>
+    </div>
   );
 };
 

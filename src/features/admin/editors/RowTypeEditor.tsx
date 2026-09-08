@@ -10,6 +10,7 @@
  * reaches every admin surface at once.
  */
 import HeroRowFields from "../site-editor/HeroEditor";
+import { CustomColoursProvider } from "../site-editor/customColours";
 import PillarEditor from "../site-editor/PillarEditor";
 import ImageTextEditor from "../site-editor/ImageTextEditor";
 import ProfileEditor from "../site-editor/ProfileEditor";
@@ -113,7 +114,7 @@ export const ROW_TYPE_EDITORS: Partial<Record<RowType, (p: RowTypeEditorProps) =
   ),
 };
 
-const RowTypeEditor = (props: RowTypeEditorProps) => {
+const RowTypeEditorInner = (props: RowTypeEditorProps) => {
   // Registry first: a migrated widget module owns its editor.
   const Admin = getWidget(props.type)?.adminComponent as
     | React.ComponentType<{ content: Record<string, any>; onChange: (field: string, value: any) => void; bgColor?: string }>
@@ -132,5 +133,15 @@ const RowTypeEditor = (props: RowTypeEditorProps) => {
      rather than a dead end. */
   return <BrandHeaderFields content={props.content} onChange={props.onChange} bgColor={props.bgColor} />;
 };
+
+/**
+ * Every row editor renders inside a CustomColoursProvider, so its
+ * colour pickers collect into one closed "Custom colours" group.
+ */
+const RowTypeEditor = (props: RowTypeEditorProps) => (
+  <CustomColoursProvider>
+    <RowTypeEditorInner {...props} />
+  </CustomColoursProvider>
+);
 
 export default RowTypeEditor;

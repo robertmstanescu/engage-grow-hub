@@ -35,9 +35,8 @@ import TagsManager from "./TagsManager";
 import RedirectsManager from "./RedirectsManager";
 import PagesManager from "./PagesManager";
 import NavigationManager from "./NavigationManager";
-import GlobalSettings from "./GlobalSettings";
 import MediaGallery from "./MediaGallery";
-import BrandSettings from "./BrandSettings";
+import DesignScreen from "./DesignScreen";
 import SeoMaster from "./SeoMaster";
 import VersionHistory from "./VersionHistory";
 import AdminInsights from "@/pages/AdminInsights";
@@ -238,7 +237,7 @@ const AdminDashboard = ({ theme = "light", onToggleTheme }: Props) => {
             {activeTab === "blog" && (activeSub === "tags" ? <TagsManager /> : <BlogEditor />)}
             {activeTab === "media" && <MediaGallery />}
             {activeTab === "navigation" && <NavigationManager />}
-            {activeTab === "design" && (activeSub === "site" ? <GlobalSettings /> : <BrandSettings />)}
+            {activeTab === "design" && <DesignScreen />}
             {activeTab === "audience" && (activeSub === "campaigns" ? <EmailCampaigns /> : <ContactsList />)}
             {activeTab === "insights" && (activeSub === "seo" ? <SeoMaster /> : <AdminInsights embedded />)}
             {activeTab === "settings" && (

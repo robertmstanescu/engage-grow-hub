@@ -3,7 +3,7 @@ import type { PageRow } from "@/types/rows";
 import { getRowBgColor } from "../rowBackground";
 import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEditor";
 import type { VAlign } from "../PageRows";
-import { resolveRowForeground } from "@/lib/rowForeground";
+import { applyTextTone, resolveRowForeground } from "@/lib/rowForeground";
 import SectionShape, { shapeHeightPx, shapeMaskStyle } from "../SectionShape";
 import { resolveRowMinHeight } from "@/lib/rowHeight";
 import { useInsideRowSurface } from "../RowSurfaceContext";
@@ -157,9 +157,10 @@ const RowSection = ({
   const surfaceColor = getRowBgColor(row);
   /* Transparent rows inherit `--page-fg`, which PageRows derives from the
      hero's mesh brightness — so a dark mesh flips them to light text. */
-  const bandFg = hasOwnPaint
-    ? resolveRowForeground(row)
-    : "var(--page-fg, hsl(var(--foreground)))";
+  const bandFg = applyTextTone(
+    row,
+    hasOwnPaint ? resolveRowForeground(row) : "var(--page-fg, hsl(var(--foreground)))",
+  );
 
   /* ── Section shapes ──
    *  Decorative curved / angled edges, off by default. The shape is

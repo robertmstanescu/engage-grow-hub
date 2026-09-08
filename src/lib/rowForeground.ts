@@ -23,3 +23,21 @@ export const resolveRowBgColor = (row: PageRow): string | undefined => row.bg_co
 export const resolveRowForeground = (row: PageRow): string => {
   return pickForeground(resolveRowBgColor(row));
 };
+
+export type TextTone = NonNullable<NonNullable<PageRow["layout"]>["textTone"]>;
+
+export const TONE_COLORS: Record<Exclude<TextTone, "auto">, string> = {
+  light: "#F4F0EC",
+  dark: "#1A1A1A",
+  accent: "hsl(var(--accent))",
+};
+
+/**
+ * applyTextTone — the row's Text tone (Style tab) wins over the
+ * auto-picked foreground. "auto" or unset returns `autoFg` unchanged.
+ */
+export const applyTextTone = (row: PageRow, autoFg: string): string => {
+  const tone = row.layout?.textTone;
+  if (!tone || tone === "auto") return autoFg;
+  return TONE_COLORS[tone] ?? autoFg;
+};
