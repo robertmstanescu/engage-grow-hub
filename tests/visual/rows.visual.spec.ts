@@ -27,7 +27,14 @@ const ROUTES = [
 const HIDE_CHROME = fileURLToPath(new URL("./hide-chrome.css", import.meta.url));
 
 const fileSafe = (route: string) =>
-  route === "/" ? "home" : route.replace(/^\/|\/$/g, "").replace(/\//g, "_");
+  route === "/"
+    ? "home"
+    : route
+        .replace(/^\/|\/$/g, "")
+        .replace(/\//g, "_")
+        .toLowerCase()
+        .replace(/[^a-z0-9_]+/g, "-")
+        .replace(/^-+|-+$/g, "");
 
 test.beforeEach(async ({ page }) => {
   // Decide the cookie question up front so the consent dialog never
@@ -88,15 +95,33 @@ for (const route of ROUTES) {
     await page.goto(route);
     await settle(page);
 
-    const rows = page.locator("section[data-row-type]");
+    // One <section> per row, whatever its shape:
+    // - a single-widget row is painted by the widget itself: its section
+    //   carries data-row-id (the widget id) and data-row-type;
+    // - a multi-widget row (or one with a row cover picture) is painted
+    //   ONCE by RowRenderer: the outer section carries data-row-id and
+    //   data-row-title, and the widgets inside render as plain divs;
+    // - the homepage hero is not a CMS row at all: data-section="hero".
+    // Matching only data-row-type used to skip the second and third kinds,
+    // so the About page's hero band and cover row were never captured.
+    // A hero widget inside a multi-widget row still renders its own
+    // data-section="hero" section; that one is nested in the row's
+    // section and already inside its shot, so it is excluded.
+    const rows = page.locator(
+      'section[data-row-id], section[data-section="hero"]:not([data-row-id] *)',
+    );
     const count = await rows.count();
 
     for (let i = 0; i < count; i++) {
       const row = rows.nth(i);
-      const type = await row.getAttribute("data-row-type");
+      const name =
+        (await row.getAttribute("data-row-type")) ||
+        fileSafe((await row.getAttribute("data-row-title")) || "") ||
+        (await row.getAttribute("data-section")) ||
+        "row";
       await row.scrollIntoViewIfNeeded();
       await expect(row).toHaveScreenshot(
-        `${fileSafe(route)}--${String(i).padStart(2, "0")}-${type}.png`,
+        `${fileSafe(route)}--${String(i).padStart(2, "0")}-${name}.png`,
         { stylePath: HIDE_CHROME },
       );
     }
