@@ -94,6 +94,9 @@ const ImageRow = ({ row }: FrontendProps) => {
           style={{
             objectPosition,
             ...(presetAspect && !cropped ? { aspectRatio: String(presetAspect), height: "auto" } : null),
+            /* Ink outline on a contained picture; a full-bleed page
+               breaker is the row's own surface and follows the row rules. */
+            ...(bleed ? null : { border: "var(--outline-ink-border)", borderRadius: "var(--radius)" }),
           }}
           loading="lazy"
         />

@@ -74,6 +74,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                 maxWidth: 340,
                 aspectRatio: String(portraitAspect),
                 padding: 4,
+                border: "var(--outline-ink-border)",
                 background: "linear-gradient(135deg, hsl(280 55% 35% / 0.4), hsl(46 75% 60% / 0.15))",
                 boxShadow:
                   "var(--shadow-card)",
