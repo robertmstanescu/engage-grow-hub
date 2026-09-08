@@ -57,7 +57,7 @@ export const BrandHeaderFields = ({
   return (
     <SectionBox label="Section Header">
       <Field
-        label="Eyebrow (optional)"
+        label="Label above title (optional)"
         value={content.eyebrow || ""}
         onChange={(v) => onChange("eyebrow", v)}
       />
@@ -82,7 +82,7 @@ export const BrandHeaderFields = ({
         bgColor={bgColor}
       />
       <Field
-        label="Note (optional)"
+        label="Small print (optional)"
         value={content.note || ""}
         onChange={(v) => onChange("note", v)}
       />
@@ -90,7 +90,7 @@ export const BrandHeaderFields = ({
           light/dark colour the row derives from its background. */}
       <div className="grid grid-cols-2 gap-3">
         <ColorField
-          label="Eyebrow colour"
+          label="Label colour"
           value={content.color_eyebrow || ""}
           fallback=""
           onChange={(v) => onChange("color_eyebrow", v)}
@@ -383,7 +383,7 @@ export const QuoteBandEditor = ({
 }) => (
   <div className="space-y-3">
     <SectionBox label="Quote">
-      <EyebrowField label="Eyebrow (optional)" value={content.eyebrow || ""} color={content.color_eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} onColorChange={(v) => onChange("color_eyebrow", v)} />
+      <EyebrowField label="Label above title (optional)" value={content.eyebrow || ""} color={content.color_eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} onColorChange={(v) => onChange("color_eyebrow", v)} />
       <RichField
         label="Quote"
         value={content.quote || ""}
@@ -422,7 +422,7 @@ export const CtaBandEditor = ({
       <Field label="Button label" value={content.button_text || ""} onChange={(v) => onChange("button_text", v)} />
       <Field label="Button link" value={content.button_url || ""} onChange={(v) => onChange("button_url", v)} />
       <Field label="Text link label (optional)" value={content.link_text || ""} onChange={(v) => onChange("link_text", v)} />
-      <Field label="Text link URL" value={content.link_url || ""} onChange={(v) => onChange("link_url", v)} />
+      <Field label="Text link" value={content.link_url || ""} onChange={(v) => onChange("link_url", v)} />
     </SectionBox>
   </div>
 );

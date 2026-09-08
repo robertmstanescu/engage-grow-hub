@@ -11,7 +11,7 @@
  * The picker only writes the timestamp columns (`publish_at`,
  * `expiry_at`) on the entity row. It does NOT save the current draft
  * state — that's a separate concern owned by the parent builder. The
- * UX prompts the user to "Save Draft" first.
+ * UX prompts the user to "Save" first.
  *
  * TIMEZONE
  * --------

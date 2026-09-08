@@ -1,3 +1,4 @@
+import type React from "react";
 import { useEffect, useRef, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { sanitizeHtml } from "@/services/sanitize";
 import { useBuilder, type NodePath } from "./BuilderContext";
@@ -30,7 +31,7 @@ import { useBuilder, type NodePath } from "./BuilderContext";
  *
  * USAGE
  * -----
- *   <SelectableWrapper path={path} label="Eyebrow" variant="atom" inline>
+ *   <SelectableWrapper path={path} label="Label above title" variant="atom" inline>
  *     <CanvasEditable path={path} value={c.eyebrow} as="span" />
  *   </SelectableWrapper>
  *
@@ -60,6 +61,8 @@ interface CanvasEditableProps {
    * (e.g. multi-line title with <br>s) that differ from the raw value.
    */
   children?: ReactNode;
+  /** Resting-state handler; EditableText uses it to start editing on double-click. */
+  onDoubleClick?: (e: React.MouseEvent<HTMLElement>) => void;
 }
 
 const CanvasEditable = ({
@@ -70,6 +73,7 @@ const CanvasEditable = ({
   className,
   style,
   children,
+  onDoubleClick,
 }: CanvasEditableProps) => {
   const { enabled, isPathEditing, commitTextAtPath, setEditingPath } = useBuilder();
   const editing = enabled && isPathEditing(path);
@@ -97,19 +101,21 @@ const CanvasEditable = ({
 
   if (!editing) {
     const El = Tag as any;
+    const rest = onDoubleClick ? { onDoubleClick, title: "Double-click to edit" } : {};
     if (children !== undefined) {
-      return <El className={className} style={style}>{children}</El>;
+      return <El className={className} style={style} {...rest}>{children}</El>;
     }
     if (html) {
       return (
         <El
           className={className}
           style={style}
+          {...rest}
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }}
         />
       );
     }
-    return <El className={className} style={style}>{value}</El>;
+    return <El className={className} style={style} {...rest}>{value}</El>;
   }
 
   // Editing: uncontrolled contentEditable.

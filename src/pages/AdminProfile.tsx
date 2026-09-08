@@ -64,7 +64,7 @@ const AdminProfile = () => {
 
   if (loading || adminLoading) {
     return (
-      <div className="admin-light min-h-screen p-8" style={{ backgroundColor: "hsl(30 20% 96%)" }}>
+      <div className="admin-light min-h-screen p-8" style={{ backgroundColor: "hsl(var(--background))" }}>
         <div className="max-w-xl mx-auto space-y-4">
           <Skeleton className="h-8 w-40" />
           <Skeleton className="h-32 w-full" />
@@ -76,8 +76,8 @@ const AdminProfile = () => {
 
   if (!isAdmin) {
     return (
-      <div className="admin-light min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(30 20% 96%)" }}>
-        <p className="font-body text-sm" style={{ color: "hsl(260 20% 40%)" }}>Access denied.</p>
+      <div className="admin-light min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(var(--background))" }}>
+        <p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Access denied.</p>
       </div>
     );
   }
@@ -85,26 +85,26 @@ const AdminProfile = () => {
   const initials = (displayName || email).slice(0, 2).toUpperCase();
 
   return (
-    <div className="admin-light min-h-screen" style={{ backgroundColor: "hsl(30 20% 96%)" }}>
+    <div className="admin-light min-h-screen" style={{ backgroundColor: "hsl(var(--background))" }}>
       <div className="max-w-xl mx-auto p-8 space-y-6">
-        <Link to="/admin" className="inline-flex items-center gap-1.5 font-body text-xs hover:opacity-70" style={{ color: "hsl(260 20% 40%)" }}>
+        <Link to="/admin" className="inline-flex items-center gap-1.5 font-body text-xs hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
           <ArrowLeft size={13} /> Back to dashboard
         </Link>
 
         <div>
-          <h1 className="font-display text-2xl font-black" style={{ color: "hsl(260 30% 20%)" }}>My Profile</h1>
-          <p className="font-body text-xs mt-1" style={{ color: "hsl(260 20% 40%)" }}>
+          <h1 className="font-display text-2xl font-black" style={{ color: "hsl(var(--foreground))" }}>My Profile</h1>
+          <p className="font-body text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
             Role: <strong>Admin</strong> · {email}
           </p>
         </div>
 
         {/* Avatar + Name */}
-        <section className="rounded-xl border p-5 space-y-4" style={{ backgroundColor: "white", borderColor: "hsl(260 15% 88%)" }}>
-          <h2 className="font-display text-xs uppercase tracking-wider font-bold" style={{ color: "hsl(260 30% 20%)" }}>Identity</h2>
+        <section className="rounded-xl border p-5 space-y-4" style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <h2 className="font-display text-xs uppercase tracking-wider font-bold" style={{ color: "hsl(var(--foreground))" }}>Identity</h2>
 
           <div className="flex items-center gap-4">
             {avatarUrl ? (
-              <img src={avatarUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover border" style={{ borderColor: "hsl(260 15% 88%)" }} />
+              <img src={avatarUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover border" style={{ borderColor: "hsl(var(--border))" }} />
             ) : (
               <div className="w-16 h-16 rounded-full flex items-center justify-center font-display text-lg font-bold" style={{ backgroundColor: "hsl(260 30% 20%)", color: "white" }}>
                 {initials}
@@ -120,14 +120,14 @@ const AdminProfile = () => {
           </div>
 
           <div>
-            <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(260 20% 40%)" }}>
+            <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>
               <UserIcon size={10} className="inline mr-1" /> Display Name
             </label>
             <input
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               className="w-full px-3 py-2 rounded-lg font-body text-sm border"
-              style={{ borderColor: "hsl(260 15% 88%)", backgroundColor: "white", color: "hsl(260 30% 20%)" }}
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
             />
           </div>
 

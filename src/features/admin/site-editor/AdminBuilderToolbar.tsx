@@ -1,4 +1,5 @@
-import { Monitor, Tablet, Smartphone, Eye, Pencil, Save, Send, ExternalLink, EyeOff, ArrowLeft, CircleDot } from "lucide-react";
+import { Monitor, Tablet, Smartphone, Eye, Pencil, Save, Send, ExternalLink, EyeOff, ArrowLeft, CircleDot, Undo2, Redo2, Check, Loader2 } from "lucide-react";
+import type { AutosaveState } from "../builder/useAutosave";
 import StatusBadge from "../ui/StatusBadge";
 import type { ContentState } from "../naming";
 
@@ -59,10 +60,18 @@ interface AdminBuilderToolbarProps {
   previewMode: PreviewMode;
   onPreviewModeChange: (m: PreviewMode) => void;
 
-  // Save Draft (active section)
+  // Save (active section)
   onSaveDraft: () => void;
   saving: boolean;
   saveLabel?: string;
+  /** Undo / redo (PageBuilderShell's row history). */
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  /** Autosave state; undefined when the adapter does not autosave. */
+  autosave?: AutosaveState;
+  autosavedAt?: number | null;
 
   // Open the rendered page in a new tab (separate from the in-place toggle).
   onPreview: () => void;
@@ -106,7 +115,13 @@ const AdminBuilderToolbar = ({
   onPreviewModeChange,
   onSaveDraft,
   saving,
-  saveLabel = "Save Draft",
+  saveLabel = "Save",
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
+  autosave,
+  autosavedAt,
   onPreview,
   onPublish,
   publishing,
@@ -169,17 +184,26 @@ const AdminBuilderToolbar = ({
             in this session that are not saved yet". They used to be one
             pill labelled "Unpublished", which read as a visibility state
             even when the page was live. */}
-        {hasChanges && (
-          <span
-            className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-body text-[10px] uppercase tracking-wider"
-            style={{
-              backgroundColor: "hsl(var(--accent) / 0.15)",
-              color: "hsl(var(--accent-foreground))",
-            }}
-            aria-live="polite"
-          >
-            <CircleDot size={11} /> Unsaved changes
-          </span>
+        {/* Save state, as words: what autosave is doing, or that edits are unsaved. */}
+        {(() => {
+          const status = autosave === "saving" || saving
+            ? { icon: <Loader2 size={11} className="animate-spin" />, text: "Saving…" }
+            : hasChanges
+              ? autosave === "pending" ? { icon: <CircleDot size={11} />, text: "Unsaved · saving shortly" } : { icon: <CircleDot size={11} />, text: "Unsaved changes" }
+              : autosave === "saved" && autosavedAt
+                ? { icon: <Check size={11} />, text: "Saved" }
+                : autosave === "error" ? { icon: <CircleDot size={11} />, text: "Autosave failed — use Save" } : null;
+          return status ? (
+            <span className="hidden md:inline-flex items-center gap-1.5 font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }} aria-live="polite">
+              {status.icon} {status.text}
+            </span>
+          ) : null;
+        })()}
+        {(onUndo || onRedo) && (
+          <div className="hidden md:flex items-center gap-0.5" role="group" aria-label="History">
+            <button type="button" onClick={onUndo} disabled={!canUndo} title="Undo (⌘Z)" aria-label="Undo" className="p-1.5 rounded-md disabled:opacity-35 hover:bg-muted"><Undo2 size={14} /></button>
+            <button type="button" onClick={onRedo} disabled={!canRedo} title="Redo (⇧⌘Z)" aria-label="Redo" className="p-1.5 rounded-md disabled:opacity-35 hover:bg-muted"><Redo2 size={14} /></button>
+          </div>
         )}
       </div>
 
@@ -247,7 +271,7 @@ const AdminBuilderToolbar = ({
         </div>
       </div>
 
-      {/* RIGHT — Save Draft + Publish (open-in-new-tab is a small icon). */}
+      {/* RIGHT — Save + Publish (open-in-new-tab is a small icon). */}
       <div className="flex items-center gap-2 justify-self-end">
         {/* Open in new tab — kept as a discrete utility, separate from the
             in-place Preview toggle in the center group. */}
@@ -264,14 +288,14 @@ const AdminBuilderToolbar = ({
           <ExternalLink size={13} />
         </button>
 
-        {/* US 4.1 — secondary outlined "Save Draft" so the eye lands on
+        {/* US 4.1 — secondary outlined "Save" so the eye lands on
             the vibrant primary "Publish" CTA next to it. The "unpublished"
             indicator pill (left side of toolbar) still cues the user that
             unsaved work exists. */}
         <button
           onClick={onSaveDraft}
           disabled={saving}
-          title={hasChanges ? "You have unsaved changes — click to save the draft" : "No changes to save"}
+          title={hasChanges ? "Save your changes as a draft" : "Nothing to save"}
           className="admin-btn-secondary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full"
           style={{
             fontWeight: hasChanges ? 600 : 500,
@@ -287,10 +311,10 @@ const AdminBuilderToolbar = ({
           <button
             onClick={onUnpublish}
             disabled={!!unpublishing}
-            title="Hide this page from the public site (status reverts to draft)"
+            title="Take this page off the public site (it becomes a draft)"
             className="admin-btn-secondary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full"
           >
-            <EyeOff size={12} /> {unpublishing ? "Unpublishing…" : "Unpublish"}
+            <EyeOff size={12} /> {unpublishing ? "Taking offline…" : "Take offline"}
           </button>
         )}
 
@@ -310,7 +334,7 @@ const AdminBuilderToolbar = ({
           }
           className="admin-btn-primary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-1.5 rounded-full font-semibold"
         >
-          <Send size={12} /> {publishing ? "Publishing…" : "Publish All"}
+          <Send size={12} /> {publishing ? "Publishing…" : "Publish"}
         </button>
       </div>
     </div>

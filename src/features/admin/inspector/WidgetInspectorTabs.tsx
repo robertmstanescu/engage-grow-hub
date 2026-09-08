@@ -198,7 +198,7 @@ const WidgetInspectorTabs = ({
               style={{
                 borderColor: "hsl(var(--border))",
                 backgroundColor: "hsl(var(--card))",
-                color: "#1a1a1a",
+                color: "hsl(var(--foreground))",
               }}
             />
           </div>
@@ -278,7 +278,7 @@ const WidgetInspectorTabs = ({
               style={{
                 borderColor: "hsl(var(--border))",
                 backgroundColor: "hsl(var(--card))",
-                color: "#1a1a1a",
+                color: "hsl(var(--foreground))",
               }}
               placeholder="& { background: red; }"
             />

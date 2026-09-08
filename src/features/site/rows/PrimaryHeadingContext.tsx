@@ -30,6 +30,8 @@ const CurrentWidgetContext = createContext<string | null>(null);
 
 export const PromotedWidgetProvider = PromotedWidgetContext.Provider;
 export const CurrentWidgetProvider = CurrentWidgetContext.Provider;
+/** The id of the widget being rendered, or null outside WidgetNode. */
+export const useCurrentWidgetId = () => useContext(CurrentWidgetContext);
 
 /** True when the widget being rendered owns the page's <h1>. */
 export const useIsPrimaryHeading = (): boolean => {

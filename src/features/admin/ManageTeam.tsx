@@ -114,15 +114,15 @@ const ManageTeam = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-display text-lg font-black" style={{ color: "hsl(260 30% 20%)" }}>Manage Team</h2>
-        <p className="font-body text-xs mt-1" style={{ color: "hsl(260 20% 40%)" }}>
+        <h2 className="font-display text-lg font-black" style={{ color: "hsl(var(--foreground))" }}>Manage Team</h2>
+        <p className="font-body text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
           Invite admins by email. They'll get a magic link — clicking it grants admin access automatically.
         </p>
       </div>
 
       {/* Invite form */}
-      <div className="rounded-xl border p-4 space-y-3" style={{ backgroundColor: "white", borderColor: "hsl(260 15% 88%)" }}>
-        <h3 className="font-display text-[11px] uppercase tracking-wider font-bold" style={{ color: "hsl(260 30% 20%)" }}>
+      <div className="rounded-xl border p-4 space-y-3" style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+        <h3 className="font-display text-[11px] uppercase tracking-wider font-bold" style={{ color: "hsl(var(--foreground))" }}>
           Send new invite
         </h3>
         <div className="flex gap-2">
@@ -132,7 +132,7 @@ const ManageTeam = () => {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="colleague@themagiccoffin.com"
             className="flex-1 px-3 py-2 rounded-lg font-body text-sm border"
-            style={{ borderColor: "hsl(260 15% 88%)", backgroundColor: "white", color: "hsl(260 30% 20%)" }}
+            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
           />
           <SpinnerButton
             onClick={handleInvite}
@@ -149,22 +149,22 @@ const ManageTeam = () => {
 
       {/* Current admins */}
       <div>
-        <h3 className="font-display text-[11px] uppercase tracking-wider font-bold mb-2" style={{ color: "hsl(260 30% 20%)" }}>
+        <h3 className="font-display text-[11px] uppercase tracking-wider font-bold mb-2" style={{ color: "hsl(var(--foreground))" }}>
           Current admins
         </h3>
         {loading ? (
           <div className="space-y-2">{[0, 1].map((i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
         ) : admins.length === 0 ? (
-          <p className="font-body text-xs italic" style={{ color: "hsl(260 20% 40%)" }}>No admins yet.</p>
+          <p className="font-body text-xs italic" style={{ color: "hsl(var(--muted-foreground))" }}>No admins yet.</p>
         ) : (
           <ul className="space-y-1.5">
             {admins.map((a) => (
-              <li key={a.id} className="flex items-center justify-between rounded-lg border p-3" style={{ backgroundColor: "white", borderColor: "hsl(260 15% 88%)" }}>
+              <li key={a.id} className="flex items-center justify-between rounded-lg border p-3" style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
                 <div>
-                  <p className="font-body text-sm font-medium" style={{ color: "hsl(260 30% 20%)" }}>
+                  <p className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>
                     {a.display_name || "(no name set)"}
                   </p>
-                  <p className="font-body text-[10px]" style={{ color: "hsl(260 20% 40%)" }}>{a.user_id.slice(0, 8)}…</p>
+                  <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{a.user_id.slice(0, 8)}…</p>
                 </div>
                 <button
                   onClick={() => removeAdmin(a.user_id)}
@@ -182,20 +182,20 @@ const ManageTeam = () => {
 
       {/* Pending invites */}
       <div>
-        <h3 className="font-display text-[11px] uppercase tracking-wider font-bold mb-2" style={{ color: "hsl(260 30% 20%)" }}>
+        <h3 className="font-display text-[11px] uppercase tracking-wider font-bold mb-2" style={{ color: "hsl(var(--foreground))" }}>
           Pending invites
         </h3>
         {loading ? (
           <div className="space-y-2">{[0, 1].map((i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
         ) : invites.filter((i) => !i.accepted_at).length === 0 ? (
-          <p className="font-body text-xs italic" style={{ color: "hsl(260 20% 40%)" }}>No pending invites.</p>
+          <p className="font-body text-xs italic" style={{ color: "hsl(var(--muted-foreground))" }}>No pending invites.</p>
         ) : (
           <ul className="space-y-1.5">
             {invites.filter((i) => !i.accepted_at).map((inv) => (
-              <li key={inv.id} className="flex items-center justify-between rounded-lg border p-3" style={{ backgroundColor: "white", borderColor: "hsl(260 15% 88%)" }}>
+              <li key={inv.id} className="flex items-center justify-between rounded-lg border p-3" style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
                 <div className="flex items-center gap-2">
-                  <Mail size={12} style={{ color: "hsl(260 20% 40%)" }} />
-                  <span className="font-body text-sm" style={{ color: "hsl(260 30% 20%)" }}>{inv.email}</span>
+                  <Mail size={12} style={{ color: "hsl(var(--muted-foreground))" }} />
+                  <span className="font-body text-sm" style={{ color: "hsl(var(--foreground))" }}>{inv.email}</span>
                 </div>
                 <button
                   onClick={() => revokeInvite(inv.id)}

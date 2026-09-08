@@ -235,6 +235,21 @@ const SiteEditor = ({ onExit, onDirtyChange, onRegisterSave }: Props) => {
 
   // Stable handle so the exit guard / parent always calls the LATEST
   // save implementation without re-registering on every keystroke.
+  /** Quiet draft save for autosave: only the sections whose draft
+   *  differs from what the database holds; live content untouched. */
+  const onAutosave = useCallback(async (): Promise<boolean> => {
+    const dirty = sections.filter((s) => !deepEqual(s.draft_content, savedDrafts[s.section_key] ?? s.content));
+    if (dirty.length === 0) return true;
+    const results = await Promise.all(dirty.map((s) =>
+      supabase.from("site_content").upsert(
+        { section_key: s.section_key, content: s.content as never, draft_content: (s.draft_content ?? s.content) as never },
+        { onConflict: "section_key" },
+      )));
+    if (results.some((r) => r.error)) return false;
+    setSavedDrafts((prev) => ({ ...prev, ...Object.fromEntries(dirty.map((s) => [s.section_key, s.draft_content ?? s.content])) }));
+    return true;
+  }, [sections, savedDrafts]);
+
   const saveRef = useRef<() => Promise<boolean>>(async () => true);
   saveRef.current = onSaveDraft;
   useEffect(() => {
@@ -325,6 +340,7 @@ const SiteEditor = ({ onExit, onDirtyChange, onRegisterSave }: Props) => {
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      onAutosave={onAutosave}
       schedulePanel={
         <AdminStatusControl
           state={visibility}

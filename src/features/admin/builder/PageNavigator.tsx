@@ -287,8 +287,8 @@ const PageNavigator = ({
                     borderColor: "hsl(var(--border))",
                   }}
                 >
-                  <Link2 size={12} style={{ color: "hsl(215 19% 35%)", flexShrink: 0 }} />
-                  <span className="font-mono text-xs select-none" style={{ color: "hsl(215 19% 35%)" }}>
+                  <Link2 size={12} style={{ color: "hsl(var(--muted-foreground))", flexShrink: 0 }} />
+                  <span className="font-mono text-xs select-none" style={{ color: "hsl(var(--muted-foreground))" }}>
                     {slugPrefix}
                   </span>
                   <input

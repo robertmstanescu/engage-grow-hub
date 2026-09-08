@@ -350,7 +350,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
         <div className="space-y-3">
           <Field label="Headline" value={error404.headline} onChange={(v) => saveError404({ headline: v })} />
           <Field label="Subhead" value={error404.subhead} onChange={(v) => saveError404({ subhead: v })} />
-          <Field label="CTA button label" value={error404.cta_label} onChange={(v) => saveError404({ cta_label: v })} />
+          <Field label="Button text" value={error404.cta_label} onChange={(v) => saveError404({ cta_label: v })} />
         </div>
         <a
           href="/__force-404-preview"
@@ -419,7 +419,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
           onDescriptionChange={(v) => saveBlogPage({ meta_description: v })}
         />
 
-        <SectionBox label="Rows Above Blog Listing">
+        <SectionBox label="Rows above the post list">
           <RowsManager rows={blogContent.rows_above} onChange={(rows) => saveBlogPage({ rows_above: rows })} />
         </SectionBox>
 
@@ -427,7 +427,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
           <span className="font-body text-xs uppercase tracking-wider">⬇ Blog Posts Listing (auto-generated) ⬇</span>
         </div>
 
-        <SectionBox label="Rows Below Blog Listing">
+        <SectionBox label="Rows below the post list">
           <RowsManager rows={blogContent.rows_below} onChange={(rows) => saveBlogPage({ rows_below: rows })} />
         </SectionBox>
       </div>

@@ -595,7 +595,7 @@ const InspectorPanel = (props: InspectorPanelProps) => {
           onCustomCssChange={(customCss) => writeDesign({ customCss })}
           slugEditor={
             <SlugField
-              label="Widget slug"
+              label="Anchor (link to this block)"
               value={(widgetContent as any)?.__slug || ""}
               placeholder={widgetType}
               onChange={(slug) => updateWidgetField("__slug", slug)}

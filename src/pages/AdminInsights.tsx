@@ -268,15 +268,15 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
   if (!authChecked) {
     return (
-      <div className="admin-light min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(30 20% 96%)" }}>
-        <p className="font-body text-sm" style={{ color: "hsl(260 20% 40%)" }}>Loading…</p>
+      <div className="admin-light min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(var(--background))" }}>
+        <p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Loading…</p>
       </div>
     );
   }
   if (!isAdmin) {
     return (
-      <div className="admin-light min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(30 20% 96%)" }}>
-        <p className="font-body text-sm" style={{ color: "hsl(260 20% 40%)" }}>Access denied.</p>
+      <div className="admin-light min-h-screen flex items-center justify-center" style={{ backgroundColor: "hsl(var(--background))" }}>
+        <p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Access denied.</p>
       </div>
     );
   }
@@ -315,10 +315,10 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         </div>
 
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: "hsl(260 20% 10%)" }}>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
             Unified Insights
           </h1>
-          <p className="font-body text-sm mt-1" style={{ color: "hsl(260 20% 40%)" }}>
+          <p className="font-body text-sm mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
             Human visitors, AI crawlers, and the journey from one to a lead.
           </p>
         </div>
@@ -350,7 +350,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
           {/* Category */}
           <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value as typeof categoryFilter)}
             className="px-3 py-1.5 rounded-md border font-body text-xs"
-            style={{ borderColor: "hsl(var(--border))", backgroundColor: "white", color: "hsl(260 20% 25%)" }}>
+            style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
             <option value="all">All content</option>
             <option value="blog">Blogs only</option>
             <option value="page">Pages only</option>
@@ -359,7 +359,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
           {allCountries.length > 0 && (
             <select value={countryFilter} onChange={(e) => setCountryFilter(e.target.value)}
               className="px-3 py-1.5 rounded-md border font-body text-xs"
-              style={{ borderColor: "hsl(var(--border))", backgroundColor: "white", color: "hsl(260 20% 25%)" }}>
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
               <option value="all">All countries</option>
               {allCountries.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -397,7 +397,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                   const pct = humanReach > 0 ? Math.round((c.count / Math.max(humanReach, c.count)) * 100) : 0;
                   return (
                     <li key={c.country} className="space-y-1">
-                      <div className="flex justify-between font-body text-xs"><span>{c.country}</span><span style={{ color: "hsl(260 20% 50%)" }}>{c.count}</span></div>
+                      <div className="flex justify-between font-body text-xs"><span>{c.country}</span><span style={{ color: "hsl(var(--muted-foreground))" }}>{c.count}</span></div>
                       <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "hsl(260 20% 92%)" }}>
                         <div className="h-full" style={{ width: `${pct}%`, backgroundColor: "hsl(280 55% 24%)" }} />
                       </div>
@@ -413,8 +413,8 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
               <ul className="space-y-2">
                 {devices.slice(0, 5).map((d) => (
                   <li key={d.name} className="flex items-center justify-between font-body text-xs">
-                    <span className="flex items-center gap-2" style={{ color: "hsl(260 20% 25%)" }}>{deviceIcon(d.name)} {d.name}</span>
-                    <span style={{ color: "hsl(260 20% 50%)" }}>{Math.round((d.count / totalDeviceCount) * 100)}% · {d.count}</span>
+                    <span className="flex items-center gap-2" style={{ color: "hsl(var(--foreground))" }}>{deviceIcon(d.name)} {d.name}</span>
+                    <span style={{ color: "hsl(var(--muted-foreground))" }}>{Math.round((d.count / totalDeviceCount) * 100)}% · {d.count}</span>
                   </li>
                 ))}
               </ul>
@@ -426,8 +426,8 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
               <ul className="space-y-2">
                 {browsers.slice(0, 5).map((b) => (
                   <li key={b.name} className="flex items-center justify-between font-body text-xs">
-                    <span style={{ color: "hsl(260 20% 25%)" }}>{b.name}</span>
-                    <span style={{ color: "hsl(260 20% 50%)" }}>{Math.round((b.count / totalBrowserCount) * 100)}% · {b.count}</span>
+                    <span style={{ color: "hsl(var(--foreground))" }}>{b.name}</span>
+                    <span style={{ color: "hsl(var(--muted-foreground))" }}>{Math.round((b.count / totalBrowserCount) * 100)}% · {b.count}</span>
                   </li>
                 ))}
               </ul>
@@ -443,7 +443,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 <div className="max-h-[420px] overflow-y-auto">
                   <table className="w-full font-body text-xs">
                     <thead>
-                      <tr style={{ color: "hsl(260 20% 45%)" }}>
+                      <tr style={{ color: "hsl(var(--muted-foreground))" }}>
                         <th className="text-left font-medium pb-2">Page</th>
                         <th className="text-right font-medium pb-2">Views</th>
                         <th className="text-right font-medium pb-2">Unique</th>
@@ -461,11 +461,11 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                             backgroundColor: selectedPath === row.path ? "hsl(280 55% 24% / 0.07)" : "transparent",
                           }}
                         >
-                          <td className="py-1.5 pr-2 truncate max-w-[240px]" style={{ color: "hsl(260 20% 15%)" }}>{row.path}</td>
-                          <td className="py-1.5 text-right" style={{ color: "hsl(260 20% 25%)" }}>{row.views}</td>
-                          <td className="py-1.5 text-right" style={{ color: "hsl(260 20% 45%)" }}>{row.unique_visitors}</td>
-                          <td className="py-1.5 text-right" style={{ color: "hsl(260 20% 45%)" }}>{row.avg_duration ? `${row.avg_duration}s` : "—"}</td>
-                          <td className="py-1.5 text-right" style={{ color: "hsl(260 20% 45%)" }}>{row.avg_scroll ? `${row.avg_scroll}%` : "—"}</td>
+                          <td className="py-1.5 pr-2 truncate max-w-[240px]" style={{ color: "hsl(var(--foreground))" }}>{row.path}</td>
+                          <td className="py-1.5 text-right" style={{ color: "hsl(var(--foreground))" }}>{row.views}</td>
+                          <td className="py-1.5 text-right" style={{ color: "hsl(var(--muted-foreground))" }}>{row.unique_visitors}</td>
+                          <td className="py-1.5 text-right" style={{ color: "hsl(var(--muted-foreground))" }}>{row.avg_duration ? `${row.avg_duration}s` : "—"}</td>
+                          <td className="py-1.5 text-right" style={{ color: "hsl(var(--muted-foreground))" }}>{row.avg_scroll ? `${row.avg_scroll}%` : "—"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -483,9 +483,9 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                     <li key={`${r.kind}-${r.label}`} className="flex items-center justify-between gap-2 font-body text-xs">
                       <span className="flex items-center gap-1.5 min-w-0">
                         <Tag color={r.kind === "search" ? "gold" : r.kind === "campaign" ? "purple" : r.kind === "direct" ? "amber" : "green"}>{r.kind}</Tag>
-                        <span className="truncate" style={{ color: "hsl(260 20% 25%)" }}>{r.label}</span>
+                        <span className="truncate" style={{ color: "hsl(var(--foreground))" }}>{r.label}</span>
                       </span>
-                      <span style={{ color: "hsl(260 20% 50%)" }}>{r.visits} · {r.unique_visitors}u</span>
+                      <span style={{ color: "hsl(var(--muted-foreground))" }}>{r.visits} · {r.unique_visitors}u</span>
                     </li>
                   ))}
                 </ul>
@@ -494,9 +494,9 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
             <Panel title="Reading Depth" loading={loading}>
               <ul className="space-y-2 font-body text-xs">
-                <li className="flex justify-between"><span style={{ color: "hsl(260 20% 40%)" }}>Unique visitors</span><span style={{ color: "hsl(260 20% 15%)" }}>{visitorDepth.total_visitors}</span></li>
-                <li className="flex justify-between"><span style={{ color: "hsl(260 20% 40%)" }}>Read 2+ pages</span><span style={{ color: "hsl(260 20% 15%)" }}>{visitorDepth.multi_page_visitors}</span></li>
-                <li className="flex justify-between"><span style={{ color: "hsl(260 20% 40%)" }}>Avg pages / visitor</span><span style={{ color: "hsl(260 20% 15%)" }}>{visitorDepth.avg_pages_per_visitor}</span></li>
+                <li className="flex justify-between"><span style={{ color: "hsl(var(--muted-foreground))" }}>Unique visitors</span><span style={{ color: "hsl(var(--foreground))" }}>{visitorDepth.total_visitors}</span></li>
+                <li className="flex justify-between"><span style={{ color: "hsl(var(--muted-foreground))" }}>Read 2+ pages</span><span style={{ color: "hsl(var(--foreground))" }}>{visitorDepth.multi_page_visitors}</span></li>
+                <li className="flex justify-between"><span style={{ color: "hsl(var(--muted-foreground))" }}>Avg pages / visitor</span><span style={{ color: "hsl(var(--foreground))" }}>{visitorDepth.avg_pages_per_visitor}</span></li>
               </ul>
             </Panel>
           </div>
@@ -510,13 +510,13 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
               <MiniList title="Devices" rows={detailDevices} />
               <MiniList title="Countries" rows={detailCountries} />
               <div>
-                <h4 className="font-body text-[10px] uppercase tracking-wider mb-2" style={{ color: "hsl(260 20% 45%)" }}>Daily views</h4>
+                <h4 className="font-body text-[10px] uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground))" }}>Daily views</h4>
                 {detailTrend.length === 0 ? <Empty>No data.</Empty> : (
                   <ul className="space-y-1 max-h-[160px] overflow-y-auto">
                     {detailTrend.map((d) => (
                       <li key={d.day} className="flex justify-between font-body text-xs">
-                        <span style={{ color: "hsl(260 20% 40%)" }}>{d.day}</span>
-                        <span style={{ color: "hsl(260 20% 15%)" }}>{d.views} · {d.unique_visitors}u</span>
+                        <span style={{ color: "hsl(var(--muted-foreground))" }}>{d.day}</span>
+                        <span style={{ color: "hsl(var(--foreground))" }}>{d.views} · {d.unique_visitors}u</span>
                       </li>
                     ))}
                   </ul>
@@ -535,10 +535,10 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
             <ul className="space-y-1.5">
               {transitions.map((t) => (
                 <li key={`${t.from_path}->${t.to_path}`} className="flex items-center gap-2 font-body text-xs">
-                  <span className="px-1.5 py-0.5 rounded truncate max-w-[38%]" style={{ backgroundColor: "hsl(280 55% 24% / 0.08)", color: "hsl(260 20% 25%)" }}>{t.from_path}</span>
-                  <ChevronRight size={11} style={{ color: "hsl(260 20% 55%)" }} />
-                  <span className="px-1.5 py-0.5 rounded truncate max-w-[38%]" style={{ backgroundColor: "hsl(46 75% 40% / 0.14)", color: "hsl(260 20% 25%)" }}>{t.to_path}</span>
-                  <span className="ml-auto" style={{ color: "hsl(260 20% 50%)" }}>{t.transitions}</span>
+                  <span className="px-1.5 py-0.5 rounded truncate max-w-[38%]" style={{ backgroundColor: "hsl(280 55% 24% / 0.08)", color: "hsl(var(--foreground))" }}>{t.from_path}</span>
+                  <ChevronRight size={11} style={{ color: "hsl(var(--muted-foreground))" }} />
+                  <span className="px-1.5 py-0.5 rounded truncate max-w-[38%]" style={{ backgroundColor: "hsl(46 75% 40% / 0.14)", color: "hsl(var(--foreground))" }}>{t.to_path}</span>
+                  <span className="ml-auto" style={{ color: "hsl(var(--muted-foreground))" }}>{t.transitions}</span>
                 </li>
               ))}
             </ul>
@@ -554,10 +554,10 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
               {journeys.map((j, idx) => (
                 <li key={idx} className="p-2.5 rounded-lg border" style={{ borderColor: "hsl(260 20% 90%)", backgroundColor: "hsl(30 20% 99%)" }}>
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-body text-xs font-semibold truncate" style={{ color: "hsl(260 20% 10%)" }}>{j.stitched_email}</span>
-                    <span className="font-body text-[10px]" style={{ color: "hsl(260 20% 55%)" }}>{new Date(j.converted_at).toLocaleDateString()}</span>
+                    <span className="font-body text-xs font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>{j.stitched_email}</span>
+                    <span className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{new Date(j.converted_at).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex items-center gap-1 flex-wrap font-body text-[11px]" style={{ color: "hsl(260 20% 45%)" }}>
+                  <div className="flex items-center gap-1 flex-wrap font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     {j.path_sequence.slice(0, 6).map((p, i) => (
                       <span key={i} className="flex items-center gap-1">
                         <span className="px-1.5 py-0.5 rounded" style={{ backgroundColor: "hsl(280 55% 24% / 0.08)" }}>{p}</span>
@@ -579,7 +579,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
               <ul className="space-y-2">
                 {botLeaderboard.slice(0, 8).map((b) => (
                   <li key={b.entity_name} className="flex items-center justify-between font-body text-xs">
-                    <span className="truncate" style={{ color: "hsl(260 20% 25%)" }}>{b.entity_name.split(" (")[0]}</span>
+                    <span className="truncate" style={{ color: "hsl(var(--foreground))" }}>{b.entity_name.split(" (")[0]}</span>
                     <span style={{ color: "hsl(46 75% 25%)" }}>{b.count}</span>
                   </li>
                 ))}
@@ -599,13 +599,13 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                           <Tag color={row.status === "published" ? "green" : "amber"}>{row.status}</Tag>
                           <Tag color={row.optimized ? "green" : "red"}>{row.optimized ? "Optimised" : "Needs summary"}</Tag>
                         </div>
-                        <div className="font-body text-sm font-medium mt-1.5 truncate" style={{ color: "hsl(260 20% 10%)" }}>{row.title}</div>
-                        <div className="font-body text-xs mt-0.5 line-clamp-2" style={{ color: "hsl(260 20% 45%)" }}>
+                        <div className="font-body text-sm font-medium mt-1.5 truncate" style={{ color: "hsl(var(--foreground))" }}>{row.title}</div>
+                        <div className="font-body text-xs mt-0.5 line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
                           {row.ai_summary ? `"${row.ai_summary.slice(0, 200)}${row.ai_summary.length > 200 ? "…" : ""}"` : "No AI summary set."}
                         </div>
                       </div>
                       <a href={row.kind === "blog" ? `/blog/${row.slug}` : `/p/${row.slug}`} target="_blank" rel="noopener noreferrer"
-                        className="p-1.5 rounded hover:opacity-70" style={{ color: "hsl(260 20% 40%)" }} title="Open page">
+                        className="p-1.5 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }} title="Open page">
                         <ExternalLink size={14} />
                       </a>
                     </li>
@@ -620,12 +620,12 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         <div className="rounded-xl border bg-card p-4" style={{ borderColor: "hsl(var(--border))" }}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h3 className="font-display text-sm font-bold" style={{ color: "hsl(260 20% 10%)" }}>llms.txt manifest</h3>
+              <h3 className="font-display text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>llms.txt manifest</h3>
               <p className="font-body text-xs text-foreground mt-0.5">The AI-readable index your bots crawl. Auto-updated on every blog publish.</p>
             </div>
             <div className="flex items-center gap-2">
               <a href={`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/llms-txt`} target="_blank" rel="noopener noreferrer"
-                className="font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-70" style={{ borderColor: "hsl(260 20% 80%)", color: "hsl(260 20% 25%)" }}>
+                className="font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-70" style={{ borderColor: "hsl(260 20% 80%)", color: "hsl(var(--foreground))" }}>
                 View llms.txt <ExternalLink size={11} className="inline ml-1" />
               </a>
               <a href={`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/llms-txt?full=1`} target="_blank" rel="noopener noreferrer"
@@ -651,16 +651,16 @@ const StatCard = ({ icon, label, value, hint, accentHsl }: { icon: React.ReactNo
   <div className="rounded-xl border p-4 sm:p-5 bg-card" style={{ borderColor: "hsl(var(--border))" }}>
     <div className="flex items-center gap-2 mb-2">
       <span className="inline-flex items-center justify-center w-7 h-7 rounded-full" style={{ backgroundColor: `hsl(${accentHsl} / 0.1)`, color: `hsl(${accentHsl})` }}>{icon}</span>
-      <span className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(260 20% 45%)" }}>{label}</span>
+      <span className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>{label}</span>
     </div>
-    <div className="font-display text-2xl sm:text-3xl font-bold leading-tight" style={{ color: "hsl(260 20% 10%)" }}>{value}</div>
-    <div className="font-body text-xs mt-1" style={{ color: "hsl(260 20% 50%)" }}>{hint}</div>
+    <div className="font-display text-2xl sm:text-3xl font-bold leading-tight" style={{ color: "hsl(var(--foreground))" }}>{value}</div>
+    <div className="font-body text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>{hint}</div>
   </div>
 );
 
 const Panel = ({ title, loading, children }: { title: string; loading: boolean; children: React.ReactNode }) => (
   <div className="rounded-xl border bg-card p-4 sm:p-5" style={{ borderColor: "hsl(var(--border))" }}>
-    <h2 className="font-display text-base font-bold mb-3" style={{ color: "hsl(260 20% 10%)" }}>{title}</h2>
+    <h2 className="font-display text-base font-bold mb-3" style={{ color: "hsl(var(--foreground))" }}>{title}</h2>
     {loading ? <ListSkeleton rows={4} rowHeight="h-8" /> : children}
   </div>
 );
@@ -668,13 +668,13 @@ const Panel = ({ title, loading, children }: { title: string; loading: boolean; 
 /** Compact label/count list used by the single-page drill-down. */
 const MiniList = ({ title, rows }: { title: string; rows: Array<{ label: string; visits: number }> }) => (
   <div>
-    <h4 className="font-body text-[10px] uppercase tracking-wider mb-2" style={{ color: "hsl(260 20% 45%)" }}>{title}</h4>
+    <h4 className="font-body text-[10px] uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground))" }}>{title}</h4>
     {rows.length === 0 ? <Empty>No data.</Empty> : (
       <ul className="space-y-1 max-h-[160px] overflow-y-auto">
         {rows.slice(0, 8).map((r) => (
           <li key={r.label} className="flex justify-between gap-2 font-body text-xs">
-            <span className="truncate" style={{ color: "hsl(260 20% 40%)" }}>{r.label}</span>
-            <span style={{ color: "hsl(260 20% 15%)" }}>{r.visits}</span>
+            <span className="truncate" style={{ color: "hsl(var(--muted-foreground))" }}>{r.label}</span>
+            <span style={{ color: "hsl(var(--foreground))" }}>{r.visits}</span>
           </li>
         ))}
       </ul>
@@ -683,7 +683,7 @@ const MiniList = ({ title, rows }: { title: string; rows: Array<{ label: string;
 );
 
 const Empty = ({ children }: { children: React.ReactNode }) => (
-  <p className="font-body text-xs py-4 text-center" style={{ color: "hsl(260 20% 50%)" }}>{children}</p>
+  <p className="font-body text-xs py-4 text-center" style={{ color: "hsl(var(--muted-foreground))" }}>{children}</p>
 );
 
 const Tag = ({ color, children }: { color: "purple" | "gold" | "green" | "red" | "amber"; children: React.ReactNode }) => {

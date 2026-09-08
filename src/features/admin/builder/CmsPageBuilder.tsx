@@ -142,6 +142,19 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
   useUnloadGuard(hasChanges);
   useEffect(() => { onDirtyChange?.(hasChanges); }, [hasChanges, onDirtyChange]);
   // Give the parent (AdminDashboard's navigation guard) a way to save.
+  /** Quiet draft save for autosave: rows and search text only. Title,
+   *  address and visibility stay manual (they need validation). */
+  const onAutosave = useCallback(async (): Promise<boolean> => {
+    if (!record) return false;
+    const { error } = await supabase
+      .from("cms_pages")
+      .update({ draft_page_rows: draftRows as never, meta_title: seoTitle, meta_description: seoDescription })
+      .eq("id", record.id);
+    if (error) return false;
+    setRecord((prev) => (prev ? { ...prev, draft_page_rows: draftRows, meta_title: seoTitle, meta_description: seoDescription } : prev));
+    return true;
+  }, [record, draftRows, seoTitle, seoDescription]);
+
   const saveRef = useRef<() => Promise<boolean>>(async () => true);
   useEffect(() => {
     onRegisterSave?.(() => saveRef.current());
@@ -363,6 +376,7 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
       saving={saving}
       publishing={publishing}
       hasChanges={hasChanges}
+      onAutosave={onAutosave}
       publishStatus={record.status}
       onUnpublish={onUnpublish}
       unpublishing={unpublishing}

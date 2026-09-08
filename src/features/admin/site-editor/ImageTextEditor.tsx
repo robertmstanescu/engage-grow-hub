@@ -49,7 +49,7 @@ const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Prop
   return (
     <div className="space-y-3">
       <SectionBox label="Header">
-        <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
+        <Field label="Label above title" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Title Lines</label>
@@ -123,7 +123,7 @@ const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Prop
 
       <>
         <div>
-          <ColorField label="Eyebrow" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onChange("color_eyebrow", v)} />
+          <ColorField label="Label above title" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onChange("color_eyebrow", v)} />
           <ColorField label="Title" value={content.color_title || ""} fallback="#2A0E33" onChange={(v) => onChange("color_title", v)} />
           <ColorField label="Description" value={content.color_description || ""} fallback="#555555" onChange={(v) => onChange("color_description", v)} />
           <ColorField label="Caption Background" value={content.color_caption_bg || ""} fallback="#000000" onChange={(v) => onChange("color_caption_bg", v)} />

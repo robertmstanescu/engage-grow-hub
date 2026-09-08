@@ -167,7 +167,7 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
                 <ImageAltInput
                   value={content.bg_image_alt || ""}
                   onChange={(v) => onChange("bg_image_alt", v)}
-                  label="Background Image Alt Text (SEO)"
+                  label="Background picture description"
                   placeholder="Describe the hero background image"
                 />
               )}
@@ -176,7 +176,7 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
                   and giving social-card scrapers a real LCP element. */}
               {bgType === "video" && bgUrl && (
                 <Field
-                  label="Video Poster Image URL (recommended)"
+                  label="Video still picture"
                   value={content.bg_poster_url || ""}
                   onChange={(v) => onChange("bg_poster_url", v)}
                 />

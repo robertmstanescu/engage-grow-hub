@@ -360,10 +360,8 @@ const LibraryCard = ({ section }: { section: LibrarySection }) => {
  * pick the variant (each entry is itself draggable). Dragging the
  * family card drags its default variant.
  * ────────────────────────────────────────────────────────────────── */
-const VariantRow = ({ family, type, label, hint }: { family: BlockFamily; type: string; label: string; hint?: string }) => {
+const VariantRow = ({ type, label, hint }: { type: string; label: string; hint?: string }) => {
   const { insertWidgetAtSelection } = useBuilder();
-  const def = listWidgets().find((w) => w.type === type);
-  const Icon = def?.icon ?? family.icon;
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `${TRAY_DRAG_ID_PREFIX}${type}`,
     data: { source: "tray", kind: "widget", type, label } satisfies TrayDragData,
@@ -380,7 +378,7 @@ const VariantRow = ({ family, type, label, hint }: { family: BlockFamily; type: 
       className="tray-variant"
       style={{ opacity: isDragging ? 0.35 : 1 }}
     >
-      <Icon size={14} strokeWidth={1.6} aria-hidden />
+      <span className="tray-glyph small" data-glyph={type} aria-hidden />
       <span className="tray-variant-name">{label}</span>
       {hint && <span className="tray-variant-hint">{hint}</span>}
     </button>
@@ -391,7 +389,6 @@ const FamilyCard = ({ family }: { family: BlockFamily }) => {
   const { insertWidgetAtSelection } = useBuilder();
   const [open, setOpen] = useState(false);
   const first = defaultVariant(family);
-  const Icon = family.icon;
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `${TRAY_DRAG_ID_PREFIX}family-${family.key}`,
     data: { source: "tray", kind: "widget", type: first.type, label: first.label } satisfies TrayDragData,
@@ -411,7 +408,7 @@ const FamilyCard = ({ family }: { family: BlockFamily }) => {
       className="tray-family"
       style={{ opacity: isDragging ? 0.35 : 1 }}
     >
-      <Icon size={18} strokeWidth={1.6} aria-hidden />
+      <span className="tray-glyph" data-glyph={family.key} aria-hidden />
       <span className="tray-family-name">{family.label}</span>
       {!single && <span className="tray-family-count">{family.variants.length}</span>}
     </button>
@@ -422,7 +419,7 @@ const FamilyCard = ({ family }: { family: BlockFamily }) => {
       <PopoverTrigger asChild>{card}</PopoverTrigger>
       <PopoverContent align="start" sideOffset={4} className="admin-menu p-1 w-[240px]" role="menu" aria-label={`${family.label} kinds`}>
         {family.variants.map((v) => (
-          <VariantRow key={v.type} family={family} type={v.type} label={v.label} hint={v.hint} />
+          <VariantRow key={v.type} type={v.type} label={v.label} hint={v.hint} />
         ))}
       </PopoverContent>
     </Popover>
