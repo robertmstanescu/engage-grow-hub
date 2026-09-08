@@ -176,10 +176,9 @@ const TrayCard = ({ def }: TrayCardProps) => {
 interface LayoutCardProps {
   columnCount: 1 | 2 | 3 | 4;
   label: string;
-  Icon: typeof Square;
 }
 
-const LayoutCard = ({ columnCount, label, Icon }: LayoutCardProps) => {
+const LayoutCard = ({ columnCount, label }: LayoutCardProps) => {
   const { insertLayoutAtSelection } = useBuilder();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `${TRAY_LAYOUT_DRAG_ID_PREFIX}${columnCount}`,
@@ -203,30 +202,11 @@ const LayoutCard = ({ columnCount, label, Icon }: LayoutCardProps) => {
       onClick={() => insertLayoutAtSelection(columnCount)}
       title={`Click or drag a ${label.toLowerCase()} onto the canvas`}
       aria-label={`Add ${label}`}
-      className="group relative flex flex-col items-center justify-center gap-1.5 rounded-lg border p-2.5 transition-all cursor-grab active:cursor-grabbing focus:outline-none focus-visible:ring-2"
-      style={{
-        opacity: isDragging ? 0.35 : 1,
-        backgroundColor: "hsl(var(--card))",
-        borderColor: "hsl(var(--border) / 0.6)",
-        // @ts-expect-error — CSS custom prop for focus ring colour
-        "--tw-ring-color": "hsl(var(--accent))",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "hsl(var(--accent))";
-        e.currentTarget.style.backgroundColor = "hsl(var(--accent) / 0.06)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "hsl(var(--border) / 0.6)";
-        e.currentTarget.style.backgroundColor = "hsl(var(--card))";
-      }}
+      className="tray-family"
+      style={{ opacity: isDragging ? 0.35 : 1 }}
     >
-      <Icon size={18} strokeWidth={1.6} style={{ color: "hsl(var(--foreground))" }} />
-      <span
-        className="font-body text-[10px] leading-tight text-center line-clamp-2"
-        style={{ color: "hsl(var(--muted-foreground))" }}
-      >
-        {label}
-      </span>
+      <span className="tray-glyph" data-glyph={`layout-${columnCount}`} aria-hidden />
+      <span className="tray-family-name">{label}</span>
     </button>
   );
 };
@@ -254,6 +234,8 @@ const SnippetCard = ({ snippet }: SnippetCardProps) => {
       snippetRow: snippet.row_data,
     } satisfies TrayDragData,
   });
+  const kind = snippet.row_data?.columns?.[0]?.cells?.[0]?.widgets?.[0]?.type;
+  const family = kind ? BLOCK_FAMILIES.find((f) => f.variants.some((v) => v.type === kind))?.label : undefined;
 
   return (
     <button
@@ -266,30 +248,12 @@ const SnippetCard = ({ snippet }: SnippetCardProps) => {
       onClick={() => insertSnippetAtSelection(snippet.row_data)}
       title={`Click or drag "${snippet.name}" onto the canvas`}
       aria-label={`Add ${snippet.name} snippet`}
-      className="group relative flex flex-col items-center justify-center gap-1.5 rounded-lg border p-2.5 transition-all cursor-grab active:cursor-grabbing focus:outline-none focus-visible:ring-2"
-      style={{
-        opacity: isDragging ? 0.35 : 1,
-        backgroundColor: "hsl(var(--card))",
-        borderColor: "hsl(var(--border) / 0.6)",
-        // @ts-expect-error — CSS custom prop for focus ring colour
-        "--tw-ring-color": "hsl(var(--accent))",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "hsl(var(--accent))";
-        e.currentTarget.style.backgroundColor = "hsl(var(--accent) / 0.06)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "hsl(var(--border) / 0.6)";
-        e.currentTarget.style.backgroundColor = "hsl(var(--card))";
-      }}
+      className="tray-section"
+      style={{ opacity: isDragging ? 0.35 : 1 }}
     >
-      <Bookmark size={18} strokeWidth={1.6} style={{ color: "hsl(var(--foreground))" }} />
-      <span
-        className="font-body text-[10px] leading-tight text-center line-clamp-2"
-        style={{ color: "hsl(var(--muted-foreground))" }}
-      >
-        {snippet.name}
-      </span>
+      <span className="tray-sglyph" data-section="snippet" data-glyph={kind} aria-hidden />
+      <span className="tray-section-name">{snippet.name}</span>
+      <span className="tray-section-family">{family ?? "Saved row"}</span>
     </button>
   );
 };
@@ -348,6 +312,7 @@ const LibraryCard = ({ section }: { section: LibrarySection }) => {
       className="tray-section"
       style={{ opacity: isDragging ? 0.35 : 1 }}
     >
+      <span className="tray-sglyph" data-section={section.key} aria-hidden />
       <span className="tray-section-name">{section.name}</span>
       <span className="tray-section-family">{section.family}</span>
     </button>
@@ -445,7 +410,7 @@ const ElementsTray = () => {
     <div className="space-y-4">
       <div>
         <TrayHeading>Sections</TrayHeading>
-        <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-2">
           {SECTION_LIBRARY.map((section) => (
             <LibraryCard key={section.key} section={section} />
           ))}
@@ -468,10 +433,10 @@ const ElementsTray = () => {
       <div>
         <TrayHeading>Empty rows</TrayHeading>
         <div className="grid grid-cols-2 gap-2">
-          <LayoutCard columnCount={1} label="1 column" Icon={Square} />
-          <LayoutCard columnCount={2} label="2 columns" Icon={Columns2} />
-          <LayoutCard columnCount={3} label="3 columns" Icon={Columns3} />
-          <LayoutCard columnCount={4} label="4 columns" Icon={Columns4} />
+          <LayoutCard columnCount={1} label="1 column" />
+          <LayoutCard columnCount={2} label="2 columns" />
+          <LayoutCard columnCount={3} label="3 columns" />
+          <LayoutCard columnCount={4} label="4 columns" />
         </div>
       </div>
 

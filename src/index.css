@@ -1555,10 +1555,10 @@
 
 /* Elements tray: sections, families, variants */
 @layer components {
-  .tray-section { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; padding: 7px 9px; border-radius: 4px; border: 1px solid hsl(var(--border) / .6); background: hsl(var(--card)); text-align: left; cursor: grab; }
+  .tray-section { display: flex; flex-direction: column; align-items: stretch; gap: 2px; width: 100%; padding: 7px; border-radius: 4px; border: 1px solid hsl(var(--border) / .6); background: hsl(var(--card)); text-align: left; cursor: grab; }
   .tray-section:hover { border-color: hsl(var(--accent)); background: hsl(var(--accent) / .06); }
-  .tray-section-name { font-size: 11.5px; font-weight: 500; color: hsl(var(--foreground)); }
-  .tray-section-family { font-size: 10.5px; color: hsl(var(--muted-foreground)); white-space: nowrap; }
+  .tray-section-name { font-size: 11.5px; font-weight: 500; line-height: 1.25; color: hsl(var(--foreground)); margin-top: 5px; }
+  .tray-section-family { font-size: 10px; color: hsl(var(--muted-foreground)); white-space: nowrap; }
   .tray-family { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px 6px; border-radius: 6px; border: 1px solid hsl(var(--border) / .6); background: hsl(var(--card)); color: hsl(var(--foreground)); cursor: grab; }
   .tray-family:hover, .tray-family[aria-expanded="true"] { border-color: hsl(var(--accent)); background: hsl(var(--accent) / .06); }
   .tray-family-name { font-size: 10.5px; line-height: 1.2; color: hsl(var(--muted-foreground)); }
@@ -1776,4 +1776,54 @@
   .tray-glyph[data-glyph="subscribe"]::before { box-shadow: none; top: 36%; }
   .tray-glyph[data-glyph="lead_magnet"]::after { content: "↓"; position: absolute; right: 14%; top: 0; font: 700 14px/28px var(--font-body); color: var(--g); }
   .tray-glyph.small::before, .tray-glyph.small::after { font-size: 11px !important; line-height: 20px !important; }
+}
+
+/* Section glyphs: a miniature of the whole pre-designed row, wider than a
+   block glyph because a section is a full row. Keys = sectionLibrary.ts. */
+@layer components {
+  .tray-sglyph { position: relative; display: block; width: 100%; height: 44px; border-radius: 3px; background: hsl(var(--muted)); overflow: hidden; --g: hsl(var(--muted-foreground) / .78); --g2: hsl(var(--muted-foreground) / .38); }
+  /* hero: centred two-line title and a button */
+  .tray-sglyph[data-section="hero-statement"]::before { content: ""; position: absolute; left: 22%; right: 22%; top: 26%; height: 4px; border-radius: 1px; background: var(--g); box-shadow: 0 8px 0 -1px var(--g); }
+  .tray-sglyph[data-section="hero-statement"]::after { content: ""; position: absolute; left: 40%; right: 40%; top: 64%; height: 7px; border-radius: 999px; background: var(--g); }
+  /* intro: a title and two lines of copy, left-aligned */
+  .tray-sglyph[data-section="intro"]::before { content: ""; position: absolute; left: 10%; right: 42%; top: 24%; height: 4px; border-radius: 1px; background: var(--g); }
+  .tray-sglyph[data-section="intro"]::after { content: ""; position: absolute; left: 10%; right: 18%; top: 50%; height: 2px; background: var(--g2); box-shadow: 0 6px 0 var(--g2), 0 12px 0 -0.5px var(--g2); }
+  /* feature trio: a heading above three cards */
+  .tray-sglyph[data-section="feature-trio"]::before { content: ""; position: absolute; left: 10%; right: 55%; top: 16%; height: 3px; border-radius: 1px; background: var(--g); }
+  .tray-sglyph[data-section="feature-trio"]::after { content: ""; position: absolute; left: 10%; right: 10%; top: 40%; bottom: 16%; border-radius: 2px; background: linear-gradient(90deg, var(--g) 0 30%, transparent 30% 35%, var(--g) 35% 65%, transparent 65% 70%, var(--g) 70%); }
+  /* proof strip: three numbers with labels under them */
+  .tray-sglyph[data-section="proof-strip"]::before { content: "36\2003 500\2003 3"; position: absolute; left: 0; right: 0; top: 4px; text-align: center; font: 800 13px/16px var(--font-title); letter-spacing: .02em; color: var(--g); }
+  .tray-sglyph[data-section="proof-strip"]::after { content: ""; position: absolute; left: 16%; right: 16%; top: 64%; height: 2px; background: linear-gradient(90deg, var(--g2) 0 22%, transparent 22% 39%, var(--g2) 39% 61%, transparent 61% 78%, var(--g2) 78%); }
+  /* how it works: numbered steps joined by a line */
+  .tray-sglyph[data-section="how-it-works"]::before { content: "①\2003\2002②\2003\2002③"; position: absolute; left: 0; right: 0; top: 0; text-align: center; font: 500 13px/30px var(--font-body); color: var(--g); }
+  .tray-sglyph[data-section="how-it-works"]::after { content: ""; position: absolute; left: 16%; right: 16%; top: 70%; height: 2px; background: linear-gradient(90deg, var(--g2) 0 22%, transparent 22% 39%, var(--g2) 39% 61%, transparent 61% 78%, var(--g2) 78%); }
+  /* picture beside text */
+  .tray-sglyph[data-section="picture-text"]::before { content: ""; position: absolute; left: 10%; top: 20%; bottom: 20%; width: 36%; border-radius: 2px; background: var(--g); }
+  .tray-sglyph[data-section="picture-text"]::after { content: ""; position: absolute; left: 54%; right: 10%; top: 30%; height: 3px; border-radius: 1px; background: var(--g); box-shadow: 0 8px 0 -1px var(--g2), 0 15px 0 -1px var(--g2); }
+  /* founder: a round portrait beside copy */
+  .tray-sglyph[data-section="founder"]::before { content: ""; position: absolute; left: 12%; top: 50%; width: 22px; height: 22px; margin-top: -11px; border-radius: 50%; background: var(--g); }
+  .tray-sglyph[data-section="founder"]::after { content: ""; position: absolute; left: 46%; right: 10%; top: 30%; height: 3px; border-radius: 1px; background: var(--g); box-shadow: 0 8px 0 -1px var(--g2), 0 15px 0 -1px var(--g2); }
+  /* testimonials: three cards, a quote mark on the first */
+  .tray-sglyph[data-section="testimonials"]::before { content: ""; position: absolute; left: 10%; right: 10%; top: 22%; bottom: 22%; border-radius: 2px; background: linear-gradient(90deg, var(--g) 0 30%, transparent 30% 35%, var(--g) 35% 65%, transparent 65% 70%, var(--g) 70%); }
+  .tray-sglyph[data-section="testimonials"]::after { content: "\201C\2003\2002\2002\201C\2003\2002\2002\201C"; position: absolute; left: 13%; top: 7px; font: 800 20px/20px var(--font-title); letter-spacing: .12em; color: hsl(var(--muted)); }
+  /* FAQ: three question rows with a + at the end */
+  .tray-sglyph[data-section="faq"]::before { content: ""; position: absolute; left: 10%; right: 10%; top: 18%; bottom: 18%; background: linear-gradient(180deg, var(--g) 0 3px, transparent 3px 11px, var(--g) 11px 14px, transparent 14px 22px, var(--g) 22px 25px, transparent 25px); background-size: 70% 100%; background-repeat: no-repeat; }
+  .tray-sglyph[data-section="faq"]::after { content: "+"; position: absolute; right: 10%; top: 2px; font: 600 11px/11px var(--font-body); color: var(--g); text-shadow: 0 11px 0 var(--g), 0 22px 0 var(--g); }
+  /* one quote: a big mark and a centred line */
+  .tray-sglyph[data-section="quote"]::before { content: "\201D"; position: absolute; left: 0; right: 0; top: -6px; text-align: center; font: 800 30px/34px var(--font-title); color: var(--g); }
+  .tray-sglyph[data-section="quote"]::after { content: ""; position: absolute; left: 30%; right: 30%; top: 68%; height: 3px; border-radius: 1px; background: var(--g2); }
+  /* call to action: a band with copy and a button */
+  .tray-sglyph[data-section="cta"]::before { content: ""; position: absolute; inset: 18% 8%; border-radius: 3px; background: var(--g2); }
+  .tray-sglyph[data-section="cta"]::after { content: ""; position: absolute; right: 14%; top: 40%; bottom: 40%; width: 24%; border-radius: 999px; background: var(--g); box-shadow: -46px 0 0 -1.5px var(--g); }
+  /* contact: two fields and a button */
+  .tray-sglyph[data-section="contact"]::before { content: ""; position: absolute; left: 10%; right: 10%; top: 16%; height: 8px; border: 1.5px solid var(--g); border-radius: 2px; box-shadow: 0 12px 0 -1.5px var(--g); }
+  .tray-sglyph[data-section="contact"]::after { content: ""; position: absolute; left: 10%; width: 30%; top: 66%; height: 8px; border-radius: 2px; background: var(--g); }
+  /* empty rows: N columns */
+  .tray-glyph[data-glyph="layout-1"]::before { content: ""; position: absolute; inset: 22% 12%; border: 1.5px dashed var(--g); border-radius: 2px; }
+  .tray-glyph[data-glyph="layout-2"]::before { content: ""; position: absolute; inset: 22% 12%; border-radius: 2px; background: linear-gradient(90deg, var(--g2) 0 48%, transparent 48% 52%, var(--g2) 52%); }
+  .tray-glyph[data-glyph="layout-3"]::before { content: ""; position: absolute; inset: 22% 12%; border-radius: 2px; background: linear-gradient(90deg, var(--g2) 0 31%, transparent 31% 34.5%, var(--g2) 34.5% 65.5%, transparent 65.5% 69%, var(--g2) 69%); }
+  .tray-glyph[data-glyph="layout-4"]::before { content: ""; position: absolute; inset: 22% 12%; border-radius: 2px; background: linear-gradient(90deg, var(--g2) 0 23%, transparent 23% 25.7%, var(--g2) 25.7% 48.7%, transparent 48.7% 51.3%, var(--g2) 51.3% 74.3%, transparent 74.3% 77%, var(--g2) 77%); }
+  /* a saved snippet: lines of a row plus a bookmark ribbon */
+  .tray-sglyph[data-section="snippet"]::before { content: ""; position: absolute; left: 10%; right: 34%; top: 28%; height: 3px; border-radius: 1px; background: var(--g); box-shadow: 0 8px 0 -1px var(--g2), 0 15px 0 -1px var(--g2); }
+  .tray-sglyph[data-section="snippet"]::after { content: ""; position: absolute; right: 12%; top: 0; width: 9px; height: 15px; background: var(--g); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 68%, 0 100%); }
 }
