@@ -1264,6 +1264,23 @@
   [data-row-grid] > :not(:last-child) .row-container {
     padding-right: clamp(12px, 2.5vw, 48px);
   }
+  /* Phones: side-by-side columns become one column, in reading order
+     (left column first, then the next). The grid's column template and
+     the optical-alignment top offsets are inline from SemanticAligner,
+     so these need !important; the halved inner gutters go back to full
+     because there is no longer a neighbour to share them with. */
+  @media (max-width: 767px) {
+    [data-row-grid] {
+      grid-template-columns: 1fr !important;
+    }
+    [data-row-grid] > * {
+      padding-top: 0 !important;
+    }
+    [data-row-grid] > * .row-container {
+      padding-left: clamp(24px, 5vw, 96px);
+      padding-right: clamp(24px, 5vw, 96px);
+    }
+  }
 
   /* Header block rhythm: headings get real air above their content. */
   .row-header {
