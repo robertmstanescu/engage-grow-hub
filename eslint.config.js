@@ -5,7 +5,15 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "supabase/functions/mcp/index.ts"] },
+  {
+    ignores: [
+      "dist",
+      "supabase/functions/mcp/index.ts",
+      // Lovable's own auto-generated preview-auth broker ("do not edit
+      // it directly"); the bot rewrites it and it does not follow our lint.
+      "src/integrations/supabase/previewAuthStorage.ts",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
