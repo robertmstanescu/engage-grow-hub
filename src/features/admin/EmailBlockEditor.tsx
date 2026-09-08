@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import {
   Type, ImageIcon, Newspaper, Star, Minus, MousePointerClick,
@@ -81,7 +81,10 @@ const EmailBlockEditor = ({ blocks, onChange }: EmailBlockEditorProps) => {
     setSelectedBlockId(block.id);
   };
 
-  const handleImageUpload = useCallback(async (file: File, blockId: string, field: "content" | "backgroundImage") => {
+  // Not memoised: it closes over `updateBlock`/`updateSettings`, which are
+  // plain per-render functions, so a useCallback here could never have a
+  // stable dependency list anyway.
+  const handleImageUpload = async (file: File, blockId: string, field: "content" | "backgroundImage") => {
     if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
     if (file.size > 5 * 1024 * 1024) { toast.error("Max 5MB"); return; }
 
@@ -99,7 +102,7 @@ const EmailBlockEditor = ({ blocks, onChange }: EmailBlockEditorProps) => {
     } else {
       updateSettings(blockId, { backgroundImage: result.publicUrl });
     }
-  }, [blocks, onChange]);
+  };
 
   const blockTypes = [
     { type: "text" as const, icon: Type, label: "Text" },

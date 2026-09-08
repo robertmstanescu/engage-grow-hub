@@ -28,7 +28,7 @@
  * `src/services/unifiedAnalytics.ts` for the same reason.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Activity, Bot, Sparkles, RefreshCw, ExternalLink, Users,
@@ -166,7 +166,7 @@ const AdminInsights = () => {
    * Wrapped in try/catch so a single panel's failure doesn't blank the
    * whole dashboard.
    */
-  const refreshAll = async () => {
+  const refreshAll = useCallback(async () => {
     setLoading(true);
     try {
       const [
@@ -236,9 +236,9 @@ const AdminInsights = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
-  useEffect(() => { if (isAdmin) refreshAll(); }, [isAdmin, filters]);
+  useEffect(() => { if (isAdmin) refreshAll(); }, [isAdmin, refreshAll]);
 
   /**
    * Drill-down loader — runs whenever an admin clicks a row in the

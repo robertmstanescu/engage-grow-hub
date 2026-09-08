@@ -148,12 +148,10 @@ const widgets = new Map<string, AnyWidgetDefinition>();
  */
 export const registerWidget = <TData,>(def: WidgetDefinition<TData>): void => {
   if (!def?.type) {
-    // eslint-disable-next-line no-console
     console.error("[WidgetRegistry] registerWidget called without a type", def);
     return;
   }
   if (def.defaultData == null) {
-    // eslint-disable-next-line no-console
     console.error(
       `[WidgetRegistry] Widget "${def.type}" registered without defaultData; refusing to register.`,
     );
@@ -188,8 +186,7 @@ export const renderWidget = (ctx: WidgetRenderContext): ReactNode => {
     if (typeof window !== "undefined") {
       // Visible-but-non-fatal warning during development. In production
       // this just no-ops, so unknown widgets degrade gracefully.
-      // eslint-disable-next-line no-console
-      console.warn(`[WidgetRegistry] No widget registered for type "${ctx.row.type}"`);
+        console.warn(`[WidgetRegistry] No widget registered for type "${ctx.row.type}"`);
     }
     return null;
   }
@@ -231,7 +228,6 @@ export const parseWidgetContent = (
       .map((i) => `${i.path.map(String).join(".") || "(root)"}: ${i.message}`)
       .slice(0, 8)
       .join("; ");
-    // eslint-disable-next-line no-console
     console.warn(`[WidgetRegistry] "${def.type}" row ${rowId ?? "?"} has invalid content — ${paths}`);
   }
   return { ...(def.defaultData as Record<string, unknown>), ...raw };

@@ -10,7 +10,7 @@
  *     be double-clicked into a duplicate insert/send.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { Plus, Send, Edit, Trash2, Eye } from "lucide-react";
 import EmailBlockEditor from "./EmailBlockEditor";
@@ -59,7 +59,7 @@ const EmailCampaigns = () => {
     updatedKey: (c) => c.created_at,
   });
 
-  const reloadCampaigns = async () => {
+  const reloadCampaigns = useCallback(async () => {
     setIsLoadingList(true);
     const result = await fetchAllCampaigns(page, DEFAULT_PAGE_SIZE);
     if (result.error) {
@@ -70,11 +70,11 @@ const EmailCampaigns = () => {
     setCampaigns((result.data as CampaignRecord[]) || []);
     if (typeof result.count === "number") setTotalCampaigns(result.count);
     setIsLoadingList(false);
-  };
+  }, [page]);
 
   useEffect(() => {
     reloadCampaigns();
-  }, [page]);
+  }, [reloadCampaigns]);
 
   const handleNew = () => {
     setIsNew(true);

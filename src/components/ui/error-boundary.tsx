@@ -95,7 +95,6 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: ErrorInfo) {
     // Always log so we can trace issues from the browser console without
     // needing remote error tracking.
-    // eslint-disable-next-line no-console
     console.error(`[ErrorBoundary${this.props.label ? `:${this.props.label}` : ""}]`, error, info);
     this.props.onError?.(error, info);
   }

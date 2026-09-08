@@ -53,7 +53,6 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
 }
 
 // Move a message to the dead letter queue and log the reason.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function moveToDlq(
   supabase: any,
   queue: string,
