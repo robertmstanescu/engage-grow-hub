@@ -87,6 +87,9 @@ const RowCoverCard = ({ row, children, variant = "flush" }: RowCoverCardProps) =
           roundedTop={false}
           fillParent
           aspectRatio={aspectRatio ?? 16 / 9}
+          // Flush covers dissolve into the row from the first pixel; the
+          // FAQ card keeps its banner-style hold before fading.
+          fade={isCard ? "hold" : "linear"}
           className="h-auto"
           style={{ objectPosition }}
         />

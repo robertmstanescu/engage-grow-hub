@@ -1,11 +1,23 @@
 /**
  * CoverFadeImage — a decorative photo that dissolves into whatever sits
- * behind it via a fixed 5-stop alpha mask: fully opaque through the top
- * two-thirds, then fading out to fully transparent by the bottom edge.
+ * behind it via an alpha mask.
  *
- * Extracted from BlogPost.tsx's article-header banner so the exact same
- * effect can be reused elsewhere (a boxed row's optional cover image)
- * without a second inline copy of the gradient recipe.
+ * Two fades:
+ * - "hold": fully opaque through the top ~45%, then out to transparent
+ *   by the bottom. The original recipe, extracted from BlogPost.tsx's
+ *   article banner; still used there and by the FAQ cover card.
+ * - "linear": 100% at the very first pixel down to 0% at the last, no
+ *   opaque hold. Used for row-level covers and flush row cover cards,
+ *   where the picture must read as dissolving into the row from the
+ *   top rather than as a banner that suddenly starts fading.
+ *
+ * The mask is applied to this component's own box, not the <img>. The
+ * callers cap the visible band with a max-height and clip the overflow,
+ * and the image inside keeps its natural height; masking the image
+ * meant the fade was measured against the full (partly hidden) picture,
+ * so a tall photo was cut off before its fade reached transparent — an
+ * abrupt bottom edge. Masking the visible box makes "0% at the bottom"
+ * mean the bottom the visitor actually sees.
  *
  * NOT interchangeable with Blog.tsx's card-cover treatment (BlogCard in
  * src/pages/Blog.tsx) — that one is a tone-aware CONTRAST overlay for
@@ -16,9 +28,7 @@
  * separate — do not try to unify them.
  */
 import { transformImageUrl, buildImageSrcSet } from "@/services/mediaOptimization";
-
-const FADE_GRADIENT =
-  "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0.6) 68%, rgba(0,0,0,0.2) 85%, rgba(0,0,0,0) 100%)";
+import { FADE_GRADIENTS, type CoverFade } from "./coverFade";
 
 interface CoverFadeImageProps {
   src: string;
@@ -54,6 +64,8 @@ interface CoverFadeImageProps {
    * own shapeTop/shapeBottom size) rather than the generic card radius.
    */
   radius?: string;
+  /** Which alpha fade to apply (see the header comment). Defaults to "hold". */
+  fade?: CoverFade;
   /** Extra classes on the outer container (e.g. a max-height clamp, or a responsive aspect-ratio when `fillParent` is set). */
   className?: string;
   /** Inline styles applied to the inner <img> element. */
@@ -67,29 +79,32 @@ const CoverFadeImage = ({
   fillParent = false,
   roundedTop = false,
   radius = "var(--radius)",
+  fade = "hold",
   className = "",
   style,
-}: CoverFadeImageProps) => (
-  <div
-    className={`relative w-full overflow-hidden ${fillParent ? "h-full" : ""} ${className}`}
-    style={{
-      ...(fillParent ? {} : { aspectRatio }),
-      borderRadius: roundedTop ? `${radius} ${radius} 0 0` : 0,
-    }}
-  >
-    <img
-      src={transformImageUrl(src, { width: 1920, aspectRatio })}
-      srcSet={buildImageSrcSet(src, undefined, 75, aspectRatio)}
-      sizes="100vw"
-      alt={alt}
-      className="w-full h-full object-cover"
+}: CoverFadeImageProps) => {
+  const gradient = FADE_GRADIENTS[fade];
+  return (
+    <div
+      data-cover-fade={fade}
+      className={`relative w-full overflow-hidden ${fillParent ? "h-full" : ""} ${className}`}
       style={{
-        WebkitMaskImage: FADE_GRADIENT,
-        maskImage: FADE_GRADIENT,
-        ...style,
+        ...(fillParent ? {} : { aspectRatio }),
+        borderRadius: roundedTop ? `${radius} ${radius} 0 0` : 0,
+        WebkitMaskImage: gradient,
+        maskImage: gradient,
       }}
-    />
-  </div>
-);
+    >
+      <img
+        src={transformImageUrl(src, { width: 1920, aspectRatio })}
+        srcSet={buildImageSrcSet(src, undefined, 75, aspectRatio)}
+        sizes="100vw"
+        alt={alt}
+        className="w-full h-full object-cover"
+        style={style}
+      />
+    </div>
+  );
+};
 
 export default CoverFadeImage;
