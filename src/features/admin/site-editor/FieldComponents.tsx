@@ -195,13 +195,27 @@ export const ArrayField = ({ label, items, onChange, placeholder }: { label: str
   );
 };
 
-export const SectionBox = ({ children, label }: { children: React.ReactNode; label?: string }) => (
+export const SectionBox = ({ children, label, group }: { children: React.ReactNode; label?: string; /** A list editor (cards, stats, steps…): counts as ONE primary field. */ group?: boolean }) => (
   <div
     className="p-3 rounded-lg border space-y-2"
+    data-field-group={group ? "" : undefined}
     style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.15)" }}>
     {label && <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground">{label}</span>}
     {children}
   </div>
+);
+
+/**
+ * MoreFields — the fold every block editor keeps its secondary fields
+ * in, closed by default. A block shows at most eight primary fields
+ * above it (fieldDiet.test.tsx counts them); alt text, captions,
+ * success states, alignment tweaks and the like go here.
+ */
+export const MoreFields = ({ children, label = "More" }: { children: React.ReactNode; label?: string }) => (
+  <details className="admin-details" data-more-fields>
+    <summary>{label}</summary>
+    <div className="space-y-3 mt-2">{children}</div>
+  </details>
 );
 
 /**

@@ -33,6 +33,10 @@ src/
                          collect their ColorFields into one "Custom colours"
                          group (site-editor/customColours.tsx). DesignScreen
                          is Brand + Site defaults beside a live sample page.
+                         builder/blockFamilies.ts groups the widget types
+                         into the eight tray families; builder/sectionLibrary.ts
+                         holds the pre-designed rows; MoreFields keeps a block
+                         editor to eight primary fields.
   features/widgets/      Self-registering widget modules — one folder per
                          type (boxed/, contact/, cta-button/, subscribe/).
                          The target shape for every row type.

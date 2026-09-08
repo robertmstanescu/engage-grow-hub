@@ -1,4 +1,4 @@
-import { SectionBox, Field, RichField, SelectField, ColorField, CtaFields } from "./FieldComponents";
+import { SectionBox, Field, RichField, SelectField, ColorField, CtaFields, MoreFields } from "./FieldComponents";
 import ImagePickerField from "../ImagePickerField";
 import ImageShapeControl from "../ImageShapeControl";
 import TitleLineEditor from "./TitleLineEditor";
@@ -82,7 +82,6 @@ const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Prop
           onAltChange={(v) => onChange("image_alt", v)}
         />
         <SelectField label="Image Position" value={content.image_position || "right"} options={IMAGE_POSITIONS} onChange={(v) => onChange("image_position", v)} />
-        <SelectField label="Image Mask" value={content.image_shape || "default"} options={IMAGE_SHAPES} onChange={(v) => onChange("image_shape", v)} />
         <ImageShapeControl
           imageUrl={content.image_url || ""}
           ratio={content.image_ratio}
@@ -101,10 +100,6 @@ const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Prop
         />
       </SectionBox>
 
-      <SectionBox label="Floating Caption">
-        <Field label="Caption Text" value={content.floating_caption || ""} onChange={(v) => onChange("floating_caption", v)} />
-        <SelectField label="Caption Position" value={content.caption_position || "bottom-left"} options={CAPTION_POSITIONS} onChange={(v) => onChange("caption_position", v)} />
-      </SectionBox>
 
       {/*
        * CALL TO ACTION block.
@@ -116,8 +111,18 @@ const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Prop
        */}
       <CtaFields content={content} onChange={onChange} />
 
-      <SectionBox label="Colors">
-        <div className="grid grid-cols-2 gap-3">
+      <MoreFields>
+        <SectionBox label="Picture shape">
+          <SelectField label="Image Mask" value={content.image_shape || "default"} options={IMAGE_SHAPES} onChange={(v) => onChange("image_shape", v)} />
+        </SectionBox>
+        <SectionBox label="Floating Caption">
+          <Field label="Caption Text" value={content.floating_caption || ""} onChange={(v) => onChange("floating_caption", v)} />
+          <SelectField label="Caption Position" value={content.caption_position || "bottom-left"} options={CAPTION_POSITIONS} onChange={(v) => onChange("caption_position", v)} />
+        </SectionBox>
+      </MoreFields>
+
+      <>
+        <div>
           <ColorField label="Eyebrow" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onChange("color_eyebrow", v)} />
           <ColorField label="Title" value={content.color_title || ""} fallback="#2A0E33" onChange={(v) => onChange("color_title", v)} />
           <ColorField label="Description" value={content.color_description || ""} fallback="#555555" onChange={(v) => onChange("color_description", v)} />
@@ -125,7 +130,7 @@ const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Prop
           <ColorField label="Caption Text" value={content.color_caption_text || ""} fallback="#FFFFFF" onChange={(v) => onChange("color_caption_text", v)} />
           <ColorField label="Note" value={content.color_note || ""} fallback="#999999" onChange={(v) => onChange("color_note", v)} />
         </div>
-      </SectionBox>
+      </>
     </div>
   );
 };
