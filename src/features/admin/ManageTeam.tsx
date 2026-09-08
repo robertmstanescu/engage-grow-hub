@@ -121,7 +121,7 @@ const ManageTeam = () => {
       </div>
 
       {/* Invite form */}
-      <div className="rounded-xl border p-4 space-y-3" style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+      <div className="rounded-lg border p-4 space-y-3" style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
         <h3 className="font-display text-[11px] uppercase tracking-wider font-bold" style={{ color: "hsl(var(--foreground))" }}>
           Send new invite
         </h3>
@@ -139,7 +139,7 @@ const ManageTeam = () => {
             isLoading={sending}
             loadingLabel="Sending…"
             icon={<Send size={12} />}
-            className="font-display text-[10px] uppercase tracking-[0.08em] font-bold px-4 py-2 rounded-full hover:opacity-85 transition-opacity"
+            className="font-display text-[10px] uppercase tracking-[0.08em] font-bold px-4 py-2 rounded-md hover:opacity-85 transition-opacity"
             style={{ backgroundColor: "hsl(260 30% 20%)", color: "white" }}
           >
             Send invite

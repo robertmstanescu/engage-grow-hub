@@ -265,7 +265,7 @@ const EmailBlockEditor = ({ blocks, onChange }: EmailBlockEditorProps) => {
                 {block.type === "button" && (
                   <div className="text-center py-4">
                     <span
-                      className="inline-block px-6 py-2.5 rounded-full font-display text-[11px] uppercase tracking-wider font-bold"
+                      className="inline-block px-6 py-2.5 rounded-md font-display text-[11px] uppercase tracking-wider font-bold"
                       style={{
                         backgroundColor: block.settings.buttonBg || "#4D1B5E",
                         color: block.settings.buttonColor || "#F9F0C1",

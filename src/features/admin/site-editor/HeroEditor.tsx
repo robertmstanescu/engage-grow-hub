@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
-import { Plus, Trash2, Upload, X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { Field, RichField, SectionBox, ColorField, CtaFields } from "./FieldComponents";
-import TitleLineEditor from "./TitleLineEditor";
+import TitleLinesEditor from "../editors/TitleLinesEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImageAltInput from "../ImageAltInput";
 import ImagePickerField from "../ImagePickerField";
@@ -18,22 +18,6 @@ interface Props {
 
 const HeroEditor = ({ content, onChange, bgColor }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const rawLines = content.title_lines || [];
-  const titleLines: string[] = rawLines.map((line: any) =>
-    typeof line === "string" ? line : (line.type === "accent"
-      ? `<p><span style="color: #E5C54F">${line.text}</span></p>`
-      : `<p>${line.text}</p>`)
-  );
-
-  const updateLine = (idx: number, html: string) => {
-    const next = [...titleLines];
-    next[idx] = html;
-    onChange("title_lines", next);
-  };
-
-  const addLine = () => onChange("title_lines", [...titleLines, "<p></p>"]);
-  const removeLine = (idx: number) => onChange("title_lines", titleLines.filter((_, i) => i !== idx));
 
   const bgType = content.bg_type || "none";
   const bgUrl = content.bg_url || "";
@@ -77,7 +61,7 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
               key={a}
               type="button"
               onClick={() => onChange("align", a)}
-              className="font-body text-[10px] uppercase tracking-wider px-3 py-1 rounded-full transition-all"
+              className="font-body text-[10px] uppercase tracking-wider px-3 py-1 rounded-md transition-all"
               style={{
                 backgroundColor: (content.align || "center") === a ? "hsl(var(--primary))" : "transparent",
                 color: (content.align || "center") === a ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
@@ -94,26 +78,7 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
       <Field label="Tagline (below title)" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
       <ColorField label="Tagline Color" description="Color of the tagline text below the title" value={content.color_tagline || ""} fallback="" onChange={(v) => onChange("color_tagline", v)} />
 
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Title Lines</label>
-          <button type="button" onClick={addLine} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70 transition-opacity" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
-            <Plus size={10} /> Add Line
-          </button>
-        </div>
-        <div className="space-y-2">
-          {titleLines.map((line, i) => (
-            <SectionBox key={i} label={`Line ${i + 1}`}>
-              <div className="flex gap-2">
-                <div className="flex-1"><TitleLineEditor value={line} onChange={(v) => updateLine(i, v)} /></div>
-                <button type="button" onClick={() => removeLine(i)} className="self-end p-2 rounded hover:opacity-70 transition-opacity" style={{ color: "hsl(var(--destructive))" }}>
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </SectionBox>
-          ))}
-        </div>
-      </div>
+      <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
 
       <SubtitleEditor
         subtitle={content.subtitle || ""}
@@ -139,7 +104,7 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
         <div className="space-y-3">
           <div className="flex gap-2">
             {(["none", "image", "video"] as const).map((t) => (
-              <button key={t} type="button" onClick={() => { onChange("bg_type", t); if (t === "none") onChange("bg_url", ""); }} className="font-body text-[10px] uppercase tracking-wider px-3 py-1 rounded-full transition-all" style={{ backgroundColor: bgType === t ? "hsl(var(--primary))" : "transparent", color: bgType === t ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))", border: bgType === t ? "none" : "1px solid hsl(var(--border))" }}>
+              <button key={t} type="button" onClick={() => { onChange("bg_type", t); if (t === "none") onChange("bg_url", ""); }} className="font-body text-[10px] uppercase tracking-wider px-3 py-1 rounded-md transition-all" style={{ backgroundColor: bgType === t ? "hsl(var(--primary))" : "transparent", color: bgType === t ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))", border: bgType === t ? "none" : "1px solid hsl(var(--border))" }}>
                 {t}
               </button>
             ))}
@@ -155,7 +120,7 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
               {bgUrl && (
                 <div className="relative rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
                   {bgType === "image" ? <img src={bgUrl} alt={content.bg_image_alt || ""} className="w-full h-32 object-cover" /> : <video src={bgUrl} className="w-full h-32 object-cover" muted />}
-                  <button type="button" onClick={() => { onChange("bg_url", ""); onChange("bg_type", "none"); }} className="absolute top-2 right-2 p-1 rounded-full" style={{ backgroundColor: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
+                  <button type="button" onClick={() => { onChange("bg_url", ""); onChange("bg_type", "none"); }} className="absolute top-2 right-2 p-1 rounded-md" style={{ backgroundColor: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
                     <X size={12} />
                   </button>
                 </div>

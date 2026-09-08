@@ -1445,6 +1445,10 @@
     --destructive-foreground: 270 12% 8%;
     color-scheme: dark;
   }
+  /* Square boxes: the admin uses a 6px radius everywhere (rounded-lg = 6, rounded-md = 4);
+     the site canvas keeps its own 1.5rem so previews stay true. */
+  .admin-light, .admin-dark { --radius: 6px; }
+  .admin-light .admin-canvas, .admin-dark .admin-canvas { --radius: 1.5rem; }
   .admin-light, .admin-dark { --admin-accent: 46 76% 52%; --admin-ok: 156 46% 34%; --admin-warn: 43 75% 41%; --admin-info: 222 52% 47%; --admin-bad: 352 52% 46%; }
   .admin-dark { --admin-accent: 46 76% 60%; --admin-ok: 156 46% 62%; --admin-warn: 46 76% 60%; --admin-info: 222 70% 75%; --admin-bad: 352 70% 72%; }
 
@@ -1826,4 +1830,19 @@
   /* a saved snippet: lines of a row plus a bookmark ribbon */
   .tray-sglyph[data-section="snippet"]::before { content: ""; position: absolute; left: 10%; right: 34%; top: 28%; height: 3px; border-radius: 1px; background: var(--g); box-shadow: 0 8px 0 -1px var(--g2), 0 15px 0 -1px var(--g2); }
   .tray-sglyph[data-section="snippet"]::after { content: ""; position: absolute; right: 12%; top: 0; width: 9px; height: 15px; background: var(--g); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 68%, 0 100%); }
+}
+
+/* Media grid: square tiles, name under each, a flag on pictures without alt text. */
+@layer components {
+  .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 10px; }
+  .media-tile { display: flex; flex-direction: column; gap: 5px; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; border-radius: 4px; }
+  .media-tile:focus-visible { outline: 2px solid hsl(var(--foreground)); outline-offset: 2px; }
+  .media-thumb { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; width: 100%; overflow: hidden; border-radius: 4px; border: 1px solid hsl(var(--input)); background: hsl(var(--muted) / .5); }
+  .media-tile:hover .media-thumb { border-color: hsl(var(--foreground) / .5); }
+  .media-tile[aria-pressed="true"] .media-thumb { outline: 2px solid hsl(var(--foreground)); outline-offset: -1px; border-color: hsl(var(--foreground)); }
+  .media-name { font-size: 11px; line-height: 1.3; color: hsl(var(--foreground)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .media-flag { position: absolute; left: 6px; bottom: 6px; padding: 1px 5px; border-radius: 3px; font-size: 9.5px; letter-spacing: .02em; background: hsl(var(--admin-warn)); color: hsl(var(--background)); }
+  .title-editor .title-editor-content p { margin: 0; }
+  .title-editor .title-editor-content p + p { margin-top: 2px; }
+  .title-editor .title-editor-content p.is-editor-empty:first-child::before { content: "Type the title. Enter starts a new line."; color: hsl(var(--muted-foreground)); float: left; pointer-events: none; height: 0; }
 }

@@ -137,7 +137,7 @@ const ContactsList = () => {
                     <LeadScoreBadge score={contact.ai_score} />
                     {contact.subscribed_to_marketing && (
                       <span
-                        className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full"
+                        className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md"
                         style={{ backgroundColor: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent-foreground))" }}>
                         Marketing
                       </span>

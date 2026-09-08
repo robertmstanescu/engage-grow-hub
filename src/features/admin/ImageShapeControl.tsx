@@ -77,7 +77,7 @@ const ImageShapeControl = ({
               style={{ objectPosition: focalObjectPosition(x, y) }}
             />
             <span
-              className="absolute w-4 h-4 -ml-2 -mt-2 rounded-full border-2 pointer-events-none"
+              className="absolute w-4 h-4 -ml-2 -mt-2 rounded-md border-2 pointer-events-none"
               style={{ left: `${x}%`, top: `${y}%`, borderColor: "white", boxShadow: "0 0 0 1px rgba(0,0,0,.6)" }}
             />
           </div>

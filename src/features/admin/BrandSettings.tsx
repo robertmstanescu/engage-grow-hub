@@ -185,7 +185,7 @@ const BrandSettings = () => {
             loadingLabel="Saving…"
             icon={<Save size={13} />}
             onClick={handleSaveDraft}
-            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-md hover:opacity-80 transition-opacity"
             style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
             Save Draft
           </SpinnerButton>
@@ -195,7 +195,7 @@ const BrandSettings = () => {
             icon={<Send size={13} />}
             disabled={!hasChanges}
             onClick={handlePublish}
-            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-md hover:opacity-80 transition-opacity"
             style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
             Publish
           </SpinnerButton>
@@ -485,7 +485,7 @@ const BrandSettings = () => {
             </div>
           ))}
         </div>
-        <button type="button" onClick={addColor} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 mt-2" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
+        <button type="button" onClick={addColor} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md hover:opacity-70 mt-2" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
           <Plus size={10} /> Add Colour
         </button>
       </AccordionSection>
@@ -587,7 +587,7 @@ const BrandSettings = () => {
             ].map(({ label, pass }) => (
               <div key={label} className="flex items-center justify-between">
                 <span className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{label}</span>
-                <span className="font-body text-[10px] font-bold px-2 py-0.5 rounded-full" style={{
+                <span className="font-body text-[10px] font-bold px-2 py-0.5 rounded-md" style={{
                   backgroundColor: pass ? "hsl(142 76% 36%)" : "hsl(0 84% 60%)",
                   color: "#FFFFFF",
                 }}>{pass ? "PASS" : "FAIL"}</span>

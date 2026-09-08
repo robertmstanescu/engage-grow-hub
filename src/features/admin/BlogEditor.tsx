@@ -365,13 +365,13 @@ const BlogEditor = () => {
           <div className="flex gap-2">
             <button
               onClick={() => { setPreviewing(false); handleSave("draft"); }}
-              className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full border hover:opacity-80 transition-opacity"
+              className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-md border hover:opacity-80 transition-opacity"
               style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}>
               Save Draft
             </button>
             <button
               onClick={() => { setPreviewing(false); handleSave("published"); }}
-              className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+              className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-md hover:opacity-80 transition-opacity"
               style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
               Publish
             </button>
@@ -389,7 +389,7 @@ const BlogEditor = () => {
             <div className="max-w-[600px] mx-auto">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span
-                  className="font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium"
+                  className="font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-md font-medium"
                   style={{ backgroundColor: "hsl(var(--accent) / 0.2)", color: "hsl(var(--accent))" }}>
                   {form.category}
                 </span>
@@ -425,7 +425,7 @@ const BlogEditor = () => {
      "content"   → metadata + rich-text article editor (default)
      "structure" → visual widget/page-structure builder */
   const ModeTabs = editing && !isNew ? (
-    <div className="inline-flex rounded-full border p-0.5" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.3)" }}>
+    <div className="inline-flex rounded-md border p-0.5" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.3)" }}>
       {([
         { id: "content", label: "Content & Metadata" },
         { id: "structure", label: "Page Structure" },
@@ -433,7 +433,7 @@ const BlogEditor = () => {
         <button
           key={t.id}
           onClick={() => setEditMode(t.id)}
-          className="font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full transition-opacity"
+          className="font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-md transition-opacity"
           style={
             editMode === t.id
               ? { backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }
@@ -499,7 +499,7 @@ const BlogEditor = () => {
               {ModeTabs}
               <button
                 onClick={openLivePreview}
-                className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-body text-xs"
+                className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-body text-xs"
                 style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
                 title={`Preview — Blogs: ${form.title || "Untitled"}`}
               >
@@ -601,7 +601,7 @@ const BlogEditor = () => {
               {form.tags.map((tag, i) => (
                 <span
                   key={i}
-                  className="flex items-center gap-1 rounded-full px-2.5 py-1 font-body text-xs"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1 font-body text-xs"
                   style={{ backgroundColor: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
                 >
                   {tag}
@@ -678,7 +678,7 @@ const BlogEditor = () => {
                 type="button"
                 onClick={handleGenerateAiSummary}
                 disabled={generatingAiSummary}
-                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-body text-[11px] hover:opacity-80 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-body text-[11px] hover:opacity-80 disabled:opacity-50"
                 style={{ borderColor: "hsl(var(--accent) / 0.6)", color: "hsl(var(--foreground))" }}
               >
                 {generatingAiSummary ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
@@ -750,7 +750,7 @@ const BlogEditor = () => {
             isLoading={isSavingChanges}
             loadingLabel="Saving…"
             onClick={() => handleSave(visibility === "live" ? "published" : "draft")}
-            className="rounded-full px-5 py-2.5 font-body text-xs font-medium"
+            className="rounded-md px-5 py-2.5 font-body text-xs font-medium"
             style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
           >
             {visibility === "live" ? "Save & publish" : "Save"}

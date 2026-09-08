@@ -210,7 +210,7 @@ const NavigationManager = () => {
             loadingLabel="Saving…"
             icon={<Save size={13} />}
             onClick={handleSaveDraft}
-            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-md hover:opacity-80 transition-opacity"
             style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
             Save Draft
           </SpinnerButton>
@@ -220,7 +220,7 @@ const NavigationManager = () => {
             icon={<Send size={13} />}
             disabled={!hasChanges}
             onClick={handlePublish}
-            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-md hover:opacity-80 transition-opacity"
             style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
             Publish
           </SpinnerButton>
@@ -291,7 +291,7 @@ const NavigationManager = () => {
               ))}
             </SortableContext>
           </DndContext>
-          <button onClick={() => updateField("sub_links", [...subLinks, { id: genId(), label: "", href: "#" }])} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80" style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
+          <button onClick={() => updateField("sub_links", [...subLinks, { id: genId(), label: "", href: "#" }])} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-md border hover:opacity-80" style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
             <Plus size={12} /> Add Item
           </button>
         </div>
@@ -312,7 +312,7 @@ const NavigationManager = () => {
             ))}
           </SortableContext>
         </DndContext>
-        <button onClick={() => updateField("links", [...links, { id: genId(), label: "", href: "#" }])} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80" style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
+        <button onClick={() => updateField("links", [...links, { id: genId(), label: "", href: "#" }])} className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-md border hover:opacity-80" style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
           <Plus size={12} /> Add Link
         </button>
       </AccordionSection>

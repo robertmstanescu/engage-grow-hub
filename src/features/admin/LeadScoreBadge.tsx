@@ -47,7 +47,7 @@ const LeadScoreBadge = ({ score }: Props) => {
   const tier = tierFor(score);
   return (
     <span
-      className="inline-flex items-center gap-1 font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full"
+      className="inline-flex items-center gap-1 font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md"
       style={{ backgroundColor: tier.bg, color: tier.fg }}
       title={`AI score: ${score}/100`}
     >

@@ -34,7 +34,7 @@ const RowAlignmentSettings = ({ layout, onChange }: Props) => {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full hover:opacity-70 transition-opacity"
+        className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md hover:opacity-70 transition-opacity"
         style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
         <AlignCenter size={11} /> Row Alignment
       </button>

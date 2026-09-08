@@ -15,7 +15,7 @@ import { normalizePath } from "@/lib/redirectPaths";
 
 const SourceBadge = ({ source }: { source: string }) => (
   <span
-    className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full font-medium flex-shrink-0"
+    className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md font-medium flex-shrink-0"
     style={
       source === "auto"
         ? { backgroundColor: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }
@@ -73,7 +73,7 @@ const RedirectsManager = () => {
             loadingLabel="Adding…"
             onClick={handleAdd}
             disabled={!fromPath.trim() || !toPath.trim()}
-            className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-85 transition-opacity flex-shrink-0"
+            className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-4 py-2 rounded-md hover:opacity-85 transition-opacity flex-shrink-0"
             style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
           >
             <Plus size={12} /> Add

@@ -32,7 +32,7 @@ const AdminSection = ({
   const [open, setOpen] = useState(!defaultCollapsed);
 
   return (
-    <section className="admin-card rounded-xl border border-border bg-card">
+    <section className="admin-card rounded-lg border border-border bg-card">
       <header className="flex items-start gap-3 px-4 py-3">
         <button
           type="button"

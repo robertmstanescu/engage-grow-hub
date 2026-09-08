@@ -12,19 +12,18 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
-  AlignJustify,
   Palette,
   Highlighter,
-  Undo,
-  Redo,
   RemoveFormatting,
+  MoreHorizontal,
+  Upload,
   Code,
   LetterText,
   Heading2,
   Heading3,
   Minus,
-  Images,
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { Extension } from "@tiptap/core";
 import { EditorContent, useEditor } from "@tiptap/react";
@@ -134,6 +133,21 @@ const ToolbarButton = ({
 
 const Divider = () => (
   <div className="w-px mx-1 h-5" style={{ backgroundColor: "hsl(var(--border))" }} />
+);
+
+/** One row of the More menu. */
+const MoreItem = ({ onClick, icon, children, active }: { onClick: () => void; icon: React.ReactNode; children: React.ReactNode; active?: boolean }) => (
+  <button
+    type="button"
+    role="menuitem"
+    onMouseDown={(event) => event.preventDefault()}
+    onClick={onClick}
+    aria-pressed={active}
+    className="admin-menu-item w-full"
+  >
+    <span className="inline-flex items-center gap-2" style={{ color: active ? "hsl(var(--foreground))" : undefined }}>{icon}{children}</span>
+    {active && <span className="admin-dot" style={{ background: "hsl(var(--foreground))" }} />}
+  </button>
 );
 
 const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEditorProps) => {
@@ -286,90 +300,87 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
 
   return (
     <div
-      className="rounded-lg border"
+      className="rounded-md border"
       style={{ borderColor: "hsl(var(--border))", backgroundColor: bgColor || "transparent" }}
     >
-      {/* Sticky so the formatting controls stay reachable while you write. */}
+      {/* Eight things people reach for, then everything else under More.
+          Undo/redo live on the keyboard and in the builder toolbar. */}
       <div
-        className="sticky top-0 z-20 flex flex-wrap items-center gap-0.5 rounded-t-lg border-b px-2 py-1.5 backdrop-blur"
+        className="sticky top-0 z-20 flex flex-wrap items-center gap-0.5 rounded-t-md border-b px-1.5 py-1 backdrop-blur"
         style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card) / 0.95)" }}
       >
-
-        <ToolbarButton onClick={() => run(() => editor.chain().focus().undo().run())} title="Undo"><Undo size={15} /></ToolbarButton>
-        <ToolbarButton onClick={() => run(() => editor.chain().focus().redo().run())} title="Redo"><Redo size={15} /></ToolbarButton>
-
-        <Divider />
-
-        <select
-          value={activeFont}
-          onChange={(e) => run(() => {
-            const v = e.target.value;
-            if (v) editor.chain().focus().setFontFamily(v).run();
-            else editor.chain().focus().unsetFontFamily().run();
-          })}
-          className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
-          style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "120px" }}
-          title="Font Family"
-        >
-          <option value="">Font</option>
-          {FONT_OPTIONS.map((font) => (
-            <option key={font.value} value={font.value}>{font.label}</option>
-          ))}
-        </select>
-
-        {/* No font-size picker: the site's type scale sets every size and
-            the renderer strips inline sizes (see sanitizeHtml). */}
-
-        <Divider />
-
         <ToolbarButton active={editor.isActive("bold")} onClick={() => run(() => editor.chain().focus().toggleBold().run())} title="Bold"><Bold size={15} /></ToolbarButton>
         <ToolbarButton active={editor.isActive("italic")} onClick={() => run(() => editor.chain().focus().toggleItalic().run())} title="Italic"><Italic size={15} /></ToolbarButton>
-        <ToolbarButton active={editor.isActive("underline")} onClick={() => run(() => editor.chain().focus().toggleUnderline().run())} title="Underline"><UnderlineIcon size={15} /></ToolbarButton>
-        <ToolbarButton active={editor.isActive("strike")} onClick={() => run(() => editor.chain().focus().toggleStrike().run())} title="Strikethrough"><Strikethrough size={15} /></ToolbarButton>
-        <ToolbarButton active={editor.isActive("code")} onClick={() => run(() => editor.chain().focus().toggleCode().run())} title="Inline code"><Code size={15} /></ToolbarButton>
-
+        <ToolbarButton active={editor.isActive("link")} onClick={addLink} title="Link"><LinkIcon size={15} /></ToolbarButton>
         <Divider />
-
-        <ToolbarButton active={editor.isActive("heading", { level: 2 })} onClick={() => run(() => editor.chain().focus().toggleHeading({ level: 2 }).run())} title="Heading 2"><Heading2 size={15} /></ToolbarButton>
-        <ToolbarButton active={editor.isActive("heading", { level: 3 })} onClick={() => run(() => editor.chain().focus().toggleHeading({ level: 3 }).run())} title="Heading 3"><Heading3 size={15} /></ToolbarButton>
-
+        <ToolbarButton active={editor.isActive("heading", { level: 2 })} onClick={() => run(() => editor.chain().focus().toggleHeading({ level: 2 }).run())} title="Heading"><Heading2 size={15} /></ToolbarButton>
+        <ToolbarButton active={editor.isActive("bulletList")} onClick={() => run(() => editor.chain().focus().toggleBulletList().run())} title="List"><List size={15} /></ToolbarButton>
+        <ToolbarButton active={editor.isActive("blockquote")} onClick={() => run(() => editor.chain().focus().toggleBlockquote().run())} title="Quote"><Quote size={15} /></ToolbarButton>
         <Divider />
-
-        {brandColors.slice(0, 8).map((c) => (
-          <button key={c.id} type="button" title={c.name}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => run(() => editor.chain().focus().setColor(c.hex).run())}
-            className="w-4 h-4 rounded-full border hover:scale-110 transition-transform"
-            style={{ backgroundColor: c.hex, borderColor: "hsl(var(--border))" }} />
-        ))}
-        <ToolbarButton onClick={setTextColor} title="Custom Text Color"><Palette size={15} /></ToolbarButton>
-        <ToolbarButton active={editor.isActive("highlight")} onClick={setHighlightColor} title="Highlight"><Highlighter size={15} /></ToolbarButton>
-
-        <Divider />
-
-        <ToolbarButton active={editor.isActive({ textAlign: "left" })} onClick={() => run(() => editor.chain().focus().setTextAlign("left").run())} title="Align Left"><AlignLeft size={15} /></ToolbarButton>
-        <ToolbarButton active={editor.isActive({ textAlign: "center" })} onClick={() => run(() => editor.chain().focus().setTextAlign("center").run())} title="Align Center"><AlignCenter size={15} /></ToolbarButton>
-        <ToolbarButton active={editor.isActive({ textAlign: "right" })} onClick={() => run(() => editor.chain().focus().setTextAlign("right").run())} title="Align Right"><AlignRight size={15} /></ToolbarButton>
-        <ToolbarButton active={editor.isActive({ textAlign: "justify" })} onClick={() => run(() => editor.chain().focus().setTextAlign("justify").run())} title="Justify"><AlignJustify size={15} /></ToolbarButton>
-
-        <Divider />
-
-        <ToolbarButton active={editor.isActive("bulletList")} onClick={() => run(() => editor.chain().focus().toggleBulletList().run())} title="Bullet List"><List size={15} /></ToolbarButton>
-        <ToolbarButton active={editor.isActive("orderedList")} onClick={() => run(() => editor.chain().focus().toggleOrderedList().run())} title="Numbered List"><ListOrdered size={15} /></ToolbarButton>
-        <ToolbarButton active={editor.isActive("blockquote")} onClick={() => run(() => editor.chain().focus().toggleBlockquote().run())} title="Blockquote"><Quote size={15} /></ToolbarButton>
-        <ToolbarButton onClick={() => run(() => editor.chain().focus().setHorizontalRule().run())} title="Divider"><Minus size={15} /></ToolbarButton>
-
-        <Divider />
-
-        <ToolbarButton active={!!editor.getAttributes("textStyle").dropCap} onClick={toggleDropCap} title="Drop Cap / Initial Letter"><LetterText size={15} /></ToolbarButton>
-        <ToolbarButton active={editor.isActive("link")} onClick={addLink} title="Add Link"><LinkIcon size={15} /></ToolbarButton>
-        <ToolbarButton onClick={() => fileInputRef.current?.click()} title="Upload Image"><ImageIcon size={15} /></ToolbarButton>
-        <ToolbarButton onClick={() => setShowGallery(true)} title="Insert from Media Gallery"><Images size={15} /></ToolbarButton>
-
-        <Divider />
-
-        <ToolbarButton onClick={() => run(() => editor.chain().focus().unsetAllMarks().clearNodes().run())} title="Remove Formatting"><RemoveFormatting size={15} /></ToolbarButton>
-        <ToolbarButton onClick={toggleHtmlMode} title="HTML Source" active={htmlMode}><Code size={15} /></ToolbarButton>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button type="button" title="Colour" aria-label="Colour" onMouseDown={(e) => e.preventDefault()} className="p-1.5 rounded transition-colors" style={{ color: "hsl(var(--muted-foreground))" }}><Palette size={15} /></button>
+          </PopoverTrigger>
+          <PopoverContent align="start" sideOffset={4} className="admin-menu p-2 w-auto">
+            <div className="flex items-center gap-1.5 flex-wrap max-w-[200px]">
+              {brandColors.map((c) => (
+                <button key={c.id} type="button" title={c.name} aria-label={`Colour ${c.name}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => run(() => editor.chain().focus().setColor(c.hex).run())}
+                  className="w-5 h-5 rounded-full border"
+                  style={{ backgroundColor: c.hex, borderColor: "hsl(var(--input))" }} />
+              ))}
+              <button type="button" className="admin-btn ghost" onMouseDown={(e) => e.preventDefault()} onClick={setTextColor}>Other…</button>
+              <button type="button" className="admin-btn ghost" onMouseDown={(e) => e.preventDefault()} onClick={() => run(() => editor.chain().focus().unsetColor().run())}>Default</button>
+            </div>
+          </PopoverContent>
+        </Popover>
+        <ToolbarButton onClick={() => setShowGallery(true)} title="Picture"><ImageIcon size={15} /></ToolbarButton>
+        <span className="flex-1" />
+        <Popover>
+          <PopoverTrigger asChild>
+            <button type="button" title="More formatting" aria-label="More formatting" onMouseDown={(e) => e.preventDefault()} className="p-1.5 rounded transition-colors" style={{ color: "hsl(var(--muted-foreground))" }}><MoreHorizontal size={15} /></button>
+          </PopoverTrigger>
+          <PopoverContent align="end" sideOffset={4} className="admin-menu p-1 w-[220px]" role="menu" aria-label="More formatting">
+            <MoreItem active={editor.isActive("underline")} onClick={() => run(() => editor.chain().focus().toggleUnderline().run())} icon={<UnderlineIcon size={13} />}>Underline</MoreItem>
+            <MoreItem active={editor.isActive("strike")} onClick={() => run(() => editor.chain().focus().toggleStrike().run())} icon={<Strikethrough size={13} />}>Strikethrough</MoreItem>
+            <MoreItem active={editor.isActive("highlight")} onClick={setHighlightColor} icon={<Highlighter size={13} />}>Highlight</MoreItem>
+            <MoreItem active={editor.isActive("code")} onClick={() => run(() => editor.chain().focus().toggleCode().run())} icon={<Code size={13} />}>Code</MoreItem>
+            <div className="admin-menu-sep" />
+            <MoreItem active={editor.isActive("heading", { level: 3 })} onClick={() => run(() => editor.chain().focus().toggleHeading({ level: 3 }).run())} icon={<Heading3 size={13} />}>Small heading</MoreItem>
+            <MoreItem active={editor.isActive("orderedList")} onClick={() => run(() => editor.chain().focus().toggleOrderedList().run())} icon={<ListOrdered size={13} />}>Numbered list</MoreItem>
+            <MoreItem onClick={() => run(() => editor.chain().focus().setHorizontalRule().run())} icon={<Minus size={13} />}>Divider line</MoreItem>
+            <MoreItem active={!!editor.getAttributes("textStyle").dropCap} onClick={toggleDropCap} icon={<LetterText size={13} />}>Big first letter</MoreItem>
+            <div className="admin-menu-sep" />
+            <MoreItem active={editor.isActive({ textAlign: "left" })} onClick={() => run(() => editor.chain().focus().setTextAlign("left").run())} icon={<AlignLeft size={13} />}>Align left</MoreItem>
+            <MoreItem active={editor.isActive({ textAlign: "center" })} onClick={() => run(() => editor.chain().focus().setTextAlign("center").run())} icon={<AlignCenter size={13} />}>Align centre</MoreItem>
+            <MoreItem active={editor.isActive({ textAlign: "right" })} onClick={() => run(() => editor.chain().focus().setTextAlign("right").run())} icon={<AlignRight size={13} />}>Align right</MoreItem>
+            <div className="admin-menu-sep" />
+            <div className="px-2 py-1 flex items-center gap-2">
+              <span className="text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>Font</span>
+              <select
+                value={activeFont}
+                onChange={(e) => run(() => {
+                  const v = e.target.value;
+                  if (v) editor.chain().focus().setFontFamily(v).run();
+                  else editor.chain().focus().unsetFontFamily().run();
+                })}
+                className="admin-input"
+                style={{ padding: "3px 6px", fontSize: 11 }}
+                aria-label="Font"
+              >
+                <option value="">Site default</option>
+                {FONT_OPTIONS.map((font) => (
+                  <option key={font.value} value={font.value}>{font.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="admin-menu-sep" />
+            <MoreItem onClick={() => fileInputRef.current?.click()} icon={<Upload size={13} />}>Upload a picture</MoreItem>
+            <MoreItem onClick={() => run(() => editor.chain().focus().unsetAllMarks().clearNodes().run())} icon={<RemoveFormatting size={13} />}>Clear formatting</MoreItem>
+            <MoreItem active={htmlMode} onClick={toggleHtmlMode} icon={<Code size={13} />}>Edit as HTML</MoreItem>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {htmlMode ? (

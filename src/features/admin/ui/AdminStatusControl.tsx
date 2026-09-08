@@ -63,7 +63,7 @@ const AdminStatusControl = ({
   return (
     <div className="space-y-3">
       <div
-        className="inline-flex rounded-full border border-border bg-muted/40 p-0.5"
+        className="inline-flex rounded-md border border-border bg-muted/40 p-0.5"
         role="radiogroup"
         aria-label="Visibility"
       >
@@ -77,7 +77,7 @@ const AdminStatusControl = ({
               aria-checked={active}
               onClick={() => pick(opt)}
               disabled={disabled}
-              className={`rounded-full px-3.5 py-1.5 font-body text-xs transition-colors ${
+              className={`rounded-md px-3.5 py-1.5 font-body text-xs transition-colors ${
                 active
                   ? "bg-primary text-primary-foreground font-medium"
                   : "text-muted-foreground hover:text-foreground"

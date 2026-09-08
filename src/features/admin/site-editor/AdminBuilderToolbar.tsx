@@ -165,7 +165,7 @@ const AdminBuilderToolbar = ({
             onClick={onExit}
             title="Back to Pages"
             aria-label="Back to Pages"
-            className="flex items-center gap-1.5 flex-shrink-0 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"
+            className="flex items-center gap-1.5 flex-shrink-0 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-md border hover:opacity-80 transition-opacity"
             style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
           >
             <ArrowLeft size={13} /> <span className="hidden sm:inline">Pages</span>
@@ -210,7 +210,7 @@ const AdminBuilderToolbar = ({
       {/* CENTER — viewport segment + edit/preview segment, fused. */}
       <div className="flex items-center gap-2 justify-self-center">
         <div
-          className="flex items-center rounded-full border p-0.5"
+          className="flex items-center rounded-md border p-0.5"
           style={{ borderColor: "hsl(var(--border) / 0.6)" }}
           role="group"
           aria-label="Viewport"
@@ -225,7 +225,7 @@ const AdminBuilderToolbar = ({
                 title={label}
                 aria-label={label}
                 aria-pressed={active}
-                className="flex items-center justify-center w-9 h-8 rounded-full transition-colors"
+                className="flex items-center justify-center w-9 h-8 rounded-md transition-colors"
                 style={segmentBtn(active)}
               >
                 <Icon size={15} strokeWidth={1.75} />
@@ -243,7 +243,7 @@ const AdminBuilderToolbar = ({
         />
 
         <div
-          className="flex items-center rounded-full border p-0.5"
+          className="flex items-center rounded-md border p-0.5"
           style={{ borderColor: "hsl(var(--border) / 0.6)" }}
           role="group"
           aria-label="Canvas mode"
@@ -258,7 +258,7 @@ const AdminBuilderToolbar = ({
                 title={label}
                 aria-label={label}
                 aria-pressed={active}
-                className="flex items-center gap-1.5 h-8 rounded-full transition-colors px-3"
+                className="flex items-center gap-1.5 h-8 rounded-md transition-colors px-3"
                 style={segmentBtn(active)}
               >
                 <Icon size={14} strokeWidth={1.75} />
@@ -296,7 +296,7 @@ const AdminBuilderToolbar = ({
           onClick={onSaveDraft}
           disabled={saving}
           title={hasChanges ? "Save your changes as a draft" : "Nothing to save"}
-          className="admin-btn-secondary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full"
+          className="admin-btn-secondary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-md"
           style={{
             fontWeight: hasChanges ? 600 : 500,
           }}
@@ -312,7 +312,7 @@ const AdminBuilderToolbar = ({
             onClick={onUnpublish}
             disabled={!!unpublishing}
             title="Take this page off the public site (it becomes a draft)"
-            className="admin-btn-secondary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full"
+            className="admin-btn-secondary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-md"
           >
             <EyeOff size={12} /> {unpublishing ? "Taking offline…" : "Take offline"}
           </button>
@@ -332,7 +332,7 @@ const AdminBuilderToolbar = ({
               ? "Promote this draft to live"
               : "Publish your changes"
           }
-          className="admin-btn-primary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-1.5 rounded-full font-semibold"
+          className="admin-btn-primary flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-1.5 rounded-md font-semibold"
         >
           <Send size={12} /> {publishing ? "Publishing…" : "Publish"}
         </button>

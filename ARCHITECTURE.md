@@ -151,3 +151,21 @@ every PR, then runs the visual suite.
   suite has its own `playwright.visual.config.ts`.
 - Brand colours for the four service pillars live in
   `src/lib/constants/pillarColors.ts` and nowhere else.
+
+## Admin editing surfaces (Phase 4b)
+
+- **Title**: `site-editor/TitleEditor.tsx` is one TipTap box for the whole
+  title; `titleHtml.ts` joins/splits `title_lines: string[]` so storage
+  and renderers are untouched. `editors/TitleLinesEditor.tsx` is the entry
+  point every row editor uses (Hero, Text, Boxed, Grid, Image + Text,
+  Profile, Contact, legacy RowsManager).
+- **Body**: `RichTextEditor.tsx` shows Bold, Italic, Link, Heading, List,
+  Quote, Colour, Picture; everything else sits in the More menu.
+- **Media**: `MediaGallery.tsx` is a tile grid with folder chips, a filter
+  box and a details panel that opens on selection. Upload asks for alt
+  text before the file is sent (`pending` state); tiles without alt text
+  carry a flag.
+- **Corners**: `.admin-light/.admin-dark` set `--radius: 6px`;
+  `.admin-canvas` restores the site's 1.5rem. `squareCorners.test.ts`
+  blocks new pills outside swatches, dots, toggles and avatars.
+

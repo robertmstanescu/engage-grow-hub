@@ -29,7 +29,7 @@
  * so the heading hierarchy stays consistent across the site.
  * ───────────────────────────────────────────────────────────────────── */
 
-import { Field, RichField, SectionBox, ColorField, EyebrowField } from "../site-editor/FieldComponents";
+import { Field, RichField, SectionBox, ColorField, EyebrowField, MoreFields } from "../site-editor/FieldComponents";
 import { CoverImageField } from "../site-editor/CoverImageField";
 import ImagePickerField from "../ImagePickerField";
 import TitleLinesEditor from "./TitleLinesEditor";
@@ -51,9 +51,6 @@ export const BrandHeaderFields = ({
   onChange: (field: string, value: any) => void;
   bgColor?: string;
 }) => {
-  const titleLines: string[] = (content.title_lines || []).map((l: any) =>
-    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`,
-  );
   return (
     <SectionBox label="Section Header">
       <Field
@@ -62,7 +59,7 @@ export const BrandHeaderFields = ({
         onChange={(v) => onChange("eyebrow", v)}
       />
       <TitleLinesEditor
-        titleLines={titleLines}
+        titleLines={content.title_lines || []}
         onChange={(v) => onChange("title_lines", v)}
         bgColor={bgColor}
       />
@@ -146,7 +143,7 @@ function ArrayCardList<T>({ label, items, onChange, newItem, renderItem, addLabe
         ))}
         <button
           onClick={() => onChange([...items, newItem()])}
-          className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em] font-body text-secondary border border-secondary/40 rounded-full px-3 py-1.5"
+          className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em] font-body text-secondary border border-secondary/40 rounded-md px-3 py-1.5"
         >
           <Plus size={12} /> {addLabel}
         </button>
@@ -421,8 +418,10 @@ export const CtaBandEditor = ({
     <SectionBox label="Actions">
       <Field label="Button label" value={content.button_text || ""} onChange={(v) => onChange("button_text", v)} />
       <Field label="Button link" value={content.button_url || ""} onChange={(v) => onChange("button_url", v)} />
+    </SectionBox>
+    <MoreFields label="Second link">
       <Field label="Text link label (optional)" value={content.link_text || ""} onChange={(v) => onChange("link_text", v)} />
       <Field label="Text link" value={content.link_url || ""} onChange={(v) => onChange("link_url", v)} />
-    </SectionBox>
+    </MoreFields>
   </div>
 );

@@ -139,7 +139,7 @@ const VersionHistory = () => {
                     ) : (
                       <ChevronRight className="h-4 w-4 text-secondary shrink-0" />
                     )}
-                    <span className="rounded-full border border-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground shrink-0">
+                    <span className="rounded-md border border-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground shrink-0">
                       {ENTITY_LABEL[e.entity_type]}
                     </span>
                     <span className="font-medium text-secondary truncate">

@@ -67,16 +67,16 @@ const ImagePickerField = ({
         <div className="relative rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
           <img src={value} alt={altValue || label} className="w-full h-28 object-cover" />
           <div className="absolute bottom-2 right-2 flex gap-1.5">
-            <button onClick={() => setShowGallery(true)} className="font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-sm" style={{ backgroundColor: "hsl(var(--card) / 0.9)", color: "hsl(var(--foreground))" }}>
+            <button onClick={() => setShowGallery(true)} className="font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md backdrop-blur-sm" style={{ backgroundColor: "hsl(var(--card) / 0.9)", color: "hsl(var(--foreground))" }}>
               <Image size={11} className="inline mr-1" />Gallery
             </button>
-            <button onClick={() => inputRef.current?.click()} className="font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-sm" style={{ backgroundColor: "hsl(var(--card) / 0.9)", color: "hsl(var(--foreground))" }}>
+            <button onClick={() => inputRef.current?.click()} className="font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md backdrop-blur-sm" style={{ backgroundColor: "hsl(var(--card) / 0.9)", color: "hsl(var(--foreground))" }}>
               Replace
             </button>
-            <button onClick={() => setShowCrop(true)} className="font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-sm" style={{ backgroundColor: "hsl(var(--card) / 0.9)", color: "hsl(var(--foreground))" }}>
+            <button onClick={() => setShowCrop(true)} className="font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md backdrop-blur-sm" style={{ backgroundColor: "hsl(var(--card) / 0.9)", color: "hsl(var(--foreground))" }}>
               <Crop size={11} className="inline mr-1" />Crop
             </button>
-            <button onClick={() => onChange("")} className="px-2 py-1 rounded-full backdrop-blur-sm" style={{ backgroundColor: "hsl(var(--destructive) / 0.9)", color: "hsl(var(--destructive-foreground))" }}>
+            <button onClick={() => onChange("")} className="px-2 py-1 rounded-md backdrop-blur-sm" style={{ backgroundColor: "hsl(var(--destructive) / 0.9)", color: "hsl(var(--destructive-foreground))" }}>
               <X size={11} />
             </button>
           </div>
@@ -277,7 +277,7 @@ function CropModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.7)" }}>
-      <div className="bg-background rounded-xl border border-border shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div className="bg-background rounded-lg border border-border shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h3 className="font-body text-sm font-semibold">Crop image</h3>
           <button onClick={onClose} className="p-1 rounded hover:bg-muted"><X size={16} /></button>

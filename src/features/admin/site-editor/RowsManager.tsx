@@ -9,7 +9,7 @@ import RowAlignmentSettings from "./RowAlignmentSettings";
 import ColumnWidthControl from "./ColumnWidthControl";
 import { SectionBox, Field, RichField, ArrayField, SelectField, TextArea, ColorField } from "./FieldComponents";
 import ImagePickerField from "../ImagePickerField";
-import TitleLineEditor from "./TitleLineEditor";
+import SharedTitleLinesEditor from "../editors/TitleLinesEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import RowTypeEditor from "../editors/RowTypeEditor";
 import WidgetSettingsDrawer from "./WidgetSettingsDrawer";
@@ -750,11 +750,11 @@ const SortableRowItem = ({
             className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity min-w-0">
             <TypeIcon size={14} style={{ color: "hsl(var(--muted-foreground))" }} />
             <span className="font-body text-xs font-medium truncate">{row.strip_title}</span>
-            <span className="font-body text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ backgroundColor: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))" }}>
+            <span className="font-body text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-md flex-shrink-0" style={{ backgroundColor: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))" }}>
               {row.type}
             </span>
             {colCount > 1 && (
-              <span className="font-body text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ backgroundColor: "hsl(var(--primary) / 0.15)", color: "hsl(var(--primary))" }}>
+              <span className="font-body text-[9px] px-1.5 py-0.5 rounded-md flex-shrink-0" style={{ backgroundColor: "hsl(var(--primary) / 0.15)", color: "hsl(var(--primary))" }}>
                 {colCount} cols
               </span>
             )}
@@ -787,7 +787,7 @@ const SortableRowItem = ({
               <button
                 type="button"
                 onClick={onAddColumn}
-                className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full hover:opacity-70 transition-opacity"
+                className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md hover:opacity-70 transition-opacity"
                 style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}
                 title="Add Column"
               >
@@ -915,35 +915,9 @@ const SortableRowItem = ({
 
 /* ── Inline sub-editors ── */
 
-const TitleLinesEditor = ({ titleLines, onChange }: { titleLines: string[]; onChange: (lines: string[]) => void }) => {
-  const updateLine = (idx: number, html: string) => {
-    const next = [...titleLines];
-    next[idx] = html;
-    onChange(next);
-  };
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Title Lines</label>
-        <button type="button" onClick={() => onChange([...titleLines, "<p></p>"])} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
-          <Plus size={10} /> Add
-        </button>
-      </div>
-      <div className="space-y-2">
-        {titleLines.map((line, i) => (
-          <SectionBox key={i} label={`Line ${i + 1}`}>
-            <div className="flex gap-2">
-              <div className="flex-1"><TitleLineEditor value={line} onChange={(v) => updateLine(i, v)} /></div>
-              <button type="button" onClick={() => onChange(titleLines.filter((_, j) => j !== i))} className="self-end p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
-                <Trash2 size={13} />
-              </button>
-            </div>
-          </SectionBox>
-        ))}
-      </div>
-    </div>
-  );
-};
+const TitleLinesEditor = ({ titleLines, onChange }: { titleLines: string[]; onChange: (lines: string[]) => void }) => (
+  <SharedTitleLinesEditor titleLines={titleLines} onChange={onChange} />
+);
 
 
 const ContactRowFields = ({ content, onChange }: { content: Record<string, any>; onChange: (field: string, value: any) => void }) => {
@@ -1027,7 +1001,7 @@ const ContactRowFields = ({ content, onChange }: { content: Record<string, any>;
         <button
           type="button"
           onClick={addField}
-          className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity mt-2"
+          className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md hover:opacity-70 transition-opacity mt-2"
           style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
           <Plus size={10} /> Add Field
         </button>

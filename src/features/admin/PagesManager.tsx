@@ -355,7 +355,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
         <a
           href="/__force-404-preview"
           target="_blank"
-          className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80"
+          className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-md hover:opacity-80"
           style={{ border: "1px solid hsl(var(--primary) / 0.4)", color: "hsl(var(--primary))" }}>
           <Eye size={13} /> Preview live 404
         </a>

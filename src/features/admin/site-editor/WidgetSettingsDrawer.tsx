@@ -406,7 +406,7 @@ const WidgetSettingsDrawer = ({
             <button
               type="button"
               onClick={reset}
-              className="font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity"
+              className="font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md hover:opacity-70 transition-opacity"
               style={{
                 color: "hsl(var(--destructive))",
                 border: "1px solid hsl(var(--destructive) / 0.3)",

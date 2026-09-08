@@ -64,7 +64,7 @@ const ColumnWidthControl = ({ columnCount, widths, onChange, disabled = false, l
         type="button"
         onClick={() => !disabled && setOpen((prev) => !prev)}
         disabled={disabled}
-        className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full transition-opacity disabled:cursor-not-allowed"
+        className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md transition-opacity disabled:cursor-not-allowed"
         style={{
           color: disabled ? "hsl(var(--muted-foreground))" : "hsl(var(--primary))",
           border: `1px solid ${disabled ? "hsl(var(--border))" : "hsl(var(--primary) / 0.3)"}`,
@@ -84,7 +84,7 @@ const ColumnWidthControl = ({ columnCount, widths, onChange, disabled = false, l
         <button
           type="button"
           onClick={() => setCustomMode(!customMode)}
-          className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70 transition-opacity"
+          className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md hover:opacity-70 transition-opacity"
           style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}
         >
           {customMode ? "Presets" : "Custom"}
