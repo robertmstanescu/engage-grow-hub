@@ -12,6 +12,7 @@ import type { RowLayout } from "@/types/rows";
 import CoverFadeImage from "../CoverFadeImage";
 import { transformImageUrl } from "@/services/mediaOptimization";
 import { focalObjectPosition, resolveAspectRatio } from "@/lib/imageShape";
+import { isRowOutlined } from "./rowOutline";
 
 const ROUNDED_PX = { none: 0, subtle: 16, medium: 24, dramatic: 48 } as const;
 
@@ -33,7 +34,12 @@ interface Props {
 }
 
 const RowCoverImage = ({ src, alt, layout }: Props) => {
-  const radius = rowCoverRadius(layout);
+  /* Concentric with the row's outline: the picture sits inside the 5px
+     border, so its corner radius is the row's radius minus the border. */
+  const outerRadius = rowCoverRadius(layout);
+  const radius = isRowOutlined(layout) && outerRadius !== "0px"
+    ? `calc(${outerRadius} - var(--outline-ink-width))`
+    : outerRadius;
   const mode = layout?.coverMode || "fade";
   const heightKey = layout?.coverHeight || "small";
   const maxHeight = COVER_HEIGHTS[heightKey]?.maxH || COVER_HEIGHTS.small.maxH;

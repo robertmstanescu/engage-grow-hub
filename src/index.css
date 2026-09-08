@@ -435,10 +435,18 @@
   .row-border {
     border-color: var(--row-border, hsl(var(--border)));
   }
+  /* Thin lines inside a card (form inputs, FAQ dividers) use the ink too. */
+  .surface-card .row-border,
+  .ink-lines .row-border {
+    border-color: var(--outline-ink);
+  }
 
   .surface-card {
     background: var(--gradient-card);
-    border: 1px solid hsl(var(--border));
+    /* Boxed widgets keep a thin line, not the 5px outline — but in the
+       same ink, so cards, the FAQ box and the contact box's inputs share
+       one colour with the row edges. */
+    border: 1px solid var(--outline-ink);
     border-radius: var(--radius);
     box-shadow: var(--shadow-soft);
     transition: box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),

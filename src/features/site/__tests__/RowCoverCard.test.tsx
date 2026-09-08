@@ -23,7 +23,7 @@ const row = (layout?: PageRow["layout"]): PageRow => ({
   content: { cover_image: "https://example.com/c.jpg", cover_image_alt: "c" },
   layout,
 });
-const outerRadius = (markup: string) => /<div style="([^"]*)"/.exec(markup)?.[1].match(/border-radius:([^;]+)/)?.[1];
+const outerRadius = (markup: string) => /<div[^>]*style="([^"]*)"/.exec(markup)?.[1].match(/border-radius:([^;]+)/)?.[1];
 
 describe("RowCoverCard corners", () => {
   it("card variant keeps a 48px radius when the row has no Corners choice", () => {

@@ -57,7 +57,10 @@ const BlogCard = ({ post }: { post: BlogPost }) => {
     <article key={post.slug} className="group">
       <Link
         to={`/blog/${post.slug}`}
-        style={hasCover ? { boxShadow: "0 18px 40px -12px hsl(var(--foreground) / 0.28), 0 4px 12px -4px hsl(var(--foreground) / 0.12)" } : undefined}
+        style={{
+          border: "var(--outline-ink-border)",
+          ...(hasCover ? { boxShadow: "0 18px 40px -12px hsl(var(--foreground) / 0.28), 0 4px 12px -4px hsl(var(--foreground) / 0.12)" } : null),
+        }}
         className={`relative block rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.01] ${
           hasCover ? "hover:-translate-y-0.5" : "glass p-6 md:p-8 hover:glow-accent"
         }`}
@@ -303,7 +306,7 @@ const Blog = () => {
             <aside className="lg:w-64 flex-shrink-0">
               <div
                 className="rounded-xl p-5 sticky top-24"
-                style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
+                style={{ backgroundColor: "hsl(var(--card))", border: "var(--outline-ink-border)" }}
               >
                 <h3
                   className="font-display text-sm font-bold mb-4"

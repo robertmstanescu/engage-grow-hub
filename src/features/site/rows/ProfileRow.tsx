@@ -73,18 +73,16 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                 width: "100%",
                 maxWidth: 340,
                 aspectRatio: String(portraitAspect),
-                padding: 4,
+                /* The ink outline sits straight on the portrait: no inner
+                   padding or gradient mat between border and picture. */
                 border: "var(--outline-ink-border)",
-                background: "linear-gradient(135deg, hsl(280 55% 35% / 0.4), hsl(46 75% 60% / 0.15))",
                 boxShadow:
                   "var(--shadow-card)",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
                 backfaceVisibility: "hidden",
                 transform: "translateZ(0)",
               }}
             >
-              <div className="w-full h-full rounded-lg overflow-hidden">
+              <div className="w-full h-full overflow-hidden" style={{ borderRadius: "calc(0.75rem - var(--outline-ink-width))" }}>
                 {c.image_url ? (
                   // Profile photos sit below the fold on most pages —
                   // lazy-load + async decode keeps initial paint snappy.
