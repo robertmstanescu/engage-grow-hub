@@ -95,6 +95,12 @@ export const updateCmsPageMeta = (
   return supabase.from("cms_pages").update(update).eq("id", id);
 };
 
+/** Rename a page and/or move it to a new address. */
+export const renameCmsPage = (id: string, title: string, slug: string) => {
+  const update: CmsPageUpdate = { title, slug };
+  return supabase.from("cms_pages").update(update).eq("id", id);
+};
+
 export const saveCmsPageRows = (id: string, rows: PageRow[]) => {
   const update: CmsPageUpdate = {
     page_rows: rowsToJson(rows),

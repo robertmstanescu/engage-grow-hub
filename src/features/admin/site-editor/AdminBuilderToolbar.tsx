@@ -148,12 +148,12 @@ const AdminBuilderToolbar = ({
           <button
             type="button"
             onClick={onExit}
-            title="Back to Dashboard"
-            aria-label="Back to Dashboard"
+            title="Back to Pages"
+            aria-label="Back to Pages"
             className="flex items-center gap-1.5 flex-shrink-0 font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"
             style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
           >
-            <ArrowLeft size={13} /> <span className="hidden sm:inline">Dashboard</span>
+            <ArrowLeft size={13} /> <span className="hidden sm:inline">Pages</span>
           </button>
         )}
         <h2

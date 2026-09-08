@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye, Home, AlertTriangle, Copy, Pencil } from "lucide-react";
+import { Eye } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import ActionMenu from "./ui/ActionMenu";
+import { MENU_DIVIDER } from "./ui/menu";
 import { toast } from "sonner";
 import RowsManager from "./site-editor/RowsManager";
 import { SectionBox, Field } from "./site-editor/FieldComponents";
 import SeoFields from "./site-editor/SeoFields";
-import { rowsToPlainText } from "@/services/aiSummary";
 import type { PageRow } from "@/types/rows";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { SpinnerButton } from "@/components/ui/spinner-button";
@@ -12,8 +14,7 @@ import { runDbAction, runOptimisticAction } from "@/services/db-helpers";
 import {
   type CmsPage,
   fetchAllCmsPages, createCmsPage, deleteCmsPage,
-  saveCmsPageDraft, saveCmsPageRows, togglePublishCmsPage,
-  updateCmsPageMeta, duplicateCmsPage, RESERVED_SLUGS,
+  togglePublishCmsPage, duplicateCmsPage, renameCmsPage, RESERVED_SLUGS,
 } from "@/services/cmsPages";
 import { DEFAULT_PAGE_SIZE } from "@/services/pagination";
 import { fetchSection, publishSection } from "@/services/siteContent";
@@ -21,8 +22,7 @@ import { useListFilters } from "@/hooks/useListFilters";
 import { createRedirect } from "@/services/redirects";
 import ListFilters from "@/components/ui/list-filters";
 import { ListPager } from "@/components/ui/list-pager";
-import StatusBadge from "./ui/StatusBadge";
-import { contentState } from "./naming";
+import { contentState, STATE_LABEL } from "./naming";
 
 /**
  * ════════════════════════════════════════════════════════════════════
@@ -94,7 +94,9 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   const [loading, setLoading] = useState(true);
   const [pageNum, setPageNum] = useState(1);
   const [totalCmsPages, setTotalCmsPages] = useState(0);
-  const [editingPage, setEditingPage] = useState<CmsPage | null>(null);
+  const [renaming, setRenaming] = useState<{ id: string; title: string; slug: string } | null>(null);
+  /* Home lives in site_content; "unpublished changes" = its draft differs from live. */
+  const [homeChanges, setHomeChanges] = useState(false);
   const [editingBlog, setEditingBlog] = useState(false);
   // Which error-page editor is open (null = none).
   const [editingError, setEditingError] = useState<"404" | "boundary" | null>(null);
@@ -142,7 +144,12 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   }, [pageNum]);
 
   useEffect(() => { load(); }, [load]);
-  useEffect(() => { loadBlogPage(); loadErrorPages(); }, []);
+  useEffect(() => { loadBlogPage(); loadErrorPages(); loadHome(); }, []);
+
+  const loadHome = async () => {
+    const { data } = await supabase.from("site_content").select("content, draft_content").eq("section_key", "page_rows").maybeSingle();
+    if (data) setHomeChanges(data.draft_content != null && JSON.stringify(data.draft_content) !== JSON.stringify(data.content));
+  };
 
   const loadBlogPage = async () => {
     const { data } = await fetchSection("blog_page");
@@ -237,8 +244,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
    * See db-helpers.ts header for the pattern.
    */
   const deletePage = (id: string) => {
-    if (!confirm("Delete this page permanently?")) return;
-    if (editingPage?.id === id) setEditingPage(null);
+    if (!confirm("Delete this page? Visitors get a redirect to the home page.")) return;
     // Redirects manager — capture the slug before the row is gone so a
     // published page's old URL redirects home instead of 404ing.
     const target = pages.find((p) => p.id === id);
@@ -278,29 +284,6 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
     if (result !== null) load();
   };
 
-  const savePageRows = async (page: CmsPage, rows: PageRow[]) => {
-    const result = await runDbAction({
-      action: () => saveCmsPageRows(page.id, rows),
-      successMessage: "Saved & Published",
-      errorMessage: "Save failed",
-    });
-    if (result !== null) {
-      setEditingPage({ ...page, page_rows: rows, draft_page_rows: rows });
-      load();
-    }
-  };
-
-  const saveDraft = async (page: CmsPage, rows: PageRow[]) => {
-    const result = await runDbAction({
-      action: () => saveCmsPageDraft(page.id, rows),
-      successMessage: "Draft saved",
-      errorMessage: "Save failed",
-    });
-    if (result !== null) {
-      setEditingPage({ ...page, draft_page_rows: rows });
-    }
-  };
-
   const previewPage = (page: CmsPage) => {
     window.open(`/p/${page.slug}?preview=draft`, "_blank");
   };
@@ -311,8 +294,23 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
       action: () => togglePublishCmsPage(page.id, newStatus),
       successMessage: newStatus === "published" ? "Published!" : "Unpublished",
     });
+    if (result !== null) load();
+  };
+
+  const renamePage = async () => {
+    if (!renaming) return;
+    const slug = slugify(renaming.slug || renaming.title);
+    if (!renaming.title.trim()) { toast.error("Title required"); return; }
+    if (RESERVED_SLUGS.includes(slug)) { toast.error(`"${slug}" is a reserved address.`); return; }
+    const old = pages.find((p) => p.id === renaming.id);
+    const result = await runDbAction({
+      action: () => renameCmsPage(renaming.id, renaming.title.trim(), slug),
+      successMessage: "Renamed",
+      errorMessage: "Could not rename",
+    });
     if (result !== null) {
-      if (editingPage?.id === page.id) setEditingPage({ ...page, status: newStatus });
+      if (old && old.status === "published" && old.slug !== slug) createRedirect(`/${old.slug}`, `/${slug}`, "auto");
+      setRenaming(null);
       load();
     }
   };
@@ -436,390 +434,173 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
     );
   }
 
-  if (editingPage) {
-    const draftRows = editingPage.draft_page_rows || editingPage.page_rows || [];
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setEditingPage(null)}
-            className="font-body text-xs uppercase tracking-wider hover:opacity-70"
-            style={{ color: "hsl(var(--primary))" }}>
-            ← Back to Pages
-          </button>
-          <div className="flex items-center gap-2">
-            <StatusBadge state={contentState(editingPage.status, editingPage.publish_at)} />
-            <button
-              onClick={() => saveDraft(editingPage, draftRows)}
-              className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
-              style={{ border: "1px solid hsl(var(--border))", color: "hsl(var(--foreground))" }}>
-              <Save size={13} /> Save Draft
-            </button>
-            <button
-              onClick={() => previewPage(editingPage)}
-              className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
-              style={{ border: "1px solid hsl(var(--primary) / 0.4)", color: "hsl(var(--primary))" }}>
-              <Eye size={13} /> Preview
-            </button>
-            <button
-              onClick={() => savePageRows(editingPage, draftRows)}
-              className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
-              style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-              {editingPage.status === "published" ? "Save & Publish" : "Publish"}
-            </button>
-          </div>
-        </div>
-        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--foreground))" }}>
-          {editingPage.title}
-          <span className="font-body text-xs font-normal ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/{editingPage.slug}</span>
-        </h2>
-        {/* SeoFields now hosts AEO too — pass aiSummary props to enable
-            the AI Search Summary block (60-320 char counter). */}
-        <SeoFields
-          metaTitle={editingPage.meta_title || ""}
-          metaDescription={editingPage.meta_description || ""}
-          onTitleChange={(v) => {
-            setEditingPage({ ...editingPage, meta_title: v });
-            updateCmsPageMeta(editingPage.id, "meta_title", v);
-          }}
-          onDescriptionChange={(v) => {
-            setEditingPage({ ...editingPage, meta_description: v });
-            updateCmsPageMeta(editingPage.id, "meta_description", v);
-          }}
-          aiSourceTitle={editingPage.title}
-          aiSourceContent={rowsToPlainText(draftRows)}
-          aiSourceKind="page"
-          aiSummary={editingPage.ai_summary || ""}
-          onAiSummaryChange={(v) => {
-            setEditingPage({ ...editingPage, ai_summary: v });
-            // Persist on every keystroke is fine here — input is short and the
-            // network write is idempotent. Toast only when the value is non-empty
-            // to avoid spamming on backspace-to-empty.
-            updateCmsPageMeta(editingPage.id, "ai_summary", v.trim());
-          }}
-          onApplySuggestions={(payload) => {
-            const next = { ...editingPage };
-            if (payload.meta_title) { next.meta_title = payload.meta_title; updateCmsPageMeta(editingPage.id, "meta_title", payload.meta_title); }
-            if (payload.meta_description) { next.meta_description = payload.meta_description; updateCmsPageMeta(editingPage.id, "meta_description", payload.meta_description); }
-            if (payload.ai_summary) { next.ai_summary = payload.ai_summary; updateCmsPageMeta(editingPage.id, "ai_summary", payload.ai_summary); }
-            setEditingPage(next);
-          }}
-        />
-        <RowsManager
-          rows={draftRows}
-          onChange={(rows) => {
-            setEditingPage({ ...editingPage, draft_page_rows: rows });
-            saveDraft(editingPage, rows);
-          }}
-        />
-      </div>
-    );
-  }
+  const status = (p: CmsPage) => {
+    const st = contentState(p.status, p.publish_at);
+    const changes = st === "live" && p.draft_page_rows != null && JSON.stringify(p.draft_page_rows) !== JSON.stringify(p.page_rows);
+    return changes ? { cls: "changes", label: "Unpublished changes" } : { cls: st, label: STATE_LABEL[st] };
+  };
+  const when = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const blocks = (p: CmsPage) => (Array.isArray(p.page_rows) ? p.page_rows.length : 0);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        {/* US 4.2 — "Pages" → "Page Manager" so the header matches the
-            sidebar label and reads as the CRUD surface for pages. */}
-        <div className="space-y-1">
-          <h2 className="font-display text-xl font-bold" style={{ color: "hsl(var(--foreground))" }}>Page Manager</h2>
-          <p className="font-body text-xs text-muted-foreground">
-            Create, edit, and organise every page on your site.
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
-          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-          <Plus size={14} /> Create Page
-        </button>
+    <div className="admin-page space-y-4">
+      <div className="admin-page-head">
+        <h2 className="admin-h2">Pages</h2>
+        <div className="admin-grow" />
+        {pages.length > 1 && (
+          <input
+            className="admin-search"
+            placeholder="Filter pages"
+            value={pageFilters.state.searchInput}
+            onChange={(e) => pageFilters.state.setSearchInput(e.target.value)}
+            aria-label="Filter pages"
+          />
+        )}
+        <button type="button" onClick={() => setShowCreate(!showCreate)} className="admin-btn primary">New page</button>
       </div>
 
       {showCreate && (
-        <div className="p-4 rounded-lg border space-y-3" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}>
+        <div className="admin-panel" style={{ padding: 12 }}>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>Page Title</label>
+              <label className="font-body text-[11px] block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Title</label>
               <input
                 value={newTitle}
                 onChange={(e) => { setNewTitle(e.target.value); if (!newSlug) setNewSlug(slugify(e.target.value)); }}
                 placeholder="About Us"
-                className="w-full px-3 py-2 rounded-lg font-body text-sm border"
-                style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
+                className="admin-input"
               />
             </div>
             <div>
-              <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>URL Slug</label>
-              <input
-                value={newSlug}
-                onChange={(e) => setNewSlug(slugify(e.target.value))}
-                placeholder="about-us"
-                className="w-full px-3 py-2 rounded-lg font-body text-sm border"
-                style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
-              />
+              <label className="font-body text-[11px] block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Address</label>
+              <input value={newSlug} onChange={(e) => setNewSlug(slugify(e.target.value))} placeholder="about-us" className="admin-input" />
             </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={createPage}
-              className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80"
-              style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-              Create
-            </button>
-            <button
-              onClick={() => { setShowCreate(false); setNewTitle(""); setNewSlug(""); }}
-              className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-70"
-              style={{ color: "hsl(var(--muted-foreground))", border: "1px solid hsl(var(--border))" }}>
-              Cancel
-            </button>
+          <div className="flex gap-2 mt-3">
+            <SpinnerButton onClick={createPage} isLoading={isCreatingPage} className="admin-btn primary">Create</SpinnerButton>
+            <button type="button" onClick={() => { setShowCreate(false); setNewTitle(""); setNewSlug(""); }} className="admin-btn">Cancel</button>
           </div>
         </div>
       )}
 
-      {/* System Pages */}
-      <div className="space-y-2">
-        <label className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>System Pages</label>
-
-        {/* Main Page */}
-        <div
-          className="flex items-center justify-between p-3 rounded-lg border"
-          style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
-          <div className="flex items-center gap-3">
-            <Home size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
-            <div>
-              <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>Main Page</span>
-              <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/</span>
-            </div>
-            <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => onEditPage?.(null)}
-              className="p-2 rounded hover:opacity-70"
-              style={{ color: "hsl(var(--primary))" }}>
-              Edit
-            </button>
-            <a href="/" target="_blank" className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
-              <ExternalLink size={14} />
-            </a>
-          </div>
-        </div>
-
-        {/* Blog */}
-        <div
-          className="flex items-center justify-between p-3 rounded-lg border"
-          style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
-          <div className="flex items-center gap-3">
-            <Globe size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
-            <div>
-              <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>Blog</span>
-              <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/blog</span>
-            </div>
-            <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setEditingBlog(true)}
-              className="p-2 rounded hover:opacity-70"
-              style={{ color: "hsl(var(--primary))" }}>
-              Edit
-            </button>
-            <a href="/blog" target="_blank" className="p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
-              <ExternalLink size={14} />
-            </a>
-          </div>
-        </div>
-
-        {/* 404 / Not Found */}
-        <div
-          className="flex items-center justify-between p-3 rounded-lg border"
-          style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
-          <div className="flex items-center gap-3">
-            <AlertTriangle size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
-            <div>
-              <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>404 / Not Found</span>
-              <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>shown for unknown URLs</span>
-            </div>
-            <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setEditingError("404")}
-              className="p-2 rounded hover:opacity-70"
-              style={{ color: "hsl(var(--primary))" }}>
-              Edit
-            </button>
-          </div>
-        </div>
-
-        {/* Error / Something went wrong */}
-        <div
-          className="flex items-center justify-between p-3 rounded-lg border"
-          style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--card))" }}>
-          <div className="flex items-center gap-3">
-            <AlertTriangle size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
-            <div>
-              <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>Something went wrong</span>
-              <span className="font-body text-xs ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>error fallback</span>
-            </div>
-            <span className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">system</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setEditingError("boundary")}
-              className="p-2 rounded hover:opacity-70"
-              style={{ color: "hsl(var(--primary))" }}>
-              Edit
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {pages.length === 0 ? (
-        <div className="py-12 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
-          No custom pages yet. Create your first page above.
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <label className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>Custom Pages</label>
-          {pages.length > 1 && (
-            <ListFilters state={pageFilters.state} searchPlaceholder="Search pages…" />
-          )}
-          {filteredPages.length === 0 ? (
-            <p className="font-body text-sm text-muted-foreground py-6 text-center">No pages match your filters.</p>
-          ) : (
-            /*
-             * EPIC 3 / US 3.2 — Pages Table View.
-             * Columns: Page Name · Slug · Status · Last Edited · Actions.
-             * Actions: Edit in Builder · Duplicate · Delete.
-             *
-             * Implemented as semantic <table> markup so screen readers
-             * and keyboard navigation get column-header context for
-             * free. The header row is sticky inside the scroll
-             * container so admins with hundreds of pages don't lose
-             * their place when scanning.
-             */
-            <div
-              className="rounded-lg border overflow-hidden"
-              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}
-            >
-              <table className="w-full text-sm">
-                <thead>
-                  <tr
-                    className="font-body text-[10px] uppercase tracking-wider text-left"
-                    style={{
-                      color: "hsl(var(--muted-foreground))",
-                      backgroundColor: "hsl(var(--muted) / 0.4)",
-                      borderBottom: "1px solid hsl(var(--border))",
-                    }}
+      <table className="admin-table">
+        <thead>
+          <tr><th>Page</th><th>Address</th><th className="r">Blocks</th><th>Status</th><th>Updated</th><th className="act"></th></tr>
+        </thead>
+        <tbody>
+          {/* Home is a page like any other; it just lives in a different table. */}
+          <tr>
+            <td className="n">Home<span className="admin-tag">home</span></td>
+            <td className="m addr"><code>/</code></td>
+            <td className="r">—</td>
+            <td><span className={`admin-st ${homeChanges ? "changes" : "live"}`}>{homeChanges ? "Unpublished changes" : "Live"}</span></td>
+            <td className="m">—</td>
+            <td className="act">
+              <button type="button" className="admin-link" onClick={() => onEditPage?.(null)}>Edit</button>
+              <ActionMenu
+                label="Actions for Home"
+                items={[
+                  { key: "edit", label: "Edit", onSelect: () => onEditPage?.(null) },
+                  { key: "view", label: "View live", onSelect: () => window.open("/", "_blank") },
+                ]}
+              />
+            </td>
+          </tr>
+          {filteredPages.map((page) => {
+            const st = status(page);
+            const live = page.status === "published";
+            if (renaming?.id === page.id) {
+              return (
+                <tr key={page.id}>
+                  <td colSpan={6}>
+                    <div className="flex items-end gap-2 flex-wrap">
+                      <div style={{ flex: "1 1 200px" }}>
+                        <label className="font-body text-[11px] block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Title</label>
+                        <input className="admin-input" value={renaming.title} onChange={(e) => setRenaming({ ...renaming, title: e.target.value })} autoFocus />
+                      </div>
+                      <div style={{ flex: "1 1 200px" }}>
+                        <label className="font-body text-[11px] block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Address</label>
+                        <input className="admin-input" value={renaming.slug} onChange={(e) => setRenaming({ ...renaming, slug: slugify(e.target.value) })} />
+                      </div>
+                      <button type="button" className="admin-btn primary" onClick={renamePage}>Save</button>
+                      <button type="button" className="admin-btn" onClick={() => setRenaming(null)}>Cancel</button>
+                    </div>
+                    {live && <p className="admin-sub" style={{ marginTop: 6 }}>Changing the address of a live page adds a redirect from the old one.</p>}
+                  </td>
+                </tr>
+              );
+            }
+            return (
+              <tr key={page.id}>
+                <td className="n">{page.title}</td>
+                <td className="m addr"><code>/{page.slug}</code></td>
+                <td className="r">{blocks(page)}</td>
+                <td><span className={`admin-st ${st.cls}`}>{st.label}</span></td>
+                <td className="m">{when(page.updated_at || page.created_at)}</td>
+                <td className="act">
+                  <button
+                    type="button"
+                    className="admin-link"
+                    onClick={() => onEditPage?.({ id: page.id, slug: page.slug, title: page.title })}
                   >
-                    <th className="px-4 py-3 font-medium">Page Name</th>
-                    <th className="px-4 py-3 font-medium">Slug</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Last Edited</th>
-                    <th className="px-4 py-3 font-medium text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPages.map((page) => {
-                    const lastEdited = page.updated_at || page.created_at;
-                    const lastEditedLabel = lastEdited
-                      ? new Date(lastEdited).toLocaleDateString(undefined, {
-                          year: "numeric", month: "short", day: "numeric",
-                        })
-                      : "—";
-                    const isPublished = page.status === "published";
-                    return (
-                      <tr
-                        key={page.id}
-                        className="hover:bg-muted/30 transition-colors"
-                        style={{ borderTop: "1px solid hsl(var(--border) / 0.5)" }}
-                      >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <FileText size={14} style={{ color: "hsl(var(--muted-foreground))" }} />
-                            <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>
-                              {page.title}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <code
-                            className="font-mono text-xs px-1.5 py-0.5 rounded"
-                            style={{
-                              backgroundColor: "hsl(var(--muted) / 0.6)",
-                              color: "hsl(var(--muted-foreground))",
-                            }}
-                          >
-                            /{page.slug}
-                          </code>
-                        </td>
-                        <td className="px-4 py-3">
-                          <StatusBadge state={contentState(page.status, page.publish_at)} />
-                        </td>
-                        <td className="px-4 py-3 font-body text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-                          {lastEditedLabel}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              onClick={() => {
-                                if (onEditPage) {
-                                  onEditPage({ id: page.id, slug: page.slug, title: page.title });
-                                } else {
-                                  setEditingPage(page);
-                                }
-                              }}
-                              title="Edit in Builder"
-                              className="inline-flex items-center gap-1 font-body text-xs px-3 py-1.5 rounded-full hover:opacity-80 transition-opacity"
-                              style={{
-                                backgroundColor: "hsl(var(--primary))",
-                                color: "hsl(var(--primary-foreground))",
-                              }}
-                            >
-                              <Pencil size={12} />
-                              Edit in Builder
-                            </button>
-                            <button
-                              onClick={() => duplicatePage(page.id)}
-                              title="Duplicate"
-                              className="p-2 rounded hover:bg-muted/60 transition-colors"
-                              style={{ color: "hsl(var(--muted-foreground))" }}
-                            >
-                              <Copy size={14} />
-                            </button>
-                            {isPublished && (
-                              <a
-                                href={`/p/${page.slug}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                title="Open page in new tab"
-                                className="p-2 rounded hover:bg-muted/60 transition-colors"
-                                style={{ color: "hsl(var(--muted-foreground))" }}
-                              >
-                                <ExternalLink size={14} />
-                              </a>
-                            )}
-                            <button
-                              onClick={() => deletePage(page.id)}
-                              title="Delete"
-                              className="p-2 rounded hover:bg-destructive/10 transition-colors"
-                              style={{ color: "hsl(var(--destructive))" }}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-          <ListPager page={pageNum} pageSize={DEFAULT_PAGE_SIZE} total={totalCmsPages} onPageChange={setPageNum} />
-        </div>
+                    Edit
+                  </button>
+                  <ActionMenu
+                    label={`Actions for ${page.title}`}
+                    items={[
+                      { key: "edit", label: "Edit", onSelect: () => onEditPage?.({ id: page.id, slug: page.slug, title: page.title }) },
+                      { key: "view", label: live ? "View live" : "Preview", onSelect: () => (live ? window.open(`/p/${page.slug}`, "_blank") : previewPage(page)) },
+                      { key: "dup", label: "Duplicate", onSelect: () => duplicatePage(page.id) },
+                      MENU_DIVIDER,
+                      { key: "pub", label: live ? "Take offline" : "Publish", onSelect: () => togglePublish(page) },
+                      { key: "rename", label: "Rename / change address", onSelect: () => setRenaming({ id: page.id, title: page.title, slug: page.slug }) },
+                      MENU_DIVIDER,
+                      { key: "del", label: "Delete", danger: true, onSelect: () => deletePage(page.id) },
+                    ]}
+                  />
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      {pages.length > 0 && filteredPages.length === 0 && (
+        <p className="admin-sub">No pages match your filter.</p>
       )}
+      {pages.length === 0 && (
+        <p className="admin-sub">No pages besides Home yet. Create one above.</p>
+      )}
+      <ListPager page={pageNum} pageSize={DEFAULT_PAGE_SIZE} total={totalCmsPages} onPageChange={setPageNum} />
+
+      {/* System pages: not built from blocks, so they keep their own small editors. */}
+      <details className="admin-details">
+        <summary>System pages: blog index, 404, error fallback</summary>
+        <table className="admin-table" style={{ marginTop: 6 }}>
+          <tbody>
+            <tr>
+              <td className="n">Blog index</td>
+              <td className="m addr"><code>/blog</code></td>
+              <td className="m">Header, search description, rows above and below the post list</td>
+              <td className="act">
+                <button type="button" className="admin-link" onClick={() => setEditingBlog(true)}>Edit</button>
+                <a href="/blog" target="_blank" rel="noreferrer" className="admin-btn ghost icon" title="View live"><Eye size={13} /></a>
+              </td>
+            </tr>
+            <tr>
+              <td className="n">Not found (404)</td>
+              <td className="m addr">any unknown address</td>
+              <td className="m">Headline, subhead, button</td>
+              <td className="act"><button type="button" className="admin-link" onClick={() => setEditingError("404")}>Edit</button></td>
+            </tr>
+            <tr>
+              <td className="n">Something went wrong</td>
+              <td className="m addr">error fallback</td>
+              <td className="m">Headline, body, button labels</td>
+              <td className="act"><button type="button" className="admin-link" onClick={() => setEditingError("boundary")}>Edit</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </details>
     </div>
   );
 };

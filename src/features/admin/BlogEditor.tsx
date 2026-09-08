@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { sanitizeHtml } from "@/services/sanitize";
 import { toast } from "sonner";
-import { Trash2, Edit, Plus, Eye, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
+import { Eye, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
+import ActionMenu from "./ui/ActionMenu";
+import { MENU_DIVIDER } from "./ui/menu";
 import { generateAiSummary, htmlToPlainText } from "@/services/aiSummary";
 import SeoAssistantPanel, { type SeoApplyPayload } from "./SeoAssistantPanel";
 import RichTextEditor from "./RichTextEditor";
@@ -26,7 +28,7 @@ import AdminField, { adminInputClass } from "./ui/AdminField";
 import AdminStickyBar from "./ui/AdminStickyBar";
 import AdminStatusControl from "./ui/AdminStatusControl";
 import StatusBadge from "./ui/StatusBadge";
-import { contentState, stateToStatus, type ContentState } from "./naming";
+import { contentState, stateToStatus, STATE_LABEL, type ContentState } from "./naming";
 
 const generateSlug = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -272,6 +274,31 @@ const BlogEditor = () => {
       },
       successMessage: "Post deleted",
     });
+  };
+
+  /** Copy a post as a draft: same content, "(copy)" title, unique slug. */
+  const handleDuplicate = async (post: BlogPost) => {
+    const base = `${post.slug}-copy`;
+    const taken = new Set(posts.map((p) => p.slug));
+    let slug = base; let n = 2;
+    while (taken.has(slug)) slug = `${base}-${n++}`;
+    const { id: _id, created_at: _c, updated_at: _u, published_at: _p, ...rest } = post as BlogPost & { created_at?: string; updated_at?: string };
+    const result = await runDbAction({
+      action: () => insertBlogPost({ ...rest, title: `${post.title} (copy)`, slug, status: "draft", publish_at: null, published_at: null }),
+      successMessage: "Duplicated as a draft",
+      errorMessage: "Could not duplicate",
+    });
+    if (result !== null) fetchPosts();
+  };
+
+  /** Publish a draft, or take a live post offline (it becomes a draft). */
+  const handleToggleLive = async (post: BlogPost) => {
+    const live = post.status === "published";
+    const result = await runDbAction({
+      action: () => updateBlogPost(post.id, live ? { status: "draft" } : { status: "published", published_at: post.published_at || new Date().toISOString() }),
+      successMessage: live ? "Taken offline" : "Published",
+    });
+    if (result !== null) fetchPosts();
   };
 
   const buildLivePreviewPost = useCallback(() => {
@@ -733,58 +760,74 @@ const BlogEditor = () => {
     );
   }
 
+  const when = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "—");
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Blogs</h2>
-        <button
-          onClick={handleNew}
-          className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
-          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-          <Plus size={14} /> New blog
-        </button>
+    <div className="admin-page space-y-4">
+      <div className="admin-page-head">
+        <h2 className="admin-h2">Posts</h2>
+        <div className="admin-grow" />
+        {posts.length > 1 && (
+          <input
+            className="admin-search"
+            placeholder="Filter posts"
+            value={blogFilters.state.searchInput}
+            onChange={(e) => blogFilters.state.setSearchInput(e.target.value)}
+            aria-label="Filter posts"
+          />
+        )}
+        <button type="button" onClick={handleNew} className="admin-btn primary">New post</button>
       </div>
 
       {postsLoading ? (
-        <ListSkeleton rows={3} rowHeight="h-20" />
+        <ListSkeleton rows={3} rowHeight="h-10" />
       ) : posts.length === 0 ? (
-        <p className="font-body text-sm text-muted-foreground py-8 text-center">No blogs yet. Create your first one!</p>
+        <div className="admin-panel admin-empty">No posts yet. Write the first one.</div>
+      ) : filteredPosts.length === 0 ? (
+        <p className="admin-sub">No posts match your filter.</p>
       ) : (
-        <div className="space-y-3">
-          {posts.length > 1 && (
-            <ListFilters state={blogFilters.state} searchPlaceholder="Search posts…" />
-          )}
-          {filteredPosts.length === 0 ? (
-            <p className="font-body text-sm text-muted-foreground py-6 text-center">No posts match your filters.</p>
-          ) : filteredPosts.map((post) => (
-            <div
-              key={post.id}
-              className="flex items-center justify-between p-4 rounded-lg border"
-              style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border) / 0.5)" }}>
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                {post.cover_image && (
-                  <img src={post.cover_image} alt="" className="w-12 h-12 rounded object-cover flex-shrink-0" />
-                )}
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <StatusBadge state={contentState(post.status, post.publish_at)} />
-                    <span className="font-body text-[10px] text-muted-foreground">{post.category}</span>
-                  </div>
-                  <p className="font-body text-sm font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>{post.title}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 ml-4">
-                <button onClick={() => handleEdit(post)} className="p-2 hover:opacity-70" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  <Edit size={15} />
-                </button>
-                <button onClick={() => handleDelete(post.id)} className="p-2 hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}>
-                  <Trash2 size={15} />
-                </button>
-              </div>
-            </div>
-          ))}
-          <ListPager page={page} pageSize={DEFAULT_PAGE_SIZE} total={totalPosts} onPageChange={setPage} />
-        </div>
+        <table className="admin-table">
+          <thead>
+            <tr><th>Post</th><th>Category</th><th>Status</th><th>Published</th><th className="act"></th></tr>
+          </thead>
+          <tbody>
+            {filteredPosts.map((post) => {
+              const st = contentState(post.status, post.publish_at);
+              const live = st === "live";
+              return (
+                <tr key={post.id}>
+                  <td className="n">
+                    <span className="flex items-center gap-2">
+                      {post.cover_image && <img src={post.cover_image} alt="" className="w-7 h-7 rounded object-cover flex-shrink-0" />}
+                      <span className="truncate">{post.title}</span>
+                    </span>
+                  </td>
+                  <td className="m">{post.category}</td>
+                  <td><span className={`admin-st ${st}`}>{STATE_LABEL[st]}</span></td>
+                  <td className="m">{when(post.published_at)}</td>
+                  <td className="act">
+                    <button type="button" className="admin-link" onClick={() => handleEdit(post)}>Edit</button>
+                    <ActionMenu
+                      label={`Actions for ${post.title}`}
+                      items={[
+                        { key: "edit", label: "Edit", onSelect: () => handleEdit(post) },
+                        { key: "view", label: live ? "View live" : "Preview", onSelect: () => window.open(live ? `/blog/${post.slug}` : `/blog/${post.slug}?preview=draft`, "_blank") },
+                        { key: "dup", label: "Duplicate", onSelect: () => handleDuplicate(post) },
+                        MENU_DIVIDER,
+                        { key: "pub", label: live ? "Take offline" : "Publish", onSelect: () => handleToggleLive(post) },
+                        MENU_DIVIDER,
+                        { key: "del", label: "Delete", danger: true, onSelect: () => handleDelete(post.id) },
+                      ]}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+      {!postsLoading && posts.length > 0 && (
+        <ListPager page={page} pageSize={DEFAULT_PAGE_SIZE} total={totalPosts} onPageChange={setPage} />
       )}
     </div>
   );
