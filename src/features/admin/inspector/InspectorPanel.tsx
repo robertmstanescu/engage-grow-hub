@@ -34,6 +34,7 @@ import {
 // only through the widget-fallback map below (HeroRowFields alias).
 import SeoFields from "../site-editor/SeoFields";
 import RowStyleTab from "../editors/RowStyleTab";
+import { PageBackgroundForRows } from "../editors/PageBackgroundPanel";
 
 // Widget admin editors (legacy, type-keyed). Where a widget exposes
 // `adminComponent` via the WidgetRegistry, that wins (US 16.1 dev note).
@@ -158,17 +159,23 @@ const InspectorPanel = (props: InspectorPanelProps) => {
   /* ─── State 1 — nothing selected → page SEO settings ─────────── */
   if (!activeElement) {
     return (
-      <Section title="Page Settings">
-        <p className="font-body text-[11px] leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
-          Click an element on the canvas to edit it. Otherwise, these page-wide settings apply.
-        </p>
-        <SeoFields
-          metaTitle={seoMetaTitle}
-          metaDescription={seoMetaDescription}
-          onTitleChange={onSeoTitleChange}
-          onDescriptionChange={onSeoDescriptionChange}
-        />
-      </Section>
+      <>
+        <Section title="Page background">
+          <p className="font-body text-[11px] leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
+            The moving colours behind this whole page. Click an element on the canvas to edit
+            that element instead.
+          </p>
+          <PageBackgroundForRows rows={pageRows} onRowsChange={onRowsChange} />
+        </Section>
+        <Section title="Page Settings">
+          <SeoFields
+            metaTitle={seoMetaTitle}
+            metaDescription={seoMetaDescription}
+            onTitleChange={onSeoTitleChange}
+            onDescriptionChange={onSeoDescriptionChange}
+          />
+        </Section>
+      </>
     );
   }
 

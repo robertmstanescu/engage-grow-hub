@@ -86,9 +86,36 @@ export const buildPageMeshCSS = (mesh?: Partial<PageMeshConfig>): string => {
   return `${layers.join(", ")}, hsl(var(--background))`;
 };
 
+/**
+ * Is this row the page's hero? A v1 row carries `type` itself; v2/v3
+ * rows carry it on their widgets, so look there too — otherwise the
+ * hero's mesh would be ignored as soon as a page is saved in v3.
+ */
+type RowLike = {
+  id?: string;
+  type?: string;
+  columns?: Array<{
+    widgets?: Array<{ type?: string }>;
+    cells?: Array<{ widgets?: Array<{ type?: string }> }>;
+  }>;
+};
+export const isHeroRow = (row: unknown): boolean => {
+  const r = row as RowLike | null | undefined;
+  if (!r) return false;
+  if (r.type === "hero") return true;
+  for (const col of r.columns || []) {
+    for (const w of col.widgets || []) if (w?.type === "hero") return true;
+    for (const cell of col.cells || []) for (const w of cell.widgets || []) if (w?.type === "hero") return true;
+  }
+  return false;
+};
+
+/** The hero row of a page, in whatever shape the rows are stored. */
+export const findHeroRow = <T,>(rows: T[]): T | undefined => rows.find(isHeroRow);
+
 /** Read the mesh config a page should use: its hero row's, else the default. */
 export const resolvePageMesh = (rows: PageRow[] | any[] | undefined): PageMeshConfig => {
-  const hero = (rows || []).find((r: any) => r?.type === "hero");
+  const hero = (rows || []).find(isHeroRow);
   const mesh = hero?.layout?.mesh as PageMeshConfig | undefined;
   if (!mesh || !Array.isArray(mesh.colors) || mesh.colors.length !== 4) return DEFAULT_PAGE_MESH;
   return {

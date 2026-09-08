@@ -3,8 +3,8 @@ import {
   meshSpeed,
   parseCssColor,
   readMeshPalette,
-  startAurora,
-} from "../meshAurora";
+  startBlooms,
+} from "../meshBlooms";
 import { buildPageMeshVars, DEFAULT_PAGE_MESH } from "../pageMesh";
 
 describe("parseCssColor", () => {
@@ -52,7 +52,7 @@ describe("meshSpeed", () => {
   });
 });
 
-describe("startAurora", () => {
+describe("startBlooms", () => {
   it("does nothing without WebGL so the blob fallback stays visible", () => {
     const layer = document.createElement("div");
     const canvas = {
@@ -65,7 +65,7 @@ describe("startAurora", () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     };
-    const stop = startAurora(canvas as never);
+    const stop = startBlooms(canvas as never);
     expect(layer.getAttribute("data-mesh-gl")).toBeNull();
     expect(canvas.getContext).toHaveBeenCalledWith("webgl", expect.objectContaining({ alpha: true }));
     expect(() => stop()).not.toThrow();

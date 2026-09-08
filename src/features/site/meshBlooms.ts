@@ -1,13 +1,14 @@
 /**
- * meshAurora — the page background as an aurora.
+ * meshBlooms — the animated page background.
  *
- * A single full-screen WebGL fragment shader paints four flowing,
- * striated curtains of colour (one per hero mesh colour), each slowly
- * crossing to its second brand hue and back, like a soft daylight
- * aurora over the cream page ground. It reads the same CSS variables
- * the blob fallback uses (`--mesh-c*`, `--mesh-d*`, `--mesh-motion`,
- * set on :root by PageRows), so the admin's Page background panel
- * drives both. Where WebGL is unavailable nothing is stamped and the
+ * A single full-screen WebGL fragment shader: the brand's static mesh
+ * backgrounds set in motion. Big soft radial blooms wander across the
+ * page on looping paths, crossing each other so the colours keep
+ * changing places, with a gentle liquid warp on their edges. The four
+ * colours are chosen per page in the hero's Page background panel.
+ * It reads the same CSS variables the blob fallback uses (`--mesh-c*`,
+ * `--mesh-d*`, `--mesh-motion`, set on :root by PageRows), so the
+ * admin's Page background panel drives both. Where WebGL is unavailable nothing is stamped and the
  * CSS blobs stay visible.
  *
  * Motion: "calm" = 1×, "lively" = 2×, "off" or a reduced-motion
@@ -17,12 +18,12 @@
  */
 import { buildPageMeshVars } from "./pageMesh";
 
-export const AURORA_VERT = `
+export const BLOOMS_VERT = `
 attribute vec2 a_pos;
 void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
 `;
 
-export const AURORA_FRAG = `
+export const BLOOMS_FRAG = `
 precision mediump float;
 uniform vec2 u_res;
 uniform float u_time;
@@ -55,43 +56,51 @@ float fbm(vec2 p) {
   return v;
 }
 
+/* ── Blooms ──
+   The brand's static backgrounds, set in motion: big soft radial blooms
+   (linear falloff, like the site's --gradient-mesh-page ellipses) that
+   wander across the page on slow looping paths, so they cross each other
+   and the colours keep changing places. A gentle liquid warp bends their
+   edges so the blend stays organic. Eight blooms: the four hero colours
+   at full strength plus their four drift hues a little fainter. */
+vec4 blooms(vec2 uv, float aspect) {
+  float T = u_time * 0.2;
+  vec2 warp = vec2(
+    fbm(uv * 2.2 + vec2(T * 0.35, 1.3)),
+    fbm(uv * 2.2 + vec2(4.1, T * 0.3))
+  ) - 0.5;
+  vec2 wp = uv + warp * 0.24;
+  vec3 acc = vec3(0.0);
+  float aacc = 0.0;
+  for (int i = 0; i < 8; i++) {
+    float fi = float(i);
+    vec4 c = vec4(0.0);
+    float weight = 1.0;
+    for (int j = 0; j < 4; j++) {
+      if (j == i) c = u_base[j];
+      if (j + 4 == i) { c = u_drift[j]; weight = 0.72; }
+    }
+    /* Lissajous path with incommensurate rates: never visibly repeats. */
+    float sx = 0.31 + 0.052 * fi;
+    float sy = 0.24 + 0.067 * fi;
+    vec2 centre = vec2(
+      0.5 + 0.48 * cos(T * sx + fi * 1.71),
+      0.5 + 0.46 * sin(T * sy + fi * 2.37)
+    );
+    vec2 d = (wp - centre) * vec2(aspect, 1.0) / vec2(0.62 * aspect, 0.54);
+    float r = length(d) / (0.70 + 0.08 * sin(T * 0.7 + fi));
+    float fall = pow(clamp(1.0 - r, 0.0, 1.0), 1.15);
+    float a = fall * c.a * weight;
+    acc = acc * (1.0 - a) + c.rgb * a;
+    aacc = aacc + a * (1.0 - aacc);
+  }
+  return vec4(acc, aacc);
+}
+
 void main() {
   vec2 uv = gl_FragCoord.xy / u_res;
   float aspect = u_res.x / u_res.y;
-  /* Hang the curtains at a slight angle instead of dead level. */
-  vec2 p = vec2(uv.x * aspect, uv.y);
-  float ang = -0.26;
-  vec2 c0 = vec2(aspect * 0.5, 0.5);
-  p = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * (p - c0) + c0;
-
-  vec3 acc = vec3(0.0);
-  float aacc = 0.0;
-  for (int i = 0; i < 4; i++) {
-    float fi = float(i);
-    float t = u_time * (0.13 + 0.02 * fi);
-    /* Flow along the curtain, each at its own pace. */
-    float x = p.x * 0.85 + fi * 4.7 + t * 0.35;
-    /* A wavy centre line that keeps re-shaping. */
-    float wave = fbm(vec2(x * 0.9, t * 0.6 + fi * 3.0)) - 0.5;
-    float centre = 0.10 + 0.27 * fi + 0.36 * wave;
-    float width = 0.11 + 0.10 * vnoise(vec2(x * 0.6 + fi, t * 0.4));
-    float d = (p.y - centre) / width;
-    float body = exp(-d * d * 1.3);
-    /* Fine vertical rays, and larger bright patches drifting through. */
-    float rays = 0.58 + 0.42 * vnoise(vec2(x * 34.0 + fi * 11.0, t * 0.9));
-    float rays2 = 0.75 + 0.25 * fbm(vec2(x * 7.0, t * 0.5));
-    float patches = 0.5 + 0.5 * fbm(vec2(x * 1.6 - t * 0.9, fi * 5.0 + t * 0.3));
-    float glow = body * rays * rays2 * (0.45 + 0.55 * patches);
-    /* Each curtain breathes between its hero colour and its drift hue. */
-    float k = 0.5 + 0.5 * sin(u_time * 0.42 + fi * 1.9 + wave * 2.5);
-    vec4 cb = u_base[i];
-    vec4 cd = u_drift[i];
-    vec3 col = mix(cb.rgb, cd.rgb, k);
-    float a = clamp(glow * 1.7, 0.0, 1.0) * cb.a;
-    acc = acc * (1.0 - a) + col * a;
-    aacc = aacc + a * (1.0 - aacc);
-  }
-  gl_FragColor = vec4(acc, aacc);
+  gl_FragColor = blooms(uv, aspect);
 }
 `;
 
@@ -138,7 +147,7 @@ export const meshSpeed = (motion: string | undefined, reducedMotion: boolean): n
 };
 
 /** Where the clock starts — well into the noise so frame one already flows. */
-export const AURORA_T0 = 90;
+export const BLOOMS_T0 = 90;
 const FRAME_MS = 1000 / 30;
 
 type MinimalCanvas = Pick<HTMLCanvasElement, "getContext" | "parentElement" | "clientWidth" | "clientHeight" | "addEventListener" | "removeEventListener"> & {
@@ -147,10 +156,10 @@ type MinimalCanvas = Pick<HTMLCanvasElement, "getContext" | "parentElement" | "c
 };
 
 /**
- * Start painting the aurora on `canvas`. Returns a stop function. If
+ * Start painting the blooms on `canvas`. Returns a stop function. If
  * WebGL is unavailable nothing happens and the CSS blobs stay in view.
  */
-export const startAurora = (canvas: MinimalCanvas, doc: Document = document): (() => void) => {
+export const startBlooms = (canvas: MinimalCanvas, doc: Document = document): (() => void) => {
   const gl = canvas.getContext("webgl", {
     alpha: true,
     premultipliedAlpha: true,
@@ -167,14 +176,14 @@ export const startAurora = (canvas: MinimalCanvas, doc: Document = document): ((
     gl.shaderSource(s, src);
     gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-      if (import.meta.env.DEV) console.warn("[mesh] shader failed:", gl.getShaderInfoLog(s));
+      console.warn("[mesh] shader failed:", gl.getShaderInfoLog(s));
       gl.deleteShader(s);
       return null;
     }
     return s;
   };
-  const vs = compile(gl.VERTEX_SHADER, AURORA_VERT);
-  const fs = compile(gl.FRAGMENT_SHADER, AURORA_FRAG);
+  const vs = compile(gl.VERTEX_SHADER, BLOOMS_VERT);
+  const fs = compile(gl.FRAGMENT_SHADER, BLOOMS_FRAG);
   const program = gl.createProgram();
   if (!vs || !fs || !program) return () => {};
   gl.attachShader(program, vs);
@@ -228,7 +237,7 @@ export const startAurora = (canvas: MinimalCanvas, doc: Document = document): ((
 
   const start = doc.defaultView?.performance?.now() ?? 0;
   const draw = (nowMs: number) => {
-    gl.uniform1f(uTime, AURORA_T0 + ((nowMs - start) / 1000) * speed);
+    gl.uniform1f(uTime, BLOOMS_T0 + ((nowMs - start) / 1000) * speed);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   };
 
