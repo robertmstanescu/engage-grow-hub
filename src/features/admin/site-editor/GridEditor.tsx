@@ -47,7 +47,7 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
     <div className="space-y-3">
       {/* Header */}
       <SectionBox label="Header">
-        <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
+        <Field label="Label above title" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Title Lines</label>
@@ -116,7 +116,7 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
       {/* Colours: each ColorField collects into the "Custom colours" group. */}
       <>
         <div>
-          <ColorField label="Eyebrow" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onChange("color_eyebrow", v)} />
+          <ColorField label="Label above title" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onChange("color_eyebrow", v)} />
           <ColorField label="Title" value={content.color_title || ""} fallback="#2A0E33" onChange={(v) => onChange("color_title", v)} />
           <ColorField label="Description" value={content.color_description || ""} fallback="#555555" onChange={(v) => onChange("color_description", v)} />
           <ColorField label="Card Background" value={content.color_card_bg || ""} fallback="#1a0d24" onChange={(v) => onChange("color_card_bg", v)} />

@@ -1725,3 +1725,55 @@
     --para-space: 1.1em;
   }
 }
+
+/* Every box is legible in night mode: inputs, textareas and selects take
+   the theme's text and card colours (the site canvas keeps its own). */
+@layer components {
+  .admin-dark input:not(.admin-canvas *):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  .admin-dark textarea:not(.admin-canvas *),
+  .admin-dark select:not(.admin-canvas *) {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--card));
+    border-color: hsl(var(--input));
+    color-scheme: dark;
+  }
+  .admin-dark input::placeholder, .admin-dark textarea::placeholder { color: hsl(var(--muted-foreground)); }
+  .admin-dark ::selection { background: hsl(var(--accent) / .45); }
+  .admin-dark [contenteditable]:not(.admin-canvas *) { color: hsl(var(--foreground)); }
+}
+
+/* Tray glyphs: a tiny picture of what each block IS, drawn in CSS so it
+   follows the theme. Family keys and widget types share the vocabulary. */
+@layer components {
+  .tray-glyph { position: relative; display: block; width: 100%; max-width: 88px; height: 28px; border-radius: 4px; background: hsl(var(--muted)); overflow: hidden; --g: hsl(var(--muted-foreground) / .75); }
+  .tray-glyph.small { width: 30px; height: 20px; border-radius: 3px; }
+  .tray-variant { grid-template-columns: 34px 1fr; }
+  .tray-variant .tray-glyph { grid-row: 1 / 3; align-self: center; }
+  /* text / hero / intro: two lines of copy */
+  .tray-glyph[data-glyph="text"]::before, .tray-glyph[data-glyph="hero"]::before { content: ""; position: absolute; left: 12%; right: 30%; top: 32%; height: 3px; background: var(--g); box-shadow: 0 8px 0 var(--g); border-radius: 1px; }
+  .tray-glyph[data-glyph="hero"]::before { left: 20%; right: 20%; top: 28%; height: 5px; box-shadow: 0 10px 0 -1px var(--g); }
+  /* cards family + boxed / grid / service / testimonial / logo_cloud: three tiles */
+  .tray-glyph[data-glyph="cards"]::before, .tray-glyph[data-glyph="boxed"]::before, .tray-glyph[data-glyph="grid"]::before, .tray-glyph[data-glyph="service"]::before, .tray-glyph[data-glyph="testimonial"]::before, .tray-glyph[data-glyph="logo_cloud"]::before { content: ""; position: absolute; inset: 22% 12%; border-radius: 2px; background: linear-gradient(90deg, var(--g) 0 30%, transparent 30% 35%, var(--g) 35% 65%, transparent 65% 70%, var(--g) 70%); }
+  .tray-glyph[data-glyph="logo_cloud"]::before { inset: 35% 12%; }
+  .tray-glyph[data-glyph="testimonial"]::after { content: "“"; position: absolute; left: 14%; top: -6px; font: 800 20px var(--font-title); color: hsl(var(--background)); }
+  /* media: picture left, lines right */
+  .tray-glyph[data-glyph="media"]::before, .tray-glyph[data-glyph="image_text"]::before, .tray-glyph[data-glyph="profile"]::before { content: ""; position: absolute; left: 12%; top: 22%; bottom: 22%; width: 34%; border-radius: 2px; background: var(--g); }
+  .tray-glyph[data-glyph="profile"]::before { border-radius: 50%; width: 26%; left: 14%; }
+  .tray-glyph[data-glyph="media"]::after, .tray-glyph[data-glyph="image_text"]::after, .tray-glyph[data-glyph="profile"]::after { content: ""; position: absolute; left: 54%; right: 12%; top: 32%; height: 3px; background: var(--g); box-shadow: 0 8px 0 var(--g); }
+  .tray-glyph[data-glyph="image"]::before { content: ""; position: absolute; inset: 18% 12%; border-radius: 2px; background: var(--g); }
+  /* numbers */
+  .tray-glyph[data-glyph="numbers"]::before, .tray-glyph[data-glyph="proof_band"]::before { content: "42"; position: absolute; left: 12%; top: 0; font: 800 16px/28px var(--font-title); color: var(--g); }
+  /* steps */
+  .tray-glyph[data-glyph="steps"]::before, .tray-glyph[data-glyph="process_steps"]::before { content: "① ② ③"; position: absolute; left: 8%; top: 0; font: 500 12px/28px var(--font-body); letter-spacing: .08em; color: var(--g); }
+  /* questions */
+  .tray-glyph[data-glyph="questions"]::before, .tray-glyph[data-glyph="faq"]::before { content: "?"; position: absolute; left: 14%; top: 0; font: 800 17px/28px var(--font-title); color: var(--g); }
+  /* banner family + cta_band / quote_band / cta_button */
+  .tray-glyph[data-glyph="banner"]::before, .tray-glyph[data-glyph="cta_band"]::before { content: ""; position: absolute; inset: 22% 30% 22% 12%; border-radius: 2px; background: var(--g); }
+  .tray-glyph[data-glyph="quote_band"]::before { content: "”"; position: absolute; left: 14%; top: -2px; font: 800 22px var(--font-title); color: var(--g); }
+  .tray-glyph[data-glyph="cta_button"]::before { content: ""; position: absolute; left: 28%; right: 28%; top: 30%; bottom: 30%; border-radius: 999px; background: var(--g); }
+  /* form family + contact / subscribe / lead_magnet */
+  .tray-glyph[data-glyph="form"]::before, .tray-glyph[data-glyph="contact"]::before, .tray-glyph[data-glyph="subscribe"]::before, .tray-glyph[data-glyph="lead_magnet"]::before { content: ""; position: absolute; left: 12%; right: 12%; top: 22%; height: 7px; border: 1.5px solid var(--g); border-radius: 2px; box-shadow: 0 11px 0 -1.5px var(--g); }
+  .tray-glyph[data-glyph="subscribe"]::before { box-shadow: none; top: 36%; }
+  .tray-glyph[data-glyph="lead_magnet"]::after { content: "↓"; position: absolute; right: 14%; top: 0; font: 700 14px/28px var(--font-body); color: var(--g); }
+  .tray-glyph.small::before, .tray-glyph.small::after { font-size: 11px !important; line-height: 20px !important; }
+}

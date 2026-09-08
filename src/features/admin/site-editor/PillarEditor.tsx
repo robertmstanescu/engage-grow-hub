@@ -148,7 +148,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
   return (
     <div className="space-y-4">
       <SectionBox label="Section Header">
-        <Field label="Eyebrow" value={pillarContent.eyebrow || pillarContent.pillar_number || ""} onChange={(v) => onPillarChange("eyebrow", v)} />
+        <Field label="Label above title" value={pillarContent.eyebrow || pillarContent.pillar_number || ""} onChange={(v) => onPillarChange("eyebrow", v)} />
         <Field label="Title" value={pillarContent.title || ""} onChange={(v) => onPillarChange("title", v)} />
         <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} bgColor={pillarContent.color_section_bg || bgColor} />
       </SectionBox>
@@ -266,7 +266,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
                     <Field label="Price / CTA" value={svc.price} onChange={(v) => updateService(i, "price", v)} />
                     <Field label="Timeline" value={svc.time} onChange={(v) => updateService(i, "time", v)} />
                   </div>
-                  <TextArea label="Note (optional)" value={svc.note || ""} onChange={(v) => updateService(i, "note", v)} rows={2} />
+                  <TextArea label="Small print (optional)" value={svc.note || ""} onChange={(v) => updateService(i, "note", v)} rows={2} />
 
                   <button
                     type="button"

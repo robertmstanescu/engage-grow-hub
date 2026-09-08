@@ -71,6 +71,8 @@ import { RowsRenderer } from "@/features/site/rows/PageRows";
 import InspectorPanel from "../inspector/InspectorPanel";
 import CanvasBreadcrumb from "./CanvasBreadcrumb";
 import PageNavigator, { isSectionNavDragData } from "./PageNavigator";
+import { useRowHistory } from "./useRowHistory";
+import { useAutosave } from "./useAutosave";
 
 /**
  * Pointer drags want pointerWithin's precision (only counts as "over" a
@@ -312,6 +314,12 @@ export interface PageBuilderShellProps {
   /** Save / publish actions. The shell renders the buttons; the adapter
    * implements the actual DB writes. */
   onSaveDraft: () => Promise<unknown> | void;
+  /**
+   * Quiet draft save for autosave: writes the draft only (no status
+   * change, no toast) and resolves true on success. When omitted the
+   * adapter keeps manual saving only.
+   */
+  onAutosave?: () => Promise<boolean>;
   onPublish: () => Promise<void> | void;
   onPreview: () => void;
   saving: boolean;
@@ -355,6 +363,13 @@ export interface PageBuilderShellProps {
 
 const PageBuilderShell = (props: PageBuilderShellProps) => {
   const [viewport, setViewport] = useState<ViewportMode>("desktop");
+  /* Undo / redo: every row change from the canvas, the navigator or the
+     inspector goes through `history.change`, so one stack covers all. */
+  const history = useRowHistory(props.pageRows, props.onRowsChange);
+  const onRowsChange = history.change;
+  /* Autosave the draft two seconds after the last edit, when the
+     adapter offers a quiet save. Manual Save and Publish still work. */
+  const autosave = useAutosave(props.hasChanges, props.onAutosave, { version: props.pageRows, paused: props.saving || props.publishing });
   // EPIC 2 / US 2.1 — in-place Edit/Preview toggle. When "preview", we
   // hide the side panes so the canvas mimics the live site.
   const [previewMode, setPreviewMode] = useState<"edit" | "preview">("edit");
@@ -389,14 +404,14 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
     viewport === "mobile" ? 390 : viewport === "tablet" ? 820 : null;
 
   return (
-    <BuilderProvider pageRows={props.pageRows} onRowsChange={props.onRowsChange}>
+    <BuilderProvider pageRows={props.pageRows} onRowsChange={onRowsChange}>
       <BuilderDndShell
         sensors={sensors}
         activeDrag={activeDrag}
         setActiveDrag={setActiveDrag}
         onDragStart={handleDragStart}
         pageRows={props.pageRows}
-        onRowsChange={props.onRowsChange}
+        onRowsChange={onRowsChange}
       >
         {/* Full-screen builder overlay — covers the standard admin sidebar
             so the canvas + side panes use 100% of the viewport. The user
@@ -412,7 +427,13 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
             onPreviewModeChange={setPreviewMode}
             onSaveDraft={() => props.onSaveDraft()}
             saving={props.saving}
-            saveLabel="Save Draft"
+            saveLabel="Save"
+            onUndo={history.undo}
+            onRedo={history.redo}
+            canUndo={history.canUndo}
+            canRedo={history.canRedo}
+            autosave={props.onAutosave ? autosave.state : undefined}
+            autosavedAt={autosave.savedAt}
             onPreview={props.onPreview}
             onPublish={() => props.onPublish()}
             publishing={props.publishing}
@@ -445,7 +466,7 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     slugEditable={props.slugEditable}
                     slugPrefix={props.slugPrefix}
                     pageRows={props.pageRows}
-                    onRowsChange={props.onRowsChange}
+                    onRowsChange={onRowsChange}
                     schedulePanel={props.schedulePanel}
                     revisionPanel={props.inspectorFooter}
                   />
@@ -486,7 +507,7 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     className="px-4 py-3 border-b"
                     style={{ borderColor: "hsl(var(--border))" }}
                   >
-                    {/* US 3.1 — "Inspector" → "Element Settings" (user-facing).
+                    {/* US 3.1 — "Inspector" → "Selected block" (user-facing).
                         US 4.1 — admin-section-label upgrades contrast. */}
                     <h3 className="admin-section-label font-body text-[10px]">
                       Element Settings
@@ -505,7 +526,7 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                       onSeoTitleChange={props.onSeoTitleChange}
                       onSeoDescriptionChange={props.onSeoDescriptionChange}
                       pageRows={props.pageRows}
-                      onRowsChange={props.onRowsChange}
+                      onRowsChange={onRowsChange}
                     />
                   </div>
                 </aside>

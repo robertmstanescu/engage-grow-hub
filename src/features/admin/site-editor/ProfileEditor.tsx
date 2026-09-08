@@ -20,7 +20,7 @@ const ProfileEditor = ({ content, onChange, bgColor }: Props) => {
   return (
     <div className="space-y-3">
       <SectionBox label="Header">
-        <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
+        <Field label="Label above title" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Title Lines</label>
@@ -80,7 +80,7 @@ const ProfileEditor = ({ content, onChange, bgColor }: Props) => {
 
       <>
         <div>
-          <ColorField label="Eyebrow" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onChange("color_eyebrow", v)} />
+          <ColorField label="Label above title" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onChange("color_eyebrow", v)} />
           <ColorField label="Title" value={content.color_title || ""} fallback="#FFFFFF" onChange={(v) => onChange("color_title", v)} />
           <ColorField label="Name" value={content.color_name || ""} fallback="#FFFFFF" onChange={(v) => onChange("color_name", v)} />
           <ColorField label="Role" value={content.color_role || ""} fallback="#E5C54F" onChange={(v) => onChange("color_role", v)} />

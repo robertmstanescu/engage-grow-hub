@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import type { PageRow, PageRowV3 } from "@/types/rows";
+import { writeRowsAtPath } from "./rowsAtPath";
 import { getWidget } from "@/lib/WidgetRegistry";
 import { generateRowId, DEFAULT_ROW_LAYOUT, buildEmptyV3Row } from "@/lib/constants/rowDefaults";
 
@@ -317,98 +318,7 @@ interface BuilderProviderProps {
  * splitting the incoming text on newlines. This keeps multi-line titles
  * round-trippable.
  */
-const writeRowsAtPath = (
-  rows: PageRow[],
-  path: NodePath,
-  value: string,
-): { rows: PageRow[]; ok: boolean } => {
-  if (path.length < 3 || path[0] !== "row") return { rows, ok: false };
-  const rowId = path[1];
-  const rowIdx = rows.findIndex((r) => r.id === rowId);
-  if (rowIdx === -1) return { rows, ok: false };
-
-  // Strip leading ["row", rowId] then optional ["widget", widgetId].
-  // V3 FIX: do NOT require widgetId === rowId — true v3 widgets carry
-  // their own ids, so the previous equality check left `rest` pointing
-  // at "widget" and the writer fell through to the no-op branch (which
-  // is why inline-edited titles/subtitles never persisted).
-  let rest = path.slice(2);
-  if (rest[0] === "widget") rest = rest.slice(2);
-  if (rest.length === 0) return { rows, ok: false };
-
-  const row = rows[rowIdx];
-  const setLeafOnObject = (obj: Record<string, any>, leaf: string, v: string) => {
-    if (leaf === "title") {
-      const lines = v.split(/\n+/).map((s) => s.trim()).filter(Boolean);
-      return { ...obj, title_lines: lines.length > 0 ? lines : [v] };
-    }
-    return { ...obj, [leaf]: v };
-  };
-
-  // Column path: ["col", colIndex, leaf]
-  if (rest[0] === "col" && rest.length >= 3) {
-    const colIndex = Number(rest[1]);
-    const leaf = rest[rest.length - 1];
-    if (Number.isNaN(colIndex)) return { rows, ok: false };
-    if (colIndex === 0) {
-      const nextContent = setLeafOnObject(row.content || {}, leaf, value);
-      const nextRows = rows.slice();
-      nextRows[rowIdx] = { ...row, content: nextContent };
-      return { rows: nextRows, ok: true };
-    }
-    const cdIdx = colIndex - 1;
-    const cd = (row.columns_data || []).slice();
-    cd[cdIdx] = setLeafOnObject(cd[cdIdx] || {}, leaf, value);
-    const nextRows = rows.slice();
-    nextRows[rowIdx] = { ...row, columns_data: cd };
-    return { rows: nextRows, ok: true };
-  }
-
-  // Item path: ["item", itemId, leaf]
-  if (rest[0] === "item" && rest.length >= 3) {
-    const itemId = rest[1];
-    const leaf = rest[rest.length - 1];
-    const content = { ...(row.content || {}) } as Record<string, any>;
-    let mutated = false;
-    for (const collectionKey of ["services", "items", "features", "pillars", "cards", "logos"]) {
-      const list = content[collectionKey];
-      if (Array.isArray(list)) {
-        const idx = list.findIndex((it: any) => it && it.id === itemId);
-        if (idx !== -1) {
-          const nextList = list.slice();
-          nextList[idx] = setLeafOnObject(list[idx] || {}, leaf, value);
-          content[collectionKey] = nextList;
-          mutated = true;
-          break;
-        }
-      }
-    }
-    if (!mutated) return { rows, ok: false };
-    const nextRows = rows.slice();
-    nextRows[rowIdx] = { ...row, content };
-    return { rows: nextRows, ok: true };
-  }
-
-  // Legacy ServiceRow shape: ["field", leaf] → row.content[leaf].
-  if (rest[0] === "field" && rest.length >= 2) {
-    const leaf = rest[rest.length - 1];
-    const nextContent = setLeafOnObject(row.content || {}, leaf, value);
-    const nextRows = rows.slice();
-    nextRows[rowIdx] = { ...row, content: nextContent };
-    return { rows: nextRows, ok: true };
-  }
-
-  // Bare ["<field>"] on the row content.
-  if (rest.length === 1) {
-    const leaf = rest[0];
-    const nextContent = setLeafOnObject(row.content || {}, leaf, value);
-    const nextRows = rows.slice();
-    nextRows[rowIdx] = { ...row, content: nextContent };
-    return { rows: nextRows, ok: true };
-  }
-
-  return { rows, ok: false };
-};
+// writeRowsAtPath lives in rowsAtPath.ts (typed, unit-tested).
 
 export const BuilderProvider = ({ children, pageRows, onRowsChange }: BuilderProviderProps) => {
   const [activeNodePath, setActiveNodePathState] = useState<NodePath | null>(null);

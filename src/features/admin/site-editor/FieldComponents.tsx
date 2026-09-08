@@ -9,7 +9,7 @@ import { useBrandColors } from "@/hooks/useBrandSettings";
 const INPUT_STYLE: React.CSSProperties = {
   borderColor: "hsl(var(--border))",
   backgroundColor: "hsl(var(--card))",
-  color: "#1a1a1a",
+  color: "hsl(var(--foreground))",
 };
 
 /**
@@ -345,7 +345,7 @@ export const ColorField = ({
  * same in every editor.
  */
 export const NoteField = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-  <Field label="Note (optional)" value={value} onChange={onChange} />
+  <Field label="Small print (optional)" value={value} onChange={onChange} />
 );
 
 /**
@@ -364,13 +364,13 @@ export const CtaFields = ({
 }) => (
   <SectionBox label="Call to Action (Button)">
     <Field
-      label="Button Label"
+      label="Button text"
       value={content.cta_label || ""}
       onChange={(v) => onChange("cta_label", v.slice(0, 30))}
       maxLength={30}
       hint="Max 30 characters for mobile."
     />
-    <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onChange("cta_url", v)} />
+    <Field label="Button link" value={content.cta_url || ""} onChange={(v) => onChange("cta_url", v)} />
     <NoteField value={content.note || ""} onChange={(v) => onChange("note", v)} />
   </SectionBox>
 );
@@ -396,6 +396,6 @@ export const EyebrowField = ({
 }) => (
   <div className="space-y-1.5">
     <Field label={label} value={value} onChange={onChange} />
-    <ColorField label="Eyebrow Colour" value={color} fallback="#7B3A91" onChange={onColorChange} />
+    <ColorField label="Label colour" value={color} fallback="#7B3A91" onChange={onColorChange} />
   </div>
 );

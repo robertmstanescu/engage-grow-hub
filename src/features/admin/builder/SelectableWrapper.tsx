@@ -24,7 +24,7 @@ import { useBuilder, type NodePath } from "./BuilderContext";
  * -----
  *   <SelectableWrapper
  *     path={['row', row.id, 'widget', widget.id, 'item', item.id, 'eyebrow']}
- *     label="Eyebrow"
+ *     label="Label above title"
  *     variant="atom"
  *   >
  *     <span>{eyebrow}</span>

@@ -86,7 +86,7 @@ const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {
               />
 
               <Field
-                label="Hyperlink the box (URL or #section-id)"
+                label="Link the whole card"
                 value={card.link_url || ""}
                 onChange={(v) => updateCard(i, "link_url", v)}
                 hint="Make the whole card a link. e.g. /pricing or #our-services"
@@ -94,12 +94,12 @@ const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {
 
               <div className="grid grid-cols-2 gap-2">
                 <Field
-                  label="CTA button label"
+                  label="Button text"
                   value={card.cta_label || ""}
                   onChange={(v) => updateCard(i, "cta_label", v)}
                 />
                 <Field
-                  label="CTA button URL"
+                  label="Button link"
                   value={card.cta_url || ""}
                   onChange={(v) => updateCard(i, "cta_url", v)}
                 />

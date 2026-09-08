@@ -36,7 +36,10 @@ src/
                          builder/blockFamilies.ts groups the widget types
                          into the eight tray families; builder/sectionLibrary.ts
                          holds the pre-designed rows; MoreFields keeps a block
-                         editor to eight primary fields.
+                         editor to eight primary fields. builder/useRowHistory
+                         (undo/redo) and builder/useAutosave wrap the shell's
+                         row setter and the adapters' quiet draft save;
+                         EditableText + CanvasEditable edit text on the canvas.
   features/widgets/      Self-registering widget modules — one folder per
                          type (boxed/, contact/, cta-button/, subscribe/).
                          The target shape for every row type.

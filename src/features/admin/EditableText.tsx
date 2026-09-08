@@ -1,27 +1,16 @@
-/**
- * EditableText — static passthrough renderer.
- *
- * This used to also render a contentEditable "click to edit in place"
- * surface, gated on a global edit/select mode from InlineEditContext.
- * That context was never wired to any UI control that could turn it
- * on (no toggle anywhere called its setters), so the editable branch
- * was permanently dead code — removed along with InlineEditContext.tsx.
- * In-place canvas editing today goes through CanvasEditable
- * (src/features/admin/builder/CanvasEditable.tsx) instead.
- *
- * `sectionKey` / `fieldPath` / `html` are kept in the prop signature
- * (unused) purely so the existing call sites across the row components
- * don't need to change.
- */
+import type React from "react";
+import { useBuilder } from "@/features/admin/builder/BuilderContext";
+import CanvasEditable from "@/features/admin/builder/CanvasEditable";
+import { fieldPathToNodePath } from "@/features/admin/builder/fieldPath";
+import { useCurrentWidgetId } from "@/features/site/rows/PrimaryHeadingContext";
 
 interface EditableTextProps {
-  /** @deprecated unused — kept for call-site compatibility. */
+  /** Kept for call-site compatibility; unused. */
   sectionKey?: string;
-  /** @deprecated unused — kept for call-site compatibility. */
+  /** `rows.<i>.content.<field>` or `rows.<i>.content.<list>.<n>.<field>` — the builder path is derived from it. */
   fieldPath?: string;
-  /** @deprecated unused — kept for call-site compatibility. */
+  /** The value is HTML (rich text). */
   html?: boolean;
-  /** The element to render (default: span) */
   as?: keyof JSX.IntrinsicElements;
   children?: React.ReactNode;
   className?: string;
@@ -29,22 +18,52 @@ interface EditableTextProps {
   dangerouslySetInnerHTML?: { __html: string };
 }
 
+/**
+ * EditableText — text on the canvas you can double-click and type into.
+ *
+ * On the public site this is a plain element. Inside the builder it is
+ * a CanvasEditable at the path derived from `fieldPath` for the widget
+ * being rendered: double-click starts editing, Enter or blur commits,
+ * Escape reverts. Rows that already used EditableText (Boxed, Grid,
+ * Image + Text, Profile, Service, Text) gain inline editing with no
+ * changes of their own.
+ */
 const EditableText = ({
   sectionKey: _sectionKey,
-  fieldPath: _fieldPath,
-  html: _html,
+  fieldPath,
+  html = false,
   as: Tag = "span",
   children,
   className = "",
   style,
   dangerouslySetInnerHTML,
   ...rest
-}: EditableTextProps & Record<string, any>) => {
-  const El = Tag as any;
-  if (dangerouslySetInnerHTML) {
-    return <El className={className} style={style} dangerouslySetInnerHTML={dangerouslySetInnerHTML} {...rest} />;
+}: EditableTextProps & Record<string, unknown>) => {
+  const { enabled, setEditingPath } = useBuilder();
+  const widgetId = useCurrentWidgetId();
+  const path = enabled && widgetId ? fieldPathToNodePath(widgetId, fieldPath) : null;
+
+  const El = Tag as React.ElementType;
+  if (!path) {
+    if (dangerouslySetInnerHTML) return <El className={className} style={style} dangerouslySetInnerHTML={dangerouslySetInnerHTML} {...rest} />;
+    return <El style={style} className={className} {...rest}>{children}</El>;
   }
-  return <El style={style} className={className} {...rest}>{children}</El>;
+
+  const value = dangerouslySetInnerHTML ? dangerouslySetInnerHTML.__html : typeof children === "string" ? children : "";
+  const start = (e: React.MouseEvent<HTMLElement>) => { e.preventDefault(); e.stopPropagation(); setEditingPath(path); };
+  return (
+    <CanvasEditable
+      path={path}
+      value={value}
+      html={html || !!dangerouslySetInnerHTML}
+      as={Tag}
+      className={className}
+      style={style}
+      onDoubleClick={start}
+    >
+      {dangerouslySetInnerHTML || typeof children === "string" ? undefined : children}
+    </CanvasEditable>
+  );
 };
 
 export default EditableText;

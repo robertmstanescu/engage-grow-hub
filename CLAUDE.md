@@ -42,6 +42,13 @@ Rules that are easy to get wrong:
   block's Content tab shows at most eight primary fields
   (`fieldDiet.test.tsx`): put the rest in `<MoreFields>` and mark list
   editors with `<SectionBox group>`.
+- Builder ergonomics: every row change goes through the shell's
+  `useRowHistory` (undo/redo, ⌘Z / ⇧⌘Z) and adapters offer a quiet
+  `onAutosave` (draft only, no toast). Text on the canvas is edited
+  in place through `EditableText` → `CanvasEditable` (double-click);
+  `writeRowsAtPath` resolves v3 widgets by id and index-based list
+  paths. Labels name the outcome (`glossary.test.ts` lists retired
+  jargon); never reintroduce "Eyebrow", "Meta Title", "Publish All".
 - Supabase changes (schema, RLS, edge functions) go through Lovable.
 - `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
   dependency changes so CI's `--frozen-lockfile` install passes.

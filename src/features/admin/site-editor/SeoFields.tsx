@@ -171,7 +171,7 @@ const SeoFields = ({
         />
       )}
 
-      <Field label="Meta Title (for search engines)" value={metaTitle} onChange={onTitleChange} />
+      <Field label="Search title" value={metaTitle} onChange={onTitleChange} />
 
       <div>
         <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">

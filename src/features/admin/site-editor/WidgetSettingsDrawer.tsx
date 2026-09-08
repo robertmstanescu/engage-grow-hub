@@ -103,7 +103,7 @@ const NumberField = ({
       style={{
         borderColor: "hsl(var(--border))",
         backgroundColor: "hsl(var(--card))",
-        color: "#1a1a1a",
+        color: "hsl(var(--foreground))",
       }}
     />
   </div>
@@ -317,7 +317,7 @@ const WidgetSettingsDrawer = ({
                 style={{
                   borderColor: "hsl(var(--border))",
                   backgroundColor: "hsl(var(--card))",
-                  color: "#1a1a1a",
+                  color: "hsl(var(--foreground))",
                 }}
               />
               {design.bgColor && (
