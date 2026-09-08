@@ -59,7 +59,7 @@ import {
 import type { PageRow, SectionShapeConfig, SectionShapeKind, SectionShapeSize } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { ROW_HEIGHT_MODES } from "@/lib/rowHeight";
-import { DEFAULT_PAGE_MESH, buildPageMeshCSS } from "@/features/site/pageMesh";
+import PageBackgroundPanel from "./PageBackgroundPanel";
 
 interface Props {
   row: PageRow;
@@ -202,8 +202,6 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   // ── Page mesh (hero rows only) ─────────────────────────────────────
   // The hero owns the single gradient painted behind the entire page.
   const isHero = row.type === "hero";
-  const mesh = { ...DEFAULT_PAGE_MESH, ...(row.layout?.mesh || {}) };
-  const meshColors = (mesh.colors?.length === 4 ? mesh.colors : DEFAULT_PAGE_MESH.colors) as string[];
   // ── Snap to viewport toggle ────────────────────────────────────────
   // Default OFF: only the Hero snaps. Admins opt-in for hero-class rows
   // (e.g. the Vows pledge) where a full-viewport reveal is desired.
@@ -295,106 +293,18 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
             </div>
 
             {/* ── Page background (hero rows only) ──
-                The hero owns the ONE gradient behind the whole page.
-                Every other row sits transparent on top of it. */}
+                The hero stores the ONE background behind the whole page.
+                The same panel is offered at page level in the inspector
+                (nothing selected) so editors find it without digging. */}
             {isHero && (
               <div className="pt-1 border-t border-border">
                 <label className="font-body text-[10px] uppercase tracking-wider mb-1 mt-3 block text-muted-foreground">
                   Page background (whole page)
                 </label>
-                <div
-                  className="h-14 rounded-lg border border-border mb-2"
-                  style={{ background: buildPageMeshCSS(mesh) }}
+                <PageBackgroundPanel
+                  mesh={row.layout?.mesh}
+                  onChange={(mesh) => patchLayout({ mesh })}
                 />
-                <div className="grid grid-cols-4 gap-1.5">
-                  {meshColors.map((c, i) => (
-                    <input
-                      key={i}
-                      type="color"
-                      value={c}
-                      aria-label={`Page background colour ${i + 1}`}
-                      onChange={(e) => {
-                        const next = [...meshColors];
-                        next[i] = e.target.value;
-                        patchLayout({ mesh: { ...mesh, colors: next } });
-                      }}
-                      className="w-full h-9 rounded border border-border cursor-pointer"
-                    />
-                  ))}
-                </div>
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
-                    Intensity
-                  </span>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={mesh.strength}
-                    onChange={(e) => patchLayout({ mesh: { ...mesh, strength: Number(e.target.value) } })}
-                    className="flex-1"
-                    style={{ accentColor: "hsl(var(--secondary))" }}
-                  />
-                  <span className="font-body text-[10px] text-foreground min-w-[32px] text-right">
-                    {mesh.strength}%
-                  </span>
-                </div>
-                {/* Motion: aurora curtains flow and each crosses to a second
-                    brand hue and back. Grain: film-grain sheet over the wash. */}
-                <div className="flex items-center gap-1.5 mt-2">
-                  <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
-                    Motion
-                  </span>
-                  <div className="flex-1 grid grid-cols-3 gap-1">
-                    {([["off", "Off"], ["calm", "Calm"], ["lively", "Lively"]] as const).map(([value, label]) => {
-                      const active = (mesh.motion || "calm") === value;
-                      return (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => patchLayout({ mesh: { ...mesh, motion: value } })}
-                          className={`font-body text-[10px] py-1.5 rounded-lg border transition-colors ${
-                            active
-                              ? "bg-secondary/15 border-secondary/40 text-foreground"
-                              : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
-                    Grain
-                  </span>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={5}
-                    value={mesh.grain ?? DEFAULT_PAGE_MESH.grain ?? 0}
-                    onChange={(e) => patchLayout({ mesh: { ...mesh, grain: Number(e.target.value) } })}
-                    className="flex-1"
-                    style={{ accentColor: "hsl(var(--secondary))" }}
-                  />
-                  <span className="font-body text-[10px] text-foreground min-w-[32px] text-right">
-                    {mesh.grain ?? DEFAULT_PAGE_MESH.grain ?? 0}%
-                  </span>
-                </div>
-                <p className="font-body text-[10px] text-muted-foreground leading-snug mt-1">
-                  The four colours flow across the page as aurora curtains, each breathing to a second
-                  brand hue and back. Grain stays almost still so the colours carry the motion.
-                  Visitors who prefer reduced motion always see it still.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => patchLayout({ mesh: DEFAULT_PAGE_MESH })}
-                  className="mt-2 font-body text-[10px] underline text-muted-foreground hover:text-foreground"
-                >
-                  Reset to brand default
-                </button>
               </div>
             )}
           </div>

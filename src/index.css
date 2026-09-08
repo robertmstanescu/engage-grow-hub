@@ -498,12 +498,12 @@
     background: hsl(var(--background));
   }
 
-  /* ── Aurora ──
-     The real background: a WebGL canvas (PageMeshAurora) painting four
-     flowing, striated curtains in the hero's colours, each breathing to
-     a second brand hue. It stamps `data-mesh-gl` on the layer once it
-     has a context, which hides the blob fallback below. */
-  .page-mesh-aurora {
+  /* ── Blooms ──
+     The real background: a WebGL canvas (PageMeshBlooms) painting the
+     brand's soft colour blooms wandering across the page and changing
+     places. It stamps `data-mesh-gl` on the layer once it has a
+     context, which hides the CSS blob fallback below. */
+  .page-mesh-blooms {
     position: absolute;
     inset: 0;
     display: block;
@@ -578,7 +578,7 @@
      A tiled fractal-noise sheet blended soft-light over the wash. Its
      opacity is the admin's Grain slider. With motion on it shifts by a
      few px a couple of times a second — barely there, so the colour
-     motion of the aurora is what the eye follows, not the grain; it is
+     motion of the blooms is what the eye follows, not the grain; it is
      a background-position change on a small tile, so it costs almost
      nothing. */
   .page-mesh-grain {
