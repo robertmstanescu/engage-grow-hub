@@ -59,7 +59,9 @@ const seedRowsFromHtml = (html: string): PageRow[] => {
       id: generateRowId(),
       type: "text",
       strip_title: "Body",
-      bg_color: "#FFFFFF",
+      // No card: an article body reads on the page itself, like the
+      // legacy renderer did. Editors can still pick a Look later.
+      bg_color: "",
       content: { body: safe },
       layout: { ...DEFAULT_ROW_LAYOUT },
     } as PageRow,
