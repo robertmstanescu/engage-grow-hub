@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import PublicChunkFallback from "@/components/app/PublicChunkFallback";
+import PageMeshAurora from "@/features/site/PageMeshAurora";
 
 /**
  * Layout for every public-facing route. Wraps the matched child in a
@@ -19,9 +20,10 @@ const PublicLayout = () => (
       pointer-events-none keeps it cheap and out of hit-testing.
     */}
     <div aria-hidden className="page-mesh-layer">
-      {/* Four drifting blobs. Each holds two pre-painted colour layers
-          (its base hue and a second brand hue) that crossfade by opacity,
-          so the colour shift costs the compositor nothing. Then a tiled
+      {/* Four drifting blobs: the fallback wash, shown only where WebGL
+          is unavailable (the aurora canvas stamps `data-mesh-gl` on the
+          layer and hides them). Each holds two pre-painted colour layers
+          that crossfade by opacity. Then the aurora canvas, then a tiled
           film-grain sheet on top. Colours, intensity, grain and motion
           come from the page's hero via CSS variables (see pageMesh.ts). */}
       {[0, 1, 2, 3].map((i) => (
@@ -30,6 +32,7 @@ const PublicLayout = () => (
           <div className="page-mesh-blob-drift" />
         </div>
       ))}
+      <PageMeshAurora />
       <div className="page-mesh-grain" />
     </div>
     <div className="public-fluid-type">
