@@ -339,8 +339,8 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                     {mesh.strength}%
                   </span>
                 </div>
-                {/* Motion: blobs drift and each crosses to a second brand hue
-                    and back. Grain: film-grain sheet over the wash. */}
+                {/* Motion: aurora curtains flow and each crosses to a second
+                    brand hue and back. Grain: film-grain sheet over the wash. */}
                 <div className="flex items-center gap-1.5 mt-2">
                   <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
                     Motion
@@ -384,7 +384,8 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                   </span>
                 </div>
                 <p className="font-body text-[10px] text-muted-foreground leading-snug mt-1">
-                  Motion drifts the four colours and lets each one shift to a second brand hue and back.
+                  The four colours flow across the page as aurora curtains, each breathing to a second
+                  brand hue and back. Grain stays almost still so the colours carry the motion.
                   Visitors who prefer reduced motion always see it still.
                 </p>
                 <button

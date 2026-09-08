@@ -25,6 +25,10 @@ export default defineConfig({
   snapshotPathTemplate: "{testDir}/__snapshots__/{platform}/{arg}{ext}",
   use: {
     ...devices["Desktop Chrome"],
+    // Headless Chromium has no GPU; these flags give it software WebGL
+    // so the page-mesh aurora paints (its still frame — reducedMotion
+    // below freezes it) instead of the blob fallback.
+    launchOptions: { args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] },
     baseURL: "http://localhost:4173",
     viewport: { width: 1280, height: 900 },
     deviceScaleFactor: 1,
