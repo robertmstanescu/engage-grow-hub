@@ -1,0 +1,42 @@
+name: visual-baseline
+
+# Re-renders the Linux screenshot baseline that the `visual` job in
+# check.yml compares against, and commits it to the branch this was run
+# on. Run it (Actions → visual-baseline → Run workflow, pick the branch)
+# after an INTENTIONAL design change, once the PR's row shots are what
+# you want. Never run it to make an unexpected red `visual` job green —
+# that red is the point.
+#
+# Why CI renders it: screenshots differ by OS (font antialiasing), so a
+# baseline made on a Mac never matches Ubuntu. Local runs use the
+# `darwin` folder, CI uses `linux`.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: bunx playwright install --with-deps chromium
+      - run: rm -rf tests/visual/__snapshots__/linux && bun run test:visual:update
+      - name: Commit the Linux baseline
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/visual/__snapshots__/linux
+          if git diff --cached --quiet; then
+            echo "Baseline unchanged; nothing to commit."
+            exit 0
+          fi
+          git commit -m "Refresh Linux visual baseline"
+          git push
