@@ -205,8 +205,15 @@ const RowSection = ({
    *  opposite padding by the shape's own height so the content sits in
    *  the middle of the total painted mass. Two shapes cancel out. */
   const flatShapes = useFlatShapes();
-  const topShapeH = shapeHeightPx(shapeTop, flatShapes);
-  const bottomShapeH = shapeHeightPx(shapeBottom, flatShapes);
+  /* Only decorative caps (wave, arch, angled, …) get that compensation.
+   * A "rounded" edge is the stacked-card lip: the row climbs over its
+   * neighbour like a card in a wallet or a sheet in a dossier, and the
+   * height it adds IS the overlap, not extra surface around the content.
+   * Padding the opposite side to match made every rounded row ~50px
+   * taller than a plain one — the "too much space" between sections. */
+  const isCardLip = (s: typeof shapeTop) => s?.kind === "rounded";
+  const topShapeH = isCardLip(shapeTop) ? 0 : shapeHeightPx(shapeTop, flatShapes);
+  const bottomShapeH = isCardLip(shapeBottom) ? 0 : shapeHeightPx(shapeBottom, flatShapes);
   const basePad = "clamp(72px, 8vw, 128px)";
 
   /* Hairline separator on the top edge — independent of shapes so a row
