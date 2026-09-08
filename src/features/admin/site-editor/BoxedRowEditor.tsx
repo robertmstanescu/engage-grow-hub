@@ -1,16 +1,18 @@
 /**
- * BoxedRowEditor — Inspector-friendly editor for legacy "boxed" widgets.
+ * BoxedRowEditor — the one editor for "boxed" card rows, used by every
+ * admin surface through RowTypeEditor.
  *
- * Mirrors the field layout used by RowContentEditor's `case "boxed"` block
- * but exposes a `{ content, onChange }` signature suitable for the
- * widget-level Inspector panel.
+ * "Our Vows" is a boxed row too: the separate VowsEditor it once had was
+ * a drifting copy of this file (same cards[] + card colours) plus a
+ * "Title Color" field that BoxedRow honours (`color_title`) — that field
+ * now lives here and the copy is gone.
  */
 
-import { Field, ColorField } from "./FieldComponents";
+import { ColorField, EyebrowField, NoteField } from "./FieldComponents";
+import { CoverImageField } from "./CoverImageField";
 import SubtitleEditor from "./SubtitleEditor";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
 import BoxedArrayField from "../editors/BoxedArrayField";
-import ImagePickerField from "../ImagePickerField";
 
 interface Props {
   content: Record<string, any>;
@@ -25,7 +27,14 @@ const BoxedRowEditor = ({ content, onChange, bgColor }: Props) => {
 
   return (
     <div className="space-y-3">
+      <EyebrowField
+        value={content.eyebrow || ""}
+        color={content.color_eyebrow || ""}
+        onChange={(v) => onChange("eyebrow", v)}
+        onColorChange={(v) => onChange("color_eyebrow", v)}
+      />
       <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
+      <ColorField label="Title Color" value={content.color_title || ""} fallback="" onChange={(v) => onChange("color_title", v)} />
       <SubtitleEditor
         subtitle={content.subtitle || ""}
         subtitleColor={content.subtitle_color || ""}
@@ -36,42 +45,13 @@ const BoxedRowEditor = ({ content, onChange, bgColor }: Props) => {
         bgColor={bgColor}
       />
       <BoxedArrayField content={content} onChange={onChange} bgColor={bgColor} />
-      <Field label="Eyebrow" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
-      <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
-      {/* Optional cover image (RowCoverCard, src/features/site/RowCoverCard.tsx)
-          — wraps eyebrow/title/subtitle/cards in a photo-card treatment
-          when set. Leave empty and the row renders exactly as before. */}
-      <ImagePickerField
-        label="Cover Image (optional)"
-        value={content.cover_image || ""}
-        onChange={(v) => onChange("cover_image", v)}
-        altValue={content.cover_image_alt || ""}
-        onAltChange={(v) => onChange("cover_image_alt", v)}
-        ratio={content.cover_image_ratio || "original"}
-        focalX={content.cover_image_focal_x}
-        focalY={content.cover_image_focal_y}
-        onShapeChange={(patch) => {
-          if (patch.ratio !== undefined) onChange("cover_image_ratio", patch.ratio);
-          if (patch.focalX !== undefined) onChange("cover_image_focal_x", patch.focalX);
-          if (patch.focalY !== undefined) onChange("cover_image_focal_y", patch.focalY);
-        }}
-      />
       <div className="grid grid-cols-2 gap-3">
-        <ColorField
-          label="Eyebrow colour"
-          value={content.color_eyebrow || ""}
-          fallback=""
-          onChange={(v) => onChange("color_eyebrow", v)}
-        />
-        <ColorField
-          label="Note colour"
-          value={content.color_note || ""}
-          fallback=""
-          onChange={(v) => onChange("color_note", v)}
-        />
+        <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onChange("color_card_title", v)} />
+        <ColorField label="Card Body Color" value={content.color_card_body || ""} fallback="" onChange={(v) => onChange("color_card_body", v)} />
       </div>
-      <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onChange("color_card_title", v)} />
-      <ColorField label="Card Body Color" value={content.color_card_body || ""} fallback="" onChange={(v) => onChange("color_card_body", v)} />
+      <NoteField value={content.note || ""} onChange={(v) => onChange("note", v)} />
+      <ColorField label="Note colour" value={content.color_note || ""} fallback="" onChange={(v) => onChange("color_note", v)} />
+      <CoverImageField content={content} onChange={onChange} shape />
     </div>
   );
 };

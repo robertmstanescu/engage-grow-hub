@@ -1,4 +1,4 @@
-import { SectionBox, Field, RichField, ArrayField, ColorField } from "./FieldComponents";
+import { SectionBox, Field, RichField, ArrayField, ColorField, CtaFields } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImagePickerField from "../ImagePickerField";
@@ -74,18 +74,7 @@ const ProfileEditor = ({ content, onChange, bgColor }: Props) => {
         <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
       </SectionBox>
 
-      {/* CTA grouped — Button Label leads, Note demoted to bottom. */}
-      <SectionBox label="Call to Action (Button)">
-        <Field
-          label="Button Label"
-          value={content.cta_label || ""}
-          onChange={(v) => onChange("cta_label", v.slice(0, 30))}
-          maxLength={30}
-          hint="Max 30 characters for mobile."
-        />
-        <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onChange("cta_url", v)} />
-        <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
-      </SectionBox>
+      <CtaFields content={content} onChange={onChange} />
 
       <SectionBox label="Colors">
         <div className="grid grid-cols-2 gap-3">

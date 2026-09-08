@@ -1,4 +1,4 @@
-import { SectionBox, Field, RichField, SelectField, ColorField } from "./FieldComponents";
+import { SectionBox, Field, RichField, SelectField, ColorField, CtaFields } from "./FieldComponents";
 import ImagePickerField from "../ImagePickerField";
 import ImageShapeControl from "../ImageShapeControl";
 import TitleLineEditor from "./TitleLineEditor";
@@ -114,17 +114,7 @@ const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Prop
        * the public renderer (ImageTextRow) MUST not render the <a/> at
        * all — see the conditional `{c.cta_label && (…)}` block there.
        */}
-      <SectionBox label="Call to Action (Button)">
-        <Field
-          label="Button Label"
-          value={content.cta_label || ""}
-          onChange={(v) => onChange("cta_label", v.slice(0, 30))}
-          maxLength={30}
-          hint="Max 30 characters for mobile."
-        />
-        <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onChange("cta_url", v)} />
-        <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
-      </SectionBox>
+      <CtaFields content={content} onChange={onChange} />
 
       <SectionBox label="Colors">
         <div className="grid grid-cols-2 gap-3">

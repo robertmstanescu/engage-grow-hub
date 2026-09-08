@@ -1,9 +1,9 @@
 import { Plus, Trash2 } from "lucide-react";
-import { SectionBox, Field, RichField, ColorField } from "./FieldComponents";
+import { SectionBox, Field, RichField, ColorField, CtaFields } from "./FieldComponents";
+import { CoverImageField } from "./CoverImageField";
 import { DeferredTextarea } from "./DeferredInput";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
-import ImagePickerField from "../ImagePickerField";
 
 interface Props {
   content: Record<string, any>;
@@ -67,13 +67,7 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
       </SectionBox>
 
       <SectionBox label="Cover Image">
-        <ImagePickerField
-          label="Cover Image (optional)"
-          value={content.cover_image || ""}
-          onChange={(v) => onChange("cover_image", v)}
-          altValue={content.cover_image_alt || ""}
-          onAltChange={(v) => onChange("cover_image_alt", v)}
-        />
+        <CoverImageField content={content} onChange={onChange} />
       </SectionBox>
 
       {/* Stats (fixed 3) */}
@@ -114,17 +108,7 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
        * CALL TO ACTION block — Button Label leads (it's the primary action).
        * Empty `cta_label` means GridRow must skip rendering the button.
        */}
-      <SectionBox label="Call to Action (Button)">
-        <Field
-          label="Button Label"
-          value={content.cta_label || ""}
-          onChange={(v) => onChange("cta_label", v.slice(0, 30))}
-          maxLength={30}
-          hint="Max 30 characters for mobile."
-        />
-        <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onChange("cta_url", v)} />
-        <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
-      </SectionBox>
+      <CtaFields content={content} onChange={onChange} />
 
       {/* Colors */}
       <SectionBox label="Colors">

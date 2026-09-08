@@ -315,6 +315,42 @@ export const ColorField = ({
 };
 
 /**
+ * NoteField — the small optional caption most rows can show near their
+ * CTA. One component so the label, key (`note`) and placement are the
+ * same in every editor.
+ */
+export const NoteField = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+  <Field label="Note (optional)" value={value} onChange={onChange} />
+);
+
+/**
+ * CtaFields — the standard "Call to Action (Button)" group: button label
+ * (capped at 30 characters so it fits on mobile), button URL, and the
+ * optional note. Reads/writes `cta_label`, `cta_url`, `note`. Hero,
+ * Grid, Image+Text and Profile all carried an identical copy of this
+ * block; a renderer must skip the button when `cta_label` is empty.
+ */
+export const CtaFields = ({
+  content,
+  onChange,
+}: {
+  content: Record<string, any>;
+  onChange: (field: string, value: any) => void;
+}) => (
+  <SectionBox label="Call to Action (Button)">
+    <Field
+      label="Button Label"
+      value={content.cta_label || ""}
+      onChange={(v) => onChange("cta_label", v.slice(0, 30))}
+      maxLength={30}
+      hint="Max 30 characters for mobile."
+    />
+    <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onChange("cta_url", v)} />
+    <NoteField value={content.note || ""} onChange={(v) => onChange("note", v)} />
+  </SectionBox>
+);
+
+/**
  * EyebrowField — the small label above a row title, paired with its own
  * colour picker so every widget offers the same control. Keeps the text
  * and its colour side by side instead of scattering the colour into a
