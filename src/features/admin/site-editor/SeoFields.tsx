@@ -222,7 +222,7 @@ const SeoFields = ({
               type="button"
               onClick={handleGenerate}
               disabled={generating}
-              className="shrink-0 flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full transition-opacity hover:opacity-80 disabled:opacity-50"
+              className="shrink-0 flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md transition-opacity hover:opacity-80 disabled:opacity-50"
               style={{ border: "1px solid hsl(46 75% 40% / 0.5)", color: "hsl(var(--foreground))" }}
             >
               {generating ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}

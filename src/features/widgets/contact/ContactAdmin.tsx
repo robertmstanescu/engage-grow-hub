@@ -21,7 +21,7 @@ import {
   Field,
   RichField,
 } from "@/features/admin/site-editor/FieldComponents";
-import TitleLineEditor from "@/features/admin/site-editor/TitleLineEditor";
+import TitleLinesEditor from "@/features/admin/editors/TitleLinesEditor";
 import ImagePickerField from "@/features/admin/ImagePickerField";
 
 interface Props {
@@ -37,63 +37,6 @@ const FIELD_TYPES = [
   { label: "Phone", value: "tel" },
   { label: "URL", value: "url" },
 ];
-
-/* ──────────────────────────────────────────────────────────────────────
- * Local TitleLinesEditor — duplicated from RowsManager so this widget
- * can stand alone. Keeping it scoped here means the widget folder is
- * self-contained: a junior dev reading `widgets/contact/` sees every
- * piece of the contact block in one place, not scattered across the
- * legacy admin tree.
- * ────────────────────────────────────────────────────────────────────── */
-const TitleLinesEditor = ({
-  titleLines,
-  onChange,
-}: {
-  titleLines: string[];
-  onChange: (lines: string[]) => void;
-}) => {
-  const updateLine = (idx: number, html: string) => {
-    const next = [...titleLines];
-    next[idx] = html;
-    onChange(next);
-  };
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">
-          Title Lines
-        </label>
-        <button
-          type="button"
-          onClick={() => onChange([...titleLines, "<p></p>"])}
-          className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70"
-          style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}
-        >
-          <Plus size={10} /> Add
-        </button>
-      </div>
-      <div className="space-y-2">
-        {titleLines.map((line, i) => (
-          <SectionBox key={i} label={`Line ${i + 1}`}>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <TitleLineEditor value={line} onChange={(v) => updateLine(i, v)} />
-              </div>
-              <button
-                type="button"
-                onClick={() => onChange(titleLines.filter((_, j) => j !== i))}
-                className="self-end p-2 rounded hover:opacity-70"
-                style={{ color: "hsl(var(--destructive))" }}
-              >
-                <Trash2 size={13} />
-              </button>
-            </div>
-          </SectionBox>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 const ContactAdmin = ({ content, onChange }: Props) => {
   const titleLines: string[] = (content.title_lines || []).map((l: any) =>
@@ -124,7 +67,7 @@ const ContactAdmin = ({ content, onChange }: Props) => {
 
   return (
     <div className="space-y-3">
-      <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} />
+      <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} />
       <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
       <Field
         label="Button Text"

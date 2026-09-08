@@ -2,7 +2,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { SectionBox, Field, RichField, ColorField, CtaFields, MoreFields } from "./FieldComponents";
 import { CoverImageField } from "./CoverImageField";
 import { DeferredTextarea } from "./DeferredInput";
-import TitleLineEditor from "./TitleLineEditor";
+import TitleLinesEditor from "../editors/TitleLinesEditor";
 import SubtitleEditor from "./SubtitleEditor";
 
 interface Props {
@@ -13,9 +13,6 @@ interface Props {
 }
 
 const GridEditor = ({ content, onChange, bgColor }: Props) => {
-  const titleLines: string[] = (content.title_lines || []).map((l: any) =>
-    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`
-  );
 
   /* ── Stats (exactly 3) ── */
   const stats: { value: string; label: string }[] = content.stats || [
@@ -48,20 +45,7 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
       {/* Header */}
       <SectionBox label="Header">
         <Field label="Label above title" value={content.eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} />
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Title Lines</label>
-            <button type="button" onClick={() => onChange("title_lines", [...titleLines, "<p></p>"])} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
-              <Plus size={10} /> Add
-            </button>
-          </div>
-          {titleLines.map((line, i) => (
-            <div key={i} className="flex gap-2 mb-2">
-              <div className="flex-1"><TitleLineEditor value={line} onChange={(v) => { const next = [...titleLines]; next[i] = v; onChange("title_lines", next); }} /></div>
-              <button type="button" onClick={() => onChange("title_lines", titleLines.filter((_, j) => j !== i))} className="self-end p-2 rounded hover:opacity-70" style={{ color: "hsl(var(--destructive))" }}><Trash2 size={13} /></button>
-            </div>
-          ))}
-        </div>
+        <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
         <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onChange("subtitle", v)} onColorChange={(v) => onChange("subtitle_color", v)} handwritten={!!content.subtitle_handwritten} onHandwrittenChange={(v) => onChange("subtitle_handwritten", v)} />
         <RichField label="Description" value={content.description || ""} onChange={(v) => onChange("description", v)} bgColor={bgColor} />
       </SectionBox>
@@ -105,7 +89,7 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
               </button>
             </div>
           ))}
-          <button type="button" onClick={addAchievement} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70 transition-opacity" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
+          <button type="button" onClick={addAchievement} className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md hover:opacity-70 transition-opacity" style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
             <Plus size={10} /> Add Achievement
           </button>
         </div>

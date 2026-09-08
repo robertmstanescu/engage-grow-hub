@@ -139,7 +139,7 @@ const TagsManager = () => {
           isLoading={isSavingChanges}
           loadingLabel="Saving…"
           onClick={handleSave}
-          className="font-display text-[10px] uppercase tracking-wider font-bold px-5 py-2 rounded-full hover:opacity-85 transition-opacity"
+          className="font-display text-[10px] uppercase tracking-wider font-bold px-5 py-2 rounded-md hover:opacity-85 transition-opacity"
           style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
           Save Tags
         </SpinnerButton>
@@ -229,7 +229,7 @@ const TagsManager = () => {
                   />
                 </div>
                 <span
-                  className="ml-auto font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium"
+                  className="ml-auto font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-md font-medium"
                   style={{ backgroundColor: tag.bgColor || "#4D1B5E", color: tag.textColor || "#FFFFFF" }}>
                   {tag.label}
                 </span>
@@ -241,7 +241,7 @@ const TagsManager = () => {
         <button
           type="button"
           onClick={addServiceTag}
-          className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity mt-2"
+          className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md hover:opacity-70 transition-opacity mt-2"
           style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
           <Plus size={10} /> Add Tag Type
         </button>
@@ -292,7 +292,7 @@ const TagsManager = () => {
                   <input type="color" value={cat.textColor || "#F9F0C1"} onChange={(e) => updateBlogCategory(i, "textColor", e.target.value)} className="w-7 h-7 rounded cursor-pointer border-0 p-0" />
                   <input type="text" value={cat.textColor || "#F9F0C1"} onChange={(e) => { const v = e.target.value; if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) updateBlogCategory(i, "textColor", v); }} placeholder="#HEX" className="w-20 px-2 py-1 rounded font-mono text-xs border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))" }} />
                 </div>
-                <span className="ml-auto font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: cat.bgColor || "#4D1B5E", color: cat.textColor || "#F9F0C1" }}>
+                <span className="ml-auto font-body text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-md font-medium" style={{ backgroundColor: cat.bgColor || "#4D1B5E", color: cat.textColor || "#F9F0C1" }}>
                   {cat.label}
                 </span>
               </div>
@@ -303,7 +303,7 @@ const TagsManager = () => {
         <button
           type="button"
           onClick={addBlogCategory}
-          className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity mt-2"
+          className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md hover:opacity-70 transition-opacity mt-2"
           style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
           <Plus size={10} /> Add Category
         </button>

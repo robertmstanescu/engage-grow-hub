@@ -92,14 +92,14 @@ const BrandingEditor = ({ content, onChange }: Props) => {
                 type="button"
                 onClick={() => inputRef.current?.click()}
                 disabled={uploading === field}
-                className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity"
+                className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md hover:opacity-70 transition-opacity"
                 style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
                 <Upload size={10} /> Replace
               </button>
               <button
                 type="button"
                 onClick={() => onChange(field, "")}
-                className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity"
+                className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md hover:opacity-70 transition-opacity"
                 style={{ color: "hsl(var(--destructive))", border: "1px solid hsl(var(--destructive) / 0.3)" }}>
                 <Trash2 size={10} /> Remove
               </button>

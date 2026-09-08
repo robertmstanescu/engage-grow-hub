@@ -510,7 +510,7 @@ const PageBuilderShell = (props: PageBuilderShellProps) => {
                     {/* US 3.1 — "Inspector" → "Selected block" (user-facing).
                         US 4.1 — admin-section-label upgrades contrast. */}
                     <h3 className="admin-section-label font-body text-[10px]">
-                      Element Settings
+                      Selected block
                     </h3>
                   </div>
                   {/* US 3.1 — strict scroll container. overflow-x-hidden +

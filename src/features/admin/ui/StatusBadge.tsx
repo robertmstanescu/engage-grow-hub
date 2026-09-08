@@ -24,7 +24,7 @@ const StatusBadge = ({ state, detail, className = "" }: Props) => {
   const { className: tone, Icon } = TONE[state] ?? TONE.draft;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-body text-[10px] uppercase tracking-wider whitespace-nowrap ${tone} ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-body text-[10px] uppercase tracking-wider whitespace-nowrap ${tone} ${className}`}
       title={detail}
     >
       <Icon size={11} aria-hidden="true" />

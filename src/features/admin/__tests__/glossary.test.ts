@@ -19,10 +19,18 @@ const FORBIDDEN: RegExp[] = [
   />Layout ratios</,
   />Edges &amp; separators</,
   />Row cover image</,
-  />Page Identity</,
-  />Element Settings</,
+  />\s*Page Identity\s*</,
+  />\s*Element Settings\s*</,
+  />\s*Page Title\s*</,
+  />\s*Page URL\s*</,
+  /label = "Eyebrow"/,
+  /eyebrow: "Eyebrow"/,
+  /Handwritten style \(Architects Daughter\)/,
   /"Publish All"/,
   /"Save Draft"/,
+  />Title Lines</,
+  />Add Line</,
+  />Media Library</,
 ];
 
 const walk = (dir: string, out: string[] = []) => {

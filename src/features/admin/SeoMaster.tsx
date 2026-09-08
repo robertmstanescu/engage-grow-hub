@@ -620,7 +620,7 @@ const AiSummaryCell = ({ summary, onGenerate }: { summary: string; onGenerate?: 
       type="button"
       disabled={busy}
       onClick={async () => { setBusy(true); try { await onGenerate(); } finally { setBusy(false); } }}
-      className="inline-flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border hover:opacity-70 disabled:opacity-50"
+      className="inline-flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md border hover:opacity-70 disabled:opacity-50"
     >
       <Sparkles size={10} /> {busy ? "Generating…" : summary ? "Regenerate" : "Generate"}
     </button>
@@ -814,7 +814,7 @@ const GlobalMetadata = () => {
           <BarChart3 size={14} className="text-secondary" />
           <h3 className="font-display text-sm uppercase tracking-wider text-foreground">Tracking IDs</h3>
           <span
-            className="font-body text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-secondary/15 text-secondary border border-secondary/30"
+            className="font-body text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-secondary/15 text-secondary border border-secondary/30"
             title="These IDs are auto-injected into the live site <head> via usePageMeta."
           >
             Live
@@ -917,7 +917,7 @@ const GlobalMetadata = () => {
             <button
               type="button"
               onClick={addSocialLink}
-              className="inline-flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full border border-secondary/40 text-secondary hover:bg-secondary/10"
+              className="inline-flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-md border border-secondary/40 text-secondary hover:bg-secondary/10"
             >
               <Plus size={12} /> Add Link
             </button>
@@ -953,7 +953,7 @@ const GlobalMetadata = () => {
             <button
               type="button"
               onClick={addServiceArea}
-              className="inline-flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full border border-secondary/40 text-secondary hover:bg-secondary/10"
+              className="inline-flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-md border border-secondary/40 text-secondary hover:bg-secondary/10"
             >
               <Plus size={12} /> Add City
             </button>

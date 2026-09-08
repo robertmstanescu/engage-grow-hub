@@ -224,7 +224,7 @@ const EmailCampaigns = () => {
             isLoading={isSavingChanges}
             loadingLabel="Saving…"
             onClick={handleSave}
-            className="font-body text-xs uppercase tracking-wider px-5 py-2.5 rounded-full border hover:opacity-80 transition-opacity"
+            className="font-body text-xs uppercase tracking-wider px-5 py-2.5 rounded-md border hover:opacity-80 transition-opacity"
             style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}>
             Save Draft
           </SpinnerButton>
@@ -239,7 +239,7 @@ const EmailCampaigns = () => {
         <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--secondary))" }}>Email Campaigns</h2>
         <button
           onClick={handleNew}
-          className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+          className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-md hover:opacity-80 transition-opacity"
           style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
           <Plus size={14} /> New Campaign
         </button>
@@ -270,7 +270,7 @@ const EmailCampaigns = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span
-                    className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full"
+                    className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md"
                     style={{
                       backgroundColor: campaign.status === "sent" ? "hsl(var(--accent) / 0.15)" : "hsl(var(--muted))",
                       color: campaign.status === "sent" ? "hsl(var(--accent-foreground))" : "hsl(var(--muted-foreground))",

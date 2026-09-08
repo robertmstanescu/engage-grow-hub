@@ -140,7 +140,7 @@ const SeoAssistantPanel = ({
         type="button"
         onClick={run}
         disabled={loading}
-        className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full disabled:opacity-50"
+        className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-md disabled:opacity-50"
         style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
       >
         {loading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
@@ -169,7 +169,7 @@ const SeoAssistantPanel = ({
             <button
               type="button"
               onClick={apply}
-              className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full"
+              className="flex items-center gap-1.5 font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-md"
               style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
             >
               <Check size={12} /> Apply selected
@@ -177,7 +177,7 @@ const SeoAssistantPanel = ({
             <button
               type="button"
               onClick={() => setSuggestions(null)}
-              className="font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full border"
+              className="font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-md border"
               style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
             >
               Discard

@@ -21,9 +21,6 @@ interface Props {
 }
 
 const BoxedRowEditor = ({ content, onChange, bgColor }: Props) => {
-  const titleLines = (content.title_lines || []).map((l: any) =>
-    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`,
-  );
 
   return (
     <div className="space-y-3">
@@ -33,7 +30,7 @@ const BoxedRowEditor = ({ content, onChange, bgColor }: Props) => {
         onChange={(v) => onChange("eyebrow", v)}
         onColorChange={(v) => onChange("color_eyebrow", v)}
       />
-      <TitleLinesEditor titleLines={titleLines} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
+      <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
       <ColorField label="Title Color" value={content.color_title || ""} fallback="" onChange={(v) => onChange("color_title", v)} />
       <SubtitleEditor
         subtitle={content.subtitle || ""}

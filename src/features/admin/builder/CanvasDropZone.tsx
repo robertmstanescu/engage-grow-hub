@@ -134,7 +134,7 @@ const CanvasDropZone = ({ position }: CanvasDropZoneProps) => {
         >
           {hovered && (
             <span
-              className="flex items-center justify-center rounded-full"
+              className="flex items-center justify-center rounded-md"
               style={{
                 width: 16,
                 height: 16,

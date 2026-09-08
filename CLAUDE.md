@@ -49,6 +49,14 @@ Rules that are easy to get wrong:
   `writeRowsAtPath` resolves v3 widgets by id and index-based list
   paths. Labels name the outcome (`glossary.test.ts` lists retired
   jargon); never reintroduce "Eyebrow", "Meta Title", "Publish All".
+- Titles are ONE box (`site-editor/TitleEditor.tsx`, wrapped by
+  `editors/TitleLinesEditor.tsx`): one line per row, formatting only on
+  selection, stored unchanged as `title_lines: string[]`. Never add a
+  per-line editor. The body editor shows eight controls and a More menu.
+  Media is a grid of square tiles with alt text asked for on upload.
+- Square boxes: the admin sets `--radius` to 6px, so `rounded-lg`/`-md`
+  are the shell's corners. `rounded-full` and `rounded-xl+` are for
+  swatches, dots, toggles and avatars only (`squareCorners.test.ts`).
 - Supabase changes (schema, RLS, edge functions) go through Lovable.
 - `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
   dependency changes so CI's `--frozen-lockfile` install passes.

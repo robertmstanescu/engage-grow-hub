@@ -246,14 +246,14 @@ const PageNavigator = ({
         {/* ── Page identity (Title + URL) ───────────────────────── */}
         <AccordionItem value="page-identity" className="border-b" style={{ borderColor: "hsl(var(--border))" }}>
           <AccordionTrigger className="admin-section-label px-4 py-2 font-body text-[10px] hover:no-underline">
-            Page Identity
+            Page
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-3 pt-0">
             <div className="space-y-3">
               {/* Slot 1 — Page Title */}
               <div className="space-y-1">
                 <label className="admin-section-label block font-body text-[10px]">
-                  Page Title
+                  Title
                 </label>
                 <input
                   type="text"
@@ -278,7 +278,7 @@ const PageNavigator = ({
               {/* Slot 2 — Page URL Slug */}
               <div className="space-y-1">
                 <label className="admin-section-label block font-body text-[10px]">
-                  Page URL
+                  Address
                 </label>
                 <div
                   className="flex items-center gap-1.5 rounded-md px-2 py-1.5 border"

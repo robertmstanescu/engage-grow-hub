@@ -122,7 +122,7 @@ const GlobalSettings = () => {
             loadingLabel="Saving…"
             icon={<Save size={13} />}
             onClick={handleSaveAll}
-            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-md hover:opacity-80 transition-opacity"
             style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
             Save Draft
           </SpinnerButton>
@@ -132,7 +132,7 @@ const GlobalSettings = () => {
             icon={<Send size={13} />}
             disabled={!hasChanges}
             onClick={handlePublishAll}
-            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
+            className="font-body text-xs uppercase tracking-wider px-4 py-2 rounded-md hover:opacity-80 transition-opacity"
             style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
             Publish
           </SpinnerButton>
@@ -318,7 +318,7 @@ const FooterColumnsEditor = ({ columns, onChange }: { columns: any[]; onChange: 
         </div>
       ))}
       <button onClick={() => onChange([...columns, { title: "New Column", links: [] }])}
-        className="font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-80"
+        className="font-body text-xs uppercase tracking-wider px-3 py-1.5 rounded-md border hover:opacity-80"
         style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>+ Add Column</button>
     </div>
   );

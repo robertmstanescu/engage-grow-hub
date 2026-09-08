@@ -45,7 +45,7 @@ const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {
           type="button"
           onClick={() => onChange("cards", [...cards, { title: "", body: "" }])}
           disabled={cards.length >= 6}
-          className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70 disabled:opacity-30 text-primary border border-primary/30"
+          className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md hover:opacity-70 disabled:opacity-30 text-primary border border-primary/30"
         >
           <Plus size={10} /> Add Card
         </button>

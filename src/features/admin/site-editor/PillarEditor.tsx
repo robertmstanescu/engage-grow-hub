@@ -163,7 +163,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
         <div className="flex gap-2">
           {(["left", "center", "right"] as const).map((opt) => (
             <button key={opt} type="button" onClick={() => onPillarChange("card_text_align", opt)}
-              className="font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full transition-all"
+              className="font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md transition-all"
               style={{
                 backgroundColor: (pillarContent.card_text_align || "left") === opt ? "hsl(var(--primary))" : "transparent",
                 color: (pillarContent.card_text_align || "left") === opt ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
@@ -197,7 +197,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
           <button
             type="button"
             onClick={addService}
-            className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full hover:opacity-70 transition-opacity"
+            className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md hover:opacity-70 transition-opacity"
             style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}>
             <Plus size={10} /> Add Service
           </button>
@@ -219,7 +219,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
                 </span>
                 <div className="flex items-center gap-1.5">
                   <span
-                    className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full"
+                    className="font-body text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md"
                     style={{
                       backgroundColor: "hsl(var(--muted) / 0.4)",
                       color: "hsl(var(--muted-foreground))",
@@ -271,7 +271,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
                   <button
                     type="button"
                     onClick={() => removeService(i)}
-                    className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity"
+                    className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md hover:opacity-70 transition-opacity"
                     style={{ color: "hsl(var(--destructive))", border: "1px solid hsl(var(--destructive) / 0.3)" }}>
                     <Trash2 size={11} /> Remove Service
                   </button>

@@ -33,7 +33,7 @@ import type { PageRow, PageColumn, PageCell } from "@/types/rows";
  */
 
 const FIELD_LABELS: Record<string, string> = {
-  eyebrow: "Eyebrow",
+  eyebrow: "Label above title",
   title: "Title",
   subtitle: "Subtitle",
   body: "Body",
