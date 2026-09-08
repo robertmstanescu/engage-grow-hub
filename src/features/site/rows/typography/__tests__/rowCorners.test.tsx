@@ -73,6 +73,28 @@ describe("row surface corners", () => {
     expect(style).not.toContain("border-bottom:");
   });
 
+  it("lets a row override the outline colour and width for itself and its children", () => {
+    const markup = renderToStaticMarkup(
+      <RowSection row={makeRow({ surfaceRadius: "medium", outlineColor: "#c00", outlineWidth: 3 })}>
+        <p>content</p>
+      </RowSection>,
+    );
+    const style = /<section[^>]*style="([^"]*)"/.exec(markup)?.[1] ?? "";
+    expect(style).toContain("--outline-ink:#c00");
+    expect(style).toContain("--outline-ink-width:3px");
+    // re-declared on the row so it resolves against the row's own tokens
+    expect(style).toContain("--outline-ink-border:var(--outline-ink-width) solid var(--outline-ink)");
+  });
+
+  it("a row-level width of 0 turns its outline off", () => {
+    const markup = renderToStaticMarkup(
+      <RowSection row={makeRow({ surfaceRadius: "medium", outlineWidth: 0 })}>
+        <p>content</p>
+      </RowSection>,
+    );
+    expect(/<section[^>]*style="([^"]*)"/.exec(markup)?.[1] ?? "").not.toContain("border-left");
+  });
+
   it("draws no outline on a plain row", () => {
     const markup = renderToStaticMarkup(
       <RowSection row={makeRow({})}>

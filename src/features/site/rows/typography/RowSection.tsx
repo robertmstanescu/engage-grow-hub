@@ -192,7 +192,18 @@ const RowSection = ({
   /* A row is outlined when any of its edges is "set": a rounded lip or
      other edge shape, or a Corners size on its own surface. Plain rows
      stay outline-free. */
-  const outlined = !maskShapes && (hasExternalShape || applyRadius);
+  const outlineWidth = row.layout?.outlineWidth;
+  const outlineColor = row.layout?.outlineColor?.trim() || undefined;
+  const outlined = !maskShapes && (hasExternalShape || applyRadius) && outlineWidth !== 0;
+  /* Per-row override of the outline tokens. `--outline-ink-border` is
+     re-declared here so it resolves against THIS row's colour and width
+     (a custom property defined on :root would already have substituted
+     the site-wide values). Children — the lip, cover picture, frames,
+     boxes — inherit the same tokens. */
+  const outlineVars: Record<string, string> = {};
+  if (outlineColor) outlineVars["--outline-ink"] = outlineColor;
+  if (outlineWidth != null && outlineWidth > 0) outlineVars["--outline-ink-width"] = `${outlineWidth}px`;
+  if (Object.keys(outlineVars).length) outlineVars["--outline-ink-border"] = "var(--outline-ink-width) solid var(--outline-ink)";
   const radiusStyle: CSSProperties | null = applyRadius
     ? {
         borderTopLeftRadius: topHasShape ? 0 : radiusValue,
@@ -325,6 +336,7 @@ const RowSection = ({
              bottom when they are square corners of a rounded surface. An
              edge that carries a cap is outlined by the cap itself
              (SectionShape), so the outline follows the curve. */
+          ...outlineVars,
           ...(outlined
             ? {
                 borderLeft: "var(--outline-ink-border)",
