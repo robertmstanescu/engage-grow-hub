@@ -129,6 +129,7 @@ const SemanticAligner = ({ columns, widths, disabled, gap = "2rem", alignItems =
     <div
       ref={containerRef}
       className="grid"
+      data-row-grid=""
       style={{
         gridTemplateColumns: widths.map((w) => `${w}fr`).join(" "),
         alignItems,

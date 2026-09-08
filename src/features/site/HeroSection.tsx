@@ -354,7 +354,7 @@ export const HeroView = ({
         data-snap-enabled="true"
         aria-busy="true"
         className="scope-hero snap-section grain relative"
-        style={{ height: "calc(100vh - var(--nav-top-offset, 0px))" }}
+        style={{ minHeight: "min(60vh, 560px)" }}
       />
     );
   }
@@ -364,7 +364,11 @@ export const HeroView = ({
       data-section="hero"
       data-snap-enabled="true"
       className="scope-hero snap-section grain relative flex flex-col justify-center overflow-hidden"
-      style={{ minHeight: "calc(100dvh - var(--nav-top-offset, 0px))", ...sectionStyle }}
+      /* Hugs its content by default (the About page look). Style ▸ Height
+         on a hero row still wins through `sectionStyle`: "Full screen"
+         restores the viewport-filling opener. The inline 0 also beats the
+         `.snap-section[data-snap-enabled]` min-height rule in index.css. */
+      style={{ minHeight: 0, ...sectionStyle }}
     >
       {/*
         LAYERING ORDER (bottom → top):

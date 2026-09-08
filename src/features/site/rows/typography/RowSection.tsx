@@ -274,6 +274,9 @@ const RowSection = ({
         data-row-type={dataRowType ?? row.type}
         data-row-title={dataRowTitle ?? row.strip_title}
         data-snap-enabled={snapEnabled ? "true" : undefined}
+        /* Column count of a v3 row, so CSS can tighten the gutters that
+           side-by-side widgets would otherwise double up between them. */
+        data-columns={(() => { const cols = (row as unknown as { columns?: unknown[] }).columns; return Array.isArray(cols) ? cols.length : undefined; })()}
         className={`snap-section ${grain && !hasOwnPaint ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} ${bleed ? "" : "py-row-fluid"} ${className}`}
         style={{
           backgroundColor: surfaceColor,
