@@ -1,0 +1,26 @@
+# Working in this repo
+
+Read `ARCHITECTURE.md` first. It describes the row pipeline, the widget
+registry, how to add a row type or a field, and the gate.
+
+Rules that are easy to get wrong:
+
+- Run `npm run check` before calling anything done. It is typecheck +
+  lint + unit tests + build, and it is what CI runs.
+- Lint warnings are capped (`--max-warnings` in package.json). Do not
+  raise the cap; lower it when you remove warnings.
+- A new row type is one folder under `src/features/widgets/<type>/`
+  plus one import in `src/widgets/index.tsx`. `rowRegistry.test.ts`
+  fails if the renderer, editor, schema or `ROW_TYPES` entry is missing.
+- Reuse the shared editor fields in
+  `src/features/admin/site-editor/FieldComponents.tsx` and
+  `CoverImageField.tsx` instead of copying label + input blocks.
+- Public rendering is guarded by screenshots (`npm run test:visual`).
+  Refresh the baseline only after an intentional design change, and say
+  so in the PR.
+- Supabase changes (schema, RLS, edge functions) go through Lovable.
+- `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
+  dependency changes so CI's `--frozen-lockfile` install passes.
+- `npm run build` rewrites `public/sitemap.xml`, `public/llms.txt` and
+  `supabase/functions/mcp/index.ts`; do not commit those side effects
+  unless the change is intentional.

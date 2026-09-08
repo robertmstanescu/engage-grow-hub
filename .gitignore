@@ -29,3 +29,6 @@ package-lock.json
 # Playwright output
 test-results
 playwright-report
+
+# Local scratch exports (design demos etc.)
+Claude outputs/
