@@ -197,8 +197,12 @@ const RowSection = ({
     ? {
         borderTopLeftRadius: topHasShape ? 0 : radiusValue,
         borderTopRightRadius: topHasShape ? 0 : radiusValue,
-        borderBottomLeftRadius: bottomHasShape ? 0 : radiusValue,
-        borderBottomRightRadius: bottomHasShape ? 0 : radiusValue,
+        /* Bottom corners stay square: rows stack like cards, and the next
+           card's lip covers this one's foot. Rounding it drew a second
+           curve just above the lip and broke the stack. A bottom edge
+           that should curve gets a bottom cap (Style ▸ Edges). */
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
       }
     : null;
 
@@ -326,7 +330,7 @@ const RowSection = ({
                 borderLeft: "var(--outline-ink-border)",
                 borderRight: "var(--outline-ink-border)",
                 ...(applyRadius && !topHasShape ? { borderTop: "var(--outline-ink-border)" } : null),
-                ...(applyRadius && !bottomHasShape ? { borderBottom: "var(--outline-ink-border)" } : null),
+                /* No bottom line: the foot runs under the next card's lip. */
               }
             : null),
           ...style,

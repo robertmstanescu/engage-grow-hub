@@ -4,6 +4,7 @@
  * that produced a visible "cut" at the seam.
  */
 import { render } from "@testing-library/react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import RowSection from "../RowSection";
 import type { PageRow } from "@/types/rows";
@@ -34,23 +35,51 @@ describe("row surface corners", () => {
     expect(s.style.borderBottomLeftRadius).toBe("");
   });
 
-  it("applies the chosen radius to all corners when no edge shape is set", () => {
+  /* Rows stack like cards: the chosen radius rounds the TOP corners only.
+     The foot stays square because the next card's lip covers it; a
+     rounded foot drew a second curve just above that lip. */
+  it("applies the chosen radius to the top corners only when no edge shape is set", () => {
     const s = sectionOf({ surfaceRadius: "medium" });
     expect(s.style.borderTopLeftRadius).toBe("24px");
     expect(s.style.borderTopRightRadius).toBe("24px");
-    expect(s.style.borderBottomLeftRadius).toBe("24px");
-    expect(s.style.borderBottomRightRadius).toBe("24px");
+    expect(s.style.borderBottomLeftRadius).toBe("0");
+    expect(s.style.borderBottomRightRadius).toBe("0");
   });
 
-  it("leaves an edge square when that edge carries a shape", () => {
+  it("leaves the top square when it carries a shape (the cap curves instead)", () => {
     const s = sectionOf({
       surfaceRadius: "medium",
       shapeTop: { kind: "rounded", size: "medium" },
     });
     expect(s.style.borderTopLeftRadius).toBe("0");
     expect(s.style.borderTopRightRadius).toBe("0");
-    expect(s.style.borderBottomLeftRadius).toBe("24px");
-    expect(s.style.borderBottomRightRadius).toBe("24px");
+    expect(s.style.borderBottomLeftRadius).toBe("0");
+    expect(s.style.borderBottomRightRadius).toBe("0");
+  });
+
+  /* jsdom drops `var()` border values from the DOM style, so the outline
+     is asserted on the server-rendered markup, which keeps the literal
+     declarations. */
+  it("outlines the sides and top of a rounded surface, never the foot", () => {
+    const markup = renderToStaticMarkup(
+      <RowSection row={makeRow({ surfaceRadius: "medium" })}>
+        <p>content</p>
+      </RowSection>,
+    );
+    const style = /<section[^>]*style="([^"]*)"/.exec(markup)?.[1] ?? "";
+    expect(style).toContain("border-left:var(--outline-ink-border)");
+    expect(style).toContain("border-right:var(--outline-ink-border)");
+    expect(style).toContain("border-top:var(--outline-ink-border)");
+    expect(style).not.toContain("border-bottom:");
+  });
+
+  it("draws no outline on a plain row", () => {
+    const markup = renderToStaticMarkup(
+      <RowSection row={makeRow({})}>
+        <p>content</p>
+      </RowSection>,
+    );
+    expect(/<section[^>]*style="([^"]*)"/.exec(markup)?.[1] ?? "").not.toContain("outline-ink");
   });
 
   it("does not clip the section when a shape cap paints outside it", () => {

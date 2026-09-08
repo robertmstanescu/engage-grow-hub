@@ -645,6 +645,7 @@ export const HeroView = ({
                 aspectRatio: String(visualAspect),
                 borderRadius: "var(--radius)",
                 boxShadow: "var(--shadow-soft)",
+                border: "var(--outline-ink-border)",
               }}
             >
               <img

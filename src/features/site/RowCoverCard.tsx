@@ -65,11 +65,17 @@ const RowCoverCard = ({ row, children, variant = "flush" }: RowCoverCardProps) =
 
   return (
     <div
+      className={isCard ? "ink-lines" : undefined}
       style={{
         borderRadius: radiusPx,
         overflow: "hidden",
         ...(isCard
-          ? { boxShadow: "var(--shadow-soft)", background: "var(--gradient-card)" }
+          ? {
+              boxShadow: "var(--shadow-soft)",
+              background: "var(--gradient-card)",
+              /* Boxed treatment: thin ink line, like every other card. */
+              border: "1px solid var(--outline-ink)",
+            }
           : null),
       }}
     >
