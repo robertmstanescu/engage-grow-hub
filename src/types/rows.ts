@@ -148,9 +148,10 @@ export interface RowLayout {
   coverTextOverlap?: number;
   /**
    * How far the content climbs up over the cover picture, as a share of
-   * the picture's rendered height (0–90). Wins over `coverTextOverlap`
-   * when set: "a third of the picture" stays a third at every band size
-   * and viewport, where a pixel value does not.
+   * the picture's rendered height (0–90, default 60). Replaces the pixel
+   * field above, which the renderer no longer reads: "60% down the
+   * picture" stays 60% at every band size and viewport, where a pixel
+   * value does not.
    */
   coverTextOverlapPct?: number;
   /** Display ratio for the row-level cover image. */

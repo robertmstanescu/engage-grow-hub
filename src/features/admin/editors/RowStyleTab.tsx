@@ -609,13 +609,13 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                       min={0}
                       max={90}
                       step={5}
-                      value={row.layout?.coverTextOverlapPct ?? 25}
+                      value={row.layout?.coverTextOverlapPct ?? 60}
                       onChange={(e) => patchLayout({ coverTextOverlapPct: Number(e.target.value) })}
                       className="flex-1"
                       style={{ accentColor: "hsl(var(--secondary))" }}
                     />
                     <span className="font-body text-[10px] text-foreground min-w-[36px] text-right">
-                      {row.layout?.coverTextOverlapPct ?? 25}%
+                      {row.layout?.coverTextOverlapPct ?? 60}%
                     </span>
                   </div>
                   <p className="font-body text-[10px] text-muted-foreground leading-snug mt-1">

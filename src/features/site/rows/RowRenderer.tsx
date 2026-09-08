@@ -115,28 +115,29 @@ const RowRenderer = ({
   const coverImage = row.layout?.coverImage?.trim() || "";
   const paintsSurface = widgetCount > 1 || Boolean(coverImage);
   /* ── How far the content climbs over the cover picture ──
-   *  Preferred: a share of the picture's rendered height
-   *  (`coverTextOverlapPct`), measured live because the band's height
-   *  depends on the photo's ratio, the height cap and the viewport.
-   *  "A third of the picture" then means a third everywhere.
-   *  Legacy: a pixel value (`coverTextOverlap`), reduced on phones. */
-  const overlapPct = row.layout?.coverTextOverlapPct;
-  const overlap = Math.max(0, Math.min(160, row.layout?.coverTextOverlap ?? 64));
+   *  A share of the picture's rendered height (`coverTextOverlapPct`,
+   *  default 60%), measured live because the band's height depends on
+   *  the photo's ratio, the height cap and the viewport — so "60% down
+   *  the picture" means the same thing at every size. The older pixel
+   *  field (`coverTextOverlap`) is ignored: it was capped at 160px and
+   *  silently reduced on desktop, which is what made covers feel like a
+   *  banner the text never reached. */
+  const overlapPct = Math.max(0, Math.min(90, row.layout?.coverTextOverlapPct ?? 60));
   const coverRef = useRef<HTMLDivElement>(null);
   const [coverHeight, setCoverHeight] = useState(0);
   useLayoutEffect(() => {
     const el = coverRef.current;
-    if (!el || overlapPct == null) return;
+    if (!el) return;
     const read = () => setCoverHeight(el.getBoundingClientRect().height);
     read();
+    // jsdom (unit tests) and very old browsers have no ResizeObserver;
+    // the first measurement above still applies, only live resizes are lost.
+    if (typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(read);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [overlapPct, coverImage]);
-  const overlapMarginTop =
-    overlapPct != null
-      ? `-${Math.round((coverHeight * Math.max(0, Math.min(90, overlapPct))) / 100)}px`
-      : `calc(-1 * clamp(0px, ${overlap / 2}px + 2vw, ${overlap}px))`;
+  }, [coverImage]);
+  const overlapMarginTop = `-${Math.round((coverHeight * overlapPct) / 100)}px`;
 
   // `layout` is optional on the row, so index the field type via RowLayout
   // rather than PageRowV3["layout"] (which is `RowLayout | undefined`).
