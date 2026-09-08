@@ -35,7 +35,11 @@
        the weight and colour stay identical everywhere it is drawn. */
     --outline-ink: #26142E;
     --outline-ink-width: 5px;
+    --outline-ink-navbar-width: 2px;
     --outline-ink-border: var(--outline-ink-width) solid var(--outline-ink);
+    /* These three are the static defaults; Brand settings ▸ Outline
+       overrides them on :root at runtime (useBrandSettings), and a row's
+       Style tab can override colour and width for that row alone. */
     --input: 285 20% 84%;
     --ring: 280 55% 24%;
     --radius: 1.5rem;

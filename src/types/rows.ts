@@ -168,6 +168,15 @@ export interface RowLayout {
    */
   surfaceRadius?: "none" | "subtle" | "medium" | "dramatic";
   /**
+   * Per-row override of the ink outline colour (CSS colour). Unset =
+   * the site default from Brand settings ▸ Outline. Cascades to
+   * everything inside the row: its lip, cover picture, image frames
+   * and boxes.
+   */
+  outlineColor?: string;
+  /** Per-row override of the outline width in px; 0 turns it off. */
+  outlineWidth?: number;
+  /**
    * How blocks sitting side by side in one row line up vertically.
    * "stretch" (default) gives the Ruul-style symmetry — every block,
    * picture included, fills the full row height so tops and bottoms

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Save, Send, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import { applyBrandCSSVars, DEFAULT_BRAND, type BrandSettings as BrandSettingsType, type BrandColor, type TypographyLevel } from "@/hooks/useBrandSettings";
-import { SectionBox } from "./site-editor/FieldComponents";
+import { SectionBox, ColorField } from "./site-editor/FieldComponents";
 import { fetchSection, fetchSections, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
 import { SpinnerButton } from "@/components/ui/spinner-button";
@@ -65,9 +65,19 @@ const BrandSettings = () => {
       const br = data?.find((r: any) => r.section_key === "branding");
 
       if (bs) {
-        const live = { ...DEFAULT_BRAND, ...bs.content, typography: { ...DEFAULT_BRAND.typography, ...(bs.content?.typography || {}) } };
+        const live = {
+          ...DEFAULT_BRAND,
+          ...bs.content,
+          typography: { ...DEFAULT_BRAND.typography, ...(bs.content?.typography || {}) },
+          outline: { ...DEFAULT_BRAND.outline, ...(bs.content?.outline || {}) },
+        };
         const draft = bs.draft_content
-          ? { ...DEFAULT_BRAND, ...bs.draft_content, typography: { ...DEFAULT_BRAND.typography, ...(bs.draft_content?.typography || {}) } }
+          ? {
+              ...DEFAULT_BRAND,
+              ...bs.draft_content,
+              typography: { ...DEFAULT_BRAND.typography, ...(bs.draft_content?.typography || {}) },
+              outline: { ...DEFAULT_BRAND.outline, ...(bs.draft_content?.outline || {}) },
+            }
           : live;
         setBrand(draft);
         setPublished(live);
@@ -389,6 +399,50 @@ const BrandSettings = () => {
         </div>
       </AccordionSection>
 
+      {/* ── Outline ── the ink line on set row edges, image frames, the
+       *  contact box, blog cards and the navbar island. Site-wide default;
+       *  a row's Style tab can override colour and width for that row. */}
+      <AccordionSection id="outline" label="Outline">
+        <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
+          The line drawn on rows with set edges, on picture frames, the contact box, blog cards and the navbar.
+          Any row can override colour and width in its Style ▸ Corners panel.
+        </p>
+        <div className="space-y-3">
+          <ColorField
+            label="Colour"
+            value={brand.outline?.color ?? ""}
+            fallback="#26142E"
+            onChange={(v) => setBrand((prev) => ({ ...prev, outline: { ...prev.outline, color: v.trim() || "#26142E" } }))}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            {([
+              ["width", "Rows, frames & boxes"],
+              ["navbarWidth", "Navbar"],
+            ] as const).map(([key, label]) => (
+              <label key={key} className="block">
+                <span className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    max={12}
+                    step={1}
+                    value={brand.outline?.[key] ?? ""}
+                    onChange={(e) =>
+                      setBrand((prev) => ({
+                        ...prev,
+                        outline: { ...prev.outline, [key]: Math.max(0, Math.min(12, Number(e.target.value) || 0)) },
+                      }))
+                    }
+                    className="w-20 px-2 py-1.5 rounded-lg border border-border bg-background font-body text-sm"
+                  />
+                  <span className="font-body text-xs text-muted-foreground">px</span>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+      </AccordionSection>
 
       {/* ── Logos & Favicons (moved from GlobalSettings as part of
        *  Epic 1: The Unified Brand Hub) ── */}

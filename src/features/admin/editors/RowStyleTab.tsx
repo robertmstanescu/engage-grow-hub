@@ -45,6 +45,7 @@
  */
 
 import RowAlignmentSettings from "../site-editor/RowAlignmentSettings";
+import { ColorField } from "../site-editor/FieldComponents";
 import ImagePickerField from "../ImagePickerField";
 import ColumnWidthControl from "../site-editor/ColumnWidthControl";
 
@@ -478,6 +479,42 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
             the two never clash.
           </p>
 
+          {/* ── Outline ──
+              The ink line drawn on this row's set edges (and inherited by
+              everything inside it: lip, cover picture, image frames,
+              boxes). Empty = the site default from Brand ▸ Outline. */}
+          <div className="mt-4 pt-3 border-t border-border/60 space-y-2">
+            <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground block">
+              Outline (this row)
+            </span>
+            <ColorField
+              label="Outline colour"
+              description="Leave empty for the site default (Brand ▸ Outline)."
+              value={row.layout?.outlineColor || ""}
+              fallback="site default"
+              onChange={(v) => patchLayout({ outlineColor: v.trim() || undefined })}
+            />
+            <div className="flex items-center gap-2">
+              <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[70px]">
+                Width
+              </span>
+              <input
+                type="number"
+                min={0}
+                max={12}
+                step={1}
+                placeholder="default"
+                value={row.layout?.outlineWidth ?? ""}
+                onChange={(e) =>
+                  patchLayout({
+                    outlineWidth: e.target.value === "" ? undefined : Math.max(0, Math.min(12, Number(e.target.value))),
+                  })
+                }
+                className="w-20 px-2 py-1 rounded border border-border bg-background font-body text-xs"
+              />
+              <span className="font-body text-[10px] text-muted-foreground">px · 0 hides it · empty = site default</span>
+            </div>
+          </div>
         </AccordionContent>
       </AccordionItem>
 

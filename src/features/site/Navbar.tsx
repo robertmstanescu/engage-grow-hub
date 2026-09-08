@@ -258,7 +258,7 @@ const Navbar = () => {
           backgroundColor: `hsl(var(--card) / ${scrolled ? 0.97 : 0.92})`,
           backdropFilter: "blur(18px) saturate(140%)",
           WebkitBackdropFilter: "blur(18px) saturate(140%)",
-          border: "2px solid var(--outline-ink)",
+          border: "var(--outline-ink-navbar-width) solid var(--outline-ink)",
           boxShadow: "var(--shadow-soft)",
         }}
       >
@@ -412,7 +412,7 @@ const Navbar = () => {
           backgroundColor: "hsl(var(--card) / 0.94)",
           backdropFilter: "blur(16px) saturate(140%)",
           WebkitBackdropFilter: "blur(16px) saturate(140%)",
-          border: "2px solid var(--outline-ink)",
+          border: "var(--outline-ink-navbar-width) solid var(--outline-ink)",
           boxShadow: "var(--shadow-soft)",
         }}
       >

@@ -36,10 +36,28 @@ export const MESH_STRENGTH_VALUES: Record<MeshStrength, string> = {
   strong: "1",
 };
 
+/**
+ * The ink outline drawn on set row edges, image frames, the contact box,
+ * blog cards and the navbar island. Site-wide defaults; a row can
+ * override colour and width in its Style tab (`layout.outlineColor`,
+ * `layout.outlineWidth`).
+ */
+export interface OutlineSettings {
+  /** CSS colour. */
+  color: string;
+  /** Width in px for rows, frames and boxes. 0 turns the outline off. */
+  width: number;
+  /** Width in px for the navbar island (thinner by design). */
+  navbarWidth: number;
+}
+
+export const DEFAULT_OUTLINE: OutlineSettings = { color: "#26142E", width: 5, navbarWidth: 2 };
+
 export interface BrandSettings {
   identity: BrandIdentity;
   /** Intensity of the fixed page-level mesh gradient. */
   meshStrength: MeshStrength;
+  outline: OutlineSettings;
   colors: BrandColor[];
   typography: {
     h1: TypographyLevel;
@@ -76,6 +94,7 @@ const DEFAULT_IDENTITY: BrandIdentity = {
 export const DEFAULT_BRAND: BrandSettings = {
   identity: DEFAULT_IDENTITY,
   meshStrength: "medium",
+  outline: DEFAULT_OUTLINE,
   colors: DEFAULT_COLORS,
   typography: DEFAULT_TYPOGRAPHY,
 };
@@ -107,6 +126,12 @@ export const applyBrandCSSVars = (brand: BrandSettings) => {
     "--mesh-strength",
     MESH_STRENGTH_VALUES[brand.meshStrength] ?? MESH_STRENGTH_VALUES.medium,
   );
+  // Ink outline (index.css carries the same values as static defaults so
+  // the first paint, before this runs, already matches).
+  const outline = { ...DEFAULT_OUTLINE, ...(brand.outline || {}) };
+  root.style.setProperty("--outline-ink", outline.color || DEFAULT_OUTLINE.color);
+  root.style.setProperty("--outline-ink-width", `${Math.max(0, Number(outline.width) || 0)}px`);
+  root.style.setProperty("--outline-ink-navbar-width", `${Math.max(0, Number(outline.navbarWidth) || 0)}px`);
   // Typography
   const levels = ["h1", "h2", "h3", "body"] as const;
   for (const level of levels) {
@@ -130,6 +155,7 @@ export const useBrandSettings = (): BrandSettings => {
           const merged: BrandSettings = {
             identity: { ...DEFAULT_BRAND.identity, ...(resolved?.identity || {}) },
             meshStrength: resolved?.meshStrength || DEFAULT_BRAND.meshStrength,
+            outline: { ...DEFAULT_BRAND.outline, ...(resolved?.outline || {}) },
             colors: resolved?.colors || DEFAULT_BRAND.colors,
             typography: { ...DEFAULT_BRAND.typography, ...resolved?.typography },
           };
