@@ -124,7 +124,7 @@ interface ArrayCardListProps<T> {
 function ArrayCardList<T>({ label, items, onChange, newItem, renderItem, addLabel = "Add item" }: ArrayCardListProps<T>) {
   return (
     <SectionBox label={label}>
-      <div className="space-y-3">
+      <div data-field-group="" className="space-y-3">
         {items.map((item, i) => (
           <div key={i} className="border border-border rounded-lg p-3 bg-background/40 space-y-2 relative">
             <div className="flex items-center justify-between">

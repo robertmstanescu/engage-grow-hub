@@ -1,4 +1,4 @@
-import { SectionBox, Field, RichField, ArrayField, ColorField, CtaFields } from "./FieldComponents";
+import { SectionBox, Field, RichField, ArrayField, ColorField, CtaFields, MoreFields } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImagePickerField from "../ImagePickerField";
@@ -61,23 +61,25 @@ const ProfileEditor = ({ content, onChange, bgColor }: Props) => {
         <Field label="Role" value={content.role || ""} onChange={(v) => onChange("role", v)} />
       </SectionBox>
 
-      <SectionBox label="Credentials">
-        <ArrayField
-          label="Credential Tags"
-          items={content.credentials || []}
-          onChange={(items) => onChange("credentials", items)}
-          placeholder="e.g. CIPD Level 7"
-        />
-      </SectionBox>
-
       <SectionBox label="Content">
         <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
       </SectionBox>
 
       <CtaFields content={content} onChange={onChange} />
 
-      <SectionBox label="Colors">
-        <div className="grid grid-cols-2 gap-3">
+      <MoreFields>
+        <SectionBox label="Credentials" group>
+          <ArrayField
+            label="Credential Tags"
+            items={content.credentials || []}
+            onChange={(items) => onChange("credentials", items)}
+            placeholder="e.g. CIPD Level 7"
+          />
+        </SectionBox>
+      </MoreFields>
+
+      <>
+        <div>
           <ColorField label="Eyebrow" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onChange("color_eyebrow", v)} />
           <ColorField label="Title" value={content.color_title || ""} fallback="#FFFFFF" onChange={(v) => onChange("color_title", v)} />
           <ColorField label="Name" value={content.color_name || ""} fallback="#FFFFFF" onChange={(v) => onChange("color_name", v)} />
@@ -87,7 +89,7 @@ const ProfileEditor = ({ content, onChange, bgColor }: Props) => {
           <ColorField label="Body Text" value={content.color_body || ""} fallback="#CCCCCC" onChange={(v) => onChange("color_body", v)} />
           <ColorField label="Note" value={content.color_note || ""} fallback="#999999" onChange={(v) => onChange("color_note", v)} />
         </div>
-      </SectionBox>
+      </>
     </div>
   );
 };

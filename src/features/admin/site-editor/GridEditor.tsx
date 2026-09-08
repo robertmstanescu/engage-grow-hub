@@ -1,5 +1,5 @@
 import { Plus, Trash2 } from "lucide-react";
-import { SectionBox, Field, RichField, ColorField, CtaFields } from "./FieldComponents";
+import { SectionBox, Field, RichField, ColorField, CtaFields, MoreFields } from "./FieldComponents";
 import { CoverImageField } from "./CoverImageField";
 import { DeferredTextarea } from "./DeferredInput";
 import TitleLineEditor from "./TitleLineEditor";
@@ -66,12 +66,8 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
         <RichField label="Description" value={content.description || ""} onChange={(v) => onChange("description", v)} bgColor={bgColor} />
       </SectionBox>
 
-      <SectionBox label="Cover Image">
-        <CoverImageField content={content} onChange={onChange} />
-      </SectionBox>
-
       {/* Stats (fixed 3) */}
-      <SectionBox label="Stats (3 units)">
+      <SectionBox label="Stats (3 units)" group>
         {stats.slice(0, 3).map((s, i) => (
           <div key={i} className="grid grid-cols-2 gap-2 mb-2">
             <Field label={`Stat ${i + 1} Value`} value={s.value} onChange={(v) => updateStat(i, "value", v)} />
@@ -80,8 +76,19 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
         ))}
       </SectionBox>
 
+      {/*
+       * CALL TO ACTION block — Button Label leads (it's the primary action).
+       * Empty `cta_label` means GridRow must skip rendering the button.
+       */}
+      <CtaFields content={content} onChange={onChange} />
+
+      <MoreFields>
+      <SectionBox label="Cover Image">
+        <CoverImageField content={content} onChange={onChange} />
+      </SectionBox>
+
       {/* Achievements */}
-      <SectionBox label="Achievements">
+      <SectionBox label="Achievements" group>
         <div className="space-y-2">
           {achievements.map((text, i) => (
             <div key={i} className="flex items-start gap-2">
@@ -104,15 +111,11 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
         </div>
       </SectionBox>
 
-      {/*
-       * CALL TO ACTION block — Button Label leads (it's the primary action).
-       * Empty `cta_label` means GridRow must skip rendering the button.
-       */}
-      <CtaFields content={content} onChange={onChange} />
+      </MoreFields>
 
-      {/* Colors */}
-      <SectionBox label="Colors">
-        <div className="grid grid-cols-2 gap-3">
+      {/* Colours: each ColorField collects into the "Custom colours" group. */}
+      <>
+        <div>
           <ColorField label="Eyebrow" value={content.color_eyebrow || ""} fallback="#7B3A91" onChange={(v) => onChange("color_eyebrow", v)} />
           <ColorField label="Title" value={content.color_title || ""} fallback="#2A0E33" onChange={(v) => onChange("color_title", v)} />
           <ColorField label="Description" value={content.color_description || ""} fallback="#555555" onChange={(v) => onChange("color_description", v)} />
@@ -124,7 +127,7 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
           <ColorField label="Stat Label" value={content.color_stat_label || ""} fallback="#999999" onChange={(v) => onChange("color_stat_label", v)} />
           <ColorField label="Note" value={content.color_note || ""} fallback="#999999" onChange={(v) => onChange("color_note", v)} />
         </div>
-      </SectionBox>
+      </>
     </div>
   );
 };

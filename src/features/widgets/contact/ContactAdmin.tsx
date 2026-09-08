@@ -17,6 +17,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { DEFAULT_CONTACT_FIELDS } from "@/lib/constants/rowDefaults";
 import {
   SectionBox,
+  MoreFields,
   Field,
   RichField,
 } from "@/features/admin/site-editor/FieldComponents";
@@ -131,7 +132,7 @@ const ContactAdmin = ({ content, onChange }: Props) => {
         onChange={(v) => onChange("button_text", v)}
       />
 
-      <SectionBox label="Form Fields">
+      <SectionBox label="Form Fields" group>
         <div className="space-y-2">
           {fields.map((f: any, i: number) => (
             <div
@@ -195,6 +196,7 @@ const ContactAdmin = ({ content, onChange }: Props) => {
         </button>
       </SectionBox>
 
+      <MoreFields>
       <SectionBox label="Success State">
         <Field
           label="Heading"
@@ -233,6 +235,7 @@ const ContactAdmin = ({ content, onChange }: Props) => {
         altValue={content.cover_image_alt || ""}
         onAltChange={(v) => onChange("cover_image_alt", v)}
       />
+      </MoreFields>
     </div>
   );
 };

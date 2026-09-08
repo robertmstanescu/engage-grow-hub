@@ -35,6 +35,10 @@ import { Blocks, Bookmark, Columns2, Columns3, Columns4, Square } from "lucide-r
 import { listWidgets, type WidgetDefinition } from "@/lib/WidgetRegistry";
 import { useBuilder } from "./BuilderContext";
 import { useRowSnippets, type RowSnippet } from "@/hooks/useRowSnippets";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { BLOCK_FAMILIES, defaultVariant, type BlockFamily } from "./blockFamilies";
+import { SECTION_LIBRARY, type LibrarySection } from "./sectionLibrary";
+import { useState } from "react";
 import type { PageRowV3 } from "@/types/rows";
 
 /** Stable id prefix used by the DnD context to recognise tray sources. */
@@ -322,45 +326,150 @@ export const TrayDragPreview = ({ data }: { data: TrayDragData }) => {
 };
 
 /* ──────────────────────────────────────────────────────────────────
- * The tray itself — a grouped grid of all registered widgets.
+ * Library sections — pre-designed rows (sectionLibrary.ts). Drag data
+ * is the snippet shape, so the shell's snippet drop path inserts them
+ * with fresh ids.
  * ────────────────────────────────────────────────────────────────── */
+const LibraryCard = ({ section }: { section: LibrarySection }) => {
+  const { insertSnippetAtSelection } = useBuilder();
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `${TRAY_SNIPPET_DRAG_ID_PREFIX}lib-${section.key}`,
+    data: { source: "tray", kind: "snippet", type: "snippet", label: section.name, snippetRow: section.build() } satisfies TrayDragData,
+  });
+  return (
+    <button
+      ref={setNodeRef}
+      type="button"
+      {...listeners}
+      {...attributes}
+      onClick={() => insertSnippetAtSelection(section.build())}
+      title={`Click or drag “${section.name}” onto the page`}
+      aria-label={`Add section ${section.name}`}
+      className="tray-section"
+      style={{ opacity: isDragging ? 0.35 : 1 }}
+    >
+      <span className="tray-section-name">{section.name}</span>
+      <span className="tray-section-family">{section.family}</span>
+    </button>
+  );
+};
+
+/* ──────────────────────────────────────────────────────────────────
+ * Block families — eight cards. A family with one variant inserts it
+ * on click and drags it; a family with several opens a small list to
+ * pick the variant (each entry is itself draggable). Dragging the
+ * family card drags its default variant.
+ * ────────────────────────────────────────────────────────────────── */
+const VariantRow = ({ family, type, label, hint }: { family: BlockFamily; type: string; label: string; hint?: string }) => {
+  const { insertWidgetAtSelection } = useBuilder();
+  const def = listWidgets().find((w) => w.type === type);
+  const Icon = def?.icon ?? family.icon;
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `${TRAY_DRAG_ID_PREFIX}${type}`,
+    data: { source: "tray", kind: "widget", type, label } satisfies TrayDragData,
+  });
+  return (
+    <button
+      ref={setNodeRef}
+      type="button"
+      {...listeners}
+      {...attributes}
+      onClick={() => insertWidgetAtSelection(type)}
+      aria-label={`Add ${label} widget`}
+      title={hint}
+      className="tray-variant"
+      style={{ opacity: isDragging ? 0.35 : 1 }}
+    >
+      <Icon size={14} strokeWidth={1.6} aria-hidden />
+      <span className="tray-variant-name">{label}</span>
+      {hint && <span className="tray-variant-hint">{hint}</span>}
+    </button>
+  );
+};
+
+const FamilyCard = ({ family }: { family: BlockFamily }) => {
+  const { insertWidgetAtSelection } = useBuilder();
+  const [open, setOpen] = useState(false);
+  const first = defaultVariant(family);
+  const Icon = family.icon;
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `${TRAY_DRAG_ID_PREFIX}family-${family.key}`,
+    data: { source: "tray", kind: "widget", type: first.type, label: first.label } satisfies TrayDragData,
+  });
+  const single = family.variants.length === 1;
+  const card = (
+    <button
+      ref={setNodeRef}
+      type="button"
+      {...listeners}
+      {...attributes}
+      onClick={() => (single ? insertWidgetAtSelection(first.type) : setOpen((v) => !v))}
+      title={single ? `Click or drag “${family.label}” onto the page` : `${family.label}: ${family.variants.length} kinds`}
+      aria-label={single ? `Add ${family.label} widget` : `${family.label} block, choose a kind`}
+      aria-haspopup={single ? undefined : "menu"}
+      aria-expanded={single ? undefined : open}
+      className="tray-family"
+      style={{ opacity: isDragging ? 0.35 : 1 }}
+    >
+      <Icon size={18} strokeWidth={1.6} aria-hidden />
+      <span className="tray-family-name">{family.label}</span>
+      {!single && <span className="tray-family-count">{family.variants.length}</span>}
+    </button>
+  );
+  if (single) return card;
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>{card}</PopoverTrigger>
+      <PopoverContent align="start" sideOffset={4} className="admin-menu p-1 w-[240px]" role="menu" aria-label={`${family.label} kinds`}>
+        {family.variants.map((v) => (
+          <VariantRow key={v.type} family={family} type={v.type} label={v.label} hint={v.hint} />
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+/* ──────────────────────────────────────────────────────────────────
+ * The tray: Sections (library) · Structure · My snippets · Blocks.
+ * ────────────────────────────────────────────────────────────────── */
+const TrayHeading = ({ children }: { children: React.ReactNode }) => (
+  <h4 className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-2 px-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+    {children}
+  </h4>
+);
+
 const ElementsTray = () => {
-  const all = listWidgets();
   const { snippets } = useRowSnippets();
-
-  // Group by `category` for a tidier menu. Widgets with no category
-  // bucket into "Other" so they're never silently hidden.
-  const grouped = all.reduce<Record<string, WidgetDefinition<unknown>[]>>((acc, def) => {
-    const key = def.category || "Other";
-    (acc[key] ??= []).push(def);
-    return acc;
-  }, {});
-
-  // Stable category order — most-used first.
-  const orderedCategories = [
-    "Layout",
-    "Content",
-    "Media",
-    "Marketing",
-    "Social",
-    "Other",
-  ].filter((c) => grouped[c]?.length);
-
-  // Note: even when no widgets are registered we still render the
-  // Structure cards (empty rows) so editors can scaffold a layout.
+  /* Every registered type must belong to a family; anything that does
+     not is still reachable here so it is never silently hidden. */
+  const orphans = listWidgets().filter((w) => !BLOCK_FAMILIES.some((f) => f.variants.some((v) => v.type === w.type)));
 
   return (
     <div className="space-y-4">
-      {/* Structure — empty rows that editors lay out FIRST and fill
-          with widgets second. These don't live in the WidgetRegistry
-          on purpose; they're an editor primitive, not a renderable. */}
       <div>
-        <h4
-          className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-2 px-1"
-          style={{ color: "hsl(var(--muted-foreground))" }}
-        >
-          Structure
-        </h4>
+        <TrayHeading>Sections</TrayHeading>
+        <div className="space-y-1">
+          {SECTION_LIBRARY.map((section) => (
+            <LibraryCard key={section.key} section={section} />
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <TrayHeading>Blocks</TrayHeading>
+        <div className="grid grid-cols-2 gap-2">
+          {BLOCK_FAMILIES.map((family) => (
+            <FamilyCard key={family.key} family={family} />
+          ))}
+          {orphans.map((def) => (
+            <TrayCard key={def.type} def={def} />
+          ))}
+        </div>
+      </div>
+
+      {/* Structure — empty rows to lay out first and fill second. */}
+      <div>
+        <TrayHeading>Empty rows</TrayHeading>
         <div className="grid grid-cols-2 gap-2">
           <LayoutCard columnCount={1} label="1 column" Icon={Square} />
           <LayoutCard columnCount={2} label="2 columns" Icon={Columns2} />
@@ -369,17 +478,9 @@ const ElementsTray = () => {
         </div>
       </div>
 
-      {/* Snippets — saved reusable rows (InspectorPanel's "Save as
-          Snippet"). Hidden entirely when there are none so a fresh
-          project doesn't show an empty header. */}
       {snippets.length > 0 && (
         <div>
-          <h4
-            className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-2 px-1"
-            style={{ color: "hsl(var(--muted-foreground))" }}
-          >
-            Snippets
-          </h4>
+          <TrayHeading>My snippets</TrayHeading>
           <div className="grid grid-cols-2 gap-2">
             {snippets.map((snippet) => (
               <SnippetCard key={snippet.id} snippet={snippet} />
@@ -387,27 +488,6 @@ const ElementsTray = () => {
           </div>
         </div>
       )}
-
-      {orderedCategories.map((cat) => (
-        <div key={cat}>
-          <h4
-            className="font-body text-[10px] uppercase tracking-[0.18em] font-medium mb-2 px-1"
-            style={{ color: "hsl(var(--muted-foreground))" }}
-          >
-            {cat}
-          </h4>
-          <div className="grid grid-cols-2 gap-2">
-            {grouped[cat]
-              .slice()
-              .sort((a, b) =>
-                (a.label ?? a.type).localeCompare(b.label ?? b.type),
-              )
-              .map((def) => (
-                <TrayCard key={def.type} def={def} />
-              ))}
-          </div>
-        </div>
-      ))}
     </div>
   );
 };

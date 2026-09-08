@@ -35,6 +35,13 @@ Rules that are easy to get wrong:
   pickers stay but every `ColorField` inside a row editor collects into
   the "Custom colours" group automatically (`site-editor/customColours`).
   Do not add colour pickers beside copy fields, and do not store a Look.
+- The tray shows eight block families (`builder/blockFamilies.ts`); a
+  new row type must be added to exactly one family (the test fails
+  otherwise) and the section library (`builder/sectionLibrary.ts`) is
+  where pre-designed rows live, in code, not in the snippets table. A
+  block's Content tab shows at most eight primary fields
+  (`fieldDiet.test.tsx`): put the rest in `<MoreFields>` and mark list
+  editors with `<SectionBox group>`.
 - Supabase changes (schema, RLS, edge functions) go through Lovable.
 - `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
   dependency changes so CI's `--frozen-lockfile` install passes.

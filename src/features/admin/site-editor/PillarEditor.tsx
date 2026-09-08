@@ -1,9 +1,8 @@
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Field, TextArea, RichField, ArrayField, SelectField, SectionBox, ColorField } from "./FieldComponents";
+import { Field, TextArea, RichField, ArrayField, SelectField, SectionBox, ColorField, MoreFields } from "./FieldComponents";
 import { CoverImageField } from "./CoverImageField";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 interface Service {
   tag: string;
@@ -105,7 +104,6 @@ const PILLAR_COLOR_GROUPS: PillarColorGroup[] = [
 
 const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServicesChange, bgColor }: Props) => {
   const [openCard, setOpenCard] = useState<number | null>(null);
-  const [showColors, setShowColors] = useState(false);
   const [tagTypes, setTagTypes] = useState(DEFAULT_TAG_TYPES);
   const services: Service[] = servicesContent?.services || [];
 
@@ -155,6 +153,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
         <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} bgColor={pillarContent.color_section_bg || bgColor} />
       </SectionBox>
 
+      <MoreFields>
       <SectionBox label="Cover Image">
         <CoverImageField content={pillarContent} onChange={onPillarChange} />
       </SectionBox>
@@ -176,50 +175,23 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
         </div>
       </SectionBox>
 
-      {/* Color overrides */}
-      <div className="rounded-lg border overflow-hidden" style={{ borderColor: "hsl(var(--border) / 0.5)", backgroundColor: "hsl(var(--muted) / 0.15)" }}>
-        <button
-          type="button"
-          onClick={() => setShowColors(!showColors)}
-          className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:opacity-80 transition-opacity"
-          style={{ color: "hsl(var(--foreground))" }}>
-          <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground">Section Colors</span>
-          {showColors ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        </button>
-        {showColors && (
-          <div className="px-3 pb-3 space-y-2 border-t" style={{ borderColor: "hsl(var(--border) / 0.3)" }}>
-            <p className="font-body text-[9px] text-muted-foreground/60 pt-2">Organized by category. Leave empty to use defaults.</p>
-            <Accordion type="multiple" className="w-full">
-              {PILLAR_COLOR_GROUPS.map((group) => (
-                <AccordionItem key={group.id} value={group.id} className="border-b-0">
-                  <AccordionTrigger className="py-2 hover:no-underline">
-                    <span className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">
-                      {group.label}
-                      <span className="ml-2 normal-case tracking-normal text-muted-foreground/50">({group.fields.length})</span>
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="grid grid-cols-2 gap-3 pt-1">
-                      {group.fields.map((cf) => (
-                        <ColorField
-                          key={cf.key}
-                          label={cf.label}
-                          description={cf.description}
-                          value={pillarContent[cf.key] || ""}
-                          fallback={cf.fallback}
-                          onChange={(v) => onPillarChange(cf.key, v)}
-                        />
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-        )}
+      </MoreFields>
+
+      {/* Colour overrides: every ColorField collects into the "Custom colours" group. */}
+      <div>
+        {PILLAR_COLOR_GROUPS.flatMap((group) => group.fields).map((cf) => (
+          <ColorField
+            key={cf.key}
+            label={cf.label}
+            description={cf.description}
+            value={pillarContent[cf.key] || ""}
+            fallback={cf.fallback}
+            onChange={(v) => onPillarChange(cf.key, v)}
+          />
+        ))}
       </div>
 
-      <div>
+      <div data-field-group="">
         <div className="flex items-center justify-between mb-2">
           <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">Service Cards</label>
           <button
