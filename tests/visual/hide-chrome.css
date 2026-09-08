@@ -1,0 +1,6 @@
+/* Applied only while screenshotting an individual row. The floating navbar
+   is position:fixed and lands inside whichever row is at the top of the
+   viewport, so its scroll-dependent size/position made row shots flaky. */
+nav.fixed {
+  visibility: hidden !important;
+}

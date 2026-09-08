@@ -1,0 +1,67 @@
+name: visual-baseline
+
+# Re-renders the Linux screenshot baseline that the `visual` job in
+# check.yml compares against, and commits it to the branch this was run
+# on. Run it (Actions → visual-baseline → Run workflow, pick the branch)
+# after an INTENTIONAL design change, once the PR's row shots are what
+# you want. Never run it to make an unexpected red `visual` job green —
+# that red is the point.
+#
+# Why CI renders it: screenshots differ by OS (font antialiasing), so a
+# baseline made on a Mac never matches Ubuntu. Local runs use the
+# `darwin` folder, CI uses `linux`.
+#
+# It also runs automatically on a pull request that changes the visual
+# test itself (spec, config, or the darwin baseline): that is the one
+# case where the Linux baseline is expected to change too. A commit
+# pushed by this job does not re-trigger `check`; push once more (or
+# re-run the checks) to see the `visual` job go green.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "tests/visual/**"
+      - "playwright.visual.config.ts"
+      - ".github/workflows/visual-baseline.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # On pull_request, github.ref is the synthetic merge ref; commit
+          # to the PR's own branch instead.
+          ref: ${{ github.head_ref || github.ref_name }}
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: bunx playwright install --with-deps chromium
+      # Only re-render when the existing Linux baseline actually FAILS the
+      # suite. Two renders of the same page are rarely byte-identical
+      # (PNG encoding, sub-pixel text), so unconditionally re-rendering
+      # produced a fresh "Refresh Linux visual baseline" commit on every
+      # run even though the diff was well inside the tolerance.
+      - name: Refresh the baseline only if the current one no longer passes
+        run: |
+          if bun run test:visual; then
+            echo "Linux baseline still passes; leaving it as is."
+          else
+            rm -rf tests/visual/__snapshots__/linux
+            bun run test:visual:update
+          fi
+      - name: Commit the Linux baseline
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/visual/__snapshots__/linux
+          if git diff --cached --quiet; then
+            echo "Baseline unchanged; nothing to commit."
+            exit 0
+          fi
+          git commit -m "Refresh Linux visual baseline"
+          git push

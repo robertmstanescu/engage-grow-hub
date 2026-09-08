@@ -18,7 +18,11 @@ export default defineConfig({
   workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
-  snapshotPathTemplate: "{testDir}/__snapshots__/{testFilePath}/{arg}{ext}",
+  // One baseline per OS: text antialiasing differs between macOS (local
+  // runs) and Linux (CI), so a Mac-rendered PNG never matches Ubuntu's.
+  // `npm run test:visual:update` refreshes the current OS; the
+  // "visual-baseline" GitHub workflow refreshes the Linux one.
+  snapshotPathTemplate: "{testDir}/__snapshots__/{platform}/{arg}{ext}",
   use: {
     ...devices["Desktop Chrome"],
     baseURL: "http://localhost:4173",
