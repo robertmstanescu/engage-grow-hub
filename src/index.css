@@ -188,16 +188,19 @@
        another's (that's how the contact row ended up smaller than the
        vows row). Add a variable here instead.
        ────────────────────────────────────────────────────────────── */
-    --fs-eyebrow: clamp(12px, 0.4vh + 0.5vw, 14px);
-    --fs-title: clamp(1.875rem, 1.6vh + 1.6vw, 3.25rem);
-    --fs-subtitle: clamp(1.125rem, 1vh + 0.85vw, 1.5rem);
-    --fs-body: clamp(1.0625rem, 0.8vh + 0.6vw, 1.25rem);
+    /* Sized by viewport WIDTH only. The earlier mix of vh + vw made
+       every size shrink when the browser window was short (a laptop
+       with a dock), which read as "the text keeps getting smaller". */
+    --fs-eyebrow: clamp(12px, 0.7rem + 0.15vw, 14px);
+    --fs-title: clamp(1.875rem, 1.35rem + 1.3vw, 3.25rem);
+    --fs-subtitle: clamp(1.125rem, 1rem + 0.35vw, 1.5rem);
+    --fs-body: clamp(1.0625rem, 0.9rem + 0.25vw, 1.25rem);
 
     /* Card-scale (secondary surfaces: service, boxed, vows, forms) */
-    --fs-card-title: clamp(1.1875rem, 0.4vh + 0.6vw, 1.375rem);
-    --fs-card-body: clamp(1rem, 0.35vh + 0.55vw, 1.125rem);
-    --fs-card-label: clamp(12px, 0.3vh + 0.55vw, 14px);
-    --fs-card-input: clamp(15px, 0.4vh + 0.7vw, 16px);
+    --fs-card-title: clamp(1.1875rem, 1.05rem + 0.35vw, 1.375rem);
+    --fs-card-body: clamp(1rem, 0.9rem + 0.25vw, 1.125rem);
+    --fs-card-label: clamp(12px, 0.7rem + 0.15vw, 14px);
+    --fs-card-input: clamp(15px, 0.9rem + 0.1vw, 16px);
 
 
     /* Feature moments */
@@ -225,8 +228,8 @@
     --ls-body: 0;            /* prose stays neutral */
     --ls-title: -0.015em;    /* large headings tighten slightly */
     --ls-display: -0.025em;
-    --measure-prose: 68ch;   /* ~60–75 characters per line */
-    --para-space: 1em;
+    --measure-prose: 54ch;   /* ≈ 66–70 characters of Inter per line */
+    --para-space: 1.1em;     /* about one line of air between paragraphs */
   }
 
 
@@ -1049,10 +1052,8 @@
   /*
    * Note: we deliberately do NOT set `max-height: 100dvh; overflow:hidden`
    * on .snap-section — that would clip expanded accordions, dropdowns,
-   * and tooltips. Instead we rely on FLUID TYPOGRAPHY (clamp with vh+vw
-   * units) so that the COLLAPSED content naturally fits in one viewport
-   * without needing a hard clip. See typography/RowBody.tsx for the
-   * formula.
+   * and tooltips. Rows free-scroll; type is sized by viewport width
+   * only (the --fs-* tokens) and is never squeezed to fit a screen.
    */
   .snap-section {
     /* Snap behaviour is opt-in. Only sections marked with
@@ -1382,53 +1383,42 @@
 
 /* Rich-text paragraph spacing – 8px before & after every <p> */
 [dangerouslySetInnerHTML] p,
+/* ONE paragraph rule for every CMS prose surface. Cards set a smaller
+   --para-space on themselves; nothing else overrides it. */
 .prose p,
-.rich-text p {
-  margin-top: 8px;
-  margin-bottom: 8px;
-}
-
-/* Global fallback: any p inside a snap-section that came from CMS */
-.snap-section p {
-  margin-top: 8px;
-  margin-bottom: 8px;
+.rich-text p,
+[data-row-part="body"] p {
+  margin-block: var(--para-space, 1em);
 }
 
 /* Rich-text lists — Tailwind's preflight removes markers, so CMS copy
    pasted with bullets/numbers rendered as plain lines. Restore them for
    every CMS-rendered surface and inside the editor itself. */
 [data-row-part="body"] ul,
-[data-rte-fit] ul,
 .rich-text ul,
 .prose ul,
 [contenteditable] ul {
   list-style: disc outside;
   padding-left: 1.35em;
-  margin-top: 8px;
-  margin-bottom: 8px;
+  margin-block: calc(var(--para-space, 1em) * 0.75);
 }
 [data-row-part="body"] ol,
-[data-rte-fit] ol,
 .rich-text ol,
 .prose ol,
 [contenteditable] ol {
   list-style: decimal outside;
   padding-left: 1.35em;
-  margin-top: 8px;
-  margin-bottom: 8px;
+  margin-block: calc(var(--para-space, 1em) * 0.75);
 }
 [data-row-part="body"] li,
-[data-rte-fit] li,
 .rich-text li,
 .prose li,
 [contenteditable] li {
   display: list-item;
-  margin-top: 4px;
-  margin-bottom: 4px;
+  margin-block: 0.3em;
 }
 /* Nested levels get their own marker style, like a document would. */
 [data-row-part="body"] ul ul,
-[data-rte-fit] ul ul,
 .rich-text ul ul,
 [contenteditable] ul ul {
   list-style-type: circle;

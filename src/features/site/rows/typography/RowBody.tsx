@@ -8,8 +8,6 @@ interface Props {
   color?: string;
   style?: CSSProperties;
   className?: string;
-  /** Pass-through for admin auto-fit hook. */
-  "data-rte-fit"?: string;
 }
 
 /**
@@ -18,35 +16,13 @@ interface Props {
  * ## Why this matters most
  * Body text gets read most. A bad line-height makes every row feel cheap.
  *
- * ## Fluidity (the `clamp()` story for juniors)
+ * ## Sizing
  *
- * `clamp(MIN, PREFERRED, MAX)` returns the PREFERRED value, but never
- * lets it drop below MIN or rise above MAX. We use it for typography so
- * the same component is readable on a 13" laptop AND a 27" iMac without
- * a single media query.
- *
- * Our preferred value mixes `vh` AND `vw`:
- *   `1.1vh + 0.6vw`
- *
- * Why both?
- *   - `vw` (viewport width) alone shrinks text on narrow desktops but
- *     ignores SHORT viewports (e.g. a laptop with the dock + browser
- *     chrome eating 200px of height). Result: text overflows vertically.
- *   - `vh` (viewport height) alone shrinks text on short screens but
- *     ignores narrow ones.
- *   - Mixing them means BOTH dimensions contribute. On a small laptop
- *     screen (1366×768) the row stays inside one viewport; on a 4K
- *     monitor the text grows but never past the MAX cap.
- *
- * MIN `0.78rem` (≈12.5px) is an aggressive floor — below WCAG-comfort
- * but acceptable for short body blocks on tiny laptop screens where
- * the alternative is overflowing the viewport. Most rows never hit
- * the floor; it's a safety net.
- * MAX `1.05rem` (≈17px) is the editorial sweet spot.
- *
- * The preferred mix `0.85vh + 0.55vw` is intentionally weighted
- * toward `vh` — short viewports are the dominant overflow risk on
- * laptops, so we prioritise vertical scaling over horizontal.
+ * Size, line-height, tracking and line length all come from the shared
+ * tokens in index.css (`--fs-body`, `--lh-body`, `--ls-body`,
+ * `--measure-prose`). The tokens are `clamp()`s driven by viewport WIDTH
+ * only, so copy never shrinks because a browser window is short, and it
+ * is never squeezed by script to make a row fit one screen.
  */
 const RowBody = ({ children, html, color, style, className, ...rest }: Props) => {
   // `.measure` caps the line length at ~65 characters so paragraphs break

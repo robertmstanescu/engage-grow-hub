@@ -6,7 +6,6 @@ import EditableText from "@/features/admin/EditableText";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 import RowCoverCard from "@/features/site/RowCoverCard";
 
@@ -110,7 +109,7 @@ const AchievementCard = memo(({ text, colors, cardBg, isVisible, idx }: {
       className="inline-block mt-[7px] flex-shrink-0"
       style={{ width: 16, height: 2, backgroundColor: colors.statNumber, borderRadius: 1 }}
     />
-    <p className="font-body text-sm leading-[1.6] [&_p]:mb-3 [&_p]:mt-3" style={{ color: colors.cardDesc }}>
+    <p className="font-body leading-[var(--lh-card-body)]" style={{ color: colors.cardDesc, fontSize: "var(--fs-card-body)" }}>
       {text}
     </p>
   </div>
@@ -129,7 +128,6 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
   const { ref, isVisible } = useScrollReveal();
-  const autoFitRef = useAutoFitText();
 
   const noteColor = c.color_note || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 55%, transparent)";
   const cardBg = c.color_card_bg || "hsl(var(--card))";
@@ -205,9 +203,8 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
               fieldPath={`${prefix}.description`}
               html
               as="div"
-              data-rte-fit=""
               data-row-part="body"
-              className={`font-body leading-[1.6] max-w-[600px] [&_p]:mb-3 [&_p]:mt-3 ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
+              className={`font-body leading-[var(--lh-body)] measure [&_p]:my-[var(--para-space)] ${align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""}`}
               style={{ ...revealStyle(isVisible, 2), fontSize: "var(--fs-body)", color: c.color_description || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 80%, transparent)" }}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description || "") }}
             />
@@ -262,7 +259,7 @@ const GridRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }: { 
       row={row}
       vAlign={vAlign}
       defaultBg="hsl(var(--background))"
-      innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
+      innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; }}
     >
       {coverImage ? (
         <div className={`relative z-10 ${maxW} w-full mx-auto`}>
