@@ -5,7 +5,6 @@ import EditableText from "@/features/admin/EditableText";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 import Icon from "@/features/icons/Icon";
 import { pillarColorFromLink } from "@/lib/constants/pillarColors";
@@ -33,7 +32,6 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
     : "mr-auto ml-6";
 
   const { ref, isVisible } = useScrollReveal();
-  const autoFitRef = useAutoFitText();
 
   // Optional cover image — a flat, row-level field (not per-column, not
   // per-card: confirmed against live "Our Vows" content, which is a
@@ -57,9 +55,11 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
     const prefix = rowIndex !== undefined
       ? (colIndex === 0 ? `rows.${rowIndex}.content` : `rows.${rowIndex}.columns_data.${colIndex - 1}`)
       : "";
-    const titleLines: string[] = (c.title_lines || []).map((li: unknown) =>
-      typeof li === "string" ? li.startsWith("<") ? li : `<p>${li}</p>` : `<p>${li}</p>`
-    );
+    /* Lines with no text (an admin cleared the title, or a saved "<p></p>")
+       are dropped, otherwise the row prints an empty <h2>. */
+    const titleLines: string[] = (c.title_lines || [])
+      .map((li: unknown) => (typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`))
+      .filter((li) => li.replace(/<[^>]*>/g, "").trim().length > 0);
     const cards: BoxedCard[] = c.cards || [];
     const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
 
@@ -91,10 +91,9 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
             </div>
           )}
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
-            className="font-body-heading font-bold mb-3 text-lg leading-[1.6]" style={{ color: titleColor }}>{card.title}</EditableText>
+            className="font-body-heading font-bold mb-3 leading-[1.3]" style={{ color: titleColor, fontSize: "var(--fs-card-title)" }}>{card.title}</EditableText>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
-            data-rte-fit=""
-            className="rich-text font-body text-xs leading-[1.6] [&_p]:mb-3 [&_p]:mt-3" style={{ color: bodyColor, overflow: "visible", height: "auto" }}
+            className="rich-text font-body leading-[var(--lh-card-body)]" style={{ color: bodyColor, fontSize: "var(--fs-card-body)", overflow: "visible", height: "auto", ["--para-space" as string]: "0.75em" } as React.CSSProperties}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
 
           {cardCtaUrl && cardCtaLabel && (
@@ -253,7 +252,6 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
     <RowSection
       row={row}
       vAlign={vAlign}
-      innerRef={(el) => { autoFitRef.current = el; }}
     >
       {!isMultiCol && coverImage ? (
         // Full-bleed to the row's OWN content boundary (same max-width the

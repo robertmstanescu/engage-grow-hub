@@ -28,7 +28,7 @@ const useFlatShapes = () => {
 interface Props {
   row: PageRow;
   children: ReactNode;
-  /** Forwarded to the underlying ref. Used by useScrollReveal / useAutoFitText. */
+  /** Forwarded to the underlying ref. Used by useScrollReveal. */
   innerRef?: (el: HTMLElement | null) => void;
   /** Vertical content alignment within the row. */
   vAlign?: VAlign;

@@ -18,6 +18,11 @@ Rules that are easy to get wrong:
 - Public rendering is guarded by screenshots (`npm run test:visual`).
   Refresh the baseline only after an intentional design change, and say
   so in the PR.
+- Type sizes come from the `--fs-*` tokens in `src/index.css`, sized
+  by viewport width only. Never put `vh` in a font-size clamp, never
+  shrink copy with JavaScript to make a row fit a screen, and never
+  size prose with a `text-xs`/`text-sm` utility. Paragraph spacing is
+  the single `--para-space` token; line length is `.measure`.
 - Supabase changes (schema, RLS, edge functions) go through Lovable.
 - `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
   dependency changes so CI's `--frozen-lockfile` install passes.

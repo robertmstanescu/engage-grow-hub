@@ -6,7 +6,6 @@ import EditableText from "@/features/admin/EditableText";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { resolveImageAlt } from "@/services/imageAlt";
 import { transformImageUrl, buildImageSrcSet } from "@/services/mediaOptimization";
 import { resolveAspectRatio, focalObjectPosition } from "@/lib/imageShape";
@@ -65,7 +64,6 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
   const { ref, isVisible } = useScrollReveal();
-  const autoFitRef = useAutoFitText();
 
   const imgPos = c.image_position || "right";
   const shape = c.image_shape || "default";
@@ -228,9 +226,8 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             fieldPath={`${prefix}.description`}
             html
             as="div"
-            data-rte-fit=""
             data-row-part="body"
-            className="font-body leading-[1.6] [&_p]:mb-3 [&_p]:mt-3"
+            className="font-body leading-[var(--lh-body)] measure [&_p]:my-[var(--para-space)]"
             style={{ fontSize: "var(--fs-body)", color: c.color_description || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 80%, transparent)", height: "auto", overflow: "visible" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
           />
@@ -257,7 +254,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
     <RowSection
       row={row}
       vAlign={vAlign}
-      innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
+      innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; }}
     >
       <div
         className={`relative z-10 ${maxW} w-full row-container ${containerPos}`}

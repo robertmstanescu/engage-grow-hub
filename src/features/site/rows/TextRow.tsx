@@ -5,7 +5,6 @@ import EditableText from "@/features/admin/EditableText";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { isTextRowEmpty } from "./textRowContent";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 // EPIC 1 / US 1.1 — atomic-node selection on text-row fields.
@@ -41,7 +40,6 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
     : "mr-auto";
 
   const { ref, isVisible } = useScrollReveal();
-  const autoFitRef = useAutoFitText();
 
   // Optional cover image — flat, row-level field, scoped to single-column
   // rows only (same convention as BoxedRow.tsx).
@@ -109,13 +107,12 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
                 value={c.body}
                 html
                 as="div"
-                className={`font-body font-medium leading-[1.6] ${isMultiCol ? "" : "max-w-[700px]"} mt-rhythm-tight [&_p]:mb-3 [&_p]:mt-3 ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
+                className={`font-body font-medium leading-[var(--lh-body)] measure mt-rhythm-tight [&_p]:my-[var(--para-space)] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
                 style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)"), fontSize: "var(--fs-body)" }}
               >
                 <EditableText sectionKey="page_rows" fieldPath={`${prefix}.body`} html as="div"
-                  data-rte-fit=""
                   data-row-part="body"
-                  className={`font-body font-medium leading-[1.6] ${isMultiCol ? "" : "max-w-[700px]"} mt-rhythm-tight [&_p]:mb-3 [&_p]:mt-3 ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
+                  className={`font-body font-medium leading-[var(--lh-body)] measure mt-rhythm-tight [&_p]:my-[var(--para-space)] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
                   style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)"), fontSize: "var(--fs-body)" }}
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
               </CanvasEditable>
@@ -149,7 +146,6 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
       row={row}
       vAlign={vAlign}
       grain={false}
-      innerRef={(el) => { autoFitRef.current = el; }}
     >
       {/*
         Wrapper is full-width so the constrained inner column can use

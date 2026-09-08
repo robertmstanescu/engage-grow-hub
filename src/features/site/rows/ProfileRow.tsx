@@ -6,7 +6,6 @@ import EditableText from "@/features/admin/EditableText";
 import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { useAutoFitText } from "@/hooks/useAutoFitText";
 import { resolveImageAlt } from "@/services/imageAlt";
 import { transformImageUrl, buildImageSrcSet } from "@/services/mediaOptimization";
 import { resolveAspectRatio, focalObjectPosition } from "@/lib/imageShape";
@@ -31,7 +30,6 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
   const { ref, isVisible } = useScrollReveal();
-  const autoFitRef = useAutoFitText(0.75);
 
   const nameColor = c.color_name || "#FFFFFF";
   const roleColor = c.color_role || "hsl(var(--accent))";
@@ -61,7 +59,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
     <RowSection
       row={row}
       vAlign={vAlign}
-      innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; autoFitRef.current = el; }}
+      innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; }}
     >
       <div className={`relative z-10 ${maxW} w-full row-container ${containerPos}`}>
         <div className="grid grid-cols-1 gap-rhythm-loose items-center" style={{ gridTemplateColumns: window.innerWidth > 768 ? gridCols : undefined }}>
@@ -180,7 +178,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                   html
                   as="div"
                   data-row-part="body"
-                  className="font-body leading-[1.6] [&_p]:mb-3 [&_p]:mt-3"
+                  className="font-body leading-[var(--lh-body)] measure [&_p]:my-[var(--para-space)]"
                   style={{
                     fontSize: "var(--fs-body)",
                     color: c.color_body || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 85%, transparent)",
