@@ -19,6 +19,8 @@ import { transformImageUrl } from "@/services/mediaOptimization";
 import { focalObjectPosition, resolveAspectRatio } from "@/lib/imageShape";
 
 const ROUNDED_PX = { none: 0, subtle: 16, medium: 24, dramatic: 48 } as const;
+/** Radius of the "card" variant when the row has no explicit Corners choice. */
+const CARD_DEFAULT_RADIUS = 48;
 
 const COVER_HEIGHTS: Record<"small" | "medium" | "large", { maxH: string }> = {
   small: { maxH: "clamp(180px, 22vh, 260px)" },
@@ -44,8 +46,15 @@ const RowCoverCard = ({ row, children, variant = "flush" }: RowCoverCardProps) =
 
   if (!coverImage) return <>{children}</>;
 
-  const radiusKey = row.layout?.surfaceRadius || "none";
-  const radiusPx = `${ROUNDED_PX[radiusKey] ?? 0}px`;
+  const isCard = variant === "card";
+  // An explicit Style ▸ Corners choice always wins. Without one, the
+  // "flush" picture follows the row's box (square by default, so it never
+  // fights an edge shape — see RowSection). The "card" variant is its own
+  // inner surface with a shadow, so it keeps the rounded look it always
+  // had (48px, the old "medium") instead of turning square when the row
+  // default changed to none; an inner card cannot clash with an edge cap.
+  const radiusKey = row.layout?.surfaceRadius;
+  const radiusPx = `${radiusKey ? (ROUNDED_PX[radiusKey] ?? 0) : isCard ? CARD_DEFAULT_RADIUS : 0}px`;
   const heightKey = row.layout?.coverHeight || "small";
   const maxHeight = COVER_HEIGHTS[heightKey]?.maxH || COVER_HEIGHTS.small.maxH;
   const objectPosition = focalObjectPosition(
@@ -53,7 +62,6 @@ const RowCoverCard = ({ row, children, variant = "flush" }: RowCoverCardProps) =
     row.content?.cover_image_focal_y,
   );
   const aspectRatio = resolveAspectRatio(row.content?.cover_image_ratio);
-  const isCard = variant === "card";
 
   return (
     <div
