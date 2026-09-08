@@ -19,10 +19,15 @@ src/
                          (BoxedRow.tsx, HeroRow.tsx, …) plus PageRows →
                          RowRenderer → CellRenderer → WidgetNode, the
                          engine that paints a page from stored JSON.
-  features/admin/        Admin app (lazy Admin chunk). site-editor/ and
-                         editors/ hold one editor per row type; inspector/
-                         and builder/ are the canvas UI; FieldComponents.tsx
-                         and CoverImageField.tsx are the shared field groups.
+  features/admin/        Admin app (lazy Admin chunk). AdminDashboard.tsx is
+                         the shell (icon rail + topbar); navigation.ts is the
+                         one list of destinations, sub-tabs and legacy URL
+                         redirects. site-editor/ and editors/ hold one editor
+                         per row type; inspector/ and builder/ are the canvas
+                         UI (every page, Home included, opens there);
+                         FieldComponents.tsx and CoverImageField.tsx are the
+                         shared field groups; ui/ActionMenu.tsx is the row
+                         quick-actions menu used by Pages and Blog.
   features/widgets/      Self-registering widget modules — one folder per
                          type (boxed/, contact/, cta-button/, subscribe/).
                          The target shape for every row type.

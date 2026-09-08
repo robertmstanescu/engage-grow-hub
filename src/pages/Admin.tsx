@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import AdminLogin from "@/features/admin/AdminLogin";
 import AdminDashboard from "@/features/admin/AdminDashboard";
+import { useAdminTheme } from "@/hooks/useAdminTheme";
 import { ConfirmDialogHost } from "@/components/ConfirmDialog";
 import useNoIndex from "@/hooks/useNoIndex";
 
@@ -12,6 +13,7 @@ const Admin = () => {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const adminTheme = useAdminTheme();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,8 +70,8 @@ const Admin = () => {
   }
 
   return (
-    <div className="admin-light">
-      <AdminDashboard session={session} />
+    <div className={adminTheme.className}>
+      <AdminDashboard session={session} theme={adminTheme.theme} onToggleTheme={adminTheme.toggle} />
       {/* Debug Story 4.1 — singleton confirm dialog host for destructive guards. */}
       <ConfirmDialogHost />
     </div>

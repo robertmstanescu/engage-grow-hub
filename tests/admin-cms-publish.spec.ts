@@ -24,9 +24,9 @@ import type { Page } from "@playwright/test";
 const adminEmail = process.env.E2E_ADMIN_EMAIL;
 const adminPassword = process.env.E2E_ADMIN_PASSWORD;
 
-/** Navigate to Page Manager from wherever the dashboard currently is. */
+/** Navigate to Pages from wherever the dashboard currently is. */
 const openPageManager = async (page: Page) => {
-  await page.getByRole("button", { name: /page manager/i }).click();
+  await page.getByRole("button", { name: /^pages$/i }).click();
 };
 
 /** Find this page's row in the Page Manager table, if it's on the current page of results. */
@@ -47,7 +47,8 @@ test.describe("Admin CMS publish flow", () => {
       await openPageManager(page);
       const row = findPageRow(page, createdPageTitle);
       if (await row.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await row.getByRole("button", { name: /delete/i }).click();
+        await row.getByRole("button", { name: /actions for/i }).click();
+        await page.getByRole("menuitem", { name: /delete/i }).click();
       }
     } catch {
       // Non-fatal — worst case a manually-cleaned-up throwaway page remains.
@@ -85,13 +86,13 @@ test.describe("Admin CMS publish flow", () => {
     await page.getByRole("button", { name: /sign in with password/i }).click();
 
     // ── 2. Land on the dashboard ───────────────────────────────────────
-    const pagesNavItem = page.getByRole("button", { name: /page manager/i });
+    const pagesNavItem = page.getByRole("button", { name: /^pages$/i });
     await expect(pagesNavItem).toBeVisible({ timeout: 20000 });
     await pagesNavItem.click();
 
     // ── 3. Create a new CMS page ───────────────────────────────────────
     const pageTitle = `E2E Publish ${Date.now()}`;
-    await page.getByRole("button", { name: /^create page$/i }).click();
+    await page.getByRole("button", { name: /^new page$/i }).click();
     await page.getByPlaceholder("About Us").fill(pageTitle);
     await page.getByRole("button", { name: "Create", exact: true }).click();
 
@@ -103,7 +104,7 @@ test.describe("Admin CMS publish flow", () => {
     expect(slug.length).toBeGreaterThan(0);
 
     // ── 4. Open it in the visual builder ────────────────────────────────
-    await pageRow.getByRole("button", { name: /edit in builder/i }).click();
+    await pageRow.getByRole("button", { name: /^edit$/i }).click();
 
     const titleInput = page.getByPlaceholder("Untitled page");
     await expect(titleInput).toHaveValue(pageTitle);

@@ -6,6 +6,7 @@ import {
   RouterProvider,
   createBrowserRouter,
   createRoutesFromElements,
+  useLocation,
 } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
@@ -32,7 +33,6 @@ const CmsPage = lazy(() => import("./pages/CmsPage"));
 // Admin routes — lazy so the editor stack stays out of the public bundle.
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminProfile = lazy(() => import("./pages/AdminProfile"));
-const AdminInsights = lazy(() => import("./pages/AdminInsights"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 /**
@@ -50,16 +50,22 @@ const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
  * createRoutesFromElements produces the identical route table from
  * the same JSX.
  */
-const RootShell = () => (
-  <>
-    <Outlet />
-    <AnalyticsBeaconMount />
-    <ConditionalToolbar />
-    <div className="public-fluid-type">
-      <CookieConsent />
-    </div>
-  </>
-);
+const RootShell = () => {
+  /* The consent banner is for visitors; the admin never shows it. */
+  const isAdmin = useLocation().pathname.startsWith("/admin");
+  return (
+    <>
+      <Outlet />
+      <AnalyticsBeaconMount />
+      <ConditionalToolbar />
+      {!isAdmin && (
+        <div className="public-fluid-type">
+          <CookieConsent />
+        </div>
+      )}
+    </>
+  );
+};
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -87,8 +93,6 @@ const router = createBrowserRouter(
             for anything else. */}
         <Route path="/admin/:tab" element={<Admin />} />
         <Route path="/admin/profile" element={<AdminProfile />} />
-        <Route path="/admin/ai-insights" element={<AdminInsights />} />
-        <Route path="/admin/insights" element={<AdminInsights />} />
       </Route>
       <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

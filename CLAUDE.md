@@ -23,6 +23,11 @@ Rules that are easy to get wrong:
   shrink copy with JavaScript to make a row fit a screen, and never
   size prose with a `text-xs`/`text-sm` utility. Paragraph spacing is
   the single `--para-space` token; line length is `.measure`.
+- The admin has ONE navigation list: `src/features/admin/navigation.ts`
+  (nine destinations, sub-tabs via `?tab=`, and `LEGACY_REDIRECTS` for
+  old URLs). Do not add sidebar entries elsewhere. Every page opens in
+  the canvas builder; there is no second list-based row editor. List
+  rows get their actions from `ui/ActionMenu.tsx`.
 - Supabase changes (schema, RLS, edge functions) go through Lovable.
 - `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
   dependency changes so CI's `--frozen-lockfile` install passes.

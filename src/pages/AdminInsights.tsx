@@ -91,7 +91,7 @@ function isAiSummaryOptimized(summary: string | null | undefined): boolean {
   return trimmed.length >= 60 && trimmed.length <= 320;
 }
 
-const AdminInsights = () => {
+const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
   useNoIndex();
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
@@ -298,13 +298,15 @@ const AdminInsights = () => {
   };
 
   return (
-    <div className="admin-light min-h-screen" style={{ backgroundColor: "hsl(30 20% 96%)" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
+    <div className={embedded ? "" : "admin-light min-h-screen"} style={embedded ? undefined : { backgroundColor: "hsl(30 20% 96%)" }}>
+      <div className={embedded ? "space-y-6" : "max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6"}>
         {/* Header */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <Link to="/admin" className="flex items-center gap-1.5 font-body text-xs text-black uppercase tracking-wider">
-            <ArrowLeft size={14} /> Back to Admin
-          </Link>
+          {embedded ? <span /> : (
+            <Link to="/admin" className="flex items-center gap-1.5 font-body text-xs text-black uppercase tracking-wider">
+              <ArrowLeft size={14} /> Back to Admin
+            </Link>
+          )}
           <button onClick={refreshAll} disabled={loading}
             className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 disabled:opacity-50"
             style={{ backgroundColor: "hsl(280 55% 24%)", color: "hsl(50 82% 87%)" }}>
