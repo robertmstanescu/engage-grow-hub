@@ -92,3 +92,22 @@ export const normalizeRichTextHtml = (html: string, forcedPx?: string): string =
   normalizeRichTextContainerFontSizes(template.content, forcedPx);
   return template.innerHTML;
 };
+
+/**
+ * Strip every custom font size from rich text: inline `font-size`
+ * declarations, `<font size>` wrappers and the legacy `text-S`…`text-XXXL`
+ * classes. The site's type scale (the `--fs-*` tokens) decides every
+ * size; copy pasted from elsewhere must not carry its own. Decided with
+ * the owner — do not reintroduce per-span sizes.
+ */
+export const stripRichTextFontSizes = (html: string): string => {
+  if (!html) return '';
+  let next = html.replace(/font-size\s*:\s*[^;"']+;?\s*/gi, '');
+  Object.keys(LEGACY_CLASS_TO_PX).forEach((className) => {
+    next = next.replace(new RegExp(`\\b${className}\\b`, 'g'), '');
+  });
+  next = next.replace(/<font\b([^>]*?)\ssize=(['"]).*?\2([^>]*)>/gi, '<font$1$3>');
+  /* Drop attributes left empty by the removals. */
+  next = next.replace(/\sstyle=(['"])\s*\1/gi, '').replace(/\sclass=(['"])\s*\1/gi, '');
+  return next;
+};

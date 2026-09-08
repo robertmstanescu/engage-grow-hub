@@ -33,7 +33,7 @@ import Image from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
-import { TextStyle, Color, FontFamily, FontSize } from "@tiptap/extension-text-style";
+import { TextStyle, Color, FontFamily } from "@tiptap/extension-text-style";
 import { sanitizeHtml } from "@/services/sanitize";
 import { uploadEditorImage } from "@/services/mediaStorage";
 import { runDbAction } from "@/services/db-helpers";
@@ -79,9 +79,6 @@ const FONT_OPTIONS = [
   { label: "Bricolage Grotesque", value: "'Bricolage Grotesque', sans-serif" },
 ];
 
-const SIZE_OPTIONS = [
-  "12px", "14px", "16px", "18px", "20px", "24px", "30px", "36px", "48px", "60px", "72px",
-];
 
 /**
  * DropCapAttribute — adds an optional `class="drop-cap"` to the textStyle
@@ -168,7 +165,6 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
       TextStyle,
       Color,
       FontFamily,
-      FontSize,
       DropCapAttribute,
       Highlight.configure({ multicolor: true }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
@@ -287,7 +283,6 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   if (!editor) return null;
 
   const activeFont = (editor.getAttributes("textStyle").fontFamily as string) || "";
-  const activeSize = (editor.getAttributes("textStyle").fontSize as string) || "";
 
   return (
     <div
@@ -322,22 +317,8 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           ))}
         </select>
 
-        <select
-          value={SIZE_OPTIONS.includes(activeSize) ? activeSize : ""}
-          onChange={(e) => run(() => {
-            const v = e.target.value;
-            if (v) editor.chain().focus().setFontSize(v).run();
-            else editor.chain().focus().unsetFontSize().run();
-          })}
-          className="font-body text-[10px] px-1.5 py-1 rounded border bg-transparent cursor-pointer"
-          style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", maxWidth: "85px" }}
-          title="Font Size"
-        >
-          <option value="">Size</option>
-          {SIZE_OPTIONS.map((size) => (
-            <option key={size} value={size}>{size}</option>
-          ))}
-        </select>
+        {/* No font-size picker: the site's type scale sets every size and
+            the renderer strips inline sizes (see sanitizeHtml). */}
 
         <Divider />
 

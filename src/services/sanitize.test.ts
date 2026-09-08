@@ -101,17 +101,22 @@ describe("sanitizeHtml", () => {
     });
   });
 
-  describe("rich-text font-size normalization", () => {
-    it("converts a browser keyword font-size to an exact pixel value", () => {
-      const out = sanitizeHtml('<span style="font-size: xx-large">big</span>');
-      expect(out).toContain("font-size: 32px");
-      expect(out).not.toContain("xx-large");
+  describe("custom font sizes are stripped (the site's type scale sets every size)", () => {
+    it("removes inline font-size but keeps the text and other styling", () => {
+      const out = sanitizeHtml('<p><span style="font-size: 16px; color: rgb(38, 20, 46);">Hello</span> <span style="font-size:0.875rem">world</span></p>');
+      expect(out).toBe('<p><span style="color: rgb(38, 20, 46);">Hello</span> <span>world</span></p>');
     });
 
-    it("converts a legacy text-size class to an inline pixel font-size", () => {
-      const out = sanitizeHtml('<span class="text-XXL">big</span>');
-      expect(out).toContain("font-size: 32px");
+    it("removes browser keyword sizes and legacy text-size classes", () => {
+      expect(sanitizeHtml('<span style="font-size: xx-large">big</span>')).toBe("<span>big</span>");
+      const out = sanitizeHtml('<span class="text-XXL lead">big</span>');
       expect(out).not.toContain("text-XXL");
+      expect(out).toContain("lead");
+      expect(out).not.toContain("font-size");
+    });
+
+    it("removes <font size> but keeps the face", () => {
+      expect(sanitizeHtml('<font size="3" face="Inter">a</font>')).toBe('<font face="Inter">a</font>');
     });
   });
 });
