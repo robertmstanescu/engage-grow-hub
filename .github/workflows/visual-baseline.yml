@@ -41,7 +41,19 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run build
       - run: bunx playwright install --with-deps chromium
-      - run: rm -rf tests/visual/__snapshots__/linux && bun run test:visual:update
+      # Only re-render when the existing Linux baseline actually FAILS the
+      # suite. Two renders of the same page are rarely byte-identical
+      # (PNG encoding, sub-pixel text), so unconditionally re-rendering
+      # produced a fresh "Refresh Linux visual baseline" commit on every
+      # run even though the diff was well inside the tolerance.
+      - name: Refresh the baseline only if the current one no longer passes
+        run: |
+          if bun run test:visual; then
+            echo "Linux baseline still passes; leaving it as is."
+          else
+            rm -rf tests/visual/__snapshots__/linux
+            bun run test:visual:update
+          fi
       - name: Commit the Linux baseline
         run: |
           git config user.name "github-actions[bot]"
