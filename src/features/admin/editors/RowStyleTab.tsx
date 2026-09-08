@@ -602,25 +602,26 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[70px]">
-                      Text overlap
+                      Text over picture
                     </span>
                     <input
                       type="range"
                       min={0}
-                      max={160}
-                      step={4}
-                      value={row.layout?.coverTextOverlap ?? 64}
-                      onChange={(e) => patchLayout({ coverTextOverlap: Number(e.target.value) })}
+                      max={90}
+                      step={5}
+                      value={row.layout?.coverTextOverlapPct ?? 60}
+                      onChange={(e) => patchLayout({ coverTextOverlapPct: Number(e.target.value) })}
                       className="flex-1"
                       style={{ accentColor: "hsl(var(--secondary))" }}
                     />
                     <span className="font-body text-[10px] text-foreground min-w-[36px] text-right">
-                      {row.layout?.coverTextOverlap ?? 64}px
+                      {row.layout?.coverTextOverlapPct ?? 60}%
                     </span>
                   </div>
                   <p className="font-body text-[10px] text-muted-foreground leading-snug mt-1">
-                    Pulls the text up over the picture's fading tail. Reduced
-                    automatically on phones.
+                    How far the text climbs up over the picture, as a share of the
+                    picture's height. Around a third puts the first lines on the
+                    fading image; the picture fades to nothing at its bottom edge.
                   </p>
                 </div>
               </>
