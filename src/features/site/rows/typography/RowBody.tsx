@@ -61,8 +61,9 @@ const RowBody = ({ children, html, color, style, className, ...rest }: Props) =>
     letterSpacing: "var(--ls-body, 0)",
     // Default to the row's auto-resolved foreground (`--row-fg`,
     // published by RowSection). Per-row admin colour pickers still
-    // win via the `color` prop.
-    color: color ?? "var(--row-fg, hsl(var(--foreground) / 0.85))",
+    // win via the `color` prop. `||` so a cleared or schema-defaulted ""
+    // counts as "no override" (see RowTitle).
+    color: color || "var(--row-fg, hsl(var(--foreground) / 0.85))",
     ...style,
   };
 

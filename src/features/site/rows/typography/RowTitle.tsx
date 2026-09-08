@@ -31,7 +31,13 @@ const RowTitle = ({ children, as, color, style, className, icon, iconSize = 32 }
      which case it renders the single <h1>. */
   const isPrimary = useIsPrimaryHeading();
   const Tag = as ?? (isPrimary ? "h1" : "h2");
-  const resolvedColor = color ?? "var(--row-fg, hsl(var(--foreground)))";
+  // `||`, not `??`: an admin colour picker that was cleared stores "",
+  // and a schema-backed row fills unset colours with "". Both mean
+  // "no override" — the row's auto-resolved light/dark foreground
+  // (`--row-fg`, published by RowSection) must win. With `??` the empty
+  // string was applied as-is, which is invalid CSS, so the heading
+  // inherited the section's static colour and dark rows got dark text.
+  const resolvedColor = color || "var(--row-fg, hsl(var(--foreground)))";
   // H1 (the page's Hero, or this row when it stands in for a missing Hero)
   // stays at the heaviest weight; H2/H3 row titles drop to font-bold so
   // there's an actual weight step down from H1 instead of every level

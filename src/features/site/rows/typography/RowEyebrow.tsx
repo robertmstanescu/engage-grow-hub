@@ -53,8 +53,9 @@ const RowEyebrow = ({ children, color, style, className }: Props) => (
       letterSpacing: "var(--ls-label, 0.28em)",
       // Eyebrow defaults to the row's auto-resolved foreground at 70%
       // alpha — quieter than the title but still on-palette. Per-row
-      // admin overrides win via the `color` prop.
-      color: color ?? "color-mix(in srgb, var(--row-fg, hsl(var(--muted-foreground))) 70%, transparent)",
+      // admin overrides win via the `color` prop. `||` so a cleared or
+      // schema-defaulted "" counts as "no override" (see RowTitle).
+      color: color || "color-mix(in srgb, var(--row-fg, hsl(var(--muted-foreground))) 70%, transparent)",
       ...style,
     }}
   >
