@@ -14,11 +14,10 @@ import PillarEditor from "../site-editor/PillarEditor";
 import ImageTextEditor from "../site-editor/ImageTextEditor";
 import ProfileEditor from "../site-editor/ProfileEditor";
 import GridEditor from "../site-editor/GridEditor";
-import ContactAdmin from "@/features/widgets/contact/ContactAdmin";
 import TextRowEditor from "../site-editor/TextRowEditor";
-import BoxedRowEditor from "../site-editor/BoxedRowEditor";
 import LeadMagnetEditor from "../site-editor/LeadMagnetEditor";
-import { ImageRowAdmin } from "@/features/site/rows/ImageRow";
+import { Suspense } from "react";
+import { getWidget } from "@/lib/WidgetRegistry";
 import type { RowType } from "@/types/rows";
 import {
   BrandHeaderFields,
@@ -45,15 +44,17 @@ interface RowTypeEditorProps {
 }
 
 /**
- * One editor per row type, keyed by `RowType`.
+ * Editors for the row types NOT yet migrated to a self-registering
+ * widget module (src/features/widgets/<type>/index.tsx). A migrated
+ * type registers its editor as `adminComponent` and must not appear
+ * here; `RowTypeEditor` looks the registry up first.
  *
- * A `Record<RowType, …>` rather than a `switch` so that (a) forgetting
- * a type is a compile error, (b) a key that is not a real row type is a
- * compile error (a stale `"vows"` case lived here for months with no
- * such row type), and (c) `rowRegistry.test.ts` can compare these keys
- * against the renderer registry without parsing source.
+ * Keyed by `RowType` so a key that is not a real row type is a compile
+ * error (a stale `"vows"` case lived here for months with no such row
+ * type). `rowRegistry.test.ts` asserts every row type has exactly one
+ * editor between this map and the registry.
  */
-export const ROW_TYPE_EDITORS: Record<RowType, (p: RowTypeEditorProps) => JSX.Element> = {
+export const ROW_TYPE_EDITORS: Partial<Record<RowType, (p: RowTypeEditorProps) => JSX.Element>> = {
   hero: ({ content, onChange, bgColor }) => (
     <HeroRowFields content={content} onChange={onChange} bgColor={bgColor} />
   ),
@@ -66,7 +67,6 @@ export const ROW_TYPE_EDITORS: Record<RowType, (p: RowTypeEditorProps) => JSX.El
       bgColor={bgColor}
     />
   ),
-  contact: ({ content, onChange }) => <ContactAdmin content={content} onChange={onChange} />,
   image_text: ({ content, onChange, bgColor, legacySplitWidths }) => (
     <ImageTextEditor
       content={content}
@@ -83,9 +83,6 @@ export const ROW_TYPE_EDITORS: Record<RowType, (p: RowTypeEditorProps) => JSX.El
   ),
   text: ({ content, onChange, bgColor }) => (
     <TextRowEditor content={content} onChange={onChange} bgColor={bgColor} />
-  ),
-  boxed: ({ content, onChange, bgColor }) => (
-    <BoxedRowEditor content={content} onChange={onChange} bgColor={bgColor} />
   ),
   lead_magnet: ({ content, onChange, onReplaceContent }) => (
     <LeadMagnetEditor
@@ -114,10 +111,21 @@ export const ROW_TYPE_EDITORS: Record<RowType, (p: RowTypeEditorProps) => JSX.El
   cta_band: ({ content, onChange, bgColor }) => (
     <CtaBandEditor content={content} onChange={onChange} bgColor={bgColor} />
   ),
-  image: ({ content, onChange }) => <ImageRowAdmin content={content as any} onChange={onChange} />,
 };
 
 const RowTypeEditor = (props: RowTypeEditorProps) => {
+  // Registry first: a migrated widget module owns its editor.
+  const Admin = getWidget(props.type)?.adminComponent as
+    | React.ComponentType<{ content: Record<string, any>; onChange: (field: string, value: any) => void; bgColor?: string }>
+    | undefined;
+  if (Admin) {
+    // Migrated editors are `lazy()` (kept out of the public bundle).
+    return (
+      <Suspense fallback={null}>
+        <Admin content={props.content} onChange={props.onChange} bgColor={props.bgColor} />
+      </Suspense>
+    );
+  }
   const editor = (ROW_TYPE_EDITORS as Record<string, (p: RowTypeEditorProps) => JSX.Element>)[props.type];
   if (editor) return editor(props);
   /* Unknown / future row types still get the standard header fields
