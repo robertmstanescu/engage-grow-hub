@@ -44,7 +44,8 @@ const RowSubtitle = ({ children, color, style, className, handwritten }: Props) 
       fontSize: "var(--fs-subtitle)",
       // Inherit the row's auto-resolved foreground unless the admin
       // set a per-row override. `--row-fg` is published by RowSection.
-      color: color ?? "var(--row-fg, inherit)",
+      // `||` so a cleared or schema-defaulted "" counts as "no override".
+      color: color || "var(--row-fg, inherit)",
       ...style,
     }}
   >
