@@ -76,6 +76,9 @@ const RowCoverImage = ({ src, alt, layout }: Props) => {
         roundedTop={false}
         fillParent
         aspectRatio={aspectRatio ?? 16 / 9}
+        // A row cover dissolves into the row from its very first pixel
+        // (100% → 0% top to bottom), not after an opaque banner strip.
+        fade="linear"
         className="h-auto"
         style={{ objectPosition }}
       />
