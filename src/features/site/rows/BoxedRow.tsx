@@ -11,6 +11,7 @@ import Icon from "@/features/icons/Icon";
 import { pillarColorFromLink } from "@/lib/constants/pillarColors";
 import { trackConversion } from "@/services/conversions";
 import RowCoverCard from "@/features/site/RowCoverCard";
+import type { BoxedContent, BoxedCard } from "@/features/widgets/boxed/schema";
 
 /**
  * Smart link helper — internal anchors / paths stay in-tab, external
@@ -49,17 +50,20 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
     return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
   };
 
-  const renderColumnContent = (c: Record<string, any>, colIndex: number) => {
+  // `c` is typed against the boxed schema; stored content reaches this
+  // renderer through the registry's parse step, so every field below
+  // exists (defaults filled) even for rows saved by older admin builds.
+  const renderColumnContent = (c: BoxedContent, colIndex: number) => {
     const prefix = rowIndex !== undefined
       ? (colIndex === 0 ? `rows.${rowIndex}.content` : `rows.${rowIndex}.columns_data.${colIndex - 1}`)
       : "";
-    const titleLines: string[] = (c.title_lines || []).map((li: any) =>
+    const titleLines: string[] = (c.title_lines || []).map((li: unknown) =>
       typeof li === "string" ? li.startsWith("<") ? li : `<p>${li}</p>` : `<p>${li}</p>`
     );
-    const cards: { title: string; body: string }[] = c.cards || [];
+    const cards: BoxedCard[] = c.cards || [];
     const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
 
-    const renderCard = (card: any, i: number) => {
+    const renderCard = (card: BoxedCard, i: number) => {
       const cardLink: string | undefined = card.link_url?.trim() || undefined;
       // Per-card accent for the icon, title and a 3px top border, from
       // two sources in priority order:
@@ -211,15 +215,15 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
           // cards to fill their own row.
           <div className={`flex flex-col gap-6 lg:gap-8 ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-stretch">
-              {cards.slice(0, 2).map((card: any, i: number) => renderCard(card, i))}
+              {cards.slice(0, 2).map((card, i) => renderCard(card, i))}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
-              {cards.slice(2, 5).map((card: any, i: number) => renderCard(card, i + 2))}
+              {cards.slice(2, 5).map((card, i) => renderCard(card, i + 2))}
             </div>
           </div>
         ) : (
           <div className={`grid ${getGridCols(cards.length)} gap-6 lg:gap-8 items-stretch ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
-            {cards.slice(0, 6).map((card: any, i: number) => renderCard(card, i))}
+            {cards.slice(0, 6).map((card, i) => renderCard(card, i))}
           </div>
         )}
 
@@ -258,16 +262,16 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         // edges and corners should read as the row's own surface, not as
         // a smaller card floating inside it.
         <div className={`relative z-10 w-full ${l.fullWidth ? "" : "max-w-[1280px]"} mx-auto`}>
-          <RowCoverCard row={row}>{renderColumnContent(contents[0], 0)}</RowCoverCard>
+          <RowCoverCard row={row}>{renderColumnContent(contents[0] as BoxedContent, 0)}</RowCoverCard>
         </div>
       ) : (
         <div ref={ref} className={`relative z-10 row-container ${isMultiCol ? `${l.fullWidth ? "" : "max-w-[1280px]"} ${containerPos}` : `${maxW} ${containerPos} ${contentAlign}`}`}>
           {isMultiCol ? (
             <div style={multiColGridStyle(widths)} className="items-start">
-              {contents.map((c, i) => renderColumnContent(c, i))}
+              {contents.map((c, i) => renderColumnContent(c as BoxedContent, i))}
             </div>
           ) : (
-            renderColumnContent(contents[0], 0)
+            renderColumnContent(contents[0] as BoxedContent, 0)
           )}
         </div>
       )}

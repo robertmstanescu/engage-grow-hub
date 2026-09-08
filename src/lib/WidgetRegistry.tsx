@@ -44,6 +44,18 @@ import type { LucideIcon } from "lucide-react";
 import type { PageRow } from "@/types/rows";
 
 /**
+ * The slice of a zod schema the engine needs — structural on purpose so
+ * widget modules can use `zod/mini` (public bundle, small) or classic
+ * `zod` without this file importing either.
+ */
+export interface ContentSchema<TData> {
+  parse(input: unknown): TData;
+  safeParse(input: unknown):
+    | { success: true; data: TData }
+    | { success: false; error: { issues: ReadonlyArray<{ path: ReadonlyArray<PropertyKey>; message: string }> } };
+}
+
+/**
  * Render context passed by the engine when it asks the registry for
  * the rendered output of a widget. Centralising this here means widget
  * authors only need to know one shape, not the heterogeneous prop
@@ -88,6 +100,16 @@ export interface WidgetRenderContext {
 export interface WidgetDefinition<TData = Record<string, unknown>> {
   type: string;
   defaultData: TData;
+  /**
+   * Zod schema for this widget's `content` blob — the ONE description of
+   * its fields that the renderer, the editor and `defaultData` all derive
+   * from (see src/features/widgets/boxed/schema.ts). When present, the
+   * engine validates stored content at the render boundary
+   * (`parseWidgetContent`): bad JSON is reported in dev and rendered
+   * with defaults merged in, never thrown. Widgets not yet migrated to
+   * a schema simply omit it.
+   */
+  schema?: ContentSchema<TData>;
   adminComponent?: ComponentType<{
     content: TData;
     onChange: (field: string, value: unknown) => void;
@@ -171,12 +193,48 @@ export const renderWidget = (ctx: WidgetRenderContext): ReactNode => {
     }
     return null;
   }
-  if (def.render) return def.render(ctx);
+  const row = def.schema
+    ? { ...ctx.row, content: parseWidgetContent(def, ctx.row.content, ctx.row.id) }
+    : ctx.row;
+  if (def.render) return def.render({ ...ctx, row });
   if (def.frontendComponent) {
     const C = def.frontendComponent;
-    return <C row={ctx.row} />;
+    return <C row={row} />;
   }
   return null;
+};
+
+/**
+ * Validate a stored `content` blob against the widget's schema at the
+ * render boundary. Stored JSON was written by many admin versions and
+ * by hand, so the public site must never crash on it:
+ *   - valid    → the parsed value (schema defaults filled in).
+ *   - invalid  → `defaultData` merged under the raw content, so every
+ *                field the renderer reads exists; plus, in development
+ *                only, a console warning naming the widget, the row and
+ *                the offending paths so the bad data gets fixed at the
+ *                source rather than papered over.
+ * Meta keys the engine adds (`__design`, `__slug`, `__global_ref`) pass
+ * through because schemas are declared `.loose()`.
+ */
+export const parseWidgetContent = (
+  def: AnyWidgetDefinition,
+  content: Record<string, unknown> | undefined,
+  rowId?: string,
+): Record<string, unknown> => {
+  const raw = content ?? {};
+  if (!def.schema) return raw;
+  const result = def.schema.safeParse(raw);
+  if (result.success) return result.data as Record<string, unknown>;
+  if (import.meta.env?.DEV && typeof window !== "undefined") {
+    const paths = result.error.issues
+      .map((i) => `${i.path.map(String).join(".") || "(root)"}: ${i.message}`)
+      .slice(0, 8)
+      .join("; ");
+    // eslint-disable-next-line no-console
+    console.warn(`[WidgetRegistry] "${def.type}" row ${rowId ?? "?"} has invalid content — ${paths}`);
+  }
+  return { ...(def.defaultData as Record<string, unknown>), ...raw };
 };
 
 /**

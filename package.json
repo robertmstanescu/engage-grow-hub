@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "lint": "eslint . --max-warnings 552",
+    "lint": "eslint . --max-warnings 495",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "test": "vitest run",

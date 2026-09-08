@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { MousePointer2, Trash2, BookmarkPlus, Loader2 } from "lucide-react";
 import { useBuilder } from "../builder/BuilderContext";
 import { useInspectorFocus } from "./useInspectorFocus";
@@ -493,7 +493,13 @@ const InspectorPanel = (props: InspectorPanelProps) => {
     const contentEditor = def?.adminComponent
       ? (() => {
           const Admin = def.adminComponent!;
-          return <Admin content={widgetContent} onChange={updateWidgetField} />;
+          // Migrated widget editors are `lazy()` so they stay out of
+          // the public bundle; Suspense covers their first load.
+          return (
+            <Suspense fallback={null}>
+              <Admin content={widgetContent} onChange={updateWidgetField} />
+            </Suspense>
+          );
         })()
       : (
         <RowTypeEditor

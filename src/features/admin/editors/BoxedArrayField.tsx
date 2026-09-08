@@ -18,21 +18,12 @@
 import { Plus, Trash2 } from "lucide-react";
 import { Field, RichField, SectionBox, ColorField } from "../site-editor/FieldComponents";
 import { IconPickerField } from "@/features/icons/IconPicker";
+import type { BoxedCard } from "@/features/widgets/boxed/schema";
 
 interface Props {
   content: Record<string, any>;
   onChange: (field: string, value: any) => void;
   bgColor?: string;
-}
-
-interface BoxedCard {
-  title: string;
-  body: string;
-  icon?: string;
-  accent_color?: string;
-  link_url?: string;
-  cta_label?: string;
-  cta_url?: string;
 }
 
 const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {

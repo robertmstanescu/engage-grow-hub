@@ -27,7 +27,6 @@ import {
   ImageIcon,
   Type,
   LayoutGrid,
-  Boxes,
   ImagePlus,
   UserSquare2,
   Grid3x3,
@@ -44,7 +43,6 @@ import {
 import HeroRow from "@/features/site/rows/HeroRow";
 import TextRow from "@/features/site/rows/TextRow";
 import ServiceRow from "@/features/site/rows/ServiceRow";
-import BoxedRow from "@/features/site/rows/BoxedRow";
 import ImageTextRow from "@/features/site/rows/ImageTextRow";
 import ImageRow, { ImageRowAdmin, IMAGE_ROW_DEFAULT } from "@/features/site/rows/ImageRow";
 import ProfileRow from "@/features/site/rows/ProfileRow";
@@ -60,6 +58,7 @@ import CtaBandRow from "@/features/site/rows/CtaBandRow";
 
 // Modular widgets — each self-registers on import. Keep this list
 // alphabetical so it's obvious whether a given widget is wired up.
+import "@/features/widgets/boxed";
 import "@/features/widgets/contact";
 import "@/features/widgets/cta-button";
 import "@/features/widgets/subscribe";
@@ -110,19 +109,9 @@ registerWidget({
   ),
 });
 
-registerWidget({
-  type: "boxed",
-  label: "Boxed Cards",
-  icon: Boxes,
-  category: "Content",
-  defaultData: { title_lines: [], cards: [] },
-  render: ({ row, rowIndex, align, vAlign }) => (
-    <BoxedRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
-  ),
-});
-
-// `contact` is registered by `src/features/widgets/contact/index.tsx`
-// (imported above). Do not re-register here — last write would win.
+// `boxed` and `contact` are registered by their own modules under
+// `src/features/widgets/` (imported above). Do not re-register here —
+// last write would win.
 
 
 registerWidget({
