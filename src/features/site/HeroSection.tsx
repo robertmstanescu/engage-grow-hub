@@ -11,6 +11,7 @@ import {
   HERO_SRCSET_WIDTHS,
 } from "@/services/mediaOptimization";
 import { resolveAspectRatio, focalObjectPosition } from "@/lib/imageShape";
+import { useInsideRowSurface } from "@/features/site/rows/RowSurfaceContext";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -282,6 +283,14 @@ export const HeroView = ({
   trailing?: React.ReactNode;
 }) => {
   const isMobile = useIsMobile();
+  /* A hero that shares a row with other widgets is wrapped by that row's
+   * RowSection, which supplies the standard row padding above and
+   * below (the About page). A hero that is a row on its own paints
+   * itself, so it adds the same padding here — every page's hero then
+   * has identical dimensions. The token matches tailwind's `row-fluid`
+   * and RowSection's basePad. */
+  const insideRowSurface = useInsideRowSurface();
+  const standardRowPadding = insideRowSurface ? null : { paddingBlock: "clamp(72px, 8vw, 128px)" };
 
   /* Inline-edit wrapper. On CMS hero rows we render the plain element so
      the markup, spacing and type scale stay byte-identical. */
@@ -368,7 +377,7 @@ export const HeroView = ({
          on a hero row still wins through `sectionStyle`: "Full screen"
          restores the viewport-filling opener. The inline 0 also beats the
          `.snap-section[data-snap-enabled]` min-height rule in index.css. */
-      style={{ minHeight: 0, ...sectionStyle }}
+      style={{ minHeight: 0, ...standardRowPadding, ...sectionStyle }}
     >
       {/*
         LAYERING ORDER (bottom → top):
