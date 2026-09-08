@@ -226,7 +226,15 @@ const BlogPost = () => {
             // haven't been migrated.
             const rows = (isPreview && article.draft_page_rows) || article.page_rows || [];
             if (rows.length > 0) {
-              return <RowsRenderer rows={rows as PageRow[]} promoteHeading={false} />;
+              // data-article-rows: text rows become a centred reading
+              // column (see index.css) instead of a left-hung landing
+              // page column, so a post composed in the builder reads
+              // like the legacy article did.
+              return (
+                <div data-article-rows>
+                  <RowsRenderer rows={rows as PageRow[]} promoteHeading={false} />
+                </div>
+              );
             }
             return (
               <div

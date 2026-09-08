@@ -800,6 +800,14 @@
     margin-left: auto;
     margin-right: auto;
   }
+  /* Blog posts composed as rows: a single-column text row is a reading
+     column, centred and no wider than the measure, whatever alignment
+     the row carries. Landing pages keep their left/right hung columns. */
+  [data-article-rows] section[data-row-type="text"] .row-container > [class*="max-w-["] {
+    max-width: var(--measure-prose, 68ch);
+    margin-left: auto;
+    margin-right: auto;
+  }
 
 
 
@@ -1337,6 +1345,24 @@
   display: list-item;
   margin-block: 0.3em;
 }
+/* Headings inside rich-text bodies: a post composed as rows must read
+   like a document, so h2/h3/h4 get the display face and a clear step
+   down from the row title. Same rule for the editor canvas. */
+[data-row-part="body"] h2,
+[data-row-part="body"] h3,
+[data-row-part="body"] h4,
+.rich-text h2, .rich-text h3, .rich-text h4,
+[contenteditable] h2, [contenteditable] h3, [contenteditable] h4 {
+  font-family: var(--font-title);
+  font-weight: 800;
+  line-height: 1.2;
+  color: inherit;
+  margin-block: calc(var(--para-space, 1em) * 1.6) calc(var(--para-space, 1em) * 0.6);
+  letter-spacing: -0.01em;
+}
+[data-row-part="body"] h2, .rich-text h2, [contenteditable] h2 { font-size: var(--fs-card-title); }
+[data-row-part="body"] h3, .rich-text h3, [contenteditable] h3 { font-size: calc(var(--fs-body) * 1.1); }
+[data-row-part="body"] h4, .rich-text h4, [contenteditable] h4 { font-size: var(--fs-body); }
 /* Nested levels get their own marker style, like a document would. */
 [data-row-part="body"] ul ul,
 .rich-text ul ul,
