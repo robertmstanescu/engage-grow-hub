@@ -252,6 +252,10 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
     return () => {
       cancelled = true;
     };
+    // Keyed on id + storage_path on purpose: the asset object is rebuilt
+    // on every gallery refresh, and re-scanning usages for the same file
+    // each time would be wasted round trips.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAsset?.id, selectedAsset?.storage_path]);
 
   /* ── Folder CRUD ── */

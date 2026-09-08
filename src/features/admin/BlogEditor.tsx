@@ -132,15 +132,15 @@ const BlogEditor = () => {
     loadCategories();
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setPostsLoading(true);
     const { data, count } = await fetchAllBlogPosts(page, DEFAULT_PAGE_SIZE);
     if (data) setPosts(data as BlogPost[]);
     if (typeof count === "number") setTotalPosts(count);
     setPostsLoading(false);
-  };
+  }, [page]);
 
-  useEffect(() => { fetchPosts(); }, [page]);
+  useEffect(() => { fetchPosts(); }, [fetchPosts]);
 
   const handleNew = () => {
     setIsNew(true);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Trash2, ExternalLink, Globe, FileText, Save, Eye, Home, AlertTriangle, Copy, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import RowsManager from "./site-editor/RowsManager";
@@ -134,14 +134,14 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   });
   const filteredPages = pageFilters.filteredItems;
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const { data, count } = await fetchAllCmsPages(pageNum, DEFAULT_PAGE_SIZE);
     setPages(((data as unknown) as CmsPage[]) || []);
     if (typeof count === "number") setTotalCmsPages(count);
     setLoading(false);
-  };
+  }, [pageNum]);
 
-  useEffect(() => { load(); }, [pageNum]);
+  useEffect(() => { load(); }, [load]);
   useEffect(() => { loadBlogPage(); loadErrorPages(); }, []);
 
   const loadBlogPage = async () => {
