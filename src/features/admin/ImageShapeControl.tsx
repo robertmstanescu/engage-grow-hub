@@ -48,7 +48,7 @@ const ImageShapeControl = ({
       <select
         value={ratio || "original"}
         onChange={(e) => onRatioChange(e.target.value)}
-        className="w-full px-3 py-1.5 rounded-lg font-body text-xs border text-black"
+        className="w-full px-3 py-1.5 rounded-lg font-body text-xs border text-foreground"
         style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
       >
         {IMAGE_RATIO_OPTIONS.map((o) => (

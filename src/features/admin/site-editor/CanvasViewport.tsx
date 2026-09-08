@@ -120,7 +120,7 @@ const CanvasViewport = ({
           }}
         >
           <div
-            className="rounded-[28px] border-[10px] overflow-hidden bg-card mx-auto origin-top"
+            className="admin-canvas rounded-[28px] border-[10px] overflow-hidden bg-card mx-auto origin-top"
             style={{
               width: deviceWidth,
               borderColor: "hsl(var(--foreground) / 0.85)",
@@ -143,7 +143,7 @@ const CanvasViewport = ({
         // owns its own bleed for full-width heroes.
         // ──────────────────────────────────────────────────────────────
         <div
-          className="rounded-lg border overflow-hidden mx-auto w-full"
+          className="admin-canvas rounded-lg border overflow-hidden mx-auto w-full"
           style={{
             backgroundColor: "hsl(var(--card))",
             borderColor: "hsl(var(--border) / 0.5)",

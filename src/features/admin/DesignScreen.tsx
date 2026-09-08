@@ -76,7 +76,7 @@ const DesignScreen = () => {
         </div>
         <aside className="admin-design-sample" aria-label="Sample page">
           <div className="admin-design-sample-label">Sample · published look</div>
-          <div className="admin-design-sample-page public-fluid-type">
+          <div className="admin-design-sample-page admin-canvas public-fluid-type">
             <RowsRenderer rows={rows} promoteHeading={false} />
           </div>
         </aside>

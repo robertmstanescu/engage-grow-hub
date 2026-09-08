@@ -25,7 +25,7 @@ const PageBackgroundPanel = ({
   return (
     <div>
       <div
-        className="h-14 rounded-lg border border-border mb-2"
+        className="admin-canvas h-14 rounded-lg border border-border mb-2"
         style={{ background: buildPageMeshCSS(mesh) }}
       />
       <div className="grid grid-cols-4 gap-1.5">

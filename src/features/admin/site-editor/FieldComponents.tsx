@@ -98,7 +98,7 @@ export const TextArea = ({ label, value, onChange, rows = 3 }: { label: string; 
         onChange={(e) => setLocal(e.target.value)}
         onBlur={commit}
         rows={rows}
-        className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none text-black"
+        className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none text-foreground"
         style={INPUT_STYLE}
       />
     </div>

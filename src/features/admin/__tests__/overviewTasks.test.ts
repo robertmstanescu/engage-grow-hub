@@ -46,3 +46,23 @@ describe("overview tasks", () => {
     expect(relativeTime(ago(24), NOW)).toBe("1 day ago");
   });
 });
+
+describe("overview summary", () => {
+  it("counts changes, drafts and this week's leads for the tiles", async () => {
+    const { summarize, greeting } = await import("../overviewTasks");
+    const s = summarize({
+      pages: [page({ id: "a", draft_page_rows: [{ id: 9 }] }), page({ id: "b", status: "draft" })],
+      posts: [
+        { id: "x", title: "Older draft", slug: "o", status: "draft", updated_at: ago(80) },
+        { id: "y", title: "Newer draft", slug: "n", status: "draft", updated_at: ago(2) },
+        { id: "z", title: "Live", slug: "l", status: "published", updated_at: ago(1) },
+      ],
+      leads: [{ id: "l1", full_name: "Maria K.", created_at: ago(5) }, { id: "l2", full_name: "Old", created_at: ago(24 * 30) }],
+      home: { content: { a: 1 }, draft_content: { a: 2 }, updated_at: ago(2) },
+    }, NOW);
+    expect(s).toEqual({ changes: 2, draftPosts: 2, latestDraftTitle: "Newer draft", leadsThisWeek: 1, leadNames: ["Maria K."] });
+    expect(greeting(new Date("2026-09-08T09:00:00"), "Robert")).toBe("Good morning, Robert");
+    expect(greeting(new Date("2026-09-08T15:00:00"))).toBe("Good afternoon");
+    expect(greeting(new Date("2026-09-08T21:00:00"), "R")).toBe("Good evening, R");
+  });
+});

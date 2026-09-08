@@ -165,7 +165,11 @@ const AdminDashboard = ({ theme = "light", onToggleTheme }: Props) => {
         className={`admin-rail${isAdminMobile ? " mobile" : ""}${isAdminMobile && !mobileDrawerOpen ? " closed" : ""}`}
       >
         <a href="/" title="View site" aria-label="View site" className="admin-rail-logo">
-          {branding.favicon_light ? <img src={branding.favicon_light} alt="" style={{ width: 20, height: 20, objectFit: "contain" }} /> : "C"}
+          {(() => {
+            /* Same rule as the site's emblem: the dark-theme mark at night, the light one by day. */
+            const mark = theme === "dark" ? branding.favicon_dark || branding.favicon_light : branding.favicon_light || branding.favicon_dark;
+            return mark ? <img src={mark} alt="" style={{ width: 20, height: 20, objectFit: "contain" }} /> : "C";
+          })()}
         </a>
         {isAdminMobile && (
           <button type="button" onClick={() => setMobileDrawerOpen(false)} aria-label="Close menu" className="admin-rail-item mobile"><X size={16} /><span className="admin-rail-label">Close</span></button>
