@@ -6,6 +6,7 @@ import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useAutoFitText } from "@/hooks/useAutoFitText";
+import { isTextRowEmpty } from "./textRowContent";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 // EPIC 1 / US 1.1 — atomic-node selection on text-row fields.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
@@ -45,6 +46,8 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
   // Optional cover image — flat, row-level field, scoped to single-column
   // rows only (same convention as BoxedRow.tsx).
   const coverImage = !isMultiCol ? (row.content?.cover_image?.trim() || undefined) : undefined;
+
+  if (isTextRowEmpty(row)) return null;
 
   const renderColumnContent = (c: Record<string, any>, colIndex: number) => {
     const prefix = rowIndex !== undefined

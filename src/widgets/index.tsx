@@ -42,6 +42,7 @@ import {
 
 import HeroRow from "@/features/site/rows/HeroRow";
 import TextRow from "@/features/site/rows/TextRow";
+import { isTextRowEmpty } from "@/features/site/rows/textRowContent";
 import ServiceRow from "@/features/site/rows/ServiceRow";
 import ImageTextRow from "@/features/site/rows/ImageTextRow";
 import ImageRow, { ImageRowAdmin, IMAGE_ROW_DEFAULT } from "@/features/site/rows/ImageRow";
@@ -93,9 +94,12 @@ registerWidget({
   icon: Type,
   category: "Content",
   defaultData: { title_lines: [], subtitle: "", body: "" },
-  render: ({ row, rowIndex, align, vAlign }) => (
-    <TextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
-  ),
+  // null (not an element that renders nothing) so WidgetNode can drop
+  // the wrapper on the public site and show a placeholder in the builder.
+  render: ({ row, rowIndex, align, vAlign }) =>
+    isTextRowEmpty(row) ? null : (
+      <TextRow row={row} rowIndex={rowIndex} align={align} vAlign={vAlign} />
+    ),
 });
 
 registerWidget({
