@@ -339,6 +339,54 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
                     {mesh.strength}%
                   </span>
                 </div>
+                {/* Motion: blobs drift and each crosses to a second brand hue
+                    and back. Grain: film-grain sheet over the wash. */}
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
+                    Motion
+                  </span>
+                  <div className="flex-1 grid grid-cols-3 gap-1">
+                    {([["off", "Off"], ["calm", "Calm"], ["lively", "Lively"]] as const).map(([value, label]) => {
+                      const active = (mesh.motion || "calm") === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => patchLayout({ mesh: { ...mesh, motion: value } })}
+                          className={`font-body text-[10px] py-1.5 rounded-lg border transition-colors ${
+                            active
+                              ? "bg-secondary/15 border-secondary/40 text-foreground"
+                              : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
+                    Grain
+                  </span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={mesh.grain ?? DEFAULT_PAGE_MESH.grain ?? 0}
+                    onChange={(e) => patchLayout({ mesh: { ...mesh, grain: Number(e.target.value) } })}
+                    className="flex-1"
+                    style={{ accentColor: "hsl(var(--secondary))" }}
+                  />
+                  <span className="font-body text-[10px] text-foreground min-w-[32px] text-right">
+                    {mesh.grain ?? DEFAULT_PAGE_MESH.grain ?? 0}%
+                  </span>
+                </div>
+                <p className="font-body text-[10px] text-muted-foreground leading-snug mt-1">
+                  Motion drifts the four colours and lets each one shift to a second brand hue and back.
+                  Visitors who prefer reduced motion always see it still.
+                </p>
                 <button
                   type="button"
                   onClick={() => patchLayout({ mesh: DEFAULT_PAGE_MESH })}

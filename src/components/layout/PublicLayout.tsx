@@ -18,7 +18,20 @@ const PublicLayout = () => (
       reads as a single surface instead of stacked blocks. Fixed +
       pointer-events-none keeps it cheap and out of hit-testing.
     */}
-    <div aria-hidden className="page-mesh-layer" />
+    <div aria-hidden className="page-mesh-layer">
+      {/* Four drifting blobs. Each holds two pre-painted colour layers
+          (its base hue and a second brand hue) that crossfade by opacity,
+          so the colour shift costs the compositor nothing. Then a tiled
+          film-grain sheet on top. Colours, intensity, grain and motion
+          come from the page's hero via CSS variables (see pageMesh.ts). */}
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="page-mesh-blob" data-blob={i}>
+          <div className="page-mesh-blob-base" />
+          <div className="page-mesh-blob-drift" />
+        </div>
+      ))}
+      <div className="page-mesh-grain" />
+    </div>
     <div className="public-fluid-type">
       <Suspense fallback={<PublicChunkFallback />}>
         <Outlet />
