@@ -14,7 +14,47 @@ import { pickForeground } from "@/lib/pickForeground";
 export const DEFAULT_PAGE_MESH: PageMeshConfig = {
   colors: ["#EBD3F0", "#FAECC0", "#E8D6F2", "#F6E9C4"],
   strength: 70,
+  motion: "calm",
+  grain: 35,
 };
+
+/**
+ * The second hue each blob drifts to when the mesh is in motion — the
+ * extra colours of the brand's light backgrounds (Aurora's sky and
+ * pink, Verdigris' mint, Ember's peach). Index-matched to the blobs.
+ */
+export const MESH_DRIFT_POOL = ["#F4D3E9", "#D5EFE4", "#D9E3F7", "#F8DCCF"] as const;
+
+/**
+ * CSS custom properties that drive the animated `.page-mesh-layer`
+ * (see index.css): per-blob base and drift colours with the intensity
+ * baked in, the grain opacity, and the motion speed multiplier.
+ */
+export const buildPageMeshVars = (mesh?: Partial<PageMeshConfig>): Record<string, string> => {
+  const colors = (mesh?.colors as string[] | undefined)?.length === 4
+    ? (mesh!.colors as string[])
+    : DEFAULT_PAGE_MESH.colors;
+  const alpha = Math.max(0, Math.min(100, mesh?.strength ?? DEFAULT_PAGE_MESH.strength)) / 100;
+  const vars: Record<string, string> = {};
+  colors.forEach((c, i) => {
+    vars[`--mesh-c${i}`] = withAlpha(c, alpha);
+    vars[`--mesh-d${i}`] = withAlpha(MESH_DRIFT_POOL[i], alpha);
+  });
+  const grain = Math.max(0, Math.min(100, mesh?.grain ?? DEFAULT_PAGE_MESH.grain ?? 0));
+  /* Full slider = 0.9 opacity of the plum speckle sheet (the sheet itself
+     is mostly transparent); the default 35 reads as film grain on a light
+     wash without muddying body copy. */
+  vars["--mesh-grain"] = String((grain / 100) * 0.9);
+  const motion = mesh?.motion ?? DEFAULT_PAGE_MESH.motion ?? "calm";
+  vars["--mesh-motion"] = motion === "off" ? "0" : motion === "lively" ? "2" : "1";
+  return vars;
+};
+
+export const MESH_VAR_NAMES = [
+  "--mesh-c0", "--mesh-c1", "--mesh-c2", "--mesh-c3",
+  "--mesh-d0", "--mesh-d1", "--mesh-d2", "--mesh-d3",
+  "--mesh-grain", "--mesh-motion",
+] as const;
 
 /** Positions of the four blobs. Index-matched to `mesh.colors`. */
 const BLOBS = [
@@ -51,7 +91,12 @@ export const resolvePageMesh = (rows: PageRow[] | any[] | undefined): PageMeshCo
   const hero = (rows || []).find((r: any) => r?.type === "hero");
   const mesh = hero?.layout?.mesh as PageMeshConfig | undefined;
   if (!mesh || !Array.isArray(mesh.colors) || mesh.colors.length !== 4) return DEFAULT_PAGE_MESH;
-  return { colors: mesh.colors as PageMeshConfig["colors"], strength: mesh.strength ?? DEFAULT_PAGE_MESH.strength };
+  return {
+    colors: mesh.colors as PageMeshConfig["colors"],
+    strength: mesh.strength ?? DEFAULT_PAGE_MESH.strength,
+    motion: mesh.motion ?? DEFAULT_PAGE_MESH.motion,
+    grain: mesh.grain ?? DEFAULT_PAGE_MESH.grain,
+  };
 };
 
 /**

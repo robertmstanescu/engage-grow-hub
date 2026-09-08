@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { buildPageMeshCSS, resolvePageMesh, meshForegroundColor } from "@/features/site/pageMesh";
+import { buildPageMeshCSS, buildPageMeshVars, MESH_VAR_NAMES, resolvePageMesh, meshForegroundColor } from "@/features/site/pageMesh";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import type { PageRow, PageRowV3 } from "@/types/rows";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
@@ -64,9 +64,14 @@ export const RowsRenderer = ({
      fixed chrome. Pages without a hero fall back to the brand default. */
   const mesh = useMemo(() => resolvePageMesh(v3Rows as any), [v3Rows]);
   const meshCSS = useMemo(() => buildPageMeshCSS(mesh), [mesh]);
+  const meshVars = useMemo(() => buildPageMeshVars(mesh), [mesh]);
   useEffect(() => {
     const root = document.documentElement;
+    /* The static gradient still feeds the transparent edge caps; the
+       animated layer reads the per-blob vars below. */
     root.style.setProperty("--gradient-mesh-page", meshCSS);
+    for (const [k, v] of Object.entries(meshVars)) root.style.setProperty(k, v);
+    root.dataset.meshMotion = mesh.motion ?? "calm";
     /* Rows with no colour of their own sit straight on the mesh, so their
        default text colour must follow the MESH's brightness — not a fixed
        dark token — otherwise a dark mesh renders dark-on-dark. */
@@ -75,8 +80,10 @@ export const RowsRenderer = ({
     return () => {
       root.style.removeProperty("--gradient-mesh-page");
       root.style.removeProperty("--page-fg");
+      for (const k of MESH_VAR_NAMES) root.style.removeProperty(k);
+      delete root.dataset.meshMotion;
     };
-  }, [meshCSS, mesh]);
+  }, [meshCSS, meshVars, mesh]);
 
   return (
     <PromotedWidgetProvider value={promotedWidgetId}>

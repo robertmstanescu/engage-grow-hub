@@ -24,6 +24,14 @@ export interface PageMeshConfig {
   colors: [string, string, string, string];
   /** Overall intensity, 0–100. */
   strength: number;
+  /**
+   * How the mesh moves: blobs drift and each one slowly crosses to a
+   * second brand hue and back, so the page's colours shift over time.
+   * "off" freezes it. Reduced-motion users always get "off".
+   */
+  motion?: "off" | "calm" | "lively";
+  /** Film grain over the mesh, 0–100 (0 = none). */
+  grain?: number;
 }
 
 /* ─── Gradient (legacy shape, kept for stored data compatibility) ──── */
