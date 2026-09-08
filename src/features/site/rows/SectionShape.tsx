@@ -56,6 +56,12 @@ interface Props {
    * (masked into the shape) rather than a flat fill.
    */
   useMesh?: boolean;
+  /**
+   * Draw the ink outline along this cap so the row's outline follows the
+   * curve. Only the rounded cap supports it (an SVG path would need a
+   * stroke, and `preserveAspectRatio="none"` would distort it).
+   */
+  outlined?: boolean;
 }
 
 /** Background used when a transparent row spills the page mesh. */
@@ -65,7 +71,7 @@ const MESH_BG: React.CSSProperties = {
   backgroundSize: "cover",
 };
 
-const SectionShape = ({ edge, config, color, useMesh = false }: Props) => {
+const SectionShape = ({ edge, config, color, useMesh = false, outlined = false }: Props) => {
   const kind = config?.kind ?? "none";
   if (!kind || kind === "none") return null;
 
@@ -92,6 +98,20 @@ const SectionShape = ({ edge, config, color, useMesh = false }: Props) => {
           borderTopRightRadius: edge === "top" ? radius : undefined,
           borderBottomLeftRadius: edge === "bottom" ? radius : undefined,
           borderBottomRightRadius: edge === "bottom" ? radius : undefined,
+          /* Outline: the curved edge and both sides; the flat side stays
+             open so the cap and the section read as one outlined shape.
+             The cap is positioned against the section's padding box, so
+             it is widened by the outline width on each side to sit flush
+             over the section's own side borders. */
+          ...(outlined
+            ? {
+                border: "var(--outline-ink-border)",
+                ...(edge === "top" ? { borderBottom: "none" } : { borderTop: "none" }),
+                left: "calc(-1 * var(--outline-ink-width))",
+                right: "calc(-1 * var(--outline-ink-width))",
+                width: "auto",
+              }
+            : null),
         }}
       />
     );

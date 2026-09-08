@@ -258,7 +258,7 @@ const Navbar = () => {
           backgroundColor: `hsl(var(--card) / ${scrolled ? 0.97 : 0.92})`,
           backdropFilter: "blur(18px) saturate(140%)",
           WebkitBackdropFilter: "blur(18px) saturate(140%)",
-          border: "1px solid hsl(var(--border))",
+          border: "var(--outline-ink-border)",
           boxShadow: "var(--shadow-soft)",
         }}
       >
@@ -306,7 +306,7 @@ const Navbar = () => {
                     data-active={active}
                     style={{
                       color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
-                      fontWeight: active ? 600 : 450,
+                      fontWeight: active ? 700 : 450,
                     }}
                   >
                     {item.label}
@@ -352,7 +352,7 @@ const Navbar = () => {
                                 data-active={subActive}
                                 style={{
                                   color: subActive ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.78)",
-                                  fontWeight: subActive ? 600 : 450,
+                                  fontWeight: subActive ? 700 : 450,
                                 }}
                               >
                                 {sub.label}
@@ -376,7 +376,7 @@ const Navbar = () => {
                 data-active={active}
                 style={{
                   color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
-                  fontWeight: active ? 600 : 450,
+                  fontWeight: active ? 700 : 450,
                 }}
               >
                 {item.label}
@@ -412,7 +412,7 @@ const Navbar = () => {
           backgroundColor: "hsl(var(--card) / 0.94)",
           backdropFilter: "blur(16px) saturate(140%)",
           WebkitBackdropFilter: "blur(16px) saturate(140%)",
-          border: "1px solid hsl(var(--border))",
+          border: "var(--outline-ink-border)",
           boxShadow: "var(--shadow-soft)",
         }}
       >

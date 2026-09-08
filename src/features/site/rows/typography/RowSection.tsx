@@ -189,6 +189,10 @@ const RowSection = ({
   const bottomHasShape = Boolean(shapeBottom && shapeBottom.kind !== "none");
   const applyRadius = radiusValue > 0 && !maskShapes;
   const clipToRadius = applyRadius && !hasExternalShape;
+  /* A row is outlined when any of its edges is "set": a rounded lip or
+     other edge shape, or a Corners size on its own surface. Plain rows
+     stay outline-free. */
+  const outlined = !maskShapes && (hasExternalShape || applyRadius);
   const radiusStyle: CSSProperties | null = applyRadius
     ? {
         borderTopLeftRadius: topHasShape ? 0 : radiusValue,
@@ -313,6 +317,18 @@ const RowSection = ({
              shape cap needs to paint beyond the section boundary. */
           ...(radiusStyle ?? null),
           ...(clipToRadius ? { overflow: "hidden" } : null),
+          /* Ink outline on every SET edge: the sides always, the top and
+             bottom when they are square corners of a rounded surface. An
+             edge that carries a cap is outlined by the cap itself
+             (SectionShape), so the outline follows the curve. */
+          ...(outlined
+            ? {
+                borderLeft: "var(--outline-ink-border)",
+                borderRight: "var(--outline-ink-border)",
+                ...(applyRadius && !topHasShape ? { borderTop: "var(--outline-ink-border)" } : null),
+                ...(applyRadius && !bottomHasShape ? { borderBottom: "var(--outline-ink-border)" } : null),
+              }
+            : null),
           ...style,
         }}
       >
@@ -338,10 +354,10 @@ const RowSection = ({
           </div>
         ) : null}
         {shapeTop ? (
-          <SectionShape edge="top" config={shapeTop} color={surfaceColor || "transparent"} useMesh={!hasOwnPaint} />
+          <SectionShape edge="top" config={shapeTop} color={surfaceColor || "transparent"} useMesh={!hasOwnPaint} outlined={outlined} />
         ) : null}
         {shapeBottom ? (
-          <SectionShape edge="bottom" config={shapeBottom} color={surfaceColor || "transparent"} useMesh={!hasOwnPaint} />
+          <SectionShape edge="bottom" config={shapeBottom} color={surfaceColor || "transparent"} useMesh={!hasOwnPaint} outlined={outlined} />
         ) : null}
         {row.layout?.overlays?.length ? (
           <div className="row-overlay-layer absolute inset-0 pointer-events-none overflow-hidden">

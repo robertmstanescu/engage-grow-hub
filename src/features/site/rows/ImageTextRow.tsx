@@ -130,6 +130,9 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             aspectRatio: String(imgAspect),
             /* Match every other box on the site rather than a 4px sliver. */
             borderRadius: shape === "default" ? "var(--radius)" : 0,
+            /* Ink outline on the picture frame. Only the rectangular frame:
+               a clip-path shape would cut the border off. */
+            ...(shape === "default" ? { border: "var(--outline-ink-border)" } : null),
             clipPath: obbPath ? `url(#img-clip-${clipId})` : CLIP_PATHS[shape] || undefined,
             backfaceVisibility: "hidden",
             transform: "translateZ(0)",

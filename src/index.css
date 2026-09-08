@@ -30,6 +30,12 @@
     --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
     --border: 285 20% 84%;
+    /* The ink outline: a 5px deep-plum line on every set row edge, on
+       image frames, the contact box and the navbar island. One token so
+       the weight and colour stay identical everywhere it is drawn. */
+    --outline-ink: #26142E;
+    --outline-ink-width: 5px;
+    --outline-ink-border: var(--outline-ink-width) solid var(--outline-ink);
     --input: 285 20% 84%;
     --ring: 280 55% 24%;
     --radius: 1.5rem;

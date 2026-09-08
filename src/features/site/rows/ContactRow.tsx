@@ -120,7 +120,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
 
         <div
           className="surface-card p-8 md:p-10"
-          style={revealStyle(isVisible, 1)}>
+          /* The contact box carries the ink outline; ordinary boxed cards do not. */
+          style={{ ...revealStyle(isVisible, 1), border: "var(--outline-ink-border)" }}>
 
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
