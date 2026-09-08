@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 import { Plus, Trash2, Upload, X } from "lucide-react";
-import { Field, RichField, SectionBox, ColorField } from "./FieldComponents";
+import { Field, RichField, SectionBox, ColorField, CtaFields } from "./FieldComponents";
 import TitleLineEditor from "./TitleLineEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImageAltInput from "../ImageAltInput";
@@ -133,17 +133,7 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
        * renderer should conditionally render the button when cta_label
        * is non-empty (consistency with the row renderers).
        */}
-      <SectionBox label="Call to Action (Button)">
-        <Field
-          label="Button Label"
-          value={content.cta_label || ""}
-          onChange={(v) => onChange("cta_label", v.slice(0, 30))}
-          maxLength={30}
-          hint="Max 30 characters for mobile."
-        />
-        <Field label="Button URL" value={content.cta_url || ""} onChange={(v) => onChange("cta_url", v)} />
-        <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
-      </SectionBox>
+      <CtaFields content={content} onChange={onChange} />
 
       <SectionBox label="Background Media">
         <div className="space-y-3">

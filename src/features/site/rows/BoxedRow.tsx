@@ -61,20 +61,19 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
 
     const renderCard = (card: any, i: number) => {
       const cardLink: string | undefined = card.link_url?.trim() || undefined;
-      // A card linking to one of the 4 service pillars gets that
-      // pillar's own brand color for its icon/title (and a matching
-      // top-accent border below) instead of the row's one shared
-      // color — so e.g. the homepage "Our Services" grid reads as 4
-      // distinct pillars, not 4 identical purple cards. Any other
-      // boxed-card row (testimonials, "Our Vows", etc.) has no
-      // pillar-matching link_url, so pillarColor is always
-      // undefined there and behavior is unchanged.
+      // Per-card accent for the icon, title and a 3px top border, from
+      // two sources in priority order:
+      //   1. A card linking to one of the 4 service pillars gets that
+      //      pillar's brand color, so the homepage "Our Services" grid
+      //      reads as 4 distinct pillars rather than 4 identical cards.
+      //      Pillar identity wins because it is tied to navigation.
+      //   2. `accent_color` set on the card itself in the admin (e.g.
+      //      the "Why The Magic Coffin" cards).
+      // Neither present → the row's shared Card Title Color applies.
+      // Trimmed like the sibling string fields: a whitespace-only value
+      // is not a colour and must fall through, not produce `3px solid  `.
       const pillarColor = pillarColorFromLink(cardLink);
-      // A per-card accent set directly in the card's own content (e.g. the
-      // "Why The Magic Coffin" cards), distinct from pillar-matching.
-      // Pillar identity still wins when both are present, since it's tied
-      // to actual navigation and is the older of the two mechanisms.
-      const cardAccent = pillarColor || card.accent_color || undefined;
+      const cardAccent: string | undefined = pillarColor || card.accent_color?.trim() || undefined;
       const titleColor = cardAccent || c.color_card_title || "hsl(var(--vows-card-title))";
       const bodyColor = c.color_card_body || "hsl(var(--vows-card-body))";
       const cardCtaUrl: string | undefined = card.cta_url?.trim() || undefined;
@@ -142,9 +141,11 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       // — `surface-card`'s own border-radius (var(--radius), 1.5rem)
       // would look wrong repeated at the same size one level down.
       const cardClass = `${coverImage ? "" : "surface-card"} p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
+      // Order matters: `border` is a shorthand that resets border-top, so
+      // the accent's `borderTop` must come AFTER the cover-image block or
+      // accent cards inside a cover-image row lose their top bar.
       const cardStyle = {
         ...revealStyle(isVisible, i + 2),
-        ...(cardAccent ? { borderTop: `3px solid ${cardAccent}` } : {}),
         ...(coverImage
           ? {
               backgroundColor: "hsl(var(--primary) / 0.045)",
@@ -152,6 +153,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               borderRadius: "1rem",
             }
           : {}),
+        ...(cardAccent ? { borderTop: `3px solid ${cardAccent}` } : {}),
       } as React.CSSProperties;
 
       if (cardLink) {

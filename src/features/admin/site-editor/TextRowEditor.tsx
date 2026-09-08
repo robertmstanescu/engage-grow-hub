@@ -6,10 +6,10 @@
  * widget-level Inspector panel.
  */
 
-import { Field, RichField, EyebrowField } from "./FieldComponents";
+import { RichField, EyebrowField, NoteField } from "./FieldComponents";
+import { CoverImageField } from "./CoverImageField";
 import SubtitleEditor from "./SubtitleEditor";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
-import ImagePickerField from "../ImagePickerField";
 
 interface Props {
   content: Record<string, any>;
@@ -36,22 +36,8 @@ const TextRowEditor = ({ content, onChange, bgColor }: Props) => {
         bgColor={bgColor}
       />
       <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
-      <Field label="Note (optional)" value={content.note || ""} onChange={(v) => onChange("note", v)} />
-      <ImagePickerField
-        label="Cover Image (optional)"
-        value={content.cover_image || ""}
-        onChange={(v) => onChange("cover_image", v)}
-        altValue={content.cover_image_alt || ""}
-        onAltChange={(v) => onChange("cover_image_alt", v)}
-        ratio={content.cover_image_ratio || "original"}
-        focalX={content.cover_image_focal_x}
-        focalY={content.cover_image_focal_y}
-        onShapeChange={(patch) => {
-          if (patch.ratio !== undefined) onChange("cover_image_ratio", patch.ratio);
-          if (patch.focalX !== undefined) onChange("cover_image_focal_x", patch.focalX);
-          if (patch.focalY !== undefined) onChange("cover_image_focal_y", patch.focalY);
-        }}
-      />
+      <NoteField value={content.note || ""} onChange={(v) => onChange("note", v)} />
+      <CoverImageField content={content} onChange={onChange} shape />
     </div>
   );
 };

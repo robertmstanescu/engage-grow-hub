@@ -66,4 +66,50 @@ describe("BoxedRow", () => {
     expect(ctaAnchor?.textContent).toBe("Book now");
     expect(container.querySelector("button")).toBeNull();
   });
+
+  /**
+   * Per-card accent colour: colours the title and draws a 3px top border.
+   * The card is the element that carries the border, so find it via the
+   * title's closest ancestor with a `boxed-lift` class.
+   */
+  const cardOf = (container: HTMLElement) =>
+    container.querySelector("p")?.closest(".boxed-lift") as HTMLElement | null;
+
+  it("applies accent_color to the card title and top border", () => {
+    const { container } = render(
+      <BoxedRow row={makeRow({ title: "Accent", body: "<p>x</p>", accent_color: "#c00" })} />,
+    );
+    const title = container.querySelector("p") as HTMLElement;
+    expect(title.style.color).toBe("rgb(204, 0, 0)");
+    expect(cardOf(container)?.style.borderTop).toBe("3px solid #c00");
+  });
+
+  it("keeps the accent top border on cover-image rows (border shorthand must not wipe it)", () => {
+    const row = makeRow({ title: "Accent", body: "<p>x</p>", accent_color: "#c00" });
+    row.content.cover_image = "https://example.com/cover.jpg";
+    const { container } = render(<BoxedRow row={row} />);
+    const card = cardOf(container);
+    expect(card?.style.borderTop).toBe("3px solid #c00");
+    // the cover-image card chrome is still there
+    expect(card?.style.borderRadius).toBe("1rem");
+  });
+
+  it("lets a pillar link win over an explicit accent_color", () => {
+    const { container } = render(
+      <BoxedRow
+        row={makeRow({ title: "EX", body: "<p>x</p>", link_url: "/services/employee-experience", accent_color: "#c00" })}
+      />,
+    );
+    // employee-experience pillar navy, not the card's own red
+    expect(cardOf(container)?.style.borderTop).toBe("3px solid #002B67");
+  });
+
+  it("treats a whitespace-only accent_color as unset and falls back to the row colour", () => {
+    const row = makeRow({ title: "Blank", body: "<p>x</p>", accent_color: "   " });
+    row.content.color_card_title = "#123456";
+    const { container } = render(<BoxedRow row={row} />);
+    const title = container.querySelector("p") as HTMLElement;
+    expect(title.style.color).toBe("rgb(18, 52, 86)");
+    expect(cardOf(container)?.style.borderTop).toBe("");
+  });
 });

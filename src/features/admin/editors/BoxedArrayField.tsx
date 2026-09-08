@@ -2,16 +2,21 @@
  * BoxedArrayField — manages cards[] on a Boxed-type page row.
  *
  * Each card supports:
- *   - icon       (IconValue)        optional icon shown above the title
- *   - title      (text)
- *   - body       (rich text)
- *   - link_url   (string)           if set, the whole card becomes a link
- *   - cta_label  (string)           optional CTA button under the box
- *   - cta_url    (string)
+ *   - icon         (IconValue)      optional icon shown above the title
+ *   - title        (text)
+ *   - body         (rich text)
+ *   - accent_color (hex)            optional per-card colour for the icon,
+ *                                   title and a 3px top border; overrides
+ *                                   the row's "Card Title Color". A card
+ *                                   linking to a service pillar uses that
+ *                                   pillar's colour instead (BoxedRow.tsx)
+ *   - link_url     (string)         if set, the whole card becomes a link
+ *   - cta_label    (string)         optional CTA button under the box
+ *   - cta_url      (string)
  */
 
 import { Plus, Trash2 } from "lucide-react";
-import { Field, RichField, SectionBox } from "../site-editor/FieldComponents";
+import { Field, RichField, SectionBox, ColorField } from "../site-editor/FieldComponents";
 import { IconPickerField } from "@/features/icons/IconPicker";
 
 interface Props {
@@ -24,6 +29,7 @@ interface BoxedCard {
   title: string;
   body: string;
   icon?: string;
+  accent_color?: string;
   link_url?: string;
   cta_label?: string;
   cta_url?: string;
@@ -79,6 +85,14 @@ const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {
               />
 
               <RichField label="Body" value={card.body} onChange={(v) => updateCard(i, "body", v)} bgColor={bgColor} />
+
+              <ColorField
+                label="Accent colour"
+                description="Icon, title and top border for this card only. Leave empty to use the row's Card Title Color."
+                value={card.accent_color || ""}
+                fallback=""
+                onChange={(v) => updateCard(i, "accent_color", v)}
+              />
 
               <Field
                 label="Hyperlink the box (URL or #section-id)"
