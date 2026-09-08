@@ -8,6 +8,7 @@
  * is delegated to `WidgetNode`.
  */
 
+import { useLayoutEffect, useRef, useState } from "react";
 import type { PageCell, PageRow, PageRowV3, RowLayout } from "@/types/rows";
 import type { GlobalWidget } from "@/hooks/useGlobalWidgets";
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
@@ -113,10 +114,29 @@ const RowRenderer = ({
   );
   const coverImage = row.layout?.coverImage?.trim() || "";
   const paintsSurface = widgetCount > 1 || Boolean(coverImage);
-  const overlap = Math.max(
-    0,
-    Math.min(160, row.layout?.coverTextOverlap ?? 64),
-  );
+  /* ── How far the content climbs over the cover picture ──
+   *  Preferred: a share of the picture's rendered height
+   *  (`coverTextOverlapPct`), measured live because the band's height
+   *  depends on the photo's ratio, the height cap and the viewport.
+   *  "A third of the picture" then means a third everywhere.
+   *  Legacy: a pixel value (`coverTextOverlap`), reduced on phones. */
+  const overlapPct = row.layout?.coverTextOverlapPct;
+  const overlap = Math.max(0, Math.min(160, row.layout?.coverTextOverlap ?? 64));
+  const coverRef = useRef<HTMLDivElement>(null);
+  const [coverHeight, setCoverHeight] = useState(0);
+  useLayoutEffect(() => {
+    const el = coverRef.current;
+    if (!el || overlapPct == null) return;
+    const read = () => setCoverHeight(el.getBoundingClientRect().height);
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [overlapPct, coverImage]);
+  const overlapMarginTop =
+    overlapPct != null
+      ? `-${Math.round((coverHeight * Math.max(0, Math.min(90, overlapPct))) / 100)}px`
+      : `calc(-1 * clamp(0px, ${overlap / 2}px + 2vw, ${overlap}px))`;
 
   // `layout` is optional on the row, so index the field type via RowLayout
   // rather than PageRowV3["layout"] (which is `RowLayout | undefined`).
@@ -153,15 +173,17 @@ const RowRenderer = ({
       <RowSurfaceProvider value>
         {coverImage ? (
           <>
-            <RowCoverImage
-              src={coverImage}
-              alt={row.layout?.coverImageAlt || ""}
-              layout={row.layout}
-            />
-            <div
-              className="relative z-10"
-              style={{ marginTop: `calc(-1 * clamp(0px, ${overlap / 2}px + 2vw, ${overlap}px))` }}
-            >
+            {/* `w-full`: the section is a centred flex column, so an
+                unsized wrapper would shrink to the picture's intrinsic
+                width and the cover would no longer span the row. */}
+            <div ref={coverRef} className="w-full">
+              <RowCoverImage
+                src={coverImage}
+                alt={row.layout?.coverImageAlt || ""}
+                layout={row.layout}
+              />
+            </div>
+            <div className="relative z-10" style={{ marginTop: overlapMarginTop }}>
               {grid}
             </div>
           </>

@@ -19,6 +19,11 @@ interface Props {
 const HeroRow = ({ row }: Props) => {
   const c = row.content || {};
   const minHeight = resolveRowMinHeight(row.layout);
+  /* HeroView fills the viewport by default (the homepage opener). A CMS
+   * hero whose admin picked Height ▸ Auto hugs its content instead, so
+   * the row after it can stack straight under the title rather than
+   * under half a screen of empty band. Unset (older rows) stays full. */
+  const hugsContent = row.layout?.heightMode === "auto";
 
   return (
     <HeroView
@@ -26,7 +31,7 @@ const HeroRow = ({ row }: Props) => {
       content={c as any}
       sectionStyle={{
         backgroundColor: getRowBgColor(row),
-        ...(minHeight ? { minHeight } : null),
+        ...(hugsContent ? { minHeight: 0 } : minHeight ? { minHeight } : null),
       }}
       leading={
         c.icon ? (
