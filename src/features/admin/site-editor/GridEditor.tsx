@@ -93,7 +93,7 @@ const GridEditor = ({ content, onChange, bgColor }: Props) => {
           {achievements.map((text, i) => (
             <div key={i} className="flex items-start gap-2">
               <DeferredTextarea
-                className="flex-1 px-3 py-2 rounded-lg font-body text-sm border resize-none text-black"
+                className="flex-1 px-3 py-2 rounded-lg font-body text-sm border resize-none text-foreground"
                 rows={2}
                 value={text}
                 onChange={(v) => updateAchievement(i, v)}

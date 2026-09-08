@@ -136,7 +136,7 @@ const UrlInput = ({ value, onCommit }: { value: string; onCommit: (v: string) =>
       onBlur={commit}
       onKeyDown={(e) => { if (e.key === "Enter") (e.currentTarget as HTMLInputElement).blur(); }}
       placeholder="Or paste image URL…"
-      className="w-full mt-1.5 px-3 py-1.5 rounded-lg font-body text-xs border text-black"
+      className="w-full mt-1.5 px-3 py-1.5 rounded-lg font-body text-xs border text-foreground"
       style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
     />
   );

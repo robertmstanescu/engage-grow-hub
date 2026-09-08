@@ -185,7 +185,7 @@ const SeoFields = ({
           rows={2}
           maxLength={160}
           placeholder="Brief description for search engines (max 160 chars)"
-          className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none text-black"
+          className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none text-foreground"
           style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
         />
         <span className="font-body text-[9px]" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -238,7 +238,7 @@ const SeoFields = ({
             onBlur={aeo.commit}
             rows={3}
             placeholder="Describe this page in plain language for AI crawlers."
-            className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none text-black"
+            className="w-full px-3 py-2 rounded-lg font-body text-sm border resize-none text-foreground"
             style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))" }}
           />
           <div className="flex items-center justify-between">

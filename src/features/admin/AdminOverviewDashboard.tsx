@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import type { AdminTab } from "./navigation";
-import { deriveTasks, relativeTime, type HomeLite, type LeadLite, type PageLite, type PostLite, type Task } from "./overviewTasks";
+import { deriveTasks, greeting, relativeTime, summarize, type HomeLite, type LeadLite, type PageLite, type PostLite, type Summary, type Task } from "./overviewTasks";
 
 interface Props {
   onGo: (tab: AdminTab, sub?: string) => void;
@@ -19,6 +19,7 @@ interface Props {
 
 interface Snapshot {
   tasks: Task[];
+  summary: Summary;
   lastPublished: { title: string; when: string } | null;
   pages: Record<string, { slug: string; title: string }>;
 }
@@ -41,16 +42,18 @@ const AdminOverviewDashboard = ({ onGo, onOpenInBuilder }: Props) => {
       const leads = (leadsQ.data || []) as unknown as LeadLite[];
       const home = (homeQ.data || null) as unknown as HomeLite | null;
       const tasks = deriveTasks({ pages, posts, leads, home });
+      const summary = summarize({ pages, posts, leads, home });
       const published = [
         ...pages.filter((p) => p.status === "published").map((p) => ({ title: p.title, at: p.updated_at })),
         ...posts.filter((p) => p.status === "published").map((p) => ({ title: p.title, at: p.published_at || p.updated_at })),
       ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())[0];
       setSnap({
         tasks,
+        summary,
         lastPublished: published ? { title: published.title, when: relativeTime(published.at) } : null,
         pages: Object.fromEntries(pages.map((p) => [p.id, { slug: p.slug, title: p.title }])),
       });
-    })().catch(() => setSnap({ tasks: [], lastPublished: null, pages: {} }));
+    })().catch(() => setSnap({ tasks: [], summary: { changes: 0, draftPosts: 0, latestDraftTitle: null, leadsThisWeek: 0, leadNames: [] }, lastPublished: null, pages: {} }));
     return () => { cancelled = true; };
   }, []);
 
@@ -64,15 +67,30 @@ const AdminOverviewDashboard = ({ onGo, onOpenInBuilder }: Props) => {
   };
 
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const sum = snap?.summary;
+  const tile = (n: number, label: string, action: string, onClick: () => void, dim: boolean) => (
+    <div className={`admin-tile${dim ? " quiet" : ""}`}>
+      <div className="admin-tile-n">{n}</div>
+      <div className="admin-tile-l">{label}</div>
+      <button type="button" className="admin-link" onClick={onClick} disabled={dim}>{action}</button>
+    </div>
+  );
 
   return (
     <div className="admin-page">
-      <div className="admin-page-head">
+      <div className="admin-page-head" style={{ alignItems: "flex-end" }}>
         <div>
-          <h2 className="admin-h2">Needs attention</h2>
-          <p className="admin-sub">{today}. Everything else is where you left it.</p>
+          <h2 className="admin-h1">{greeting(new Date(), "Robert")}</h2>
+          <p className="admin-sub">{today}. What needs you today; everything else is where you left it.</p>
         </div>
       </div>
+      {sum && (
+        <div className="admin-tiles">
+          {tile(sum.changes, sum.changes === 1 ? "page with unpublished changes" : "pages with unpublished changes", "Review and publish", () => onGo("pages"), sum.changes === 0)}
+          {tile(sum.draftPosts, sum.draftPosts === 1 ? `draft blog post${sum.latestDraftTitle ? "" : ""}` : "draft blog posts", sum.latestDraftTitle ? `Open “${sum.latestDraftTitle.length > 28 ? sum.latestDraftTitle.slice(0, 28) + "…" : sum.latestDraftTitle}”` : "Open blog", () => onGo("blog"), sum.draftPosts === 0)}
+          {tile(sum.leadsThisWeek, sum.leadsThisWeek === 1 ? "new lead this week" : "new leads this week", sum.leadNames.length ? `See ${sum.leadNames.slice(0, 2).join(", ")}` : "See leads", () => onGo("audience", "contacts"), sum.leadsThisWeek === 0)}
+        </div>
+      )}
       {!snap ? (
         <ListSkeleton rows={4} rowHeight="h-10" />
       ) : snap.tasks.length === 0 ? (

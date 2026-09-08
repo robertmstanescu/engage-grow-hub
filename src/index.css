@@ -941,86 +941,6 @@
   }
 
 
-  /* Reusable primary-action button for the admin shell. Vibrant indigo
-     on a white card; lifts on hover; clear focus ring. */
-  .admin-light .admin-btn-primary,
-  .admin-btn-primary {
-    background-color: hsl(var(--admin-primary, 239 84% 53%));
-    color: hsl(var(--admin-primary-foreground, 0 0% 100%));
-    border: 1px solid hsl(var(--admin-primary, 239 84% 53%));
-    box-shadow: 0 1px 2px 0 hsl(222 47% 11% / 0.08);
-    transition: background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
-  }
-  .admin-light .admin-btn-primary:hover:not(:disabled),
-  .admin-btn-primary:hover:not(:disabled) {
-    background-color: hsl(var(--admin-primary-hover, 243 75% 47%));
-    border-color: hsl(var(--admin-primary-hover, 243 75% 47%));
-    box-shadow: 0 4px 12px -2px hsl(239 84% 53% / 0.35);
-  }
-  .admin-light .admin-btn-primary:disabled,
-  .admin-btn-primary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-
-  /* Secondary outlined admin button — for "Save Draft" type actions
-     that should read as strong but not steal focus from the publish
-     primary. Slate border, white surface, clear hover. */
-  .admin-light .admin-btn-secondary,
-  .admin-btn-secondary {
-    background-color: hsl(0 0% 100%);
-    color: hsl(222 47% 11%);
-    border: 1px solid hsl(214 32% 80%);
-    transition: background-color 150ms ease, border-color 150ms ease;
-  }
-  .admin-light .admin-btn-secondary:hover:not(:disabled),
-  .admin-btn-secondary:hover:not(:disabled) {
-    background-color: hsl(210 40% 96%);
-    border-color: hsl(214 32% 65%);
-  }
-  .admin-light .admin-btn-secondary:disabled,
-  .admin-btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Admin section card — the one surface every grouped block of fields
-     sits on, so spacing and elevation are identical across screens. */
-  .admin-card {
-    background-color: hsl(0 0% 100%);
-    border-color: hsl(214 32% 91%);
-    box-shadow: 0 1px 2px hsl(222 47% 11% / 0.04);
-  }
-
-
-  /* Sidebar list item — clear hover (slate-100) and active state.
-     Replaces the inline `hsl(var(--muted) / 0.5)` hover that was nearly
-     invisible on the white sidebar surface. */
-  .admin-sidebar-item {
-    color: hsl(215 25% 27%); /* slate-700 by default */
-    transition: background-color 120ms ease, color 120ms ease;
-  }
-  .admin-sidebar-item:hover {
-    background-color: hsl(210 40% 96%); /* slate-100 */
-    color: hsl(222 47% 11%); /* slate-900 on hover */
-  }
-  .admin-sidebar-item[data-active="true"] {
-    background-color: hsl(239 84% 53% / 0.10);
-    color: hsl(239 84% 35%); /* indigo-700 */
-    font-weight: 500;
-  }
-
-  /* Sidebar/inspector section header — uppercase eyebrow text. Was
-     muted-foreground (40% lightness) which felt washed out; bumped to
-     slate-600 so it reads as deliberate metadata. */
-  .admin-section-label {
-    color: hsl(215 19% 35%); /* slate-600 */
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-  }
-
   /* ── Glow effects (soft light shadows) ── */
   .glow-accent {
     box-shadow: var(--shadow-card);
@@ -1535,6 +1455,7 @@
   .admin-rail.mobile.closed { transform: translateX(-100%); }
   .admin-rail-logo { width: 28px; height: 28px; margin: 0 auto 10px; border-radius: 4px; display: grid; place-items: center; background: hsl(var(--foreground)); color: hsl(var(--background)); font-family: var(--font-title); font-weight: 800; font-size: 13px; text-decoration: none; }
   .admin-rail.mobile .admin-rail-logo { margin: 0 0 12px 6px; }
+  .admin-rail-logo:has(img) { background: transparent; }
   .admin-rail-item { position: relative; width: 30px; height: 30px; border-radius: 4px; display: grid; place-items: center; color: hsl(var(--muted-foreground)); background: none; border: 0; cursor: pointer; }
   .admin-rail-item.mobile { width: auto; height: auto; display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: hsl(var(--foreground)); }
   .admin-rail-item:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
@@ -1646,4 +1567,161 @@
   .tray-variant:hover { background: hsl(var(--muted)); }
   .tray-variant-name { font-size: 12px; font-weight: 500; }
   .tray-variant-hint { grid-column: 2; font-size: 10.5px; color: hsl(var(--muted-foreground)); }
+}
+
+/* Overview: greeting, three summary tiles, then the list. */
+@layer components {
+  .admin-h1 { font-family: var(--font-title); font-size: 24px; font-weight: 800; letter-spacing: -0.01em; margin: 0; line-height: 1.1; }
+  .admin-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 16px 0 14px; }
+  .admin-tile { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 4px; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+  .admin-tile-n { font-family: var(--font-title); font-size: 28px; font-weight: 800; line-height: 1; }
+  .admin-tile-l { color: hsl(var(--muted-foreground)); }
+  .admin-tile .admin-link { align-self: flex-start; margin-top: 6px; }
+  .admin-tile.quiet .admin-tile-n, .admin-tile.quiet .admin-link { color: hsl(var(--muted-foreground)); }
+  .admin-tile.quiet .admin-link { text-decoration: none; cursor: default; }
+}
+
+/* The page canvas and the Design sample always show the SITE's own light tokens, whatever the admin theme is: the site provides its own colour scheme. Single-line tokens only; multi-line ones (the static mesh gradient) are not theme colours. */
+@layer components {
+  .admin-dark .admin-canvas {
+    color-scheme: light;
+    --background: 32 30% 97%;
+    --foreground: 282 45% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 282 40% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 282 40% 13%;
+    --primary: 280 55% 24%;
+    --primary-foreground: 45 60% 97%;
+    --secondary: 285 38% 94%;
+    --secondary-foreground: 280 55% 24%;
+    --muted: 288 24% 95%;
+    --muted-foreground: 281 18% 32%;
+    --accent: 46 75% 58%;
+    --accent-foreground: 280 57% 13%;
+    --accent-ink: 40 68% 30%;
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 285 20% 84%;
+    --outline-ink: #26142E;
+    --outline-ink-width: 5px;
+    --outline-ink-navbar-width: 2px;
+    --outline-ink-border: var(--outline-ink-width) solid var(--outline-ink);
+    --input: 285 20% 84%;
+    --ring: 280 55% 24%;
+    --radius: 1.5rem;
+    --gradient-card: linear-gradient(160deg, hsl(0 0% 100%) 0%, hsl(288 30% 98%) 100%);
+    --shadow-soft: 0 1px 2px hsl(282 40% 13% / 0.04), 0 8px 24px -12px hsl(282 40% 13% / 0.12);
+    --shadow-card: 0 1px 2px hsl(282 40% 13% / 0.05), 0 18px 40px -24px hsl(282 40% 13% / 0.25);
+    --light-bg: 32 30% 97%;
+    --light-fg: 282 40% 13%;
+    --valentino: 286 42% 40%;
+    --eliza: 46 75% 60%;
+    --gold-crush: 46 73% 67%;
+    --revolver: 280 57% 13%;
+    --violet: 280 55% 24%;
+    --plum: 310 52% 17%;
+    --isabelline: 30 20% 94%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 282 40% 13%;
+    --sidebar-primary: 280 55% 24%;
+    --sidebar-primary-foreground: 45 60% 97%;
+    --sidebar-accent: 288 30% 95%;
+    --sidebar-accent-foreground: 282 40% 13%;
+    --sidebar-border: 285 22% 89%;
+    --sidebar-ring: 280 55% 24%;
+    --font-title: "Bricolage Grotesque", sans-serif;
+    --font-header: "Bricolage Grotesque", sans-serif;
+    --font-body: "Inter", sans-serif;
+    --pillar-label: 40 68% 30%;
+    --pillar-heading: 282 40% 13%;
+    --pillar-heading-sub: 281 20% 32%;
+    --pillar-section-bg: 32 30% 97%;
+    --pillar-primary: 280 55% 24%;
+    --pillar-card-bg: 0 0% 100%;
+    --pillar-card-title: 282 40% 13%;
+    --pillar-subtitle: 280 55% 34%;
+    --pillar-body: 281 16% 34%;
+    --pillar-deliverables-bg: 288 30% 97%;
+    --pillar-deliverables-label: 280 55% 30%;
+    --pillar-tag-fixed-bg: 46 80% 78%;
+    --pillar-tag-fixed-fg: 40 68% 22%;
+    --pillar-tag-retainer-bg: 285 45% 92%;
+    --pillar-tag-retainer-fg: 280 55% 28%;
+    --pillar-meta-bg: 288 30% 96%;
+    --pillar-meta-fg: 280 55% 28%;
+    --pillar-note-border: 46 75% 55%;
+    --pillar-note-bg: 45 70% 96%;
+    --pillar-divider-from: 285 30% 88%;
+    --pillar-divider-to: 45 40% 90%;
+    --pillar-card-description: 281 16% 38%;
+    --pillar-cta-text: 280 55% 28%;
+    --pillar-cta-time: 281 12% 48%;
+    --pillar-carousel-btn-bg: 282 40% 13%;
+    --pillar-carousel-btn-fg: 282 40% 13%;
+    --pillar-dot-active: 280 55% 24%;
+    --pillar-dot-inactive: 282 20% 60%;
+    --vows-bg: 32 30% 97%;
+    --vows-title: 282 40% 13%;
+    --vows-card-border: 285 22% 88%;
+    --vows-card-title: 280 55% 26%;
+    --vows-card-body: 281 16% 36%;
+    --contact-bg: 32 30% 97%;
+    --contact-title: 280 55% 24%;
+    --contact-body: 281 16% 32%;
+    --contact-label: 282 30% 20%;
+    --contact-input-border: 285 22% 85%;
+    --contact-input-focus: 280 55% 24%;
+    --contact-input-text: 282 40% 13%;
+    --contact-btn-bg: 280 57% 16%;
+    --contact-btn-text: 0 0% 100%;
+    --contact-success-bg: 46 80% 82%;
+    --contact-success-fg: 280 57% 13%;
+    --contact-success-btn-bg: 280 57% 16%;
+    --contact-success-btn-text: 0 0% 100%;
+    --band-white: 0 0% 100%;
+    --band-white-fg: 282 40% 13%;
+    --band-tint: 288 34% 96%;
+    --band-tint-fg: 282 40% 13%;
+    --band-deep: 280 57% 14%;
+    --band-deep-fg: 45 60% 96%;
+    --mesh-strength: 0.7;
+    --mesh-c0: rgba(235, 211, 240, 0.7);
+    --mesh-c1: rgba(250, 236, 192, 0.7);
+    --mesh-c2: rgba(232, 214, 242, 0.7);
+    --mesh-c3: rgba(246, 233, 196, 0.7);
+    --mesh-d0: rgba(244, 211, 233, 0.7);
+    --mesh-d1: rgba(213, 239, 228, 0.7);
+    --mesh-d2: rgba(217, 227, 247, 0.7);
+    --mesh-d3: rgba(248, 220, 207, 0.7);
+    --mesh-grain: 0.315;
+    --mesh-motion: 1;
+    --btn-ink-fg: 0 0% 100%;
+    --fs-eyebrow: clamp(12px, 0.7rem + 0.15vw, 14px);
+    --fs-title: clamp(1.875rem, 1.35rem + 1.3vw, 3.25rem);
+    --fs-subtitle: clamp(1.125rem, 1rem + 0.35vw, 1.5rem);
+    --fs-body: clamp(1.0625rem, 0.9rem + 0.25vw, 1.25rem);
+    --fs-card-title: clamp(1.1875rem, 1.05rem + 0.35vw, 1.375rem);
+    --fs-card-body: clamp(1rem, 0.9rem + 0.25vw, 1.125rem);
+    --fs-card-label: clamp(12px, 0.7rem + 0.15vw, 14px);
+    --fs-card-input: clamp(15px, 0.9rem + 0.1vw, 16px);
+    --fs-stat: clamp(2rem, 3.4vw, 3.5rem);
+    --fs-quote: clamp(26px, 3.4vw, 46px);
+    --fs-step-title: clamp(18px, 1.6vw, 24px);
+    --fs-hero-title: clamp(40px, 8.4vw, 132px);
+    --fs-hero-label: clamp(11px, 0.9vw, 14px);
+    --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
+    --fs-hero-body: clamp(15px, 1.15vw, 19px);
+    --lh-body: 1.6;
+    --lh-card-body: 1.55;
+    --lh-subtitle: 1.45;
+    --lh-title: 1.05;
+    --lh-display: 0.95;
+    --ls-label: 0.28em;
+    --ls-body: 0;
+    --ls-title: -0.015em;
+    --ls-display: -0.025em;
+    --measure-prose: 54ch;
+    --para-space: 1.1em;
+  }
 }

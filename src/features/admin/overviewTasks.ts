@@ -72,3 +72,40 @@ export const deriveTasks = (
   }
   return tasks;
 };
+
+export interface Summary {
+  /** Home + pages whose draft differs from live. */
+  changes: number;
+  /** Posts not published. */
+  draftPosts: number;
+  /** Title of the most recently edited draft post, for the tile's link. */
+  latestDraftTitle: string | null;
+  /** Leads created in the last 7 days. */
+  leadsThisWeek: number;
+  /** Full names of the newest leads, at most three. */
+  leadNames: string[];
+}
+
+export const summarize = (
+  input: { pages: PageLite[]; posts: PostLite[]; leads: LeadLite[]; home: HomeLite | null },
+  now = Date.now(),
+): Summary => {
+  const homeChanged = !!input.home && input.home.draft_content != null && !sameJson(input.home.content, input.home.draft_content);
+  const changes = (homeChanged ? 1 : 0) + input.pages.filter((p) => p.status === "published" && hasUnpublishedChanges(p)).length;
+  const drafts = input.posts.filter((p) => p.status !== "published").sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+  const week = now - 7 * 24 * 3600 * 1000;
+  const fresh = input.leads.filter((l) => new Date(l.created_at).getTime() >= week);
+  return {
+    changes,
+    draftPosts: drafts.length,
+    latestDraftTitle: drafts[0]?.title ?? null,
+    leadsThisWeek: fresh.length,
+    leadNames: fresh.slice(0, 3).map((l) => l.full_name),
+  };
+};
+
+export const greeting = (now = new Date(), name?: string): string => {
+  const h = now.getHours();
+  const part = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+  return name ? `${part}, ${name}` : part;
+};
