@@ -28,6 +28,11 @@ src/
                          FieldComponents.tsx and CoverImageField.tsx are the
                          shared field groups; ui/ActionMenu.tsx is the row
                          quick-actions menu used by Pages and Blog.
+                         editors/RowStyleTab.tsx opens with a derived Look
+                         (editors/rowLooks.ts) and five controls; row editors
+                         collect their ColorFields into one "Custom colours"
+                         group (site-editor/customColours.tsx). DesignScreen
+                         is Brand + Site defaults beside a live sample page.
   features/widgets/      Self-registering widget modules — one folder per
                          type (boxed/, contact/, cta-button/, subscribe/).
                          The target shape for every row type.

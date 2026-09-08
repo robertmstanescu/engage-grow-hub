@@ -176,6 +176,13 @@ export interface RowLayout {
    */
   surfaceRadius?: "none" | "subtle" | "medium" | "dramatic";
   /**
+   * Text tone for everything in this row. "auto" (default) picks light
+   * or dark from the row's background; "light"/"dark" force it; "accent"
+   * uses the brand accent. Replaces per-part colour pickers as the
+   * everyday control — those still exist under "Custom colours".
+   */
+  textTone?: "auto" | "light" | "dark" | "accent";
+  /**
    * Per-row override of the ink outline colour (CSS colour). Unset =
    * the site default from Brand settings ▸ Outline. Cascades to
    * everything inside the row: its lip, cover picture, image frames

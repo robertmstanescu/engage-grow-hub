@@ -36,7 +36,7 @@ export const ADMIN_DESTINATIONS: AdminDestination[] = [
   { key: "blog", label: "Blog", icon: BookOpen, tabs: [{ key: "posts", label: "Posts" }, { key: "tags", label: "Tags" }] },
   { key: "media", label: "Media", icon: Image },
   { key: "navigation", label: "Navigation", icon: Compass },
-  { key: "design", label: "Design", icon: Palette, tabs: [{ key: "brand", label: "Brand" }, { key: "site", label: "Site defaults" }] },
+  { key: "design", label: "Design", icon: Palette },
   { key: "audience", label: "Audience", icon: Users, tabs: [{ key: "contacts", label: "Contacts" }, { key: "campaigns", label: "Campaigns" }] },
   { key: "insights", label: "Insights", icon: LineChart, tabs: [{ key: "traffic", label: "Traffic" }, { key: "seo", label: "SEO checks" }] },
   {
@@ -56,7 +56,7 @@ export const LEGACY_REDIRECTS: Record<string, { tab: AdminTab; sub?: string }> =
   redirects: { tab: "settings", sub: "redirects" },
   team: { tab: "settings", sub: "team" },
   versions: { tab: "settings", sub: "history" },
-  brand: { tab: "design", sub: "brand" },
+  brand: { tab: "design" },
   seo_master: { tab: "insights", sub: "seo" },
   "ai-insights": { tab: "insights", sub: "traffic" },
 };

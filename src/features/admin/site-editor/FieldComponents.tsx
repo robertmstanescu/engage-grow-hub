@@ -1,5 +1,7 @@
 import { Plus, Trash2, Pencil } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { useCustomColoursHost } from "./customColoursContext";
 import RichTextEditor from "../RichTextEditor";
 import { useBrandColors } from "@/hooks/useBrandSettings";
 
@@ -229,6 +231,13 @@ export const ColorField = ({
 }) => {
   const { local, setLocal, commit } = useDeferredValue(value, onChange);
   const brandColors = useBrandColors();
+  /* Inside a row editor every colour picker lives in the "Custom
+     colours" group at the bottom (see customColours.tsx). */
+  const host = useCustomColoursHost();
+  const fieldId = slugifyLabel(label);
+  useEffect(() => {
+    host?.report(fieldId, !!value);
+  }, [host, fieldId, value]);
 
   const normalize = (hex: string) => (hex || "").trim().toLowerCase();
   const valueNorm = normalize(value);
@@ -243,8 +252,8 @@ export const ColorField = ({
     if (hasCustomValue) setHexOpen(true);
   }, [hasCustomValue]);
 
-  return (
-    <div data-inspector-field={slugifyLabel(label)}>
+  const field = (
+    <div data-inspector-field={fieldId}>
       <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5 block">
         {label}
       </label>
@@ -312,6 +321,8 @@ export const ColorField = ({
       )}
     </div>
   );
+  if (host) return host.target ? createPortal(field, host.target) : null;
+  return field;
 };
 
 /**
