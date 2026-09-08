@@ -2,7 +2,7 @@ import { DEFAULT_PAGE_MESH, buildPageMeshCSS, findHeroRow } from "@/features/sit
 import type { PageMeshConfig, PageRow } from "@/types/rows";
 
 /**
- * PageBackgroundPanel — the one place to set a page's moving background:
+ * PageBackgroundPanel — the one place to set a page's flowing background:
  * its four colours, intensity, motion and grain.
  *
  * The values are stored on the page's HERO row (`layout.mesh`), because
@@ -61,7 +61,7 @@ const PageBackgroundPanel = ({
           {mesh.strength}%
         </span>
       </div>
-      {/* Motion: how fast the blooms wander. Grain: film-grain sheet. */}
+      {/* Motion: how fast the colours flow. Grain: film-grain sheet. */}
       <div className="flex items-center gap-1.5 mt-2">
         <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[50px]">
           Motion
@@ -105,9 +105,10 @@ const PageBackgroundPanel = ({
         </span>
       </div>
       <p className="font-body text-[10px] text-muted-foreground leading-snug mt-1">
-        The four colours become soft blooms that wander across the page and change places, like
-        the brand backgrounds in motion. Grain stays almost still so the colours carry the
-        motion. Visitors who prefer reduced motion see it still.
+        The four colours flow into each other like slow liquid silk across the whole page.
+        Intensity sets how much of the cream ground shows through; at 100% the colours are
+        pure. Grain stays almost still so the colours carry the motion. Visitors who prefer
+        reduced motion see it still.
       </p>
       <button
         type="button"

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import PublicChunkFallback from "@/components/app/PublicChunkFallback";
-import PageMeshBlooms from "@/features/site/PageMeshBlooms";
+import PageMeshLiquid from "@/features/site/PageMeshLiquid";
 
 /**
  * Layout for every public-facing route. Wraps the matched child in a
@@ -21,18 +21,18 @@ const PublicLayout = () => (
     */}
     <div aria-hidden className="page-mesh-layer">
       {/* Four drifting blobs: the fallback wash, shown only where WebGL
-          is unavailable (the blooms canvas stamps `data-mesh-gl` on the
-          layer and hides them). Each holds two pre-painted colour layers
-          that crossfade by opacity. Then the blooms canvas, then a tiled
-          film-grain sheet on top. Colours, intensity, grain and motion
-          come from the page's hero via CSS variables (see pageMesh.ts). */}
+          is unavailable (the liquid canvas stamps `data-mesh-gl` on the
+          layer and hides them). Then the liquid canvas — the page's
+          colours flowing like silk — then a tiled film-grain sheet.
+          Colours, intensity, grain and motion come from the page's hero
+          via CSS variables (see pageMesh.ts). */}
       {[0, 1, 2, 3].map((i) => (
         <div key={i} className="page-mesh-blob" data-blob={i}>
           <div className="page-mesh-blob-base" />
           <div className="page-mesh-blob-drift" />
         </div>
       ))}
-      <PageMeshBlooms />
+      <PageMeshLiquid />
       <div className="page-mesh-grain" />
     </div>
     <div className="public-fluid-type">
