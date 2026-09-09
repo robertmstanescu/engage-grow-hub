@@ -33,4 +33,15 @@ describe("article block", () => {
     expect(ensureArticleRow(keep)).toBe(keep);
     expect(hasArticleRow([row("text")])).toBe(false);
   });
+
+  it("turns an old seeded copy of the article into the Article block instead of adding a second copy", () => {
+    const html = "<p>On 3 September 2026, the rules changed.</p>";
+    const seededV1 = { id: "seed", type: "text", content: { body: html } } as unknown as PageRow;
+    const out = ensureArticleRow([row("cta_band"), seededV1], 0, html).map((r) => r.type);
+    expect(out).toEqual(["cta_band", "article"]);
+    const seededV3 = { id: "seed3", schema_version: 3, columns: [{ id: "c", cells: [{ id: "ce", widgets: [{ id: "w", type: "text", data: { body: " " + html + "\n" } }] }] }] } as unknown as PageRow;
+    expect(ensureArticleRow([seededV3], 0, html).map((r) => r.type)).toEqual(["article"]);
+    const other = { id: "t", type: "text", content: { body: "<p>Different words.</p>" } } as unknown as PageRow;
+    expect(ensureArticleRow([other], 0, html).map((r) => r.type)).toEqual(["article", "text"]);
+  });
 });

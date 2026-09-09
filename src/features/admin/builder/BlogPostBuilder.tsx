@@ -83,7 +83,7 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
     const rec = data as unknown as BlogPostRecord;
     setRecord(rec);
     const existing = (rec.draft_page_rows || rec.page_rows || []) as PageRow[];
-    setDraftRows(existing.length > 0 ? existing : seedRows());
+    setDraftRows(existing.length > 0 ? ensureArticleRow(existing, 0, rec.content) : seedRows());
     setSeoTitle(rec.meta_title || "");
     setSeoDescription(rec.meta_description || "");
     setPageTitle(rec.title || "");
@@ -107,7 +107,7 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
   const initialSnapshot = useMemo(() => {
     if (!record) return "";
     const baseRows = (record.draft_page_rows || record.page_rows || []) as PageRow[];
-    const effective = baseRows.length > 0 ? baseRows : seedRows();
+    const effective = baseRows.length > 0 ? ensureArticleRow(baseRows, 0, record.content) : seedRows();
     return JSON.stringify({
       rows: effective,
       meta_title: record.meta_title || "",
