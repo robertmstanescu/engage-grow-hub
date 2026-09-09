@@ -203,7 +203,7 @@ function renderPage(shell, meta) {
     html = html.replace(
       "</head>",
       `${blocks
-        .map((b) => `  <script type="application/ld+json">${JSON.stringify(b)}</script>`)
+        .map((b) => `  <script type="application/ld+json" data-prerender="1">${JSON.stringify(b)}</script>`)
         .join("\n")}\n  </head>`,
     );
   }
