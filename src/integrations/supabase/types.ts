@@ -762,9 +762,11 @@ export type Database = {
           browser: string | null
           category: string
           country: string | null
+          country_source: string | null
           created_at: string
           device: string | null
           duration_seconds: number | null
+          engaged: boolean
           entity_name: string
           id: string
           ip_hash: string | null
@@ -775,7 +777,9 @@ export type Database = {
           search_engine: string | null
           source: string
           stitched_email: string | null
+          timezone: string | null
           user_agent: string
+          view_id: string | null
           visitor_id: string | null
         }
         Insert: {
@@ -783,9 +787,11 @@ export type Database = {
           browser?: string | null
           category?: string
           country?: string | null
+          country_source?: string | null
           created_at?: string
           device?: string | null
           duration_seconds?: number | null
+          engaged?: boolean
           entity_name?: string
           id?: string
           ip_hash?: string | null
@@ -796,7 +802,9 @@ export type Database = {
           search_engine?: string | null
           source?: string
           stitched_email?: string | null
+          timezone?: string | null
           user_agent?: string
+          view_id?: string | null
           visitor_id?: string | null
         }
         Update: {
@@ -804,9 +812,11 @@ export type Database = {
           browser?: string | null
           category?: string
           country?: string | null
+          country_source?: string | null
           created_at?: string
           device?: string | null
           duration_seconds?: number | null
+          engaged?: boolean
           entity_name?: string
           id?: string
           ip_hash?: string | null
@@ -817,7 +827,9 @@ export type Database = {
           search_engine?: string | null
           source?: string
           stitched_email?: string | null
+          timezone?: string | null
           user_agent?: string
+          view_id?: string | null
           visitor_id?: string | null
         }
         Relationships: []
