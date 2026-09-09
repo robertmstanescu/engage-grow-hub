@@ -1,11 +1,9 @@
 import { useState, forwardRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getAttributionForPayload } from "@/services/attribution";
 import { trackConversion } from "@/services/conversions";
 
-const ease = [0.16, 1, 0.3, 1] as const;
 type SubscribeWidgetAlignment = "left" | "center" | "right";
 
 interface SubscribeWidgetProps {
@@ -86,50 +84,37 @@ const SubscribeWidget = forwardRef<HTMLDivElement, SubscribeWidgetProps>(
 
     if (done) {
       return (
-        <motion.p
+        <p
           ref={ref as React.Ref<HTMLParagraphElement>}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease }}
-          className={`w-full font-body text-sm font-medium ${contentAlignClass} ${textAlignClass} ${className}`}
-          style={{ color: "hsl(var(--primary))" }}
+          className={`mc-rise w-full font-body text-sm font-medium ${contentAlignClass} ${textAlignClass} ${className}`}
+          style={{ "--rise-y": "6px", "--rise-dur": "0.4s", color: "hsl(var(--primary))" } as React.CSSProperties}
         >
           ✓ You're on the list. We'll keep you posted.
-        </motion.p>
+        </p>
       );
     }
 
     return (
       <div ref={ref} className={`flex w-full flex-col ${containerAlignClass} ${className}`}>
-        <AnimatePresence mode="wait">
           {!open ? (
-            <motion.button
+            <button
               key="trigger"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.3, ease }}
               onClick={() => setOpen(true)}
-              className="max-w-full w-fit font-body text-xs uppercase tracking-[0.14em] font-medium px-6 py-3 rounded-full transition-opacity hover:opacity-80"
-              style={{
+              className="mc-rise max-w-full w-fit font-body text-xs uppercase tracking-[0.14em] font-medium px-6 py-3 rounded-full transition-opacity hover:opacity-80"
+              style={{ "--rise-y": "6px", "--rise-dur": "0.3s",
                 backgroundColor: "hsl(var(--primary))",
                 color: "hsl(var(--primary-foreground))",
-              }}
+               } as React.CSSProperties}
             >
               {triggerLabel && triggerLabel.trim().length > 0
                 ? triggerLabel
                 : "Keep me updated with insights & articles"}
-            </motion.button>
+            </button>
           ) : (
-            <motion.form
+            <form
               key="form"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.35, ease }}
               onSubmit={handleSubmit}
-              className={`flex w-full max-w-[42rem] ${contentAlignClass} flex-col sm:flex-row items-stretch sm:items-center gap-2`}
-            >
+              className={`mc-rise flex w-full max-w-[42rem] ${contentAlignClass} flex-col sm:flex-row items-stretch sm:items-center gap-2`} style={{ "--rise-y": "10px", "--rise-dur": "0.35s" } as React.CSSProperties}>
               <input
                 type="text"
                 placeholder="Your name"
@@ -169,9 +154,8 @@ const SubscribeWidget = forwardRef<HTMLDivElement, SubscribeWidgetProps>(
               >
                 {submitting ? "…" : "Subscribe"}
               </button>
-            </motion.form>
+            </form>
           )}
-        </AnimatePresence>
       </div>
     );
   },

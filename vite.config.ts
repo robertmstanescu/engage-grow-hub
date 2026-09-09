@@ -48,7 +48,6 @@ export default defineConfig(({ mode }) => ({
           if (/^@supabase/.test(pkg)) return "supabase";
           if (/^(@tiptap|prosemirror|@prosemirror|orderedmap|w3c-keyname|rope-sequence|linkifyjs)/.test(pkg)) return "editor";
           if (/^@dnd-kit/.test(pkg)) return "dnd";
-          if (/^@radix-ui/.test(pkg)) return "radix";
           if (/^(zod|@tanstack)/.test(pkg)) return "data";
           return undefined;
         },

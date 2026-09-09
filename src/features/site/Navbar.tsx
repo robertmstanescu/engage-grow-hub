@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSiteContent, useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const ease = [0.16, 1, 0.3, 1] as const;
 
 /**
  * Browser-native responsive logo. The <picture> element lets the browser
@@ -318,15 +316,9 @@ const Navbar = () => {
                       }}
                     />
                   </a>
-                  <AnimatePresence>
                     {open && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.18, ease }}
-                        className="absolute left-1/2 -translate-x-1/2 top-full pt-3 min-w-[240px] z-50"
-                      >
+                      <div
+                        className="mc-rise absolute left-1/2 -translate-x-1/2 top-full pt-3 min-w-[240px] z-50" style={{ "--rise-y": "-6px", "--rise-dur": "0.18s" } as React.CSSProperties}>
                         <div
                           className="flex flex-col py-2"
                           style={{
@@ -360,9 +352,8 @@ const Navbar = () => {
                             );
                           })}
                         </div>
-                      </motion.div>
+                      </div>
                     )}
-                  </AnimatePresence>
                 </div>
               );
             }
@@ -460,15 +451,10 @@ const Navbar = () => {
 
 
       {/* Mobile menu overlay */}
-      <AnimatePresence>
         {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-6"
-            style={{ backgroundColor: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" }}
+          <div
+            className="mc-rise lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-6"
+            style={{ "--rise-dur": "0.3s", backgroundColor: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" } as React.CSSProperties}
           >
             {renderedItems.map((item) => {
               if (item.kind === "dropdown") {
@@ -537,9 +523,8 @@ const Navbar = () => {
               </a>
             ) : null}
 
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </>
   );
 };
