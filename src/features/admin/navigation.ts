@@ -41,7 +41,7 @@ export const ADMIN_DESTINATIONS: AdminDestination[] = [
   { key: "insights", label: "Insights", icon: LineChart, tabs: [{ key: "traffic", label: "Traffic" }, { key: "seo", label: "SEO checks" }] },
   {
     key: "settings", label: "Settings", icon: Settings, bottom: true,
-    tabs: [{ key: "redirects", label: "Redirects" }, { key: "team", label: "Team" }, { key: "history", label: "Version history" }],
+    tabs: [{ key: "redirects", label: "Redirects" }, { key: "search", label: "Search engines" }, { key: "team", label: "Team" }, { key: "history", label: "Version history" }],
   },
 ];
 
@@ -54,6 +54,7 @@ export const LEGACY_REDIRECTS: Record<string, { tab: AdminTab; sub?: string }> =
   emails: { tab: "audience", sub: "campaigns" },
   tags: { tab: "blog", sub: "tags" },
   redirects: { tab: "settings", sub: "redirects" },
+  search_engines: { tab: "settings", sub: "search" },
   team: { tab: "settings", sub: "team" },
   versions: { tab: "settings", sub: "history" },
   brand: { tab: "design" },

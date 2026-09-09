@@ -29,6 +29,8 @@ import { contentState, stateToStatus, type ContentState } from "../naming";
 import { useUnloadGuard } from "@/hooks/useUnloadGuard";
 import { confirmUnsavedExit } from "@/components/ConfirmDialog";
 import { createRedirect } from "@/services/redirects";
+import { notifyIndexNow } from "@/services/searchEngines";
+import { cmsPagePath } from "@/lib/cmsPagePath";
 
 interface CmsPageRecord {
   id: string;
@@ -291,6 +293,7 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
     if (error) toast.error(error.message);
     else {
       toast.success("Published");
+      notifyIndexNow([cmsPagePath(pageSlug)]);
       // Redirects manager — only matters if the OLD slug was already
       // live (public visitors/search engines may have it bookmarked or
       // indexed). A slug change on a page that was still a draft never

@@ -38,6 +38,7 @@ import NavigationManager from "./NavigationManager";
 import MediaGallery from "./MediaGallery";
 import DesignScreen from "./DesignScreen";
 import SeoMaster from "./SeoMaster";
+import SearchEnginesSettings from "./SearchEnginesSettings";
 import VersionHistory from "./VersionHistory";
 import AdminInsights from "@/pages/AdminInsights";
 import { confirmUnsavedExit } from "@/components/ConfirmDialog";
@@ -245,7 +246,7 @@ const AdminDashboard = ({ theme = "light", onToggleTheme }: Props) => {
             {activeTab === "audience" && (activeSub === "campaigns" ? <EmailCampaigns /> : <ContactsList />)}
             {activeTab === "insights" && (activeSub === "seo" ? <SeoMaster /> : <AdminInsights embedded />)}
             {activeTab === "settings" && (
-              activeSub === "team" ? <ManageTeam /> : activeSub === "history" ? <VersionHistory /> : <RedirectsManager />
+              activeSub === "team" ? <ManageTeam /> : activeSub === "history" ? <VersionHistory /> : activeSub === "search" ? <SearchEnginesSettings /> : <RedirectsManager />
             )}
           </main>
         )}

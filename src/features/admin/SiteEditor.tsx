@@ -15,6 +15,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { notifyIndexNow } from "@/services/searchEngines";
 import { confirmUnsavedExit } from "@/components/ConfirmDialog";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import type { PageRow } from "@/types/rows";
@@ -294,6 +295,7 @@ const SiteEditor = ({ onExit, onDirtyChange, onRegisterSave }: Props) => {
       setExpiryAt(null);
       sections.forEach((s) => invalidateSiteContent(s.section_key));
       toast.success("All changes published!");
+      notifyIndexNow(["/"]);
     }
     setPublishing(false);
   }, [sections]);

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { notifyIndexNow } from "@/services/searchEngines";
 import { sanitizeHtml } from "@/services/sanitize";
 import { toast } from "sonner";
 import { Eye, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
@@ -237,6 +238,7 @@ const BlogEditor = () => {
     // AEO sync confirmation — let the admin know the manifest will pick it up.
     if (result !== null && form.ai_summary?.trim()) {
       toast.success("AEO Metadata Synchronized: Content is now ready for AI Crawlers.");
+      if (status === "published") notifyIndexNow([`/blog/${slug}/`]);
     }
 
     if (result !== null) {
@@ -299,6 +301,7 @@ const BlogEditor = () => {
       successMessage: live ? "Taken offline" : "Published",
     });
     if (result !== null) fetchPosts();
+    if (result !== null && !live) notifyIndexNow([`/blog/${post.slug}/`]);
   };
 
   const buildLivePreviewPost = useCallback(() => {
