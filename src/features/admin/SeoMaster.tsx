@@ -73,6 +73,7 @@ import { fetchAllPages } from "@/services/pagination";
 import { fetchSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
 import { generateAiSummary, htmlToPlainText, rowsToPlainText } from "@/services/aiSummary";
+import { extractHeadings } from "./seoHeadings";
 import { toast } from "sonner";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 
@@ -198,65 +199,6 @@ const GLOBAL_SEO_KEY = "global_seo_tags";
    ═════════════════════════════════════════════════════════════════════ */
 
 /** Strip HTML tags from a rich-text string for plain-text display. */
-const stripHtml = (input: unknown): string => {
-  if (typeof input !== "string") return "";
-  return input.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
-};
-
-/**
- * Pull plain-text strings out of a `title_lines` array.
- * Entries may be HTML strings, plain strings, or `{text, type}` objects.
- */
-const titleLinesToStrings = (content: unknown): string[] => {
-  if (!content || typeof content !== "object") return [];
-  const c = content as Record<string, any>;
-  if (!Array.isArray(c.title_lines)) return [];
-  const out: string[] = [];
-  for (const line of c.title_lines) {
-    const raw = typeof line === "string" ? line : line?.text ?? "";
-    const text = stripHtml(raw);
-    if (text) out.push(text);
-  }
-  return out;
-};
-
-/**
- * Walk all rows on a page and produce a clean H1/H2 split.
- *
- * SEO HIERARCHY RULE (the #1 technical SEO requirement):
- *   • Exactly one H1 per page — the hero's `title_lines`.
- *   • H2s = `title_lines` of every OTHER row.
- *   • The hero's `tagline` is NOT a heading (it renders as <p>) so
- *     it is deliberately excluded from this audit.
- *   • Per-row `subtitle` strings are stylised paragraphs in the live
- *     site, so they are excluded too — auditing them would create
- *     false-positive "H2" entries.
- */
-const extractHeadings = (rows: any): { h1s: string[]; h2s: string[] } => {
-  const acc = { h1s: [] as string[], h2s: [] as string[] };
-  if (!Array.isArray(rows)) return acc;
-
-  // First hero row owns the H1. Everything else contributes H2s.
-  const heroIdx = rows.findIndex((r: any) => r?.row_type === "hero");
-
-  rows.forEach((row: any, i: number) => {
-    const lines = titleLinesToStrings(row?.content);
-    if (!lines.length) return;
-    if (i === heroIdx) {
-      acc.h1s.push(...lines);
-    } else {
-      acc.h2s.push(...lines);
-    }
-  });
-
-  // Fallback: page has no hero row → first row with title_lines becomes H1.
-  if (heroIdx === -1 && acc.h1s.length === 0 && acc.h2s.length > 0) {
-    acc.h1s.push(acc.h2s.shift()!);
-  }
-
-  return acc;
-};
-
 /* ═════════════════════════════════════════════════════════════════════
    COMPONENT
    ═════════════════════════════════════════════════════════════════════ */

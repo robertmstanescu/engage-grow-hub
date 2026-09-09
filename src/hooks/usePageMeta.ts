@@ -37,7 +37,12 @@ const clampTitle = (value: string, max = TITLE_MAX): string => {
 const buildTitle = (title: string | undefined, suffix: string, brandName: string): string => {
   const page = (title || "").trim();
   if (!page) return clampTitle(suffix);
-  const candidates = [suffix, brandName.trim()].filter(Boolean);
+  // A search title that already ends with the brand ("Our Services |
+  // The Magic Coffin") is used as it is; appending again gave
+  // "… | The Magic Coffin | The Magic Coffin" on the live site.
+  const brand = brandName.trim();
+  if (brand && new RegExp(`\\|\\s*${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "i").test(page)) return clampTitle(page);
+  const candidates = [suffix, brand].filter(Boolean);
   for (const tail of candidates) {
     const combined = `${page} | ${tail}`;
     if (combined.length <= TITLE_MAX) return combined;
@@ -215,6 +220,11 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", 
 
   useEffect(() => {
     if (typeof document === "undefined") return;
+
+    // The prerendered HTML carries the same structured data for crawlers
+    // that never run the app. Once the app runs it owns those blocks, so
+    // the static copies go, or every page would carry each block twice.
+    document.querySelectorAll('script[type="application/ld+json"][data-prerender]').forEach((n) => n.remove());
 
     let cancelled = false;
 
