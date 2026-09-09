@@ -834,6 +834,84 @@ export type Database = {
         }
         Relationships: []
       }
+      unified_analytics_logs_archive_20260909: {
+        Row: {
+          attribution: Json | null
+          browser: string | null
+          category: string | null
+          country: string | null
+          country_source: string | null
+          created_at: string | null
+          device: string | null
+          duration_seconds: number | null
+          engaged: boolean | null
+          entity_name: string | null
+          id: string | null
+          ip_hash: string | null
+          is_bot: boolean | null
+          path: string | null
+          referrer: string | null
+          scroll_depth: number | null
+          search_engine: string | null
+          source: string | null
+          stitched_email: string | null
+          timezone: string | null
+          user_agent: string | null
+          view_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          attribution?: Json | null
+          browser?: string | null
+          category?: string | null
+          country?: string | null
+          country_source?: string | null
+          created_at?: string | null
+          device?: string | null
+          duration_seconds?: number | null
+          engaged?: boolean | null
+          entity_name?: string | null
+          id?: string | null
+          ip_hash?: string | null
+          is_bot?: boolean | null
+          path?: string | null
+          referrer?: string | null
+          scroll_depth?: number | null
+          search_engine?: string | null
+          source?: string | null
+          stitched_email?: string | null
+          timezone?: string | null
+          user_agent?: string | null
+          view_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          attribution?: Json | null
+          browser?: string | null
+          category?: string | null
+          country?: string | null
+          country_source?: string | null
+          created_at?: string | null
+          device?: string | null
+          duration_seconds?: number | null
+          engaged?: boolean | null
+          entity_name?: string | null
+          id?: string | null
+          ip_hash?: string | null
+          is_bot?: boolean | null
+          path?: string | null
+          referrer?: string | null
+          scroll_depth?: number | null
+          search_engine?: string | null
+          source?: string | null
+          stitched_email?: string | null
+          timezone?: string | null
+          user_agent?: string | null
+          view_id?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       site_content_public: {
