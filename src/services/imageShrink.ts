@@ -61,3 +61,29 @@ export async function shrinkImage(file: File, opts: ShrinkOptions = {}): Promise
     bitmap?.close?.();
   }
 }
+
+/**
+ * A small JPEG preview of a picture as a data URL, for sending to the
+ * describe-image function before the file has a public address.
+ * Returns null when the browser cannot decode the file.
+ */
+export async function imagePreviewDataUrl(file: File, maxEdge = 1024, quality = 0.7): Promise<string | null> {
+  if (!file.type.startsWith("image/") || /svg/i.test(file.type)) return null;
+  if (typeof createImageBitmap !== "function" || typeof document === "undefined") return null;
+  let bitmap: ImageBitmap | null = null;
+  try {
+    bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", quality);
+  } catch {
+    return null;
+  } finally {
+    bitmap?.close?.();
+  }
+}
