@@ -74,6 +74,7 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { countryFromTimezone } from "./tzCountry.ts";
 
 // ── CORS — every browser-originating call needs this preflight. ──────────
 const corsHeaders = {
@@ -445,10 +446,13 @@ Deno.serve(async (req) => {
   // through their network. In Supabase Edge (Deno Deploy) this header
   // is also populated for real production traffic. Local dev returns
   // "Unknown" which is the right behaviour.
-  const country =
-    req.headers.get("cf-ipcountry") ||
-    req.headers.get("x-vercel-ip-country") ||
-    null;
+  // Country: an edge header when one exists (never the case when the
+  // browser talks to Supabase directly), otherwise the browser's own time
+  // zone mapped to a country. No address is looked up or stored.
+  const headerCountry = req.headers.get("cf-ipcountry") || req.headers.get("x-vercel-ip-country") || null;
+  const tzCountry = headerCountry ? null : countryFromTimezone(timezone);
+  const country = headerCountry ?? tzCountry;
+  const countrySource = headerCountry ? "header" : tzCountry ? "timezone" : null;
 
   const ipAddress =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -518,6 +522,7 @@ Deno.serve(async (req) => {
         browser: clientBrowser || null,
         device: clientDevice || null,
         country,
+        country_source: countrySource,
         visitor_id: visitorId,
         user_agent: userAgent.slice(0, 500),
         ip_hash: ipHash,
