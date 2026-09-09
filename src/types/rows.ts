@@ -265,6 +265,7 @@ export const ROW_TYPES = [
   "process_steps",
   "quote_band",
   "cta_band",
+  "from_the_blog",
 ] as const;
 
 export type RowType = (typeof ROW_TYPES)[number];

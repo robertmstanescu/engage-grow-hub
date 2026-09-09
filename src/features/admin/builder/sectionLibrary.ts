@@ -70,6 +70,10 @@ export const SECTION_LIBRARY: LibrarySection[] = [
     }, { strip_title: "Feature trio", bg_color: "#FFFFFF", layout: { surfaceRadius: "medium" } }),
   },
   {
+    key: "from-the-blog", name: "From the blog", family: "Cards",
+    build: () => rowWith("from_the_blog", { title: "From the blog" }, { strip_title: "From the blog" }),
+  },
+  {
     key: "proof-strip", name: "Proof strip", family: "Numbers",
     build: () => rowWith("proof_band", {
       eyebrow: "Proof, not promises",

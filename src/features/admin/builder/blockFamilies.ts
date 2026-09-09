@@ -42,6 +42,7 @@ export const BLOCK_FAMILIES: BlockFamily[] = [
       { type: "service", label: "Services", hint: "Service cards with deliverables and price" },
       { type: "testimonial", label: "Testimonials", hint: "Quotes with names" },
       { type: "logo_cloud", label: "Logos", hint: "A row of client logos" },
+      { type: "from_the_blog", label: "From the blog", hint: "Recent posts, chosen by category" },
     ],
   },
   {

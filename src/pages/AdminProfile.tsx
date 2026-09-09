@@ -17,9 +17,10 @@
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Linkedin, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyProfile, updateMyProfile, type Profile } from "@/services/profiles";
+import { fetchSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
 import { SpinnerButton } from "@/components/ui/spinner-button";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
@@ -37,18 +38,24 @@ const AdminProfile = () => {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
+  /* Public author details. These are not private profile data: they
+     show under every blog post, so they live in site_content
+     ("author_profile"), which the public site can read. */
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [savingAuthor, setSavingAuthor] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/admin"); return; }
-      const p = await getMyProfile();
+      const [p, author] = await Promise.all([getMyProfile(), fetchSection<{ linkedin?: string }>("author_profile")]);
       if (cancelled) return;
       setProfile(p);
       setEmail(user.email || "");
       setDisplayName(p?.display_name || "");
       setAvatarUrl(p?.avatar_url || "");
+      setLinkedinUrl(author.data?.content?.linkedin || "");
       setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -59,6 +66,15 @@ const AdminProfile = () => {
       action: () => updateMyProfile({ display_name: displayName, avatar_url: avatarUrl }),
       setLoading: setSavingProfile,
       successMessage: "Profile updated",
+    });
+  };
+
+  const handleSaveAuthor = async () => {
+    const url = linkedinUrl.trim();
+    await runDbAction({
+      action: () => publishSection("author_profile", { linkedin: url }),
+      setLoading: setSavingAuthor,
+      successMessage: url ? "Author details saved" : "LinkedIn link removed",
     });
   };
 
@@ -139,6 +155,44 @@ const AdminProfile = () => {
             style={{ backgroundColor: "hsl(var(--foreground))", color: "hsl(var(--background))" }}
           >
             Save profile
+          </SpinnerButton>
+        </section>
+
+        {/* Public author details */}
+        <section className="rounded-xl border p-5 space-y-4" style={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <div>
+            <h2 className="font-display text-xs uppercase tracking-wider font-bold" style={{ color: "hsl(var(--foreground))" }}>Author details</h2>
+            <p className="font-body text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+              Shown under every blog post, beside your name. Use your own LinkedIn page here; the company page in Settings stays on the site's social links.
+            </p>
+          </div>
+
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <Linkedin size={10} className="inline mr-1" /> Your LinkedIn page
+            </label>
+            <input
+              value={linkedinUrl}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+              placeholder="https://www.linkedin.com/in/your-name/"
+              inputMode="url"
+              spellCheck={false}
+              className="w-full px-3 py-2 rounded-lg font-body text-sm border"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
+            />
+            <p className="font-body text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+              Leave it empty to fall back to the company page.
+            </p>
+          </div>
+
+          <SpinnerButton
+            onClick={handleSaveAuthor}
+            isLoading={savingAuthor}
+            loadingLabel="Saving…"
+            className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
+            style={{ backgroundColor: "hsl(var(--foreground))", color: "hsl(var(--background))" }}
+          >
+            Save author details
           </SpinnerButton>
         </section>
       </div>
