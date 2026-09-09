@@ -34,7 +34,7 @@ const calculateReadTime = (content: string) => {
 const formatDate = (dateStr: string) =>
   new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
-const BlogCard = ({ post }: { post: BlogPost }) => {
+const BlogCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => void }) => {
   const { getCategoryColors, getTagColors } = useTagColors();
   const catColors = getCategoryColors(post.category);
   const tone = useImageTone(post.cover_image);
@@ -121,9 +121,12 @@ const BlogCard = ({ post }: { post: BlogPost }) => {
                 {post.tags.map((tag) => {
                   const tc = getTagColors(tag);
                   return (
-                    <span
+                    <button
+                      type="button"
                       key={tag}
-                      className="font-body text-[10px] tracking-[0.12em] uppercase px-2 py-1 rounded-full font-medium"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onTag?.(tag); }}
+                      title={`Show every article tagged ${tag}`}
+                      className="font-body text-[10px] tracking-[0.12em] uppercase px-2 py-1 rounded-full font-medium hover:underline"
                       style={{
                         backgroundColor: hasCover
                           ? isLight
@@ -134,7 +137,7 @@ const BlogCard = ({ post }: { post: BlogPost }) => {
                       }}
                     >
                       {tag}
-                    </span>
+                    </button>
                   );
                 })}
               </div>
@@ -153,10 +156,18 @@ const Blog = () => {
 
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
   const selectedCategory = searchParams.get("category") || "all";
+  const selectedTag = searchParams.get("tag") || "";
 
   const setPage = (p: number) => {
     const params = new URLSearchParams(searchParams);
     params.set("page", String(p));
+    setSearchParams(params, { replace: true });
+  };
+
+  const setTag = (tag: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (tag) params.set("tag", tag); else params.delete("tag");
+    params.set("page", "1");
     setSearchParams(params, { replace: true });
   };
 
@@ -208,9 +219,11 @@ const Blog = () => {
   }, [posts]);
 
   const filteredPosts = useMemo(() => {
-    if (selectedCategory === "all") return posts;
-    return posts.filter((p) => p.category === selectedCategory);
-  }, [posts, selectedCategory]);
+    let list = posts;
+    if (selectedCategory !== "all") list = list.filter((p) => p.category === selectedCategory);
+    if (selectedTag) list = list.filter((p) => (p.tags || []).some((t) => t.toLowerCase() === selectedTag.toLowerCase()));
+    return list;
+  }, [posts, selectedCategory, selectedTag]);
 
   const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE) || 1;
   const currentPage = Math.min(page, totalPages);
@@ -247,6 +260,12 @@ const Blog = () => {
         <div className="max-w-[1200px] mx-auto">
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
             <div className="flex-1 min-w-0">
+              {selectedTag && (
+                <p className="font-body text-sm mb-4" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
+                  Tagged <strong style={{ color: "hsl(var(--foreground))" }}>{selectedTag}</strong> ·{" "}
+                  <button type="button" className="underline underline-offset-4" onClick={() => setTag("")}>Show all</button>
+                </p>
+              )}
               {loading ? (
                 <p
                   className="font-body text-sm text-center py-12"
@@ -264,7 +283,7 @@ const Blog = () => {
               ) : (
                 <div className="space-y-6">
                   {paginatedPosts.map((post) => (
-                    <BlogCard key={post.slug} post={post} />
+                    <BlogCard key={post.slug} post={post} onTag={setTag} />
                   ))}
                 </div>
               )}
