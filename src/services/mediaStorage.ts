@@ -8,6 +8,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { shrinkImage } from "./imageShrink";
 
 const EDITOR_BUCKET = "editor-images";
 const OVERLAY_BUCKET = "row-overlays";
@@ -28,7 +29,8 @@ const makePath = (folder: string, file: File) => {
    ───────────────────────────────────────────────────────────────────────── */
 
 /** Upload to a known folder under editor-images. */
-export async function uploadEditorImage(folder: string, file: File): Promise<UploadResult> {
+export async function uploadEditorImage(folder: string, original: File): Promise<UploadResult> {
+  const file = await shrinkImage(original);
   const path = makePath(folder, file);
   const { error } = await supabase.storage.from(EDITOR_BUCKET).upload(path, file);
   if (error) return { publicUrl: null, error };

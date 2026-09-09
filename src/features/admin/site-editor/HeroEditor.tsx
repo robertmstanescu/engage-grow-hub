@@ -6,6 +6,7 @@ import SubtitleEditor from "./SubtitleEditor";
 import ImageAltInput from "../ImageAltInput";
 import ImagePickerField from "../ImagePickerField";
 import { supabase } from "@/integrations/supabase/client";
+import { shrinkImage } from "@/services/imageShrink";
 import { toast } from "sonner";
 import { runDbAction } from "@/services/db-helpers";
 
@@ -31,13 +32,15 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
     }
     if (file.size > 50 * 1024 * 1024) { toast.error("File must be under 50MB"); return; }
 
-    const ext = file.name.split(".").pop();
+    // Pictures are made web-sized before upload; video passes through.
+    const upload = file.type.startsWith("image/") ? await shrinkImage(file) : file;
+    const ext = upload.name.split(".").pop();
     const path = `hero/${Date.now()}.${ext}`;
 
     const result = await runDbAction({
       action: async () => {
-        const upload = await supabase.storage.from("editor-images").upload(path, file);
-        if (upload.error) return { data: null, error: upload.error };
+        const res = await supabase.storage.from("editor-images").upload(path, upload);
+        if (res.error) return { data: null, error: res.error };
         const { data: { publicUrl } } = supabase.storage.from("editor-images").getPublicUrl(path);
         return { data: { publicUrl }, error: null };
       },
