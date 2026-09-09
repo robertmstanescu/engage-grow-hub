@@ -7,6 +7,7 @@ import usePageMeta from "@/hooks/usePageMeta";
 import { useSmoothAnchors } from "@/hooks/useSmoothAnchors";
 import { extractFaqItems } from "@/features/site/rows/PrimaryHeadingContext";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
+import { findWidgetsByType } from "@/lib/rowWidgets";
 import type { PageRow } from "@/types/rows";
 
 /**
@@ -23,6 +24,8 @@ const Index = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const faqItems = extractFaqItems(normalizeRowsToV3(pageRowsData.rows || []) as any);
+  /* The hero's plain answer, shown as small print in the footer. */
+  const heroAnswer = ((findWidgetsByType(normalizeRowsToV3(pageRowsData.rows || []) as never, "hero")[0]?.data as { answer?: string } | undefined)?.answer || "").trim() || undefined;
 
   usePageMeta({
     title: seo.meta_title || undefined,
@@ -64,7 +67,7 @@ const Index = () => {
   return (
     <div ref={containerRef} className="snap-container page-shell">
       <Navbar />
-      <PageRows footerSlot={<Footer />} />
+      <PageRows footerSlot={<Footer pageAnswer={heroAnswer} />} />
     </div>
   );
 };
