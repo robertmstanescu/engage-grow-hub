@@ -244,7 +244,7 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
             <button
               type="submit"
               disabled={submitting}
-              className="btn-glass font-display text-micro uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+              className="btn-ink disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
             >
               {submitting ? "Sending…" : "Download now"}
             </button>
