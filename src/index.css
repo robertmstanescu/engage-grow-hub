@@ -1879,3 +1879,12 @@
   .admin-savebar-actions { display: flex; align-items: center; gap: 8px; flex: none; }
   .admin-savebar-space { height: 72px; }
 }
+
+/* Entrance motion without a library: opacity + a small rise, finishing in
+   exactly the resting state. Custom properties set distance, duration,
+   delay and final opacity per element. Off for reduced-motion. */
+@layer components {
+  @keyframes mc-rise { from { opacity: 0; transform: translateY(var(--rise-y, 12px)); } to { opacity: var(--rise-to, 1); transform: none; } }
+  .mc-rise { animation: mc-rise var(--rise-dur, .6s) cubic-bezier(.22, 1, .36, 1) both; animation-delay: var(--rise-delay, 0s); opacity: var(--rise-to, 1); }
+  @media (prefers-reduced-motion: reduce) { .mc-rise { animation: none; transform: none; } }
+}

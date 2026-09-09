@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
@@ -22,7 +21,6 @@ const HERO_ROW_PADDING = "clamp(72px, 8vw, 128px)";
  */
 const HERO_STANDARD_HEIGHT = "clamp(600px, 86vh, 800px)";
 
-const ease = [0.16, 1, 0.3, 1] as const;
 
 interface HeroContent {
   label: string;
@@ -528,16 +526,13 @@ export const HeroView = ({
 
           {leading}
           {c.label && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.2, ease }}
-              className="font-body tracking-[0.32em] uppercase flex-shrink-0"
-              style={{ color: c.color_label || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
+            <p
+              className="mc-rise font-body tracking-[0.32em] uppercase flex-shrink-0"
+              style={{ "--rise-dur": "1s", "--rise-delay": "0.2s", color: c.color_label || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" } as React.CSSProperties}>
               <Field fieldPath="label" as="span">
                 {c.label}
               </Field>
-            </motion.p>
+            </p>
           )}
 
           <h1
@@ -548,36 +543,27 @@ export const HeroView = ({
               fontSize: "calc(var(--fs-hero-title) * var(--hero-fit-scale, 1))",
             }}>
             {titleLines.map((line, i) => (
-              <motion.span
+              <span
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.3 + i * 0.12, ease }}
-                className="block">
+                className="mc-rise block" style={{ "--rise-y": "30px", "--rise-dur": "0.7s", "--rise-delay": `${0.3 + i * 0.12}s` } as React.CSSProperties}>
                 <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
-              </motion.span>
+              </span>
             ))}
           </h1>
 
           {c.tagline && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
-              transition={{ duration: 1, delay: 0.8, ease }}
-              className="font-body tracking-[0.28em] uppercase flex-shrink-0"
-              style={{ color: c.tagline_color || c.color_tagline || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" }}>
+            <p
+              className="mc-rise font-body tracking-[0.28em] uppercase flex-shrink-0"
+              style={{ "--rise-to": 0.4, "--rise-dur": "1s", "--rise-delay": "0.8s", color: c.tagline_color || c.color_tagline || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" } as React.CSSProperties}>
               <Field fieldPath="tagline" as="span">
                 {c.tagline}
               </Field>
-            </motion.p>
+            </p>
           )}
 
           {c.subtitle && (
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1, ease }}
-              className="flex-shrink-0">
+            <div
+              className="mc-rise flex-shrink-0" style={{ "--rise-y": "15px", "--rise-dur": "0.8s", "--rise-delay": "1s" } as React.CSSProperties}>
               <Field
                 fieldPath="subtitle"
                 as="p"
@@ -591,18 +577,15 @@ export const HeroView = ({
                 }}>
                 {c.subtitle}
               </Field>
-            </motion.div>
+            </div>
           )}
 
           {/* The editor stores an empty body as "<p></p>", which is truthy;
               rendering it added a blank block plus the column gap under
               the title and pushed the hero off centre (About page). */}
           {hasText(c.body) && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1.1, ease }}
-              className="flex-shrink-0">
+            <div
+              className="mc-rise flex-shrink-0" style={{ "--rise-y": "20px", "--rise-dur": "0.8s", "--rise-delay": "1.1s" } as React.CSSProperties}>
               <Field
                 fieldPath="body"
                 html
@@ -611,17 +594,14 @@ export const HeroView = ({
                 style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "var(--fs-hero-body)" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
               />
-            </motion.div>
+            </div>
           )}
 
           {trailing && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1.2, ease }}
-              className="flex-shrink-0">
+            <div
+              className="mc-rise flex-shrink-0" style={{ "--rise-y": "20px", "--rise-dur": "0.8s", "--rise-delay": "1.2s" } as React.CSSProperties}>
               {trailing}
-            </motion.div>
+            </div>
           )}
         </div>
 
@@ -633,12 +613,8 @@ export const HeroView = ({
           // settles in the gap between the title lines starting (0.3s+)
           // and the tagline fading in (0.8s), same ease curve as every
           // other entrance in this component.
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.65, ease }}
-            className="relative hidden lg:block w-full lg:w-[340px] lg:flex-shrink-0"
-          >
+          <div
+            className="mc-rise relative hidden lg:block w-full lg:w-[340px] lg:flex-shrink-0" style={{ "--rise-y": "20px", "--rise-dur": "0.8s", "--rise-delay": "0.65s" } as React.CSSProperties}>
             <div
               className="relative w-full overflow-hidden"
               style={{
@@ -659,7 +635,7 @@ export const HeroView = ({
                 decoding="async"
               />
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
     </section>

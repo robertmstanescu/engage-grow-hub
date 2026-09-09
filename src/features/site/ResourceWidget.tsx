@@ -21,14 +21,12 @@
  */
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { fetchAssetById, getAssetPublicUrl, type MediaAsset } from "@/services/mediaLibrary";
 import { submitLeadAndGetDownload } from "@/services/leads";
 import { trackConversion } from "@/services/conversions";
 
 const CREAM = "hsl(var(--foreground))";
-const ease = [0.16, 1, 0.3, 1] as const;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface Props {
@@ -153,17 +151,13 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
   const coverAlt = cover?.alt_text || heading;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, ease }}
-      className="overflow-hidden rounded-2xl"
-      style={{
+    <div
+      className="mc-rise overflow-hidden rounded-2xl"
+      style={{ "--rise-y": "16px", "--rise-dur": "0.6s",
         backgroundColor: "hsl(var(--card))",
         border: "1px solid hsl(var(--border))",
         boxShadow: "var(--shadow-card)",
-      }}
+       } as React.CSSProperties}
     >
       <div className="grid grid-cols-1 md:grid-cols-2">
         {/* ── Image column ── */}
@@ -257,7 +251,7 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
           </form>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
