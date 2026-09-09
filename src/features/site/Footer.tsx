@@ -1,4 +1,5 @@
 import { Instagram, Linkedin, Twitter, Facebook, Youtube } from "lucide-react";
+import { transformImageUrl } from "@/services/mediaOptimization";
 import { useLocation } from "react-router-dom";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import SectionShape from "@/features/site/rows/SectionShape";
@@ -94,7 +95,7 @@ const Footer = ({ breadcrumbTrail }: { breadcrumbTrail?: BreadcrumbEntry[] }) =>
               <img
                 alt="The Magic Coffin logo"
                 className={`w-8 h-8 object-contain mb-4${needsWhiten ? " logo-whiten" : ""}`}
-                src={emblemUrl}
+                src={transformImageUrl(emblemUrl, { width: 96, quality: 85 })}
                 width={32}
                 height={32}
                 loading="lazy"

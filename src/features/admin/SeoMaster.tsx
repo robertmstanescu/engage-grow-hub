@@ -75,16 +75,9 @@ import { runDbAction } from "@/services/db-helpers";
 import { generateAiSummary, htmlToPlainText, rowsToPlainText } from "@/services/aiSummary";
 import { extractHeadings } from "./seoHeadings";
 import SearchPerformance from "./SearchPerformance";
-import { findWidgetsByType, mergeWidgetDataByType } from "@/lib/rowWidgets";
-import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
+import { mergeWidgetDataByType } from "@/lib/rowWidgets";
 import { supabase } from "@/integrations/supabase/client";
-
-/** The hero's plain answer in a row set, or "". */
-const heroAnswerOf = (rows: unknown): string => {
-  if (!Array.isArray(rows)) return "";
-  const hero = findWidgetsByType(normalizeRowsToV3(rows) as never, "hero")[0];
-  return ((hero?.data as { answer?: string } | undefined)?.answer || "").trim();
-};
+import { heroAnswerOf, seoChecks } from "./seoHeadings";
 import { toast } from "sonner";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 
@@ -101,6 +94,7 @@ interface HeadingRow {
   pageTitle: string;
   slug: string;
   metaTitle: string;
+  metaDescription: string;
   /** Detected H1 strings (one per `title_lines` entry). */
   h1s: string[];
   /** Detected H2 string (`subtitle`). */
@@ -316,7 +310,7 @@ const HeadingsAudit = () => {
       const liveRows = home.content?.rows || [];
       const { h1s, h2s } = extractHeadings(liveRows);
       homeRows.push({
-        source: "home", id: "home", pageTitle: "Home", slug: "/", metaTitle: "",
+        source: "home", id: "home", pageTitle: "Home", slug: "/", metaTitle: "", metaDescription: "",
         h1s, h2s, answer: heroAnswerOf(liveRows), answerEditable: true,
         homeContent: (home.content || {}) as Record<string, unknown>, homeDraft: (home.draft_content as Record<string, unknown> | null) || null,
         aiSummary: "", bodyText: rowsToPlainText(liveRows as never),
@@ -333,6 +327,7 @@ const HeadingsAudit = () => {
         pageTitle: p.title || "(untitled)",
         slug: `/p/${p.slug}`,
         metaTitle: p.meta_title || "",
+        metaDescription: p.meta_description || "",
         h1s,
         h2s,
         answer: heroAnswerOf(sourceRows),
@@ -350,6 +345,7 @@ const HeadingsAudit = () => {
       pageTitle: b.title || "(untitled)",
       slug: `/blog/${b.slug}`,
       metaTitle: b.meta_title || "",
+      metaDescription: b.meta_description || "",
       // Blog posts don't use the row JSON system — their "H1" is the post title
       // and their "H2" surrogate is the excerpt. Keeping the audit useful means
       // surfacing those instead of leaving the cells empty.
@@ -494,6 +490,7 @@ const HeadingsAudit = () => {
             <thead className="bg-muted/30">
               <tr className="text-left font-body text-[10px] uppercase tracking-wider text-muted-foreground">
                 <th className="px-3 py-2 font-medium">Page</th>
+                <th className="px-3 py-2 font-medium" title="Title 50–60 characters · description 120–155 · one headline · plain answer 25–45 words · alt text on every picture">Checks</th>
                 <th className="px-3 py-2 font-medium">Search title</th>
                 <th
                   className="px-3 py-2 font-medium"
@@ -580,6 +577,16 @@ const HeadingRowItem = ({
             {row.source === "cms_page" ? "Page" : row.source === "home" ? "Home" : "Blog post"}
           </span>
         </div>
+      </td>
+      <td className="px-3 py-3 min-w-[170px]">
+        <ul className="space-y-1">
+          {seoChecks({ title: row.pageTitle, metaTitle: row.metaTitle, metaDescription: row.metaDescription, h1s: row.h1s, answer: row.answer, rows: row.source === "home" ? (row.homeContent?.rows as unknown[]) : row.pageRows, isPost: row.source === "blog_post" }).map((c) => (
+            <li key={c.key} className="flex items-start gap-1.5 font-body text-[11px]" title={c.detail}>
+              <span className={`admin-st ${c.ok ? "live" : "changes"}`} aria-label={c.ok ? "Passes" : "Needs a fix"} />
+              <span style={{ color: c.ok ? "hsl(var(--muted-foreground))" : "hsl(var(--foreground))" }}>{c.label}</span>
+            </li>
+          ))}
+        </ul>
       </td>
       <td className="px-3 py-3">
         <input
