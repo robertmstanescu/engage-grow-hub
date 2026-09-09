@@ -37,6 +37,7 @@ import { useBuilder } from "./BuilderContext";
 import { useRowSnippets, type RowSnippet } from "@/hooks/useRowSnippets";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { BLOCK_FAMILIES, defaultVariant, type BlockFamily } from "./blockFamilies";
+import { useArticle } from "@/features/widgets/article/articleContext";
 import { SECTION_LIBRARY, type LibrarySection } from "./sectionLibrary";
 import { useState } from "react";
 import type { PageRowV3 } from "@/types/rows";
@@ -402,6 +403,9 @@ const TrayHeading = ({ children }: { children: React.ReactNode }) => (
 
 const ElementsTray = () => {
   const { snippets } = useRowSnippets();
+  /* Some blocks only make sense inside a blog post (the Article block). */
+  const inPost = !!useArticle();
+  const families = BLOCK_FAMILIES.map((f) => ({ ...f, variants: f.variants.filter((v) => !v.postsOnly || inPost) }));
   /* Every registered type must belong to a family; anything that does
      not is still reachable here so it is never silently hidden. */
   const orphans = listWidgets().filter((w) => !BLOCK_FAMILIES.some((f) => f.variants.some((v) => v.type === w.type)));
@@ -420,7 +424,7 @@ const ElementsTray = () => {
       <div>
         <TrayHeading>Blocks</TrayHeading>
         <div className="grid grid-cols-2 gap-2">
-          {BLOCK_FAMILIES.map((family) => (
+          {families.map((family) => (
             <FamilyCard key={family.key} family={family} />
           ))}
           {orphans.map((def) => (

@@ -60,6 +60,7 @@ import CtaBandRow from "@/features/site/rows/CtaBandRow";
 // Modular widgets — each self-registers on import. Keep this list
 // alphabetical so it's obvious whether a given widget is wired up.
 import "@/features/widgets/boxed";
+import "@/features/widgets/article";
 import "@/features/widgets/contact";
 import "@/features/widgets/cta-button";
 import "@/features/widgets/subscribe";

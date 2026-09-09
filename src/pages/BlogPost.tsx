@@ -19,6 +19,8 @@ import { readLivePreviewState, subscribeLivePreview } from "@/services/livePrevi
 // pipeline). When it's empty, we fall back to the legacy HTML body so
 // existing posts keep working unchanged.
 import { RowsRenderer } from "@/features/site/rows/PageRows";
+import { ArticleContext } from "@/features/widgets/article/articleContext";
+import { ensureArticleRow } from "@/features/widgets/article/postRows";
 import type { PageRow } from "@/types/rows";
 
 interface BlogArticle {
@@ -220,29 +222,18 @@ const BlogPost = () => {
         </div>
 
         <div className="section-light pt-6 pb-16 px-8">
-          {(() => {
-            // Prefer widget rows when the post has been (re-)composed in
-            // the new builder. Fall back to legacy HTML for posts that
-            // haven't been migrated.
-            const rows = (isPreview && article.draft_page_rows) || article.page_rows || [];
-            if (rows.length > 0) {
-              // data-article-rows: text rows become a centred reading
-              // column (see index.css) instead of a left-hung landing
-              // page column, so a post composed in the builder reads
-              // like the legacy article did.
-              return (
-                <div data-article-rows>
-                  <RowsRenderer rows={rows as PageRow[]} promoteHeading={false} />
-                </div>
-              );
-            }
-            return (
-              <div
-                className="max-w-[700px] mx-auto prose prose-sm md:prose-base prose-headings:font-display prose-headings:text-[hsl(260_20%_10%)] prose-p:text-[hsl(260_20%_10%_/_0.75)] prose-p:leading-[1.8] prose-p:my-4 prose-a:text-[hsl(280_55%_24%)] prose-img:rounded-lg"
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
+          {/* The article is the post. Rows are extras around it: a post
+              with no rows renders exactly one article block, and any rows
+              the builder saved render with the article block among them.
+              The words always come from `content`, never from a copy. */}
+          <ArticleContext.Provider value={{ html: sanitizeHtml(article.content) }}>
+            <div data-article-rows>
+              <RowsRenderer
+                rows={ensureArticleRow(((isPreview && article.draft_page_rows) || article.page_rows || []) as PageRow[])}
+                promoteHeading={false}
               />
-            );
-          })()}
+            </div>
+          </ArticleContext.Provider>
           {article.lead_magnet_asset_id && (
             <div className="max-w-[900px] mx-auto mt-12">
               <ResourceWidget

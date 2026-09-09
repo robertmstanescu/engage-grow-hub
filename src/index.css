@@ -1777,6 +1777,7 @@
   /* text / hero / intro: two lines of copy */
   .tray-glyph[data-glyph="text"]::before, .tray-glyph[data-glyph="hero"]::before { content: ""; position: absolute; left: 12%; right: 30%; top: 32%; height: 3px; background: var(--g); box-shadow: 0 8px 0 var(--g); border-radius: 1px; }
   .tray-glyph[data-glyph="hero"]::before { left: 20%; right: 20%; top: 28%; height: 5px; box-shadow: 0 10px 0 -1px var(--g); }
+  .tray-glyph[data-glyph="article"]::before { content: ""; position: absolute; left: 12%; right: 12%; top: 22%; height: 2px; background: var(--g); box-shadow: 0 6px 0 var(--g), 0 12px 0 var(--g), 0 18px 0 -1px var(--g); border-radius: 1px; }
   /* cards family + boxed / grid / service / testimonial / logo_cloud: three tiles */
   .tray-glyph[data-glyph="cards"]::before, .tray-glyph[data-glyph="boxed"]::before, .tray-glyph[data-glyph="grid"]::before, .tray-glyph[data-glyph="service"]::before, .tray-glyph[data-glyph="testimonial"]::before, .tray-glyph[data-glyph="logo_cloud"]::before { content: ""; position: absolute; inset: 22% 12%; border-radius: 2px; background: linear-gradient(90deg, var(--g) 0 30%, transparent 30% 35%, var(--g) 35% 65%, transparent 65% 70%, var(--g) 70%); }
   .tray-glyph[data-glyph="logo_cloud"]::before { inset: 35% 12%; }
