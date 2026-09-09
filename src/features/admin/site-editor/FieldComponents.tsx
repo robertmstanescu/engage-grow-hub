@@ -135,6 +135,27 @@ export const SelectField = ({ label, value, onChange, options }: { label: string
   </div>
 );
 
+/** A short paragraph field (a few sentences), saved on blur like Field. */
+export const TextAreaField = ({ label, value, onChange, hint, placeholder, rows = 3, maxLength }: { label: string; value: string; onChange: (v: string) => void; hint?: string; placeholder?: string; rows?: number; maxLength?: number }) => {
+  const { local, setLocal, commit } = useDeferredValue(value, onChange);
+  return (
+    <div data-inspector-field={slugifyLabel(label)}>
+      <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">{label}</label>
+      <textarea
+        value={local}
+        onChange={(e) => setLocal(e.target.value)}
+        onBlur={commit}
+        rows={rows}
+        maxLength={maxLength}
+        placeholder={placeholder}
+        className="w-full px-3 py-2 rounded-md font-body text-sm border bg-background text-foreground resize-y"
+        style={{ borderColor: "hsl(var(--input))" }}
+      />
+      {hint && <p className="font-body text-[10px] text-muted-foreground mt-1">{hint}</p>}
+    </div>
+  );
+};
+
 export const ArrayField = ({ label, items, onChange, placeholder }: { label: string; items: string[]; onChange: (items: string[]) => void; placeholder?: string }) => {
   const [localItems, setLocalItems] = useState(items);
   const committedRef = useRef(items);
