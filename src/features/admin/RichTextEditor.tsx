@@ -300,8 +300,8 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
 
   return (
     <div
-      className="rounded-md border"
-      style={{ borderColor: "hsl(var(--border))", backgroundColor: bgColor || "transparent" }}
+      className="rounded-md border overflow-hidden"
+      style={{ borderColor: "hsl(var(--border))" }}
     >
       {/* Eight things people reach for, then everything else under More.
           Undo/redo live on the keyboard and in the builder toolbar. */}
@@ -393,7 +393,11 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           style={{ color: "hsl(var(--foreground))", backgroundColor: "hsl(var(--background))", border: "none" }}
         />
       ) : (
-        <EditorContent editor={editor} />
+        /* The page's own surface, whatever the admin theme: coloured words
+           and headings look here exactly as they will publish. */
+        <div className="admin-canvas rte-surface" style={{ backgroundColor: bgColor || "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
+          <EditorContent editor={editor} />
+        </div>
       )}
 
       <input

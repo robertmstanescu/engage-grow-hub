@@ -140,7 +140,7 @@ const ManageTeam = () => {
             loadingLabel="Sending…"
             icon={<Send size={12} />}
             className="font-display text-[10px] uppercase tracking-[0.08em] font-bold px-4 py-2 rounded-md hover:opacity-85 transition-opacity"
-            style={{ backgroundColor: "hsl(260 30% 20%)", color: "white" }}
+            style={{ backgroundColor: "hsl(var(--foreground))", color: "hsl(var(--background))" }}
           >
             Send invite
           </SpinnerButton>
@@ -169,7 +169,7 @@ const ManageTeam = () => {
                 <button
                   onClick={() => removeAdmin(a.user_id)}
                   className="p-2 rounded hover:opacity-70 transition-opacity"
-                  style={{ color: "hsl(0 70% 50%)" }}
+                  style={{ color: "hsl(var(--admin-bad))" }}
                   title="Remove admin"
                 >
                   <Trash2 size={13} />
@@ -200,7 +200,7 @@ const ManageTeam = () => {
                 <button
                   onClick={() => revokeInvite(inv.id)}
                   className="p-2 rounded hover:opacity-70 transition-opacity"
-                  style={{ color: "hsl(0 70% 50%)" }}
+                  style={{ color: "hsl(var(--admin-bad))" }}
                   title="Revoke invite"
                 >
                   <Trash2 size={13} />

@@ -328,7 +328,7 @@ const PageNavigator = ({
               {sections.length === 0 ? (
                 <p
                   className="px-3 py-2 font-body text-xs italic"
-                  style={{ color: "hsl(215 19% 45%)" }}
+                  style={{ color: "hsl(var(--muted-foreground))" }}
                 >
                   No sections yet — drag an element onto the canvas.
                 </p>
