@@ -229,7 +229,7 @@ const BlogPost = () => {
           <ArticleContext.Provider value={{ html: sanitizeHtml(article.content) }}>
             <div data-article-rows>
               <RowsRenderer
-                rows={ensureArticleRow(((isPreview && article.draft_page_rows) || article.page_rows || []) as PageRow[])}
+                rows={ensureArticleRow(((isPreview && article.draft_page_rows) || article.page_rows || []) as PageRow[], 0, article.content)}
                 promoteHeading={false}
               />
             </div>
