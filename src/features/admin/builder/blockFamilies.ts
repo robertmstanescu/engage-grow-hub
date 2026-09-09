@@ -15,7 +15,7 @@ import {
   AlignLeft, LayoutGrid, Image, Hash, ListOrdered, HelpCircle, Megaphone, Mail,
 } from "lucide-react";
 
-export interface BlockVariant { type: string; label: string; hint?: string }
+export interface BlockVariant { type: string; label: string; hint?: string; /** Only offered inside a blog post. */ postsOnly?: boolean }
 export interface BlockFamily {
   key: string;
   label: string;
@@ -31,6 +31,7 @@ export const BLOCK_FAMILIES: BlockFamily[] = [
     variants: [
       { type: "text", label: "Text", hint: "Heading, subtitle, copy" },
       { type: "hero", label: "Hero", hint: "Big page opener with the page background" },
+      { type: "article", label: "Article", hint: "The post's own words, edited under Posts", postsOnly: true },
     ],
   },
   {

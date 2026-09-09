@@ -57,6 +57,11 @@ Rules that are easy to get wrong:
 - Square boxes: the admin sets `--radius` to 6px, so `rounded-lg`/`-md`
   are the shell's corners. `rounded-full` and `rounded-xl+` are for
   swatches, dots, toggles and avatars only (`squareCorners.test.ts`).
+- A blog post IS its article. The `article` row type
+  (`src/features/widgets/article/`) renders the post's `content` from
+  `ArticleContext`; `ensureArticleRow` keeps exactly one in a post's rows
+  (public page and builder). Never copy post HTML into a text row; rows
+  are extras placed around the article.
 - Admin colours come from tokens only (`hsl(var(--foreground))`,
   `--muted-foreground`, `--admin-accent`, `--admin-ok/warn/bad`);
   `adminTokens.test.ts` fails on any raw `hsl(…)` literal in

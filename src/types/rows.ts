@@ -249,6 +249,7 @@ export interface SectionShapeConfig {
 export const ROW_TYPES = [
   "hero",
   "text",
+  "article",
   "service",
   "boxed",
   "contact",

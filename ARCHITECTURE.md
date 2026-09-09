@@ -169,3 +169,15 @@ every PR, then runs the visual suite.
   `.admin-canvas` restores the site's 1.5rem. `squareCorners.test.ts`
   blocks new pills outside swatches, dots, toggles and avatars.
 
+## Blog posts: article first
+
+`blog_posts.content` is the article and the only copy of its words. The
+`article` row type (`src/features/widgets/article/`) renders that HTML
+as a centred reading column, reading it from `ArticleContext`, which
+`BlogPost.tsx` (public) and `BlogPostBuilder.tsx` (canvas) provide.
+`postRows.ts` keeps exactly one article row in a post: a post with no
+rows renders `[article]`; the builder seeds `[article]` and puts the
+block back if a change removes it. The tray offers the Article block
+only inside a post (`BlockVariant.postsOnly`). Rows are extras placed
+above or below the article.
+

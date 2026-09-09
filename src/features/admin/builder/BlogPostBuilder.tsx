@@ -14,7 +14,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { PageRow } from "@/types/rows";
-import { generateRowId, DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
+import { ArticleContext } from "@/features/widgets/article/articleContext";
+import { articleRowIndex, ensureArticleRow, hasArticleRow, makeArticleRow } from "@/features/widgets/article/postRows";
 import {
   findMissingAltViolations,
   formatAltMissingMessage,
@@ -48,25 +49,11 @@ interface Props {
 }
 
 /**
- * Build a starter row set from the legacy `content` HTML so editors
- * never see an empty canvas when migrating an existing post.
+ * A post's rows start as one Article block. The block renders the
+ * post's `content` (edited under Posts) and is never copied; other
+ * blocks go above or below it.
  */
-const seedRowsFromHtml = (html: string): PageRow[] => {
-  const safe = (html || "").trim();
-  if (!safe) return [];
-  return [
-    {
-      id: generateRowId(),
-      type: "text",
-      strip_title: "Body",
-      // No card: an article body reads on the page itself, like the
-      // legacy renderer did. Editors can still pick a Look later.
-      bg_color: "",
-      content: { body: safe },
-      layout: { ...DEFAULT_ROW_LAYOUT },
-    } as PageRow,
-  ];
-};
+const seedRows = (): PageRow[] => [makeArticleRow()];
 
 const BlogPostBuilder = ({ postId, onExit }: Props) => {
   const [record, setRecord] = useState<BlogPostRecord | null>(null);
@@ -96,7 +83,7 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
     const rec = data as unknown as BlogPostRecord;
     setRecord(rec);
     const existing = (rec.draft_page_rows || rec.page_rows || []) as PageRow[];
-    setDraftRows(existing.length > 0 ? existing : seedRowsFromHtml(rec.content));
+    setDraftRows(existing.length > 0 ? existing : seedRows());
     setSeoTitle(rec.meta_title || "");
     setSeoDescription(rec.meta_description || "");
     setPageTitle(rec.title || "");
@@ -110,10 +97,17 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
     load();
   }, [load]);
 
+  /* The article block stays: if a change removes it, put it back where it was. */
+  const handleRowsChange = useCallback((rows: PageRow[]) => {
+    if (hasArticleRow(rows)) { setDraftRows(rows); return; }
+    toast.message("The article block stays. Add blocks above or below it.");
+    setDraftRows(ensureArticleRow(rows, Math.max(0, articleRowIndex(draftRows))));
+  }, [draftRows]);
+
   const initialSnapshot = useMemo(() => {
     if (!record) return "";
     const baseRows = (record.draft_page_rows || record.page_rows || []) as PageRow[];
-    const effective = baseRows.length > 0 ? baseRows : seedRowsFromHtml(record.content);
+    const effective = baseRows.length > 0 ? baseRows : seedRows();
     return JSON.stringify({
       rows: effective,
       meta_title: record.meta_title || "",
@@ -317,49 +311,51 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
   }
 
   return (
-    <PageBuilderShell
-      title={pageTitle || pageSlug || "Untitled post"}
-      contentState={contentState(record.status, record.publish_at)}
-      onExit={onExit ? handleExit : undefined}
-      pageTitle={pageTitle}
-      onPageTitleChange={setPageTitle}
-      pageSlug={pageSlug}
-      onPageSlugChange={setPageSlug}
-      slugEditable={true}
-      slugPrefix="/blog/"
-      pageRows={draftRows}
-      onRowsChange={setDraftRows}
-      seoMetaTitle={seoTitle}
-      seoMetaDescription={seoDescription}
-      onSeoTitleChange={setSeoTitle}
-      onSeoDescriptionChange={setSeoDescription}
-      onSaveDraft={onSaveDraft}
-      onPublish={onPublish}
-      onPreview={onPreview}
-      saving={saving}
-      publishing={publishing}
-      hasChanges={hasChanges}
-      publishStatus={record.status}
-      onUnpublish={onUnpublish}
-      unpublishing={unpublishing}
-      schedulePanel={
-        <AdminStatusControl
-          state={visibility}
-          onStateChange={setVisibility}
-          publishAt={publishAt}
-          expiryAt={expiryAt}
-          onPublishAtChange={setPublishAt}
-          onExpiryAtChange={setExpiryAt}
-        />
-      }
-      inspectorFooter={
-        <RevisionHistoryPanel
-          entityType="blog_post"
-          entityRef={record.id}
-          onRestored={load}
-        />
-      }
-    />
+    <ArticleContext.Provider value={{ html: record.content || "" }}>
+      <PageBuilderShell
+        title={pageTitle || pageSlug || "Untitled post"}
+        contentState={contentState(record.status, record.publish_at)}
+        onExit={onExit ? handleExit : undefined}
+        pageTitle={pageTitle}
+        onPageTitleChange={setPageTitle}
+        pageSlug={pageSlug}
+        onPageSlugChange={setPageSlug}
+        slugEditable={true}
+        slugPrefix="/blog/"
+        pageRows={draftRows}
+        onRowsChange={handleRowsChange}
+        seoMetaTitle={seoTitle}
+        seoMetaDescription={seoDescription}
+        onSeoTitleChange={setSeoTitle}
+        onSeoDescriptionChange={setSeoDescription}
+        onSaveDraft={onSaveDraft}
+        onPublish={onPublish}
+        onPreview={onPreview}
+        saving={saving}
+        publishing={publishing}
+        hasChanges={hasChanges}
+        publishStatus={record.status}
+        onUnpublish={onUnpublish}
+        unpublishing={unpublishing}
+        schedulePanel={
+          <AdminStatusControl
+            state={visibility}
+            onStateChange={setVisibility}
+            publishAt={publishAt}
+            expiryAt={expiryAt}
+            onPublishAtChange={setPublishAt}
+            onExpiryAtChange={setExpiryAt}
+          />
+        }
+        inspectorFooter={
+          <RevisionHistoryPanel
+            entityType="blog_post"
+            entityRef={record.id}
+            onRestored={load}
+          />
+        }
+      />
+    </ArticleContext.Provider>
   );
 };
 

@@ -427,8 +427,8 @@ const BlogEditor = () => {
   const ModeTabs = editing && !isNew ? (
     <div className="inline-flex rounded-md border p-0.5" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--muted) / 0.3)" }}>
       {([
-        { id: "content", label: "Content & Metadata" },
-        { id: "structure", label: "Page Structure" },
+        { id: "content", label: "Article" },
+        { id: "structure", label: "Blocks around it" },
       ] as const).map((t) => (
         <button
           key={t.id}
