@@ -256,6 +256,12 @@ async function main() {
   const identity = brand.identity || {};
   const homeSeo = section("main_page_seo");
   const blogSeo = section("blog_page");
+  /* The author block is set once on the admin's Profile screen
+     (site content "author_profile"); a post's own author_name is the
+     fallback for anything written before that move. Mirrors
+     `resolveAuthor` in src/features/site/authorProfile.ts. */
+  const authorProfile = section("author_profile");
+  const authorNameFor = (post) => (authorProfile.name || "").trim() || (post.author_name || "").trim();
   const serviceAreas = (section("global_seo_tags").organization?.service_areas || [])
     .map((s) => String(s).trim())
     .filter(Boolean);
@@ -480,7 +486,7 @@ async function main() {
             url: abs(path),
             datePublished: post.published_at || undefined,
             dateModified: post.updated_at || post.published_at || undefined,
-            ...(post.author_name ? { author: { "@type": "Person", name: post.author_name } } : {}),
+            ...(authorNameFor(post) ? { author: { "@type": "Person", name: authorNameFor(post) } } : {}),
             ...(brandName ? { publisher: { "@type": "Organization", name: brandName } } : {}),
           },
           breadcrumbLd([

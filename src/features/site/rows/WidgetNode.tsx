@@ -94,7 +94,10 @@ const WidgetNode = ({
      (Quote Band with no quote, How We Work with no steps, …). Correct
      on the live site — fatal in the editor, where an invisible widget
      can't be clicked, so its settings can never be opened. In the
-     builder we swap the null for a labelled, selectable placeholder. */
+     builder we swap the null for a labelled, selectable placeholder.
+     A block the registry has never heard of lands here too, and reads
+     very differently: the page is fine, this build of the site is
+     behind it. Say so, rather than calling it empty. */
   if (rendered === null) {
     if (!builderEnabled) return null;
     const def = getWidget(renderRow.type as string);
@@ -110,7 +113,9 @@ const WidgetNode = ({
             {def?.label || renderRow.type}
           </p>
           <p className="mt-1 font-body text-xs text-blue-700/70">
-            Empty — click to add content in the settings panel
+            {def
+              ? "Empty — click to add content in the settings panel"
+              : `This build of the site has no “${renderRow.type}” block. Reload the page; if it stays, the site needs deploying.`}
           </p>
         </div>
       </SelectableWrapper>

@@ -53,9 +53,6 @@ interface BlogPost {
   created_at: string;
   cover_image: string | null;
   cover_image_alt: string | null;
-  author_name: string | null;
-  author_image: string | null;
-  author_image_alt: string | null;
   meta_title: string | null;
   meta_description: string | null;
   og_image: string | null;
@@ -80,7 +77,7 @@ const BlogEditor = () => {
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [visibility, setVisibility] = useState<ContentState>("draft");
   const [blogCategories, setBlogCategories] = useState<string[]>(["Internal Communications", "Employee Experience", "General"]);
-  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", publish_at: null as string | null, expiry_at: null as string | null, cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
+  const [form, setForm] = useState({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", publish_at: null as string | null, expiry_at: null as string | null, cover_image: "", cover_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [] as string[], newTag: "", lead_magnet_asset_id: null as string | null, lead_magnet_cover_id: null as string | null, ai_summary: "" });
 
   const [generatingAiSummary, setGeneratingAiSummary] = useState(false);
 
@@ -117,7 +114,6 @@ const BlogEditor = () => {
       for (const { key, alt } of payload.image_alts || []) {
         if (key === "cover") next.cover_image_alt = alt;
         if (key === "og") next.og_image_alt = alt;
-        if (key === "author") next.author_image_alt = alt;
       }
       return next;
     });
@@ -149,7 +145,7 @@ const BlogEditor = () => {
     setIsNew(true);
     setEditing(null);
     setVisibility("draft");
-    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", publish_at: null, expiry_at: null, cover_image: "", cover_image_alt: "", author_name: "", author_image: "", author_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "", lead_magnet_asset_id: null, lead_magnet_cover_id: null, ai_summary: "" });
+    setForm({ title: "", excerpt: "", content: "", category: "Internal Communications", status: "draft", publish_at: null, expiry_at: null, cover_image: "", cover_image_alt: "", meta_title: "", meta_description: "", og_image: "", og_image_alt: "", tags: [], newTag: "", lead_magnet_asset_id: null, lead_magnet_cover_id: null, ai_summary: "" });
   };
 
   const handleEdit = (post: BlogPost) => {
@@ -167,9 +163,6 @@ const BlogEditor = () => {
       expiry_at: post.expiry_at,
       cover_image: post.cover_image || "",
       cover_image_alt: post.cover_image_alt || "",
-      author_name: post.author_name || "",
-      author_image: post.author_image || "",
-      author_image_alt: post.author_image_alt || "",
       meta_title: post.meta_title || "",
       meta_description: post.meta_description || "",
       og_image: post.og_image || post.cover_image || "",
@@ -211,9 +204,6 @@ const BlogEditor = () => {
       expiry_at: visibility === "scheduled" ? form.expiry_at : null,
       cover_image: form.cover_image || null,
       cover_image_alt: form.cover_image_alt?.trim() || null,
-      author_name: form.author_name || null,
-      author_image: form.author_image || null,
-      author_image_alt: form.author_image_alt?.trim() || null,
       meta_title: form.meta_title || null,
       meta_description: form.meta_description || null,
       og_image: form.og_image || null,
@@ -314,8 +304,6 @@ const BlogEditor = () => {
       content: form.content || "<p>No content yet.</p>",
       category: form.category,
       cover_image: form.cover_image || null,
-      author_name: form.author_name || null,
-      author_image: form.author_image || null,
       meta_title: form.meta_title || null,
       meta_description: form.meta_description || null,
       og_image: form.og_image || null,
@@ -579,25 +567,6 @@ const BlogEditor = () => {
           />
         </AdminSection>
 
-        <AdminSection title="Author" defaultCollapsed>
-          <ImagePickerField
-            label="Author photo"
-            value={form.author_image}
-            onChange={(url) => setForm((f) => ({ ...f, author_image: url }))}
-            altValue={form.author_image_alt}
-            onAltChange={(v) => setForm((f) => ({ ...f, author_image_alt: v }))}
-          />
-          <AdminField label="Author name">
-            <input
-              type="text"
-              placeholder="Who wrote this?"
-              value={form.author_name}
-              onChange={(e) => setForm({ ...form, author_name: e.target.value })}
-              className={adminInputClass}
-            />
-          </AdminField>
-        </AdminSection>
-
         <AdminSection title="Tags" description="Help readers and search engines group related blogs." defaultCollapsed>
           {form.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
@@ -666,7 +635,6 @@ const BlogEditor = () => {
             images={[
               ...(form.cover_image ? [{ key: "cover", url: form.cover_image, context: "blog cover image", current: form.cover_image_alt }] : []),
               ...(form.og_image ? [{ key: "og", url: form.og_image, context: "social share image", current: form.og_image_alt }] : []),
-              ...(form.author_image ? [{ key: "author", url: form.author_image, context: "author portrait", current: form.author_image_alt }] : []),
             ]}
             onApply={applySeoSuggestions}
           />
