@@ -30,6 +30,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { isDeviceExcluded, setDeviceExcluded } from "@/services/analyticsGuards";
 import {
   ArrowLeft, Activity, Bot, Sparkles, RefreshCw, ExternalLink, Users,
   Smartphone, Monitor, Tablet, Globe, ChevronRight,
@@ -100,6 +101,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
   // Filter state
   const [dateRangeKey, setDateRangeKey] = useState<DateRangeKey>("7d");
   const [trafficType, setTrafficType] = useState<TrafficTypeFilter>("all");
+  const [excluded, setExcluded] = useState<boolean>(() => isDeviceExcluded());
   const [categoryFilter, setCategoryFilter] = useState<"all" | "blog" | "page">("all");
   const [countryFilter, setCountryFilter] = useState<string>("all");
 
@@ -307,9 +309,15 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
               <ArrowLeft size={14} /> Back to Admin
             </Link>
           )}
-          <button onClick={refreshAll} disabled={loading} className="admin-btn">
-            <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 font-body text-xs cursor-pointer" style={{ color: "hsl(var(--muted-foreground))" }} title="Your own visits from this browser are not counted. Logged-in admins are never counted anyway; this covers the same browser when logged out.">
+              <input type="checkbox" checked={excluded} onChange={(e) => { setDeviceExcluded(e.target.checked); setExcluded(e.target.checked); }} />
+              Exclude this device
+            </label>
+            <button onClick={refreshAll} disabled={loading} className="admin-btn">
+              <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Refresh
+            </button>
+          </div>
         </div>
 
         <div>
@@ -371,7 +379,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         {/* ── Section A: Hero metrics ── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard icon={<Users size={16} />} label="Human Reach" value={humanReach.toString()}
-            hint="Unique visitors in window" accentHsl="var(--foreground)" />
+            hint="People who stayed at least a second" accentHsl="var(--foreground)" />
           <StatCard icon={<Bot size={16} />} label="AI Mindshare" value={aiMindshare.toString()}
             hint="Crawler hits in window" accentHsl="var(--admin-accent)" />
           <StatCard icon={<Sparkles size={16} />} label="Conversion Index" value={`${conversionIndex}%`}

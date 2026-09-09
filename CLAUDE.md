@@ -69,6 +69,15 @@ Rules that are easy to get wrong:
   (`RichTextEditor`, `TitleEditor`) render on `.admin-canvas` so the
   page's colours show in both themes. The save bar is `AdminStickyBar`
   (small, centred, fixed).
+- Analytics: the beacon (`hooks/useAnalyticsBeacon.ts`) fires only on
+  the production hosts (`services/analyticsGuards.ts`), never for a
+  device flagged "Exclude this device", and sends a `viewId` plus
+  browser signals; `services/engagement.ts` reports foreground seconds,
+  scroll depth and interaction on hide/pagehide/route change. In
+  `track-visitor` a view starts as "No engagement" (is_bot = true) and
+  becomes Human only when its engagement beacon arrives; previews are
+  dropped; a fleet (>5 fresh visitor ids from one address + browser
+  string in a day) is a bot. Do not count raw page views as humans.
 - Supabase changes (schema, RLS, edge functions) go through Lovable.
 - `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
   dependency changes so CI's `--frozen-lockfile` install passes.

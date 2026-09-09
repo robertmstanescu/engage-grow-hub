@@ -9,6 +9,12 @@ import {
 } from "@/services/analytics";
 import { captureAttribution, getAttributionForPayload } from "@/services/attribution";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
+import { collectSignals, isDeviceExcluded, isTrackableHost } from "@/services/analyticsGuards";
+import { sendBeaconJson, startEngagement, type EngagementTracker } from "@/services/engagement";
+
+const TRACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/track-visitor`;
+/** Hosts allowed to record traffic; VITE_ANALYTICS_HOSTS overrides for a staging domain. */
+const ALLOWED_HOSTS = (import.meta.env.VITE_ANALYTICS_HOSTS as string | undefined)?.split(",").map((h) => h.trim()).filter(Boolean);
 
 /**
  * useAnalyticsBeacon — fires one beacon per route change.
@@ -67,6 +73,8 @@ export function useAnalyticsBeacon(): void {
   const { isAdmin, loading: adminStatusLoading } = useAdminStatus();
   // Track the last logged path to deduplicate StrictMode double-effects.
   const lastLoggedRef = useRef<string | null>(null);
+  // The view being measured right now: its id and its engagement clock.
+  const viewRef = useRef<{ id: string; tracker: EngagementTracker } | null>(null);
   // Re-read on every mount; kept as state (not a plain read inside the
   // effect) so the CookieConsent panel's "tmc:consent-changed" event can
   // unlock capture immediately when someone accepts mid-session, without
@@ -99,8 +107,19 @@ export function useAnalyticsBeacon(): void {
     // ones.
     if (adminStatusLoading) return;
     if (isAdmin) return;
+    // Only the live site counts: previews, sandboxes and localhost never
+    // beacon. A device flagged from Insights never beacons either.
+    if (typeof window !== "undefined" && !isTrackableHost(window.location.hostname, ALLOWED_HOSTS)) return;
+    if (isDeviceExcluded()) return;
     if (lastLoggedRef.current === pathname) return;
     lastLoggedRef.current = pathname;
+
+    // Close the previous view's engagement before opening the next one.
+    flushView(viewRef.current);
+    const viewId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    viewRef.current = { id: viewId, tracker: startEngagement() };
 
     // Build the beacon body. The edge function handles country detection
     // and bot identification authoritatively; everything we send here is
@@ -117,12 +136,15 @@ export function useAnalyticsBeacon(): void {
 
     const body = {
       pagePath: pathname,
+      host: window.location.host,
+      viewId,
       browser,
       device,
       referrer,
       searchEngine: detectSearchEngine(referrer),
       visitorId,
       attribution,
+      signals: collectSignals(),
     };
 
     // Fire-and-forget. We do not await — page interactivity matters more
@@ -145,4 +167,26 @@ export function useAnalyticsBeacon(): void {
       // Synchronous throw (extremely rare) — also silent.
     }
   }, [pathname, isAdmin, adminStatusLoading, consentStatus]);
+
+  // Engagement leaves with the page: when the tab goes hidden and on
+  // pagehide (tab close, navigation away). Totals are cumulative, so
+  // sending twice is harmless; the server keeps the greatest values.
+  useEffect(() => {
+    const onHide = () => { if (document.visibilityState === "hidden") flushView(viewRef.current); };
+    const onPageHide = () => flushView(viewRef.current);
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", onPageHide);
+    };
+  }, []);
+}
+
+/** Report a view's engagement so far. Silent on every failure. */
+function flushView(view: { id: string; tracker: EngagementTracker } | null): void {
+  if (!view) return;
+  const snap = view.tracker.snapshot();
+  if (snap.seconds < 1 && !snap.interacted && snap.scrollDepth === 0) return;
+  sendBeaconJson(TRACK_URL, { kind: "engagement", viewId: view.id, seconds: snap.seconds, scrollDepth: snap.scrollDepth, interacted: snap.interacted });
 }
