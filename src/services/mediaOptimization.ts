@@ -46,9 +46,9 @@ export interface ImageTransformOptions {
    * `object-fit: cover` into a 3:4 box then crops an already-wrong-aspect
    * sliver down to a razor-thin strip (this is exactly what produced the
    * "images zoomed in way too much" bug on /about-us). Pass this whenever
-   * the caller knows its target aspect ratio; omit only for truly
-   * unconstrained/full-bleed images with no single fixed ratio (e.g. the
-   * hero background, which fills the viewport at whatever shape it is).
+   * the caller knows its target aspect ratio. Without it the request asks
+   * for `resize=contain` inside a tall box, so the picture keeps its own
+   * shape (a logo, a full-bleed hero background).
    */
   aspectRatio?: number;
 }
@@ -80,12 +80,19 @@ export const transformImageUrl = (
   params.set("width", String(Math.round(opts.width)));
   params.set("quality", String(opts.quality ?? 75));
   params.set("format", opts.format ?? "webp");
-  // Only ask for a crop when we actually know the target shape — see the
-  // `aspectRatio` doc comment above for why `resize=cover` does nothing
-  // useful without an explicit `height` alongside it.
   if (opts.aspectRatio) {
+    // The caller knows the box: crop to it on the server.
     params.set("height", String(Math.round(opts.width / opts.aspectRatio)));
     params.set("resize", "cover");
+  } else {
+    // No box known: fit inside a generous one so the picture keeps its own
+    // shape. Measured against the live endpoint on 9 Sept 2026: `width`
+    // alone keeps the SOURCE's pixel height (a 3457×2296 photo asked at
+    // width=960 came back 960×2296, squeezed sideways), which is what
+    // made blog covers and the logo look zoomed in. With `resize=contain`
+    // and a tall enough height the same request returns 960×638.
+    params.set("height", String(Math.round(opts.width * 3)));
+    params.set("resize", "contain");
   }
 
   return `${transformed}?${params.toString()}`;

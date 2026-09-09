@@ -218,8 +218,16 @@ const GLOBAL_SEO_KEY = "global_seo_tags";
    COMPONENT
    ═════════════════════════════════════════════════════════════════════ */
 
+/** `?view=search` opens the Search performance view (Settings → Search engines links here). */
+const initialTab = (): TabKey => {
+  try {
+    const v = new URLSearchParams(window.location.search).get("view");
+    return v === "search" || v === "global" ? v : "headings";
+  } catch { return "headings"; }
+};
+
 const SeoMaster = () => {
-  const [tab, setTab] = useState<TabKey>("headings");
+  const [tab, setTab] = useState<TabKey>(initialTab);
 
   return (
     <div className="space-y-6">

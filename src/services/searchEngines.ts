@@ -17,6 +17,16 @@ export interface SearchReport {
   byQuery: SearchRow[]; byPage: SearchRow[]; byCountry?: SearchRow[];
 }
 
+/**
+ * An engine said no. `sites` is filled when the key worked but the site
+ * was not among the properties it can see, so the setup screen can show
+ * what the account does have access to.
+ */
+export class EngineError extends Error {
+  sites?: string[];
+  constructor(message: string, sites?: string[]) { super(message); this.name = "EngineError"; this.sites = sites; }
+}
+
 /** A query answers with the report, or simply says the engine is not connected. */
 export type SearchQueryResult = SearchReport | { notConnected: true };
 export const isNotConnected = (r: SearchQueryResult): r is { notConnected: true } => "notConnected" in r;
@@ -25,13 +35,21 @@ const call = async <T,>(fn: string, body: Record<string, unknown>): Promise<T> =
   const { data, error } = await supabase.functions.invoke(fn, { body });
   if (error) {
     let message = error.message || "Request failed";
+    let sites: string[] | undefined;
     try {
-      const ctx = (error as { context?: { json?: () => Promise<{ error?: string }> } }).context;
-      if (ctx && typeof ctx.json === "function") { const b = await ctx.json(); if (b?.error) message = b.error; }
+      const ctx = (error as { context?: { json?: () => Promise<{ error?: string; sites?: string[] }> } }).context;
+      if (ctx && typeof ctx.json === "function") {
+        const b = await ctx.json();
+        if (b?.error) message = b.error;
+        if (Array.isArray(b?.sites)) sites = b.sites.map(String);
+      }
     } catch { /* keep message */ }
-    throw new Error(message);
+    throw new EngineError(message, sites);
   }
-  if (data && typeof data === "object" && "error" in (data as Record<string, unknown>) && (data as { error?: string }).error) throw new Error((data as { error: string }).error);
+  if (data && typeof data === "object" && "error" in (data as Record<string, unknown>) && (data as { error?: string }).error) {
+    const d = data as { error: string; sites?: string[] };
+    throw new EngineError(d.error, Array.isArray(d.sites) ? d.sites.map(String) : undefined);
+  }
   return data as T;
 };
 

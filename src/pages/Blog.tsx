@@ -69,8 +69,8 @@ const BlogCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => vo
         {hasCover && (
           <>
             <img
-              src={transformImageUrl(post.cover_image!, { width: 960, quality: 70 })}
-              srcSet={buildImageSrcSet(post.cover_image!, [480, 960, 1440], 70)}
+              src={transformImageUrl(post.cover_image!, { width: 960, quality: 70, aspectRatio: 16 / 9 })}
+              srcSet={buildImageSrcSet(post.cover_image!, [480, 960, 1440], 70, 16 / 9)}
               sizes="(min-width: 1024px) 720px, 100vw"
               alt={post.cover_image_alt || `${post.title} cover image`}
               className="absolute inset-0 w-full h-full object-cover"
