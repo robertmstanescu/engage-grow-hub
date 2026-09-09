@@ -481,7 +481,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
               <option key={opt.id || ROOT_KEY} value={opt.id || ""}>{opt.label}</option>
             ))}
           </select>
-          <button type="submit" className="admin-btn primary">Upload</button>
+          <button type="submit" className="admin-btn primary" title="Pictures are resized to web size (max 2400px, WebP) before they upload">Upload</button>
           <button type="button" className="admin-btn ghost" onClick={cancelPending}>Cancel</button>
         </form>
       )}

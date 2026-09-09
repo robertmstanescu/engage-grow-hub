@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Upload, Image, X, Crop } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { shrinkImage } from "@/services/imageShrink";
 import { toast } from "sonner";
 import MediaGallery from "./MediaGallery";
 import ImageAltInput from "./ImageAltInput";
@@ -48,9 +49,10 @@ const ImagePickerField = ({
   const [showCrop, setShowCrop] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpload = async (file: File) => {
-    if (!file.type.startsWith("image/")) { toast.error("Not an image"); return; }
-    if (file.size > 10 * 1024 * 1024) { toast.error("Max 10MB"); return; }
+  const handleUpload = async (original: File) => {
+    if (!original.type.startsWith("image/")) { toast.error("Not an image"); return; }
+    if (original.size > 10 * 1024 * 1024) { toast.error("Max 10MB"); return; }
+    const file = await shrinkImage(original);
     const ext = file.name.split(".").pop();
     const path = `gallery/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { error } = await supabase.storage.from("editor-images").upload(path, file);

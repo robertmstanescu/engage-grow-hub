@@ -18,6 +18,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { shrinkImage } from "./imageShrink";
 
 const BUCKET = "media-library";
 
@@ -372,13 +373,15 @@ interface UploadAssetParams {
  * @returns the inserted MediaAsset row, or `{ error }` on failure.
  */
 export async function uploadAssetWithProgress({
-  file,
+  file: original,
   folderId,
   title,
   description,
   altText,
   onProgress,
 }: UploadAssetParams): Promise<{ asset: MediaAsset | null; error: Error | null }> {
+  // Pictures are made web-sized here, before a byte leaves the browser.
+  const file = await shrinkImage(original);
   const storagePath = buildStoragePath(file);
   const session = (await supabase.auth.getSession()).data.session;
   const accessToken = session?.access_token;

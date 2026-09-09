@@ -78,6 +78,11 @@ Rules that are easy to get wrong:
   becomes Human only when its engagement beacon arrives; previews are
   dropped; a fleet (>5 fresh visitor ids from one address + browser
   string in a day) is a bot. Do not count raw page views as humans.
+- Every picture upload goes through `services/imageShrink.ts`
+  (`shrinkImage`: max 2400px long edge, WebP 0.82, in the browser) before
+  it reaches Storage: Media, editor pictures, cover/picker fields, hero
+  backgrounds. SVG, GIF, video and small files pass through. Serve with
+  `transformImageUrl` (Supabase render/image) at the slot's width.
 - Supabase changes (schema, RLS, edge functions) go through Lovable.
 - `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
   dependency changes so CI's `--frozen-lockfile` install passes.
