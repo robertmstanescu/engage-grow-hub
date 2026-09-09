@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { bing, gsc, type SearchReport } from "@/services/searchEngines";
+import { bing, gsc, isNotConnected, type SearchQueryResult, type SearchReport } from "@/services/searchEngines";
 
 /**
  * Search performance — what people searched before they clicked, from
@@ -38,13 +38,17 @@ const Table = ({ rows, label, name }: { rows: Array<{ query?: string; page?: str
   </div>
 );
 
-const Engine = ({ title, load }: { title: string; load: () => Promise<SearchReport> }) => {
+const Engine = ({ title, load }: { title: string; load: () => Promise<SearchQueryResult> }) => {
   const [report, setReport] = useState<SearchReport | null>(null);
   const [state, setState] = useState<"loading" | "off" | "error" | "ok">("loading");
   const [message, setMessage] = useState("");
   const fetchIt = useCallback(async () => {
     setState("loading");
-    try { setReport(await load()); setState("ok"); }
+    try {
+      const result = await load();
+      if (isNotConnected(result)) { setReport(null); setState("off"); return; }
+      setReport(result); setState("ok");
+    }
     catch (e) { const m = e instanceof Error ? e.message : ""; setMessage(m); setState(/not connected/i.test(m) ? "off" : "error"); }
   }, [load]);
   useEffect(() => { fetchIt(); }, [fetchIt]);

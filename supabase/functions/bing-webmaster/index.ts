@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
     }
     if (action === "query") {
       const row = await readIntegration<BingSecret>(admin, ID);
-      if (!row?.secret || !row.config?.siteUrl) return json({ error: "Bing Webmaster Tools is not connected." }, 400);
+      if (!row?.secret || !row.config?.siteUrl) return json({ notConnected: true });
       const days = Math.max(7, Math.min(90, Number(body?.days) || 28));
       const since = isoDaysAgo(days);
       const siteUrl = String(row.config.siteUrl);
