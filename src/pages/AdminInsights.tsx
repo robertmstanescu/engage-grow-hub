@@ -32,6 +32,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isDeviceExcluded, setDeviceExcluded } from "@/services/analyticsGuards";
 import { countryName, fetchEngagement, formatSeconds, type EngagementSummary, type PageEngagement } from "@/services/engagementStats";
+import { fetchSources, type ChannelCount } from "@/services/channels";
 import {
   ArrowLeft, Activity, Bot, Sparkles, RefreshCw, ExternalLink, Users,
   Smartphone, Monitor, Tablet, Globe, ChevronRight,
@@ -49,7 +50,6 @@ import {
   fetchConvertedJourneys,
   countLeadsInWindow,
   fetchPageStats,
-  fetchReferrerStats,
   fetchVisitorDepth,
   fetchPageTransitions,
   fetchPageBreakdown,
@@ -58,7 +58,6 @@ import {
   type TrafficTypeFilter,
   type JourneyRecord,
   type PageStatRow,
-  type ReferrerStatRow,
   type VisitorDepthRow,
   type TransitionRow,
   type LabelCountRow,
@@ -105,6 +104,8 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const [excluded, setExcluded] = useState<boolean>(() => isDeviceExcluded());
   const [engagement, setEngagement] = useState<EngagementSummary>({ engagedViews: 0, medianSeconds: 0, depth: { reached25: 0, reached50: 0, reached75: 0, reached100: 0, views: 0 } });
   const [pageEngagement, setPageEngagement] = useState<PageEngagement[]>([]);
+  const [channels, setChannels] = useState<ChannelCount[]>([]);
+  const [openChannel, setOpenChannel] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<"all" | "blog" | "page">("all");
   const [countryFilter, setCountryFilter] = useState<string>("all");
 
@@ -125,7 +126,6 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const [journeys, setJourneys] = useState<JourneyRecord[]>([]);
   // Server-side aggregated panels (exact, no ROW_CAP sampling).
   const [pageStats, setPageStats] = useState<PageStatRow[]>([]);
-  const [referrers, setReferrers] = useState<ReferrerStatRow[]>([]);
   const [visitorDepth, setVisitorDepth] = useState<VisitorDepthRow>({
     total_visitors: 0, multi_page_visitors: 0, avg_pages_per_visitor: 0,
   });
@@ -178,8 +178,8 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         uniqueHumans, botCountResult, leadsResult,
         countriesResult, deviceResult, leaderboardResult,
         journeysResult, blogResult, pageResult,
-        pageStatsResult, referrerResult, depthResult, transitionsResult,
-        engagementResult,
+        pageStatsResult, depthResult, transitionsResult,
+        engagementResult, sourcesResult,
       ] = await Promise.all([
         countUniqueHumanVisitors(filters),
         countAnalyticsRows({ ...filters, trafficType: "bot" }),
@@ -195,16 +195,16 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         fetchAllPages(fetchAllBlogPosts),
         fetchAllPages(fetchAllCmsPages),
         fetchPageStats(filters),
-        fetchReferrerStats(filters),
         fetchVisitorDepth(filters),
         fetchPageTransitions(filters, 10),
         fetchEngagement(filters),
+        fetchSources(filters),
       ]);
+      setChannels(sourcesResult.channels);
       setEngagement(engagementResult.overall);
       setPageEngagement(engagementResult.pages);
 
       setPageStats(pageStatsResult.data);
-      setReferrers(referrerResult.data);
       setVisitorDepth(depthResult.data);
       setTransitions(transitionsResult.data);
 
@@ -329,10 +329,10 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
         <div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
-            Unified Insights
+            Insights
           </h1>
           <p className="font-body text-sm mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
-            Human visitors, AI crawlers, and the journey from one to a lead.
+            People first: who stayed, where they came from, what they read. Machines last.
           </p>
         </div>
 
@@ -397,7 +397,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
         {/* ── Section B: Human Behavioural Report ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Panel title="Top Countries" loading={loading}>
+          <Panel title="Where they are" loading={loading}>
             {topCountries.length === 0 ? (
               <Empty>No country data yet. New visits carry a country from the browser's time zone.</Empty>
             ) : (
@@ -447,7 +447,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         {/* ── Per-page performance ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
-            <Panel title="Pages" loading={loading}>
+            <Panel title="What they read" loading={loading}>
               {pageStats.length === 0 ? <Empty>No page views in this window yet.</Empty> : (
                 <div className="max-h-[420px] overflow-y-auto">
                   <table className="w-full font-body text-xs">
@@ -485,18 +485,28 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
           </div>
 
           <div className="space-y-4">
-            <Panel title="Traffic Sources" loading={loading}>
-              {referrers.length === 0 ? <Empty>No referrer data yet.</Empty> : (
-                <ul className="space-y-2 max-h-[200px] overflow-y-auto">
-                  {referrers.slice(0, 10).map((r) => (
-                    <li key={`${r.kind}-${r.label}`} className="flex items-center justify-between gap-2 font-body text-xs">
-                      <span className="flex items-center gap-1.5 min-w-0">
-                        <Tag color={r.kind === "search" ? "gold" : r.kind === "campaign" ? "purple" : r.kind === "direct" ? "amber" : "green"}>{r.kind}</Tag>
-                        <span className="truncate" style={{ color: "hsl(var(--foreground))" }}>{r.label}</span>
-                      </span>
-                      <span style={{ color: "hsl(var(--muted-foreground))" }}>{r.visits} · {r.unique_visitors}u</span>
-                    </li>
-                  ))}
+            <Panel title="Where they came from" loading={loading}>
+              {channels.length === 0 ? <Empty>No visits in this window yet.</Empty> : (
+                <ul className="space-y-1.5 font-body text-xs">
+                  {channels.map((c) => {
+                    const total = channels.reduce((n, x) => n + x.visitors, 0) || 1;
+                    const open = openChannel === c.channel;
+                    return (
+                      <li key={c.channel}>
+                        <button type="button" onClick={() => setOpenChannel(open ? null : c.channel)} className="w-full text-left" aria-expanded={open}>
+                          <div className="flex justify-between"><span style={{ color: "hsl(var(--foreground))" }}>{c.channel}</span><span style={{ color: "hsl(var(--muted-foreground))" }}>{c.visitors} {c.visitors === 1 ? "person" : "people"}</span></div>
+                          <div className="h-1.5 rounded-full overflow-hidden mt-1" style={{ backgroundColor: "hsl(var(--muted))" }}><div className="h-full" style={{ width: `${Math.round((c.visitors / total) * 100)}%`, backgroundColor: "hsl(var(--foreground))" }} /></div>
+                        </button>
+                        {open && (
+                          <ul className="mt-1.5 mb-2 pl-3 space-y-1" style={{ borderLeft: "1px solid hsl(var(--border))" }}>
+                            {c.sources.slice(0, 8).map((src) => (
+                              <li key={src.label} className="flex justify-between"><span style={{ color: "hsl(var(--foreground))" }}>{src.label}</span><span style={{ color: "hsl(var(--muted-foreground))" }}>{src.visitors} · {src.hits} views</span></li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </Panel>
@@ -551,7 +561,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         )}
 
         {/* Where visitors go next */}
-        <Panel title="Where Visitors Go Next" loading={loading}>
+        <Panel title="Where they go next" loading={loading}>
           {transitions.length === 0 ? <Empty>Not enough multi-page sessions yet.</Empty> : (
             <ul className="space-y-1.5">
               {transitions.map((t) => (
@@ -567,7 +577,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         </Panel>
 
         {/* Path to Lead */}
-        <Panel title="Path to Lead" loading={loading}>
+        <Panel title="Path to a lead" loading={loading}>
           {journeys.length === 0 ? (
             <Empty>No converted visitors yet — once someone fills a lead form, their visit history appears here.</Empty>
           ) : (
@@ -595,7 +605,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
         {/* ── Section C: AI Crawler & AEO Report ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Panel title="Bot Leaderboard" loading={loading}>
+          <Panel title="Machines · crawlers and scanners" loading={loading}>
             {botLeaderboard.length === 0 ? <Empty>No AI crawlers yet.</Empty> : (
               <ul className="space-y-2">
                 {botLeaderboard.slice(0, 8).map((b) => (
