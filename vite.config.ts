@@ -39,7 +39,18 @@ export default defineConfig(({ mode }) => ({
         // Splitting them means a content-only deploy only invalidates
         // the (much smaller) app chunk's cache.
         manualChunks(id) {
-          if (id.includes("node_modules")) return "vendor";
+          if (!id.includes("node_modules")) return undefined;
+          const m = id.match(/node_modules\/(@[^/]+\/[^/]+|[^/]+)/); const pkg = m ? m[1] : "vendor";
+          // Exact names only: a loose /^react/ would also catch react-* libraries
+          // and create a chunk cycle (the editor chunk ended up holding React's
+          // own use-sync-external-store shim, which the react chunk imported back).
+          if (/^(react|react-dom|scheduler|react-router|react-router-dom|@remix-run\/router|use-sync-external-store)$/.test(pkg)) return "react";
+          if (/^@supabase/.test(pkg)) return "supabase";
+          if (/^(@tiptap|prosemirror|@prosemirror|orderedmap|w3c-keyname|rope-sequence|linkifyjs)/.test(pkg)) return "editor";
+          if (/^@dnd-kit/.test(pkg)) return "dnd";
+          if (/^@radix-ui/.test(pkg)) return "radix";
+          if (/^(zod|@tanstack)/.test(pkg)) return "data";
+          return undefined;
         },
       },
     },

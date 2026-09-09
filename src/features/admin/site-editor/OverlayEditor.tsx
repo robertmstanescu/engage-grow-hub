@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { uploadRowOverlay } from "@/services/mediaStorage";
 import { runDbAction } from "@/services/db-helpers";
 import type { OverlayElement, OverlayFit, OverlayAnchor, BlendMode } from "@/types/rows";
+import { renderOverlayElements } from "@/features/site/rows/overlayRender";
 
 interface Props {
   overlays: OverlayElement[];
@@ -33,45 +34,7 @@ const ANCHOR_GRID: { anchor: OverlayAnchor; row: number; col: number }[] = [
   { anchor: "bottom-right", row: 2, col: 2 },
 ];
 
-const anchorToCSS = (anchor: OverlayAnchor): React.CSSProperties => {
-  const [v, h] = anchor.split("-") as [string, string];
-  return {
-    top: v === "top" ? 0 : v === "middle" ? "50%" : undefined,
-    bottom: v === "bottom" ? 0 : undefined,
-    left: h === "left" ? 0 : h === "center" ? "50%" : undefined,
-    right: h === "right" ? 0 : undefined,
-    transform: `translate(${h === "center" ? "-50%" : "0"}, ${v === "middle" ? "-50%" : "0"})`,
-  };
-};
 
-export const renderOverlayElements = (overlays: OverlayElement[] | undefined) => {
-  if (!overlays?.length) return null;
-  return overlays.map((el) => {
-    const posStyle = anchorToCSS(el.anchor);
-    const fitStyle: React.CSSProperties =
-      el.fit === "fill" ? { width: "100%", height: "100%", objectFit: "cover" }
-      : el.fit === "fit" ? { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }
-      : {};
-    return (
-      <img
-        key={el.id}
-        src={el.url}
-        alt=""
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          ...posStyle,
-          ...fitStyle,
-          opacity: el.opacity / 100,
-          transform: `${posStyle.transform || ""} rotate(${el.rotation}deg)`,
-          mixBlendMode: el.blendMode as any,
-          pointerEvents: "none",
-          zIndex: 1,
-        }}
-      />
-    );
-  });
-};
 
 const labelStyle: React.CSSProperties = {
   fontFamily: "var(--font-body)", fontSize: 10, textTransform: "uppercase",

@@ -11,7 +11,7 @@
  * sees this DOM (and never mounts a `useDraggable` outside a
  * DndContext).
  */
-import { useDraggable } from "@dnd-kit/core";
+import { Suspense, lazy } from "react";
 import { GripVertical } from "lucide-react";
 
 export interface CanvasWidgetDragData {
@@ -35,31 +35,16 @@ export const CanvasWidgetDragPreview = ({ data }: { data: CanvasWidgetDragData }
 interface WidgetDragHandleProps {
   widgetId: string;
   type: string;
-  /** Extra classes — used for the hover-reveal behaviour. */
   className?: string;
 }
 
-const WidgetDragHandle = ({ widgetId, type, className = "" }: WidgetDragHandleProps) => {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `canvas-widget:${widgetId}`,
-    data: { source: "canvas-widget", widgetId, type } satisfies CanvasWidgetDragData,
-  });
+/* The draggable handle (and dnd-kit) loads only inside a builder. */
+const WidgetDragHandleLive = lazy(() => import("./CanvasWidgetDragLive"));
 
-  return (
-    <button
-      ref={setNodeRef}
-      type="button"
-      aria-label={`Move ${type} widget`}
-      title="Drag to move this widget"
-      onClick={(e) => e.stopPropagation()}
-      {...listeners}
-      {...attributes}
-      className={`absolute z-50 -top-1 right-1 flex h-6 w-6 items-center justify-center rounded-md border border-blue-500 bg-white text-blue-600 shadow-sm cursor-grab active:cursor-grabbing transition-opacity ${className}`}
-      style={{ opacity: isDragging ? 0.4 : undefined }}
-    >
-      <GripVertical className="h-3.5 w-3.5" />
-    </button>
-  );
-};
+const WidgetDragHandle = (props: WidgetDragHandleProps) => (
+  <Suspense fallback={null}>
+    <WidgetDragHandleLive {...props} />
+  </Suspense>
+);
 
 export default WidgetDragHandle;

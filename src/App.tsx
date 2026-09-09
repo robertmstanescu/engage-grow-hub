@@ -8,7 +8,6 @@ import {
   createRoutesFromElements,
   useLocation,
 } from "react-router-dom";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import CookieConsent from "@/features/site/CookieConsent";
 import { queryClient } from "@/lib/queryClient";
@@ -104,10 +103,8 @@ const router = createBrowserRouter(
 const App = () => (
   <ErrorBoundary label="app">
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
         <GlobalMounts />
         <RouterProvider router={router} />
-      </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );

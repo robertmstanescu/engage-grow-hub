@@ -78,6 +78,12 @@ Rules that are easy to get wrong:
   becomes Human only when its engagement beacon arrives; previews are
   dropped; a fleet (>5 fresh visitor ids from one address + browser
   string in a day) is a bot. Do not count raw page views as humans.
+- The public bundle must stay free of admin code: widget editors are
+  `lazy()`, dnd-kit lives only in `*Live.tsx` / `CellDropTargets.tsx`
+  loaded inside a builder, icons load per name through
+  `features/icons/Icon.tsx` (never import the `icons` map on a public
+  path), and `vite.config.ts` groups vendor chunks by exact package
+  names (a loose `/^react/` match created a chunk cycle once).
 - Every picture upload goes through `services/imageShrink.ts`
   (`shrinkImage`: max 2400px long edge, WebP 0.82, in the browser) before
   it reaches Storage: Media, editor pictures, cover/picker fields, hero

@@ -1,11 +1,20 @@
+import { Suspense, lazy } from "react";
 import { useLocation } from "react-router-dom";
-import AdminToolbar from "@/features/admin/AdminToolbar";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 
-/** Renders the admin toolbar on every route except /admin/*. */
+/* The floating admin toolbar exists only for a signed-in admin on a
+   public page; its code loads only then. */
+const AdminToolbar = lazy(() => import("@/features/admin/AdminToolbar"));
+
 const ConditionalToolbar = () => {
   const { pathname } = useLocation();
-  if (pathname.startsWith("/admin")) return null;
-  return <AdminToolbar />;
+  const { isAdmin } = useAdminStatus();
+  if (pathname.startsWith("/admin") || !isAdmin) return null;
+  return (
+    <Suspense fallback={null}>
+      <AdminToolbar />
+    </Suspense>
+  );
 };
 
 export default ConditionalToolbar;
