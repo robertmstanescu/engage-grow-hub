@@ -1,21 +1,31 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import type { PageRow } from "@/types/rows";
 import { supabase } from "@/integrations/supabase/client";
 import { transformImageUrl } from "@/services/mediaOptimization";
+import { RowEyebrow, RowTitle, RowSection } from "@/features/site/rows/typography";
+import AllPostsButton from "@/features/site/AllPostsButton";
+import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
+import { fromTheBlogSchema } from "./schema";
+import { blogLinkFor, pickPosts, type PostLite } from "./postPick";
 
 /**
- * FromTheBlog — three recent posts under a service page, so a pillar
- * links to the writing that supports it and a reader has somewhere to
- * go next. Posts in the matching categories come first; if none match,
- * the newest posts are shown.
+ * FromTheBlogRow — recent posts as a proper row.
+ *
+ * A RowSection like every other row, so it stacks with the rows above
+ * it (top corners rounded, square feet) instead of sitting outside the
+ * page like the old hard-coded section did. Heading, categories, count
+ * and link text come from the row's content; the posts come from
+ * `blog_posts` when the row renders.
  */
-interface Lite { slug: string; title: string; excerpt: string | null; cover_image: string | null; cover_image_alt: string | null; published_at: string | null; category: string | null }
-
-
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "");
 
-const FromTheBlog = ({ categories, limit = 3 }: { categories: string[]; limit?: number }) => {
-  const [posts, setPosts] = useState<Lite[]>([]);
+const FromTheBlogRow = ({ row }: { row: PageRow }) => {
+  const c = fromTheBlogSchema.parse(row.content || {});
+  const [posts, setPosts] = useState<PostLite[]>([]);
+  const { ref, isVisible } = useScrollReveal();
+  const catKey = c.categories.join("|");
+
   useEffect(() => {
     let cancelled = false;
     supabase
@@ -26,25 +36,27 @@ const FromTheBlog = ({ categories, limit = 3 }: { categories: string[]; limit?: 
       .limit(24)
       .then(({ data }) => {
         if (cancelled || !data) return;
-        const rows = data as Lite[];
-        const same = rows.filter((p) => p.category && categories.includes(p.category));
-        const rest = rows.filter((p) => !same.includes(p));
-        setPosts([...same, ...rest].slice(0, limit));
+        setPosts(pickPosts(data as PostLite[], catKey.split("|"), c.limit));
       });
     return () => { cancelled = true; };
-  }, [categories, limit]);
+  }, [catKey, c.limit]);
 
   if (posts.length === 0) return null;
-  const matched = posts.some((p) => p.category && categories.includes(p.category));
-  const listHref = matched ? `/blog/?category=${encodeURIComponent(posts[0].category || "")}` : "/blog/";
+  const listHref = blogLinkFor(posts, c.categories);
+
   return (
-    <section aria-labelledby="from-the-blog" className="px-8 py-16" data-from-the-blog>
-      <div className="max-w-[1280px] mx-auto">
+    <RowSection row={row}>
+      <div ref={ref as never} className="max-w-[1280px] mx-auto row-container">
         <div className="flex items-end justify-between gap-4 mb-6">
-          <h2 id="from-the-blog" className="font-display font-bold" style={{ color: "hsl(var(--foreground))", fontSize: "var(--fs-card-title)" }}>From the blog</h2>
-          <Link to={listHref} className="font-body text-sm font-medium underline underline-offset-4" style={{ color: "hsl(var(--primary))" }}>All articles</Link>
+          <div>
+            {c.eyebrow && <RowEyebrow color={c.color_eyebrow} style={revealStyle(isVisible, -0.5)}>{c.eyebrow}</RowEyebrow>}
+            {c.title && <RowTitle color={c.color_title} style={revealStyle(isVisible, 0)}><span className="block">{c.title}</span></RowTitle>}
+          </div>
+          {c.link_label && (
+            <span style={revealStyle(isVisible, 0.2)}><AllPostsButton to={listHref} label={c.link_label} /></span>
+          )}
         </div>
-        <ul className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <ul className="grid grid-cols-1 md:grid-cols-3 gap-5" style={revealStyle(isVisible, 0.3)}>
           {posts.map((p) => (
             <li key={p.slug}>
               <Link to={`/blog/${p.slug}/`} className="group block h-full overflow-hidden" style={{ background: "hsl(var(--card))", border: "var(--outline-ink-border)", borderRadius: "var(--radius)" }}>
@@ -63,8 +75,8 @@ const FromTheBlog = ({ categories, limit = 3 }: { categories: string[]; limit?: 
           ))}
         </ul>
       </div>
-    </section>
+    </RowSection>
   );
 };
 
-export default FromTheBlog;
+export default FromTheBlogRow;

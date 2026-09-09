@@ -45,6 +45,10 @@ const BlogPost = () => {
   const [searchParams] = useSearchParams();
   const [article, setArticle] = useState<BlogArticle | null>(null);
   const socialLinks = useSiteContent<Record<string, string>>("social_links", {});
+  /* The author's personal links (Profile screen in the admin), with the
+     company profile as the fallback. */
+  const authorProfile = useSiteContent<Record<string, string>>("author_profile", {});
+  const authorLinkedin = (authorProfile.linkedin || socialLinks.linkedin || "").trim();
   const [loading, setLoading] = useState(true);
   const { getTagColors } = useTagColors();
   // BlogPost has its own bespoke "not found" branch below — it does NOT
@@ -74,7 +78,7 @@ const BlogPost = () => {
     const id = "mc-jsonld-article";
     document.getElementById(id)?.remove();
     const origin = window.location.origin;
-    const linkedin = (socialLinks.linkedin || "").trim();
+    const linkedin = authorLinkedin;
     const jsonLd = {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
@@ -93,7 +97,7 @@ const BlogPost = () => {
     s.text = JSON.stringify(jsonLd);
     document.head.appendChild(s);
     return () => { document.getElementById(id)?.remove(); };
-  }, [article, pageImage, pageDesc, socialLinks.linkedin]);
+  }, [article, pageImage, pageDesc, authorLinkedin]);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -149,7 +153,7 @@ const BlogPost = () => {
         <Navbar />
         <div className="pt-36 pb-20 text-center px-8">
           <h1 className="font-display text-2xl font-bold mb-4" style={{ color: "hsl(var(--foreground))" }}>Article not found</h1>
-          <Link to="/blog/" className="font-body text-sm underline" style={{ color: "hsl(var(--accent))" }}>← Back to all articles</Link>
+          <Link to="/blog/" className="font-body text-sm underline" style={{ color: "hsl(var(--accent))" }}>← Back to all blogs &amp; insights</Link>
         </div>
         <Footer />
       </div>
@@ -174,28 +178,15 @@ const BlogPost = () => {
           <header className={`relative z-10 px-8 ${article.cover_image ? "-mt-24 md:-mt-32 pb-6" : "pt-10 pb-12"}`}>
             <div className="relative z-10 max-w-[1100px] mx-auto lg:pr-[352px]">
               <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-4 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
-                <ArrowLeft size={14} /> All articles
+                <ArrowLeft size={14} /> All blogs &amp; insights
               </Link>
               <div>
                 <h1 className="font-display text-2xl md:text-4xl lg:text-5xl font-black leading-tight" style={{ color: "hsl(var(--foreground))" }}>{article.title}</h1>
 
+                {/* The author is shown ONCE, in the block under the
+                    article (owner's decision); the line here carries the
+                    date and the reading time only. */}
                 <div className="flex flex-wrap items-center gap-3 mt-3">
-                  {article.author_name && (
-                    <>
-                      {article.author_image && (
-                        <img
-                          src={transformImageUrl(article.author_image, { width: 56, aspectRatio: 1 })}
-                          alt={article.author_image_alt || article.author_name}
-                          className="w-7 h-7 rounded-full object-cover"
-                          loading="lazy"
-                        />
-                      )}
-                      <span className="font-body text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>
-                        {article.author_name}
-                      </span>
-                      <span style={{ color: "hsl(var(--foreground) / 0.3)" }}>·</span>
-                    </>
-                  )}
                   <span className="font-body text-sm" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
                     {article.published_at ? formatDate(article.published_at) : ""}
                     {article.published_at && <span style={{ color: "hsl(var(--foreground) / 0.3)" }}> · </span>}
@@ -264,7 +255,7 @@ const BlogPost = () => {
                 <p className="text-sm" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
                   Founder, The Magic Coffin ·{" "}
                   <Link to="/p/about-us/" className="underline underline-offset-4 hover:opacity-70">About</Link>
-                  {socialLinks.linkedin && (<>{" · "}<a href={socialLinks.linkedin} target="_blank" rel="noreferrer me" className="underline underline-offset-4 hover:opacity-70">LinkedIn</a></>)}
+                  {authorLinkedin && (<>{" · "}<a href={authorLinkedin} target="_blank" rel="noreferrer me" className="underline underline-offset-4 hover:opacity-70">LinkedIn</a></>)}
                 </p>
               </div>
             </div>
@@ -278,7 +269,7 @@ const BlogPost = () => {
 
           <div className="w-full mt-8 pt-8" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }}>
             <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "hsl(var(--primary))" }}>
-              <ArrowLeft size={16} /> Back to all articles
+              <ArrowLeft size={16} /> Back to all blogs &amp; insights
             </Link>
           </div>
           </div>

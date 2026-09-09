@@ -61,6 +61,17 @@ Rules that are easy to get wrong:
   block) with "More to read" (`site/MoreArticles.tsx`) beside it on
   wide screens and below it on phones. `ArticleRow` is deliberately not
   a RowSection: no padding or card of its own, flush with the headline.
+  The author appears ONCE, in the block under the article; the line
+  under the headline carries the date and the reading time only. That
+  block's LinkedIn is the author's own, set in the admin's Profile
+  screen (site content `author_profile`), falling back to the company
+  page in `social_links`.
+- Recent posts are a row, not a page fixture: the `from_the_blog` row
+  type (`src/features/widgets/from_the_blog/`) is placed on a page like
+  any other block and edited there (heading, categories, how many,
+  button text). Never hard-code a posts section into a page component.
+  Every link to the blog index is the pill in
+  `site/AllPostsButton.tsx` ("All blogs & insights").
 - A blog post IS its article. The `article` row type
   (`src/features/widgets/article/`) renders the post's `content` from
   `ArticleContext`; `ensureArticleRow` keeps exactly one in a post's rows

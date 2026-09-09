@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { transformImageUrl } from "@/services/mediaOptimization";
+import AllPostsButton from "@/features/site/AllPostsButton";
 
 /**
  * MoreArticles — the next things to read, beside an article on wide
@@ -53,7 +54,7 @@ const MoreArticles = ({ currentSlug, category, limit = 5, className = "" }: { cu
           </li>
         ))}
       </ul>
-      <Link to="/blog/" className="inline-block mt-5 font-body text-sm font-medium underline underline-offset-4" style={{ color: "hsl(var(--primary))" }}>All articles</Link>
+      <div className="mt-5 flex justify-end"><AllPostsButton /></div>
     </nav>
   );
 };

@@ -1793,6 +1793,8 @@
   .tray-glyph[data-glyph="steps"]::before, .tray-glyph[data-glyph="process_steps"]::before { content: "① ② ③"; position: absolute; left: 8%; top: 0; font: 500 12px/28px var(--font-body); letter-spacing: .08em; color: var(--g); }
   /* questions */
   .tray-glyph[data-glyph="questions"]::before, .tray-glyph[data-glyph="faq"]::before { content: "?"; position: absolute; left: 14%; top: 0; font: 800 17px/28px var(--font-title); color: var(--g); }
+  /* from_the_blog: three post cards */
+  .tray-glyph[data-glyph="from_the_blog"]::before { content: ""; position: absolute; inset: 20% 8%; border-radius: 2px; background: linear-gradient(90deg, var(--g) 0 28%, transparent 28% 36%, var(--g) 36% 64%, transparent 64% 72%, var(--g) 72% 100%); }
   /* banner family + cta_band / quote_band / cta_button */
   .tray-glyph[data-glyph="banner"]::before, .tray-glyph[data-glyph="cta_band"]::before { content: ""; position: absolute; inset: 22% 30% 22% 12%; border-radius: 2px; background: var(--g); }
   .tray-glyph[data-glyph="quote_band"]::before { content: "”"; position: absolute; left: 14%; top: -2px; font: 800 22px var(--font-title); color: var(--g); }
