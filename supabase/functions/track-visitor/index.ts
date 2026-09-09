@@ -138,6 +138,11 @@ const KNOWN_BOTS: { pattern: RegExp; name: string }[] = [
   { pattern: /WhatsApp/i,           name: "WhatsApp" },
   { pattern: /TelegramBot/i,        name: "TelegramBot" },
 
+  // ── Performance audits: emulated devices Lighthouse / PageSpeed use ───
+  { pattern: /Chrome-Lighthouse/i,  name: "Lighthouse (PageSpeed)" },
+  { pattern: /Nexus 5X Build\/MMB29P/i, name: "Lighthouse (PageSpeed)" },
+  { pattern: /Moto G \(4\)/i,        name: "Lighthouse (PageSpeed)" },
+
   // ── Headless browsers / automation runtimes ───────────────────────────
   // These tokens leak through even if the script tries to look human.
   { pattern: /HeadlessChrome/i,     name: "HeadlessChrome" },
@@ -317,6 +322,58 @@ function sanitizeAttribution(raw: unknown): Record<string, string> | null {
   return Object.keys(out).length > 0 ? out : null;
 }
 
+/** Our own environments: never stored, whether they arrive as the page host or as a referrer. */
+const isPreviewHost = (host: string): boolean =>
+  /(^|\.)lovable\.(dev|app)$|(^|\.)lovableproject\.com$|^localhost(:\d+)?$|^127\.0\.0\.1(:\d+)?$/i.test(host);
+const hostOf = (url: string): string => {
+  try { return new URL(url).host; } catch { return ""; }
+};
+
+/** Signals the browser sent about itself; a scripted browser fails one. */
+const automationFromSignals = (signals: unknown): string | null => {
+  if (!signals || typeof signals !== "object") return null;
+  const s = signals as { webdriver?: boolean; language?: string; screen?: [number, number] };
+  if (s.webdriver === true) return "Automation (webdriver)";
+  if (typeof s.language === "string" && s.language === "") return "Automation (no language)";
+  if (Array.isArray(s.screen) && (s.screen[0] === 0 || s.screen[1] === 0)) return "Automation (no screen)";
+  return null;
+};
+
+/**
+ * A human is someone who stayed. A view starts as "No engagement" and is
+ * confirmed human by the engagement beacon (≥1 s in the foreground, or a
+ * scroll / click / key). Views that never engage remain in the machine
+ * bucket, which is where scanners that look like Chrome end up.
+ */
+const ENGAGED_MIN_SECONDS = 1;
+const PENDING_LABEL = "No engagement";
+
+async function recordEngagement(body: Record<string, unknown>, supabaseAdmin: ReturnType<typeof createClient>): Promise<void> {
+  const viewId = truncate(body?.viewId, 64);
+  if (!viewId) return;
+  const seconds = Math.max(0, Math.min(86_400, Number(body?.seconds) || 0));
+  const scrollDepth = Math.max(0, Math.min(100, Math.round(Number(body?.scrollDepth) || 0)));
+  const interacted = body?.interacted === true;
+  const engaged = seconds >= ENGAGED_MIN_SECONDS || interacted;
+  const { data } = await supabaseAdmin
+    .from("unified_analytics_logs")
+    .select("id, duration_seconds, scroll_depth, engaged, entity_name")
+    .eq("view_id", viewId)
+    .maybeSingle();
+  if (!data) return;
+  const row = data as { id: string; duration_seconds: number | null; scroll_depth: number | null; engaged: boolean; entity_name: string | null };
+  const patch: Record<string, unknown> = {
+    duration_seconds: Math.max(row.duration_seconds ?? 0, seconds),
+    scroll_depth: Math.max(row.scroll_depth ?? 0, scrollDepth),
+    engaged: row.engaged || engaged,
+  };
+  if (engaged && row.entity_name === PENDING_LABEL) {
+    patch.is_bot = false;
+    patch.entity_name = "Human";
+  }
+  await supabaseAdmin.from("unified_analytics_logs").update(patch).eq("id", row.id);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -337,10 +394,28 @@ Deno.serve(async (req) => {
   let searchEngine: string | null = null;
   let visitorId: string | null = null;
   let attribution: Record<string, string> | null = null;
+  let pageHost = "";
+  let viewId: string | null = null;
+  let signals: unknown = null;
+  let timezone: string | null = null;
 
   try {
     const body = await req.json();
+    // Second beacon of a view: how long it stayed and how far it read.
+    if (body?.kind === "engagement") {
+      try {
+        const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        await recordEngagement(body, supabaseAdmin);
+      } catch (e) {
+        console.error("track-visitor engagement failed:", e);
+      }
+      return new Response(JSON.stringify({ tracked: true, kind: "engagement" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     pagePath = normalizePath(truncate(body?.pagePath, 500) || "/");
+    pageHost = truncate(body?.host, 200);
+    viewId = body?.viewId ? truncate(body.viewId, 64) : null;
+    signals = body?.signals ?? null;
+    timezone = body?.signals?.timezone ? truncate(body.signals.timezone, 64) : null;
     clientBrowser = truncate(body?.browser, 50);
     clientDevice = truncate(body?.device, 30);
     referrer = truncate(body?.referrer, 500);
@@ -358,8 +433,12 @@ Deno.serve(async (req) => {
   }
 
   // ── Identify caller from HEADERS (never trust the body for this). ─────
+  // Our own environments never make it into the table.
+  if ((pageHost && isPreviewHost(pageHost)) || (referrer && isPreviewHost(hostOf(referrer)))) {
+    return new Response(JSON.stringify({ tracked: false, reason: "preview" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
   const userAgent = req.headers.get("user-agent") || "";
-  const detectedBotName = identifyBot(userAgent);
+  const detectedBotName = identifyBot(userAgent) ?? automationFromSignals(signals);
   const isBot = !!detectedBotName;
 
   // Country: Cloudflare adds CF-IPCountry on every request that goes
@@ -408,10 +487,30 @@ Deno.serve(async (req) => {
       throttled = (count ?? 0) >= 30;
     }
 
+    // Fleet rule: one address and one browser string minting many fresh
+    // visitor ids in a day is a scanner, however human its string looks.
+    let fleet = false;
+    if (!isBot && ipHash) {
+      const since = new Date(Date.now() - 86_400_000).toISOString();
+      const { data: recent } = await supabaseAdmin
+        .from("unified_analytics_logs")
+        .select("visitor_id")
+        .eq("ip_hash", ipHash)
+        .eq("user_agent", userAgent.slice(0, 500))
+        .gte("created_at", since)
+        .limit(200);
+      const ids = new Set((recent ?? []).map((r: { visitor_id: string | null }) => r.visitor_id).filter(Boolean));
+      if (visitorId) ids.add(visitorId);
+      fleet = ids.size > 5;
+    }
+    const label = detectedBotName ?? (fleet ? "Fleet (fresh ids)" : PENDING_LABEL);
     if (!throttled) {
       await supabaseAdmin.from("unified_analytics_logs").insert({
-        is_bot: isBot,
-        entity_name: detectedBotName ?? "Human",
+        is_bot: isBot || fleet || label === PENDING_LABEL,
+        entity_name: label,
+        view_id: viewId,
+        engaged: false,
+        timezone,
         path: pagePath,
         category: classifyPathCategory(pagePath),
         referrer: referrer || null,
@@ -432,7 +531,7 @@ Deno.serve(async (req) => {
   }
 
   return new Response(
-    JSON.stringify({ tracked: true, isBot, entityName: detectedBotName ?? "Human" }),
+    JSON.stringify({ tracked: true, isBot, entityName: detectedBotName ?? PENDING_LABEL }),
     { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
   );
 });
