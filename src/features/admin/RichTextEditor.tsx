@@ -299,8 +299,12 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
   const activeFont = (editor.getAttributes("textStyle").fontFamily as string) || "";
 
   return (
+    /* No `overflow-hidden` here: any clipping ancestor becomes the
+       sticky toolbar's scroll container, so the bar would pin itself to
+       a box that never scrolls and ride off the top with the article.
+       The bottom corners are rounded on the content below instead. */
     <div
-      className="rounded-md border overflow-hidden"
+      className="rounded-md border"
       style={{ borderColor: "hsl(var(--border))" }}
     >
       {/* Eight things people reach for, then everything else under More.
@@ -389,13 +393,13 @@ const RichTextEditor = ({ content, onChange, placeholder, bgColor }: RichTextEdi
           onChange={(e) => setHtmlDraft(e.target.value)}
           onBlur={() => emit(sanitizeHtml(htmlDraft))}
           spellCheck={false}
-          className="w-full min-h-[300px] px-4 py-3 font-mono text-xs focus:outline-none resize-y"
+          className="w-full min-h-[300px] rounded-b-md px-4 py-3 font-mono text-xs focus:outline-none resize-y"
           style={{ color: "hsl(var(--foreground))", backgroundColor: "hsl(var(--background))", border: "none" }}
         />
       ) : (
         /* The page's own surface, whatever the admin theme: coloured words
            and headings look here exactly as they will publish. */
-        <div className="admin-canvas rte-surface" style={{ backgroundColor: bgColor || "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
+        <div className="admin-canvas rte-surface overflow-hidden rounded-b-md" style={{ backgroundColor: bgColor || "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
           <EditorContent editor={editor} />
         </div>
       )}

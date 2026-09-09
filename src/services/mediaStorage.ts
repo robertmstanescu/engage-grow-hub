@@ -38,8 +38,15 @@ export async function uploadEditorImage(folder: string, original: File): Promise
   return { publicUrl, error: null };
 }
 
-/** Upsert a branding asset at a deterministic path so it can be replaced cleanly. */
-export async function uploadBrandingAsset(field: string, file: File): Promise<UploadResult> {
+/** Upsert a branding asset at a deterministic path so it can be replaced cleanly.
+ *
+ * Shrunk first, like every other upload: a logo saved straight out of a
+ * design tool can be tens of thousands of pixels wide, and Supabase's
+ * image transform refuses anything that large ("source image resolution
+ * is too large to process"), which broke every sized logo URL on the
+ * site while the raw file still loaded. */
+export async function uploadBrandingAsset(field: string, original: File): Promise<UploadResult> {
+  const file = await shrinkImage(original);
   const ext = file.name.split(".").pop() || "png";
   const path = `branding/${field}-${Date.now()}.${ext}`;
   const { error } = await supabase.storage.from(EDITOR_BUCKET).upload(path, file, { upsert: true });

@@ -11,6 +11,7 @@ import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
 import CoverFadeImage from "@/features/site/CoverFadeImage";
 import MoreArticles from "@/features/site/MoreArticles";
+import { resolveAuthor, type AuthorProfile } from "@/features/site/authorProfile";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { transformImageUrl } from "@/services/mediaOptimization";
 import { useRedirectLookup } from "@/hooks/useRedirectLookup";
@@ -45,10 +46,12 @@ const BlogPost = () => {
   const [searchParams] = useSearchParams();
   const [article, setArticle] = useState<BlogArticle | null>(null);
   const socialLinks = useSiteContent<Record<string, string>>("social_links", {});
-  /* The author's personal links (Profile screen in the admin), with the
-     company profile as the fallback. */
-  const authorProfile = useSiteContent<Record<string, string>>("author_profile", {});
-  const authorLinkedin = (authorProfile.linkedin || socialLinks.linkedin || "").trim();
+  /* The whole author — name, photo and personal links — comes from the
+     Profile screen in the admin, with the post's own stored author as
+     the fallback and the company page as the fallback for LinkedIn. */
+  const authorProfile = useSiteContent<AuthorProfile>("author_profile", {});
+  const authorLinkedin = ((authorProfile.linkedin || "").trim() || (socialLinks.linkedin || "").trim());
+  const author = resolveAuthor(authorProfile, article);
   const [loading, setLoading] = useState(true);
   const { getTagColors } = useTagColors();
   // BlogPost has its own bespoke "not found" branch below — it does NOT
@@ -85,7 +88,7 @@ const BlogPost = () => {
       headline: article.title,
       ...(article.published_at ? { datePublished: article.published_at } : {}),
       ...(article.updated_at ? { dateModified: article.updated_at } : {}),
-      ...(article.author_name ? { author: { "@type": "Person", name: article.author_name, url: `${origin}/p/about-us/`, ...(linkedin ? { sameAs: [linkedin] } : {}) } } : {}),
+      ...(author.name ? { author: { "@type": "Person", name: author.name, url: `${origin}/p/about-us/`, ...(linkedin ? { sameAs: [linkedin] } : {}) } } : {}),
       publisher: { "@type": "Organization", name: "The Magic Coffin", url: origin },
       ...(pageImage ? { image: pageImage } : {}),
       ...(pageDesc ? { description: pageDesc } : {}),
@@ -97,7 +100,7 @@ const BlogPost = () => {
     s.text = JSON.stringify(jsonLd);
     document.head.appendChild(s);
     return () => { document.getElementById(id)?.remove(); };
-  }, [article, pageImage, pageDesc, authorLinkedin]);
+  }, [article, pageImage, pageDesc, authorLinkedin, author.name]);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -245,13 +248,13 @@ const BlogPost = () => {
             </div>
           )}
 
-          {article.author_name && (
+          {author.name && (
             <div className="w-full mt-10 pt-6 flex items-center gap-4" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }} data-author-block>
-              {article.author_image && (
-                <img src={transformImageUrl(article.author_image, { width: 112, aspectRatio: 1 })} alt={article.author_image_alt || article.author_name} width={56} height={56} loading="lazy" decoding="async" className="w-14 h-14 rounded-full object-cover" style={{ border: "var(--outline-ink-border)" }} />
+              {author.photo && (
+                <img src={transformImageUrl(author.photo, { width: 112, aspectRatio: 1 })} alt={author.photoAlt} width={56} height={56} loading="lazy" decoding="async" className="w-14 h-14 rounded-full object-cover" style={{ border: "var(--outline-ink-border)" }} />
               )}
               <div className="min-w-0 font-body">
-                <p className="font-medium" style={{ color: "hsl(var(--foreground))" }}>{article.author_name}</p>
+                <p className="font-medium" style={{ color: "hsl(var(--foreground))" }}>{author.name}</p>
                 <p className="text-sm" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
                   Founder, The Magic Coffin ·{" "}
                   <Link to="/p/about-us/" className="underline underline-offset-4 hover:opacity-70">About</Link>

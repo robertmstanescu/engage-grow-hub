@@ -28,22 +28,34 @@ type ResponsiveLogoProps = {
   darken?: boolean;
 };
 
-const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, height, darken }: ResponsiveLogoProps) => (
-  <picture className={className}>
-    <source media="(min-width: 1024px)" srcSet={transformImageUrl(emblemUrl, { width: 160, quality: 85 })} />
-    <img
-      src={transformImageUrl(logoUrl, { width: 480, quality: 85 })}
-      alt="The Magic Coffin logo"
-      className={`${imgClassName ?? ""}${darken ? " logo-darken" : ""}`}
-      width={width}
-      height={height}
-      // @ts-expect-error – React types lag behind the standard attribute name.
-      fetchpriority="high"
-      loading="eager"
-      decoding="sync"
-    />
-  </picture>
-);
+const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, height, darken }: ResponsiveLogoProps) => {
+  /* A sized URL can fail where the stored file still loads: Supabase's
+     image transform refuses a source above its resolution limit and
+     answers 400, which showed as a broken logo on phones (the mobile
+     branch uses the long asset; desktop uses the small emblem). One
+     retry on the untouched file keeps the mark on screen. */
+  const [rawOnly, setRawOnly] = useState(false);
+  return (
+    <picture className={className}>
+      <source
+        media="(min-width: 1024px)"
+        srcSet={rawOnly ? emblemUrl : transformImageUrl(emblemUrl, { width: 160, quality: 85 })}
+      />
+      <img
+        src={rawOnly ? logoUrl : transformImageUrl(logoUrl, { width: 480, quality: 85 })}
+        alt="The Magic Coffin logo"
+        className={`${imgClassName ?? ""}${darken ? " logo-darken" : ""}`}
+        width={width}
+        height={height}
+        onError={() => setRawOnly(true)}
+        // @ts-expect-error – React types lag behind the standard attribute name.
+        fetchpriority="high"
+        loading="eager"
+        decoding="sync"
+      />
+    </picture>
+  );
+};
 
 
 const Navbar = () => {

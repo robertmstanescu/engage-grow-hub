@@ -13,8 +13,6 @@ export interface LivePreviewBlogPost {
   content: string;
   category: string;
   cover_image: string | null;
-  author_name: string | null;
-  author_image: string | null;
   meta_title: string | null;
   meta_description: string | null;
   og_image: string | null;

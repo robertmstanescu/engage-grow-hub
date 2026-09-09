@@ -6,6 +6,7 @@ import { transformImageUrl } from "@/services/mediaOptimization";
 import { RowEyebrow, RowTitle, RowSection } from "@/features/site/rows/typography";
 import AllPostsButton from "@/features/site/AllPostsButton";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
+import { useBuilder } from "@/features/admin/builder/BuilderContext";
 import { fromTheBlogSchema } from "./schema";
 import { blogLinkFor, pickPosts, type PostLite } from "./postPick";
 
@@ -17,12 +18,20 @@ import { blogLinkFor, pickPosts, type PostLite } from "./postPick";
  * page like the old hard-coded section did. Heading, categories, count
  * and link text come from the row's content; the posts come from
  * `blog_posts` when the row renders.
+ *
+ * With nothing to show the row paints nothing on the public site. In
+ * the builder it paints a note instead: a row that renders nothing is
+ * a zero-height, unclickable strip, so its settings could never be
+ * opened — which is exactly when the owner needs to change the
+ * categories it is asking for.
  */
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "");
 
 const FromTheBlogRow = ({ row }: { row: PageRow }) => {
   const c = fromTheBlogSchema.parse(row.content || {});
   const [posts, setPosts] = useState<PostLite[]>([]);
+  const [looked, setLooked] = useState(false);
+  const { enabled: builderEnabled } = useBuilder();
   const { ref, isVisible } = useScrollReveal();
   const catKey = c.categories.join("|");
 
@@ -35,13 +44,26 @@ const FromTheBlogRow = ({ row }: { row: PageRow }) => {
       .order("published_at", { ascending: false })
       .limit(24)
       .then(({ data }) => {
-        if (cancelled || !data) return;
-        setPosts(pickPosts(data as PostLite[], catKey.split("|"), c.limit));
-      });
+        if (cancelled) return;
+        setPosts(data ? pickPosts(data as PostLite[], catKey.split("|"), c.limit) : []);
+        setLooked(true);
+      }, () => { if (!cancelled) setLooked(true); });
     return () => { cancelled = true; };
   }, [catKey, c.limit]);
 
-  if (posts.length === 0) return null;
+  if (posts.length === 0) {
+    if (!builderEnabled || !looked) return null;
+    return (
+      <RowSection row={row}>
+        <div className="max-w-[1280px] mx-auto row-container">
+          {c.title && <RowTitle color={c.color_title}><span className="block">{c.title}</span></RowTitle>}
+          <p className="font-body text-sm mt-3" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
+            No published post matches this block yet. It stays hidden on the live page until one does.
+          </p>
+        </div>
+      </RowSection>
+    );
+  }
   const listHref = blogLinkFor(posts, c.categories);
 
   return (

@@ -21,6 +21,7 @@ import { ArrowLeft, Linkedin, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyProfile, updateMyProfile, type Profile } from "@/services/profiles";
 import { fetchSection, publishSection } from "@/services/siteContent";
+import type { AuthorProfile } from "@/features/site/authorProfile";
 import { runDbAction } from "@/services/db-helpers";
 import { SpinnerButton } from "@/components/ui/spinner-button";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
@@ -40,7 +41,12 @@ const AdminProfile = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   /* Public author details. These are not private profile data: they
      show under every blog post, so they live in site_content
-     ("author_profile"), which the public site can read. */
+     ("author_profile"), which the public site can read. `profiles` is
+     readable by signed-in users only, so the name and photo have to be
+     kept here too rather than read from Identity at render time. */
+  const [authorName, setAuthorName] = useState("");
+  const [authorPhoto, setAuthorPhoto] = useState("");
+  const [authorPhotoAlt, setAuthorPhotoAlt] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [savingAuthor, setSavingAuthor] = useState(false);
 
@@ -49,13 +55,19 @@ const AdminProfile = () => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/admin"); return; }
-      const [p, author] = await Promise.all([getMyProfile(), fetchSection<{ linkedin?: string }>("author_profile")]);
+      const [p, author] = await Promise.all([getMyProfile(), fetchSection<AuthorProfile>("author_profile")]);
       if (cancelled) return;
+      const saved = author.data?.content || {};
       setProfile(p);
       setEmail(user.email || "");
       setDisplayName(p?.display_name || "");
       setAvatarUrl(p?.avatar_url || "");
-      setLinkedinUrl(author.data?.content?.linkedin || "");
+      /* Nothing saved yet: start from Identity, so the first visit here
+         after the upgrade already shows the right author. */
+      setAuthorName(saved.name || p?.display_name || "");
+      setAuthorPhoto(saved.photo || p?.avatar_url || "");
+      setAuthorPhotoAlt(saved.photo_alt || "");
+      setLinkedinUrl(saved.linkedin || "");
       setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -70,11 +82,16 @@ const AdminProfile = () => {
   };
 
   const handleSaveAuthor = async () => {
-    const url = linkedinUrl.trim();
+    const next: AuthorProfile = {
+      name: authorName.trim(),
+      photo: authorPhoto.trim(),
+      photo_alt: authorPhotoAlt.trim(),
+      linkedin: linkedinUrl.trim(),
+    };
     await runDbAction({
-      action: () => publishSection("author_profile", { linkedin: url }),
+      action: () => publishSection("author_profile", next),
       setLoading: setSavingAuthor,
-      successMessage: url ? "Author details saved" : "LinkedIn link removed",
+      successMessage: "Author details saved",
     });
   };
 
@@ -163,9 +180,30 @@ const AdminProfile = () => {
           <div>
             <h2 className="font-display text-xs uppercase tracking-wider font-bold" style={{ color: "hsl(var(--foreground))" }}>Author details</h2>
             <p className="font-body text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
-              Shown under every blog post, beside your name. Use your own LinkedIn page here; the company page in Settings stays on the site's social links.
+              The block under every blog post: your name, your photo and your links. Set once here — posts do not ask for it. Use your own LinkedIn page; the company page in Settings stays on the site&rsquo;s social links.
             </p>
           </div>
+
+          <div>
+            <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <UserIcon size={10} className="inline mr-1" /> Name under the article
+            </label>
+            <input
+              value={authorName}
+              onChange={(e) => setAuthorName(e.target.value)}
+              placeholder="Who readers see as the author"
+              className="w-full px-3 py-2 rounded-lg font-body text-sm border"
+              style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
+            />
+          </div>
+
+          <ImagePickerField
+            label="Photo under the article"
+            value={authorPhoto}
+            onChange={setAuthorPhoto}
+            altValue={authorPhotoAlt}
+            onAltChange={setAuthorPhotoAlt}
+          />
 
           <div>
             <label className="font-body text-[10px] uppercase tracking-wider mb-1 block" style={{ color: "hsl(var(--muted-foreground))" }}>

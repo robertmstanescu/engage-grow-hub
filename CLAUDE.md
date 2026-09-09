@@ -63,15 +63,23 @@ Rules that are easy to get wrong:
   a RowSection: no padding or card of its own, flush with the headline.
   The author appears ONCE, in the block under the article; the line
   under the headline carries the date and the reading time only. That
-  block's LinkedIn is the author's own, set in the admin's Profile
-  screen (site content `author_profile`), falling back to the company
-  page in `social_links`.
+  block's name, photo and LinkedIn all come from the admin's Profile
+  screen (site content `author_profile`, publicly readable; `profiles`
+  is not), resolved by `site/authorProfile.ts` with the post's own
+  `author_name`/`author_image` columns as the fallback for anything
+  written before that move, and the company page in `social_links` as
+  the fallback for LinkedIn. The blog form does NOT ask for an author;
+  never add those fields back to it. `scripts/prerender-seo.mjs`
+  resolves the same way for the BlogPosting schema.
 - Recent posts are a row, not a page fixture: the `from_the_blog` row
   type (`src/features/widgets/from_the_blog/`) is placed on a page like
   any other block and edited there (heading, categories, how many,
   button text). Never hard-code a posts section into a page component.
   Every link to the blog index is the pill in
-  `site/AllPostsButton.tsx` ("All blogs & insights").
+  `site/AllPostsButton.tsx` ("All blogs & insights"). With nothing to
+  show the row paints nothing publicly but a note in the builder: a row
+  that renders nothing is unclickable, so its settings could never be
+  opened.
 - A blog post IS its article. The `article` row type
   (`src/features/widgets/article/`) renders the post's `content` from
   `ArticleContext`; `ensureArticleRow` keeps exactly one in a post's rows
@@ -82,8 +90,12 @@ Rules that are easy to get wrong:
   `adminTokens.test.ts` fails on any raw `hsl(…)` literal in
   `src/features/admin` or `src/pages/Admin*`. Editing surfaces
   (`RichTextEditor`, `TitleEditor`) render on `.admin-canvas` so the
-  page's colours show in both themes. The save bar is `AdminStickyBar`
-  (small, centred, fixed).
+  page's colours show in both themes. `RichTextEditor`'s toolbar is
+  `sticky top-0`, so nothing in its box may clip: an `overflow-hidden`
+  ancestor becomes the sticky scroll container and the bar rides off
+  the top with the article. Round the bottom corners on the content,
+  not the wrapper. The save bar is `AdminStickyBar` (small, centred,
+  fixed).
 - Analytics: the beacon (`hooks/useAnalyticsBeacon.ts`) fires only on
   the production hosts (`services/analyticsGuards.ts`), never for a
   device flagged "Exclude this device", and sends a `viewId` plus
@@ -110,7 +122,12 @@ Rules that are easy to get wrong:
 - Every picture upload goes through `services/imageShrink.ts`
   (`shrinkImage`: max 2400px long edge, WebP 0.82, in the browser) before
   it reaches Storage: Media, editor pictures, cover/picker fields, hero
-  backgrounds. SVG, GIF, video and small files pass through. Serve with
+  backgrounds and branding (logo/emblem). SVG, GIF, video and small
+  files pass through. Never add an upload path that skips it: a
+  32767x6407 logo reached Storage that way and Supabase's transform
+  answered 400 ("source image resolution is too large to process") for
+  every sized URL, so the logo was broken on phones while the raw file
+  still loaded; `Navbar`'s logo falls back to the untransformed file. Serve with
   `transformImageUrl` (Supabase render/image) at the slot's width, and
   pass `aspectRatio` whenever the box is known: Supabase keeps the
   SOURCE's pixel height when only a width is asked for (a 3457×2296
