@@ -98,7 +98,16 @@ Rules that are easy to get wrong:
   (`shrinkImage`: max 2400px long edge, WebP 0.82, in the browser) before
   it reaches Storage: Media, editor pictures, cover/picker fields, hero
   backgrounds. SVG, GIF, video and small files pass through. Serve with
-  `transformImageUrl` (Supabase render/image) at the slot's width.
+  `transformImageUrl` (Supabase render/image) at the slot's width, and
+  pass `aspectRatio` whenever the box is known: Supabase keeps the
+  SOURCE's pixel height when only a width is asked for (a 3457×2296
+  photo at width=960 came back 960×2296), which showed as zoomed-in
+  blog covers. Without a ratio the helper asks for `resize=contain`.
+- Settings → Search engines is a guided setup: numbered steps, a button
+  that opens the exact outside page, ticks the owner sets (remembered
+  in `localStorage`) and ticks that set themselves (a key that reads
+  correctly, `admin/serviceAccountKey.ts`). Keep the steps in words a
+  non-developer can follow; never ask for anything but the key file.
 - Search engines: `Settings → Search engines` connects Google Search
   Console (service-account JSON), Bing Webmaster (API key) and shows
   IndexNow. Keys live only in `integration_settings` (RLS, no policies;
