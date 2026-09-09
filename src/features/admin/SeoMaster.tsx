@@ -74,6 +74,7 @@ import { fetchSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
 import { generateAiSummary, htmlToPlainText, rowsToPlainText } from "@/services/aiSummary";
 import { extractHeadings } from "./seoHeadings";
+import SearchPerformance from "./SearchPerformance";
 import { findWidgetsByType, mergeWidgetDataByType } from "@/lib/rowWidgets";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import { supabase } from "@/integrations/supabase/client";
@@ -91,7 +92,7 @@ import { invalidateSiteContent } from "@/hooks/useSiteContent";
    TYPES
    ═════════════════════════════════════════════════════════════════════ */
 
-type TabKey = "headings" | "global";
+type TabKey = "headings" | "global" | "search";
 
 /** A flat row in the headings audit table. */
 interface HeadingRow {
@@ -249,9 +250,12 @@ const SeoMaster = () => {
         <TabButton active={tab === "global"} onClick={() => setTab("global")} icon={Globe}>
           Global Metadata
         </TabButton>
+        <TabButton active={tab === "search"} onClick={() => setTab("search")} icon={BarChart3}>
+          Search performance
+        </TabButton>
       </div>
 
-      {tab === "headings" ? <HeadingsAudit /> : <GlobalMetadata />}
+      {tab === "headings" ? <HeadingsAudit /> : tab === "global" ? <GlobalMetadata /> : <SearchPerformance />}
     </div>
   );
 };

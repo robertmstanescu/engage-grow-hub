@@ -7,6 +7,7 @@ import { RowsRenderer } from "@/features/site/rows/PageRows";
 import { rowsProvideHeading, extractFaqItems } from "@/features/site/rows/PrimaryHeadingContext";
 import type { BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
 import { findWidgetsByType } from "@/lib/rowWidgets";
+import { cmsPagePath } from "@/lib/cmsPagePath";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import type { PageRow } from "@/types/rows";
 import NotFound from "./NotFound";
@@ -37,8 +38,6 @@ const SYSTEM_ROUTES = ["blog", "admin", "unsubscribe", "api", "auth", "login", "
  * "canonical" URLs for one piece of content. This is what every route
  * passes to usePageMeta's `canonicalPath` so they all agree on one.
  */
-const cmsPagePath = (slug: string): string =>
-  slug === "services" || slug.startsWith("services/") ? `/${slug}/` : `/p/${slug}/`;
 
 /**
  * `prefix` lets a nested route (e.g. `/services/:slug`) resolve against a

@@ -95,6 +95,13 @@ Rules that are easy to get wrong:
   it reaches Storage: Media, editor pictures, cover/picker fields, hero
   backgrounds. SVG, GIF, video and small files pass through. Serve with
   `transformImageUrl` (Supabase render/image) at the slot's width.
+- Search engines: `Settings → Search engines` connects Google Search
+  Console (service-account JSON), Bing Webmaster (API key) and shows
+  IndexNow. Keys live only in `integration_settings` (RLS, no policies;
+  service role only) through the `search-console`, `bing-webmaster` and
+  `indexnow` functions, all behind `_shared/adminGuard.ts`. Publishing
+  a page or post pings IndexNow (`notifyIndexNow`). Never read that
+  table from the client.
 - Supabase changes (schema, RLS, edge functions) go through Lovable.
 - `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
   dependency changes so CI's `--frozen-lockfile` install passes.
