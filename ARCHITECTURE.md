@@ -181,3 +181,19 @@ block back if a change removes it. The tray offers the Article block
 only inside a post (`BlockVariant.postsOnly`). Rows are extras placed
 above or below the article.
 
+## Analytics
+
+`unified_analytics_logs` is written only by the edge function
+`track-visitor`. The client (`hooks/useAnalyticsBeacon.ts`) beacons from
+production hosts only (`services/analyticsGuards.ts`), never for an
+excluded device or a logged-in admin, and sends a `viewId` plus browser
+signals; `services/engagement.ts` reports foreground seconds, scroll
+depth and interaction when the tab hides, on pagehide and on route
+change. The function drops previews, inserts a view as "No engagement"
+(a bot until it engages), flips it to Human on the engagement beacon,
+flags automation signals, Lighthouse strings and fleets, and derives
+the country from the browser time zone (`tzCountry.ts`). The dashboard
+(`src/pages/AdminInsights.tsx`) reads through `services/engagementStats.ts`
+(median time, read depth) and `services/channels.ts` (Search / Social /
+Referral / Direct, counted in people).
+
