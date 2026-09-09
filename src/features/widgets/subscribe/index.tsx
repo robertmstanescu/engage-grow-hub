@@ -12,7 +12,9 @@
 
 import { registerWidget } from "@/lib/WidgetRegistry";
 import { Mail } from "lucide-react";
-import SubscribeAdmin from "./SubscribeAdmin";
+import { lazy } from "react";
+// Loaded lazily: the editor must never ride along in the public bundle.
+const SubscribeAdmin = lazy(() => import("./SubscribeAdmin"));
 import SubscribeFrontend from "./SubscribeFrontend";
 
 registerWidget({
@@ -29,4 +31,4 @@ registerWidget({
   render: ({ row, align }) => <SubscribeFrontend row={row} align={align} />,
 });
 
-export { SubscribeAdmin, SubscribeFrontend };
+export { SubscribeFrontend };

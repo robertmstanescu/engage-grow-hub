@@ -16,7 +16,9 @@
 import { registerWidget } from "@/lib/WidgetRegistry";
 import { DEFAULT_CONTACT_FIELDS } from "@/lib/constants/rowDefaults";
 import { Mail } from "lucide-react";
-import ContactAdmin from "./ContactAdmin";
+import { lazy } from "react";
+// Loaded lazily: the editor must never ride along in the public bundle.
+const ContactAdmin = lazy(() => import("./ContactAdmin"));
 import ContactFrontend from "./ContactFrontend";
 
 registerWidget({
@@ -42,4 +44,4 @@ registerWidget({
   ),
 });
 
-export { ContactAdmin, ContactFrontend };
+export { ContactFrontend };

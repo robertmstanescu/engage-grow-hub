@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import type { PageRow } from "@/types/rows";
 import { getRowBgColor } from "../rowBackground";
-import { renderOverlayElements } from "@/features/admin/site-editor/OverlayEditor";
+import { renderOverlayElements } from "@/features/site/rows/overlayRender";
 import type { VAlign } from "../PageRows";
 import { applyTextTone, resolveRowForeground } from "@/lib/rowForeground";
 import SectionShape, { shapeHeightPx, shapeMaskStyle } from "../SectionShape";

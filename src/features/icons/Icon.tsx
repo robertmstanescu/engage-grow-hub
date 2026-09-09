@@ -16,8 +16,40 @@
  * change.
  */
 
-import { Suspense, lazy, type CSSProperties } from "react";
-import { icons as lucideIcons, type LucideProps } from "lucide-react";
+import { Suspense, lazy, type ComponentType, type CSSProperties, type LazyExoticComponent } from "react";
+import type { LucideProps } from "lucide-react";
+
+
+/**
+ * Icons load one at a time, on demand. Importing the `icons` map pulled
+ * every Lucide icon (660 KB) into the public bundle to render the three
+ * or four a page uses. `dynamicIconImports` gives one tiny chunk per icon;
+ * the stored name is PascalCase ("ArrowDownUp"), the import key is
+ * kebab-case ("arrow-down-up"), so the name is converted and cached.
+ */
+type IconModule = { default: ComponentType<LucideProps> };
+type IconMap = Record<string, () => Promise<IconModule>>;
+/* The name → import map itself is 160 KB, so it loads as its own chunk
+   the first time an icon is drawn, off the page's critical path. */
+let mapPromise: Promise<IconMap> | null = null;
+const loadMap = () => (mapPromise ??= import("lucide-react/dynamicIconImports").then((m) => m.default as unknown as IconMap));
+const cache = new Map<string, LazyExoticComponent<ComponentType<LucideProps>>>();
+export const lucideKey = (name: string): string =>
+  name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/([A-Za-z])(\d)/g, "$1-$2").toLowerCase();
+const EMPTY: ComponentType<LucideProps> = () => null;
+const lazyIcon = (name: string) => {
+  const key = lucideKey(name);
+  let cmp = cache.get(key);
+  if (!cmp) {
+    cmp = lazy(async () => {
+      const map = await loadMap();
+      const loader = map[key];
+      return loader ? loader() : { default: EMPTY };
+    });
+    cache.set(key, cmp);
+  }
+  return cmp;
+};
 
 export type IconValue = string;
 
@@ -47,18 +79,20 @@ const Icon = ({ value, size = 24, color, className, style, strokeWidth = 2, aria
   if (!parsed) return null;
 
   if (parsed.kind === "lucide") {
-    const Cmp = (lucideIcons as Record<string, React.ComponentType<LucideProps>>)[parsed.name];
+    const Cmp = lazyIcon(parsed.name);
     if (!Cmp) return null;
     return (
-      <Cmp
-        size={size}
-        color={color}
-        strokeWidth={strokeWidth}
-        className={className}
-        style={style}
-        aria-label={ariaLabel}
-        aria-hidden={!ariaLabel || undefined}
-      />
+      <Suspense fallback={<span aria-hidden style={{ display: "inline-block", width: size, height: size, ...style }} className={className} />}>
+        <Cmp
+          size={size}
+          color={color}
+          strokeWidth={strokeWidth}
+          className={className}
+          style={style}
+          aria-label={ariaLabel}
+          aria-hidden={!ariaLabel || undefined}
+        />
+      </Suspense>
     );
   }
 

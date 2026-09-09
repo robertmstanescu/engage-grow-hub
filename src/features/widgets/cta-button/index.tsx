@@ -12,7 +12,9 @@
 
 import { registerWidget } from "@/lib/WidgetRegistry";
 import { MousePointerClick } from "lucide-react";
-import CtaButtonAdmin from "./CtaButtonAdmin";
+import { lazy } from "react";
+// Loaded lazily: the editor must never ride along in the public bundle.
+const CtaButtonAdmin = lazy(() => import("./CtaButtonAdmin"));
 import CtaButtonFrontend from "./CtaButtonFrontend";
 
 registerWidget({
@@ -30,4 +32,4 @@ registerWidget({
   render: ({ row, align }) => <CtaButtonFrontend row={row} align={align} />,
 });
 
-export { CtaButtonAdmin, CtaButtonFrontend };
+export { CtaButtonFrontend };
