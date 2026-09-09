@@ -446,6 +446,27 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_settings: {
+        Row: {
+          config: Json
+          id: string
+          secret: Json | null
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          id: string
+          secret?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          id?: string
+          secret?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       internal_settings: {
         Row: {
           key: string
