@@ -10,6 +10,8 @@ import SubscribeWidget from "@/features/site/SubscribeWidget";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
 import CoverFadeImage from "@/features/site/CoverFadeImage";
+import MoreArticles from "@/features/site/MoreArticles";
+import { useSiteContent } from "@/hooks/useSiteContent";
 import { transformImageUrl } from "@/services/mediaOptimization";
 import { useRedirectLookup } from "@/hooks/useRedirectLookup";
 import { readLivePreviewState, subscribeLivePreview } from "@/services/livePreview";
@@ -27,6 +29,7 @@ interface BlogArticle {
   slug: string; title: string; excerpt: string | null; published_at: string | null; content: string; category: string;
   cover_image: string | null; cover_image_alt: string | null;
   author_name: string | null; author_image: string | null; author_image_alt: string | null;
+  updated_at?: string | null;
   meta_title: string | null; meta_description: string | null;
   og_image: string | null; og_image_alt: string | null; tags: string[] | null;
   lead_magnet_asset_id: string | null; lead_magnet_cover_id: string | null;
@@ -41,6 +44,7 @@ const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const [article, setArticle] = useState<BlogArticle | null>(null);
+  const socialLinks = useSiteContent<Record<string, string>>("social_links", {});
   const [loading, setLoading] = useState(true);
   const { getTagColors } = useTagColors();
   // BlogPost has its own bespoke "not found" branch below — it does NOT
@@ -69,12 +73,16 @@ const BlogPost = () => {
     if (!article || typeof document === "undefined") return;
     const id = "mc-jsonld-article";
     document.getElementById(id)?.remove();
+    const origin = window.location.origin;
+    const linkedin = (socialLinks.linkedin || "").trim();
     const jsonLd = {
       "@context": "https://schema.org",
-      "@type": "Article",
+      "@type": "BlogPosting",
       headline: article.title,
       ...(article.published_at ? { datePublished: article.published_at } : {}),
-      ...(article.author_name ? { author: { "@type": "Person", name: article.author_name } } : {}),
+      ...(article.updated_at ? { dateModified: article.updated_at } : {}),
+      ...(article.author_name ? { author: { "@type": "Person", name: article.author_name, url: `${origin}/p/about-us/`, ...(linkedin ? { sameAs: [linkedin] } : {}) } } : {}),
+      publisher: { "@type": "Organization", name: "The Magic Coffin", url: origin },
       ...(pageImage ? { image: pageImage } : {}),
       ...(pageDesc ? { description: pageDesc } : {}),
       mainEntityOfPage: `${window.location.origin}/blog/${article.slug}/`,
@@ -85,7 +93,7 @@ const BlogPost = () => {
     s.text = JSON.stringify(jsonLd);
     document.head.appendChild(s);
     return () => { document.getElementById(id)?.remove(); };
-  }, [article, pageImage, pageDesc]);
+  }, [article, pageImage, pageDesc, socialLinks.linkedin]);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -102,7 +110,7 @@ const BlogPost = () => {
       // `draft_page_rows` is admin-only at the column level, so anonymous
       // readers never request it.
       const baseColumns =
-        "slug, title, excerpt, published_at, content, category, cover_image, cover_image_alt, author_name, author_image, author_image_alt, meta_title, meta_description, og_image, og_image_alt, tags, lead_magnet_asset_id, lead_magnet_cover_id, page_rows";
+        "slug, title, excerpt, published_at, content, category, cover_image, cover_image_alt, author_name, author_image, author_image_alt, meta_title, meta_description, og_image, og_image_alt, tags, lead_magnet_asset_id, lead_magnet_cover_id, page_rows, updated_at";
       let query = supabase
         .from("blog_posts")
         .select(isPreview ? `${baseColumns}, draft_page_rows` : baseColumns)
@@ -164,7 +172,7 @@ const BlogPost = () => {
 
 
           <header className={`relative z-10 px-8 ${article.cover_image ? "-mt-24 md:-mt-32 pb-6" : "pt-10 pb-12"}`}>
-            <div className="relative z-10 max-w-[700px] mx-auto">
+            <div className="relative z-10 max-w-[1100px] mx-auto lg:pr-[352px]">
               <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-4 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
                 <ArrowLeft size={14} /> All articles
               </Link>
@@ -222,7 +230,9 @@ const BlogPost = () => {
           </header>
         </div>
 
-        <div className="section-light pt-6 pb-16 px-8">
+        <div className="section-light pt-2 pb-16 px-8">
+          <div className="max-w-[1100px] mx-auto lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-[52px] lg:items-start">
+          <div className="min-w-0">
           {/* The article is the post. Rows are extras around it: a post
               with no rows renders exactly one article block, and any rows
               the builder saved render with the article block among them.
@@ -236,7 +246,7 @@ const BlogPost = () => {
             </div>
           </ArticleContext.Provider>
           {article.lead_magnet_asset_id && (
-            <div className="max-w-[900px] mx-auto mt-12">
+            <div className="w-full mt-12">
               <ResourceWidget
                 resourceAssetId={article.lead_magnet_asset_id}
                 coverAssetId={article.lead_magnet_cover_id}
@@ -244,14 +254,37 @@ const BlogPost = () => {
             </div>
           )}
 
-          <div className="max-w-[700px] mx-auto mt-12 pt-8 flex flex-col items-center" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }}>
+          {article.author_name && (
+            <div className="w-full mt-10 pt-6 flex items-center gap-4" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }} data-author-block>
+              {article.author_image && (
+                <img src={transformImageUrl(article.author_image, { width: 112, aspectRatio: 1 })} alt={article.author_image_alt || article.author_name} width={56} height={56} loading="lazy" decoding="async" className="w-14 h-14 rounded-full object-cover" style={{ border: "var(--outline-ink-border)" }} />
+              )}
+              <div className="min-w-0 font-body">
+                <p className="font-medium" style={{ color: "hsl(var(--foreground))" }}>{article.author_name}</p>
+                <p className="text-sm" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
+                  Founder, The Magic Coffin ·{" "}
+                  <Link to="/p/about-us/" className="underline underline-offset-4 hover:opacity-70">About</Link>
+                  {socialLinks.linkedin && (<>{" · "}<a href={socialLinks.linkedin} target="_blank" rel="noreferrer me" className="underline underline-offset-4 hover:opacity-70">LinkedIn</a></>)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="w-full mt-10 pt-8 flex flex-col items-start" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }}>
             <SubscribeWidget />
           </div>
 
-          <div className="max-w-[700px] mx-auto mt-8 pt-8" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }}>
+          <MoreArticles currentSlug={article.slug} category={article.category} className="lg:hidden w-full mt-10 pt-8" />
+
+          <div className="w-full mt-8 pt-8" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }}>
             <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "hsl(var(--primary))" }}>
               <ArrowLeft size={16} /> Back to all articles
             </Link>
+          </div>
+          </div>
+          <aside className="hidden lg:block lg:sticky lg:top-28 pt-2">
+            <MoreArticles currentSlug={article.slug} category={article.category} />
+          </aside>
           </div>
         </div>
       </article>
