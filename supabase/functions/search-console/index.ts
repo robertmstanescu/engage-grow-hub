@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
 
     if (action === "query") {
       const row = await readIntegration<ServiceAccount>(admin, ID);
-      if (!row?.secret || !row.config?.siteUrl) return json({ error: "Search Console is not connected." }, 400);
+      if (!row?.secret || !row.config?.siteUrl) return json({ notConnected: true });
       const days = Math.max(7, Math.min(90, Number(body?.days) || 28));
       // Search Console data trails by about two days.
       const endDate = isoDaysAgo(2);

@@ -17,6 +17,10 @@ export interface SearchReport {
   byQuery: SearchRow[]; byPage: SearchRow[]; byCountry?: SearchRow[];
 }
 
+/** A query answers with the report, or simply says the engine is not connected. */
+export type SearchQueryResult = SearchReport | { notConnected: true };
+export const isNotConnected = (r: SearchQueryResult): r is { notConnected: true } => "notConnected" in r;
+
 const call = async <T,>(fn: string, body: Record<string, unknown>): Promise<T> => {
   const { data, error } = await supabase.functions.invoke(fn, { body });
   if (error) {
