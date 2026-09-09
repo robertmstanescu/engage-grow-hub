@@ -31,6 +31,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isDeviceExcluded, setDeviceExcluded } from "@/services/analyticsGuards";
+import { countryName, fetchEngagement, formatSeconds, type EngagementSummary, type PageEngagement } from "@/services/engagementStats";
 import {
   ArrowLeft, Activity, Bot, Sparkles, RefreshCw, ExternalLink, Users,
   Smartphone, Monitor, Tablet, Globe, ChevronRight,
@@ -102,6 +103,8 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const [dateRangeKey, setDateRangeKey] = useState<DateRangeKey>("7d");
   const [trafficType, setTrafficType] = useState<TrafficTypeFilter>("all");
   const [excluded, setExcluded] = useState<boolean>(() => isDeviceExcluded());
+  const [engagement, setEngagement] = useState<EngagementSummary>({ engagedViews: 0, medianSeconds: 0, depth: { reached25: 0, reached50: 0, reached75: 0, reached100: 0, views: 0 } });
+  const [pageEngagement, setPageEngagement] = useState<PageEngagement[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<"all" | "blog" | "page">("all");
   const [countryFilter, setCountryFilter] = useState<string>("all");
 
@@ -176,6 +179,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         countriesResult, deviceResult, leaderboardResult,
         journeysResult, blogResult, pageResult,
         pageStatsResult, referrerResult, depthResult, transitionsResult,
+        engagementResult,
       ] = await Promise.all([
         countUniqueHumanVisitors(filters),
         countAnalyticsRows({ ...filters, trafficType: "bot" }),
@@ -194,7 +198,10 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         fetchReferrerStats(filters),
         fetchVisitorDepth(filters),
         fetchPageTransitions(filters, 10),
+        fetchEngagement(filters),
       ]);
+      setEngagement(engagementResult.overall);
+      setPageEngagement(engagementResult.pages);
 
       setPageStats(pageStatsResult.data);
       setReferrers(referrerResult.data);
@@ -377,27 +384,29 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         )}
 
         {/* ── Section A: Hero metrics ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard icon={<Users size={16} />} label="Human Reach" value={humanReach.toString()}
             hint="People who stayed at least a second" accentHsl="var(--foreground)" />
           <StatCard icon={<Bot size={16} />} label="AI Mindshare" value={aiMindshare.toString()}
             hint="Crawler hits in window" accentHsl="var(--admin-accent)" />
           <StatCard icon={<Sparkles size={16} />} label="Conversion Index" value={`${conversionIndex}%`}
             hint={`${leadsCount} leads from ${humanReach} visitors`} accentHsl="var(--admin-ok)" />
+          <StatCard icon={<Activity size={16} />} label="Time on page" value={engagement.engagedViews ? formatSeconds(engagement.medianSeconds) : "—"}
+            hint={engagement.engagedViews ? `Median over ${engagement.engagedViews} engaged views` : "Arrives with the first engaged view"} accentHsl="var(--admin-info)" />
         </div>
 
         {/* ── Section B: Human Behavioural Report ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Panel title="Top Countries" loading={loading}>
             {topCountries.length === 0 ? (
-              <Empty>No country data yet.</Empty>
+              <Empty>No country data yet. New visits carry a country from the browser's time zone.</Empty>
             ) : (
               <ul className="space-y-2">
                 {topCountries.map((c) => {
                   const pct = humanReach > 0 ? Math.round((c.count / Math.max(humanReach, c.count)) * 100) : 0;
                   return (
                     <li key={c.country} className="space-y-1">
-                      <div className="flex justify-between font-body text-xs"><span>{c.country}</span><span style={{ color: "hsl(var(--muted-foreground))" }}>{c.count}</span></div>
+                      <div className="flex justify-between font-body text-xs"><span>{countryName(c.country)}</span><span style={{ color: "hsl(var(--muted-foreground))" }}>{c.count}</span></div>
                       <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "hsl(var(--muted))" }}>
                         <div className="h-full" style={{ width: `${pct}%`, backgroundColor: "hsl(var(--foreground))" }} />
                       </div>
@@ -447,8 +456,8 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                         <th className="text-left font-medium pb-2">Page</th>
                         <th className="text-right font-medium pb-2">Views</th>
                         <th className="text-right font-medium pb-2">Unique</th>
-                        <th className="text-right font-medium pb-2">Avg&nbsp;time</th>
-                        <th className="text-right font-medium pb-2">Scroll</th>
+                        <th className="text-right font-medium pb-2" title="Median foreground time over engaged views">Time</th>
+                        <th className="text-right font-medium pb-2" title="Share of engaged views that reached half the page">Read&nbsp;½</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -464,8 +473,8 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                           <td className="py-1.5 pr-2 truncate max-w-[240px]" style={{ color: "hsl(var(--foreground))" }}>{row.path}</td>
                           <td className="py-1.5 text-right" style={{ color: "hsl(var(--foreground))" }}>{row.views}</td>
                           <td className="py-1.5 text-right" style={{ color: "hsl(var(--muted-foreground))" }}>{row.unique_visitors}</td>
-                          <td className="py-1.5 text-right" style={{ color: "hsl(var(--muted-foreground))" }}>{row.avg_duration ? `${row.avg_duration}s` : "—"}</td>
-                          <td className="py-1.5 text-right" style={{ color: "hsl(var(--muted-foreground))" }}>{row.avg_scroll ? `${row.avg_scroll}%` : "—"}</td>
+                          <td className="py-1.5 text-right" style={{ color: "hsl(var(--muted-foreground))" }}>{(() => { const e = pageEngagement.find((p) => p.path === row.path); return e ? formatSeconds(e.medianSeconds) : "—"; })()}</td>
+                          <td className="py-1.5 text-right" style={{ color: "hsl(var(--muted-foreground))" }}>{(() => { const e = pageEngagement.find((p) => p.path === row.path); return e ? `${e.depth.reached50}%` : "—"; })()}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -492,7 +501,19 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
               )}
             </Panel>
 
-            <Panel title="Reading Depth" loading={loading}>
+            <Panel title="Read depth" loading={loading}>
+              {engagement.depth.views === 0 ? (
+                <Empty>How far down the page people reach; arrives with the first engaged view.</Empty>
+              ) : (
+                <ul className="space-y-2 font-body text-xs mb-3">
+                  {([["Started", 25, engagement.depth.reached25], ["Halfway", 50, engagement.depth.reached50], ["Most of it", 75, engagement.depth.reached75], ["To the end", 100, engagement.depth.reached100]] as Array<[string, number, number]>).map(([label, mark, pct]) => (
+                    <li key={mark} className="space-y-1">
+                      <div className="flex justify-between"><span style={{ color: "hsl(var(--foreground))" }}>{label} <span style={{ color: "hsl(var(--muted-foreground))" }}>· {mark}%</span></span><span style={{ color: "hsl(var(--muted-foreground))" }}>{pct}%</span></div>
+                      <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "hsl(var(--muted))" }}><div className="h-full" style={{ width: `${pct}%`, backgroundColor: "hsl(var(--foreground))" }} /></div>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <ul className="space-y-2 font-body text-xs">
                 <li className="flex justify-between"><span style={{ color: "hsl(var(--muted-foreground))" }}>Unique visitors</span><span style={{ color: "hsl(var(--foreground))" }}>{visitorDepth.total_visitors}</span></li>
                 <li className="flex justify-between"><span style={{ color: "hsl(var(--muted-foreground))" }}>Read 2+ pages</span><span style={{ color: "hsl(var(--foreground))" }}>{visitorDepth.multi_page_visitors}</span></li>
