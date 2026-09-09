@@ -6,6 +6,7 @@ import Footer from "@/features/site/Footer";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import { rowsProvideHeading, extractFaqItems } from "@/features/site/rows/PrimaryHeadingContext";
 import type { BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
+import { findWidgetsByType } from "@/lib/rowWidgets";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import type { PageRow } from "@/types/rows";
 import NotFound from "./NotFound";
@@ -58,6 +59,9 @@ const CmsPage = ({ prefix = "" }: { prefix?: string }) => {
 
   const rows: PageRow[] = livePreviewPage?.rows || (isPreview && page?.draft_page_rows ? page.draft_page_rows : (page?.page_rows || []));
   const faqItems = extractFaqItems(normalizeRowsToV3(rows) as any);
+  /* The hero's plain answer doubles as the search description and the
+     Service schema description when the page has none of its own. */
+  const heroAnswer = ((findWidgetsByType(normalizeRowsToV3(rows) as never, "hero")[0]?.data as { answer?: string } | undefined)?.answer || "").trim() || undefined;
   const pageTitle: string = page?.title || livePreviewPage?.meta_title || "";
 
   const breadcrumbTrail: BreadcrumbEntry[] = !pageTitle
@@ -70,11 +74,11 @@ const CmsPage = ({ prefix = "" }: { prefix?: string }) => {
 
   usePageMeta({
     title: livePreviewPage?.meta_title || page?.meta_title || page?.title || undefined,
-    description: livePreviewPage?.meta_description || page?.meta_description || undefined,
+    description: livePreviewPage?.meta_description || page?.meta_description || heroAnswer,
     canonicalPath: slug ? cmsPagePath(slug) : undefined,
     serviceSchema:
       isServicePage && page?.title
-        ? { name: page.title, description: page?.meta_description || undefined }
+        ? { name: page.title, description: heroAnswer || page?.meta_description || undefined }
         : undefined,
     faqSchema: faqItems.length > 0 ? faqItems : undefined,
     breadcrumbs: breadcrumbTrail.length > 0 ? breadcrumbTrail : undefined,

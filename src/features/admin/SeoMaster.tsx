@@ -74,6 +74,16 @@ import { fetchSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
 import { generateAiSummary, htmlToPlainText, rowsToPlainText } from "@/services/aiSummary";
 import { extractHeadings } from "./seoHeadings";
+import { findWidgetsByType, mergeWidgetDataByType } from "@/lib/rowWidgets";
+import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
+import { supabase } from "@/integrations/supabase/client";
+
+/** The hero's plain answer in a row set, or "". */
+const heroAnswerOf = (rows: unknown): string => {
+  if (!Array.isArray(rows)) return "";
+  const hero = findWidgetsByType(normalizeRowsToV3(rows) as never, "hero")[0];
+  return ((hero?.data as { answer?: string } | undefined)?.answer || "").trim();
+};
 import { toast } from "sonner";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 
@@ -85,7 +95,7 @@ type TabKey = "headings" | "global";
 
 /** A flat row in the headings audit table. */
 interface HeadingRow {
-  source: "cms_page" | "blog_post";
+  source: "cms_page" | "blog_post" | "home";
   id: string;
   pageTitle: string;
   slug: string;
@@ -94,6 +104,16 @@ interface HeadingRow {
   h1s: string[];
   /** Detected H2 string (`subtitle`). */
   h2s: string[];
+  /** The plain answer shown under the page's headline (hero `answer`). */
+  answer: string;
+  /** Where the answer is stored; blog posts show their summary read-only. */
+  answerEditable: boolean;
+  /** Raw rows, kept so the answer can be written back without a refetch. */
+  pageRows?: unknown[];
+  draftPageRows?: unknown[] | null;
+  /** Home only: the whole site_content payloads. */
+  homeContent?: Record<string, unknown>;
+  homeDraft?: Record<string, unknown> | null;
   /** AI summary (the "answer-first" snippet AI scrapers extract). */
   aiSummary: string;
   /** Plain-text body used as source material for AI summary generation. */
@@ -284,7 +304,20 @@ const HeadingsAudit = () => {
     // Two independent reads — kick them off in parallel for snappier load.
     // The audit needs every row (not just one page), so page through each
     // table's `.range()`-based fetcher instead of one unbounded query.
-    const [cmsRes, blogRes] = await Promise.all([fetchAllPages(fetchAllCmsPages), fetchAllPages(fetchAllBlogPosts)]);
+    const [cmsRes, blogRes, homeRes] = await Promise.all([fetchAllPages(fetchAllCmsPages), fetchAllPages(fetchAllBlogPosts), fetchSection<{ rows?: unknown[] }>("page_rows")]);
+
+    const homeRows: HeadingRow[] = [];
+    if (homeRes.data) {
+      const home = homeRes.data as { content?: { rows?: unknown[] }; draft_content?: { rows?: unknown[] } | null };
+      const liveRows = home.content?.rows || [];
+      const { h1s, h2s } = extractHeadings(liveRows);
+      homeRows.push({
+        source: "home", id: "home", pageTitle: "Home", slug: "/", metaTitle: "",
+        h1s, h2s, answer: heroAnswerOf(liveRows), answerEditable: true,
+        homeContent: (home.content || {}) as Record<string, unknown>, homeDraft: (home.draft_content as Record<string, unknown> | null) || null,
+        aiSummary: "", bodyText: rowsToPlainText(liveRows as never),
+      });
+    }
 
     const cmsRows: HeadingRow[] = (cmsRes.data || []).map((p: any) => {
       // Prefer published rows, fall back to draft if nothing has shipped yet.
@@ -298,6 +331,10 @@ const HeadingsAudit = () => {
         metaTitle: p.meta_title || "",
         h1s,
         h2s,
+        answer: heroAnswerOf(sourceRows),
+        answerEditable: true,
+        pageRows: p.page_rows || [],
+        draftPageRows: p.draft_page_rows || null,
         aiSummary: p.ai_summary || "",
         bodyText: rowsToPlainText(sourceRows),
       };
@@ -314,11 +351,13 @@ const HeadingsAudit = () => {
       // surfacing those instead of leaving the cells empty.
       h1s: b.title ? [b.title] : [],
       h2s: b.excerpt ? [b.excerpt] : [],
+      answer: b.excerpt || "",
+      answerEditable: false,
       aiSummary: b.ai_summary || "",
       bodyText: htmlToPlainText(b.content || "") || b.excerpt || "",
     }));
 
-    setRows([...cmsRows, ...blogRows]);
+    setRows([...homeRows, ...cmsRows, ...blogRows]);
     setLoading(false);
   }, []);
 
@@ -338,6 +377,41 @@ const HeadingsAudit = () => {
         r.h2s.some((h) => h.toLowerCase().includes(q)),
     );
   }, [rows, filter]);
+
+  /**
+   * Save the plain answer into the page's hero widget (live and draft
+   * rows alike, so the builder and the site agree), or into Home's
+   * site_content payloads.
+   */
+  const saveAnswer = useCallback(async (row: HeadingRow, value: string) => {
+    const answer = value.trim();
+    if (answer === row.answer) return;
+    const patch = { answer };
+    if (row.source === "cms_page") {
+      const page_rows = mergeWidgetDataByType((row.pageRows || []) as never, "hero", patch);
+      const draft_page_rows = row.draftPageRows ? mergeWidgetDataByType(row.draftPageRows as never, "hero", patch) : null;
+      await runDbAction({
+        action: async () => {
+          const res = await supabase.from("cms_pages").update({ page_rows: page_rows as never, ...(draft_page_rows ? { draft_page_rows: draft_page_rows as never } : {}) }).eq("id", row.id);
+          return { data: res.data, error: res.error };
+        },
+        successMessage: "Plain answer saved",
+      });
+      setRows((prev) => prev.map((r) => (r.id === row.id && r.source === row.source ? { ...r, answer, pageRows: page_rows as unknown[], draftPageRows: draft_page_rows as unknown[] | null } : r)));
+    } else if (row.source === "home") {
+      const content = { ...(row.homeContent || {}), rows: mergeWidgetDataByType(((row.homeContent?.rows as unknown[]) || []) as never, "hero", patch) };
+      const draft = row.homeDraft && Array.isArray(row.homeDraft.rows) ? { ...row.homeDraft, rows: mergeWidgetDataByType(row.homeDraft.rows as never, "hero", patch) } : row.homeDraft;
+      await runDbAction({
+        action: async () => {
+          const res = await supabase.from("site_content").update({ content: content as never, ...(draft ? { draft_content: draft as never } : {}) }).eq("section_key", "page_rows");
+          return { data: res.data, error: res.error };
+        },
+        successMessage: "Plain answer saved",
+      });
+      invalidateSiteContent("page_rows");
+      setRows((prev) => prev.map((r) => (r.source === "home" ? { ...r, answer, homeContent: content, homeDraft: draft as Record<string, unknown> | null } : r)));
+    }
+  }, []);
 
   /**
    * Save a meta-title edit back to the source table.
@@ -416,7 +490,13 @@ const HeadingsAudit = () => {
             <thead className="bg-muted/30">
               <tr className="text-left font-body text-[10px] uppercase tracking-wider text-muted-foreground">
                 <th className="px-3 py-2 font-medium">Page</th>
-                <th className="px-3 py-2 font-medium">Meta Title</th>
+                <th className="px-3 py-2 font-medium">Search title</th>
+                <th
+                  className="px-3 py-2 font-medium"
+                  title="One or two plain sentences under the headline: what this is, for whom, how you work. 25–45 words. Search engines and AI answers quote it."
+                >
+                  Plain answer (under the title)
+                </th>
                 <th
                   className="px-3 py-2 font-medium"
                   title="The single, dominant heading for this page. Sourced from the Hero row's title_lines."
@@ -443,6 +523,7 @@ const HeadingsAudit = () => {
                   key={`${row.source}-${row.id}`}
                   row={row}
                   onSaveMetaTitle={saveMetaTitle}
+                  onSaveAnswer={saveAnswer}
                   onGenerateSummary={generateSummaryForRow}
                 />
               ))}
@@ -457,10 +538,12 @@ const HeadingsAudit = () => {
 const HeadingRowItem = ({
   row,
   onSaveMetaTitle,
+  onSaveAnswer,
   onGenerateSummary,
 }: {
   row: HeadingRow;
   onSaveMetaTitle: (row: HeadingRow, value: string) => void;
+  onSaveAnswer: (row: HeadingRow, value: string) => void;
   /** Generate + save an AI search summary for this row. */
   onGenerateSummary?: (row: HeadingRow) => Promise<void>;
 }) => {
@@ -468,6 +551,9 @@ const HeadingRowItem = ({
   // Commit on blur — matches the project's deferred-saving Core memory.
   const [draft, setDraft] = useState(row.metaTitle);
   useEffect(() => setDraft(row.metaTitle), [row.metaTitle]);
+  const [answerDraft, setAnswerDraft] = useState(row.answer);
+  useEffect(() => setAnswerDraft(row.answer), [row.answer]);
+  const answerWords = answerDraft.trim() ? answerDraft.trim().split(/\s+/).length : 0;
 
   const noH1 = row.h1s.length === 0;
   const multiH1 = row.h1s.length > 1;
@@ -487,7 +573,7 @@ const HeadingRowItem = ({
         </a>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground/70">
-            {row.source === "cms_page" ? "CMS Page" : "Blog Post"}
+            {row.source === "cms_page" ? "Page" : row.source === "home" ? "Home" : "Blog post"}
           </span>
         </div>
       </td>
@@ -500,10 +586,29 @@ const HeadingRowItem = ({
           onKeyDown={(e) => {
             if (e.key === "Enter") (e.target as HTMLInputElement).blur();
           }}
-          placeholder="(no meta title)"
+          placeholder="(no search title)"
           className="w-full px-2 py-1 rounded font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary"
         />
         <div className="font-body text-[9px] text-muted-foreground mt-0.5">{draft.length}/60</div>
+      </td>
+      <td className="px-3 py-3 min-w-[260px]">
+        {row.answerEditable ? (
+          <div>
+            <textarea
+              value={answerDraft}
+              onChange={(e) => setAnswerDraft(e.target.value)}
+              onBlur={() => onSaveAnswer(row, answerDraft)}
+              rows={3}
+              placeholder="What this is, for whom, how you work."
+              className="w-full px-2 py-1 rounded font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary resize-y"
+            />
+            <div className="font-body text-[10px] mt-0.5" style={{ color: answerWords === 0 ? "hsl(var(--admin-bad))" : answerWords < 25 || answerWords > 45 ? "hsl(var(--admin-warn))" : "hsl(var(--muted-foreground))" }}>
+              {answerWords === 0 ? "Missing — nothing under the headline yet" : `${answerWords} words${answerWords < 25 ? " · aim for 25–45" : answerWords > 45 ? " · trim to 45" : ""}`}
+            </div>
+          </div>
+        ) : (
+          <p className="font-body text-xs text-muted-foreground" title="Edit under Posts → Short summary">{row.answer || "(no short summary)"}</p>
+        )}
       </td>
       <td className="px-3 py-3 max-w-[280px]">
         {noH1 ? (

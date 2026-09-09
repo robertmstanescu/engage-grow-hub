@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 import { Upload, X } from "lucide-react";
-import { Field, RichField, SectionBox, ColorField, CtaFields } from "./FieldComponents";
+import { Field, RichField, SectionBox, ColorField, CtaFields, MoreFields, TextAreaField } from "./FieldComponents";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImageAltInput from "../ImageAltInput";
@@ -78,10 +78,19 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
       </div>
       <Field label="Label (above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
       <ColorField label="Label Color" description="Color of the small label text above the title" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
-      <Field label="Tagline (below title)" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
+      <MoreFields label="Tagline">
+        <Field label="Tagline (below title)" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
+      </MoreFields>
       <ColorField label="Tagline Color" description="Color of the tagline text below the title" value={content.color_tagline || ""} fallback="" onChange={(v) => onChange("color_tagline", v)} />
 
       <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
+      <TextAreaField
+        label="Plain answer (under the title)"
+        value={content.answer || ""}
+        onChange={(v) => onChange("answer", v)}
+        placeholder="One or two plain sentences: what this is, for whom, how you work. 25–45 words."
+        hint="Shown right under the headline. Search engines and AI answers quote this line; it also becomes the search description when that is empty."
+      />
 
       <SubtitleEditor
         subtitle={content.subtitle || ""}

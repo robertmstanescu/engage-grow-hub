@@ -78,6 +78,12 @@ Rules that are easy to get wrong:
   becomes Human only when its engagement beacon arrives; previews are
   dropped; a fleet (>5 fresh visitor ids from one address + browser
   string in a day) is a bot. Do not count raw page views as humans.
+- Every hero carries a "plain answer" (`content.answer`, edited on the
+  hero block and under Insights → SEO checks, Home included): one or two
+  plain sentences under the headline that say what the page is, for
+  whom and how the work happens. It renders visibly (never hidden text),
+  and doubles as the search description and Service schema description
+  when those are empty. Blog posts use their short summary the same way.
 - The public bundle must stay free of admin code: widget editors are
   `lazy()`, dnd-kit lives only in `*Live.tsx` / `CellDropTargets.tsx`
   loaded inside a builder, icons load per name through
