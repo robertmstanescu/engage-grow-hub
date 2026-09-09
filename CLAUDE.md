@@ -57,6 +57,13 @@ Rules that are easy to get wrong:
 - Square boxes: the admin sets `--radius` to 6px, so `rounded-lg`/`-md`
   are the shell's corners. `rounded-full` and `rounded-xl+` are for
   swatches, dots, toggles and avatars only (`squareCorners.test.ts`).
+- Admin colours come from tokens only (`hsl(var(--foreground))`,
+  `--muted-foreground`, `--admin-accent`, `--admin-ok/warn/bad`);
+  `adminTokens.test.ts` fails on any raw `hsl(…)` literal in
+  `src/features/admin` or `src/pages/Admin*`. Editing surfaces
+  (`RichTextEditor`, `TitleEditor`) render on `.admin-canvas` so the
+  page's colours show in both themes. The save bar is `AdminStickyBar`
+  (small, centred, fixed).
 - Supabase changes (schema, RLS, edge functions) go through Lovable.
 - `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
   dependency changes so CI's `--frozen-lockfile` install passes.

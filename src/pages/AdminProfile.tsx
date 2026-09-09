@@ -106,7 +106,7 @@ const AdminProfile = () => {
             {avatarUrl ? (
               <img src={avatarUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover border" style={{ borderColor: "hsl(var(--border))" }} />
             ) : (
-              <div className="w-16 h-16 rounded-full flex items-center justify-center font-display text-lg font-bold" style={{ backgroundColor: "hsl(260 30% 20%)", color: "white" }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center font-display text-lg font-bold" style={{ backgroundColor: "hsl(var(--foreground))", color: "hsl(var(--background))" }}>
                 {initials}
               </div>
             )}
@@ -136,7 +136,7 @@ const AdminProfile = () => {
             isLoading={savingProfile}
             loadingLabel="Saving…"
             className="font-display text-[11px] uppercase tracking-[0.08em] font-bold px-5 py-2.5 rounded-full hover:opacity-85 transition-opacity"
-            style={{ backgroundColor: "hsl(260 30% 20%)", color: "white" }}
+            style={{ backgroundColor: "hsl(var(--foreground))", color: "hsl(var(--background))" }}
           >
             Save profile
           </SpinnerButton>

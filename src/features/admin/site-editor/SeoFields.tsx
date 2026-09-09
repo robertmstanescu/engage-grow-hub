@@ -204,8 +204,8 @@ const SeoFields = ({
           className="rounded-md border p-3 space-y-1.5"
           // Soft gold tint mirrors the brand's "AEO" accent used elsewhere.
           style={{
-            borderColor: "hsl(46 75% 40% / 0.4)",
-            backgroundColor: "hsl(46 75% 60% / 0.06)",
+            borderColor: "hsl(var(--admin-accent) / 0.4)",
+            backgroundColor: "hsl(var(--admin-accent) / 0.08)",
           }}
         >
           <div className="flex items-start justify-between gap-2">
@@ -223,7 +223,7 @@ const SeoFields = ({
               onClick={handleGenerate}
               disabled={generating}
               className="shrink-0 flex items-center gap-1.5 font-body text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md transition-opacity hover:opacity-80 disabled:opacity-50"
-              style={{ border: "1px solid hsl(46 75% 40% / 0.5)", color: "hsl(var(--foreground))" }}
+              style={{ border: "1px solid hsl(var(--admin-accent) / 0.5)", color: "hsl(var(--foreground))" }}
             >
               {generating ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
               {generating ? "Generating…" : "Generate with AI"}
@@ -246,7 +246,7 @@ const SeoFields = ({
               className="font-body text-[10px] font-medium"
               style={{
                 // Green inside window, red outside — matches AdminInsights heuristic.
-                color: aeoInRange ? "hsl(140 60% 35%)" : "hsl(var(--destructive))",
+                color: aeoInRange ? "hsl(var(--admin-ok))" : "hsl(var(--admin-bad))",
               }}
             >
               {aeoLen}/{AEO_MAX} chars

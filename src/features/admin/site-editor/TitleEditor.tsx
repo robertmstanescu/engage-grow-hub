@@ -90,7 +90,7 @@ const TitleEditor = ({ lines, onChange, bgColor, label = "Title" }: Props) => {
         <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">{label}</label>
         {!hasSelection && <span className="font-body text-[10px] text-muted-foreground">{lineCount === 1 ? "1 line · Enter for a new line" : `${lineCount} lines`}</span>}
       </div>
-      <div className="relative rounded-md border" style={{ borderColor: "hsl(var(--input))", backgroundColor: surfaceBg, color: surfaceFg }}>
+      <div className="relative rounded-md border admin-canvas" style={{ borderColor: "hsl(var(--input))", backgroundColor: surfaceBg, color: surfaceFg }}>
         {hasSelection && (
           <div
             role="toolbar"

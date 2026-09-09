@@ -298,7 +298,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
   };
 
   return (
-    <div className={embedded ? "" : "admin-light min-h-screen"} style={embedded ? undefined : { backgroundColor: "hsl(30 20% 96%)" }}>
+    <div className={embedded ? "" : "admin-light min-h-screen"} style={embedded ? undefined : { backgroundColor: "hsl(var(--background))" }}>
       <div className={embedded ? "space-y-6" : "max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6"}>
         {/* Header */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -307,9 +307,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
               <ArrowLeft size={14} /> Back to Admin
             </Link>
           )}
-          <button onClick={refreshAll} disabled={loading}
-            className="flex items-center gap-1.5 font-body text-xs uppercase tracking-wider px-4 py-2 rounded-full hover:opacity-80 disabled:opacity-50"
-            style={{ backgroundColor: "hsl(280 55% 24%)", color: "hsl(50 82% 87%)" }}>
+          <button onClick={refreshAll} disabled={loading} className="admin-btn">
             <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Refresh
           </button>
         </div>
@@ -324,27 +322,21 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         </div>
 
         {/* ── Filter bar ── */}
-        <div className="rounded-xl border bg-card p-3 flex flex-wrap items-center gap-2" style={{ borderColor: "hsl(var(--border))" }}>
+        <div className="rounded-md border bg-card p-3 flex flex-wrap items-center gap-2" style={{ borderColor: "hsl(var(--border))" }}>
           {/* Date range */}
-          <div className="flex items-center gap-1 rounded-md border overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
+          <div className="flex items-center gap-1" role="group" aria-label="Date range">
             {DATE_RANGE_OPTIONS.map((opt) => (
-              <button key={opt.key} onClick={() => setDateRangeKey(opt.key)}
-                className="px-3 py-1.5 font-body text-xs transition-colors"
-                style={{
-                  backgroundColor: dateRangeKey === opt.key ? "hsl(280 55% 24% / 0.12)" : "transparent",
-                  color: dateRangeKey === opt.key ? "hsl(280 55% 24%)" : "hsl(260 20% 40%)",
-                }}>{opt.label}</button>
+              <button key={opt.key} onClick={() => setDateRangeKey(opt.key)} aria-pressed={dateRangeKey === opt.key}
+                className={`admin-btn ${dateRangeKey === opt.key ? "" : "ghost"}`}
+                style={dateRangeKey === opt.key ? { borderColor: "hsl(var(--foreground))" } : undefined}>{opt.label}</button>
             ))}
           </div>
           {/* Traffic type */}
-          <div className="flex items-center gap-1 rounded-md border overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
+          <div className="flex items-center gap-1" role="group" aria-label="Traffic type">
             {(["all", "human", "bot"] as TrafficTypeFilter[]).map((t) => (
-              <button key={t} onClick={() => setTrafficType(t)}
-                className="px-3 py-1.5 font-body text-xs capitalize transition-colors"
-                style={{
-                  backgroundColor: trafficType === t ? "hsl(46 75% 40% / 0.18)" : "transparent",
-                  color: trafficType === t ? "hsl(46 75% 25%)" : "hsl(260 20% 40%)",
-                }}>{t === "all" ? "Combined" : t === "human" ? "Humans" : "Bots"}</button>
+              <button key={t} onClick={() => setTrafficType(t)} aria-pressed={trafficType === t}
+                className={`admin-btn ${trafficType === t ? "" : "ghost"}`}
+                style={trafficType === t ? { borderColor: "hsl(var(--foreground))" } : undefined}>{t === "all" ? "Combined" : t === "human" ? "Humans" : "Bots"}</button>
             ))}
           </div>
           {/* Category */}
@@ -369,7 +361,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         {resultsTruncated && (
           <div
             className="rounded-lg border px-4 py-2.5 font-body text-xs"
-            style={{ borderColor: "hsl(38 90% 45% / 0.4)", backgroundColor: "hsl(38 90% 45% / 0.1)", color: "hsl(38 90% 25%)" }}
+            style={{ borderColor: "hsl(var(--admin-warn) / 0.4)", backgroundColor: "hsl(var(--admin-warn) / 0.1)", color: "hsl(var(--admin-warn))" }}
           >
             Results may be incomplete for this range — one or more panels hit their row cap and are
             computed over a partial sample. Narrow the date range or filters for an exact count.
@@ -379,11 +371,11 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         {/* ── Section A: Hero metrics ── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard icon={<Users size={16} />} label="Human Reach" value={humanReach.toString()}
-            hint="Unique visitors in window" accentHsl="280 55% 24%" />
+            hint="Unique visitors in window" accentHsl="var(--foreground)" />
           <StatCard icon={<Bot size={16} />} label="AI Mindshare" value={aiMindshare.toString()}
-            hint="Crawler hits in window" accentHsl="46 75% 40%" />
+            hint="Crawler hits in window" accentHsl="var(--admin-accent)" />
           <StatCard icon={<Sparkles size={16} />} label="Conversion Index" value={`${conversionIndex}%`}
-            hint={`${leadsCount} leads from ${humanReach} visitors`} accentHsl="280 57% 13%" />
+            hint={`${leadsCount} leads from ${humanReach} visitors`} accentHsl="var(--admin-ok)" />
         </div>
 
         {/* ── Section B: Human Behavioural Report ── */}
@@ -398,8 +390,8 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                   return (
                     <li key={c.country} className="space-y-1">
                       <div className="flex justify-between font-body text-xs"><span>{c.country}</span><span style={{ color: "hsl(var(--muted-foreground))" }}>{c.count}</span></div>
-                      <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "hsl(260 20% 92%)" }}>
-                        <div className="h-full" style={{ width: `${pct}%`, backgroundColor: "hsl(280 55% 24%)" }} />
+                      <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "hsl(var(--muted))" }}>
+                        <div className="h-full" style={{ width: `${pct}%`, backgroundColor: "hsl(var(--foreground))" }} />
                       </div>
                     </li>
                   );
@@ -458,7 +450,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                           onClick={() => setSelectedPath(row.path === selectedPath ? null : row.path)}
                           className="cursor-pointer"
                           style={{
-                            backgroundColor: selectedPath === row.path ? "hsl(280 55% 24% / 0.07)" : "transparent",
+                            backgroundColor: selectedPath === row.path ? "hsl(var(--muted))" : "transparent",
                           }}
                         >
                           <td className="py-1.5 pr-2 truncate max-w-[240px]" style={{ color: "hsl(var(--foreground))" }}>{row.path}</td>
@@ -523,7 +515,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 )}
               </div>
             </div>
-            <button onClick={() => setSelectedPath(null)} className="mt-3 font-body text-[11px] uppercase tracking-wider" style={{ color: "hsl(280 55% 24%)" }}>
+            <button onClick={() => setSelectedPath(null)} className="mt-3 font-body text-[11px] uppercase tracking-wider" style={{ color: "hsl(var(--foreground))" }}>
               Close detail
             </button>
           </Panel>
@@ -535,9 +527,9 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
             <ul className="space-y-1.5">
               {transitions.map((t) => (
                 <li key={`${t.from_path}->${t.to_path}`} className="flex items-center gap-2 font-body text-xs">
-                  <span className="px-1.5 py-0.5 rounded truncate max-w-[38%]" style={{ backgroundColor: "hsl(280 55% 24% / 0.08)", color: "hsl(var(--foreground))" }}>{t.from_path}</span>
+                  <span className="px-1.5 py-0.5 rounded truncate max-w-[38%]" style={{ backgroundColor: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}>{t.from_path}</span>
                   <ChevronRight size={11} style={{ color: "hsl(var(--muted-foreground))" }} />
-                  <span className="px-1.5 py-0.5 rounded truncate max-w-[38%]" style={{ backgroundColor: "hsl(46 75% 40% / 0.14)", color: "hsl(var(--foreground))" }}>{t.to_path}</span>
+                  <span className="px-1.5 py-0.5 rounded truncate max-w-[38%]" style={{ backgroundColor: "hsl(var(--admin-accent) / 0.18)", color: "hsl(var(--foreground))" }}>{t.to_path}</span>
                   <span className="ml-auto" style={{ color: "hsl(var(--muted-foreground))" }}>{t.transitions}</span>
                 </li>
               ))}
@@ -552,7 +544,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
           ) : (
             <ul className="space-y-2">
               {journeys.map((j, idx) => (
-                <li key={idx} className="p-2.5 rounded-lg border" style={{ borderColor: "hsl(260 20% 90%)", backgroundColor: "hsl(30 20% 99%)" }}>
+                <li key={idx} className="p-2.5 rounded-lg border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}>
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <span className="font-body text-xs font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>{j.stitched_email}</span>
                     <span className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{new Date(j.converted_at).toLocaleDateString()}</span>
@@ -560,7 +552,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                   <div className="flex items-center gap-1 flex-wrap font-body text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     {j.path_sequence.slice(0, 6).map((p, i) => (
                       <span key={i} className="flex items-center gap-1">
-                        <span className="px-1.5 py-0.5 rounded" style={{ backgroundColor: "hsl(280 55% 24% / 0.08)" }}>{p}</span>
+                        <span className="px-1.5 py-0.5 rounded" style={{ backgroundColor: "hsl(var(--muted))" }}>{p}</span>
                         {i < Math.min(j.path_sequence.length, 6) - 1 && <ChevronRight size={10} />}
                       </span>
                     ))}
@@ -580,7 +572,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 {botLeaderboard.slice(0, 8).map((b) => (
                   <li key={b.entity_name} className="flex items-center justify-between font-body text-xs">
                     <span className="truncate" style={{ color: "hsl(var(--foreground))" }}>{b.entity_name.split(" (")[0]}</span>
-                    <span style={{ color: "hsl(46 75% 25%)" }}>{b.count}</span>
+                    <span style={{ color: "hsl(var(--foreground))" }}>{b.count}</span>
                   </li>
                 ))}
               </ul>
@@ -592,7 +584,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
               {auditRows.length === 0 ? <Empty>No content yet.</Empty> : (
                 <ul className="space-y-2 max-h-[360px] overflow-y-auto">
                   {auditRows.map((row) => (
-                    <li key={`${row.kind}-${row.id}`} className="flex items-start justify-between gap-3 p-3 rounded-lg border" style={{ borderColor: "hsl(260 20% 90%)", backgroundColor: "hsl(30 20% 99%)" }}>
+                    <li key={`${row.kind}-${row.id}`} className="flex items-start justify-between gap-3 p-3 rounded-lg border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--card))" }}>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Tag color={row.kind === "blog" ? "purple" : "gold"}>{row.kind}</Tag>
@@ -617,7 +609,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
         </div>
 
         {/* llms.txt link card */}
-        <div className="rounded-xl border bg-card p-4" style={{ borderColor: "hsl(var(--border))" }}>
+        <div className="rounded-md border bg-card p-4" style={{ borderColor: "hsl(var(--border))" }}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h3 className="font-display text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>llms.txt manifest</h3>
@@ -625,7 +617,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
             </div>
             <div className="flex items-center gap-2">
               <a href={`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/llms-txt`} target="_blank" rel="noopener noreferrer"
-                className="font-body text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full border hover:opacity-70" style={{ borderColor: "hsl(260 20% 80%)", color: "hsl(var(--foreground))" }}>
+                className="admin-btn">
                 View llms.txt <ExternalLink size={11} className="inline ml-1" />
               </a>
               <a href={`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/llms-txt?full=1`} target="_blank" rel="noopener noreferrer"
@@ -648,7 +640,7 @@ const AdminInsights = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
 // ── Tiny sub-components, kept inline because they're page-specific ─────
 const StatCard = ({ icon, label, value, hint, accentHsl }: { icon: React.ReactNode; label: string; value: string; hint: string; accentHsl: string }) => (
-  <div className="rounded-xl border p-4 sm:p-5 bg-card" style={{ borderColor: "hsl(var(--border))" }}>
+  <div className="rounded-md border p-4 sm:p-5 bg-card" style={{ borderColor: "hsl(var(--border))" }}>
     <div className="flex items-center gap-2 mb-2">
       <span className="inline-flex items-center justify-center w-7 h-7 rounded-full" style={{ backgroundColor: `hsl(${accentHsl} / 0.1)`, color: `hsl(${accentHsl})` }}>{icon}</span>
       <span className="font-body text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground))" }}>{label}</span>
@@ -659,7 +651,7 @@ const StatCard = ({ icon, label, value, hint, accentHsl }: { icon: React.ReactNo
 );
 
 const Panel = ({ title, loading, children }: { title: string; loading: boolean; children: React.ReactNode }) => (
-  <div className="rounded-xl border bg-card p-4 sm:p-5" style={{ borderColor: "hsl(var(--border))" }}>
+  <div className="rounded-md border bg-card p-4 sm:p-5" style={{ borderColor: "hsl(var(--border))" }}>
     <h2 className="font-display text-base font-bold mb-3" style={{ color: "hsl(var(--foreground))" }}>{title}</h2>
     {loading ? <ListSkeleton rows={4} rowHeight="h-8" /> : children}
   </div>
@@ -688,11 +680,11 @@ const Empty = ({ children }: { children: React.ReactNode }) => (
 
 const Tag = ({ color, children }: { color: "purple" | "gold" | "green" | "red" | "amber"; children: React.ReactNode }) => {
   const palette: Record<string, { bg: string; fg: string }> = {
-    purple: { bg: "hsl(280 55% 24% / 0.10)", fg: "hsl(280 55% 24%)" },
-    gold:   { bg: "hsl(46 75% 40% / 0.18)",  fg: "hsl(46 75% 25%)" },
-    green:  { bg: "hsl(140 50% 90%)",        fg: "hsl(140 60% 25%)" },
-    red:    { bg: "hsl(0 60% 95%)",          fg: "hsl(0 60% 40%)" },
-    amber:  { bg: "hsl(40 80% 90%)",         fg: "hsl(40 80% 30%)" },
+    purple: { bg: "hsl(var(--muted))", fg: "hsl(var(--foreground))" },
+    gold:   { bg: "hsl(var(--admin-accent) / 0.18)",  fg: "hsl(var(--foreground))" },
+    green:  { bg: "hsl(var(--admin-ok) / 0.15)",   fg: "hsl(var(--admin-ok))" },
+    red:    { bg: "hsl(var(--admin-bad) / 0.15)",  fg: "hsl(var(--admin-bad))" },
+    amber:  { bg: "hsl(var(--admin-warn) / 0.15)", fg: "hsl(var(--admin-warn))" },
   };
   const p = palette[color];
   return <span className="font-body text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: p.bg, color: p.fg }}>{children}</span>;

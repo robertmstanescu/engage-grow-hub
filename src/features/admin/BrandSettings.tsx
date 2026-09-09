@@ -588,7 +588,7 @@ const BrandSettings = () => {
               <div key={label} className="flex items-center justify-between">
                 <span className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{label}</span>
                 <span className="font-body text-[10px] font-bold px-2 py-0.5 rounded-md" style={{
-                  backgroundColor: pass ? "hsl(142 76% 36%)" : "hsl(0 84% 60%)",
+                  backgroundColor: pass ? "hsl(var(--admin-ok))" : "hsl(var(--admin-bad))",
                   color: "#FFFFFF",
                 }}>{pass ? "PASS" : "FAIL"}</span>
               </div>
