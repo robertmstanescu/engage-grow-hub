@@ -502,9 +502,9 @@ const HeadingsAudit = () => {
                 <th className="px-3 py-2 font-medium">Search title</th>
                 <th
                   className="px-3 py-2 font-medium"
-                  title="One or two plain sentences under the headline: what this is, for whom, how you work. 25–45 words. Search engines and AI answers quote it."
+                  title="One or two plain sentences, shown as small print in the page footer: what this is, for whom, how you work. 25–45 words. Search engines and AI answers quote it."
                 >
-                  Plain answer (under the title)
+                  Plain answer (footer small print)
                 </th>
                 <th
                   className="px-3 py-2 font-medium"
@@ -622,7 +622,7 @@ const HeadingRowItem = ({
               className="w-full px-2 py-1 rounded font-body text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary resize-y"
             />
             <div className="font-body text-[10px] mt-0.5" style={{ color: answerWords === 0 ? "hsl(var(--admin-bad))" : answerWords < 25 || answerWords > 45 ? "hsl(var(--admin-warn))" : "hsl(var(--muted-foreground))" }}>
-              {answerWords === 0 ? "Missing — nothing under the headline yet" : `${answerWords} words${answerWords < 25 ? " · aim for 25–45" : answerWords > 45 ? " · trim to 45" : ""}`}
+              {answerWords === 0 ? "Missing — nothing for the footer yet" : `${answerWords} words${answerWords < 25 ? " · aim for 25–45" : answerWords > 45 ? " · trim to 45" : ""}`}
             </div>
           </div>
         ) : (

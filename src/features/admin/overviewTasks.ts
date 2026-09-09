@@ -80,7 +80,7 @@ export const deriveTasks = (
   const livePages = input.pages.filter((p) => p.status === "published" && Array.isArray(p.page_rows));
   const noAnswer = livePages.filter((p) => hasHero(p.page_rows) && heroAnswerOf(p.page_rows) === "");
   if (noAnswer.length) {
-    tasks.push({ kind: "seo", title: `${noAnswer.length} live page${noAnswer.length === 1 ? " has" : "s have"} no plain answer under the headline`, detail: noAnswer.map((p) => p.title).slice(0, 4).join(", "), go: { tab: "insights", sub: "seo" }, action: "Write" });
+    tasks.push({ kind: "seo", title: `${noAnswer.length} live page${noAnswer.length === 1 ? " has" : "s have"} no plain answer for the footer`, detail: noAnswer.map((p) => p.title).slice(0, 4).join(", "), go: { tab: "insights", sub: "seo" }, action: "Write" });
   }
   const noAlt = livePages.map((p) => ({ p, n: findMissingAltViolations(p.page_rows as PageRow[]).length })).filter((x) => x.n > 0);
   if (noAlt.length) {

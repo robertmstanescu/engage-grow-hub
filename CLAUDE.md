@@ -84,10 +84,12 @@ Rules that are easy to get wrong:
   string in a day) is a bot. Do not count raw page views as humans.
 - Every hero carries a "plain answer" (`content.answer`, edited on the
   hero block and under Insights → SEO checks, Home included): one or two
-  plain sentences under the headline that say what the page is, for
-  whom and how the work happens. It renders visibly (never hidden text),
-  and doubles as the search description and Service schema description
-  when those are empty. Blog posts use their short summary the same way.
+  plain sentences that say what the page is, for whom and how the work
+  happens. The hero does NOT render it; the page passes it to `Footer`
+  (`pageAnswer`), which shows it as small print under "In plain words"
+  beside the Connect column. Visible text, never hidden; it doubles as
+  the search description and Service schema description when those are
+  empty. Blog pages pass nothing (owner's choice).
 - The public bundle must stay free of admin code: widget editors are
   `lazy()`, dnd-kit lives only in `*Live.tsx` / `CellDropTargets.tsx`
   loaded inside a builder, icons load per name through

@@ -94,7 +94,7 @@ export const seoChecks = (page: { title: string; metaTitle: string; metaDescript
     : { key: "h1", ok: false, label: `${page.h1s.length} headlines`, detail: "A page should have exactly one H1." });
   if (!page.isPost) {
     const w = wordCount(page.answer);
-    checks.push(w === 0 ? { key: "answer", ok: false, label: "No plain answer", detail: "One or two plain sentences under the headline." }
+    checks.push(w === 0 ? { key: "answer", ok: false, label: "No plain answer", detail: "One or two plain sentences, shown as small print in the footer." }
       : w < 25 || w > 45 ? { key: "answer", ok: false, label: "Plain answer length", detail: `${w} words; aim for 25–45.` }
       : { key: "answer", ok: true, label: "Plain answer", detail: `${w} words.` });
     if (Array.isArray(page.rows)) {

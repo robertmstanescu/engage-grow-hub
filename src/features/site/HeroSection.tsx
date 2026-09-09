@@ -23,7 +23,7 @@ const HERO_STANDARD_HEIGHT = "clamp(600px, 86vh, 800px)";
 
 
 interface HeroContent {
-  /** The plain answer shown under the title: what this is, for whom, how it works. */
+  /** The plain answer: what this is, for whom, how it works. Shown as small print in the footer, not in the hero. */
   answer?: string;
   label: string;
   /** Admin-picked eyebrow (label) colour. Falls back to the theme token. */
@@ -553,18 +553,8 @@ export const HeroView = ({
             ))}
           </h1>
 
-          {/* The plain answer: what this is, for whom, how it works — the
-              sentence search engines and AI answers quote. Sits right
-              under the headline, before the evocative line. */}
-          {hasText(c.answer) && (
-            <p
-              className={`mc-rise font-body flex-shrink-0 max-w-[640px] leading-relaxed ${marginClass}`}
-              data-hero-answer
-              style={{ "--rise-y": "12px", "--rise-dur": "0.8s", "--rise-delay": "0.7s", color: "hsl(var(--hero-body))", fontSize: "var(--fs-hero-subtitle)", fontWeight: 500 } as React.CSSProperties}
-            >
-              <Field fieldPath="answer" as="span">{c.answer}</Field>
-            </p>
-          )}
+          {/* `c.answer` (the plain answer) is deliberately NOT rendered
+              here: the page passes it to the Footer as small print. */}
 
           {c.tagline && (
             <p

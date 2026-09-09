@@ -85,11 +85,11 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
 
       <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
       <TextAreaField
-        label="Plain answer (under the title)"
+        label="Plain answer (small print in the footer)"
         value={content.answer || ""}
         onChange={(v) => onChange("answer", v)}
         placeholder="One or two plain sentences: what this is, for whom, how you work. 25–45 words."
-        hint="Shown right under the headline. Search engines and AI answers quote this line; it also becomes the search description when that is empty."
+        hint="Shown as small print in the footer of this page. Search engines and AI answers quote this line; it also becomes the search description when that is empty."
       />
 
       <SubtitleEditor

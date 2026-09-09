@@ -127,7 +127,7 @@ const CmsPage = ({ prefix = "" }: { prefix?: string }) => {
 
   return (
     <CmsPageBody rows={rows}
-      blogCategories={isServicePage && slug ? SERVICE_CATEGORIES[slug] || [] : undefined} isPreview={isPreview} pageTitle={pageTitle} breadcrumbTrail={breadcrumbTrail} />
+      blogCategories={isServicePage && slug ? SERVICE_CATEGORIES[slug] || [] : undefined} heroAnswer={heroAnswer} isPreview={isPreview} pageTitle={pageTitle} breadcrumbTrail={breadcrumbTrail} />
   );
 };
 
@@ -135,13 +135,14 @@ const CmsPageBody = ({
   rows,
   isPreview,
   pageTitle,
-  breadcrumbTrail, blogCategories }: {
+  breadcrumbTrail, blogCategories, heroAnswer }: {
   rows: PageRow[];
   isPreview: boolean;
   pageTitle: string;
   breadcrumbTrail: BreadcrumbEntry[];
   /** Blog categories that belong to this page; a few posts show before the footer when set. */
   blogCategories?: string[];
+  heroAnswer?: string;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   /* Content-only pages (a privacy policy is the classic case) carry no
@@ -166,7 +167,7 @@ const CmsPageBody = ({
             <div className="py-32 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
               This page has no content yet. Add rows in the admin panel.
             </div>
-            <Footer breadcrumbTrail={breadcrumbTrail} />
+            <Footer breadcrumbTrail={breadcrumbTrail} pageAnswer={heroAnswer} />
           </>
         ) : (
           <RowsRenderer
@@ -174,7 +175,7 @@ const CmsPageBody = ({
             footerSlot={
               <>
                 {blogCategories && <FromTheBlog categories={blogCategories} />}
-                <Footer breadcrumbTrail={breadcrumbTrail} />
+                <Footer breadcrumbTrail={breadcrumbTrail} pageAnswer={heroAnswer} />
               </>
             }
           />

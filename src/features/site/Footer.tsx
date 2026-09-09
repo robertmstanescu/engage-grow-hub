@@ -42,7 +42,15 @@ interface FooterContent {
   shapeTop?: SectionShapeConfig;
 }
 
-const Footer = ({ breadcrumbTrail }: { breadcrumbTrail?: BreadcrumbEntry[] }) => {
+/**
+ * `pageAnswer` is the page's plain answer (what this is, for whom, how the
+ * work happens), written on the hero block and shown here as small print
+ * beside the Connect column. It used to sit under the headline at
+ * subtitle size; the owner wanted it quieter, so the hero no longer
+ * renders it and every page with a hero passes it down here. Blog pages
+ * do not pass one.
+ */
+const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbEntry[]; pageAnswer?: string }) => {
   const { pathname } = useLocation();
   /* Footer hash links (#vows, #contact) point at rows that only exist
      on the homepage. When the footer renders on /blog or a CMS page we
@@ -137,6 +145,17 @@ const Footer = ({ breadcrumbTrail }: { breadcrumbTrail?: BreadcrumbEntry[] }) =>
               </ul>
             </div>
           ))}
+
+          {pageAnswer?.trim() ? (
+            <div className="col-span-2 md:col-span-1" data-page-answer>
+              <h4 className="font-body text-micro uppercase tracking-[0.25em] font-semibold mb-4" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
+                In plain words
+              </h4>
+              <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
+                {pageAnswer.trim()}
+              </p>
+            </div>
+          ) : null}
         </div>
 
         {/*
