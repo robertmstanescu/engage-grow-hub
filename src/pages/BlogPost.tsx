@@ -127,7 +127,8 @@ const BlogPost = () => {
     return (
       <div className="min-h-screen page-shell">
         <Navbar />
-        <div className="pt-36 pb-20 text-center px-8"><p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Loading...</p></div>
+        {/* Reserve the article's room so the footer does not jump when the text arrives (layout shift). */}
+        <div className="pt-36 pb-20 text-center px-8" style={{ minHeight: "85vh" }}><p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Loading...</p></div>
         <Footer />
       </div>
     );

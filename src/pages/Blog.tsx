@@ -2,6 +2,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { buildImageSrcSet, transformImageUrl } from "@/services/mediaOptimization";
 import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
@@ -68,9 +69,13 @@ const BlogCard = ({ post }: { post: BlogPost }) => {
         {hasCover && (
           <>
             <img
-              src={post.cover_image!}
+              src={transformImageUrl(post.cover_image!, { width: 960, quality: 70 })}
+              srcSet={buildImageSrcSet(post.cover_image!, [480, 960, 1440], 70)}
+              sizes="(min-width: 1024px) 720px, 100vw"
               alt={post.cover_image_alt || `${post.title} cover image`}
               className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
             />
             <div
               className="absolute inset-0"

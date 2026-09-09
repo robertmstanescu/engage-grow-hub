@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
+import { transformImageUrl } from "@/services/mediaOptimization";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSiteContent, useSiteContentWithStatus } from "@/hooks/useSiteContent";
@@ -29,9 +30,9 @@ type ResponsiveLogoProps = {
 
 const ResponsiveLogo = ({ emblemUrl, logoUrl, className, imgClassName, width, height, darken }: ResponsiveLogoProps) => (
   <picture className={className}>
-    <source media="(min-width: 1024px)" srcSet={emblemUrl} />
+    <source media="(min-width: 1024px)" srcSet={transformImageUrl(emblemUrl, { width: 160, quality: 85 })} />
     <img
-      src={logoUrl}
+      src={transformImageUrl(logoUrl, { width: 480, quality: 85 })}
       alt="The Magic Coffin logo"
       className={`${imgClassName ?? ""}${darken ? " logo-darken" : ""}`}
       width={width}

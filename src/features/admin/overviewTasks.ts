@@ -20,6 +20,13 @@ export interface Task {
   action: string;
 }
 
+import { findWidgetsByType } from "@/lib/rowWidgets";
+import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
+import { heroAnswerOf } from "./seoHeadings";
+import { findMissingAltViolations } from "@/services/contentAccessibility";
+import type { PageRow } from "@/types/rows";
+const hasHero = (rows: unknown): boolean => Array.isArray(rows) && findWidgetsByType(normalizeRowsToV3(rows) as never, "hero").length > 0;
+
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
 export const hasUnpublishedChanges = (page: Pick<PageLite, "page_rows" | "draft_page_rows">) =>
@@ -69,6 +76,16 @@ export const deriveTasks = (
   const noSeo = input.pages.filter((p) => p.status === "published" && !(p.meta_description || "").trim());
   if (noSeo.length) {
     tasks.push({ kind: "seo", title: `${noSeo.length} live page${noSeo.length === 1 ? " has" : "s have"} no search description`, detail: noSeo.map((p) => p.title).slice(0, 4).join(", "), go: { tab: "insights", sub: "seo" }, action: "Fix" });
+  }
+  const livePages = input.pages.filter((p) => p.status === "published" && Array.isArray(p.page_rows));
+  const noAnswer = livePages.filter((p) => hasHero(p.page_rows) && heroAnswerOf(p.page_rows) === "");
+  if (noAnswer.length) {
+    tasks.push({ kind: "seo", title: `${noAnswer.length} live page${noAnswer.length === 1 ? " has" : "s have"} no plain answer under the headline`, detail: noAnswer.map((p) => p.title).slice(0, 4).join(", "), go: { tab: "insights", sub: "seo" }, action: "Write" });
+  }
+  const noAlt = livePages.map((p) => ({ p, n: findMissingAltViolations(p.page_rows as PageRow[]).length })).filter((x) => x.n > 0);
+  if (noAlt.length) {
+    const total = noAlt.reduce((a, x) => a + x.n, 0);
+    tasks.push({ kind: "seo", title: `${total} picture${total === 1 ? "" : "s"} without alt text`, detail: noAlt.map((x) => x.p.title).slice(0, 4).join(", "), go: { tab: "insights", sub: "seo" }, action: "Describe" });
   }
   return tasks;
 };
