@@ -5,6 +5,7 @@ import { shrinkImage } from "@/services/imageShrink";
 import { toast } from "sonner";
 import MediaGallery from "./MediaGallery";
 import ImageAltInput from "./ImageAltInput";
+import { describeImage } from "@/services/describeImage";
 import ImageShapeControl from "./ImageShapeControl";
 import { IMAGE_RATIO_OPTIONS, type ImageRatioPreset } from "@/lib/imageShape";
 
@@ -98,7 +99,24 @@ const ImagePickerField = ({
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = ""; }} />
       <UrlInput value={value} onCommit={onChange} />
       {value && onAltChange && (
-        <ImageAltInput value={altValue ?? ""} onChange={onAltChange} />
+        <div>
+          <ImageAltInput value={altValue ?? ""} onChange={onAltChange} />
+          <button
+            type="button"
+            className="admin-link mt-1"
+            onClick={async () => {
+              try {
+                const { alt } = await describeImage({ imageUrl: value, context: label });
+                onAltChange(alt);
+                toast.success("Description suggested — check it reads true.");
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Could not describe the picture");
+              }
+            }}
+          >
+            {altValue?.trim() ? "Suggest another description with AI" : "Suggest a description with AI"}
+          </button>
+        </div>
       )}
       {value && onShapeChange && (
         <ImageShapeControl

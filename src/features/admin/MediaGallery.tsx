@@ -22,6 +22,8 @@ import { toast } from "sonner";
 import { ExternalLink, FileText, FolderPlus, Upload, X } from "lucide-react";
 import ActionMenu from "./ui/ActionMenu";
 import { MENU_DIVIDER } from "./ui/menu";
+import { describeImage } from "@/services/describeImage";
+import { Sparkles } from "lucide-react";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import UploadProgress, { type UploadStatus } from "@/components/ui/upload-progress";
 import {
@@ -158,7 +160,21 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
   /** A file waiting for its alt text before it uploads. */
-  const [pending, setPending] = useState<{ file: File; previewUrl: string; alt: string; folderId: string | null } | null>(null);
+  const [pending, setPending] = useState<{ file: File; previewUrl: string; alt: string; description: string; folderId: string | null; suggested?: boolean } | null>(null);
+  const [describing, setDescribing] = useState(false);
+
+  /** Ask the AI for alt text; fills only what is still empty. */
+  const suggestForPending = useCallback(async (file: File) => {
+    setDescribing(true);
+    try {
+      const { alt, description } = await describeImage({ file });
+      setPending((prev) => (prev && prev.file === file ? { ...prev, alt: prev.alt.trim() ? prev.alt : alt, description: prev.description.trim() ? prev.description : description, suggested: true } : prev));
+    } catch (e) {
+      toast.message(e instanceof Error ? e.message : "Could not describe the picture; write it by hand.");
+    } finally {
+      setDescribing(false);
+    }
+  }, []);
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
   const [uploadPercent, setUploadPercent] = useState(0);
   const [uploadName, setUploadName] = useState<string | undefined>();
@@ -292,7 +308,9 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
     const file = fileList[0];
     if (file.size > 50 * 1024 * 1024) { toast.error("File exceeds 50MB."); return; }
     const previewUrl = isImageMime(file.type) ? URL.createObjectURL(file) : "";
-    setPending({ file, previewUrl, alt: "", folderId: activeFolderId === "all" ? null : activeFolderId });
+    setPending({ file, previewUrl, alt: "", description: "", folderId: activeFolderId === "all" ? null : activeFolderId });
+    // Pictures get a suggested description straight away; the field stays editable.
+    if (isImageMime(file.type)) void suggestForPending(file);
   };
 
   const cancelPending = () => {
@@ -302,7 +320,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
 
   const handleUpload = async () => {
     if (!pending) return;
-    const { file, alt, folderId } = pending;
+    const { file, alt, description, folderId } = pending;
     if (isImageMime(file.type) && !alt.trim()) { toast.error("Describe the picture first — screen readers and search read it."); return; }
     setUploadStatus("uploading");
     setUploadPercent(0);
@@ -314,6 +332,7 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
       file,
       folderId,
       title: filenameWithoutExt(file.name),
+      description: description.trim() || undefined,
       altText: alt.trim(),
       onProgress: (event) => setUploadPercent(event.percent),
     });
@@ -465,10 +484,20 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
               value={pending.alt}
               onChange={(e) => setPending({ ...pending, alt: e.target.value })}
               maxLength={100}
-              placeholder={isImageMime(pending.file.type) ? "Describe the picture in one line (for screen readers and search)" : "Short description (optional)"}
-              aria-label="Description"
+              placeholder={describing ? "Looking at the picture…" : isImageMime(pending.file.type) ? "Describe the picture in one line (for screen readers and search)" : "Short description (optional)"}
+              aria-label="Alt text"
               className="admin-input mt-1"
             />
+            {isImageMime(pending.file.type) && (
+              <p className="font-body text-[11px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+                {describing ? "Suggesting a description…" : pending.suggested ? "Suggested by AI — check it reads true, then upload." : "No suggestion yet."}
+                {!describing && (
+                  <button type="button" className="admin-link ml-2" onClick={() => suggestForPending(pending.file)}>
+                    {pending.suggested ? "Suggest again" : "Suggest with AI"}
+                  </button>
+                )}
+              </p>
+            )}
           </div>
           <select
             value={pending.folderId || ""}
@@ -564,9 +593,34 @@ const MediaGallery = ({ onSelect, isModal, onClose, mimeFilter }: Props) => {
             <p className="font-body text-[11px] text-muted-foreground">{formatBytes(selectedAsset.size_bytes)} · {formatDate(selectedAsset.created_at)}</p>
 
             <div>
-              <label className={fieldLabel}>Alt text</label>
+              <div className="flex items-center justify-between">
+                <label className={fieldLabel}>Alt text</label>
+                {isImageMime(selectedAsset.mime_type) && (
+                  <button
+                    type="button"
+                    className="admin-btn ghost"
+                    disabled={describing}
+                    title="Let the AI write the alt text and description; you can edit both afterwards"
+                    onClick={async () => {
+                      setDescribing(true);
+                      try {
+                        const { alt, description } = await describeImage({ imageUrl: getAssetPublicUrl(selectedAsset.storage_path, selectedAsset.bucket), context: selectedAsset.title });
+                        await updateAssetMetadata(selectedAsset.id, { alt_text: alt, ...(description && !selectedAsset.description ? { description } : {}) });
+                        toast.success("Description written — check it reads true.");
+                        refresh();
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : "Could not describe the picture");
+                      } finally {
+                        setDescribing(false);
+                      }
+                    }}
+                  >
+                    <Sparkles size={12} /> {describing ? "Looking…" : "Describe with AI"}
+                  </button>
+                )}
+              </div>
               <input
-                key={`alt-${selectedAsset.id}`}
+                key={`alt-${selectedAsset.id}-${selectedAsset.alt_text}`}
                 defaultValue={selectedAsset.alt_text}
                 maxLength={100}
                 placeholder="Describe the picture in one line"
