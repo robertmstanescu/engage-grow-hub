@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
+import FromTheBlog from "@/features/site/FromTheBlog";
+import { SERVICE_CATEGORIES } from "@/features/site/serviceCategories";
 import { rowsProvideHeading, extractFaqItems } from "@/features/site/rows/PrimaryHeadingContext";
 import type { BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
 import { findWidgetsByType } from "@/lib/rowWidgets";
@@ -124,7 +126,8 @@ const CmsPage = ({ prefix = "" }: { prefix?: string }) => {
   if (notFound) return <NotFound />;
 
   return (
-    <CmsPageBody rows={rows} isPreview={isPreview} pageTitle={pageTitle} breadcrumbTrail={breadcrumbTrail} />
+    <CmsPageBody rows={rows}
+      blogCategories={isServicePage && slug ? SERVICE_CATEGORIES[slug] || [] : undefined} isPreview={isPreview} pageTitle={pageTitle} breadcrumbTrail={breadcrumbTrail} />
   );
 };
 
@@ -132,12 +135,13 @@ const CmsPageBody = ({
   rows,
   isPreview,
   pageTitle,
-  breadcrumbTrail,
-}: {
+  breadcrumbTrail, blogCategories }: {
   rows: PageRow[];
   isPreview: boolean;
   pageTitle: string;
   breadcrumbTrail: BreadcrumbEntry[];
+  /** Blog categories that belong to this page; a few posts show before the footer when set. */
+  blogCategories?: string[];
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   /* Content-only pages (a privacy policy is the classic case) carry no
@@ -165,7 +169,15 @@ const CmsPageBody = ({
             <Footer breadcrumbTrail={breadcrumbTrail} />
           </>
         ) : (
-          <RowsRenderer rows={rows} footerSlot={<Footer breadcrumbTrail={breadcrumbTrail} />} />
+          <RowsRenderer
+            rows={rows}
+            footerSlot={
+              <>
+                {blogCategories && <FromTheBlog categories={blogCategories} />}
+                <Footer breadcrumbTrail={breadcrumbTrail} />
+              </>
+            }
+          />
         )}
       </div>
     </div>
