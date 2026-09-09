@@ -39,14 +39,14 @@ export const gsc = {
   status: () => call<EngineStatus>("search-console", { action: "status" }),
   connect: (serviceAccountJson: string) => call<EngineStatus>("search-console", { action: "connect", serviceAccountJson }),
   disconnect: () => call<EngineStatus>("search-console", { action: "disconnect" }),
-  query: (days = 28) => call<SearchReport>("search-console", { action: "query", days }),
+  query: (days = 28) => call<SearchQueryResult>("search-console", { action: "query", days }),
 };
 
 export const bing = {
   status: () => call<EngineStatus>("bing-webmaster", { action: "status" }),
   connect: (apiKey: string) => call<EngineStatus>("bing-webmaster", { action: "connect", apiKey }),
   disconnect: () => call<EngineStatus>("bing-webmaster", { action: "disconnect" }),
-  query: (days = 28) => call<SearchReport>("bing-webmaster", { action: "query", days }),
+  query: (days = 28) => call<SearchQueryResult>("bing-webmaster", { action: "query", days }),
 };
 
 export const INDEXNOW_KEY = "9f4c1e7a2b8d4e6f9a0c3b5d7e1f2a4b";
