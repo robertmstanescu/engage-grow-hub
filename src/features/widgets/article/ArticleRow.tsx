@@ -1,30 +1,28 @@
 import type { PageRow } from "@/types/rows";
-import RowSection from "@/features/site/rows/typography/RowSection";
 import { useArticle } from "./articleContext";
 
 /**
- * ArticleRow — the post's own words as a centred reading column.
+ * ArticleRow — the post's own words.
  *
- * Renders the HTML provided by the surrounding post (see articleContext)
- * with the same body rules as every other row (`data-row-part="body"`
- * gives paragraphs, lists and headings their styles). No card, no
- * background of its own; the row's Style tab still applies if wanted.
+ * Deliberately NOT a RowSection: the article sits in the post's own
+ * reading column, flush with the headline above it, with no row padding,
+ * card or background of its own. `data-row-part="body"` gives
+ * paragraphs, lists and headings their styles; the section attributes
+ * keep the builder and the screenshot suite able to find it.
  */
 const ArticleRow = ({ row }: { row: PageRow }) => {
   const article = useArticle();
   if (!article || !article.html.trim()) return null;
   return (
-    <RowSection row={row} grain={false} className="">
-      <div className="relative z-10 w-full">
-        <div
-          className="measure mx-auto font-body font-medium leading-[var(--lh-body)] [&_p]:my-[var(--para-space)]"
-          data-row-part="body"
-          data-article-body
-          style={{ fontSize: "var(--fs-body)", color: "hsl(var(--foreground) / 0.78)" }}
-          dangerouslySetInnerHTML={{ __html: article.html }}
-        />
-      </div>
-    </RowSection>
+    <section data-row-type="article" data-row-id={row.id} className="w-full pt-2 pb-6">
+      <div
+        className="measure font-body font-medium leading-[var(--lh-body)] [&_p]:my-[var(--para-space)]"
+        data-row-part="body"
+        data-article-body
+        style={{ fontSize: "var(--fs-body)", color: "hsl(var(--foreground) / 0.78)" }}
+        dangerouslySetInnerHTML={{ __html: article.html }}
+      />
+    </section>
   );
 };
 

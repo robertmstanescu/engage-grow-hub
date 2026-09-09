@@ -57,6 +57,10 @@ Rules that are easy to get wrong:
 - Square boxes: the admin sets `--radius` to 6px, so `rounded-lg`/`-md`
   are the shell's corners. `rounded-full` and `rounded-xl+` are for
   swatches, dots, toggles and avatars only (`squareCorners.test.ts`).
+- A post page is one reading column (header, article, extras, author
+  block) with "More to read" (`site/MoreArticles.tsx`) beside it on
+  wide screens and below it on phones. `ArticleRow` is deliberately not
+  a RowSection: no padding or card of its own, flush with the headline.
 - A blog post IS its article. The `article` row type
   (`src/features/widgets/article/`) renders the post's `content` from
   `ArticleContext`; `ensureArticleRow` keeps exactly one in a post's rows
