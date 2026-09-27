@@ -1,20 +1,26 @@
 # The Magic Coffin
 
-Internal comms, employee experience, people ops and fractional HRBP consulting for scale-ups. Fix culture gaps, align teams, make change stick.
+Internal comms, employee experience, people ops, fractional HRBP, pay transparency and manager training for scale-ups. Book a free 30-minute consultation.
 
 ## Pages
 
-- [Home](https://themagiccoffin.com/): Internal comms, employee experience, people ops and fractional HRBP consulting for scale-ups. Fix culture gaps, align teams, make change stick.
-- [Employee Experience](https://themagiccoffin.com/services/employee-experience/): Onboarding, engagement and employee journey design for scale-ups without an HR team. Book a free consultation.
-- [People Operations](https://themagiccoffin.com/services/people-operations/): HR systems and people operations support for scale-ups, fractional or one-off. Book a free consultation.
-- [Privacy Policy](https://themagiccoffin.com/p/privacy-policy/): How we, at The Magic Coffin, collect, use, and protect your personal data under the GDPR.
-- [Internal Communications](https://themagiccoffin.com/services/internal-communications/): Internal comms audits, strategy playbooks and fractional comms leadership for scale-ups whose messages are landing flat. Book a free consultation.
-- [Services](https://themagiccoffin.com/services/): Four ways into the same problem: internal comms, employee experience, people operations and fractional HRBP. Pick the one currently draining you.
+- [Home](https://themagiccoffin.com/): Internal comms, employee experience, people ops, fractional HRBP, pay transparency and manager training for scale-ups. Book a free 30-minute consultation.
+- [Privacy Policy](https://themagiccoffin.com/p/privacy-policy/): How The Magic Coffin collects, uses and protects your personal data under the GDPR, how long we keep it, and how to use your rights to access or delete it.
+- [Pay Transparency](https://themagiccoffin.com/services/pay-transparency/): Job levels, pay bands and pay communication for the EU Pay Transparency Directive. Start with a fixed-price pay transparency check. Book a free consultation.
+- [Internal Communications](https://themagiccoffin.com/services/internal-communications/): Internal comms audits, strategy playbooks and fractional comms leadership for scale-ups whose all-hands messages keep landing flat. Book a free consultation.
+- [People Operations](https://themagiccoffin.com/services/people-operations/): People operations consulting for scale-ups: HRIS workflows, onboarding and policy design, and a fractional people ops partner. Book a free consultation.
+- [Employee Experience](https://themagiccoffin.com/services/employee-experience/): Onboarding design, engagement surveys and employee journey mapping for scale-ups of 50 to 2,000 people, plus a fractional EX partner. Book a free consultation.
+- [About us](https://themagiccoffin.com/p/about-us/): Meet Robert Stănescu, founder of The Magic Coffin: senior people and comms help for scale-ups, from internal comms to pay transparency. Book a free call.
 - [Fractional HRBP](https://themagiccoffin.com/services/fractional-hrbp/): Fractional HR Business Partner for founders who need senior judgement on restructures, exits and culture, without a full-time hire. Book a free consultation.
-- [About us](https://themagiccoffin.com/p/about-us/): One-person fractional HR consultancy for scale-ups. Real numbers, no jargon. Book a free consultation to see if it's a fit.
+- [Manager Enablement](https://themagiccoffin.com/services/manager-enablement/): Manager training for scale-ups: a manager kit, small peer cohorts and one-to-one coaching so new managers practise hard conversations. Book a free consultation.
+- [Services](https://themagiccoffin.com/services/): Six ways into the same problem: internal comms, employee experience, people operations, fractional HRBP, pay transparency and manager enablement. Pick yours.
 
 ## Articles
 
+- [Buried Benefits: What Employees Don't Know They're Owed](https://themagiccoffin.com/blog/buried-benefits-what-employees-don-t-know-they-re-owed/): 36% of workers are left to find their own benefits.
+- [Who Signs Off When the Algorithm Sets the Pay?](https://themagiccoffin.com/blog/who-signs-off-when-the-algorithm-sets-the-pay/): 241,000 drivers challenge Uber's pay algorithm under GDPR.
+- [The Immigration Rules Changed on 3 September. Who Told Your People?](https://themagiccoffin.com/blog/the-immigration-rules-changed-on-3-september-who-told-your-people/): New UK visa rules landed. Did you let your employees know?
+- [Volkswagen to Cut 50,000 Jobs: Employees More Upset with Comms than Job Loss](https://themagiccoffin.com/blog/volkswagen-to-cut-50-000-jobs-its-own-workers-ranked-something-else-worse/): Volkswagen's supervisory board signed off on cutting 50,000 jobs on 3 September 2026. Ask the workforce what upset them most about the whole affair, and the jo…
 - [Two-thirds of Dutch workers do not remove sensitive data before pasting it into an AI tool](https://themagiccoffin.com/blog/two-thirds-of-dutch-workers-do-not-remove-sensitive-data-before-pasting-it-into-an-ai-tool/): In the Netherlands, 5.2 million people now use AI at work, only 29% have had any training, and just 34% strip sensitive information out before pasting it into…
 - [Spain and Portugal: The New Written Rules for Your Pay Gap](https://themagiccoffin.com/blog/spain-and-portugal-the-new-written-rules-for-your-pay-gap/): Spain’s draft pay transparency rules require a written justification wherever mean or median pay for one sex exceeds the other by 25%. Portugal’s draft gives e…
 - [One in 19 European workers has flexible working on paper and a rota in real life](https://themagiccoffin.com/blog/one-in-19-european-workers-has-flexible-working-on-paper-and-a-rota-in-real-life/): A gym membership is not the same as going to the gym.
