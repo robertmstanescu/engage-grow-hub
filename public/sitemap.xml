@@ -2,57 +2,93 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://themagiccoffin.com/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://themagiccoffin.com/blog/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://themagiccoffin.com/services/employee-experience/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://themagiccoffin.com/services/people-operations/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://themagiccoffin.com/p/privacy-policy/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://themagiccoffin.com/services/pay-transparency/</loc>
+    <lastmod>2026-09-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://themagiccoffin.com/services/internal-communications/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://themagiccoffin.com/services/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <loc>https://themagiccoffin.com/services/people-operations/</loc>
+    <lastmod>2026-09-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://themagiccoffin.com/services/fractional-hrbp/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <loc>https://themagiccoffin.com/services/employee-experience/</loc>
+    <lastmod>2026-09-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://themagiccoffin.com/p/about-us/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://themagiccoffin.com/services/fractional-hrbp/</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://themagiccoffin.com/services/manager-enablement/</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://themagiccoffin.com/services/</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://themagiccoffin.com/blog/buried-benefits-what-employees-don-t-know-they-re-owed/</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://themagiccoffin.com/blog/who-signs-off-when-the-algorithm-sets-the-pay/</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://themagiccoffin.com/blog/the-immigration-rules-changed-on-3-september-who-told-your-people/</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://themagiccoffin.com/blog/volkswagen-to-cut-50-000-jobs-its-own-workers-ranked-something-else-worse/</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://themagiccoffin.com/blog/two-thirds-of-dutch-workers-do-not-remove-sensitive-data-before-pasting-it-into-an-ai-tool/</loc>
@@ -92,25 +128,25 @@
   </url>
   <url>
     <loc>https://themagiccoffin.com/blog/flip-a-coin-and-then-you-get-the-ai-culture-result/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://themagiccoffin.com/blog/sixty-years-one-email-and-an-apology-that-told-the-truth/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://themagiccoffin.com/blog/two-numbers-one-week-one-contradiction-worth-sitting-with/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://themagiccoffin.com/blog/silence-has-a-price-now-and-it-s-210-000/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
