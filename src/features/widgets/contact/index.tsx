@@ -14,7 +14,6 @@
  */
 
 import { registerWidget } from "@/lib/WidgetRegistry";
-import { DEFAULT_CONTACT_FIELDS } from "@/lib/constants/rowDefaults";
 import { Mail } from "lucide-react";
 import { lazy } from "react";
 // Loaded lazily: the editor must never ride along in the public bundle.
@@ -23,18 +22,14 @@ import ContactFrontend from "./ContactFrontend";
 
 registerWidget({
   type: "contact",
-  label: "Contact Form",
+  label: "Book a call",
   icon: Mail,
   category: "Marketing",
   defaultData: {
     title_lines: [],
     body: "",
-    button_text: "Request a discovery call",
-    success_heading: "Message received.",
-    success_body: "We respond within 24 hours.",
-    success_button: "Send another message",
-    show_social: false,
-    fields: DEFAULT_CONTACT_FIELDS,
+    booking_button_text: "Book a discovery call",
+    show_calendar: true,
   },
   adminComponent: ContactAdmin,
   frontendComponent: ContactFrontend,
