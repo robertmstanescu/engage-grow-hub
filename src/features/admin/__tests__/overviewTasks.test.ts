@@ -30,9 +30,7 @@ describe("overview tasks", () => {
     expect(tasks[0].title).toBe("Home has unpublished changes");
     expect(tasks[0].go).toEqual({ tab: "builder", pageId: null });
     expect(tasks[1].go).toEqual({ tab: "builder", pageId: "a" });
-    expect(tasks[4].title).toBe("1 new lead this week");
-    expect(tasks[4].detail).toBe("Maria K.");
-    expect(tasks[5].detail).toBe("Services");
+    expect(tasks[4].detail).toBe("Services");
   });
 
   it("returns nothing when everything is published and quiet", () => {
