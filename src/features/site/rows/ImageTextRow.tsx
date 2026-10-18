@@ -3,7 +3,6 @@ import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
-import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { resolveImageAlt } from "@/services/imageAlt";
@@ -284,11 +283,6 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
           )}
         </div>
       </div>
-      {c.show_subscribe && (
-        <div className="relative z-10 mt-rhythm-loose row-container" style={revealStyle(isVisible, 5)}>
-          <SubscribeWidget align={align} />
-        </div>
-      )}
     </RowSection>
   );
 });

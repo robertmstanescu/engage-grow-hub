@@ -5,7 +5,6 @@ import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
-import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSection } from "./typography";
@@ -263,8 +262,6 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           );
         })()}
 
-        {/* Subscribe widget — `mt-rhythm-loose` (48px) marks a major content break between the carousel and the secondary CTA. */}
-        {c.show_subscribe && <div className="mt-rhythm-loose" style={revealStyle(isVisible, 5)}><SubscribeWidget align={align} /></div>}
     </>
   );
 

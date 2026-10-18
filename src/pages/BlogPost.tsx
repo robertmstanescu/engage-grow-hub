@@ -6,7 +6,6 @@ import { sanitizeHtml } from "@/services/sanitize";
 import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
-import SubscribeWidget from "@/features/site/SubscribeWidget";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
 import CoverFadeImage from "@/features/site/CoverFadeImage";
@@ -264,9 +263,6 @@ const BlogPost = () => {
             </div>
           )}
 
-          <div className="w-full mt-10 pt-8 flex flex-col items-start" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }}>
-            <SubscribeWidget />
-          </div>
 
           <MoreArticles currentSlug={article.slug} category={article.category} className="lg:hidden w-full mt-10 pt-8" />
 

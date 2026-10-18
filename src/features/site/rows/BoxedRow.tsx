@@ -2,7 +2,6 @@ import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT, getRowColumns, multiColGridStyle } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
-import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
@@ -243,7 +242,6 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
           </div>
         )}
 
-        {c.show_subscribe && <div className="mt-rhythm-loose" style={revealStyle(isVisible, cards.length + 2)}><SubscribeWidget align={align} /></div>}
       </div>
     );
   };
