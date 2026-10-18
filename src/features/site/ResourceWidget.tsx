@@ -10,7 +10,7 @@
  *   • Mobile        : columns stack; image is on top with a fixed aspect
  *     ratio so the card never explodes vertically on tall phones.
  *
- * Behaviour
+ * Behaviour (no email gate: the file downloads directly)
  * ─────────
  *   • The 4-field form is the gate. We trim every input, lowercase the
  *     email, run a regex check, and submit through the `submit-lead`
@@ -21,13 +21,10 @@
  */
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { fetchAssetById, getAssetPublicUrl, type MediaAsset } from "@/services/mediaLibrary";
-import { submitLeadAndGetDownload } from "@/services/leads";
 import { trackConversion } from "@/services/conversions";
 
 const CREAM = "hsl(var(--foreground))";
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface Props {
   /** Required: id of the gated resource asset. */
@@ -40,24 +37,10 @@ interface Props {
   description?: string;
 }
 
-interface FormState {
-  fullName: string;
-  companyUniversity: string;
-  title: string;
-  email: string;
-}
-
 const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: Props) => {
   const [resource, setResource] = useState<MediaAsset | null>(null);
   const [cover, setCover] = useState<MediaAsset | null>(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState<FormState>({
-    fullName: "",
-    companyUniversity: "",
-    title: "",
-    email: "",
-  });
 
   // Fetch resource + cover metadata. We allow the resource to double as
   // its own cover when no separate cover is set (common case for image
@@ -83,47 +66,6 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
     };
   }, [resourceAssetId, coverAssetId]);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!resource) return;
-
-    const payload = {
-      fullName: form.fullName.trim(),
-      companyUniversity: form.companyUniversity.trim(),
-      title: form.title.trim(),
-      email: form.email.trim().toLowerCase(),
-    };
-
-    if (!payload.fullName || !payload.companyUniversity || !payload.title) {
-      toast.error("Please fill in every field.");
-      return;
-    }
-    if (!EMAIL_REGEX.test(payload.email)) {
-      toast.error("Please enter a valid email address.");
-      return;
-    }
-
-    setSubmitting(true);
-    const { downloadUrl, error } = await submitLeadAndGetDownload({
-      ...payload,
-      resourceAssetId: resource.id,
-      marketingConsent: true,
-    });
-    setSubmitting(false);
-
-    if (error || !downloadUrl) {
-      toast.error(error || "Something went wrong. Please try again.");
-      return;
-    }
-
-    // Gate cleared — open the download. We use window.open so the user
-    // keeps the article in their current tab.
-    window.open(downloadUrl, "_blank", "noopener,noreferrer");
-    toast.success("Thanks! Your download is opening in a new tab.");
-    trackConversion("lead_magnet_download", resource.title);
-    setForm({ fullName: "", companyUniversity: "", title: "", email: "" });
-  };
-
   if (loading) {
     return (
       <div
@@ -146,7 +88,7 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
   }
 
   const heading = title || resource.title || "Download the resource";
-  const subhead = description || resource.description || "Enter your details to get instant access.";
+  const subhead = description || resource.description || "Free to download.";
   const coverUrl = cover ? getAssetPublicUrl(cover.storage_path) : null;
   const coverAlt = cover?.alt_text || heading;
 
@@ -207,48 +149,17 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
                 "linear-gradient(135deg, hsl(285 40% 96% / 0.9) 0%, transparent 55%, hsl(46 70% 92% / 0.5) 100%)",
             }}
           />
-          <form onSubmit={handleSubmit} className="relative z-10 space-y-6">
-            {[
-              { label: "Full name", key: "fullName", type: "text" },
-              { label: "Company / university", key: "companyUniversity", type: "text" },
-              { label: "Title", key: "title", type: "text" },
-              { label: "Email address", key: "email", type: "email" },
-            ].map((field) => (
-              <div key={field.key}>
-                <label
-                  className="block font-body text-micro uppercase tracking-[0.25em] mb-2"
-                  style={{ color: `${CREAM}99` }}
-                >
-                  {field.label}
-                </label>
-                <input
-                  type={field.type}
-                  required
-                  value={form[field.key as keyof FormState]}
-                  onChange={(e) =>
-                    setForm({ ...form, [field.key]: e.target.value })
-                  }
-                  className="w-full bg-transparent pb-2 font-body text-sm outline-none transition-all duration-300"
-                  style={{ borderBottom: `1px solid ${CREAM}30`, color: CREAM }}
-                  onFocus={(e) => (e.currentTarget.style.borderBottomColor = "hsl(var(--accent))")}
-                  onBlur={(e) => (e.currentTarget.style.borderBottomColor = `${CREAM}30`)}
-                />
-              </div>
-            ))}
-
-            <p className="font-body text-micro leading-relaxed" style={{ color: `${CREAM}99` }}>
-              By clicking download, you agree to our Privacy Policy and consent to be contacted for
-              consulting insights and marketing updates. You can unsubscribe at any time.
-            </p>
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="btn-ink disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+          <div className="relative z-10 flex h-full items-center">
+            <a
+              href={getAssetPublicUrl(resource.storage_path)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackConversion("lead_magnet_download", resource.title)}
+              className="btn-ink w-full md:w-auto"
             >
-              {submitting ? "Sending…" : "Download now"}
-            </button>
-          </form>
+              Download now
+            </a>
+          </div>
         </div>
       </div>
     </div>

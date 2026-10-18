@@ -1,3 +1,4 @@
+import { Navigate } from "react-router-dom";
 import { lazy } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -17,10 +18,8 @@ import GlobalMounts from "@/components/app/GlobalMounts";
 import AnalyticsBeaconMount from "@/components/app/AnalyticsBeaconMount";
 import ConditionalToolbar from "@/components/app/ConditionalToolbar";
 // Index stays eager so the homepage — the site's highest-priority URL —
-// paints without an extra chunk round-trip. Unsubscribe is tiny and
-// reached only from an email link, no real bundle weight either way.
+// paints without an extra chunk round-trip.
 import Index from "./pages/Index";
-import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 // Blog/BlogPost/CmsPage are lazy: each pulls in its own data-fetching and
 // rendering code that a visitor landing on a DIFFERENT public route (say,
@@ -73,7 +72,7 @@ const router = createBrowserRouter(
         <Route path="/" element={<Index />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
-        <Route path="/unsubscribe" element={<Unsubscribe />} />
+        <Route path="/unsubscribe" element={<Navigate to="/" replace />} />
         <Route path="/services/:slug" element={<CmsPage prefix="services/" />} />
         <Route path="/p/:slug" element={<CmsPage />} />
         <Route path="/:slug" element={<CmsPage />} />
