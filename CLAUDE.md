@@ -151,3 +151,9 @@ Rules that are easy to get wrong:
 - `npm run build` rewrites `public/sitemap.xml`, `public/llms.txt` and
   `supabase/functions/mcp/index.ts`; do not commit those side effects
   unless the change is intentional.
+- The site sends no visitor email: contact is the Google Calendar booking
+  block (`ContactRow`: embedded calendar, no inner scroll, plus a
+  booking-page button), downloads are direct links, and there are no
+  newsletter/sign-up boxes, contacts or campaigns. Never add an email
+  form back. Admin login emails (auth-email-hook + process-email-queue)
+  stay.
