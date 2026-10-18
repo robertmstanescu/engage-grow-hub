@@ -24,7 +24,7 @@ Rules that are easy to get wrong:
   size prose with a `text-xs`/`text-sm` utility. Paragraph spacing is
   the single `--para-space` token; line length is `.measure`.
 - The admin has ONE navigation list: `src/features/admin/navigation.ts`
-  (nine destinations, sub-tabs via `?tab=`, and `LEGACY_REDIRECTS` for
+  (eight destinations, sub-tabs via `?tab=`, and `LEGACY_REDIRECTS` for
   old URLs). Do not add sidebar entries elsewhere. Every page opens in
   the canvas builder; there is no second list-based row editor. List
   rows get their actions from `ui/ActionMenu.tsx`.

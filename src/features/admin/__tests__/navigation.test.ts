@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { ADMIN_DESTINATIONS, LEGACY_REDIRECTS, adminPath, resolveAdminTab } from "../navigation";
 
 describe("admin navigation", () => {
-  it("has nine destinations and every sub-tab key is unique within its destination", () => {
-    expect(ADMIN_DESTINATIONS).toHaveLength(9);
+  it("has eight destinations and every sub-tab key is unique within its destination", () => {
+    expect(ADMIN_DESTINATIONS).toHaveLength(8);
     for (const d of ADMIN_DESTINATIONS) {
       const keys = (d.tabs || []).map((t) => t.key);
       expect(new Set(keys).size).toBe(keys.length);
@@ -12,8 +12,8 @@ describe("admin navigation", () => {
 
   it("builds canonical paths, omitting the default sub-tab", () => {
     expect(adminPath("pages")).toBe("/admin/pages");
-    expect(adminPath("audience", "contacts")).toBe("/admin/audience");
-    expect(adminPath("audience", "campaigns")).toBe("/admin/audience?tab=campaigns");
+    expect(adminPath("blog", "posts")).toBe("/admin/blog");
+    expect(adminPath("blog", "tags")).toBe("/admin/blog?tab=tags");
   });
 
   it("redirects every legacy sidebar key to a real destination", () => {
