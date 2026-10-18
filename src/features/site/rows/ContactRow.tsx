@@ -67,13 +67,16 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
           className="surface-card p-4 md:p-8"
           style={{ ...revealStyle(isVisible, 1), border: "var(--outline-ink-border)" }}>
           {showCalendar && (
-            <iframe
-              src={embedUrl}
-              title="Book a time with The Magic Coffin"
-              loading="lazy"
-              className="block w-full rounded-lg bg-background h-[900px] md:h-[680px]"
-              style={{ border: 0 }}
-            />
+            <div className="overflow-hidden rounded-lg bg-card">
+              <iframe
+                src={embedUrl}
+                title="Book a time with The Magic Coffin"
+                loading="lazy"
+                scrolling="no"
+                className="block w-full h-[1250px] md:h-[820px]"
+                style={{ border: 0, background: "hsl(var(--card))" }}
+              />
+            </div>
           )}
           <div className={`flex ${showCalendar ? "mt-6 pt-6 border-t row-border" : ""} ${align === "center" ? "justify-center" : align === "right" ? "justify-end" : "justify-start"}`}>
             <a

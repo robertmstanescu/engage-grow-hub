@@ -15,7 +15,7 @@ describe("overview tasks", () => {
     expect(hasUnpublishedChanges(page({ draft_page_rows: null }))).toBe(false);
   });
 
-  it("orders changes, then drafts, then leads, then missing descriptions", () => {
+  it("orders changes, then drafts, then missing descriptions", () => {
     const tasks = deriveTasks({
       pages: [
         page({ id: "a", title: "About us", draft_page_rows: [{ id: 9 }] }),
@@ -26,7 +26,7 @@ describe("overview tasks", () => {
       leads: [{ id: "l1", full_name: "Maria K.", created_at: ago(5) }, { id: "l2", full_name: "Old", created_at: ago(24 * 30) }],
       home: { content: { a: 1 }, draft_content: { a: 2 }, updated_at: ago(2) },
     }, NOW);
-    expect(tasks.map((t) => t.kind)).toEqual(["changes", "changes", "draft", "draft", "leads", "seo"]);
+    expect(tasks.map((t) => t.kind)).toEqual(["changes", "changes", "draft", "draft", "seo"]);
     expect(tasks[0].title).toBe("Home has unpublished changes");
     expect(tasks[0].go).toEqual({ tab: "builder", pageId: null });
     expect(tasks[1].go).toEqual({ tab: "builder", pageId: "a" });
