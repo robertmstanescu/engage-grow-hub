@@ -213,69 +213,13 @@ var list_pages_default = defineTool5({
   }
 });
 
-// src/lib/mcp/tools/list-contacts.ts
-import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.26.2";
-import { z as z6 } from "npm:zod@^4.4.3";
-var list_contacts_default = defineTool6({
-  name: "list_contacts",
-  title: "List contact enquiries",
-  description: "List contact-form enquiries with name, email, company and message, newest first.",
-  inputSchema: {
-    limit: z6.number().int().min(1).max(100).default(25).describe("Maximum number of enquiries to return."),
-    search: z6.string().trim().optional().describe("Filter by name, email or company (case-insensitive substring).")
-  },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ limit, search }, ctx) => {
-    if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
-    }
-    const supabase = supabaseForUser(ctx);
-    let query = supabase.from("contacts").select("id, name, email, company, message, subscribed_to_marketing, created_at").order("created_at", { ascending: false }).limit(limit ?? 25);
-    if (search) {
-      const term = `%${search}%`;
-      query = query.or(`name.ilike.${term},email.ilike.${term},company.ilike.${term}`);
-    }
-    const { data, error } = await query;
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
-    return {
-      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
-      structuredContent: { contacts: data ?? [] }
-    };
-  }
-});
-
-// src/lib/mcp/tools/list-leads.ts
-import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.26.2";
-import { z as z7 } from "npm:zod@^4.4.3";
-var list_leads_default = defineTool7({
-  name: "list_leads",
-  title: "List leads",
-  description: "List captured leads (lead-magnet downloads) with name, email, company and download history.",
-  inputSchema: {
-    limit: z7.number().int().min(1).max(100).default(25).describe("Maximum number of leads to return.")
-  },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ limit }, ctx) => {
-    if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
-    }
-    const supabase = supabaseForUser(ctx);
-    const { data, error } = await supabase.from("leads").select("id, full_name, email, company_university, title, marketing_consent, download_history, created_at").order("created_at", { ascending: false }).limit(limit ?? 25);
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
-    return {
-      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
-      structuredContent: { leads: data ?? [] }
-    };
-  }
-});
-
 // src/lib/mcp/index.ts
 var projectRef = "mbxqjjmjywsxibttjrgr";
 var mcp_default = defineMcp({
   name: "the-magic-coffin-for-silly-vampires",
   title: "The Magic Coffin for Silly Vampires",
   version: "0.1.0",
-  instructions: "Tools for The Magic Coffin for Silly Vampires. Read and edit blog posts and CMS pages, and review contact enquiries and captured leads. All tools act as the signed-in admin user.",
+  instructions: "Tools for The Magic Coffin for Silly Vampires. Read and edit blog posts and CMS pages. All tools act as the signed-in admin user.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
@@ -285,9 +229,7 @@ var mcp_default = defineMcp({
     get_blog_post_default,
     create_blog_post_default,
     update_blog_post_default,
-    list_pages_default,
-    list_contacts_default,
-    list_leads_default
+    list_pages_default
   ]
 });
 

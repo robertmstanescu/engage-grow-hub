@@ -24,15 +24,11 @@ declare global {
 }
 
 export type ConversionKind =
-  | "contact_form"
-  | "newsletter_signup"
   | "lead_magnet_download"
   | "cta_click";
 
 /** GA4's own recommended event names — see Google's "recommended events" reference. */
 const GA4_EVENT: Record<ConversionKind, string> = {
-  contact_form: "generate_lead",
-  newsletter_signup: "sign_up",
   lead_magnet_download: "generate_lead",
   cta_click: "select_content",
 };
@@ -45,8 +41,6 @@ const GA4_EVENT: Record<ConversionKind, string> = {
  * or "Schedule" happened — it's tracked as a custom event instead.
  */
 const META_STANDARD_EVENT: Partial<Record<ConversionKind, string>> = {
-  contact_form: "Contact",
-  newsletter_signup: "CompleteRegistration",
   lead_magnet_download: "Lead",
 };
 

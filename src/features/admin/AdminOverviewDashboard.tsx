@@ -1,7 +1,7 @@
 /**
  * Overview — what needs the owner today, nothing else.
  *
- * Pages with unpublished changes, drafts, new leads and live pages
+ * Pages with unpublished changes, drafts and live pages
  * without a search description, each with the one button that deals
  * with it. The old stat tiles and quick-action grid repeated the rail;
  * they are gone. Derivation lives in overviewTasks.ts (unit-tested).
@@ -33,7 +33,7 @@ const AdminOverviewDashboard = ({ onGo, onOpenInBuilder }: Props) => {
       const [pagesQ, postsQ, leadsQ, homeQ] = await Promise.all([
         supabase.from("cms_pages").select("id, title, slug, status, updated_at, meta_description, page_rows, draft_page_rows").order("updated_at", { ascending: false }),
         supabase.from("blog_posts").select("id, title, slug, status, updated_at, published_at").order("updated_at", { ascending: false }),
-        supabase.from("leads").select("id, full_name, created_at").order("created_at", { ascending: false }).limit(50),
+        Promise.resolve({ data: [] }),
         supabase.from("site_content").select("content, draft_content, updated_at").eq("section_key", "page_rows").maybeSingle(),
       ]);
       if (cancelled) return;
@@ -88,13 +88,12 @@ const AdminOverviewDashboard = ({ onGo, onOpenInBuilder }: Props) => {
         <div className="admin-tiles">
           {tile(sum.changes, sum.changes === 1 ? "page with unpublished changes" : "pages with unpublished changes", "Review and publish", () => onGo("pages"), sum.changes === 0)}
           {tile(sum.draftPosts, sum.draftPosts === 1 ? `draft blog post${sum.latestDraftTitle ? "" : ""}` : "draft blog posts", sum.latestDraftTitle ? `Open “${sum.latestDraftTitle.length > 28 ? sum.latestDraftTitle.slice(0, 28) + "…" : sum.latestDraftTitle}”` : "Open blog", () => onGo("blog"), sum.draftPosts === 0)}
-          {tile(sum.leadsThisWeek, sum.leadsThisWeek === 1 ? "new lead this week" : "new leads this week", sum.leadNames.length ? `See ${sum.leadNames.slice(0, 2).join(", ")}` : "See leads", () => onGo("audience", "contacts"), sum.leadsThisWeek === 0)}
         </div>
       )}
       {!snap ? (
         <ListSkeleton rows={4} rowHeight="h-10" />
       ) : snap.tasks.length === 0 ? (
-        <div className="admin-panel admin-empty">Nothing waiting. Every page is published and there are no new leads this week.</div>
+        <div className="admin-panel admin-empty">Nothing waiting. Every page is published.</div>
       ) : (
         <div className="admin-panel admin-todo" role="list">
           {snap.tasks.map((t, i) => (

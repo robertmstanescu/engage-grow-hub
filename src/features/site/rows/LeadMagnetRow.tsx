@@ -8,7 +8,6 @@
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import ResourceWidget from "@/features/site/ResourceWidget";
-import SubscribeWidget from "@/features/site/SubscribeWidget";
 import { parseSpacing } from "@/lib/spacing";
 import type { Alignment, VAlign } from "./PageRows";
 import RowCoverCard from "@/features/site/RowCoverCard";
@@ -69,12 +68,6 @@ const LeadMagnetRow = ({ row, align = "center" }: Props) => {
             description={c.description}
           />
 
-          {/* Universal subscribe widget — see SubscribeToggle.tsx. */}
-          {c.show_subscribe && (
-            <div className="mt-rhythm-loose">
-              <SubscribeWidget align={align} />
-            </div>
-          )}
         </RowCoverCard>
       </div>
     </section>

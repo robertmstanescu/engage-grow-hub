@@ -210,58 +210,6 @@
           }
         },
         "outputSchema": null
-      },
-      {
-        "name": "list_contacts",
-        "title": "List contact enquiries",
-        "description": "List contact-form enquiries with name, email, company and message, newest first.",
-        "annotations": {
-          "readOnlyHint": true,
-          "idempotentHint": true,
-          "openWorldHint": false
-        },
-        "inputSchema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "limit": {
-              "default": 25,
-              "description": "Maximum number of enquiries to return.",
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100
-            },
-            "search": {
-              "description": "Filter by name, email or company (case-insensitive substring).",
-              "type": "string"
-            }
-          }
-        },
-        "outputSchema": null
-      },
-      {
-        "name": "list_leads",
-        "title": "List leads",
-        "description": "List captured leads (lead-magnet downloads) with name, email, company and download history.",
-        "annotations": {
-          "readOnlyHint": true,
-          "idempotentHint": true,
-          "openWorldHint": false
-        },
-        "inputSchema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "limit": {
-              "default": 25,
-              "description": "Maximum number of leads to return.",
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100
-            }
-          }
-        },
-        "outputSchema": null
       }
     ]
   }

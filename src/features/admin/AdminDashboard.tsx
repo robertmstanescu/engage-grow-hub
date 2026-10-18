@@ -29,8 +29,6 @@ import { Link, useLocation, useNavigate, useParams, useBlocker } from "react-rou
 import AdminOverviewDashboard from "./AdminOverviewDashboard";
 import ManageTeam from "./ManageTeam";
 import BlogEditor from "./BlogEditor";
-import ContactsList from "./ContactsList";
-import EmailCampaigns from "./EmailCampaigns";
 import TagsManager from "./TagsManager";
 import RedirectsManager from "./RedirectsManager";
 import PagesManager from "./PagesManager";
@@ -243,7 +241,6 @@ const AdminDashboard = ({ theme = "light", onToggleTheme }: Props) => {
             {activeTab === "media" && <MediaGallery />}
             {activeTab === "navigation" && <NavigationManager />}
             {activeTab === "design" && <DesignScreen />}
-            {activeTab === "audience" && (activeSub === "campaigns" ? <EmailCampaigns /> : <ContactsList />)}
             {activeTab === "insights" && (activeSub === "seo" ? <SeoMaster /> : <AdminInsights embedded />)}
             {activeTab === "settings" && (
               activeSub === "team" ? <ManageTeam /> : activeSub === "history" ? <VersionHistory /> : activeSub === "search" ? <SearchEnginesSettings /> : <RedirectsManager />

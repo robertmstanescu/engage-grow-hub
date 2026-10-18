@@ -16,7 +16,7 @@ export interface Task {
   title: string;
   detail: string;
   /** Where the task's button goes. */
-  go: { tab: "pages" | "blog" | "audience" | "insights" | "builder"; pageId?: string | null; sub?: string };
+  go: { tab: "pages" | "blog" | "insights" | "builder"; pageId?: string | null; sub?: string };
   action: string;
 }
 
@@ -66,12 +66,6 @@ export const deriveTasks = (
     if (post.status !== "published") {
       tasks.push({ kind: "draft", title: `“${post.title}” is still a draft`, detail: `last edited ${relativeTime(post.updated_at, now)}`, go: { tab: "blog" }, action: "Open" });
     }
-  }
-  const week = now - 7 * 24 * 3600 * 1000;
-  const fresh = input.leads.filter((l) => new Date(l.created_at).getTime() >= week);
-  if (fresh.length) {
-    const names = fresh.slice(0, 3).map((l) => l.full_name).join(", ");
-    tasks.push({ kind: "leads", title: `${fresh.length} new lead${fresh.length === 1 ? "" : "s"} this week`, detail: names, go: { tab: "audience", sub: "contacts" }, action: "See" });
   }
   const noSeo = input.pages.filter((p) => p.status === "published" && !(p.meta_description || "").trim());
   if (noSeo.length) {

@@ -30,7 +30,6 @@ import { resolveImageAlt } from "@/services/imageAlt";
 import { sanitizeHtml } from "@/services/sanitize";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
-import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import RowCoverCard from "@/features/site/RowCoverCard";
 
@@ -111,12 +110,6 @@ const LogoCloudRow = ({
           ))}
         </div>
 
-        {/* Universal subscribe widget — see SubscribeToggle.tsx. */}
-        {c.show_subscribe && (
-          <div className="mt-rhythm-loose" style={revealStyle(isVisible, 0.4)}>
-            <SubscribeWidget align={align} />
-          </div>
-        )}
     </>
   );
 

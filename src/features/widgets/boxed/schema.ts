@@ -63,7 +63,6 @@ export const boxedSchema = z.looseObject({
   color_note: color(),
   cta_label: str(),
   cta_url: str(),
-  show_subscribe: z._default(z.boolean(), false),
 
   /* ── Optional cover image (RowCoverCard) ── */
   cover_image: str(),

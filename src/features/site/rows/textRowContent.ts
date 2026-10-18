@@ -8,7 +8,7 @@ export const hasText = (v: unknown): boolean =>
 const columnHasContent = (c: Record<string, unknown>) =>
   hasText(c.eyebrow) || hasText(c.subtitle) || hasText(c.body) || hasText(c.note) ||
   (Array.isArray(c.title_lines) && c.title_lines.some(hasText)) ||
-  hasText(c.cta_label) || Boolean(c.show_subscribe);
+  hasText(c.cta_label);
 
 /**
  * True when a text widget has nothing to show. An empty text widget must

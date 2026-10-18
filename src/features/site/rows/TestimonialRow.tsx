@@ -50,7 +50,6 @@ import {
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 import RowNote from "./typography/RowNote";
-import SubscribeWidget from "@/features/site/SubscribeWidget";
 import type { Alignment, VAlign } from "./PageRows";
 import RowCoverCard from "@/features/site/RowCoverCard";
 
@@ -184,13 +183,6 @@ const TestimonialRow = ({
 
         {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
 
-        {/* Universal subscribe widget — rendered when admin toggles
-         *  `show_subscribe` on this row. See SubscribeToggle.tsx. */}
-        {c.show_subscribe && (
-          <div className="mt-rhythm-loose" style={revealStyle(isVisible, 0.6)}>
-            <SubscribeWidget align={align} />
-          </div>
-        )}
     </>
   );
 

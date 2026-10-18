@@ -10,13 +10,13 @@
  * Keys are STABLE: they appear in URLs. Only labels may change.
  */
 import {
-  LayoutDashboard, FileText, BookOpen, Image, Compass, Palette, Users,
+  LayoutDashboard, FileText, BookOpen, Image, Compass, Palette,
   LineChart, Settings,
 } from "lucide-react";
 
 export type AdminTab =
   | "overview" | "pages" | "blog" | "media" | "navigation"
-  | "design" | "audience" | "insights" | "settings";
+  | "design" | "insights" | "settings";
 
 export interface SubTab { key: string; label: string }
 
@@ -37,7 +37,6 @@ export const ADMIN_DESTINATIONS: AdminDestination[] = [
   { key: "media", label: "Media", icon: Image },
   { key: "navigation", label: "Navigation", icon: Compass },
   { key: "design", label: "Design", icon: Palette },
-  { key: "audience", label: "Audience", icon: Users, tabs: [{ key: "contacts", label: "Contacts" }, { key: "campaigns", label: "Campaigns" }] },
   { key: "insights", label: "Insights", icon: LineChart, tabs: [{ key: "traffic", label: "Traffic" }, { key: "seo", label: "SEO checks" }] },
   {
     key: "settings", label: "Settings", icon: Settings, bottom: true,
@@ -50,8 +49,9 @@ export const ADMIN_TAB_KEYS = new Set<string>(ADMIN_DESTINATIONS.map((d) => d.ke
 /** Where an old sidebar key lands now: `/admin/<tab>?tab=<sub>`. */
 export const LEGACY_REDIRECTS: Record<string, { tab: AdminTab; sub?: string }> = {
   dashboard: { tab: "overview" },
-  contacts: { tab: "audience", sub: "contacts" },
-  emails: { tab: "audience", sub: "campaigns" },
+  contacts: { tab: "overview" },
+  emails: { tab: "overview" },
+  audience: { tab: "overview" },
   tags: { tab: "blog", sub: "tags" },
   redirects: { tab: "settings", sub: "redirects" },
   search_engines: { tab: "settings", sub: "search" },
