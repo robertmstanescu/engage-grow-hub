@@ -1,176 +1,48 @@
 /**
- * ContactAdmin — admin editor surface for the Contact widget.
- *
- * Extracted verbatim from `RowsManager.tsx` (US 2.2). All the field
- * shapes, form-field configuration UI, and success-state controls move
- * here unchanged so the existing `content` JSON keys keep working.
- *
- * Why we keep the {content, onChange} signature:
- * That is the WidgetRegistry's standard admin contract (see
- * `WidgetDefinition.adminComponent` in `src/lib/WidgetRegistry.tsx`).
- * Every future widget admin will use the same shape, which is what
- * allows the page-builder to mount any widget editor in any cell
- * without special casing.
+ * ContactAdmin — editor for the Contact block, which books calls through
+ * Google Calendar appointment scheduling (embedded calendar + button).
  */
 
-import { Plus, Trash2 } from "lucide-react";
-import { DEFAULT_CONTACT_FIELDS } from "@/lib/constants/rowDefaults";
-import {
-  SectionBox,
-  MoreFields,
-  Field,
-  RichField,
-} from "@/features/admin/site-editor/FieldComponents";
+import { MoreFields, Field, RichField } from "@/features/admin/site-editor/FieldComponents";
 import TitleLinesEditor from "@/features/admin/editors/TitleLinesEditor";
 import ImagePickerField from "@/features/admin/ImagePickerField";
+import { DEFAULT_BOOKING_URL, DEFAULT_CALENDAR_EMBED_URL } from "@/features/site/rows/ContactRow";
 
 interface Props {
   content: Record<string, any>;
   onChange: (field: string, value: any) => void;
 }
 
-const FIELD_TYPES = [
-  { label: "Text", value: "text" },
-  { label: "Email", value: "email" },
-  { label: "Textarea", value: "textarea" },
-  { label: "Checkbox", value: "checkbox" },
-  { label: "Phone", value: "tel" },
-  { label: "URL", value: "url" },
-];
-
-const ContactAdmin = ({ content, onChange }: Props) => {
-  const titleLines: string[] = (content.title_lines || []).map((l: any) =>
-    typeof l === "string" ? (l.startsWith("<") ? l : `<p>${l}</p>`) : `<p>${l}</p>`,
-  );
-  const fields = content.fields || DEFAULT_CONTACT_FIELDS;
-
-  const updateFieldConfig = (idx: number, key: string, value: any) => {
-    const next = [...fields];
-    next[idx] = { ...next[idx], [key]: value };
-    onChange("fields", next);
-  };
-
-  const addField = () => {
-    const key = `custom_${Date.now()}`;
-    onChange("fields", [
-      ...fields,
-      { key, label: "New field", type: "text", required: false, visible: true },
-    ]);
-  };
-
-  const removeField = (idx: number) => {
-    onChange(
-      "fields",
-      fields.filter((_: any, i: number) => i !== idx),
-    );
-  };
-
-  return (
-    <div className="space-y-3">
-      <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} />
-      <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
-      <Field
-        label="Button Text"
-        value={content.button_text || ""}
-        onChange={(v) => onChange("button_text", v)}
+const ContactAdmin = ({ content, onChange }: Props) => (
+  <div className="space-y-3">
+    <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} />
+    <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
+    <Field
+      label="Button text"
+      value={content.booking_button_text || "Book a discovery call"}
+      onChange={(v) => onChange("booking_button_text", v)}
+    />
+    <Field
+      label="Booking page link"
+      value={content.booking_url || DEFAULT_BOOKING_URL}
+      onChange={(v) => onChange("booking_url", v)}
+    />
+    <label className="flex items-center gap-2 cursor-pointer">
+      <input
+        type="checkbox"
+        checked={content.show_calendar !== false}
+        onChange={(e) => onChange("show_calendar", e.target.checked)}
+        className="rounded"
       />
+      <span className="font-body text-xs text-muted-foreground">Show the calendar on the page</span>
+    </label>
 
-      <SectionBox label="Form Fields" group>
-        <div className="space-y-2">
-          {fields.map((f: any, i: number) => (
-            <div
-              key={f.key || i}
-              className="flex items-center gap-2 p-2 rounded-lg"
-              style={{ backgroundColor: "hsl(var(--background))" }}
-            >
-              <input
-                type="checkbox"
-                checked={f.visible}
-                onChange={(e) => updateFieldConfig(i, "visible", e.target.checked)}
-                className="rounded"
-                style={{ accentColor: "hsl(var(--primary))" }}
-              />
-              <input
-                value={f.label}
-                onChange={(e) => updateFieldConfig(i, "label", e.target.value)}
-                className="flex-1 px-2 py-1 rounded font-body text-xs border text-black"
-                style={{ borderColor: "hsl(var(--border))", backgroundColor: "transparent" }}
-              />
-              <select
-                value={f.type}
-                onChange={(e) => updateFieldConfig(i, "type", e.target.value)}
-                className="px-2 py-1 rounded font-body text-[10px] border text-black"
-                style={{ borderColor: "hsl(var(--border))", backgroundColor: "transparent" }}
-              >
-                {FIELD_TYPES.map((ft) => (
-                  <option key={ft.value} value={ft.value}>
-                    {ft.label}
-                  </option>
-                ))}
-              </select>
-              <label className="flex items-center gap-1 font-body text-[9px] uppercase tracking-wider text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={f.required}
-                  onChange={(e) => updateFieldConfig(i, "required", e.target.checked)}
-                  className="rounded"
-                  style={{ accentColor: "hsl(var(--primary))" }}
-                />
-                Req
-              </label>
-              <button
-                type="button"
-                onClick={() => removeField(i)}
-                className="p-1 rounded hover:opacity-70"
-                style={{ color: "hsl(var(--destructive))" }}
-              >
-                <Trash2 size={11} />
-              </button>
-            </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={addField}
-          className="flex items-center gap-1 font-body text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full hover:opacity-70 transition-opacity mt-2"
-          style={{ color: "hsl(var(--primary))", border: "1px solid hsl(var(--primary) / 0.3)" }}
-        >
-          <Plus size={10} /> Add Field
-        </button>
-      </SectionBox>
-
-      <MoreFields>
-      <SectionBox label="Success State">
-        <Field
-          label="Heading"
-          value={content.success_heading || ""}
-          onChange={(v) => onChange("success_heading", v)}
-        />
-        <Field
-          label="Body"
-          value={content.success_body || ""}
-          onChange={(v) => onChange("success_body", v)}
-        />
-        <Field
-          label="Button Text"
-          value={content.success_button || ""}
-          onChange={(v) => onChange("success_button", v)}
-        />
-      </SectionBox>
-
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={content.show_social || false}
-          onChange={(e) => onChange("show_social", e.target.checked)}
-          className="rounded"
-          style={{ accentColor: "hsl(var(--primary))" }}
-        />
-        <span className="font-body text-xs text-muted-foreground">
-          Show social media links below form
-        </span>
-      </label>
-
+    <MoreFields>
+      <Field
+        label="Calendar embed link (Google Calendar)"
+        value={content.calendar_embed_url || DEFAULT_CALENDAR_EMBED_URL}
+        onChange={(v) => onChange("calendar_embed_url", v)}
+      />
       <ImagePickerField
         label="Cover Image (optional)"
         value={content.cover_image || ""}
@@ -178,9 +50,8 @@ const ContactAdmin = ({ content, onChange }: Props) => {
         altValue={content.cover_image_alt || ""}
         onAltChange={(v) => onChange("cover_image_alt", v)}
       />
-      </MoreFields>
-    </div>
-  );
-};
+    </MoreFields>
+  </div>
+);
 
 export default ContactAdmin;

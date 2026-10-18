@@ -1,67 +1,36 @@
-import { useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { sanitizeHtml } from "@/services/sanitize";
-import type { PageRow, ContactField } from "@/types/rows";
+import type { PageRow } from "@/types/rows";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 import RowCoverCard from "@/features/site/RowCoverCard";
-
-import { getAttributionForPayload } from "@/services/attribution";
 import { trackConversion } from "@/services/conversions";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
-const defaultFields: ContactField[] = [
-  { key: "name", label: "Your name", type: "text", required: true, visible: true },
-  { key: "email", label: "Email address", type: "email", required: true, visible: true },
-  { key: "company", label: "Company", type: "text", required: false, visible: true },
-  { key: "message", label: "How can we help?", type: "textarea", required: true, visible: true },
-  { key: "marketing", label: "Keep me updated with news and articles", type: "checkbox", required: false, visible: true },
-];
+export const DEFAULT_BOOKING_URL = "https://calendar.app.google/kyyVvzdka4GS5CPo8";
+export const DEFAULT_CALENDAR_EMBED_URL =
+  "https://calendar.google.com/calendar/appointments/schedules/AcZssZ2k8Gb0pNJCCqc-53e7WnczGGsTatLak9uSbunJcsuRxC7MzNzL_Ns7gjcYy1ooA_V4wy9d-rMI?gv=true";
 
-/* Form typography uses the shared card-scale utilities so the contact
- * row reads like the service/boxed cards instead of a one-off form. */
-const LABEL_CLASS =
-  "block text-card-label row-fg mb-2 text-left";
-const INPUT_CLASS =
-  "w-full bg-transparent border row-border rounded-lg px-4 py-3 text-card-input row-fg outline-none interactive text-left transition-colors placeholder:text-[color:var(--row-fg-muted,hsl(var(--muted-foreground)))] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
+/** Only Google Calendar pages may be embedded. */
+const safeEmbed = (url?: string) => {
+  const u = (url || "").trim();
+  return u.startsWith("https://calendar.google.com/") ? u : DEFAULT_CALENDAR_EMBED_URL;
+};
+const safeLink = (url?: string) => {
+  const u = (url || "").trim();
+  return /^https:\/\//.test(u) ? u : DEFAULT_BOOKING_URL;
+};
 
 const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
   const titleLines: string[] = (c.title_lines || []).map((l: any) =>
     typeof l === "string" ? l.startsWith("<") ? l : `<p>${l}</p>` : `<p>${l}</p>`
   );
-  const fields: ContactField[] = c.fields || defaultFields;
-  const visibleFields = fields.filter((f) => f.visible);
-  const buttonText = c.button_text || "Request a discovery call";
-  const successHeading = c.success_heading || "Message received.";
-  const successBody = c.success_body || "We respond within 24 hours.";
-  const successButton = c.success_button || "Send another message";
-
-  const [formData, setFormData] = useState<Record<string, any>>({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false });
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    const { error } = await supabase.functions.invoke("submit-contact", {
-      body: {
-        name: formData.name,
-        email: formData.email,
-        company: formData.company || null,
-        message: formData.message || null,
-        subscribed_to_marketing: formData.subscribed_to_marketing || false,
-        // Epic 4 / US 4.1 — first-touch marketing attribution.
-        attribution: getAttributionForPayload(),
-      },
-    });
-    if (error) { toast.error("Something went wrong."); setSubmitting(false); return; }
-    setSubmitted(true); setSubmitting(false); toast.success("Message sent!");
-    trackConversion("contact_form");
-  };
+  const buttonText = c.booking_button_text || "Book a discovery call";
+  const bookingUrl = safeLink(c.booking_url);
+  const embedUrl = safeEmbed(c.calendar_embed_url);
+  const showCalendar = c.show_calendar !== false;
 
   const containerPos = align === "center" ? "mx-auto"
     : align === "right" ? "ml-auto mr-6"
@@ -70,32 +39,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
     : align === "right" ? "text-right"
     : "text-left";
 
-  const leftFields = visibleFields.filter((f) => f.type !== "textarea" && f.type !== "checkbox");
-  const textareaField = visibleFields.find((f) => f.type === "textarea");
-  const checkboxFields = visibleFields.filter((f) => f.type === "checkbox");
-
   const { ref, isVisible } = useScrollReveal();
   const coverImage = c.cover_image?.trim() || undefined;
-
-  /* ContactRow uses the shared <RowSection/> wrapper so it inherits the
-   * whole row feature set — band tones, edge shapes, separators, snap —
-   * exactly like every other row. `.section-light` still ships the
-   * inverted foreground the form controls expect. */
-  if (submitted) {
-    return (
-      <RowSection row={row} vAlign={vAlign} className="section-light" grain={false}>
-        <div className={`relative z-10 max-w-[520px] row-container ${containerPos} ${contentAlign}`}>
-          <div style={revealStyle(true, 0)}>
-            <RowTitle color="hsl(var(--primary))">{successHeading}</RowTitle>
-            <RowBody className="mb-rhythm-base">{successBody}</RowBody>
-            <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", company: "", message: "", subscribed_to_marketing: false }); }}
-              className="btn-ink"
->{successButton}</button>
-          </div>
-        </div>
-      </RowSection>
-    );
-  }
 
   const innerContent = (
     <>
@@ -119,50 +64,28 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         <div
-          className="surface-card p-8 md:p-10"
-          /* The contact box carries the ink outline; ordinary boxed cards do not. */
+          className="surface-card p-4 md:p-8"
           style={{ ...revealStyle(isVisible, 1), border: "var(--outline-ink-border)" }}>
-
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                {leftFields.map((field, fi) => (
-                  <div key={field.key} style={revealStyle(isVisible, fi + 2)}>
-                    <label className={LABEL_CLASS}>{field.label}</label>
-                    <input type={field.type} required={field.required} value={formData[field.key] || ""}
-                      onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                      className={INPUT_CLASS} />
-                  </div>
-                ))}
-              </div>
-
-              {textareaField && (
-                <div className="flex flex-col" style={revealStyle(isVisible, leftFields.length + 2)}>
-                  <label className={LABEL_CLASS}>{textareaField.label}</label>
-                  <textarea required={textareaField.required} rows={5} value={formData[textareaField.key] || ""}
-                    onChange={(e) => setFormData({ ...formData, [textareaField.key]: e.target.value })}
-                    className={`${INPUT_CLASS} resize-none flex-1`} />
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-8 pt-6 border-t row-border" style={revealStyle(isVisible, leftFields.length + 3)}>
-              <div className="space-y-1.5">
-                {checkboxFields.map((field) => (
-                  <label key={field.key} className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={formData.subscribed_to_marketing || false}
-                      onChange={(e) => setFormData({ ...formData, subscribed_to_marketing: e.target.checked })}
-                      className="rounded accent-foreground" />
-                    <span className="text-card-body row-fg-muted">{field.label}</span>
-                  </label>
-                ))}
-              </div>
-              <button type="submit" disabled={submitting}
-                className="btn-ink disabled:opacity-50 sm:ml-auto">
-                {submitting ? "Sending…" : buttonText}
-              </button>
-            </div>
-          </form>
+          {showCalendar && (
+            <iframe
+              src={embedUrl}
+              title="Book a time with The Magic Coffin"
+              loading="lazy"
+              className="block w-full rounded-lg bg-background h-[900px] md:h-[680px]"
+              style={{ border: 0 }}
+            />
+          )}
+          <div className={`flex ${showCalendar ? "mt-6 pt-6 border-t row-border" : ""} ${align === "center" ? "justify-center" : align === "right" ? "justify-end" : "justify-start"}`}>
+            <a
+              href={bookingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackConversion("cta_click", "booking")}
+              className="btn-ink"
+            >
+              {buttonText}
+            </a>
+          </div>
         </div>
 
         {c.note && (
