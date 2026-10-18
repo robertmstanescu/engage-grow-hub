@@ -74,11 +74,10 @@ export const BLOCK_FAMILIES: BlockFamily[] = [
     ],
   },
   {
-    key: "form", label: "Form", icon: Mail, hint: "Collect a message or an email",
+    key: "form", label: "Form", icon: Mail, hint: "Bookings and downloads",
     variants: [
-      { type: "contact", label: "Contact form", hint: "Name, email, message" },
-      { type: "subscribe", label: "Subscribe", hint: "Email sign-up" },
-      { type: "lead_magnet", label: "Download", hint: "A file in exchange for an email" },
+      { type: "contact", label: "Book a call", hint: "Your booking calendar" },
+      { type: "lead_magnet", label: "Download", hint: "A file to download" },
     ],
   },
 ];

@@ -62,7 +62,7 @@ describe("row type registry", () => {
   it("registers no widget outside ROW_TYPES except the modular add-ons", () => {
     // Modular widgets (src/features/widgets/*) that are not page rows
     // are allowed here. Add to this list deliberately.
-    const nonRowWidgets = ["cta_button", "subscribe"];
+    const nonRowWidgets = ["cta_button"];
     const registered = listWidgets().map((w) => w.type);
     const unknown = registered.filter((t) => !ROW_TYPES.includes(t as never) && !nonRowWidgets.includes(t));
     expect(unknown, "widget type registered but missing from ROW_TYPES").toEqual([]);
