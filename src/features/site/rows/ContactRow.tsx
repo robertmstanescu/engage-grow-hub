@@ -73,7 +73,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
                 title="Book a time with The Magic Coffin"
                 loading="lazy"
                 scrolling="no"
-                className="block w-full h-[1250px] md:h-[820px]"
+                className="block w-full h-[1180px] md:h-[680px]"
                 style={{ border: 0, background: "hsl(var(--card))" }}
               />
             </div>
