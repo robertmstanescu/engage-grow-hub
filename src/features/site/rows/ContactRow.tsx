@@ -8,9 +8,9 @@ import { trackConversion } from "@/services/conversions";
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
-export const DEFAULT_BOOKING_URL = "https://calendar.app.google/6MhwyESSZTtSbUrX8";
+export const DEFAULT_BOOKING_URL = "https://calendar.app.google/rCZX6w2RUWKpsKfRA";
 export const DEFAULT_CALENDAR_EMBED_URL =
-  "https://calendar.google.com/calendar/appointments/schedules/AcZssZ2k8Gb0pNJCCqc-53e7WnczGGsTatLak9uSbunJcsuRxC7MzNzL_Ns7gjcYy1ooA_V4wy9d-rMI?gv=true";
+  "https://calendar.google.com/calendar/appointments/schedules/AcZssZ0wK351aXmB3bMjJ8upin66l0GI2RHg45H4F_nxaiP5PTRPulrUrYYKwV-bOdpQ8oT2v2egoz9L?gv=true";
 
 /** Only Google Calendar pages may be embedded. */
 const safeEmbed = (url?: string) => {
