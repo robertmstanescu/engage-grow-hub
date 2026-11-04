@@ -1193,6 +1193,15 @@
     }
   }
 
+  /* The booking card hugs the screen edges on phones so the embedded
+     calendar gets the width (opted in per row via .contact-room). */
+  @media (max-width: 767px) {
+    .row-container.contact-room {
+      padding-left: clamp(6px, 2vw, 24px) !important;
+      padding-right: clamp(6px, 2vw, 24px) !important;
+    }
+  }
+
   /* Header block rhythm: headings get real air above their content. */
   .row-header {
     margin-bottom: clamp(32px, 3.5vw, 64px);

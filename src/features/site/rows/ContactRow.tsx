@@ -64,7 +64,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         </div>
 
         <div
-          className="surface-card p-4 md:p-8"
+          className="surface-card p-3 md:p-8"
           style={{ ...revealStyle(isVisible, 1), border: "var(--outline-ink-border)" }}>
           {showCalendar && (
             <div className="overflow-hidden rounded-lg bg-card">
@@ -108,7 +108,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
           </RowCoverCard>
         </div>
       ) : (
-        <div ref={ref} className={`relative z-10 max-w-[1280px] row-container ${containerPos} ${contentAlign}`}>
+        <div ref={ref} className={`relative z-10 max-w-[1280px] row-container contact-room ${containerPos} ${contentAlign}`}>
           {innerContent}
         </div>
       )}
