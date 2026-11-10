@@ -2095,7 +2095,7 @@
 /* World map row (redesign): staggered draw-on, replayable. */
 /* Main markets: the brand green (#003728, the Fractional HRBP pillar colour), the owner's choice of 10 Nov 2026, so they stand apart from the two purples. */
 :root { --map-main: 164 100% 11%; }
-.tmc-map .c { fill: hsl(280 24% 88%); stroke: hsl(var(--background)); stroke-width: 0.6; }
+.tmc-map .c { fill: hsl(280 24% 88%); stroke: hsl(var(--background)); stroke-width: 0.5; }
 .tmc-map .wm-worked, .tmc-map .wm-hr, .tmc-map .wm-main { fill: hsl(280 24% 88%); }
 .tmc-map.play .wm-worked { animation: tmcWorked .7s ease-out forwards; animation-delay: var(--d, 0s); }
 .tmc-map.play .wm-hr { animation: tmcWorked .7s ease-out forwards, tmcHr .8s ease-out forwards; animation-delay: var(--d, 0s), calc(var(--d, 0s) + .35s); }
@@ -2103,8 +2103,8 @@
 .tmc-map:not(.play) .wm-worked { fill: hsl(var(--gold-decor)); }
 .tmc-map:not(.play) .wm-hr { fill: hsl(var(--primary)); }
 .tmc-map:not(.play) .wm-main { fill: hsl(var(--map-main)); }
-/* Hover and focus on worked places only (.wm-live). */
-.tmc-map .wm-live:hover, .tmc-map .wm-live:focus-visible { stroke: hsl(var(--deep)); stroke-width: 1.4; outline: none; cursor: default; }
+/* Hover and focus on every shaded place (.wm-live). Lines are screen pixels (non-scaling): borders 0.5px, the hover line 1px at most (owner, 10 Nov 2026). */
+.tmc-map .wm-live:hover, .tmc-map .wm-live:focus-visible { stroke: hsl(var(--deep)); stroke-width: 1; outline: none; cursor: default; }
 @keyframes tmcWorked { to { fill: hsl(var(--gold-decor)); } }
 @keyframes tmcHr { to { fill: hsl(var(--primary)); } }
 @keyframes tmcMain { to { fill: hsl(var(--map-main)); } }
@@ -2121,6 +2121,15 @@
 .tmc-legend-swatch { width: 18px; height: 12px; border-radius: 4px; }
 .tmc-replay { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; border: 1.5px solid hsl(var(--primary)); background: transparent; color: hsl(var(--primary)); font-family: var(--font-body); font-weight: 600; font-size: 14px; cursor: pointer; }
 .tmc-replay:hover { background: hsl(var(--primary) / .08); }
+/* Zoom: the outlines stay hairlines however far in, a hand shows the map can be moved. */
+.tmc-map .c { vector-effect: non-scaling-stroke; }
+.tmc-map.is-zoomed { cursor: grab; }
+.tmc-map.is-zoomed .wm-live:hover { cursor: grab; }
+.tmc-map.is-dragging, .tmc-map.is-dragging .wm-live:hover { cursor: grabbing; }
+.tmc-zoom { display: inline-flex; gap: 8px; }
+.tmc-zoom-btn { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; border: 1.5px solid hsl(var(--primary)); background: transparent; color: hsl(var(--primary)); font-family: var(--font-body); font-weight: 600; font-size: 20px; line-height: 1; cursor: pointer; }
+.tmc-zoom-btn:hover:not(:disabled) { background: hsl(var(--primary) / .08); }
+.tmc-zoom-btn:disabled { opacity: .4; cursor: default; }
 
 /* ── Space above and below a row (Style ▸ Space). The page rhythm is
       `py-row-fluid`; a row can ask for less, as the canvas does for a

@@ -1,21 +1,31 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MAP_BASE_PATHS, MAP_COUNTRIES, MAP_DOTS } from "./mapData";
-import { statusLabel, workedPlaces, type MapStatus } from "./resolve";
+import { statusLabel, type MapStatus } from "./resolve";
 import type { WorldMapContent } from "./schema";
+import { MAX_ZOOM, WHOLE_WORLD, ZOOM_STEP, panBy, viewBoxOf, zoomAt, type MapView } from "./zoom";
 
 /**
  * The map itself, code-split out of the public bundle (the path data is
  * ~120KB). Countries shade in with a staggered draw-on animation; the
  * `play` class is re-applied by the Replay button. Reduced motion shows
  * the end state instantly (CSS).
+ *
+ * Zoom (owner's request, 10 Nov 2026): plus, minus and reset buttons,
+ * pinch on a touch screen, Ctrl/Cmd + wheel (a trackpad pinch), a
+ * double-click, and drag to move once zoomed in. A plain wheel still
+ * scrolls the page. The maths lives in `zoom.ts`.
  */
 const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; content: WorldMapContent }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(true);
   const [tip, setTip] = useState<{ x: number; y: number; name: string; status: string } | null>(null);
-  /* Hover and keyboard focus are for worked places only; a market that
-     is shaded but not worked in (Romania) stays quiet. */
-  const worked = useMemo(() => workedPlaces(content).comms, [content]);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [view, setView] = useState<MapView>(WHOLE_WORLD);
+  const [dragging, setDragging] = useState(false);
+  /* Live pointers on the map (one = drag, two = pinch) and the last
+     reading of each, kept in a ref so moves do not re-render. */
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const zoomed = view.k > 1;
   const dots = useMemo(() => MAP_DOTS.filter((d) => groups.has(d.name)), [groups]);
 
   const shaded = useMemo(
@@ -28,13 +38,85 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
     if (!wrap) return;
     const w = wrap.getBoundingClientRect();
     const b = el.getBoundingClientRect();
+    // Zoomed in, a country can run past the edge: keep the label in the box.
     setTip({
-      x: b.left - w.left + b.width / 2,
-      y: b.top - w.top,
+      x: Math.min(w.width, Math.max(0, b.left - w.left + b.width / 2)),
+      y: Math.max(0, b.top - w.top),
       name,
       status: statusLabel(status, content),
     });
   }, [content]);
+
+  /** Where a screen point sits across the map box, 0 to 1. */
+  const fractionOf = (clientX: number, clientY: number): { fx: number; fy: number } => {
+    const r = svgRef.current?.getBoundingClientRect();
+    if (!r || !r.width || !r.height) return { fx: 0.5, fy: 0.5 };
+    return { fx: (clientX - r.left) / r.width, fy: (clientY - r.top) / r.height };
+  };
+
+  const zoomBy = (factor: number, fx = 0.5, fy = 0.5) => {
+    setTip(null);
+    setView((v) => zoomAt(v, factor, fx, fy));
+  };
+
+  /* Ctrl/Cmd + wheel zooms (this is also what a trackpad pinch sends).
+     React's wheel listener is passive, so it is attached by hand to be
+     able to stop the browser's own page zoom. */
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return; // a plain wheel scrolls the page
+      e.preventDefault();
+      const r = svg.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const factor = Math.exp(-e.deltaY * 0.01);
+      setTip(null);
+      setView((v) => zoomAt(v, factor, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height));
+    };
+    svg.addEventListener("wheel", onWheel, { passive: false });
+    return () => svg.removeEventListener("wheel", onWheel);
+  }, []);
+
+  const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  };
+
+  const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    const prev = pointers.current.get(e.pointerId);
+    if (!prev) return;
+    const r = svgRef.current?.getBoundingClientRect();
+    if (!r || !r.width || !r.height) return;
+    const all = pointers.current;
+    if (all.size === 2) {
+      // Pinch: zoom by the change in distance, about the midpoint.
+      const other = [...all.entries()].find(([id]) => id !== e.pointerId)?.[1];
+      if (other) {
+        const before = Math.hypot(prev.x - other.x, prev.y - other.y);
+        const after = Math.hypot(e.clientX - other.x, e.clientY - other.y);
+        if (before > 0 && after > 0) {
+          const { fx, fy } = fractionOf((e.clientX + other.x) / 2, (e.clientY + other.y) / 2);
+          zoomBy(after / before, fx, fy);
+        }
+      }
+    } else if (all.size === 1 && zoomed) {
+      const dx = e.clientX - prev.x;
+      const dy = e.clientY - prev.y;
+      if (!dragging && Math.hypot(dx, dy) < 3) return; // a click, not a drag
+      if (!dragging) {
+        setDragging(true);
+        setTip(null);
+        try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* pointer already gone */ }
+      }
+      setView((v) => panBy(v, dx / r.width, dy / r.height));
+    }
+    all.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  };
+
+  const onPointerEnd = (e: React.PointerEvent<SVGSVGElement>) => {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size === 0) setDragging(false);
+  };
 
   const replay = () => {
     setPlaying(false);
@@ -46,11 +128,20 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
     <>
       <div ref={wrapRef} className="relative">
         <svg
-          className={`tmc-map${playing ? " play" : ""}`}
+          ref={svgRef}
+          className={`tmc-map${playing ? " play" : ""}${zoomed ? " is-zoomed" : ""}${dragging ? " is-dragging" : ""}`}
           role="img"
           aria-label="World map of the countries worked across"
-          viewBox="0 0 1200 560"
-          style={{ display: "block", width: "100%", height: "auto" }}
+          viewBox={viewBoxOf(view)}
+          /* The box keeps the whole map's shape at every zoom. Zoomed
+             in, one finger moves the map; at rest it scrolls the page. */
+          style={{ display: "block", width: "100%", height: "auto", aspectRatio: "1200 / 560", touchAction: zoomed ? "none" : "pan-y" }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerEnd}
+          onPointerCancel={onPointerEnd}
+          onPointerLeave={(e) => { if (!dragging) onPointerEnd(e); }}
+          onDoubleClick={(e) => { const { fx, fy } = fractionOf(e.clientX, e.clientY); zoomBy(ZOOM_STEP, fx, fy); }}
         >
           <g>
             {MAP_BASE_PATHS.map((d, i) => (
@@ -58,7 +149,9 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
             ))}
             {shaded.map((c) => {
               const status = groups.get(c.name)!;
-              const live = worked.has(c.name);
+              /* Every shaded place names itself on hover and focus,
+                 a market-only one (Romania) included: owner, 10 Nov 2026. */
+              const live = true;
               return (
                 <path
                   key={c.name}
@@ -70,7 +163,7 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
                         tabIndex: 0,
                         role: "button",
                         "aria-label": `${c.name}: ${statusLabel(status, content)}`,
-                        onMouseEnter: (e: React.MouseEvent<SVGPathElement>) => showTip(c.name, status, e.currentTarget),
+                        onMouseEnter: (e: React.MouseEvent<SVGPathElement>) => { if (!dragging) showTip(c.name, status, e.currentTarget); },
                         onMouseLeave: () => setTip(null),
                         onFocus: (e: React.FocusEvent<SVGPathElement>) => showTip(c.name, status, e.currentTarget),
                         onBlur: () => setTip(null),
@@ -82,7 +175,7 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
             {/* Places too small for a shape (Hong Kong, Singapore). */}
             {dots.map((d) => {
               const status = groups.get(d.name)!;
-              const live = worked.has(d.name);
+              const live = true;
               return (
                 <circle
                   key={d.name}
@@ -96,7 +189,7 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
                         tabIndex: 0,
                         role: "button",
                         "aria-label": `${d.name}: ${statusLabel(status, content)}`,
-                        onMouseEnter: (e: React.MouseEvent<SVGCircleElement>) => showTip(d.name, status, e.currentTarget),
+                        onMouseEnter: (e: React.MouseEvent<SVGCircleElement>) => { if (!dragging) showTip(d.name, status, e.currentTarget); },
                         onMouseLeave: () => setTip(null),
                         onFocus: (e: React.FocusEvent<SVGCircleElement>) => showTip(d.name, status, e.currentTarget),
                         onBlur: () => setTip(null),
@@ -129,9 +222,24 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
           <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--map-main))" }} />{content.legend_main || "Main markets today"}</span>
           {content.legend_note && <span className="tmc-legend">{content.legend_note}</span>}
         </div>
-        <button type="button" onClick={replay} className="tmc-replay">
-          <span aria-hidden>&#8635;</span>Replay the map
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="tmc-zoom" role="group" aria-label="Zoom the map">
+            <button type="button" className="tmc-zoom-btn" onClick={() => zoomBy(1 / ZOOM_STEP)} disabled={!zoomed} aria-label="Zoom out">
+              <span aria-hidden>&minus;</span>
+            </button>
+            <button type="button" className="tmc-zoom-btn" onClick={() => zoomBy(ZOOM_STEP)} disabled={view.k >= MAX_ZOOM} aria-label="Zoom in">
+              <span aria-hidden>+</span>
+            </button>
+          </div>
+          {zoomed && (
+            <button type="button" className="tmc-replay" onClick={() => { setTip(null); setView(WHOLE_WORLD); }}>
+              Whole map
+            </button>
+          )}
+          <button type="button" onClick={replay} className="tmc-replay">
+            <span aria-hidden>&#8635;</span>Replay the map
+          </button>
+        </div>
       </div>
     </>
   );
