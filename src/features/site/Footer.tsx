@@ -118,11 +118,31 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
                 <p className="font-body" style={{ color: "hsl(var(--body))", fontSize: 15, lineHeight: 1.6 }}>{answer}</p>
               </>
             ) : emblem}
+            {/* Socials sit here as one line (owner, 10 Nov 2026): as a
+                list in their own column they made the footer a screen
+                taller. */}
+            {activeLinks.length > 0 ? (
+              <ul className="flex flex-wrap items-center" aria-label="Connect" style={{ gap: "10px 24px", marginTop: 20 }}>
+                {activeLinks.map((p) => {
+                  const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;
+                  return (
+                    <li key={p.key}>
+                      <a href={safeHref(socialLinks[p.key])} target="_blank" rel="noopener noreferrer" className={linkClass} style={{ ...linkStyle, gap: 8 }}>
+                        {Icon && <Icon className="w-4 h-4" />}
+                        {p.label}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
           </div>
 
           <div className="flex flex-wrap" style={{ gap: "32px clamp(32px, 5vw, 80px)" }}>
-            {columns.map((col, i) => (
-              <div key={i} className="min-w-0" style={{ flex: "0 1 auto", minWidth: "min(140px, 100%)" }}>
+            {/* The Connect column only held the socials, which moved to the
+                brand block; it is drawn only if it has links of its own. */}
+            {columns.filter((col) => col !== connectColumn || (Array.isArray(col.links) && col.links.length > 0)).map((col, i) => (
+              <div key={i} className="min-w-0" style={{ flex: "0 1 auto", minWidth: 140 }}>
                 <h4 className={headingClass} style={headingStyle}>{col.title}</h4>
                 <ul className="flex flex-col" style={{ gap: 12 }}>
                   {(Array.isArray(col.links) ? col.links : []).map((link, j) => {
@@ -138,17 +158,6 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
                     );
                   })}
 
-                  {col === connectColumn && activeLinks.map((p) => {
-                    const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;
-                    return (
-                      <li key={p.key}>
-                        <a href={safeHref(socialLinks[p.key])} target="_blank" rel="noopener noreferrer" className={linkClass} style={linkStyle}>
-                          {Icon && <Icon className="w-4 h-4" />}
-                          {p.label}
-                        </a>
-                      </li>
-                    );
-                  })}
                 </ul>
               </div>
             ))}
