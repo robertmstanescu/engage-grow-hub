@@ -22,6 +22,7 @@
  */
 
 import { useId, type CSSProperties, type ReactNode } from "react";
+import { safeCss } from "@/services/safeCss";
 import type { WidgetDesignSettings } from "@/types/rows";
 import { parseSpacing } from "@/lib/spacing";
 
@@ -48,7 +49,7 @@ interface Props {
  */
 const scopeCss = (raw: string, scope: string): string => {
   if (!raw) return "";
-  return raw.replace(/&/g, `.${scope}`);
+  return safeCss(raw).replace(/&/g, `.${scope}`);
 };
 
 /**

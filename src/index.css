@@ -30,12 +30,12 @@
     --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
     --border: 285 20% 84%;
-    /* The ink outline: a 5px deep-plum line on every set row edge, on
-       image frames, the contact box and the navbar island. One token so
+    /* The outline: a 1px glass hairline (it was a 5px deep-plum line
+       before the redesign) on image frames and the navbar island. One token so
        the weight and colour stay identical everywhere it is drawn. */
-    --outline-ink: #26142E;
-    --outline-ink-width: 5px;
-    --outline-ink-navbar-width: 2px;
+    --outline-ink: #D8CCDB;
+    --outline-ink-width: 1px;
+    --outline-ink-navbar-width: 1px;
     --outline-ink-border: var(--outline-ink-width) solid var(--outline-ink);
     /* These three are the static defaults; Brand settings ▸ Outline
        overrides them on :root at runtime (useBrandSettings), and a row's
@@ -262,6 +262,7 @@
     --fs-hero-title: clamp(46px, 6vw, 100px);
     --fs-hero-title-display: clamp(52px, 7vw, 116px);
     --fs-hero-title-compact: clamp(38px, 4.3vw, 66px);
+    --fs-document-title: clamp(44px, 5.6vw, 84px);
     --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
     --fs-hero-body: clamp(17px, 1.3vw, 19px);
@@ -789,6 +790,24 @@
     color: hsl(var(--link));
     text-decoration: none;
   }
+  /* Small label pill (redesign): blog categories, tags, chips. */
+  .pill-tag {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: hsl(var(--gold) / 0.85);
+    color: hsl(var(--deep));
+  }
+
+  /* Handwritten asides (redesign): notes, captions, "start here". */
+  .font-hand { font-family: 'Architects Daughter', cursive; font-weight: 400; }
+
   .link-arrow-mc:hover { color: hsl(var(--heading)); text-decoration: underline; text-underline-offset: 4px; }
 
   /* FAQ toggle: a 34px hairline circle showing − when open, + when closed. */
@@ -1730,9 +1749,9 @@
     --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
     --border: 285 20% 84%;
-    --outline-ink: #26142E;
-    --outline-ink-width: 5px;
-    --outline-ink-navbar-width: 2px;
+    --outline-ink: #D8CCDB;
+    --outline-ink-width: 1px;
+    --outline-ink-navbar-width: 1px;
     --outline-ink-border: var(--outline-ink-width) solid var(--outline-ink);
     --input: 285 20% 84%;
     --ring: 280 55% 24%;
@@ -1838,6 +1857,7 @@
     --fs-hero-title: clamp(46px, 6vw, 100px);
     --fs-hero-title-display: clamp(52px, 7vw, 116px);
     --fs-hero-title-compact: clamp(38px, 4.3vw, 66px);
+    --fs-document-title: clamp(44px, 5.6vw, 84px);
     --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
     --fs-hero-body: clamp(17px, 1.3vw, 19px);
@@ -2080,3 +2100,53 @@
 .tmc-legend-swatch { width: 18px; height: 12px; border-radius: 4px; }
 .tmc-replay { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; border: 1.5px solid hsl(var(--primary)); background: transparent; color: hsl(var(--primary)); font-family: var(--font-body); font-weight: 600; font-size: 14px; cursor: pointer; }
 .tmc-replay:hover { background: hsl(var(--primary) / .08); }
+
+/* ── Document pages (Privacy): heading above one glass card, 820px column.
+      Spec: docs/redesign/03-appendix-section-layouts.md, "Privacy". ── */
+.document-page {
+  padding: clamp(96px, 11vw, 168px) clamp(16px, 5vw, 96px) clamp(80px, 9vw, 140px);
+}
+.document-header {
+  max-width: 820px;
+  margin: 0 auto 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.document-eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--gold-text));
+}
+.document-title {
+  font-family: var(--font-title);
+  font-size: var(--fs-document-title);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: hsl(var(--heading));
+  overflow-wrap: anywhere;
+}
+.document-date {
+  font-size: var(--fs-card-body);
+  color: hsl(var(--muted-foreground));
+}
+.document-card {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: clamp(28px, 4vw, 56px);
+  border-radius: 24px;
+  overflow: hidden;
+  /* The card is the measure: prose fills it. */
+  --measure-prose: none;
+}
+/* Rows inside the card are plain text: the card supplies the spacing. */
+.document-card .py-row-fluid { padding-top: 0; padding-bottom: 0; }
+.document-card .row-container { padding-left: 0; padding-right: 0; max-width: none; }
+.document-card .mt-rhythm-tight:first-child { margin-top: 0; }
+.document-card [data-row-part="body"] > p:first-child { margin-top: 0; }
+.document-card [data-row-part="body"] > p:last-child { margin-bottom: 0; }
+.document-card [data-row-part="body"] strong { color: hsl(var(--heading)); }

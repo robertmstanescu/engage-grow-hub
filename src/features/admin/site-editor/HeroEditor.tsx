@@ -93,6 +93,25 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
 
       <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
       <MoreFields>
+        <SelectField
+          label="Title size"
+          value={content.title_size || ""}
+          onChange={(v) => onChange("title_size", v)}
+          options={[
+            { label: "Standard", value: "" },
+            { label: "Display (largest)", value: "display" },
+            { label: "Compact (long titles)", value: "compact" },
+          ]}
+        />
+        <SelectField
+          label="Plain answer"
+          value={content.answer_strip ? "strip" : ""}
+          onChange={(v) => onChange("answer_strip", v === "strip")}
+          options={[
+            { label: "Footer only", value: "" },
+            { label: 'Also as an "In short" strip under the hero', value: "strip" },
+          ]}
+        />
         <Field
           label="Word to underline (optional)"
           value={content.underline_word || ""}

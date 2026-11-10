@@ -90,7 +90,45 @@ const ProofBandRow = ({
   const cols = items.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3";
   const coverImage = c.cover_image?.trim() || undefined;
 
-  const innerContent = (
+  /* Redesign "deep" band: one deep-plum panel, gold numbers, light
+     labels. Set by `band_style` on the row; every word is the same. */
+  const deepBand = c.band_style === "deep" ? (
+    <div
+      className="text-left"
+      style={{ ...revealStyle(isVisible, 0), background: "hsl(var(--deep))", borderRadius: 28, padding: "clamp(28px, 3.4vw, 48px)", boxShadow: "var(--shadow-card)" }}
+    >
+      {c.eyebrow && (
+        <p className="font-body font-bold uppercase" style={{ color: "hsl(var(--gold))", fontSize: "var(--fs-eyebrow)", letterSpacing: "0.26em", marginBottom: titleLines.length ? 12 : 28 }}>
+          {c.eyebrow}
+        </p>
+      )}
+      {titleLines.length > 0 && (
+        <h2 className="font-display font-bold" style={{ color: "hsl(var(--deep-fg))", fontSize: "var(--fs-title)", lineHeight: 1.05, marginBottom: 28 }}>
+          {titleLines.map((line, i) => (
+            <span key={i} className="block" dangerouslySetInnerHTML={{ __html: sanitizeHtml(line.replace(/^<p>|<\/p>$/g, "")) }} />
+          ))}
+        </h2>
+      )}
+      {c.body && sanitizeHtml(c.body).replace(/<[^>]+>/g, "").trim() && (
+        <div className="rich-text font-body measure" style={{ color: "hsl(var(--deep-fg) / 0.8)", fontSize: "var(--fs-body)", marginBottom: 28 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
+      )}
+      <dl className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))", gap: "28px clamp(20px, 3vw, 48px)" }}>
+        {items.map((item, i) => (
+          <div key={i} className="flex flex-col gap-2" style={revealStyle(isVisible, 0.2 + i * 0.08)}>
+            {item.logo ? (
+              <img src={item.logo} alt={resolveImageAlt(item.logo_alt, item.label || "Client logo")} loading="lazy" className="h-8 w-auto object-contain self-start" />
+            ) : (
+              <dt className="font-display font-extrabold leading-none" style={{ color: "hsl(var(--gold))", fontSize: "var(--fs-stat)" }}>{item.value}</dt>
+            )}
+            <dd className="font-body" style={{ color: "hsl(var(--deep-fg) / 0.82)", fontSize: 14.5, lineHeight: 1.5, maxWidth: "26ch" }}>{item.label}</dd>
+          </div>
+        ))}
+      </dl>
+      {c.note && <p className="font-body italic mt-6" style={{ color: "hsl(var(--deep-fg) / 0.7)", fontSize: 13.5 }}>{c.note}</p>}
+    </div>
+  ) : null;
+
+  const innerContent = deepBand || (
     <>
         {c.eyebrow && (
           <RowEyebrow color={c.color_eyebrow || ""} style={revealStyle(isVisible, -0.5)}>
@@ -156,11 +194,11 @@ const ProofBandRow = ({
       {coverImage ? (
         <div className={`${maxW} w-full mx-auto`}>
           <RowCoverCard row={row}>
-            <div ref={ref as any} className={contentAlign}>{innerContent}</div>
+            <div ref={ref} className={contentAlign}>{innerContent}</div>
           </RowCoverCard>
         </div>
       ) : (
-        <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+        <div ref={ref} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
           {innerContent}
         </div>
       )}

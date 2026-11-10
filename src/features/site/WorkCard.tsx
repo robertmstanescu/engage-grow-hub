@@ -17,6 +17,7 @@
  *   - the pillar colour comes from pillarColors.ts via `--pillar`.
  */
 import { Link } from "react-router-dom";
+import { safeHref } from "@/services/safeHref";
 import { pillarColorFromKey } from "@/lib/constants/pillarColors";
 import { transformImageUrl } from "@/services/mediaOptimization";
 
@@ -70,7 +71,7 @@ const WorkCard = ({ item, style, proofApproved, className }: Props) => {
   // approved; a typed metric (no link) always shows.
   const showMetric = Boolean(item.metric) && (!item.proof_point_id || proofApproved === true);
 
-  const href = item.link_out || (item.has_case_study ? `/work/${item.slug}/` : "");
+  const href = (item.link_out ? safeHref(item.link_out) : "") || (item.has_case_study ? `/work/${item.slug}/` : "");
   const external = Boolean(item.link_out);
   const isDark = resolved === "dark";
 

@@ -87,7 +87,7 @@ const Work = () => {
               Proof, not promises.
             </h1>
             <p className="font-body measure" style={{ fontSize: "var(--fs-body)", lineHeight: "var(--lh-body, 1.6)", color: "hsl(var(--body))", ...revealStyle(isVisible, 0.2) }}>
-              Case studies, artefacts and playbooks from real engagements — with the numbers we can stand behind.
+              Case studies, artefacts and playbooks from real engagements, with the numbers we can stand behind.
             </p>
 
             {(pillarsPresent.length > 1 || typesPresent.length > 1) && (

@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "@/features/site/ServiceCard";
+import TierCard from "@/features/site/TierCard";
+import { pillarColorFromKey } from "@/lib/constants/pillarColors";
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
@@ -236,7 +238,18 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           ~60px strip above the card that was clipping the card content
           on shorter viewports.
         */}
-        {(() => {
+        {c.card_layout === "grid" ? (
+          /* Redesign: every tier visible at once, three across on a wide
+             screen, stacked on a phone. No carousel, nothing hidden. */
+          <div
+            className="grid gap-4 lg:gap-5 text-left"
+            style={{ ...revealStyle(isVisible, 4), gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))" }}
+          >
+            {services.map((service: Record<string, unknown>, i: number) => (
+              <TierCard key={i} {...service} accent={pillarColorFromKey(c.pillar)} />
+            ))}
+          </div>
+        ) : (() => {
           const controls = (
             <div className="flex items-center gap-2">
               <button onClick={prev} aria-label="Previous service" className="w-6 h-6 rounded-full flex items-center justify-center interactive backdrop-blur-sm" style={{ backgroundColor: carouselBtnBg, color: carouselBtnColor, border: `1px solid ${carouselBtnBorder}` }}><ChevronLeft className="w-3 h-3" /></button>
@@ -288,7 +301,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           </RowCoverCard>
         </div>
       ) : (
-        <div ref={ref} className={`relative z-10 w-full max-w-[900px] ${rowContentAlign} row-container ${rowTextAlign}`}>
+        <div ref={ref} className={`relative z-10 w-full ${c.card_layout === "grid" ? "max-w-[1280px]" : "max-w-[900px]"} ${rowContentAlign} row-container ${rowTextAlign}`}>
           {innerContent}
         </div>
       )}

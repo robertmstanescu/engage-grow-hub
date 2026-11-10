@@ -5,6 +5,16 @@ import TitleLinesEditor from "../editors/TitleLinesEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ColumnWidthControl from "./ColumnWidthControl";
 
+const PILLAR_OPTIONS = [
+  { label: "Choose a service", value: "" },
+  { label: "Internal Communications", value: "internal-communications" },
+  { label: "Employee Experience", value: "employee-experience" },
+  { label: "People Operations", value: "people-operations" },
+  { label: "Fractional HRBP", value: "fractional-hrbp" },
+  { label: "Pay Transparency", value: "pay-transparency" },
+  { label: "Manager Enablement", value: "manager-enablement" },
+];
+
 const IMAGE_POSITIONS = [
   { label: "Left", value: "left" },
   { label: "Right", value: "right" },
@@ -107,6 +117,21 @@ const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Prop
       </button>
 
       <MoreFields>
+        <SectionBox label="Look">
+          <SelectField
+            label="Layout"
+            value={content.panel_style || ""}
+            options={[
+              { label: "Picture beside the text", value: "" },
+              { label: "Colour panel in the page's service colour (no picture)", value: "pillar" },
+              { label: "Deep plum panel (no picture)", value: "dark" },
+            ]}
+            onChange={(v) => onChange("panel_style", v)}
+          />
+          {content.panel_style === "pillar" && (
+            <SelectField label="Service colour" value={content.pillar || ""} options={PILLAR_OPTIONS} onChange={(v) => onChange("pillar", v)} />
+          )}
+        </SectionBox>
         <SectionBox label="Picture shape">
           <SelectField label="Image Mask" value={content.image_shape || "default"} options={IMAGE_SHAPES} onChange={(v) => onChange("image_shape", v)} />
         </SectionBox>

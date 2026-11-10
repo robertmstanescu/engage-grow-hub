@@ -298,8 +298,8 @@ const Blog = () => {
       <section className="grain relative pt-28 pb-8">
         <div className="relative z-10 max-w-[1280px] mx-auto px-8">
           <h1
-            className="font-display font-black leading-tight mb-5"
-            style={{ color: "hsl(var(--foreground))", fontSize: "var(--fs-title)" }}
+            className="font-display font-extrabold mb-5"
+            style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-hero-title-compact)", lineHeight: 1, letterSpacing: "-0.02em" }}
           >
             {pageData.header_title || "Insights & Articles"}
           </h1>

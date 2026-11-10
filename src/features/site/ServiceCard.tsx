@@ -1,4 +1,5 @@
 import { useState, memo, useCallback } from "react";
+import { safeHref } from "@/services/safeHref";
 import { ChevronDown } from "lucide-react";
 import { useTagColors } from "@/hooks/useTagColors";
 
@@ -126,7 +127,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
       {/* Structured CTA row */}
       <div className="border-t border-border px-6 py-4 flex items-center justify-between gap-4 flex-wrap flex-shrink-0">
         <a
-          href={ctaUrl || "/#contact"}
+          href={safeHref(ctaUrl, "/#contact")}
           className="font-display text-micro uppercase tracking-[0.1em] font-bold px-4 py-2 rounded-full inline-block transition-opacity duration-300 hover:opacity-90"
           style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >

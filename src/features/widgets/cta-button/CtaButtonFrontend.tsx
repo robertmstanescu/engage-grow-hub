@@ -8,6 +8,7 @@
  * identical means brand styling tweaks propagate everywhere.
  */
 import type { PageRow } from "@/types/rows";
+import { safeHref } from "@/services/safeHref";
 
 interface CtaButtonFrontendProps {
   row: PageRow;
@@ -21,7 +22,7 @@ const CtaButtonFrontend = ({ row, align: outerAlign }: CtaButtonFrontendProps) =
     align?: "left" | "center" | "right";
   };
   const label = (c.cta_label || "").trim();
-  const url = (c.cta_url || "").trim();
+  const url = (c.cta_url || "").trim() ? safeHref(c.cta_url) : "";
   if (!label || !url) return null;
 
   const align = c.align ?? outerAlign ?? "center";

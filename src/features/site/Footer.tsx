@@ -1,8 +1,8 @@
 import { Instagram, Linkedin, Twitter, Facebook, Youtube } from "lucide-react";
 import { transformImageUrl } from "@/services/mediaOptimization";
 import { useLocation } from "react-router-dom";
+import { safeHref } from "@/services/safeHref";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
-import SectionShape from "@/features/site/rows/SectionShape";
 import PageBreadcrumbs, { type BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
 import { pillarColorFromLink } from "@/lib/constants/pillarColors";
 import type { SectionShapeConfig } from "@/types/rows";
@@ -18,14 +18,14 @@ const PLATFORMS = [
   { key: "threads", icon: null, label: "Threads" },
 ];
 
-const TikTokIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+const TikTokIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
     <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.73a8.19 8.19 0 004.76 1.52V6.79a4.85 4.85 0 01-1-.1z" />
   </svg>
 );
 
-const ThreadsIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+const ThreadsIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
     <path d="M12.186 24h-.007C5.461 23.956.057 18.529.007 11.786l-.001-.006C.05 5.046 5.463-.37 12.193.007 18.924.383 24.007 5.84 23.993 12.572v.009c-.012 6.546-4.468 11.408-10.596 12.285a12.88 12.88 0 01-1.211.134zM12 2.5A9.5 9.5 0 002.5 12 9.5 9.5 0 0012 21.5 9.5 9.5 0 0021.5 12 9.5 9.5 0 0012 2.5z" />
   </svg>
 );
@@ -57,8 +57,10 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
      on the homepage. When the footer renders on /blog or a CMS page we
      rewrite them to absolute `/#slug` links so they navigate home and
      then scroll, instead of silently doing nothing. */
-  const resolveHref = (href: string) =>
-    href.startsWith("#") && pathname !== "/" ? `/${href}` : href;
+  const resolveHref = (raw: string) => {
+    const href = safeHref(raw);
+    return href.startsWith("#") && href.length > 1 && pathname !== "/" ? `/${href}` : href;
+  };
 
   const { isLoading: socialLoading, content: socialLinks } =
     useSiteContentWithStatus<Record<string, string>>("social_links", {});
@@ -71,154 +73,122 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
     useSiteContentWithStatus<FooterContent>("footer", {});
   const { isLoading: brandingLoading, content: branding } =
     useSiteContentWithStatus<Record<string, any>>("branding", {});
-  /* Footer uses the emblem (small icon). The footer band is light, so
-     prefer the dark emblem; if the brand only ships the light asset we
-     apply the same `.logo-darken` filter the navbar uses rather than
-     rendering a white mark on cream. */
-  /* Footer band is DARK (revolver). Prefer the light/white mark; if the
-     brand only ships a dark asset, whiten it with `.logo-whiten`. */
-  const lightEmblem = branding.emblem_logo_url || branding.logo_url || "";
+  /* The footer sits on the light page mesh (redesign): prefer the dark
+     mark; if the brand only ships a light one, darken it with the same
+     `.logo-darken` filter the navbar uses. */
   const darkEmblem = branding.emblem_dark_url || branding.logo_dark_url || "";
-  const emblemUrl = lightEmblem || darkEmblem;
-  const needsWhiten = !lightEmblem;
+  const lightEmblem = branding.emblem_logo_url || branding.logo_url || "";
+  const emblemUrl = darkEmblem || lightEmblem;
+  const needsDarken = !darkEmblem;
 
-  const columns = !footerLoading && Array.isArray(footer.columns) ? footer.columns : [];
+  const columns = (!footerLoading && Array.isArray(footer.columns) ? footer.columns : []).filter((col) => col && typeof col === "object");
   const activeLinks = socialLoading ? [] : PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
-  const connectColumn = columns.find((c) => c.title.toLowerCase() === "connect");
+  const connectColumn = columns.find((c) => !!c && String(c?.title || "").toLowerCase() === "connect");
+  const answer = pageAnswer?.trim();
+
+  const headingClass = "font-body font-bold uppercase mb-4";
+  const headingStyle = { color: "hsl(var(--gold-text))", fontSize: "var(--fs-eyebrow)", letterSpacing: "0.26em" } as const;
+  const linkClass = "font-body inline-flex items-center gap-3 transition-colors duration-300 hover:text-[hsl(var(--heading))]";
+  const linkStyle = { color: "hsl(var(--body))", fontSize: 15, lineHeight: 1.4 } as const;
+  const smallStyle = { color: "hsl(var(--meta))", fontSize: 13 } as const;
+
+  const emblem = !brandingLoading && emblemUrl ? (
+    /* Below the fold by definition: lazy-load it. */
+    <img
+      alt="The Magic Coffin logo"
+      className={`w-8 h-8 object-contain flex-none${needsDarken ? " logo-darken" : ""}`}
+      src={transformImageUrl(emblemUrl, { width: 96, quality: 85 })}
+      width={32}
+      height={32}
+      loading="lazy"
+      decoding="async"
+    />
+  ) : null;
 
   return (
-    <footer className="footer-dark relative border-t" style={{ backgroundColor: "hsl(var(--revolver))", borderColor: "hsl(0 0% 100% / 0.14)", scrollSnapAlign: "end" }}>
-      {footer.shapeTop ? (
-        <SectionShape edge="top" config={footer.shapeTop} color="hsl(var(--revolver))" />
-      ) : null}
-
-      <div className="relative z-10 max-w-[1280px] mx-auto row-container pt-16 md:pt-20 pb-2">
+    <footer className="site-footer relative [overflow-wrap:anywhere]" style={{ borderTop: "1px solid hsl(var(--line-1))", scrollSnapAlign: "end" }}>
+      <div className="relative z-10 max-w-[1280px] mx-auto row-container" style={{ paddingTop: 56, paddingBottom: 40 }}>
         {breadcrumbTrail && breadcrumbTrail.length > 1 ? (
           <PageBreadcrumbs trail={breadcrumbTrail} placement="footer" />
         ) : null}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">
-          {/* Logo column — emblem */}
-          <div className="col-span-2 md:col-span-1">
-            {/* Footer logo: below the fold by definition — lazy-load it. */}
-            {!brandingLoading && emblemUrl ? (
-              <img
-                alt="The Magic Coffin logo"
-                className={`w-8 h-8 object-contain mb-4${needsWhiten ? " logo-whiten" : ""}`}
-                src={transformImageUrl(emblemUrl, { width: 96, quality: 85 })}
-                width={32}
-                height={32}
-                loading="lazy"
-                decoding="async"
-              />
-            ) : null}
+
+        <div className="flex flex-wrap justify-between" style={{ gap: "40px clamp(32px, 6vw, 96px)" }}>
+          {/* Brand block: the page's plain answer, in small print. */}
+          <div className="min-w-0" style={{ flex: "1 1 420px", maxWidth: 560 }} {...(answer ? { "data-page-answer": true } : {})}>
+            {answer ? (
+              <>
+                <h4 className={headingClass} style={headingStyle}>In plain words</h4>
+                <p className="font-body" style={{ color: "hsl(var(--body))", fontSize: 15, lineHeight: 1.6 }}>{answer}</p>
+              </>
+            ) : emblem}
+          </div>
+
+          <div className="flex flex-wrap" style={{ gap: "32px clamp(32px, 5vw, 80px)" }}>
+            {columns.map((col, i) => (
+              <div key={i} className="min-w-0" style={{ flex: "0 1 auto", minWidth: "min(140px, 100%)" }}>
+                <h4 className={headingClass} style={headingStyle}>{col.title}</h4>
+                <ul className="flex flex-col" style={{ gap: 12 }}>
+                  {(Array.isArray(col.links) ? col.links : []).map((link, j) => {
+                    /* Services column: a pillar-coloured dot before each service link. */
+                    const dot = pillarColorFromLink(link.href);
+                    return (
+                      <li key={j}>
+                        <a href={resolveHref(link.href)} className={linkClass} style={linkStyle}>
+                          {dot ? <span aria-hidden className="inline-block rounded-full flex-none" style={{ width: 10, height: 10, backgroundColor: dot }} /> : null}
+                          {link.label}
+                        </a>
+                      </li>
+                    );
+                  })}
+
+                  {col === connectColumn && activeLinks.map((p) => {
+                    const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;
+                    return (
+                      <li key={p.key}>
+                        <a href={safeHref(socialLinks[p.key])} target="_blank" rel="noopener noreferrer" className={linkClass} style={linkStyle}>
+                          {Icon && <Icon className="w-4 h-4" />}
+                          {p.label}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom rule: emblem and city line on the left, the legal line
+            on the right. flex-wrap lets the legal line drop under the
+            cities on a phone. "Cookie Settings" is a <button> because it
+            opens the consent panel instead of navigating. */}
+        <div
+          className="flex flex-wrap items-center justify-between gap-4"
+          style={{ borderTop: "1px solid hsl(var(--line-1))", marginTop: 40, paddingTop: 24 }}
+        >
+          <div className="flex items-center gap-4 min-w-0">
+            {answer ? emblem : null}
             {!footerLoading && footer.tagline ? (
-              <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
+              <p className="font-body uppercase" style={{ color: "hsl(var(--meta))", fontSize: 12, letterSpacing: "0.22em", lineHeight: 1.6 }}>
                 {footer.tagline}
               </p>
             ) : null}
           </div>
 
-          {columns.map((col, i) => (
-            <div key={i}>
-              <h4 className="font-body text-micro uppercase tracking-[0.25em] font-semibold mb-4" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
-                {col.title}
-              </h4>
-              <ul className="space-y-2.5">
-                {col.links.map((link, j) => {
-                  /* Services column: a small pillar-coloured dot before
-                     each service link (redesign footer). */
-                  const dot = pillarColorFromLink(link.href);
-                  return (
-                    <li key={j}>
-                      <a href={resolveHref(link.href)} className="font-body text-xs transition-all duration-500 hover:opacity-100 inline-flex items-center gap-2" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
-                        {dot ? <span aria-hidden className="inline-block w-2 h-2 rounded-full flex-none" style={{ backgroundColor: dot }} /> : null}
-                        {link.label}
-                      </a>
-                    </li>
-                  );
-                })}
-
-                {col === connectColumn && activeLinks.map((p) => {
-                  const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;
-                  return (
-                    <li key={p.key}>
-                      <a href={socialLinks[p.key]} target="_blank" rel="noopener noreferrer" className="font-body text-xs transition-all duration-500 hover:opacity-100 inline-flex items-center gap-1.5" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
-                        {Icon && <Icon />}
-                        {p.label}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
-
-          {pageAnswer?.trim() ? (
-            <div className="col-span-2 md:col-span-1" data-page-answer>
-              <h4 className="font-body text-micro uppercase tracking-[0.25em] font-semibold mb-4" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
-                In plain words
-              </h4>
-              <p className="font-body text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
-                {pageAnswer.trim()}
-              </p>
-            </div>
-          ) : null}
-        </div>
-
-        {/*
-          Bottom legal row.
-          ───────────────────────────────────────────────────────────
-          Layout:
-            • flex-wrap so on very narrow screens the legal links can
-              drop to a second line under the copyright instead of
-              overflowing horizontally.
-            • justify-between pushes copyright to the LEFT and the
-              legal-link group to the RIGHT on desktop. On mobile the
-              wrap behaviour means each cluster sits on its own line.
-            • gap-4 prevents the two clusters from touching when they
-              share a row.
-          ───────────────────────────────────────────────────────────
-          Typography:
-            • Both the copyright text and the legal links share the
-              EXACT same classes (`font-body text-micro tracking-wide`)
-              and base color (`hsl(var(--foreground) / 0.5)`) so the
-              row reads as one consistent legal-line. Hover lifts the
-              link colour to `hsl(var(--foreground))` (full opacity)
-              over a 500ms transition matching the rest of the footer.
-            • The middot `·` between Privacy Policy and Cookie Settings
-              is a plain text separator. We deliberately use a literal
-              character (not a border) so it inherits the same colour
-              and never breaks at the wrong moment.
-          ───────────────────────────────────────────────────────────
-          Why a <button> for Cookie Settings (not an <a>)?
-            It does not navigate — it triggers a `cookie-settings:open`
-            CustomEvent that the cookie-consent banner listens for so
-            it can re-open. Using a <button> keeps semantics correct
-            for screen readers and keyboard users.
-        */}
-        <div
-          className="pt-6 flex flex-wrap items-center justify-between gap-4"
-          style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}
-        >
-          <p className="font-body text-micro tracking-wide" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
-            {!footerLoading && footer.copyright ? footer.copyright : null}
-          </p>
-
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-body" style={smallStyle}>
+            {!footerLoading && footer.copyright ? (
+              <>
+                <span>{footer.copyright}</span>
+                <span aria-hidden="true">·</span>
+              </>
+            ) : null}
             <a
               href="/privacy-policy"
-              className="font-body text-micro tracking-wide transition-colors duration-500 hover:text-foreground"
-              style={{ color: "hsl(var(--foreground) / 0.5)" }}
+              className="transition-colors duration-300 hover:text-[hsl(var(--heading))]"
             >
               Privacy Policy
             </a>
-            <span
-              aria-hidden="true"
-              className="font-body text-micro tracking-wide"
-              style={{ color: "hsl(var(--foreground) / 0.5)" }}
-            >
-              ·
-            </span>
+            <span aria-hidden="true">·</span>
             <button
               type="button"
               onClick={() => {
@@ -237,8 +207,8 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
                   console.warn("Failed to open cookie settings:", err);
                 }
               }}
-              className="font-body text-micro tracking-wide transition-colors duration-500 hover:text-foreground bg-transparent border-0 p-0 cursor-pointer"
-              style={{ color: "hsl(var(--foreground) / 0.5)" }}
+              className="transition-colors duration-300 hover:text-[hsl(var(--heading))] bg-transparent border-0 p-0 cursor-pointer"
+              style={{ font: "inherit", color: "inherit" }}
             >
               Cookie Settings
             </button>

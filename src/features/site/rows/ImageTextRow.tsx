@@ -1,4 +1,5 @@
 import { memo, useEffect, useId, useState } from "react";
+import { safeHref } from "@/services/safeHref";
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
@@ -248,7 +249,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
       )}
       {c.cta_url && c.cta_label && (
         <div className="mt-rhythm-base">
-          <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
+          <a href={safeHref(c.cta_url)} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
             className="btn-ink"
 >
             {c.cta_label}

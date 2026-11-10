@@ -51,7 +51,8 @@ export interface OutlineSettings {
   navbarWidth: number;
 }
 
-export const DEFAULT_OUTLINE: OutlineSettings = { color: "#26142E", width: 5, navbarWidth: 2 };
+/* Redesign: the outline is a 1px glass hairline, not the old 5px ink line. */
+export const DEFAULT_OUTLINE: OutlineSettings = { color: "#D8CCDB", width: 1, navbarWidth: 1 };
 
 export interface BrandSettings {
   identity: BrandIdentity;

@@ -44,7 +44,18 @@ const ProcessStepsRow = ({
 
   if (steps.length === 0) return null;
 
-  const cols = steps.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3";
+  /* Redesign looks, all stored on the row and set in its editor:
+       step_style "cards"   glass step cards instead of ruled columns
+       subtitle_as_title    the subtitle is the section's headline
+       last_step_as_note    the last step hangs under the cards as a
+                            handwritten aside (needs two steps or more) */
+  const asCards = c.step_style === "cards";
+  const subtitleAsTitle = !!c.subtitle_as_title && !!c.subtitle && titleLines.length === 0;
+  const noteStep = c.last_step_as_note && steps.length > 1 ? steps[steps.length - 1] : null;
+  const shown = noteStep ? steps.slice(0, -1) : steps;
+  const stripTags = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+  const cols = shown.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4" : shown.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3";
   const coverImage = c.cover_image?.trim() || undefined;
 
   const innerContent = (
@@ -61,36 +72,57 @@ const ProcessStepsRow = ({
             ))}
           </RowTitle>
         )}
-        {c.subtitle && (
+        {subtitleAsTitle && (
+          <RowTitle style={{ ...revealStyle(isVisible, 0), maxWidth: "22ch" }}>{c.subtitle}</RowTitle>
+        )}
+        {c.subtitle && !subtitleAsTitle && (
           <RowSubtitle handwritten={!!c.subtitle_handwritten} color={c.subtitle_color || ""} style={revealStyle(isVisible, 0.3)}>
             {c.subtitle}
           </RowSubtitle>
         )}
         {c.body && <RowBody html={sanitizeHtml(c.body)} className="measure" style={revealStyle(isVisible, 0.35)} />}
 
-        <ol className={`mt-10 grid grid-cols-1 ${cols} gap-8 lg:gap-10 text-left`}>
-          {steps.map((step, i) => (
+        <ol className={`mt-10 grid grid-cols-1 ${cols} ${asCards ? "gap-4 lg:gap-5" : "gap-8 lg:gap-10"} text-left`}>
+          {shown.map((step, i) => (
             <li
               key={i}
-              className="border-t row-border pt-5 flex flex-col gap-2"
-              style={revealStyle(isVisible, 0.4 + i * 0.08)}
+              className={asCards ? "surface-card flex flex-col gap-2" : "border-t row-border pt-5 flex flex-col gap-2"}
+              style={{ ...revealStyle(isVisible, 0.4 + i * 0.08), ...(asCards ? { padding: "clamp(20px, 2vw, 28px)" } : {}) }}
             >
-              {/* Understated number — a quiet counter, not a badge. */}
-              <span className="font-display text-sm font-semibold tracking-[0.18em] row-fg-muted">
+              {/* Understated number: a quiet counter, not a badge. */}
+              <span
+                className={`font-display font-bold tracking-[0.08em] ${asCards ? "" : "row-fg-muted"}`}
+                style={{ fontSize: 13, ...(asCards ? { color: "hsl(var(--heading))" } : {}) }}
+              >
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <h3 className="font-display font-bold leading-tight row-fg" style={{ fontSize: "var(--fs-step-title)" }}>
-                {step.title}
-              </h3>
+              {step.title && (
+                <h3 className="font-display font-bold leading-tight row-fg" style={{ fontSize: "var(--fs-step-title)", ...(asCards ? { color: "hsl(var(--heading))" } : {}) }}>
+                  {step.title}
+                </h3>
+              )}
               {step.description && (
                 <div
-                  className="rich-text font-body text-sm leading-relaxed row-fg-muted measure [&_p]:my-1"
+                  className="rich-text font-body row-fg-muted [&_p]:my-1"
+                  style={{ fontSize: "var(--fs-card-body)", lineHeight: "var(--lh-card-body)" }}
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(step.description) }}
                 />
               )}
             </li>
           ))}
         </ol>
+
+        {noteStep && (
+          <p
+            className="font-hand flex items-start gap-3 text-left"
+            style={{ ...revealStyle(isVisible, 0.8), marginTop: 28, fontSize: 20, lineHeight: 1.4, color: "hsl(var(--link))", transform: "rotate(-1deg)", transformOrigin: "left center" }}
+          >
+            <svg aria-hidden width="34" height="22" viewBox="0 0 34 22" fill="none" className="flex-none mt-1">
+              <path d="M1 20C8 9 18 5 31 5M31 5l-7-4M31 5l-5 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span>{[noteStep.title, stripTags(noteStep.description || "")].filter(Boolean).join(" ")}</span>
+          </p>
+        )}
 
         {c.note && <RowNote color={c.color_note} handwritten={!!c.note_handwritten}>{c.note}</RowNote>}
     </>
@@ -101,11 +133,11 @@ const ProcessStepsRow = ({
       {coverImage ? (
         <div className={`${maxW} w-full mx-auto`}>
           <RowCoverCard row={row}>
-            <div ref={ref as any} className={contentAlign}>{innerContent}</div>
+            <div ref={ref} className={contentAlign}>{innerContent}</div>
           </RowCoverCard>
         </div>
       ) : (
-        <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
+        <div ref={ref} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
           {innerContent}
         </div>
       )}

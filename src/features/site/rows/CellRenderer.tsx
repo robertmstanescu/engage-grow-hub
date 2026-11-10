@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { safeCss } from "@/services/safeCss";
 /**
  * ════════════════════════════════════════════════════════════════════
  * CellRenderer — User Story 1.2 ("LumApps-style Cell Management")
@@ -94,7 +95,7 @@ const hAlignToFlex = (
 };
 
 const cellScopeCss = (raw: string, scope: string) =>
-  raw.replace(/<(?:\/)?script[^>]*>/gi, "").replace(/&/g, `.${scope}`);
+  safeCss(raw).replace(/&/g, `.${scope}`);
 
 /* ─── component ──────────────────────────────────────────────────── */
 

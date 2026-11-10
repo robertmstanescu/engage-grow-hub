@@ -82,16 +82,19 @@ const FromTheBlogRow = ({ row }: { row: PageRow }) => {
         <ul className="grid grid-cols-1 md:grid-cols-3 gap-5" style={revealStyle(isVisible, 0.3)}>
           {posts.map((p) => (
             <li key={p.slug}>
-              <Link to={`/blog/${p.slug}/`} className="group block h-full overflow-hidden" style={{ background: "hsl(var(--card))", border: "var(--outline-ink-border)", borderRadius: "var(--radius)" }}>
+              <Link to={`/blog/${p.slug}/`} className="surface-card group flex flex-col h-full overflow-hidden">
                 {p.cover_image && (
                   <span className="block w-full overflow-hidden" style={{ aspectRatio: "16 / 9" }}>
                     <img src={transformImageUrl(p.cover_image, { width: 640, aspectRatio: 16 / 9, quality: 70 })} alt={p.cover_image_alt || ""} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   </span>
                 )}
-                <span className="block p-5">
-                  <span className="block font-body text-[11px] uppercase tracking-[0.16em] mb-2" style={{ color: "hsl(var(--foreground) / 0.55)" }}>{[p.category, fmt(p.published_at)].filter(Boolean).join(" · ")}</span>
-                  <span className="block font-display font-bold leading-snug group-hover:underline" style={{ color: "hsl(var(--foreground))", fontSize: "var(--fs-card-title)" }}>{p.title}</span>
-                  {p.excerpt && <span className="block font-body mt-2" style={{ color: "hsl(var(--foreground) / 0.7)", fontSize: "var(--fs-card-body)" }}>{p.excerpt}</span>}
+                <span className="flex flex-col flex-1" style={{ padding: "18px 20px 22px" }}>
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3">
+                    {p.category && <span className="pill-tag">{p.category}</span>}
+                    {p.published_at && <span className="font-body" style={{ color: "hsl(var(--meta))", fontSize: 12.5 }}>{fmt(p.published_at)}</span>}
+                  </span>
+                  <span className="block font-display font-bold leading-snug group-hover:underline" style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-card-title)" }}>{p.title}</span>
+                  {p.excerpt && <span className="block font-body mt-auto pt-3" style={{ color: "hsl(var(--body))", fontSize: "var(--fs-card-body)" }}>{p.excerpt}</span>}
                 </span>
               </Link>
             </li>
