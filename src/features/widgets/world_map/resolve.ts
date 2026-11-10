@@ -1,13 +1,31 @@
-import { MAP_COUNTRIES, type MapCountry } from "./mapData";
+import { MAP_COUNTRIES, MAP_DOTS } from "./mapData";
 import type { WorldMapContent } from "./schema";
 
 export type MapStatus = "worked" | "hr" | "main";
 
-/** Case/space-insensitive lookup of a country name against the map art. */
-export const findCountry = (name: string): MapCountry | undefined => {
-  const needle = name.trim().toLowerCase();
-  if (!needle) return undefined;
-  return MAP_COUNTRIES.find((c) => c.name.toLowerCase() === needle);
+/** Every place the map can shade: country shapes, then the small-place dots. */
+export const MAP_PLACES: { name: string; status: MapStatus }[] = [...MAP_COUNTRIES, ...MAP_DOTS];
+
+/** Names people type that mean a place on the map under another name. */
+const ALIASES: Record<string, string> = {
+  "usa": "United States",
+  "united states of america": "United States",
+  "uk": "United Kingdom",
+  "great britain": "United Kingdom",
+  "drc": "Democratic Republic of the Congo",
+  "dr congo": "Democratic Republic of the Congo",
+  "congo (kinshasa)": "Democratic Republic of the Congo",
+  "congo-kinshasa": "Democratic Republic of the Congo",
+  "hong kong (dot)": "Hong Kong",
+  "singapore (dot)": "Singapore",
+};
+
+/** Case/space-insensitive lookup of a place name against the map art. */
+export const findCountry = (name: string): { name: string; status: MapStatus } | undefined => {
+  const typed = (typeof name === "string" ? name : "").trim().toLowerCase().replace(/\s+/g, " ");
+  if (!typed) return undefined;
+  const needle = (ALIASES[typed] || typed).toLowerCase();
+  return MAP_PLACES.find((c) => c.name.toLowerCase() === needle);
 };
 
 /** Split a pasted list (one per line, or comma/semicolon-separated). */
@@ -42,22 +60,30 @@ export const resolveMapGroups = (c: WorldMapContent): Map<string, MapStatus> => 
 /** The artboard's built-in shading, used when the owner has set nothing. */
 export const defaultMapGroups = (): Map<string, MapStatus> => {
   const out = new Map<string, MapStatus>();
-  for (const c of MAP_COUNTRIES) out.set(c.name, c.status);
+  for (const c of MAP_PLACES) out.set(c.name, c.status);
   return out;
 };
 
 export const hasAnyGroup = (c: WorldMapContent): boolean =>
   (c.worked || []).length + (c.hr || []).length + (c.main || []).length > 0;
 
-/** Counter maths: comms = every shaded country; HR = hr + main. */
-export const mapCounters = (groups: Map<string, MapStatus>): { comms: number; hr: number } => {
-  let comms = 0;
-  let hr = 0;
-  for (const status of groups.values()) {
-    comms += 1;
-    if (status === "hr" || status === "main") hr += 1;
-  }
+/**
+ * The places that count as "worked in": everything in the comms list or
+ * the HR list. A main market that is in neither (Romania) is shaded but
+ * is a market only, so it is left out of the counters and has no hover.
+ */
+export const workedPlaces = (c: WorldMapContent): { comms: Set<string>; hr: Set<string> } => {
+  const comms = new Set<string>();
+  const hr = new Set<string>();
+  for (const raw of c.worked || []) { const hit = findCountry(raw); if (hit) comms.add(hit.name); }
+  for (const raw of c.hr || []) { const hit = findCountry(raw); if (hit) { comms.add(hit.name); hr.add(hit.name); } }
   return { comms, hr };
+};
+
+/** Counter maths: comms = every worked place; HR = the HR list. */
+export const mapCounters = (c: WorldMapContent): { comms: number; hr: number } => {
+  const { comms, hr } = workedPlaces(c);
+  return { comms: comms.size, hr: hr.size };
 };
 
 /** One-line hover/focus label for a country. */

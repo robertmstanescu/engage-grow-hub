@@ -7,9 +7,6 @@
  * reads as proof; a slider reads as filler. Use TestimonialRow when you
  * genuinely have several to rotate.
  *
- * Pairs naturally with a wave shape — set `shapeTop`/`shapeBottom` on the
- * row layout in the Style tab.
- *
  * DATA CONTRACT
  * {
  *   "eyebrow": "",                     // optional

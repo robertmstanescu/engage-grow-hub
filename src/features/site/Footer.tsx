@@ -5,7 +5,6 @@ import { safeHref } from "@/services/safeHref";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import PageBreadcrumbs, { type BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
 import { pillarColorFromLink } from "@/lib/constants/pillarColors";
-import type { SectionShapeConfig } from "@/types/rows";
 
 
 const PLATFORMS = [
@@ -39,8 +38,6 @@ interface FooterContent {
   copyright?: string;
   tagline?: string;
   columns?: FooterColumn[];
-  /** Optional decorative top edge — the dark footer spills UP over the row above. */
-  shapeTop?: SectionShapeConfig;
 }
 
 /**

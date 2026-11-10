@@ -46,10 +46,10 @@ describe("row looks", () => {
   });
 
   it("leaving Cover clears the picture; other fields are untouched", () => {
-    const cover = row({ bg_color: "#fff", layout: { coverImage: "https://x/y.jpg", coverImageAlt: "a", heightMode: "full", outlineWidth: 0 } as PageRow["layout"] });
+    const cover = row({ bg_color: "#fff", layout: { coverImage: "https://x/y.jpg", coverImageAlt: "a", heightMode: "full", textTone: "dark" } as PageRow["layout"] });
     const next = after(cover, "band");
     expect(next.layout?.coverImage).toBe("");
     expect(next.layout?.heightMode).toBe("full");
-    expect(next.layout?.outlineWidth).toBe(0);
+    expect(next.layout?.textTone).toBe("dark");
   });
 });

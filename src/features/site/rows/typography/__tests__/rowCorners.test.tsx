@@ -1,7 +1,8 @@
 /**
- * Corners (the row's own box) and edge shapes (curves that spill over
- * the neighbouring row) must never draw two curves on the same edge —
- * that produced a visible "cut" at the seam.
+ * Corners are the only curve a row draws. The decorative edge shapes
+ * and the per-row ink outline were retired with the redesign (bundle
+ * 9C): rows saved before then may still carry those settings, and they
+ * must be ignored, never drawn.
  */
 import { render } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -46,15 +47,17 @@ describe("row surface corners", () => {
     expect(s.style.borderBottomRightRadius).toBe("0");
   });
 
-  it("leaves the top square when it carries a shape (the cap curves instead)", () => {
+  it("ignores a stored edge shape: the corners follow the radius and no cap is drawn", () => {
     const s = sectionOf({
       surfaceRadius: "medium",
       shapeTop: { kind: "rounded", size: "medium" },
+      shapeBottom: { kind: "wave", size: "dramatic" },
     });
-    expect(s.style.borderTopLeftRadius).toBe("0");
-    expect(s.style.borderTopRightRadius).toBe("0");
-    expect(s.style.borderBottomLeftRadius).toBe("0");
-    expect(s.style.borderBottomRightRadius).toBe("0");
+    expect(s.style.borderTopLeftRadius).toBe("24px");
+    expect(s.style.borderTopRightRadius).toBe("24px");
+    expect(s.querySelector("svg")).toBeNull();
+    expect(s.querySelector("[data-section-shape]")).toBeNull();
+    expect(s.style.zIndex).toBe("");
   });
 
   /* jsdom drops `var()` border values from the DOM style, so the outline
@@ -70,30 +73,16 @@ describe("row surface corners", () => {
     expect(style).not.toContain("--outline-ink-border)");
   });
 
-  it("outlines the sides and top of a rounded surface that sets a width, never the foot", () => {
+  it("ignores a stored outline colour and width", () => {
     const markup = renderToStaticMarkup(
-      <RowSection row={makeRow({ surfaceRadius: "medium", outlineWidth: 5 })}>
+      <RowSection row={makeRow({ surfaceRadius: "medium", outlineColor: "#c00", outlineWidth: 5 })}>
         <p>content</p>
       </RowSection>,
     );
     const style = /<section[^>]*style="([^"]*)"/.exec(markup)?.[1] ?? "";
-    expect(style).toContain("border-left:var(--outline-ink-border)");
-    expect(style).toContain("border-right:var(--outline-ink-border)");
-    expect(style).toContain("border-top:var(--outline-ink-border)");
-    expect(style).not.toContain("border-bottom:");
-  });
-
-  it("lets a row override the outline colour and width for itself and its children", () => {
-    const markup = renderToStaticMarkup(
-      <RowSection row={makeRow({ surfaceRadius: "medium", outlineColor: "#c00", outlineWidth: 3 })}>
-        <p>content</p>
-      </RowSection>,
-    );
-    const style = /<section[^>]*style="([^"]*)"/.exec(markup)?.[1] ?? "";
-    expect(style).toContain("--outline-ink:#c00");
-    expect(style).toContain("--outline-ink-width:3px");
-    // re-declared on the row so it resolves against the row's own tokens
-    expect(style).toContain("--outline-ink-border:var(--outline-ink-width) solid var(--outline-ink)");
+    expect(style).not.toContain("outline-ink");
+    expect(style).not.toContain("border-left");
+    expect(style).not.toContain("#c00");
   });
 
   it("a row-level width of 0 turns its outline off", () => {
@@ -114,11 +103,11 @@ describe("row surface corners", () => {
     expect(/<section[^>]*style="([^"]*)"/.exec(markup)?.[1] ?? "").not.toContain("outline-ink");
   });
 
-  it("does not clip the section when a shape cap paints outside it", () => {
+  it("clips a rounded surface to its curve, stored shapes or not", () => {
     const s = sectionOf({
       surfaceRadius: "medium",
       shapeBottom: { kind: "rounded", size: "medium" },
     });
-    expect(s.style.overflow).not.toBe("hidden");
+    expect(s.style.overflow).toBe("hidden");
   });
 });

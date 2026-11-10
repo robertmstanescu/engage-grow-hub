@@ -23,6 +23,7 @@
  * filled in is overwritten.
  */
 import type { RestyleContext } from "./restyle";
+import { OWNER_MAP_COPY, OWNER_MAP_LIST } from "@/features/widgets/world_map/ownerList";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Json = any;
@@ -132,6 +133,27 @@ const homeGaps = (rows: Json[], notes: GapNote[]): Json[] => {
     for (const item of HOME_PROOF.items) {
       notes.push({ where: "Home, new proof strip under the hero", field: "item", value: `${item.value} ${item.label}`, kind: "new" });
     }
+  }
+
+  // World map, straight under the proof strip (design: Main artboard).
+  // The countries are the owner's own list; the copy is the artboard's.
+  if (rowIndexOf(rows, "world_map") < 0) {
+    const after = Math.max(rowIndexOf(rows, "proof_band"), rowIndexOf(rows, "hero"));
+    const where = "Home, new world map under the proof strip";
+    const map = makeRow("gap-home-world-map", "World map", "world_map", {
+      eyebrow: OWNER_MAP_COPY.eyebrow,
+      title_lines: [...OWNER_MAP_COPY.title_lines],
+      lede: OWNER_MAP_COPY.lede,
+      legend_note: OWNER_MAP_COPY.legend_note,
+      worked: [...OWNER_MAP_LIST.worked],
+      hr: [...OWNER_MAP_LIST.hr],
+      main: [...OWNER_MAP_LIST.main],
+    });
+    rows = [...rows.slice(0, after + 1), map, ...rows.slice(after + 1)];
+    notes.push({ where, field: "eyebrow", value: OWNER_MAP_COPY.eyebrow, kind: "new" });
+    notes.push({ where, field: "title", value: OWNER_MAP_COPY.title_lines.join(" "), kind: "new" });
+    notes.push({ where, field: "intro", value: OWNER_MAP_COPY.lede, kind: "new" });
+    notes.push({ where, field: "legend note", value: OWNER_MAP_COPY.legend_note, kind: "new" });
   }
   return rows;
 };

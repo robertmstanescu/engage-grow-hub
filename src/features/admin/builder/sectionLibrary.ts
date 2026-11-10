@@ -13,7 +13,7 @@
 import type { PageRowV3, PageWidget, RowLayout } from "@/types/rows";
 import { buildEmptyV3Row, generateRowId } from "@/lib/constants/rowDefaults";
 import { getWidget } from "@/lib/WidgetRegistry";
-import { MAP_COUNTRIES } from "@/features/widgets/world_map/mapData";
+import { OWNER_MAP_COPY, OWNER_MAP_LIST } from "@/features/widgets/world_map/ownerList";
 
 export interface LibrarySection {
   key: string;
@@ -96,13 +96,12 @@ export const SECTION_LIBRARY: LibrarySection[] = [
   {
     key: "world-map", name: "World map", family: "Numbers",
     build: () => rowWith("world_map", {
-      eyebrow: "Where the work has travelled",
-      title_lines: ["One comms function, many countries."],
-      lede: "Gold marks internal comms. Purple marks the countries where the work covered HR as well, and the darkest purple marks the main markets today.",
-      // Pre-filled from the redesign artboard's shading; edit freely.
-      worked: MAP_COUNTRIES.filter((c) => c.status === "worked").map((c) => c.name),
-      hr: MAP_COUNTRIES.filter((c) => c.status === "hr").map((c) => c.name),
-      main: MAP_COUNTRIES.filter((c) => c.status === "main").map((c) => c.name),
+      ...OWNER_MAP_COPY,
+      title_lines: [...OWNER_MAP_COPY.title_lines],
+      // The owner's list of 12 Oct 2026; edit freely in the block.
+      worked: [...OWNER_MAP_LIST.worked],
+      hr: [...OWNER_MAP_LIST.hr],
+      main: [...OWNER_MAP_LIST.main],
     }, { strip_title: "World map" }),
   },
   {

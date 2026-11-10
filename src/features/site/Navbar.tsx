@@ -261,7 +261,7 @@ const Navbar = () => {
       {/* Desktop navigation — wide floating island the page scrolls under */}
       <nav
         ref={railRef}
-        className="hidden lg:grid fixed left-1/2 -translate-x-1/2 z-50 w-[96vw] max-w-[1780px] grid-cols-[auto_1fr_auto] items-center gap-6 pl-7 pr-3 transition-all duration-300"
+        className="hidden lg:grid fixed left-1/2 -translate-x-1/2 z-50 w-[calc(100vw-2*clamp(16px,5vw,96px))] max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 pl-7 pr-3 transition-all duration-300"
         style={{
           top: scrolled ? "10px" : "16px",
           paddingTop: scrolled ? "8px" : "12px",

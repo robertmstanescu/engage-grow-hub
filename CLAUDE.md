@@ -29,12 +29,21 @@ Rules that are easy to get wrong:
   the canvas builder; there is no second list-based row editor. List
   rows get their actions from `ui/ActionMenu.tsx`.
 - A row's Style tab opens with a Look (Plain/Card/Band/Cover, derived by
-  `editors/rowLooks.ts`, never stored) and five controls; everything
+  `editors/rowLooks.ts`, never stored) and the everyday controls; everything
   else lives under "Show all". Text colour is `layout.textTone`
   (Auto/Light/Dark/Accent, applied in RowSection); per-part colour
   pickers stay but every `ColorField` inside a row editor collects into
   the "Custom colours" group automatically (`site-editor/customColours`).
   Do not add colour pickers beside copy fields, and do not store a Look.
+- Rows float on the page mesh. Decorative edge shapes, the per-row ink
+  outline and the dark footer band were retired with the redesign:
+  `site/retiredDesign.test.ts` fails if `shapeTop`, `SectionShape`,
+  `outlineWidth` or `.footer-dark` come back. Rows saved with those
+  settings ignore them. The only curve a row draws is Style ▸ Corners.
+- The world map's countries are the owner's list, kept in
+  `widgets/world_map/ownerList.ts`. Never add or remove a country
+  without his word; a market that is in neither worked list (Romania)
+  is shaded but stays out of the counters and has no hover.
 - The tray shows eight block families (`builder/blockFamilies.ts`); a
   new row type must be added to exactly one family (the test fails
   otherwise) and the section library (`builder/sectionLibrary.ts`) is
