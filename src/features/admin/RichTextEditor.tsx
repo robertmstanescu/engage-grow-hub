@@ -75,7 +75,7 @@ import MediaGallery from "./MediaGallery";
 const FONT_OPTIONS = [
   { label: "Inter", value: "Inter, sans-serif" },
   { label: "Playwrite Cuba", value: "'Playwrite CU', cursive" },
-  { label: "Bricolage Grotesque", value: "'Bricolage Grotesque', sans-serif" },
+  { label: "Funnel Display", value: "'Funnel Display', sans-serif" },
 ];
 
 

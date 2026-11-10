@@ -35,7 +35,7 @@ const INPUT_STYLE: React.CSSProperties = { backgroundColor: "hsl(var(--card))", 
 
 const FONT_OPTIONS = [
   
-  { label: "Bricolage Grotesque", value: "'Bricolage Grotesque', sans-serif" },
+  { label: "Funnel Display", value: "'Funnel Display', sans-serif" },
   { label: "Inter", value: "'Inter', sans-serif" },
   { label: "Playwrite Cuba", value: "'Playwrite CU', cursive" },
 ];

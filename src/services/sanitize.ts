@@ -1,3 +1,4 @@
+import { currentFace } from "@/lib/typefaces";
 import DOMPurify from "dompurify";
 import { stripRichTextFontSizes } from "@/services/richTextFontSize";
 
@@ -11,8 +12,7 @@ export const sanitizeHtml = (html: string): string => {
     ADD_ATTR: ["style", "class", "face"],
   });
 
-  // The handwritten face changed from Architects Daughter to Playwrite
-  // Cuba (owner, 10 Nov 2026). Text saved with the old name inline keeps
-  // working: it is read as the new face, the stored copy is untouched.
-  return stripRichTextFontSizes(sanitized).replace(/Architects Daughter/g, "Playwrite CU");
+  // Two faces changed on 10 Nov 2026 (lib/typefaces.ts). Text saved with
+  // an old name inline is read as the new face; the stored copy is untouched.
+  return currentFace(stripRichTextFontSizes(sanitized));
 };

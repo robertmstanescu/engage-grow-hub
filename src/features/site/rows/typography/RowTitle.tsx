@@ -42,7 +42,7 @@ const RowTitle = ({ children, as, color, style, className, icon, iconSize = 32 }
   // foreground on dark ones. Falls back to --row-fg outside a row.
   const resolvedColor = color || "var(--row-heading, var(--row-fg, hsl(var(--foreground))))";
   // Weight scale (redesign §2.2): H1 and H2 at 800, H3 at 700, so the
-  // levels step down by weight as well as size. Bricolage Grotesque is
+  // levels step down by weight as well as size. Funnel Display is
   // a variable font capped at 800, so extrabold IS the heaviest cut.
   const weightClass = Tag === "h1" ? "font-extrabold" : "font-bold";
   return (

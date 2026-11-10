@@ -1,3 +1,4 @@
+import { currentFace } from "@/lib/typefaces";
 import { useState, useEffect } from "react";
 import { fetchPublicSiteContentValue } from "@/services/publicSiteContent";
 
@@ -67,9 +68,9 @@ export interface BrandSettings {
 }
 
 const DEFAULT_TYPOGRAPHY: BrandSettings["typography"] = {
-  h1: { fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: "clamp(2rem, 5vw, 4rem)", lineHeight: "1.1", fontWeight: "900" },
-  h2: { fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)", lineHeight: "1.15", fontWeight: "700" },
-  h3: { fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: "clamp(1.1rem, 2vw, 1.5rem)", lineHeight: "1.3", fontWeight: "700" },
+  h1: { fontFamily: "'Funnel Display', sans-serif", fontSize: "clamp(2rem, 5vw, 4rem)", lineHeight: "1.1", fontWeight: "900" },
+  h2: { fontFamily: "'Funnel Display', sans-serif", fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)", lineHeight: "1.15", fontWeight: "700" },
+  h3: { fontFamily: "'Funnel Display', sans-serif", fontSize: "clamp(1.1rem, 2vw, 1.5rem)", lineHeight: "1.3", fontWeight: "700" },
   body: { fontFamily: "'Inter', sans-serif", fontSize: "16px", lineHeight: "1.7", fontWeight: "400" },
 };
 
@@ -138,7 +139,8 @@ export const applyBrandCSSVars = (brand: BrandSettings) => {
     root.style.setProperty(`--font-size-${level}`, t.fontSize);
     root.style.setProperty(`--line-height-${level}`, t.lineHeight);
     root.style.setProperty(`--font-weight-${level}`, t.fontWeight);
-    root.style.setProperty(`--font-family-${level}`, t.fontFamily);
+    // Settings saved before the faces changed still name the old ones.
+    root.style.setProperty(`--font-family-${level}`, currentFace(t.fontFamily));
   }
 };
 

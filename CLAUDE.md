@@ -206,9 +206,10 @@ Rules that are easy to get wrong:
   card, outside it. Q&A answers start closed (`start_open` turns that
   round) but stay in the HTML (`forceMount`). The booking calendar sits
   beside the copy (the block can say "Under the text"); on a phone the
-  copy is centred. The handwritten face is Playwrite Cuba
-  (`'Playwrite CU'`); `sanitizeHtml` reads the old Architects Daughter
-  name in saved text as the new face.
+  copy is centred. Headings are Funnel Display and the
+  handwritten face is Playwrite Cuba (`'Playwrite CU'`); saved text and
+  brand settings that still name Bricolage Grotesque or Architects
+  Daughter are read as the new faces (`lib/typefaces.ts`).
 - A page with no hero is a document page (Privacy): `CmsPage` lifts the
   first text block's small heading, title and date line above one glass
   card (`site/documentHeader.ts`, render-time only) and prints the body
