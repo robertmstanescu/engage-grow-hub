@@ -271,6 +271,16 @@ export const startLiquid = (canvas: MinimalCanvas, doc: Document = document): ((
   doc.defaultView?.addEventListener("resize", onResize);
   const onMotionPref = () => restart();
   reduced?.addEventListener?.("change", onMotionPref);
+  /* Pause the shader while the tab is hidden (redesign §2.4: the shader
+     pauses off-screen); restart on return so the time base stays smooth. */
+  const onVisibility = () => {
+    if (doc.hidden) {
+      if (raf) { doc.defaultView?.cancelAnimationFrame(raf); raf = 0; }
+    } else {
+      restart();
+    }
+  };
+  doc.addEventListener("visibilitychange", onVisibility);
   const onLost = (e: Event) => {
     e.preventDefault();
     layer?.removeAttribute("data-mesh-gl");
@@ -286,6 +296,7 @@ export const startLiquid = (canvas: MinimalCanvas, doc: Document = document): ((
     observer.disconnect();
     doc.defaultView?.removeEventListener("resize", onResize);
     reduced?.removeEventListener?.("change", onMotionPref);
+    doc.removeEventListener("visibilitychange", onVisibility);
     canvas.removeEventListener("webglcontextlost", onLost);
     layer?.removeAttribute("data-mesh-gl");
     const ext = gl.getExtension("WEBGL_lose_context");
