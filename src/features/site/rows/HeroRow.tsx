@@ -23,7 +23,29 @@ interface Props {
 const HeroRow = ({ row }: Props) => {
   const c = row.content || {};
 
+  /* "In short" strip (redesign, service pages): the page's plain answer
+     in a glass strip under the hero. Off unless the hero turns it on
+     (`answer_strip`); the footer keeps showing the same answer. */
+  const answer = typeof c.answer === "string" ? c.answer.trim() : "";
+  const strip = c.answer_strip && answer ? (
+    <div className="relative z-10 w-full max-w-[1280px] mx-auto row-container" style={{ marginTop: "clamp(20px, 3vw, 40px)" }}>
+      <div
+        className="surface-card flex flex-wrap items-baseline"
+        style={{ gap: "8px 40px", padding: "clamp(20px, 2.4vw, 32px) clamp(20px, 3vw, 40px)", borderLeft: "3px solid hsl(var(--deep))" }}
+        data-answer-strip
+      >
+        <p className="font-body font-bold uppercase flex-none" style={{ color: "hsl(var(--gold-text))", fontSize: "var(--fs-eyebrow)", letterSpacing: "0.26em", minWidth: 110 }}>
+          In short
+        </p>
+        <p className="font-body" style={{ flex: "1 1 320px", color: "hsl(var(--foreground))", fontSize: "var(--fs-body)", lineHeight: 1.65 }}>
+          {answer}
+        </p>
+      </div>
+    </div>
+  ) : null;
+
   return (
+    <>
     <HeroView
       editable={false}
       content={c as any}
@@ -47,6 +69,8 @@ const HeroRow = ({ row }: Props) => {
         ) : null
       }
     />
+    {strip}
+    </>
   );
 };
 

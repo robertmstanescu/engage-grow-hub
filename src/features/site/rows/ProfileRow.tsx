@@ -30,10 +30,12 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
   const { ref, isVisible } = useScrollReveal();
 
-  const nameColor = c.color_name || "#FFFFFF";
-  const roleColor = c.color_role || "hsl(var(--accent))";
-  const credBg = c.color_credential_bg || "hsl(280 55% 24% / 0.6)";
-  const credText = c.color_credential_text || "#FFFFFF";
+  /* Defaults follow the row's own text colour, so the block reads on the
+     light mesh and on a dark band alike; the owner's overrides still win. */
+  const nameColor = c.color_name || "var(--row-heading, hsl(var(--heading)))";
+  const roleColor = c.color_role || "var(--row-fg-muted, hsl(var(--meta)))";
+  const credBg = c.color_credential_bg || "hsl(var(--glass-bg))";
+  const credText = c.color_credential_text || "hsl(var(--body))";
   const noteColor = c.color_note || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 55%, transparent)";
   const eyebrowColor = c.color_eyebrow || "hsl(var(--primary))";
 
@@ -72,14 +74,14 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                 aspectRatio: String(portraitAspect),
                 /* The ink outline sits straight on the portrait: no inner
                    padding or gradient mat between border and picture. */
-                border: "var(--outline-ink-border)",
+                borderRadius: 28,
                 boxShadow:
                   "var(--shadow-card)",
                 backfaceVisibility: "hidden",
                 transform: "translateZ(0)",
               }}
             >
-              <div className="w-full h-full overflow-hidden" style={{ borderRadius: "calc(0.75rem - var(--outline-ink-width))" }}>
+              <div className="w-full h-full overflow-hidden" style={{ borderRadius: 28 }}>
                 {c.image_url ? (
                   // Profile photos sit below the fold on most pages —
                   // lazy-load + async decode keeps initial paint snappy.
@@ -128,7 +130,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                   <span
                     key={i}
                     className="font-body text-micro tracking-wider px-3 py-1 rounded-full"
-                    style={{ backgroundColor: credBg, color: credText, backdropFilter: "blur(8px)" }}
+                    style={{ backgroundColor: credBg, color: credText, border: "1px solid hsl(var(--glass-border) / 0.9)", backdropFilter: "blur(8px)" }}
                   >
                     {cred}
                   </span>

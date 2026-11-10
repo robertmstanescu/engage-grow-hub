@@ -162,6 +162,15 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
         />
       </SectionBox>
 
+      <SelectField
+        label="Cards"
+        value={pillarContent.card_layout || ""}
+        onChange={(v) => onPillarChange("card_layout", v)}
+        options={[
+          { label: "One at a time (carousel)", value: "" },
+          { label: "All visible, three across", value: "grid" },
+        ]}
+      />
       <MoreFields>
       <SectionBox label="Cover Image">
         <CoverImageField content={pillarContent} onChange={onPillarChange} />

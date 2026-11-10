@@ -8,7 +8,7 @@
  * now lives here and the copy is gone.
  */
 
-import { ColorField, EyebrowField, NoteField, SelectField } from "./FieldComponents";
+import { ColorField, EyebrowField, Field, MoreFields, NoteField, SelectField } from "./FieldComponents";
 import { CoverImageField } from "./CoverImageField";
 import SubtitleEditor from "./SubtitleEditor";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
@@ -58,9 +58,19 @@ const BoxedRowEditor = ({ content, onChange, bgColor }: Props) => {
           options={[
             { label: "None", value: "" },
             { label: "Roman numerals (vows)", value: "roman" },
+            { label: "Service dot, number and Explore link", value: "pillar_number" },
+            { label: "Short bar above the title", value: "bar" },
+            { label: "Handwritten line (no card)", value: "note" },
           ]}
         />
       )}
+      <MoreFields>
+        <Field
+          label="Small label above the light cards (optional)"
+          value={content.group_label || ""}
+          onChange={(v) => onChange("group_label", v)}
+        />
+      </MoreFields>
       <BoxedArrayField content={content} onChange={onChange} bgColor={bgColor} />
       <div className="grid grid-cols-2 gap-3">
         <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onChange("color_card_title", v)} />

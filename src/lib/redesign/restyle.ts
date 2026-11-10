@@ -248,6 +248,27 @@ const restyleHero = (data: Json, ctx: RestyleContext): void => {
   data.title_size = ctx.kind === "service" ? "compact" : ctx.kind === "home" ? "" : "display";
 };
 
+/**
+ * About page: the design shows the photo beside the hero headline, and
+ * the story under it as plain text. Today the photo is a banner laid
+ * over the story row. Move the same picture (and its focal point) to
+ * the hero; no words move.
+ */
+const COVER_KEYS = ["coverImage", "coverImageRatio", "coverHeight", "coverTextOverlap", "coverFocalX", "coverFocalY"];
+const movePhotoToHero = (rows: Json[]): void => {
+  const heroRow = rows.find((r) => widgetsOf(r).some((w) => w.type === "hero"));
+  const hero = heroRow && widgetsOf(heroRow).find((w) => w.type === "hero");
+  const coverRow = rows.find((r) => r !== heroRow && typeof r.layout?.coverImage === "string" && r.layout.coverImage.trim());
+  if (!hero || !coverRow) return;
+  const data = hero.data || (hero.data = {});
+  if (String(data.visual_image_url || "").trim()) return;
+  data.visual_image_url = coverRow.layout.coverImage.trim();
+  data.visual_layout = "half_bleed";
+  if (typeof coverRow.layout.coverFocalX === "number") data.visual_image_focal_x = coverRow.layout.coverFocalX;
+  if (typeof coverRow.layout.coverFocalY === "number") data.visual_image_focal_y = coverRow.layout.coverFocalY;
+  for (const k of COVER_KEYS) delete coverRow.layout[k];
+};
+
 /* ── Page ──────────────────────────────────────────────────────────── */
 
 const newId = (seed: string) => `rs-${seed}`;
@@ -284,6 +305,9 @@ export const restyleRows = (input: Json[], ctx: RestyleContext): Json[] => {
   if (ctx.kind === "service") rows = splitServiceAndFaq(rows);
   for (const row of rows) {
     plainRow(row);
+    /* Only service pages tint the page mesh (their pillar colour). A dark
+       mesh left on any other page would turn its text light on glass. */
+    if (ctx.kind !== "service" && row.layout) delete row.layout.mesh;
     for (const w of widgetsOf(row)) {
       const data = w.data || (w.data = {});
       /* A service hero's label keeps its pillar colour (the design's
@@ -295,10 +319,16 @@ export const restyleRows = (input: Json[], ctx: RestyleContext): Json[] => {
       else if (w.type === "image_text") restyleImageText(data, ctx);
       else if (w.type === "process_steps") restyleSteps(data, ctx);
       else if (w.type === "hero") restyleHero(data, ctx);
+      else if (w.type === "service") {
+        /* Tiers: all visible, three across, with the pillar's top border. */
+        data.card_layout = "grid";
+        if (ctx.pillarSlug) data.pillar = ctx.pillarSlug;
+      }
       else if (w.type === "proof_band") data.band_style = "deep";
       else if (w.type === "text" && ctx.kind === "privacy") data.panel_style = "glass";
     }
   }
+  if (ctx.kind === "about") movePhotoToHero(rows);
   return rows;
 };
 

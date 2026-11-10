@@ -550,8 +550,10 @@ export const HeroView = ({
               // the text side needs real room: a fixed ~340px visual keeps
               // the text column comfortably above that floor at every
               // width the two-column layout is active.
-              "relative z-10 w-full max-w-[1280px] mx-auto px-6 sm:px-8 py-20 flex flex-col items-center lg:flex-row lg:items-center gap-10 lg:gap-16"
-            : "relative z-10 w-full max-w-[1100px] mx-auto px-6 sm:px-8 py-20 flex min-h-0 flex-1 flex-col justify-center items-center"
+              "relative z-10 w-full max-w-[1280px] mx-auto row-container py-20 flex flex-col items-center lg:flex-row lg:items-center gap-10 lg:gap-16"
+            : // No picture: the copy starts on the same left edge as every
+              // section under it (centred copy keeps its own narrower box).
+              `relative z-10 w-full max-w-[1280px] mx-auto row-container py-20 flex min-h-0 flex-1 flex-col justify-center ${c.align === "left" ? "items-start" : "items-center"}`
         }
       >
         {/*

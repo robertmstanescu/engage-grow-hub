@@ -30,12 +30,12 @@
     --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
     --border: 285 20% 84%;
-    /* The ink outline: a 5px deep-plum line on every set row edge, on
-       image frames, the contact box and the navbar island. One token so
+    /* The outline: a 1px glass hairline (it was a 5px deep-plum line
+       before the redesign) on image frames and the navbar island. One token so
        the weight and colour stay identical everywhere it is drawn. */
-    --outline-ink: #26142E;
-    --outline-ink-width: 5px;
-    --outline-ink-navbar-width: 2px;
+    --outline-ink: #D8CCDB;
+    --outline-ink-width: 1px;
+    --outline-ink-navbar-width: 1px;
     --outline-ink-border: var(--outline-ink-width) solid var(--outline-ink);
     /* These three are the static defaults; Brand settings ▸ Outline
        overrides them on :root at runtime (useBrandSettings), and a row's
@@ -789,6 +789,24 @@
     color: hsl(var(--link));
     text-decoration: none;
   }
+  /* Small label pill (redesign): blog categories, tags, chips. */
+  .pill-tag {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: hsl(var(--gold) / 0.85);
+    color: hsl(var(--deep));
+  }
+
+  /* Handwritten asides (redesign): notes, captions, "start here". */
+  .font-hand { font-family: 'Architects Daughter', cursive; font-weight: 400; }
+
   .link-arrow-mc:hover { color: hsl(var(--heading)); text-decoration: underline; text-underline-offset: 4px; }
 
   /* FAQ toggle: a 34px hairline circle showing − when open, + when closed. */
@@ -1730,9 +1748,9 @@
     --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
     --border: 285 20% 84%;
-    --outline-ink: #26142E;
-    --outline-ink-width: 5px;
-    --outline-ink-navbar-width: 2px;
+    --outline-ink: #D8CCDB;
+    --outline-ink-width: 1px;
+    --outline-ink-navbar-width: 1px;
     --outline-ink-border: var(--outline-ink-width) solid var(--outline-ink);
     --input: 285 20% 84%;
     --ring: 280 55% 24%;

@@ -186,7 +186,7 @@ const BlogPost = () => {
             </div>
             <h1
               className="font-display font-extrabold"
-              style={{ color: "hsl(var(--deep))", fontSize: "clamp(40px, 5vw, 76px)", lineHeight: 1.0, letterSpacing: "-0.02em" }}
+              style={{ color: "hsl(var(--heading))", fontSize: "clamp(40px, 5vw, 76px)", lineHeight: 1.0, letterSpacing: "-0.02em" }}
             >
               {article.title}
             </h1>

@@ -30,7 +30,7 @@
  * ───────────────────────────────────────────────────────────────────── */
 
 import { useEffect, useState } from "react";
-import { Field, RichField, SectionBox, ColorField, EyebrowField, MoreFields, NoteField } from "../site-editor/FieldComponents";
+import { Field, RichField, SectionBox, ColorField, EyebrowField, MoreFields, NoteField, SelectField } from "../site-editor/FieldComponents";
 import { CoverImageField } from "../site-editor/CoverImageField";
 import ImagePickerField from "../ImagePickerField";
 import TitleLinesEditor from "./TitleLinesEditor";
@@ -356,6 +356,15 @@ export const ProofBandEditor = ({
           </>
         )}
       />
+      <SelectField
+        label="Look"
+        value={content.band_style || ""}
+        onChange={(v) => onChange("band_style", v)}
+        options={[
+          { label: "Light tiles", value: "" },
+          { label: "Deep plum band, gold numbers", value: "deep" },
+        ]}
+      />
       {/* Tile colours — all optional. Left empty, each tile keeps
           inheriting the row's automatic light/dark contrast. */}
       <ColorField
@@ -412,6 +421,35 @@ export const ProcessStepsEditor = ({
           </>
         )}
       />
+      <SelectField
+        label="Look"
+        value={content.step_style || ""}
+        onChange={(v) => onChange("step_style", v)}
+        options={[
+          { label: "Ruled columns", value: "" },
+          { label: "Glass cards", value: "cards" },
+        ]}
+      />
+      <MoreFields>
+        <SelectField
+          label="Subtitle"
+          value={content.subtitle_as_title ? "title" : ""}
+          onChange={(v) => onChange("subtitle_as_title", v === "title")}
+          options={[
+            { label: "Small line under the title", value: "" },
+            { label: "Use it as the section's headline", value: "title" },
+          ]}
+        />
+        <SelectField
+          label="Last step"
+          value={content.last_step_as_note ? "note" : ""}
+          onChange={(v) => onChange("last_step_as_note", v === "note")}
+          options={[
+            { label: "A step like the others", value: "" },
+            { label: "Handwritten aside under the steps", value: "note" },
+          ]}
+        />
+      </MoreFields>
     </div>
   );
 };

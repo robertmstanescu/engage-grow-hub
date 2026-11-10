@@ -11,6 +11,8 @@
  *   - the same JSON files with restyled rows (used by the local preview)
  *   - restyle.sql: UPDATE statements for the DRAFT columns only
  *   - text-diff.txt: per page, "same" or the lines that differ
+ *   - gap-content.txt: every piece of text ADDED after the restyle
+ *     (buttons, the proof strip, repeated blocks), for the owner to read
  *
  * Exits non-zero if any page's visible text changed in the restyle
  * step, so a restyle that touches copy can never produce SQL.
@@ -18,7 +20,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { restyleRows, kindForSlug, visibleText } from "../../src/lib/redesign/restyle";
-import { applyGapContent } from "../../src/lib/redesign/gapContent";
+import { applyGapContent, type GapNote } from "../../src/lib/redesign/gapContent";
 
 const [snapshotDir, outDir] = process.argv.slice(2);
 if (!snapshotDir || !outDir) {
@@ -57,6 +59,8 @@ const sql: string[] = [
   "begin;",
 ];
 const report: string[] = [];
+const gapNotes: GapNote[] = [];
+let homeRows: Row[] = [];
 let failed = false;
 
 const check = (label: string, before: Row[], after: Row[]) => {
@@ -78,7 +82,8 @@ if (home) {
   const before = rowsOf(home.content);
   const restyled = restyleRows(before, { kind: "home" });
   check("home", before, restyled);
-  home.content = withRows(home.content, applyGapContent(restyled, { kind: "home" }));
+  homeRows = applyGapContent(restyled, { kind: "home" }, gapNotes);
+  home.content = withRows(home.content, homeRows);
   sql.push(`update public.site_content set draft_content = ${sqlJson(home.content)} where section_key = 'page_rows';`);
 }
 
@@ -89,7 +94,7 @@ for (const page of pages) {
   const before = rowsOf(page.page_rows);
   const restyled = restyleRows(before, ctx);
   check(slug, before, restyled);
-  page.page_rows = withRows(page.page_rows, applyGapContent(restyled, ctx));
+  page.page_rows = withRows(page.page_rows, applyGapContent(restyled, { ...ctx, homeRows }, gapNotes));
   sql.push(`update public.cms_pages set draft_page_rows = ${sqlJson(page.page_rows)} where slug = '${slug.replace(/'/g, "''")}';`);
 }
 sql.push("commit;");
@@ -101,6 +106,11 @@ for (const extra of ["blog_posts.json", "work_items.json", "proof_points.json"])
   if (fs.existsSync(src)) fs.copyFileSync(src, path.join(outDir, extra));
 }
 fs.writeFileSync(path.join(outDir, "text-diff.txt"), report.join("\n") + "\n");
+const kindLabel = { reused: "Your own words, shown in one more place", label: "Button label", new: "New copy" } as const;
+fs.writeFileSync(
+  path.join(outDir, "gap-content.txt"),
+  gapNotes.map((n) => `[${kindLabel[n.kind]}] ${n.where} (${n.field}): ${n.value}`).join("\n") + "\n",
+);
 console.log(report.join("\n"));
 if (failed) {
   console.error("\nVisible text changed: no SQL written.");
