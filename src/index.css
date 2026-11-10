@@ -2002,7 +2002,8 @@
 }
 
 /* World map row (redesign): staggered draw-on, replayable. */
-:root { --map-main: 281 53% 20%; }
+/* Main markets: the brand green (#003728, the Fractional HRBP pillar colour), the owner's choice of 10 Nov 2026, so they stand apart from the two purples. */
+:root { --map-main: 164 100% 11%; }
 .tmc-map .c { fill: hsl(280 24% 88%); stroke: hsl(var(--background)); stroke-width: 0.6; }
 .tmc-map .wm-worked, .tmc-map .wm-hr, .tmc-map .wm-main { fill: hsl(280 24% 88%); }
 .tmc-map.play .wm-worked { animation: tmcWorked .7s ease-out forwards; animation-delay: var(--d, 0s); }

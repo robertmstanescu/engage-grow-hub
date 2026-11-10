@@ -7,7 +7,7 @@
  * - `hr`: internal comms AND HR (15, purple).
  * - `worked`: internal comms only (21, gold). Hong Kong and Singapore
  *   are drawn as dots.
- * - `main`: main markets today (darkest purple). Romania is a market
+ * - `main`: main markets today (brand green #003728). Romania is a market
  *   only: shaded, but not one of the 36 and not counted.
  * - Congo is the Democratic Republic of the Congo (Kinshasa).
  */
@@ -30,6 +30,6 @@ export const OWNER_MAP_LIST = {
 export const OWNER_MAP_COPY = {
   eyebrow: "Where the work has travelled",
   title_lines: ["36 countries. One comms function."],
-  lede: "Town halls across time zones, onboarding in every office and news that lands the same day wherever people sit. Gold marks internal comms. Purple marks the countries where the work covered HR as well, and the darkest purple marks the main markets today.",
+  lede: "Town halls across time zones, onboarding in every office and news that lands the same day wherever people sit. Gold marks internal comms. Purple marks the countries where the work covered HR as well, and green marks the main markets today.",
   legend_note: "Learning and development ran in all 36.",
 } as const;
