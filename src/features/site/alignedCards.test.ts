@@ -20,6 +20,20 @@ describe("aligned cards", () => {
     expect(css).toMatch(/grid-template-rows: subgrid/);
   });
 
+  it("step cards and blog cards share their rows too (owner, 10 Nov 2026)", () => {
+    // Bodies in a line start level whatever the title length: a rule for
+    // every card grid, not only tiers and boxed cards.
+    for (const file of [
+      "src/features/site/rows/ProcessStepsRow.tsx",
+      "src/pages/Blog.tsx",
+      "src/features/widgets/from_the_blog/FromTheBlogRow.tsx",
+    ]) {
+      const src = read(file);
+      expect(src, file).toMatch(/align-cards/);
+      expect(src, file).toMatch(/align-card[ "`]/);
+    }
+  });
+
   it("the tier card always renders its seven parts, so rows stay in step", () => {
     // Slots: tag, title, price, text, done box, what's inside, button.
     expect(tier).toMatch(/\["--slots" as string\]: 7/);

@@ -505,8 +505,10 @@
     transition: border-color 300ms ease, box-shadow 300ms ease, background-color 300ms ease;
   }
 
-  /* Hover: gentle lift + slightly deeper soft shadow (no dark glow). */
-  .glass:hover {
+  /* Hover: gentle lift + slightly deeper soft shadow (no dark glow), only on
+     glass you can click. A static box such as the world map or a document
+     card keeps its see-through glass under the pointer (owner, 11 Nov 2026). */
+  a.glass:hover, button.glass:hover {
     background: hsl(0 0% 100% / 0.9);
     border-color: hsl(280 30% 78%);
     box-shadow: var(--shadow-card);
@@ -2192,14 +2194,14 @@
 @media (prefers-reduced-motion: reduce) { .list-line-link::before { transition: none; } }
 
 /* World map row (redesign): staggered draw-on, replayable. */
-/* Main markets: Cobalt Blue (#0047AB, brand secondary palette), the owner's choice of 10 Nov 2026 (it replaced the green #003728). */
+/* Map colours, the owner's choice of 11 Nov 2026: purple #3D348B for
+   internal comms, navy #002B67 for internal comms and HR, green #1A8164
+   for the main markets. The map, its legend and its counters all read
+   these three tokens. */
 :root {
-  /* Map colours from the brand's secondary palette (owner left the
-     choice to Claude, 10 Nov 2026): Prince for internal comms, Admiral
-     for internal comms and HR, Mars Yellow for the main markets. */
-  --map-worked: 246 45% 57%;
-  --map-hr: 246 52% 21%;
-  --map-main: 23 84% 48%;
+  --map-worked: 246 46% 37%;
+  --map-hr: 215 100% 20%;
+  --map-main: 163 66% 30%;
 }
 .tmc-map .c { fill: hsl(280 24% 88%); stroke: hsl(var(--background)); stroke-width: 0.5; }
 .tmc-map .wm-worked, .tmc-map .wm-hr, .tmc-map .wm-main { fill: hsl(280 24% 88%); }

@@ -19,6 +19,7 @@ export const worldMapSchema = z.looseObject({
   main: strList(),
   worked_label: str("countries in internal comms"),
   hr_label: str("with HR as well"),
+  main_label: str("main markets today"),
   legend_worked: str("Internal comms"),
   legend_hr: str("Internal comms and HR"),
   legend_main: str("Main markets today"),

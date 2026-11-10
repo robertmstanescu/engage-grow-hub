@@ -16,10 +16,10 @@ describe("owner's choices of 10 Nov 2026", () => {
     expect(css).toMatch(/--hero-label:\s*0 0% 0%/);
   });
 
-  it("map colours come from the secondary palette: Prince, Admiral, Mars Yellow", () => {
-    expect(css).toMatch(/--map-worked:\s*246 45% 57%/);
-    expect(css).toMatch(/--map-hr:\s*246 52% 21%/);
-    expect(css).toMatch(/--map-main:\s*23 84% 48%/);
+  it("map colours are the owner's of 11 Nov 2026: #3D348B, #002B67, #1A8164", () => {
+    expect(css).toMatch(/--map-worked:\s*246 46% 37%/);
+    expect(css).toMatch(/--map-hr:\s*215 100% 20%/);
+    expect(css).toMatch(/--map-main:\s*163 66% 30%/);
   });
 
   it("no coloured edge stripes on cards and no underline under title words", () => {

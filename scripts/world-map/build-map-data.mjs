@@ -37,7 +37,7 @@ const SHADEABLE = {
   "Germany": ["hr", 1.37], "Switzerland": ["hr", 1.35], "Belgium": ["hr", 1.33],
   "Netherlands": ["hr", 1.33], "Spain": ["main", 1.28], "Australia": ["hr", 2.24],
   "China": ["worked", 2], "Italy": ["worked", 1.38], "Denmark": ["main", 1.36],
-  "United Kingdom": ["main", 1.28], "Finland": ["main", 1.45], "Japan": ["worked", 2.23],
+  "United Kingdom": ["main", 1.28], "Ireland": ["main", 1.26], "Finland": ["main", 1.45], "Japan": ["worked", 2.23],
   "Serbia": ["worked", 1.44], "Democratic Republic of the Congo": ["worked", 1.41],
 };
 /** Places too small for a shape: drawn as a dot at the shape's centre. */

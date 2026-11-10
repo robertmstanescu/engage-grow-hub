@@ -44,12 +44,16 @@ Rules that are easy to get wrong:
   settings ignore them. The only curve a row draws is Style ▸ Corners.
 - The world map's countries are the owner's list, kept in
   `widgets/world_map/ownerList.ts`. Never add or remove a country
-  without his word; a market that is in neither worked list (Romania)
-  is shaded and names itself on hover but stays out of the counters. The
+  without his word; a market that is in neither worked list (Romania, Ireland)
+  is shaded and names itself on hover; it counts as a main market but
+  not among the 36 worked places. The
   map zooms by narrowing its `viewBox` (`world_map/zoom.ts`); a plain
   wheel must keep scrolling the page. Map colours are
-  from the secondary palette (`--map-worked` Prince, `--map-hr` Admiral,
-  `--map-main` Mars Yellow), chosen for him on 10 Nov 2026. The map art
+  his of 11 Nov 2026 (`--map-worked` #3D348B, `--map-hr` #002B67,
+  `--map-main` #1A8164); Ireland and Romania are markets only, and a
+  market names itself "Main market" on hover. The three
+  counters (comms, HR, main markets) wear the same legend colours, and
+  the map box does not brighten on hover (only clickable glass does). The map art
   is generated (`scripts/world-map/build-map-data.mjs`, amCharts
   Mercator, no Antarctica); the "Map: amCharts" credit by the legend is
   the licence's condition and must stay. Small labels and eyebrows on
@@ -217,7 +221,9 @@ Rules that are easy to get wrong:
   hard-code it into the navigation.
 - Cards in a line share their rows: the grid carries `.align-cards` and
   each card `.align-card` with `--slots` (CSS subgrid, `src/index.css`),
-  so prices, text and buttons sit level whatever the title length. Every
+  so prices, text and buttons sit level whatever the title length. This is
+  a rule for EVERY card grid (tiers, boxed cards, process steps, blog
+  cards): a new card grid opts in too, so bodies start on the same line. Every
   part must render (an empty one as `.align-empty`). On a tier card
   "What's inside" is a closed `<details>` and the note prints under the
   card, outside it. Q&A answers start closed (`start_open` turns that

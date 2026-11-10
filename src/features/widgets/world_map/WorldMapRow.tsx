@@ -43,19 +43,21 @@ const WorldMapRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow;
             </RowTitle>
             <p className="font-body" style={{ margin: 0, fontSize: "var(--fs-subtitle)", lineHeight: 1.7, color: "hsl(var(--body))" }}>{c.lede}</p>
           </div>
-          <div className="flex items-end gap-9" aria-live="polite">
-            <div className="flex flex-col gap-1">
-              <span className="font-display font-extrabold leading-[0.9]" style={{ color: "hsl(var(--gold-text))", fontSize: "clamp(48px, 5vw, 72px)" }}>
-                {counters.comms}
-              </span>
-              <span className="text-[13px]" style={{ color: "hsl(var(--vows-card-body))" }}>{c.worked_label}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="font-display font-extrabold leading-[0.9]" style={{ color: "hsl(var(--primary))", fontSize: "clamp(48px, 5vw, 72px)" }}>
-                {counters.hr}
-              </span>
-              <span className="text-[13px]" style={{ color: "hsl(var(--vows-card-body))" }}>{c.hr_label}</span>
-            </div>
+          <div className="flex flex-wrap items-end gap-x-9 gap-y-4" aria-live="polite">
+            {/* Each number wears its legend colour (owner, 11 Nov 2026):
+                purple for comms, navy for HR, green for markets. */}
+            {([
+              [counters.comms, c.worked_label, "--map-worked"],
+              [counters.hr, c.hr_label, "--map-hr"],
+              [counters.main, c.main_label, "--map-main"],
+            ] as const).map(([value, label, token]) => (
+              <div key={token} className="flex flex-col gap-1">
+                <span className="font-display font-extrabold leading-[0.9]" style={{ color: `hsl(var(${token}))`, fontSize: "clamp(48px, 5vw, 72px)" }}>
+                  {value}
+                </span>
+                <span className="text-[13px]" style={{ color: "hsl(var(--vows-card-body))" }}>{label}</span>
+              </div>
+            ))}
           </div>
         </div>
         {!isMultiCol && (
