@@ -19,6 +19,7 @@
  * ───────────────────────────────────────────────────────────────────────── */
 
 import type { PageRow } from "@/types/rows";
+import { safeHref } from "@/services/safeHref";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
@@ -74,12 +75,12 @@ const CtaBandRow = ({
 
           <div className={`flex flex-wrap items-center gap-5 ${actionsAlign} shrink-0`} style={revealStyle(isVisible, 0.4)}>
             {buttonText && (
-              <a href={c.button_url || "/#contact"} className="btn-ink">
+              <a href={safeHref(c.button_url, "/#contact")} className="btn-ink">
                 {buttonText}
               </a>
             )}
             {linkText && (
-              <a href={c.link_url || "#"} className="link-arrow">
+              <a href={safeHref(c.link_url)} className="link-arrow">
                 {linkText}
                 <span aria-hidden className="link-arrow-glyph">→</span>
               </a>

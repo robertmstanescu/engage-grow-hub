@@ -1,4 +1,5 @@
 import type { PageRow } from "@/types/rows";
+import { safeHref } from "@/services/safeHref";
 import { DEFAULT_ROW_LAYOUT, getRowColumns, multiColGridStyle } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
@@ -71,7 +72,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
     const lightCards = indexed.filter((entry) => !darkCards.includes(entry));
 
     const renderCard = (card: BoxedCard, i: number) => {
-      const cardLink: string | undefined = card.link_url?.trim() || undefined;
+      const cardLink: string | undefined = card.link_url?.trim() ? safeHref(card.link_url) : undefined;
       // Per-card accent for the icon, title and a 3px top border, from
       // two sources in priority order:
       //   1. A card linking to one of the 4 service pillars gets that
@@ -99,7 +100,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       const bodyColor = isDarkCard
         ? "hsl(var(--deep-fg) / 0.8)"
         : c.color_card_body || "hsl(var(--body))";
-      const cardCtaUrl: string | undefined = card.cta_url?.trim() || undefined;
+      const cardCtaUrl: string | undefined = card.cta_url?.trim() ? safeHref(card.cta_url) : undefined;
       const cardCtaLabel: string | undefined = card.cta_label?.trim() || undefined;
 
       /* Marker above the title (redesign): replaces the icon when set.
@@ -247,7 +248,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
        * pillar-coloured number tile, title + tier line, body, price and
        * an "Explore →" link, separated by hairlines. Stacks on phones. */
     const renderListItem = (card: BoxedCard, i: number) => {
-      const cardLink: string | undefined = card.link_url?.trim() || undefined;
+      const cardLink: string | undefined = card.link_url?.trim() ? safeHref(card.link_url) : undefined;
       const pillarColor = pillarColorFromLink(cardLink) || pillarColorFromKey(card.pillar);
       const tileColor = pillarColor || card.accent_color?.trim() || "hsl(var(--primary))";
       const titleColor = "hsl(var(--row-heading))";
@@ -388,7 +389,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
 
         {c.cta_url && c.cta_label && (
           <div className="mt-rhythm-base" style={revealStyle(isVisible, cards.length + 3)}>
-            <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
+            <a href={safeHref(c.cta_url)} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
               className="btn-ink"
 >
               {c.cta_label}

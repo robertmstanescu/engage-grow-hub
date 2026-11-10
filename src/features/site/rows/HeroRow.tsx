@@ -1,4 +1,5 @@
 import type { PageRow } from "@/types/rows";
+import { safeHref } from "@/services/safeHref";
 import { HeroView } from "@/features/site/HeroSection";
 import Icon from "@/features/icons/Icon";
 
@@ -59,7 +60,7 @@ const HeroRow = ({ row }: Props) => {
       trailing={
         c.cta_url && c.cta_label ? (
           <a
-            href={c.cta_url}
+            href={safeHref(c.cta_url)}
             target={c.cta_url.startsWith("http") ? "_blank" : undefined}
             rel="noopener noreferrer"
             className="btn-ink btn-lg"

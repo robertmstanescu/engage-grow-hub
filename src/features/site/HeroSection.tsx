@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { safeHref } from "@/services/safeHref";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
@@ -652,7 +653,7 @@ export const HeroView = ({
               {trailing}
               {c.secondary_cta_label && c.secondary_cta_url && (
                 <a
-                  href={c.secondary_cta_url}
+                  href={safeHref(c.secondary_cta_url)}
                   target={c.secondary_cta_url.startsWith("http") ? "_blank" : undefined}
                   rel={c.secondary_cta_url.startsWith("http") ? "noopener noreferrer" : undefined}
                   className="link-arrow-mc"

@@ -1,4 +1,5 @@
 import { useParams, Link, useSearchParams } from "react-router-dom";
+import { safeHref } from "@/services/safeHref";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -272,7 +273,7 @@ const BlogPost = () => {
                 <p className="text-sm" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
                   Founder, The Magic Coffin ·{" "}
                   <Link to="/p/about-us/" className="underline underline-offset-4 hover:opacity-70">About</Link>
-                  {authorLinkedin && (<>{" · "}<a href={authorLinkedin} target="_blank" rel="noreferrer me" className="underline underline-offset-4 hover:opacity-70">LinkedIn</a></>)}
+                  {authorLinkedin && (<>{" · "}<a href={safeHref(authorLinkedin)} target="_blank" rel="noreferrer me" className="underline underline-offset-4 hover:opacity-70">LinkedIn</a></>)}
                 </p>
               </div>
             </div>

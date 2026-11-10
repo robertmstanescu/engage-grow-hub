@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { safeCss } from "@/services/safeCss";
 import type { PageRow } from "@/types/rows";
 import { getRowBgColor } from "../rowBackground";
 import { renderOverlayElements } from "@/features/site/rows/overlayRender";
@@ -143,7 +144,7 @@ const RowSection = ({
   const rawCss = row.customCss?.trim();
   const rowDomId = rawCss ? `row-${row.id}` : undefined;
   const scopedCss = rawCss
-    ? rawCss.replace(/<\/?script[^>]*>/gi, "").replace(/&/g, `#${rowDomId}`)
+    ? safeCss(rawCss).replace(/&/g, `#${rowDomId}`)
     : "";
 
   const snapEnabled = row.layout?.snapEnabled === true;

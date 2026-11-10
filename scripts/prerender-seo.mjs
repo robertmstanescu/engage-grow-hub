@@ -203,7 +203,7 @@ function renderPage(shell, meta) {
     html = html.replace(
       "</head>",
       `${blocks
-        .map((b) => `  <script type="application/ld+json" data-prerender="1">${JSON.stringify(b)}</script>`)
+        .map((b) => `  <script type="application/ld+json" data-prerender="1">${JSON.stringify(b).replace(/</g, "\\u003c")}</script>`)
         .join("\n")}\n  </head>`,
     );
   }
@@ -606,8 +606,8 @@ async function main() {
     if (sitemap.lastmod) {
       parts.push(`    <lastmod>${new Date(sitemap.lastmod).toISOString().split("T")[0]}</lastmod>`);
     }
-    if (sitemap.changefreq) parts.push(`    <changefreq>${sitemap.changefreq}</changefreq>`);
-    if (sitemap.priority) parts.push(`    <priority>${sitemap.priority}</priority>`);
+    if (sitemap.changefreq) parts.push(`    <changefreq>${escapeXml(String(sitemap.changefreq))}</changefreq>`);
+    if (sitemap.priority) parts.push(`    <priority>${escapeXml(String(sitemap.priority))}</priority>`);
     return `  <url>\n${parts.join("\n")}\n  </url>`;
   });
   const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`;

@@ -1,4 +1,5 @@
 import type { PageRow } from "@/types/rows";
+import { safeHref } from "@/services/safeHref";
 import { DEFAULT_ROW_LAYOUT, getRowColumns, multiColGridStyle } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
@@ -128,7 +129,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
 
         {c.cta_url && c.cta_label && (
           <div className="mt-rhythm-base" style={revealStyle(isVisible, 3)}>
-            <a href={c.cta_url} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
+            <a href={safeHref(c.cta_url)} target={c.cta_url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
               className="btn-ink"
 >
               {c.cta_label}

@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { safeHref } from "@/services/safeHref";
 import { useTagColors } from "@/hooks/useTagColors";
 
 /**
@@ -131,7 +132,7 @@ const TierCard = memo(({
       ) : null}
 
       <div className="mt-auto pt-6">
-        <a href={ctaUrl || "/#contact"} className="link-arrow-mc">
+        <a href={safeHref(ctaUrl, "/#contact")} className="link-arrow-mc">
           {price || "Inquire Now"} <span aria-hidden>→</span>
         </a>
       </div>
