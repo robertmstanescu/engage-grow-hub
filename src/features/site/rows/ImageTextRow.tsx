@@ -178,7 +178,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
               boxShadow: "0 12px 30px -18px rgba(38,20,46,0.4)",
             }}
           >
-            <span style={{ fontFamily: "'Architects Daughter', cursive", fontSize: 20, lineHeight: 1.4, color: c.color_caption_text || "hsl(var(--link))", transform: "rotate(-3deg)", display: "inline-block" }}>
+            <span style={{ fontFamily: "'Playwrite CU', cursive", fontSize: 20, lineHeight: 1.4, color: c.color_caption_text || "hsl(var(--link))", transform: "rotate(-3deg)", display: "inline-block" }}>
               {c.floating_caption}
             </span>
           </span>
@@ -242,7 +242,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             className={c.note_handwritten ? "leading-[1.4]" : "font-body text-xs italic leading-[1.6]"}
             style={{
               color: c.note_handwritten && !c.color_note ? "hsl(var(--link))" : noteColor,
-              ...(c.note_handwritten ? { fontFamily: "'Architects Daughter', cursive", fontSize: 20 } : {}),
+              ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: 20 } : {}),
             }}
           >{c.note}</p>
         </div>

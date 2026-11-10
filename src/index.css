@@ -81,8 +81,8 @@
     --sidebar-border: 285 22% 89%;
     --sidebar-ring: 280 55% 24%;
 
-    --font-title: "Bricolage Grotesque", sans-serif;
-    --font-header: "Bricolage Grotesque", sans-serif;
+    --font-title: "Funnel Display", sans-serif;
+    --font-header: "Funnel Display", sans-serif;
     --font-body: "Inter", sans-serif;
 
     /* ── Pillar/service tokens ── */
@@ -128,7 +128,7 @@
     --meta: 290 12% 42%;        /* captions, meta, dates — darkened from the
                                    spec's #8A7A92 (3.8:1) so captions pass AA */
     --link: 281 55% 34%;        /* #672786 links; hover → --heading */
-    --gold-text: 40 69% 30%;    /* #815E18 eyebrows on light (only gold as text) */
+    --gold-text: 0 0% 0%;       /* eyebrows and small labels on light: pure black (owner, 10 Nov 2026; was mustard #815E18) */
     --gold: 45 75% 60%;         /* #E6C24C fills, underline strokes, focus ring */
     --gold-decor: 46 73% 60%;   /* #E5C54F map "comms" fill, decorative marks */
     --deep: 281 59% 13%;        /* #2A0E33 deep plum bands, primary pill, nav CTA */
@@ -553,6 +553,18 @@
       border-color 160ms ease-out,
       transform 160ms ease-out;
   }
+  /* A boxed card with a service colour (the six services and their
+     kin) is glass in THAT colour: the colour at a quarter strength over
+     a see-through white, a stronger blur and a bright top edge (owner,
+     10 Nov 2026). `--card-tint` is set on the card by BoxedRow; the same
+     colour stays on the top line, dot, number and link. */
+  .surface-card.tint-card {
+    background: color-mix(in srgb, var(--card-tint, hsl(var(--primary))) 25%, hsl(0 0% 100% / 0.5));
+    -webkit-backdrop-filter: blur(18px) saturate(1.35);
+    backdrop-filter: blur(18px) saturate(1.35);
+    border-color: hsl(0 0% 100% / 0.7);
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.85), var(--shadow-card);
+  }
   .surface-card:hover {
     box-shadow: 0 1px 2px hsl(282 40% 13% / 0.06), 0 22px 44px -22px hsl(282 40% 13% / 0.32);
   }
@@ -774,7 +786,7 @@
   }
 
   /* Handwritten asides (redesign): notes, captions, "start here". */
-  .font-hand { font-family: 'Architects Daughter', cursive; font-weight: 400; }
+  .font-hand { font-family: 'Playwrite CU', cursive; font-weight: 400; }
 
   .link-arrow-mc:hover { color: hsl(var(--heading)); text-decoration: underline; text-underline-offset: 4px; }
 
@@ -1205,7 +1217,7 @@
     --hero-bg: 32 40% 97%;
     --hero-title: 281 55% 24%;
     --hero-title-accent: 281 55% 34%;
-    --hero-label: 40 68% 30%;
+    --hero-label: 0 0% 0%;
     --hero-body: 285 15% 34%;
   }
 
@@ -1775,8 +1787,8 @@
     --sidebar-accent-foreground: 282 40% 13%;
     --sidebar-border: 285 22% 89%;
     --sidebar-ring: 280 55% 24%;
-    --font-title: "Bricolage Grotesque", sans-serif;
-    --font-header: "Bricolage Grotesque", sans-serif;
+    --font-title: "Funnel Display", sans-serif;
+    --font-header: "Funnel Display", sans-serif;
     --font-body: "Inter", sans-serif;
     --pillar-label: 40 68% 30%;
     --pillar-heading: 282 40% 13%;
@@ -2152,13 +2164,18 @@
 @media (prefers-reduced-motion: reduce) { .list-line-link::before { transition: none; } }
 
 /* World map row (redesign): staggered draw-on, replayable. */
-/* Main markets: the brand green (#003728, the Fractional HRBP pillar colour), the owner's choice of 10 Nov 2026, so they stand apart from the two purples. */
-:root { --map-main: 164 100% 11%; }
+/* Main markets: Cobalt Blue (#0047AB, brand secondary palette), the owner's choice of 10 Nov 2026 (it replaced the green #003728). */
+:root { --map-main: 215 100% 34%; }
 .tmc-map .c { fill: hsl(280 24% 88%); stroke: hsl(var(--background)); stroke-width: 0.5; }
 .tmc-map .wm-worked, .tmc-map .wm-hr, .tmc-map .wm-main { fill: hsl(280 24% 88%); }
 /* Pace (owner, 10 Nov 2026): slower than the artboard. `--pace` stretches
    each place's own delay; the map waits (`.wait`) until it is in full view. */
 .tmc-map { --pace: 1.8; }
+/* The Mercator art is tall (1200 x 788): the box is capped so the whole
+   map fits a laptop screen, and centred in the card. */
+.tmc-map-box { width: 100%; max-width: 980px; margin-inline: auto; }
+.tmc-credit { color: hsl(var(--muted-foreground)); text-decoration: underline; text-underline-offset: 3px; }
+.tmc-credit:hover { color: hsl(var(--heading)); }
 .tmc-map.play .wm-worked { animation: tmcWorked 1.2s ease-out forwards; animation-delay: calc(var(--d, 0s) * var(--pace)); }
 .tmc-map.play .wm-hr { animation: tmcWorked 1.2s ease-out forwards, tmcHr 1.3s ease-out forwards; animation-delay: calc(var(--d, 0s) * var(--pace)), calc(var(--d, 0s) * var(--pace) + .6s); }
 .tmc-map.play .wm-main { animation: tmcWorked 1.2s ease-out forwards, tmcHr 1.3s ease-out forwards, tmcMain 1s ease-out forwards; animation-delay: calc(var(--d, 0s) * var(--pace)), calc(var(--d, 0s) * var(--pace) + .6s), calc(var(--d, 0s) * var(--pace) + 1.4s); }
@@ -2585,12 +2602,40 @@ section.snap-section .contact-title[data-row-part="title"] {
   overflow-wrap: anywhere;
 }
 
+/* Hero with the tagline as chips (About): copy and button on the left,
+   the chips beside them in two columns from 1024px; wrapped pills below. */
+.hero-chip-split { display: flex; flex-wrap: wrap; align-items: center; gap: 28px 48px; width: 100%; }
+.hero-chip-copy { display: flex; flex-direction: column; gap: 1.75rem; flex: 1 1 380px; max-width: 580px; min-width: 0; }
+.hero-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.hero-chip { transition: background-color .2s ease, border-color .2s ease; }
+.hero-chip:hover, .hero-chip:focus-visible { background: rgba(255, 255, 255, 0.95) !important; border-color: hsl(var(--link)) !important; }
+@media (min-width: 1024px) {
+  .hero-chip-split .hero-chips { display: grid; grid-template-columns: repeat(2, max-content); gap: 10px; flex: 0 0 auto; }
+}
+
+/* "You can reach out about": a short list under the stamp. */
+.contact-reach { margin-top: 28px; }
+.contact-reach-label { font-family: var(--font-body); font-weight: 600; font-size: 15px; color: hsl(var(--heading)); margin: 0 0 10px; }
+.contact-reach ul { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.contact-reach li { position: relative; padding-left: 18px; font-family: var(--font-body); font-size: 16px; line-height: 1.5; color: hsl(var(--body)); }
+.contact-reach li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 999px; background: hsl(var(--link)); }
+/* Phone: the booking copy is centred, title included (owner, 10 Nov 2026). */
+@media (max-width: 767px) {
+  .contact-copy { text-align: center !important; }
+  .contact-copy [data-row-part="body"], .contact-copy .measure { margin-left: auto; margin-right: auto; }
+  .contact-reach ul { align-items: center; }
+  .contact-reach li { padding-left: 0; }
+  .contact-reach li::before { display: none; }
+}
+
 /* Intro under a row heading (Services index): the canvas lede. */
 .boxed-intro { max-width: 760px; font-size: 18px; line-height: 1.7; color: hsl(var(--body)); }
 .boxed-intro p + p { margin-top: var(--para-space); }
 
-/* A second accent for a hero headline (About artboard: the gold line). */
-.mc-accent.mc-accent-gold { color: hsl(var(--gold-text)); }
+/* A second accent for a hero headline (About: "Vampire Slayer."). The
+   class keeps its stored name; the colour is Revolver, the darkest
+   purple (owner, 10 Nov 2026; was mustard). */
+.mc-accent.mc-accent-gold { color: hsl(var(--revolver)); }
 
 /* Blog index header (Blog artboard): the menu is fixed, so the artboard's
    top padding sits under its 90px. */

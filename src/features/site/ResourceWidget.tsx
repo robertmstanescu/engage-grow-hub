@@ -127,7 +127,7 @@ const ResourceWidget = ({ resourceAssetId, coverAssetId, title, description }: P
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
             <h3
               className="font-display text-xl md:text-2xl font-bold leading-tight"
-              style={{ color: CREAM, fontFamily: "'Bricolage Grotesque', sans-serif" }}
+              style={{ color: CREAM, fontFamily: "'Funnel Display', sans-serif" }}
             >
               {heading}
             </h3>

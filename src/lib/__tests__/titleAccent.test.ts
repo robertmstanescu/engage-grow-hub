@@ -4,7 +4,7 @@ import { applyUnderlineWord, resolveAccentColor } from "../titleAccent";
 describe("resolveAccentColor", () => {
   it("resolves the named accents", () => {
     expect(resolveAccentColor("brand")).toBe("hsl(var(--hero-title-accent))");
-    expect(resolveAccentColor("gold")).toBe("hsl(var(--gold-text))");
+    expect(resolveAccentColor("gold")).toBe("hsl(var(--revolver))");
   });
   it("resolves pillar keys and slugs", () => {
     expect(resolveAccentColor("ic")).toBe("#43143B");

@@ -11,7 +11,8 @@ import { pillarColorFromKey } from "@/lib/constants/pillarColors";
 
 const NAMED: Record<string, string> = {
   brand: "hsl(var(--hero-title-accent))",
-  gold: "hsl(var(--gold-text))",
+  // Stored name stays "gold"; the colour is Revolver (owner, 10 Nov 2026).
+  gold: "hsl(var(--revolver))",
 };
 
 /** Resolve a named accent ("brand" | "gold" | pillar key/slug) to a colour. */

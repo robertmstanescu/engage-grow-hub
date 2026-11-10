@@ -202,7 +202,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       // smaller-radius tiles nested inside that photo-card container
       // — `surface-card`'s own border-radius (var(--radius), 1.5rem)
       // would look wrong repeated at the same size one level down.
-      const cardClass = `${coverImage || isDarkCard ? "" : "surface-card"} text-left boxed-lift align-card flex flex-col ${cardLink ? "cursor-pointer" : ""}`;
+      const cardClass = `${coverImage || isDarkCard ? "" : cardAccent ? "surface-card tint-card" : "surface-card"} text-left boxed-lift align-card flex flex-col ${cardLink ? "cursor-pointer" : ""}`;
       // Order matters: `border` is a shorthand that resets border-top, so
       // the accent's `borderTop` must come AFTER the cover-image block or
       // accent cards inside a cover-image row lose their top bar.
@@ -228,6 +228,8 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         /* A card with a pillar (by link or key) or its own accent colour
            carries the thin coloured top border; dark bands never do. */
         ...(cardAccent && !isDarkCard ? { borderTop: `3px solid ${cardAccent}` } : {}),
+        /* …and the same colour, thinned to a quarter, as its glass fill. */
+        ...(cardAccent && !isDarkCard && !coverImage ? { ["--card-tint" as string]: cardAccent } : {}),
       } as React.CSSProperties;
 
       if (cardLink) {
@@ -350,7 +352,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               <div
                 key={i}
                 className="rich-text"
-                style={{ fontFamily: "'Architects Daughter', cursive", fontSize: "clamp(18px, 1.5vw, 22px)", lineHeight: 1.4, color: "hsl(var(--link))", transform: "rotate(-1deg)" }}
+                style={{ fontFamily: "'Playwrite CU', cursive", fontSize: "clamp(18px, 1.5vw, 22px)", lineHeight: 1.4, color: "hsl(var(--link))", transform: "rotate(-1deg)" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }}
               />
             ))}
@@ -394,7 +396,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               className={c.note_handwritten ? "leading-[1.4]" : "font-body text-xs italic leading-[1.6]"}
               style={{
                 color: c.note_handwritten && !c.color_note ? "hsl(var(--link))" : noteColor,
-                ...(c.note_handwritten ? { fontFamily: "'Architects Daughter', cursive", fontSize: 20 } : {}),
+                ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: 20 } : {}),
               }}
             >{c.note}</p>
           </div>

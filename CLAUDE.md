@@ -46,7 +46,13 @@ Rules that are easy to get wrong:
   is shaded and names itself on hover but stays out of the counters. The
   map zooms by narrowing its `viewBox` (`world_map/zoom.ts`); a plain
   wheel must keep scrolling the page. Main markets
-  are drawn in the brand green (`--map-main`, #003728), his choice.
+  are drawn in Cobalt Blue (`--map-main`, #0047AB), his choice. The map art
+  is generated (`scripts/world-map/build-map-data.mjs`, amCharts
+  Mercator, no Antarctica); the "Map: amCharts" credit by the legend is
+  the licence's condition and must stay. Small labels and eyebrows on
+  light are pure black (`--gold-text`, `--hero-label`) and the named
+  "gold" title accent is Revolver; a boxed card with a service colour is glass in that
+  colour at a quarter strength (`.tint-card`, `--card-tint`). His choices of 10 Nov 2026.
 - The tray shows eight block families (`builder/blockFamilies.ts`); a
   new row type must be added to exactly one family (the test fails
   otherwise) and the section library (`builder/sectionLibrary.ts`) is
@@ -205,7 +211,11 @@ Rules that are easy to get wrong:
   "What's inside" is a closed `<details>` and the note prints under the
   card, outside it. Q&A answers start closed (`start_open` turns that
   round) but stay in the HTML (`forceMount`). The booking calendar sits
-  full width under the copy unless the block says "Beside the text".
+  beside the copy (the block can say "Under the text"); on a phone the
+  copy is centred. Headings are Funnel Display and the
+  handwritten face is Playwrite Cuba (`'Playwrite CU'`); saved text and
+  brand settings that still name Bricolage Grotesque or Architects
+  Daughter are read as the new faces (`lib/typefaces.ts`).
 - A page with no hero is a document page (Privacy): `CmsPage` lifts the
   first text block's small heading, title and date line above one glass
   card (`site/documentHeader.ts`, render-time only) and prints the body

@@ -18,7 +18,7 @@ interface Props {
   subtitleColor: string;
   onSubtitleChange: (v: string) => void;
   onColorChange: (v: string) => void;
-  /** Opt-in handwritten (Architects Daughter) styling for the subtitle. */
+  /** Opt-in handwritten (Playwrite Cuba) styling for the subtitle. */
   handwritten?: boolean;
   onHandwrittenChange?: (v: boolean) => void;
   /** Accepted for API compatibility; the field is themed by the admin, not the row. */
@@ -54,7 +54,7 @@ const SubtitleEditor = ({ subtitle, subtitleColor, onSubtitleChange, onColorChan
         onBlur={() => debouncedPush.flush()}
         placeholder="Optional line under the title"
         className="admin-input"
-        style={{ ...(handwritten ? { fontFamily: "'Architects Daughter', cursive" } : {}), ...(subtitleColor ? { color: subtitleColor } : {}) }}
+        style={{ ...(handwritten ? { fontFamily: "'Playwrite CU', cursive" } : {}), ...(subtitleColor ? { color: subtitleColor } : {}) }}
       />
       {localValue && (
         <div className="flex items-center gap-2 mt-1.5 flex-wrap">

@@ -241,9 +241,9 @@ const GlobalSettings = () => {
           <select value={getDraft("theme").fontFamily || "default"} onChange={(e) => updateField("theme", "fontFamily", e.target.value)} className="w-full px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
             <option value="default">System Default</option>
             <option value="inter">Inter</option>
-            <option value="bricolage">Bricolage Grotesque</option>
+            <option value="bricolage">Funnel Display</option>
             <option value="playfair">Playfair Display</option>
-            <option value="architects">Architects Daughter</option>
+            <option value="architects">Playwrite Cuba</option>
           </select>
         </div>
         <div className="mt-3">

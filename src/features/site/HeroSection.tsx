@@ -40,7 +40,7 @@ interface HeroContent {
   title_lines?: any[];
   subtitle?: string;
   subtitle_color?: string;
-  /** Opt-in handwritten (Architects Daughter) styling for the subtitle. */
+  /** Opt-in handwritten (Playwrite Cuba) styling for the subtitle. */
   subtitle_handwritten?: boolean;
   /** Show the tagline as a handwritten note under the buttons instead of spaced capitals under the title. */
   tagline_handwritten?: boolean;
@@ -383,6 +383,7 @@ export const HeroView = ({
      content container and bleeds off the right edge with a 28px left
      radius; the text column keeps the page gutter. Stacks on phones. */
   const halfBleed = c.visual_layout === "half_bleed" && hasVisual;
+  const chipSplit = Boolean(c.tagline) && !c.tagline_handwritten && c.tagline_style === "chips";
 
   /* Admin alignment (Style ▸ Hero alignment). A hero with a foreground
      visual defaults to left, matching the side-by-side layout. */
@@ -629,7 +630,7 @@ export const HeroView = ({
                 style={{
                   // Opt-in only: the script font is reserved for genuine
                   // handwritten annotations, not ordinary subtitle copy.
-                  ...(c.subtitle_handwritten ? { fontFamily: "'Architects Daughter', cursive" } : {}),
+                  ...(c.subtitle_handwritten ? { fontFamily: "'Playwrite CU', cursive" } : {}),
                   color: c.subtitle_color || "hsl(var(--hero-body))",
                   fontSize: "var(--fs-hero-subtitle)",
                 }}>
@@ -638,6 +639,12 @@ export const HeroView = ({
             </div>
           )}
 
+          {/* With the tagline as chips (About), the text and button sit on
+              the left and the chips fill the space beside them in two
+              columns (owner, 10 Nov 2026). Otherwise both wrappers are
+              `display: contents` and the stack is unchanged. */}
+          <div className={chipSplit ? "hero-chip-split" : "contents"}>
+          <div className={chipSplit ? "hero-chip-copy" : "contents"}>
           {/* The editor stores an empty body as "<p></p>", which is truthy;
               rendering it added a blank block plus the column gap under
               the title and pushed the hero off centre (About page). */}
@@ -672,20 +679,35 @@ export const HeroView = ({
             </div>
           )}
 
+          </div>
           {/* Tagline as chips (About artboard): each part between the dots
               is a pill; a part that names a service pillar carries that
-              pillar's dot. */}
+              pillar's dot and links to that service's page. */}
           {c.tagline && !c.tagline_handwritten && c.tagline_style === "chips" && (
-            <ul className="mc-rise flex flex-wrap gap-2 flex-shrink-0 list-none p-0 m-0" style={{ "--rise-dur": "0.8s", "--rise-delay": "1.3s" } as React.CSSProperties}>
-              {c.tagline.split(/\s*[·•|]\s*/).map((part) => part.trim()).filter(Boolean).map((part, i) => (
-                <li key={i} className="inline-flex items-center gap-2 rounded-full font-body"
-                  style={{ padding: "8px 14px", background: "rgba(255, 255, 255, 0.75)", border: "1px solid hsl(var(--line-2))", fontSize: 13, lineHeight: 1.4, color: "hsl(var(--foreground))", overflowWrap: "anywhere" }}>
-                  <span aria-hidden className="flex-none rounded-full" style={{ width: 8, height: 8, background: PILLAR_COLORS[part.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "")] || "hsl(var(--deep))" }} />
-                  {part}
-                </li>
-              ))}
+            <ul className="mc-rise hero-chips flex-shrink-0 list-none p-0 m-0" style={{ "--rise-dur": "0.8s", "--rise-delay": "1.3s" } as React.CSSProperties}>
+              {c.tagline.split(/\s*[·•|]\s*/).map((part) => part.trim()).filter(Boolean).map((part, i) => {
+                const key = part.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
+                const isPillar = Boolean(PILLAR_COLORS[key]);
+                const chipStyle: React.CSSProperties = { padding: "8px 14px", background: "rgba(255, 255, 255, 0.75)", border: "1px solid hsl(var(--line-2))", fontSize: 13, lineHeight: 1.4, color: "hsl(var(--foreground))", overflowWrap: "anywhere", textDecoration: "none" };
+                const inner = (
+                  <>
+                    <span aria-hidden className="flex-none rounded-full" style={{ width: 8, height: 8, background: PILLAR_COLORS[key] || "hsl(var(--deep))" }} />
+                    {part}
+                  </>
+                );
+                return (
+                  <li key={i} className="flex">
+                    {isPillar ? (
+                      <a href={safeHref(`/services/${key}`)} className="hero-chip inline-flex items-center gap-2 rounded-full font-body" style={chipStyle}>{inner}</a>
+                    ) : (
+                      <span className="inline-flex items-center gap-2 rounded-full font-body" style={chipStyle}>{inner}</span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
+          </div>
 
           {/* Handwritten tagline (Main artboard): a slanted script note under the buttons. */}
           {c.tagline && c.tagline_handwritten && (
@@ -693,7 +715,7 @@ export const HeroView = ({
               className="mc-rise flex-shrink-0"
               style={{
                 "--rise-dur": "1s", "--rise-delay": "1.3s",
-                fontFamily: "'Architects Daughter', cursive",
+                fontFamily: "'Playwrite CU', cursive",
                 color: c.tagline_color || c.color_tagline || "hsl(var(--link))",
                 fontSize: 20,
                 lineHeight: 1.4,

@@ -156,8 +156,8 @@ export default {
         gutter: "clamp(24px, 5vw, 96px)",
       },
       fontFamily: {
-        display: ["Bricolage Grotesque", "sans-serif"],
-        "body-heading": ["Bricolage Grotesque", "sans-serif"],
+        display: ["Funnel Display", "sans-serif"],
+        "body-heading": ["Funnel Display", "sans-serif"],
         body: ["Inter", "sans-serif"],
       },
       keyframes: {

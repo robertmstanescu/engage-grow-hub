@@ -1,0 +1,124 @@
+/**
+ * Builds src/features/widgets/world_map/mapData.ts from worldHigh.svg
+ * (amCharts geodata, Mercator; free for any use with a credit to
+ * amCharts, which the map row prints under the legend).
+ *
+ * Run: node scripts/world-map/build-map-data.mjs
+ *
+ * - Antarctica and four sub-Antarctic specks are left out (owner,
+ *   10 Nov 2026), so the box ends just below Cape Horn.
+ * - Coordinates are rescaled to a 1200-wide box, one decimal place.
+ * - SHADEABLE lists the places a page can shade, with the artboard's
+ *   default status and the draw-on delay; everything else is base map.
+ *   Adding a shadeable place is a code change here, never a guess: the
+ *   owner's list lives in world_map/ownerList.ts.
+ */
+import { readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const svg = readFileSync(resolve(here, "worldHigh.svg"), "utf8");
+const OUT = resolve(here, "../../src/features/widgets/world_map/mapData.ts");
+
+/** Left out of the drawing altogether. */
+const SKIP = new Set(["AQ", "BV", "GS", "HM", "TF"]);
+/** The source's name -> the name the site uses. */
+const RENAME = { "Democratic Republic of Congo": "Democratic Republic of the Congo" };
+/** name -> [default status, draw-on delay in seconds]. */
+const SHADEABLE = {
+  "Tanzania": ["worked", 1.55], "Canada": ["worked", 0.73], "United States": ["main", 0.6],
+  "Indonesia": ["worked", 2.15], "Kenya": ["worked", 1.57], "Norway": ["main", 1.38],
+  "South Africa": ["worked", 1.47], "Mexico": ["hr", 0.58], "Brazil": ["worked", 0.92],
+  "Peru": ["worked", 0.77], "Colombia": ["hr", 0.77], "France": ["hr", 1.27],
+  "Ecuador": ["worked", 0.73], "Mozambique": ["worked", 1.55], "Israel": ["worked", 1.54],
+  "Cambodia": ["worked", 2.05], "Thailand": ["worked", 2.02], "India": ["worked", 1.86],
+  "Sweden": ["main", 1.4], "Austria": ["worked", 1.39], "Romania": ["main", 0],
+  "Germany": ["hr", 1.37], "Switzerland": ["hr", 1.35], "Belgium": ["hr", 1.33],
+  "Netherlands": ["hr", 1.33], "Spain": ["main", 1.28], "Australia": ["hr", 2.24],
+  "China": ["worked", 2], "Italy": ["worked", 1.38], "Denmark": ["main", 1.36],
+  "United Kingdom": ["main", 1.28], "Finland": ["main", 1.45], "Japan": ["worked", 2.23],
+  "Serbia": ["worked", 1.44], "Democratic Republic of the Congo": ["worked", 1.41],
+};
+/** Places too small for a shape: drawn as a dot at the shape's centre. */
+const DOTS = { "Hong Kong": ["worked", 2.1], "Singapore": ["worked", 2.05] };
+const DOT_R = 3.4;
+const WIDTH = 1200;
+const PAD = 6;
+
+const paths = [...svg.matchAll(/<path id="([^"]+)" data-name="([^"]+)"[^>]*?\sd="([^"]+)"/gs)]
+  .map(([, id, name, d]) => ({ id, name: RENAME[name] || name, d }))
+  .filter((p) => !SKIP.has(p.id));
+if (paths.length < 200) throw new Error(`Only ${paths.length} shapes read: has the source changed?`);
+
+const points = (d) => [...d.matchAll(/(-?[\d.]+),(-?[\d.]+)/g)].map(([, x, y]) => [Number(x), Number(y)]);
+const box = (d) => {
+  const pts = points(d);
+  const xs = pts.map((p) => p[0]);
+  const ys = pts.map((p) => p[1]);
+  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+};
+
+const boxes = paths.map((p) => box(p.d));
+const minX = Math.min(...boxes.map((b) => b[0]));
+const maxX = Math.max(...boxes.map((b) => b[2]));
+const minY = Math.min(...boxes.map((b) => b[1]));
+const maxY = Math.max(...boxes.map((b) => b[3]));
+const k = WIDTH / (maxX - minX);
+const HEIGHT = Math.ceil((maxY - minY) * k + PAD * 2);
+const r1 = (n) => String(Math.round(n * 10) / 10);
+const tx = (x) => (x - minX) * k;
+const ty = (y) => (y - minY) * k + PAD;
+
+/** Rescale a path; points that round onto the previous one are dropped. */
+const rescale = (d) => {
+  let out = "";
+  let last = "";
+  for (const [, cmd, x, y] of d.matchAll(/([ML])(-?[\d.]+),(-?[\d.]+)|Z/g)) {
+    if (cmd === undefined) { out += "Z"; last = ""; continue; }
+    const pt = `${r1(tx(Number(x)))},${r1(ty(Number(y)))}`;
+    if (cmd === "L" && pt === last) continue;
+    out += cmd + pt;
+    last = pt;
+  }
+  return out;
+};
+
+const countries = [];
+const dots = [];
+const base = [];
+for (const p of paths) {
+  if (SHADEABLE[p.name]) {
+    const [status, delay] = SHADEABLE[p.name];
+    countries.push({ name: p.name, status, d: rescale(p.d), delay });
+  } else if (DOTS[p.name]) {
+    const [status, delay] = DOTS[p.name];
+    const b = box(p.d);
+    dots.push({ name: p.name, status, cx: Number(r1(tx((b[0] + b[2]) / 2))), cy: Number(r1(ty((b[1] + b[3]) / 2))), r: DOT_R, delay });
+  } else {
+    base.push(rescale(p.d));
+  }
+}
+const missing = [...Object.keys(SHADEABLE), ...Object.keys(DOTS)].filter((n) => !paths.some((p) => p.name === n));
+if (missing.length) throw new Error(`Not in the source map: ${missing.join(", ")}`);
+
+const file = `/**
+ * World map art (viewBox 0 0 ${WIDTH} ${HEIGHT}, Mercator, no Antarctica).
+ * GENERATED by scripts/world-map/build-map-data.mjs from amCharts
+ * geodata (worldHigh.svg; free to use with a credit to amCharts). Do not
+ * edit by hand. MAP_COUNTRIES are the shapes a page can shade; MAP_DOTS
+ * are places too small for a shape; the rest of the world is
+ * MAP_BASE_PATHS. \`status\` is the default shading, from the owner's
+ * list. Congo is the Democratic Republic of the Congo (Kinshasa); the
+ * Republic of the Congo (Brazzaville) is part of the base map.
+ */
+export const MAP_ART_W = ${WIDTH};
+export const MAP_ART_H = ${HEIGHT};
+export interface MapCountry { name: string; status: "worked" | "hr" | "main"; d: string; delay: number }
+export interface MapDot { name: string; status: "worked" | "hr" | "main"; cx: number; cy: number; r: number; delay: number }
+export const MAP_DOTS: MapDot[] = ${JSON.stringify(dots)};
+export const MAP_BASE_PATHS: string[] = ${JSON.stringify(base)};
+export const MAP_COUNTRIES: MapCountry[] = ${JSON.stringify(countries)};
+`;
+writeFileSync(OUT, file);
+console.log(`Wrote ${OUT}: ${WIDTH}x${HEIGHT}, ${countries.length} countries, ${dots.length} dots, ${base.length} base shapes, ${(file.length / 1024).toFixed(0)} KB`);

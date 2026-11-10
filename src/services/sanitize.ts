@@ -1,3 +1,4 @@
+import { currentFace } from "@/lib/typefaces";
 import DOMPurify from "dompurify";
 import { stripRichTextFontSizes } from "@/services/richTextFontSize";
 
@@ -11,5 +12,7 @@ export const sanitizeHtml = (html: string): string => {
     ADD_ATTR: ["style", "class", "face"],
   });
 
-  return stripRichTextFontSizes(sanitized);
+  // Two faces changed on 10 Nov 2026 (lib/typefaces.ts). Text saved with
+  // an old name inline is read as the new face; the stored copy is untouched.
+  return currentFace(stripRichTextFontSizes(sanitized));
 };

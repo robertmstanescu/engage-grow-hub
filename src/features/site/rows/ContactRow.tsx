@@ -1,3 +1,4 @@
+import { DEFAULT_REACH_LABEL, DEFAULT_REACH_TOPICS } from "./contactDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import type { PageRow } from "@/types/rows";
 import type { Alignment, VAlign } from "./PageRows";
@@ -43,16 +44,21 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   const coverImage = c.cover_image?.trim() || undefined;
 
   // Two layouts (Content ▸ More ▸ "Calendar position"):
-  //  - "stacked" (default; owner, 10 Nov 2026): the copy, then the
-  //    booking card across the full column underneath. The row is much
-  //    shorter because the wide calendar shows its times beside the month.
-  //  - "side" (the artboard): copy on the left, the card on the right;
-  //    the two wrap to a stack on narrow screens (flex-basis, no
-  //    breakpoint), so the calendar never gets narrower than it can use.
-  const stacked = c.layout !== "side";
+  //  - "side" (default, the artboard; owner, 10 Nov 2026): copy on the
+  //    left, the booking card on the right. The two wrap to a stack on
+  //    narrow screens (flex-basis, no breakpoint), so the calendar never
+  //    gets narrower than it can use. On a phone the stacked copy,
+  //    title included, is centred (`.contact-copy`).
+  //  - "stacked": the copy, then the card across the full column.
+  const stacked = c.layout === "stacked";
+  // What to get in touch about, under the stamp. The owner's own list
+  // wins; an empty block shows the starter list so the row never loses it.
+  const reachLabel = typeof c.reach_label === "string" && c.reach_label.trim() ? c.reach_label.trim() : DEFAULT_REACH_LABEL;
+  const ownTopics = Array.isArray(c.reach_topics) ? c.reach_topics.filter((t: unknown): t is string => typeof t === "string" && t.trim().length > 0) : [];
+  const reachTopics = c.show_reach === false ? [] : ownTopics.length > 0 ? ownTopics : DEFAULT_REACH_TOPICS;
   const innerContent = (
     <div className={stacked ? "flex flex-col" : "flex flex-wrap items-start"} style={{ gap: stacked ? 36 : 56 }}>
-      <div className={`min-w-0 ${contentAlign}`} style={{ ...(stacked ? { maxWidth: 820, ...(align === "center" ? { marginInline: "auto" } : align === "right" ? { marginLeft: "auto" } : {}) } : { flex: "1 1 440px" }), ...revealStyle(isVisible, 0) }}>
+      <div className={`min-w-0 contact-copy ${contentAlign}`} style={{ ...(stacked ? { maxWidth: 820, ...(align === "center" ? { marginInline: "auto" } : align === "right" ? { marginLeft: "auto" } : {}) } : { flex: "1 1 440px" }), ...revealStyle(isVisible, 0) }}>
         {c.eyebrow && (
           <RowEyebrow color={c.color_eyebrow || ""}>{c.eyebrow}</RowEyebrow>
         )}
@@ -74,6 +80,16 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         )}
         {/* The tilted stamp under the copy (artboard Main: "LID OFF"). */}
         {typeof c.stamp === "string" && c.stamp.trim() && <span className="contact-stamp">{c.stamp}</span>}
+        {reachTopics.length > 0 && (
+          <div className="contact-reach">
+            <p className="contact-reach-label">{reachLabel}</p>
+            <ul>
+              {reachTopics.map((topic: string, i: number) => (
+                <li key={i}>{topic}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div

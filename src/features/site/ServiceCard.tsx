@@ -90,7 +90,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
           {startHere && (
             <span
               className="inline-block"
-              style={{ fontFamily: "'Architects Daughter', cursive", fontSize: 18, lineHeight: 1.4, color: "hsl(var(--link))", transform: "rotate(-3deg)" }}
+              style={{ fontFamily: "'Playwrite CU', cursive", fontSize: 18, lineHeight: 1.4, color: "hsl(var(--link))", transform: "rotate(-3deg)" }}
             >
               {startHere}
             </span>

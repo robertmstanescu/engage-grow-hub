@@ -74,8 +74,8 @@ import MediaGallery from "./MediaGallery";
 
 const FONT_OPTIONS = [
   { label: "Inter", value: "Inter, sans-serif" },
-  { label: "Architects Daughter", value: "'Architects Daughter', cursive" },
-  { label: "Bricolage Grotesque", value: "'Bricolage Grotesque', sans-serif" },
+  { label: "Playwrite Cuba", value: "'Playwrite CU', cursive" },
+  { label: "Funnel Display", value: "'Funnel Display', sans-serif" },
 ];
 
 

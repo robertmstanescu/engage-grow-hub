@@ -36,7 +36,7 @@ interface Props {
  *   size at which Inter remains comfortably legible on a retina display
  *   without inducing eye strain.
  *
- * - **`font-body` (Inter)**: the title above uses the display font (Bricolage Grotesque);
+ * - **`font-body` (Inter)**: the title above uses the display font (Funnel Display);
  *   the eyebrow uses the body font for typographic CONTRAST. Same font for
  *   both would look monotonous.
  *
