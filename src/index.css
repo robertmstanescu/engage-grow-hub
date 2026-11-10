@@ -2092,6 +2092,44 @@
   }
 }
 
+/* Cards that line up (owner, 10 Nov 2026): inside an `.align-cards` grid
+   each `.align-card` lays its parts on rows shared with its neighbours
+   (subgrid), so a two-line title in one card moves the price, the text
+   and the button of every card in that line down together. `--slots` is
+   the number of parts; each part is one direct child. Browsers without
+   subgrid keep the plain column. */
+.align-empty { display: none; }
+@supports (grid-template-rows: subgrid) {
+  .align-cards > .align-card {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-row: span var(--slots, 1);
+    row-gap: var(--slot-gap, 0px);
+  }
+  /* A card inside a wrapper (the tier card and its note underneath):
+     the card takes the wrapper's first rows and shares them again. */
+  .align-cards > .align-card > .align-card-inner {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-row: span var(--slots, 1);
+    row-gap: var(--slot-gap, 0px);
+  }
+  .align-cards > .align-card:has(> .align-card-inner) { --slots: 8; }
+  .align-cards .align-empty { display: block; }
+}
+
+/* Q&A: answers are always in the HTML (forceMount); a closed one is hidden here. */
+.faq-list [role="region"][data-state="closed"] { display: none; }
+
+/* Tier card: "What's inside" opens on a click; the note sits under the card. */
+.tier-inside > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; padding: 4px 0; }
+.tier-inside > summary::-webkit-details-marker { display: none; }
+.tier-inside-toggle::before { content: "+"; font-size: 18px; letter-spacing: 0; line-height: 1; }
+.tier-inside[open] .tier-inside-toggle::before { content: "\2212"; }
+.tier-note { font-size: 17px; line-height: 1.45; padding: 14px clamp(10px, 1.4vw, 18px) 0; transform: rotate(-1deg); transform-origin: left top; }
+
 /* Services list line: the hover tint has no hard edge. It fades out
    towards all four sides inside the line (owner, 10 Nov 2026), so it
    never adds width to the page. */

@@ -52,9 +52,18 @@ const TierCard = memo(({
      (ServiceIC and its five siblings), value for value. */
   const tone = accent || "hsl(var(--heading))";
   return (
+    /* The wrapper is the grid item: the card, then the owner's note
+       under it, outside the card (owner, 10 Nov 2026). */
+    <div className="align-card flex flex-col h-full text-left" style={{ ["--slots" as string]: 8 }}>
     <article
-      className="surface-card flex flex-col h-full text-left"
-      style={{ padding: "clamp(22px, 2.1vw, 30px)", gap: 14, ...(accent ? { borderTop: `4px solid ${accent}` } : {}) }}
+      /* `align-card-inner`: inside an `.align-cards` grid the eight parts below
+         share their rows with the neighbouring cards (CSS subgrid), so
+         prices, "Done looks like" boxes, lists and buttons line up
+         whatever the length of a title. Every part is always rendered
+         (an empty one as `.align-empty`) so the rows stay in step. */
+      className="surface-card align-card-inner flex flex-col flex-1 text-left"
+     
+      style={{ padding: "clamp(22px, 2.1vw, 30px)", gap: 14, ["--slots" as string]: 7, ["--slot-gap" as string]: "14px", ...(accent ? { borderTop: `4px solid ${accent}` } : {}) }}
     >
       <div className="flex items-center justify-between gap-3" style={{ minHeight: 26 }}>
         {tag ? (
@@ -79,7 +88,7 @@ const TierCard = memo(({
             <p className="font-body font-semibold" style={{ color: "hsl(var(--body))", fontSize: 14, lineHeight: 1.5 }}>{subtitle}</p>
           ) : null}
         </div>
-      ) : null}
+      ) : <div aria-hidden className="align-empty" />}
 
       {priceLine.price ? (
         <div className="flex flex-col" style={{ gap: 2, padding: "14px 0", borderTop: "1px solid hsl(var(--line-1))", borderBottom: "1px solid hsl(var(--line-1))" }}>
@@ -88,21 +97,26 @@ const TierCard = memo(({
             <p className="font-body" style={{ color: "hsl(var(--body))", fontSize: 13, lineHeight: 1.5 }}>{priceLine.detail}</p>
           ) : null}
         </div>
-      ) : null}
+      ) : <div aria-hidden className="align-empty" />}
 
       {split.lead ? (
         <p className="font-body" style={{ color: "hsl(var(--body))", fontSize: 15, lineHeight: 1.7 }}>{split.lead}</p>
-      ) : null}
+      ) : <div aria-hidden className="align-empty" />}
       {split.done ? (
         <p className="font-body" style={{ borderRadius: 14, background: "rgba(250, 236, 192, 0.55)", padding: "14px 16px", fontSize: 14, lineHeight: 1.6, color: "hsl(var(--foreground))" }}>
           <strong>{split.label}</strong> {split.done}
         </p>
-      ) : null}
+      ) : <div aria-hidden className="align-empty" />}
 
       {items.length > 0 ? (
-        <div className="flex flex-col" style={{ gap: 10 }}>
-          <p className="font-body font-bold uppercase" style={{ color: "hsl(var(--gold-text))", fontSize: "var(--fs-chip)", letterSpacing: "0.22em" }}>{deliverablesLabel}</p>
-          <ul className="flex flex-col" style={{ gap: 8 }}>
+        /* Closed by default (owner, 10 Nov 2026): the list is still in the
+           page for search engines, one click opens it. */
+        <details className="tier-inside">
+          <summary className="font-body font-bold uppercase" style={{ color: "hsl(var(--gold-text))", fontSize: "var(--fs-chip)", letterSpacing: "0.22em" }}>
+            <span>{deliverablesLabel}</span>
+            <span aria-hidden className="tier-inside-toggle" />
+          </summary>
+          <ul className="flex flex-col" style={{ gap: 8, marginTop: 10 }}>
             {items.map((item, i) => (
               <li key={i} className="font-body flex items-start" style={{ gap: 10, color: "hsl(var(--body))", fontSize: 14, lineHeight: 1.55 }}>
                 <span aria-hidden className="rounded-full flex-none" style={{ marginTop: 7, width: 6, height: 6, background: tone }} />
@@ -110,18 +124,17 @@ const TierCard = memo(({
               </li>
             ))}
           </ul>
-        </div>
-      ) : null}
+        </details>
+      ) : <div aria-hidden className="align-empty" />}
 
-      {note ? (
-        <p className="font-body italic" style={{ color: "hsl(var(--body))", fontSize: 13, lineHeight: 1.6 }}>{note}</p>
-      ) : null}
-
-      <div className="flex-grow" />
-      <a href={safeHref(ctaUrl, "/#contact")} className="inline-flex items-center font-body font-semibold" style={{ gap: 10, fontSize: 16, color: tone, textDecoration: "none" }}>
+      <a href={safeHref(ctaUrl, "/#contact")} className="inline-flex items-center font-body font-semibold mt-auto" style={{ gap: 10, fontSize: 16, color: tone, textDecoration: "none", alignSelf: "end", justifySelf: "start" }}>
         {price || "Inquire Now"} <span aria-hidden>→</span>
       </a>
     </article>
+    {note ? (
+      <p className="font-hand tier-note" style={{ color: tone }}>{note}</p>
+    ) : <div aria-hidden className="align-empty" />}
+    </div>
   );
 });
 TierCard.displayName = "TierCard";

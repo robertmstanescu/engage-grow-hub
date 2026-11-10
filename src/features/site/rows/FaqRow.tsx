@@ -61,8 +61,9 @@ const FaqRow = ({
 
   /* Two columns from 1024px (artboards): the heading block on the left
      (with the row's picture under it when one is set), every question
-     on the right, open by default so the answers are readable and
-     indexable without a click. Stacks below 1024px. */
+     on the right, closed by default (owner, 10 Nov 2026; "Start with
+     the answers open" in the editor turns that round). A closed answer
+     is still in the HTML. Stacks below 1024px. */
   const headSpan = coverImage ? "lg:col-span-5" : "lg:col-span-4";
   const listSpan = coverImage ? "lg:col-span-7" : "lg:col-span-8";
 
@@ -110,8 +111,8 @@ const FaqRow = ({
           <div className={listSpan}>
             <Accordion
               type="multiple"
-              defaultValue={items.map((_, i) => `item-${i}`)}
-              className="w-full text-left"
+              defaultValue={c.start_open === true ? items.map((_, i) => `item-${i}`) : []}
+              className="w-full text-left faq-list"
               style={revealStyle(isVisible, 0.4)}
             >
               {items.map((item, i) => (
@@ -129,6 +130,9 @@ const FaqRow = ({
                     <span aria-hidden className="faq-toggle" />
                   </AccordionTrigger>
                   <AccordionContent
+                    /* Closed answers stay in the page so search engines and
+                       the prerender still read them; `.faq-list` hides them. */
+                    forceMount
                     className="font-body text-left"
                     style={{ fontSize: 16, lineHeight: 1.7, color: "var(--row-body, hsl(var(--body)))", paddingBottom: 14 }}
                   >

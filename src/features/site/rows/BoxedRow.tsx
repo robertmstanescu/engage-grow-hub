@@ -109,8 +109,12 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
          rule (fix cards). */
       const marker = c.marker_style || "";
       const showIcon = Boolean(card.icon) && !marker;
+      /* Four parts (marker, title, text, footer) that share their rows
+         with the neighbouring cards inside `.align-cards`, so a two-line
+         title pushes every card's text down to the same line. */
       const innerCard = (
         <>
+          <div>
           {marker === "roman" && (
             <span
               aria-hidden
@@ -136,12 +140,14 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               <Icon value={card.icon!} size={28} />
             </div>
           )}
+          </div>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
             className="font-display font-bold leading-[1.15]" style={{ color: titleColor, fontSize: "var(--fs-card-title)", marginBottom: 12 }}>{card.title}</EditableText>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
             className="rich-text font-body leading-[var(--lh-card-body)] flex-grow" style={{ color: bodyColor, fontSize: "var(--fs-card-body)", overflow: "visible", height: "auto", ["--para-space" as string]: "0.75em" } as React.CSSProperties}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
 
+          <div className="flex flex-col items-start">
           {marker === "pillar_number" && cardLink && (
             <span className="font-body font-semibold" style={{ fontSize: 15, color: cardAccent || "hsl(var(--link))", marginTop: 14 }}>
               {card.cta_label?.trim() || `Explore ${card.title}`} <span aria-hidden>→</span>
@@ -185,6 +191,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               )}
             </div>
           )}
+          </div>
         </>
       );
 
@@ -195,13 +202,14 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       // smaller-radius tiles nested inside that photo-card container
       // — `surface-card`'s own border-radius (var(--radius), 1.5rem)
       // would look wrong repeated at the same size one level down.
-      const cardClass = `${coverImage || isDarkCard ? "" : "surface-card"} text-left boxed-lift flex flex-col ${cardLink ? "cursor-pointer" : ""}`;
+      const cardClass = `${coverImage || isDarkCard ? "" : "surface-card"} text-left boxed-lift align-card flex flex-col ${cardLink ? "cursor-pointer" : ""}`;
       // Order matters: `border` is a shorthand that resets border-top, so
       // the accent's `borderTop` must come AFTER the cover-image block or
       // accent cards inside a cover-image row lose their top bar.
       const cardStyle = {
         ...revealStyle(isVisible, i + 2),
         padding: marker === "roman" ? 34 : 30,
+        ["--slots" as string]: 4,
         ...(coverImage
           ? {
               backgroundColor: "hsl(var(--primary) / 0.045)",
@@ -372,7 +380,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               </p>
             )}
             {lightCards.length > 0 && (
-              <div className={`grid ${getGridCols(lightCards.length)} gap-6 items-stretch`}>
+              <div className={`grid ${getGridCols(lightCards.length)} gap-6 items-stretch align-cards`}>
                 {lightCards.map(({ card, i }) => renderCard(card, i))}
               </div>
             )}
