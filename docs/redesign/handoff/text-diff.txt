@@ -1,0 +1,11 @@
+home: same
+services/pay-transparency: same
+services/internal-communications: same
+privacy-policy: same
+services/employee-experience: same
+pay-transparency-check: same
+about-us: same
+services/people-operations: same
+services/fractional-hrbp: same
+services/manager-enablement: same
+services: same
