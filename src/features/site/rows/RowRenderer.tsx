@@ -21,8 +21,10 @@ import { RowSurfaceProvider } from "./RowSurfaceContext";
 import type { Alignment, VAlign } from "@/lib/layoutUtils";
 
 
-const slugify = (s: string) =>
-  s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+/* A row saved without a name must still render: a missing name gives an
+   empty anchor instead of throwing the whole row into its error boundary. */
+const slugify = (s: unknown) =>
+  (typeof s === "string" ? s : "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 interface RowRendererProps {
   row: PageRowV3;

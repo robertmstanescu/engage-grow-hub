@@ -7,7 +7,7 @@ import { ErrorBoundary, RowFallback } from "@/components/ui/error-boundary";
 import { useGlobalWidgetMap } from "@/hooks/useGlobalWidgets";
 import CanvasDropZone from "@/features/admin/builder/CanvasDropZone";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
-import { computeAutoAlignments, resolveAlignment } from "@/lib/layoutUtils";
+import { computeAutoAlignments, resolveAlignment, type Alignment } from "@/lib/layoutUtils";
 import RowRenderer from "./RowRenderer";
 import { PromotedWidgetProvider, resolvePromotedHeadingId } from "./PrimaryHeadingContext";
 
@@ -36,11 +36,16 @@ export const RowsRenderer = ({
      fixed navbar never covers it). Used by the case study "On this
      page" column; builder output is untouched. */
   rowAnchorId,
+  /* One alignment for every row, whatever the row asks for. A reading
+     column (the case study) is left-aligned from top to bottom; the
+     left/right rhythm of a full-width page would zigzag inside it. */
+  forceAlign,
 }: {
   rows: Array<PageRow | PageRowV3 | any>;
   footerSlot?: React.ReactNode;
   promoteHeading?: boolean;
   rowAnchorId?: (row: PageRowV3, index: number) => string | undefined;
+  forceAlign?: Alignment;
 }) => {
   // Memoize on `rows` identity so we don't re-walk the tree on every
   // parent re-render. Idempotent for already-v3 input.
@@ -105,7 +110,7 @@ export const RowsRenderer = ({
             <RowRenderer
               row={row}
               rowIndex={index}
-              align={resolveAlignment(row, autoAlignments[index])}
+              align={forceAlign ?? resolveAlignment(row, autoAlignments[index])}
               globalMap={globalMap}
             />
           </ErrorBoundary>

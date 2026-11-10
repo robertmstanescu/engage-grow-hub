@@ -1,11 +1,18 @@
 /**
- * /work/:slug — a case study.
+ * /work/:slug — a case study (redesign: CaseStudy artboard).
  *
- * Hero (eyebrow = pillar · type, H1 = the item's title, summary), the
- * cover, an "At a glance" strip built from the item's approved proof
- * points, the case body as rows through the normal row renderer, and
- * a closing nudge to book a call. Items without a case study never
- * link here; an unpublished slug 404s.
+ * Top to bottom: a breadcrumb back to Work, the type chip with the
+ * item's honesty label, the headline and summary, an "At a glance"
+ * strip (role, timeframe, pillar and the item's APPROVED proof
+ * points), the cover, then the case body: a sticky "On this page" list
+ * beside one 760px reading column. Under 1024px the list folds into a
+ * closed <details>. The page ends on the related service and a nudge
+ * to book a call.
+ *
+ * The body is the item's rows through the normal row renderer, so
+ * every row type works here; `.case-body` strips the rows' own padding
+ * and the column supplies the spacing. Items without a case study
+ * never link here; an unpublished slug shows the not-found page.
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -18,25 +25,24 @@ import { fetchProofPointsByIds, type ProofPointRecord } from "@/services/proofPo
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import { transformImageUrl } from "@/services/mediaOptimization";
-import { pillarColorFromKey } from "@/lib/constants/pillarColors";
+import { pillarColorFromKey, PILLAR_KEY_TO_SLUG } from "@/lib/constants/pillarColors";
+import { safeHref } from "@/services/safeHref";
+import WorkTypeChip from "@/features/site/work/WorkTypeChip";
+import { pillarName } from "@/features/site/work/workLabels";
 
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, "").trim();
+const two = (n: number) => String(n).padStart(2, "0");
 
-const PILLAR_NAMES: Record<string, string> = {
-  ic: "Internal Communications",
-  ex: "Employee Experience",
-  ops: "People Operations",
-  hrbp: "Fractional HRBP",
-  pay: "Pay Transparency",
-  mgr: "Manager Enablement",
-};
-const TYPE_NAMES: Record<string, string> = { case: "Case study", artefact: "Artefact", playbook: "Playbook" };
+/** Case rows as a clean list: malformed data and empty entries are dropped. */
+const cleanRows = (rows: unknown): unknown[] =>
+  Array.isArray(rows) ? rows.filter((r) => r && typeof r === "object") : [];
 
 const WorkCase = () => {
   const { slug = "" } = useParams<{ slug: string }>();
   const [item, setItem] = useState<WorkItemRecord | null>(null);
   const [proofs, setProofs] = useState<ProofPointRecord[]>([]);
   const [looked, setLooked] = useState(false);
+  const [current, setCurrent] = useState("");
 
   usePageMeta({
     title: item?.meta_title || item?.title || "Work",
@@ -53,9 +59,11 @@ const WorkCase = () => {
       if (cancelled) return;
       const record = (data as WorkItemRecord | null) ?? null;
       setItem(record);
-      if (record?.case_proof_ids?.length) {
-        const { data: pts } = await fetchProofPointsByIds(record.case_proof_ids);
-        if (!cancelled) setProofs(((pts as ProofPointRecord[]) ?? []).filter((p) => p.approved));
+      const ids = Array.isArray(record?.case_proof_ids) ? record.case_proof_ids.filter((id) => typeof id === "string") : [];
+      if (ids.length) {
+        const { data: pts } = await fetchProofPointsByIds(ids);
+        // Only approved numbers reach the page, whatever the query returns.
+        if (!cancelled) setProofs((Array.isArray(pts) ? (pts as ProofPointRecord[]) : []).filter((p) => p && p.approved === true));
       } else {
         setProofs([]);
       }
@@ -66,40 +74,64 @@ const WorkCase = () => {
     return () => { cancelled = true; };
   }, [slug]);
 
-  const caseRows = useMemo(
-    () => (item && Array.isArray(item.case_rows) ? item.case_rows : []),
-    [item],
-  );
+  const caseRows = useMemo(() => cleanRows(item?.case_rows), [item]);
 
-  /* "On this page" (redesign §6 E4): one entry per case row that has a
-     title or eyebrow; clicking scrolls to the row's anchor. */
+  /* "On this page": one entry per case row that has a title (or, failing
+     that, a small heading); clicking scrolls to the row's anchor. */
   const caseSections = useMemo(() => {
-    const v3 = normalizeRowsToV3(caseRows as Parameters<typeof normalizeRowsToV3>[0]);
     const out: { id: string; label: string }[] = [];
-    v3.forEach((row, i) => {
-      for (const col of row.columns ?? []) {
-        for (const cell of col.cells ?? []) {
-          for (const w of cell.widgets ?? []) {
-            const data = (w.data ?? {}) as { title_lines?: string[]; eyebrow?: string };
-            const raw = data.title_lines?.[0] || data.eyebrow;
-            const label = raw ? stripHtml(String(raw)) : "";
-            if (label) { out.push({ id: `case-s-${i}`, label }); return; }
+    try {
+      const v3 = normalizeRowsToV3(caseRows as Parameters<typeof normalizeRowsToV3>[0]);
+      v3.forEach((row, i) => {
+        for (const col of row?.columns ?? []) {
+          for (const cell of col?.cells ?? []) {
+            for (const w of cell?.widgets ?? []) {
+              const data = (w?.data ?? {}) as { title_lines?: unknown; eyebrow?: unknown };
+              const first = Array.isArray(data.title_lines) ? data.title_lines[0] : "";
+              const raw = first || data.eyebrow;
+              const label = raw ? stripHtml(String(raw)) : "";
+              if (label) { out.push({ id: `case-s-${i}`, label }); return; }
+            }
           }
         }
-      }
-    });
+      });
+    } catch {
+      /* Rows that cannot be read get no index; the body still renders
+         through the row renderer's own error boundary. */
+    }
     return out;
   }, [caseRows]);
   const anchorFor = (_row: unknown, index: number) =>
     caseSections.some((s) => s.id === `case-s-${index}`) ? `case-s-${index}` : undefined;
 
+  /* Mark the section being read in the index. Purely a visual aid: the
+     links work without it, and it does nothing where the observer is
+     missing. */
+  useEffect(() => {
+    if (caseSections.length < 2 || typeof IntersectionObserver === "undefined") return;
+    const seen = new Map<string, boolean>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) seen.set(e.target.id, e.isIntersecting);
+        const first = caseSections.find((s) => seen.get(s.id));
+        if (first) setCurrent(first.id);
+      },
+      { rootMargin: "-20% 0px -55% 0px" },
+    );
+    for (const s of caseSections) {
+      const el = document.getElementById(s.id);
+      if (el) io.observe(el);
+    }
+    return () => io.disconnect();
+  }, [caseSections]);
+
   if (!looked) {
     return (
       <div className="min-h-screen">
         <Navbar />
-        <main className="py-row-fluid">
-          <div className="max-w-[820px] mx-auto row-container">
-            <div className="animate-pulse space-y-4">
+        <main className="work-page">
+          <div className="work-header">
+            <div className="work-column animate-pulse space-y-4">
               <div className="h-4 w-40 rounded bg-tint" />
               <div className="h-10 w-3/4 rounded bg-tint" />
               <div className="h-4 w-full rounded bg-tint" />
@@ -112,121 +144,126 @@ const WorkCase = () => {
   if (!item) return <NotFound />;
 
   const pillarColor = pillarColorFromKey(item.pillar);
-  const eyebrow = [PILLAR_NAMES[item.pillar] ?? item.pillar, TYPE_NAMES[item.type] ?? item.type, item.year].filter(Boolean).join(" · ");
+  const pillar = pillarName(item.pillar);
+  const serviceSlug = PILLAR_KEY_TO_SLUG[item.pillar];
+  const cover = /^(https?:\/\/|\/)/i.test(safeHref(item.cover_image, "")) ? safeHref(item.cover_image, "") : "";
+  const facts = [
+    { name: "Role", text: item.role_title },
+    { name: "Timeframe", text: item.year },
+  ].filter((f) => f.text);
+  const hasIndex = caseSections.length > 1;
+  const indexLinks = caseSections.map((s, i) => (
+    <a key={s.id} href={`#${s.id}`} aria-current={current === s.id ? "true" : undefined}>
+      {two(i + 1)} {s.label}
+    </a>
+  ));
+
   return (
     <div className="min-h-screen">
       <Navbar />
-      <main>
-        <section className="py-row-fluid">
-          <div className="max-w-[820px] mx-auto row-container">
-            <span
-              className="flex items-center gap-2 font-body uppercase mb-rhythm-tight"
-              style={{ fontSize: "var(--fs-eyebrow)", letterSpacing: "var(--ls-label, 0.28em)", color: "hsl(var(--gold-text))" }}
-            >
-              {pillarColor && <span aria-hidden className="inline-block w-2 h-2 rounded-full" style={{ background: pillarColor }} />}
-              {eyebrow}
-            </span>
-            <h1
-              className="font-display font-extrabold mb-rhythm-base"
-              style={{ fontSize: "var(--fs-h2)", lineHeight: "var(--lh-title, 1.05)", letterSpacing: "var(--ls-title, -0.015em)", color: "hsl(var(--heading))" }}
-            >
-              {item.title}
-            </h1>
-            {item.summary && (
-              <p className="font-body measure" style={{ fontSize: "var(--fs-subtitle)", lineHeight: "var(--lh-subtitle, 1.45)", color: "hsl(var(--body))" }}>
-                {item.summary}
+      <main className="work-page">
+        <header className="work-header">
+          <div className="work-column work-header-stack">
+            <p className="case-crumb">
+              <Link to="/work/">Work</Link>
+              {pillar && (
+                <>
+                  <span aria-hidden>/</span>
+                  <span className="work-card-pillar">
+                    {pillarColor && <span aria-hidden className="work-dot" style={{ background: pillarColor }} />}
+                    {pillar}
+                  </span>
+                </>
+              )}
+            </p>
+            {(item.type || item.honesty_label) && (
+              <p className="case-label">
+                <WorkTypeChip type={item.type} />
+                {item.honesty_label && <span>{item.honesty_label}</span>}
               </p>
             )}
-            {(item.role_title || item.honesty_label) && (
-              <p className="font-body mt-4" style={{ fontSize: "var(--fs-card-label)", color: "hsl(var(--meta))" }}>
-                {[item.role_title, item.honesty_label].filter(Boolean).join(" · ")}
-              </p>
+            <h1 className="case-title">{item.title}</h1>
+            {item.summary && <p className="work-lede">{item.summary}</p>}
+
+            {(facts.length > 0 || pillar || proofs.length > 0) && (
+              <dl className="case-glance" aria-label="At a glance">
+                {facts.map((f) => (
+                  <div key={f.name} className="mc-card-glass">
+                    <dt>{f.name}</dt>
+                    <dd>{f.text}</dd>
+                  </div>
+                ))}
+                {pillar && (
+                  <div className="mc-card-glass">
+                    <dt>Pillar</dt>
+                    <dd className="work-card-pillar">
+                      {pillarColor && <span aria-hidden className="work-dot" style={{ background: pillarColor }} />}
+                      {pillar}
+                    </dd>
+                  </div>
+                )}
+                {proofs.map((p) => (
+                  <div key={p.id} className="mc-card-glass">
+                    <dt>{p.label}</dt>
+                    <dd className="case-glance-number">{p.value}</dd>
+                  </div>
+                ))}
+              </dl>
             )}
           </div>
-        </section>
+        </header>
 
-        {item.cover_image && (
-          <section className="pb-row-fluid">
-            <div className="max-w-[1100px] mx-auto row-container">
-              <img
-                src={transformImageUrl(item.cover_image, { width: 1100, aspectRatio: 21 / 9, quality: 75 })}
-                alt={item.cover_image_alt || ""}
-                className="w-full object-cover rounded-card"
-                style={{ aspectRatio: "21 / 9" }}
-              />
-            </div>
-          </section>
-        )}
-
-        {proofs.length > 0 && (
-          <section className="pb-row-fluid" aria-label="At a glance">
-            <div className="max-w-[1100px] mx-auto row-container">
-              <div className="mc-card p-6 md:p-8">
-                <span className="font-body uppercase block mb-4" style={{ fontSize: "var(--fs-card-label)", letterSpacing: "var(--ls-label, 0.28em)", color: "hsl(var(--gold-text))" }}>
-                  At a glance
-                </span>
-                <ul className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  {proofs.map((p) => (
-                    <li key={p.id}>
-                      <span className="block font-display font-extrabold" style={{ fontSize: "var(--fs-stat)", lineHeight: 1, color: "hsl(var(--heading))" }}>
-                        {p.value}
-                      </span>
-                      <span className="block font-body mt-1" style={{ fontSize: "var(--fs-card-body)", color: "hsl(var(--body))" }}>
-                        {p.label}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </section>
+        {cover && (
+          <div className="work-gutter">
+            <img
+              src={transformImageUrl(cover, { width: 1280, aspectRatio: 21 / 9, quality: 75 })}
+              alt={item.cover_image_alt || ""}
+              className="work-column case-cover"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
+          </div>
         )}
 
         {caseRows.length > 0 && (
-          <div className={caseSections.length > 1 ? "xl:grid xl:grid-cols-[240px_minmax(0,1fr)] xl:gap-10 max-w-[1280px] mx-auto" : ""}>
-            {caseSections.length > 1 && (
-              <aside className="hidden xl:block" aria-label="On this page">
-                <nav className="sticky top-32">
-                  <span className="font-body uppercase block mb-3" style={{ fontSize: "var(--fs-card-label)", letterSpacing: "var(--ls-label, 0.28em)", color: "hsl(var(--meta))" }}>
-                    On this page
-                  </span>
-                  <ul className="space-y-2">
-                    {caseSections.map((s) => (
-                      <li key={s.id}>
-                        <a
-                          href={`#${s.id}`}
-                          className="font-body no-underline transition-colors hover:opacity-100"
-                          style={{ fontSize: "var(--fs-card-body)", color: "hsl(var(--body) / 0.75)" }}
-                        >
-                          {s.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              </aside>
-            )}
-            <div className="min-w-0">
-              <RowsRenderer rows={caseRows} promoteHeading={false} rowAnchorId={anchorFor} />
+          <section className="work-gutter case-body-section">
+            <div className={`work-column ${hasIndex ? "case-layout" : ""}`}>
+              {hasIndex && (
+                <>
+                  <aside className="case-index" aria-label="On this page">
+                    <span className="case-index-name">On this page</span>
+                    {indexLinks}
+                  </aside>
+                  <details className="case-index-fold mc-card-glass">
+                    <summary>On this page</summary>
+                    <nav aria-label="On this page">{indexLinks}</nav>
+                  </details>
+                </>
+              )}
+              <article className="case-body">
+                <RowsRenderer rows={caseRows} promoteHeading={false} rowAnchorId={anchorFor} forceAlign="left" />
+              </article>
             </div>
-          </div>
+          </section>
         )}
 
-        <section className="py-row-fluid">
-          <div className="max-w-[820px] mx-auto row-container text-center">
-            <h2 className="font-display font-extrabold mb-4" style={{ fontSize: "var(--fs-h3)", color: "hsl(var(--heading))" }}>
-              Facing something similar?
-            </h2>
-            <p className="font-body measure mx-auto mb-6" style={{ fontSize: "var(--fs-body)", color: "hsl(var(--body))" }}>
-              Book a discovery call and we will talk it through.
-            </p>
-            <Link
-              to="/#contact"
-              className="inline-flex items-center justify-center rounded-pill px-6 min-h-[44px] font-body font-semibold no-underline"
-              style={{ background: "hsl(var(--deep))", color: "hsl(var(--deep-fg))", fontSize: "var(--fs-card-body)" }}
-            >
-              Book a discovery call
-            </Link>
+        <section aria-labelledby="case-next" className="work-gutter case-next-section">
+          <div className="work-column case-next">
+            {pillar && serviceSlug && (
+              <Link to={`/services/${serviceSlug}`} className="mc-card-glass mc-card-lift case-next-card">
+                <span className="work-filter-name">Related service</span>
+                <span className="case-next-service">{pillar}</span>
+                <span className="case-next-link">
+                  See the service <span aria-hidden>→</span>
+                </span>
+              </Link>
+            )}
+            <div className="mc-card-glass case-next-card">
+              <h2 id="case-next" className="case-next-title">Facing something similar?</h2>
+              <p className="work-count">Book a discovery call and we will talk it through.</p>
+              <Link to="/#contact" className="case-next-button">
+                Book a discovery call
+              </Link>
+            </div>
           </div>
         </section>
       </main>
