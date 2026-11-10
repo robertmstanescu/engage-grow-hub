@@ -1,0 +1,27 @@
+/* The Magic Coffin — spacing. Values measured out of the .pptx (EMU ÷ 9525 = px on a 1280×720 stage).
+   The unit is 4.8px (3.6pt); the page margin and card padding are the two fixed anchors. */
+:root{
+  --space-1:4.8px;
+  --space-2:9.6px;
+  --space-3:14.4px;
+  --space-4:19.2px;
+  --space-5:24px;
+  --space-6:28.8px;   /* the standard gap between cards and columns */
+  --space-7:38.4px;
+  --space-8:48px;
+  --space-9:57.6px;
+  --space-10:74.88px;
+
+  /* ── Slide geometry ──────────────────────────────────────── */
+  --slide-w:1280px;
+  --slide-h:720px;
+  --page-x:74.88px;      /* left and right clear margin, every layout */
+  --page-top:59.52px;    /* baseline of the eyebrow label */
+  --page-bottom:74.88px;
+  --footer-y:689.28px;   /* emblem + page number sit on this line */
+  --gap-card:28.8px;
+  --gap-column:28.8px;
+  --card-pad:30.72px;
+  --content-w:1130.24px; /* 1280 − 2 × page-x */
+  --measure:56ch;        /* natural body measure; beyond it, split across two slides */
+}

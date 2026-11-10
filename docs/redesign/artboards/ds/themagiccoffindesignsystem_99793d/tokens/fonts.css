@@ -1,0 +1,16 @@
+/* The Magic Coffin — webfonts. Three families, each with one job. The logotype is not set in live
+   text at all; it ships as artwork in assets/logo/, so no fourth face is loaded.
+
+   The deck uses 400 and 700 only ("weight comes from bold, never from a different font name").
+   The website reaches for 500/600 on body UI and 800 on the hero, so the full run is declared here
+   and the deck simply never asks for the middle weights. */
+@font-face{font-family:"Bricolage Grotesque";src:url("../assets/fonts/BricolageGrotesque-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Bricolage Grotesque";src:url("../assets/fonts/BricolageGrotesque-Medium.ttf") format("truetype");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Bricolage Grotesque";src:url("../assets/fonts/BricolageGrotesque-SemiBold.ttf") format("truetype");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Bricolage Grotesque";src:url("../assets/fonts/BricolageGrotesque-Bold.ttf") format("truetype");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Bricolage Grotesque";src:url("../assets/fonts/BricolageGrotesque-ExtraBold.ttf") format("truetype");font-weight:800;font-style:normal;font-display:swap}
+@font-face{font-family:"Inter";src:url("../assets/fonts/Inter-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Inter";src:url("../assets/fonts/Inter-Medium.ttf") format("truetype");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Inter";src:url("../assets/fonts/Inter-SemiBold.ttf") format("truetype");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Inter";src:url("../assets/fonts/Inter-Bold.ttf") format("truetype");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Architects Daughter";src:url("../assets/fonts/ArchitectsDaughter-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}

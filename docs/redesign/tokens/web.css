@@ -1,0 +1,95 @@
+/* The Magic Coffin — WEB SURFACE tokens.
+   Read out of the live site's own `src/index.css` (repo: engage-grow-hub).
+
+   Read this first: the deck and the website are the same brand at different hardness.
+   The deck is architectural and sharp — 4px radius, no shadows, hairline borders.
+   The website is soft — 24px radius, real shadows, pill buttons, a continuous mesh.
+   Both are correct. Pick the surface, then take that surface's tokens. Never mix a
+   24px radius into a slide or a hairline 4px card into the site.
+
+   Everything below is prefixed --web-* so it can never collide with the deck layer. */
+:root{
+  /* ── Radius. The site's base is 1.5rem, with two computed steps up. ── */
+  --web-radius:1.5rem;                    /* cards, panels, image frames */
+  --web-radius-dropdown:1.8rem;           /* calc(radius * 1.2) */
+  --web-radius-island:2.1rem;             /* calc(radius * 1.4) — the floating nav */
+  --web-radius-pill:999px;                /* every button, tag and nav CTA */
+
+  /* ── Shadow. The site HAS depth; the deck does not. ── */
+  --web-shadow-soft:0 1px 2px hsl(282 40% 13% / .04),0 8px 24px -12px hsl(282 40% 13% / .12);
+  --web-shadow-card:0 1px 2px hsl(282 40% 13% / .05),0 18px 40px -24px hsl(282 40% 13% / .25);
+
+  /* ── Surfaces and bands. Rows alternate white / tint / deep plum. ── */
+  --web-bg:hsl(32 30% 97%);               /* warm isabelline canvas */
+  --web-fg:hsl(282 45% 10%);              /* deep plum ink */
+  --web-card:hsl(0 0% 100%);
+  --web-border:hsl(285 20% 84%);
+  --web-muted:hsl(288 24% 95%);
+  --web-muted-fg:hsl(281 18% 32%);
+  --web-band-white:hsl(0 0% 100%);
+  --web-band-tint:hsl(288 34% 96%);
+  --web-band-deep:hsl(280 57% 14%);
+  --web-band-deep-fg:hsl(45 60% 96%);
+
+  /* ── The page mesh. One continuous painted surface behind the whole site,
+        not a per-section background. --web-mesh-strength is the intensity dial
+        exposed in the site's own Brand Settings (subtle .45 / medium .7 / strong 1). ── */
+  --web-mesh-strength:.7; /* @kind other */
+  --web-mesh:
+    radial-gradient(ellipse 70% 55% at 12% 4%,hsl(286 52% 88% / var(--web-mesh-strength)),transparent 68%),
+    radial-gradient(ellipse 60% 48% at 92% 14%,hsl(45 78% 87% / var(--web-mesh-strength)),transparent 68%),
+    radial-gradient(ellipse 65% 50% at 78% 62%,hsl(280 45% 90% / var(--web-mesh-strength)),transparent 70%),
+    radial-gradient(ellipse 80% 45% at 22% 88%,hsl(46 70% 90% / var(--web-mesh-strength)),transparent 72%),
+    var(--web-bg); /* @kind other */
+  --web-gradient-card:linear-gradient(160deg,hsl(0 0% 100%) 0%,hsl(288 30% 98%) 100%); /* @kind other */
+
+  /* ── Fluid type. The site's single source of truth: components never inline
+        their own clamp(), or one row's title drifts from another's. ── */
+  --web-fs-eyebrow:clamp(9px,0.4vh + 0.5vw,11px); /* @kind other */
+  --web-fs-title:clamp(1.5rem,1.6vh + 1.5vw,3rem); /* @kind other */
+  --web-fs-subtitle:clamp(0.95rem,1vh + 0.85vw,1.35rem); /* @kind other */
+  --web-fs-body:clamp(0.9rem,0.8vh + 0.6vw,1.1rem); /* @kind other */
+  --web-fs-card-title:clamp(0.95rem,0.4vh + 0.5vw,1.1rem); /* @kind other */
+  --web-fs-card-body:clamp(0.85rem,0.35vh + 0.55vw,1rem); /* @kind other */
+  --web-fs-card-label:clamp(10px,0.3vh + 0.55vw,12px); /* @kind other */
+  --web-fs-stat:clamp(2rem,3.4vw,3.5rem); /* @kind other */
+  --web-fs-quote:clamp(26px,3.4vw,46px); /* @kind other */
+  --web-fs-step-title:clamp(18px,1.6vw,24px); /* @kind other */
+  --web-fs-hero-title:clamp(40px,8.4vw,132px); /* @kind other */
+  --web-fs-hero-label:clamp(11px,0.9vw,14px); /* @kind other */
+  --web-fs-hero-subtitle:clamp(16px,1.6vw,24px); /* @kind other */
+  --web-fs-hero-body:clamp(15px,1.15vw,19px); /* @kind other */
+
+  /* ── Line height and tracking as the site sets them ── */
+  --web-lh-body:1.7; /* @kind font */
+  --web-lh-hero:.9; /* @kind font */
+  --web-tr-eyebrow:.32em;   /* hero label */
+  --web-tr-tagline:.28em;
+  --web-tr-micro:.18em;     /* card labels, tags */
+  --web-tr-nav:.02em;
+
+  /* ── Buttons. Two pills plus one arrow link. Never a third pill style. ── */
+  --web-btn-h:2.75rem;
+  --web-btn-px:1.5rem;
+  --web-btn-fs:clamp(0.8125rem,0.9vw,0.9375rem); /* @kind other */
+  --web-btn-ink-bg:var(--web-fg);
+  --web-btn-ink-fg:hsl(0 0% 100%);
+  --web-btn-ink-hover-bg:hsl(280 55% 24%);
+  --web-btn-ghost-bg:hsl(45 60% 96%);
+  --web-btn-ghost-hover-bg:hsl(0 0% 100%);
+  --web-nav-cta-bg:hsl(280 57% 16%);
+  --web-nav-cta-fg:hsl(45 60% 96%);
+
+  /* ── Motion. The site's one easing curve, used for every entrance. ── */
+  --web-ease:cubic-bezier(.16,1,.3,1); /* @kind other */
+  --web-dur-nav:200ms; /* @kind other */
+  --web-dur-reveal:700ms; /* @kind other */
+  --web-stagger:120ms; /* @kind other */
+  --web-blur-island:blur(16px) saturate(140%); /* @kind other */
+
+  /* ── Layout ── */
+  --web-measure:640px;        /* hero body max-width */
+  --web-max-w:1100px;         /* single-column row */
+  --web-max-w-wide:1280px;    /* split rows */
+  --web-row-px:1.5rem;
+}

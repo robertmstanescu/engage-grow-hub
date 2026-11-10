@@ -1,0 +1,135 @@
+/* The Magic Coffin — colour.
+   Transcribed from "The Magic Coffin for Silly Vampires - Brand Book" (the Main / Accent / Secondary
+   palette sheet) and the main-colours list, cross-checked against the light deck's own toolkit page and
+   the working values measured out of the .pptx layouts. Hex is the authority, not the swatch on screen.
+
+   The tiers mean what they say: MAIN carries the brand, ACCENT is for data, states and emphasis,
+   SECONDARY is structure. A layout that needs a fourth main colour needs a second layout. */
+:root{
+  /* ══ MAIN ══════════════════════════════════════════════════ */
+  --authentic-violet:#4D1B5E;
+  --revolver:#2A0E33;
+  --valentino:#7B3A91;
+  --eliza:#E5C54F;
+  --gold-crush:#EAD06E;
+  --intense-cream:#F9F0C1;
+  --blackcurrant:#26142E;        /* deepest ink; the deck's body-text black */
+  --spicy-mustard:#7A5C12;       /* the dark gold that is safe as small text on light */
+
+  /* ══ ACCENT ════════════════════════════════════════════════ */
+  /* red */
+  --red-crystal:#F8465C;
+  --american-crimson:#B11226;
+  --burnt-crimson:#6A010E;
+  /* orange */
+  --comforting-orange:#FFBD45;
+  --mars-yellow:#E36414;
+  --peru-tan:#883500;
+  /* yellow */
+  --coral-yellow:#FFD933;
+  --dark-yellow:#FFD000;
+  --deep-buttered-rum:#997D00;
+  /* green */
+  --dark-jungle-green:#1A8164;
+  --evening-sea:#005C42;
+  --strong-dark-green:#003728;
+  /* blue */
+  --tech-blue:#307FEF;
+  --cobalt-blue:#0047AB;
+  --dark-ultramarine:#002B67;
+  /* indigo */
+  --prince:#6B61C3;
+  --persian-indigo:#3D348B;
+  --admiral:#201A53;
+  /* plum */
+  --lavender-red:#9D4D8E;
+  --byzantium:#702963;
+  --dark-plum:#43143B;
+
+  /* ══ SECONDARY ═════════════════════════════════════════════ */
+  --white:#FFFFFF;
+  --isabelline:#F4F0EC;
+  --white-marble:#E8E8E8;
+  --dark-grey:#A9A9A9;
+  --dim-gray:#696969;
+  --stygian:#1B1F24;
+  --black:#000000;
+
+  /* ══ DECK WORKING VALUES ═══════════════════════════════════ */
+  /* Measured out of the light template. These are the palette above as the deck actually applies it. */
+  --paper:#FAF8F5;               /* "Site background" — warm paper, one step off Isabelline */
+  --purple-primary:#481C5F;      /* "Site primary" — every heading on the light deck */
+  --purple-stamp:#672786;        /* stamps, handwritten asides, tilted marks */
+  --gold:#E6C24C;               /* "Site accent" — fills, bars, marks */
+  --gold-deep:#B8912B;           /* stroke-weight gold for outline marks on light */
+  --gold-ink:#815E18;            /* the deck's small-text gold; Spicy Mustard is its palette name */
+  --void:#0A0610;                /* dark inset panels inside the light deck */
+  /* Purple-tinted neutral ramp — the deck never uses a true grey for text or lines. */
+  --ink:var(--blackcurrant);
+  --ink-muted:#5C4965;           /* the default body colour */
+  --ink-meta:#8A7A90;            /* labels, captions, page numbers */
+  --line-1:#E5D7EA;              /* hairlines and dividers */
+  --line-2:#DED3E4;              /* card borders */
+  --line-3:#D6C9DC;
+  --line-4:#C9BCCE;
+  --tint-violet:#F7F1F8;         /* faintest purple fill */
+
+  /* ══ SEMANTIC ALIASES ══════════════════════════════════════ */
+  --surface-page:var(--paper);
+  --surface-alt:var(--isabelline);
+  --surface-tint:var(--tint-violet);
+  --surface-solid:var(--purple-primary);
+  --surface-inverse:var(--void);
+
+  --text-heading:var(--purple-primary);
+  --text-body:var(--ink-muted);
+  --text-strong:var(--ink);
+  --text-meta:var(--ink-meta);
+  --text-label:var(--gold-ink);   /* eyebrow / section label */
+  --text-hand:var(--purple-stamp);
+  --text-inverse:var(--white);
+  --text-link:var(--purple-stamp);
+  --text-link-hover:var(--purple-primary);
+
+  --border-hairline:var(--line-1);
+  --border-card:var(--line-2);
+  --border-strong:var(--line-3);
+  --rule-faint:rgb(229 215 234 / .7);
+
+  --accent:var(--gold);
+  --accent-on-light:var(--gold-ink);
+  --accent-stroke:var(--gold-deep);
+
+  --data-1:var(--purple-primary);
+  --data-2:var(--gold);
+  --data-3:var(--lavender-red);
+  --data-4:var(--persian-indigo);
+  --data-5:var(--dark-jungle-green);
+  --data-6:var(--tech-blue);
+  --data-negative:var(--american-crimson);
+  --data-track:var(--line-1);
+
+  --status-complete:var(--evening-sea);
+  --status-progress:var(--purple-stamp);
+  --status-risk:var(--american-crimson);
+}
+/* Dark inset panels and the dark deck. Scope, not a media query — the light deck
+   uses this on individual panels (see the dashboard and cost-of-inaction layouts). */
+.tmc-inverse{
+  --surface-page:var(--void);
+  --surface-alt:var(--revolver);
+  --surface-tint:rgb(255 255 255 / .06);
+  --text-heading:var(--white);
+  --text-body:rgb(255 255 255 / .78);
+  --text-strong:var(--white);
+  --text-meta:rgb(255 255 255 / .55);
+  --text-label:var(--gold);
+  --text-hand:var(--gold-crush);
+  --border-hairline:rgb(255 255 255 / .14);
+  --border-card:rgb(255 255 255 / .18);
+  --border-strong:rgb(255 255 255 / .28);
+  --rule-faint:rgb(255 255 255 / .1);
+  --accent-on-light:var(--gold);
+  --accent-stroke:var(--gold);
+  --data-track:rgb(255 255 255 / .14);
+}

@@ -1,0 +1,21 @@
+/* The Magic Coffin — motion. The source is a print-static deck: it declares no animation.
+   These are the house rules for interactive surfaces built on the system. Intentional addition.
+   Nothing bounces. Nothing springs. Things fade and settle, like a lid closing.
+   dur-fast = hover/focus/colour · dur-base = reveal, tab change · dur-slow = panel, drawer, slide */
+:root{
+  --ease-standard:cubic-bezier(.2,0,.2,1); /* @kind other */
+  --ease-out:cubic-bezier(0,0,.2,1); /* @kind other */
+  --ease-in:cubic-bezier(.4,0,1,1); /* @kind other */
+  --dur-fast:120ms; /* @kind other */
+  --dur-base:200ms; /* @kind other */
+  --dur-slow:420ms; /* @kind other */
+  --hover-opacity:.72; /* @kind other */
+  --press-scale:.985; /* @kind other */
+}
+@media (prefers-reduced-motion:reduce){
+  :root{
+    --dur-fast:1ms; /* @kind other */
+    --dur-base:1ms; /* @kind other */
+    --dur-slow:1ms; /* @kind other */
+  }
+}

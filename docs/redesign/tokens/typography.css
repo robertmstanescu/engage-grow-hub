@@ -1,0 +1,50 @@
+/* The Magic Coffin — typography.
+   Sizes are the deck's own point sizes converted to CSS px on a 1280×720 stage (1pt = 1.3333px).
+   Three families only. Weight comes from bold, never from a different font name. */
+:root{
+  --font-logo:"Bricolage Grotesque",system-ui,sans-serif; /* live-text fallback only — prefer the lockup artwork in assets/logo/ */
+  --font-display:"Bricolage Grotesque","Bricolage Grotesque 24pt",system-ui,sans-serif;
+  --font-body:"Inter",system-ui,sans-serif;
+  --font-hand:"Architects Daughter","Bradley Hand",cursive;
+
+  /* ── Scale (deck point size in brackets) ─────────────────── */
+  --fs-figure-hero:253.33px; /* 190pt — the one giant number on a slide */
+  --fs-figure-xl:176px;      /* 132pt */
+  --fs-poster:128px;         /*  96pt — title poster */
+  --fs-figure:96px;          /*  72pt */
+  --fs-display:82.67px;      /*  62pt — closing / statement */
+  --fs-stat:61.33px;         /*  46pt — KPI numbers */
+  --fs-h1:50.67px;           /*  38pt — the standard slide title */
+  --fs-h2:34.67px;           /*  26pt */
+  --fs-h3:22px;              /* 16.5pt — card titles, step names */
+  --fs-lead:20.67px;         /* 15.5pt — standfirst */
+  --fs-hand:18px;            /* 13.5pt — handwritten aside */
+  --fs-stamp:14.67px;        /*  11pt — stamps and badges */
+  --fs-body:14.67px;         /*  11pt — body copy everywhere */
+  --fs-body-sm:12.67px;      /* 9.5pt — the deck's working body size */
+  --fs-caption:11.33px;      /* 8.5pt */
+  --fs-label:12px;           /*   9pt — eyebrow / section label */
+  --fs-meta:10px;            /* 7.5pt — meta label, smallest permitted */
+
+  /* ── Line height ─────────────────────────────────────────── */
+  --lh-poster:.88; /* @kind font */
+  --lh-display:.94; /* @kind font */
+  --lh-heading:1.02; /* @kind font */
+  --lh-h3:1.12; /* @kind font */
+  --lh-hand:1.15; /* @kind font */
+  --lh-lead:1.4; /* @kind font */
+  --lh-body:1.55; /* @kind font */
+  --lh-flat:1; /* @kind font */
+
+  /* ── Tracking ────────────────────────────────────────────── */
+  --tr-poster:-.005em; /* @kind font */
+  --tr-h1:-.007em; /* @kind font */
+  --tr-normal:0; /* @kind font */
+  --tr-stamp:.109em; /* @kind font */
+  --tr-label:.2em; /* @kind font */
+  --tr-meta:.293em; /* @kind font */
+  --tr-slide-no:.047em; /* @kind font */
+
+  --fw-regular:400; /* @kind font */
+  --fw-bold:700; /* @kind font */
+}
