@@ -1,3 +1,4 @@
+import { PILLAR_COLORS } from "@/lib/constants/pillarColors";
 import { useEffect, useRef } from "react";
 import { safeHref } from "@/services/safeHref";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -70,6 +71,12 @@ interface HeroContent {
   visual_layout?: string;
   /** Headline size: "" (default) | "display" (index pages) | "compact" (service pages). */
   title_size?: string;
+  /** "large" sets the intro a size up (Services index). */
+  body_size?: string;
+  /** "chips" prints the tagline's parts as pills under the buttons. */
+  tagline_style?: string;
+  /** A round dot in the label's colour before it (service pages). */
+  label_dot?: boolean;
   /** Second, quieter link next to the primary button. */
   secondary_cta_label?: string;
   secondary_cta_url?: string;
@@ -571,8 +578,10 @@ export const HeroView = ({
           {leading}
           {c.label && (
             <p
-              className="mc-rise font-body font-bold tracking-[0.32em] uppercase flex-shrink-0"
-              style={{ "--rise-dur": "1s", "--rise-delay": "0.2s", color: c.color_label || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" } as React.CSSProperties}>
+              className="mc-rise font-body font-bold tracking-[0.32em] uppercase flex-shrink-0 flex items-center gap-3"
+              style={{ "--rise-dur": "1s", "--rise-delay": "0.2s", color: c.color_label || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)", lineHeight: 1.4 } as React.CSSProperties}>
+              {/* The pillar dot before a service page's label (service artboards). */}
+              {c.label_dot && <span aria-hidden className="flex-none rounded-full" style={{ width: 12, height: 12, background: "currentColor" }} />}
               <Field fieldPath="label" as="span">
                 {c.label}
               </Field>
@@ -587,7 +596,6 @@ export const HeroView = ({
               fontSize: titleSizeVar,
               lineHeight: 0.94,
               letterSpacing: "-0.025em",
-              textWrap: "balance",
             } as React.CSSProperties}>
             {titleLines.map((line, i) => (
               <span
@@ -601,7 +609,7 @@ export const HeroView = ({
           {/* `c.answer` (the plain answer) is deliberately NOT rendered
               here: the page passes it to the Footer as small print. */}
 
-          {c.tagline && !c.tagline_handwritten && (
+          {c.tagline && !c.tagline_handwritten && c.tagline_style !== "chips" && (
             <p
               className="mc-rise font-body tracking-[0.28em] uppercase flex-shrink-0"
               style={{ "--rise-to": 0.4, "--rise-dur": "1s", "--rise-delay": "0.8s", color: c.tagline_color || c.color_tagline || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" } as React.CSSProperties}>
@@ -641,7 +649,7 @@ export const HeroView = ({
                 html
                 as="div"
                 className={`rich-text font-body max-w-[580px] ${marginClass}`}
-                style={{ color: "hsl(var(--hero-body))", fontSize: "var(--fs-hero-body)", lineHeight: 1.7 }}
+                style={{ color: "hsl(var(--hero-body))", fontSize: c.body_size === "large" ? "var(--fs-hero-body-large)" : "var(--fs-hero-body)", lineHeight: 1.7 }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
               />
             </div>
@@ -662,6 +670,21 @@ export const HeroView = ({
                 </a>
               )}
             </div>
+          )}
+
+          {/* Tagline as chips (About artboard): each part between the dots
+              is a pill; a part that names a service pillar carries that
+              pillar's dot. */}
+          {c.tagline && !c.tagline_handwritten && c.tagline_style === "chips" && (
+            <ul className="mc-rise flex flex-wrap gap-2 flex-shrink-0 list-none p-0 m-0" style={{ "--rise-dur": "0.8s", "--rise-delay": "1.3s" } as React.CSSProperties}>
+              {c.tagline.split(/\s*[·•|]\s*/).map((part) => part.trim()).filter(Boolean).map((part, i) => (
+                <li key={i} className="inline-flex items-center gap-2 rounded-full font-body"
+                  style={{ padding: "8px 14px", background: "rgba(255, 255, 255, 0.75)", border: "1px solid hsl(var(--line-2))", fontSize: 13, lineHeight: 1.4, color: "hsl(var(--foreground))", overflowWrap: "anywhere" }}>
+                  <span aria-hidden className="flex-none rounded-full" style={{ width: 8, height: 8, background: PILLAR_COLORS[part.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "")] || "hsl(var(--deep))" }} />
+                  {part}
+                </li>
+              ))}
+            </ul>
           )}
 
           {/* Handwritten tagline (Main artboard): a slanted script note under the buttons. */}
@@ -699,24 +722,27 @@ export const HeroView = ({
             />
             {(c.visual_badge_title || c.visual_badge_text) && (
               <div
-                className="absolute bottom-5 left-5 right-5 lg:right-auto lg:max-w-[320px] p-4"
+                className="absolute bottom-5 left-5 right-5 lg:bottom-10 lg:-left-7 lg:right-auto lg:max-w-[340px] flex flex-col gap-1"
                 style={{
-                  background: "hsl(var(--glass-bg))",
+                  /* The badge hangs over the photo's left edge (service
+                     artboards): near-opaque glass, 24px corners. */
+                  background: "rgba(255, 255, 255, 0.9)",
                   backdropFilter: "blur(10px)",
                   WebkitBackdropFilter: "blur(10px)",
                   border: "1px solid hsl(var(--glass-border))",
-                  borderRadius: 16,
+                  borderRadius: 24,
                   boxShadow: "var(--shadow-card)",
+                  padding: "18px 22px",
                 }}
               >
                 {c.visual_badge_label && (
-                  <p className="font-body uppercase font-bold" style={{ fontSize: 11, letterSpacing: "0.16em", color: "hsl(var(--gold-text))" }}>{c.visual_badge_label}</p>
+                  <p className="font-body uppercase font-bold" style={{ fontSize: "var(--fs-chip)", letterSpacing: "0.22em", lineHeight: 1.4, color: "hsl(var(--gold-text))" }}>{c.visual_badge_label}</p>
                 )}
                 {c.visual_badge_title && (
-                  <p className="font-display font-bold mt-1" style={{ fontSize: "var(--fs-card-title)", color: "hsl(var(--heading))" }}>{c.visual_badge_title}</p>
+                  <p className="font-display font-bold" style={{ fontSize: 20, lineHeight: 1.3, color: "hsl(var(--heading))" }}>{c.visual_badge_title}</p>
                 )}
                 {c.visual_badge_text && (
-                  <p className="font-body mt-1 leading-[1.6]" style={{ fontSize: 14, color: "hsl(var(--body))" }}>{c.visual_badge_text}</p>
+                  <p className="font-body leading-[1.5]" style={{ fontSize: 14, color: "hsl(var(--body))" }}>{c.visual_badge_text}</p>
                 )}
               </div>
             )}

@@ -46,6 +46,8 @@ export const boxedCardSchema = z.looseObject({
   meta: str(),
   /** Right-column price (list layout). */
   price: str(),
+  /** Small line over the price (list layout), e.g. "start with The Autopsy, from". */
+  price_note: str(),
 });
 
 export const boxedSchema = z.looseObject({
@@ -78,6 +80,8 @@ export const boxedSchema = z.looseObject({
   marker_style: str(),
   /** Small label between the dark band(s) and the remaining cards. */
   group_label: str(),
+  /** Formatted intro under the heading. */
+  intro: str(),
 
   /* ── Footer bits ── */
   note: str(),

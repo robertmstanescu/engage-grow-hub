@@ -52,10 +52,27 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
 
   // Use column_widths to control the image/text split ratio
   const colWidths = l.column_widths || [35, 65];
-  const gridCols = `${colWidths[0]}fr ${colWidths[1]}fr`;
+  /* "portrait" is the About artboard: a large portrait on five of twelve
+     columns with the name under it, the story and the chips on seven. */
+  const portrait = c.layout_style === "portrait";
+  const gridCols = portrait ? "minmax(0, 5fr) minmax(0, 7fr)" : `${colWidths[0]}fr ${colWidths[1]}fr`;
 
   // EPIC 1 / US 1.1 — base path for atomic-node selection.
   const basePath: string[] = ["row", row.id, "widget", row.id, "field"];
+
+  const credentialChips = credentials.length > 0 ? (
+    <div className={`flex flex-wrap gap-2 ${portrait ? "mt-rhythm-base justify-start" : "mt-rhythm-tight justify-center"}`} style={revealStyle(isVisible, 3)}>
+      {credentials.map((cred, i) => (
+        <span
+          key={i}
+          className={portrait ? "font-body rounded-full" : "font-body text-micro tracking-wider px-3 py-1 rounded-full"}
+          style={{ backgroundColor: credBg, color: credText, border: "1px solid hsl(var(--glass-border) / 0.9)", backdropFilter: "blur(8px)", ...(portrait ? { fontSize: 13, lineHeight: 1.4, padding: "8px 14px" } : {}) }}
+        >
+          {cred}
+        </span>
+      ))}
+    </div>
+  ) : null;
 
   return (
     <RowSection
@@ -64,14 +81,14 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
       innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; }}
     >
       <div className={`relative z-10 ${maxW} w-full row-container ${containerPos}`}>
-        <div className="grid grid-cols-1 gap-rhythm-loose items-center" style={{ gridTemplateColumns: window.innerWidth > 768 ? gridCols : undefined }}>
+        <div className={`grid grid-cols-1 gap-rhythm-loose ${portrait ? "items-start" : "items-center"}`} style={{ gridTemplateColumns: window.innerWidth > 768 ? gridCols : undefined }}>
           {/* Left column: Image + Name + Credentials */}
-          <div className="flex flex-col items-center" style={revealStyle(isVisible, 1)}>
+          <div className={`flex flex-col ${portrait ? "items-start" : "items-center"}`} style={revealStyle(isVisible, 1)}>
             <div
               className="relative rounded-xl overflow-hidden"
               style={{
                 width: "100%",
-                maxWidth: 340,
+                maxWidth: portrait ? undefined : 340,
                 aspectRatio: String(portraitAspect),
                 /* The ink outline sits straight on the portrait: no inner
                    padding or gradient mat between border and picture. */
@@ -103,10 +120,10 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
             </div>
 
             {(c.name || c.role) && (
-              <div className="mt-rhythm-base text-center" style={revealStyle(isVisible, 2)}>
+              <div className={portrait ? "mt-4 text-left" : "mt-rhythm-base text-center"} style={revealStyle(isVisible, 2)}>
                 {c.name && (
                   <SelectableWrapper path={[...basePath, "name"]} label="Name" variant="atom">
-                    <p className="font-display font-bold text-lg leading-[1.6]" style={{ color: nameColor }}>
+                    <p className={`font-display font-bold ${portrait ? "leading-[1.3]" : "text-lg leading-[1.6]"}`} style={{ color: nameColor, ...(portrait ? { fontSize: "var(--fs-card-title)" } : {}) }}>
                       <EditableText sectionKey="page_rows" fieldPath={`${prefix}.name`} as="span">
                         {c.name}
                       </EditableText>
@@ -115,7 +132,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                 )}
                 {c.role && (
                   <SelectableWrapper path={[...basePath, "role"]} label="Role" variant="atom">
-                    <p className="font-body text-xs tracking-wider uppercase mt-1" style={{ color: roleColor }}>
+                    <p className={portrait ? "font-body mt-1" : "font-body text-xs tracking-wider uppercase mt-1"} style={{ color: portrait ? "var(--row-body, hsl(var(--body)))" : roleColor, ...(portrait ? { fontSize: 14 } : {}) }}>
                       <EditableText sectionKey="page_rows" fieldPath={`${prefix}.role`} as="span">
                         {c.role}
                       </EditableText>
@@ -125,19 +142,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
               </div>
             )}
 
-            {credentials.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-rhythm-tight justify-center" style={revealStyle(isVisible, 3)}>
-                {credentials.map((cred, i) => (
-                  <span
-                    key={i}
-                    className="font-body text-micro tracking-wider px-3 py-1 rounded-full"
-                    style={{ backgroundColor: credBg, color: credText, border: "1px solid hsl(var(--glass-border) / 0.9)", backdropFilter: "blur(8px)" }}
-                  >
-                    {cred}
-                  </span>
-                ))}
-              </div>
-            )}
+            {!portrait && credentialChips}
           </div>
 
           {/* Right column: Header + RTE body */}
@@ -191,6 +196,8 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
                 />
               </SelectableWrapper>
             )}
+
+            {portrait && credentialChips}
 
             {c.note && (
               <div className="mt-rhythm-base pt-3" style={{ borderTop: `1px solid ${eyebrowColor}30` }}>

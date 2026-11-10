@@ -242,7 +242,7 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
           /* Redesign: every tier visible at once, three across on a wide
              screen, stacked on a phone. No carousel, nothing hidden. */
           <div
-            className="grid gap-4 lg:gap-5 text-left"
+            className="grid gap-6 text-left"
             style={{ ...revealStyle(isVisible, 4), gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))" }}
           >
             {services.map((service: Record<string, unknown>, i: number) => (

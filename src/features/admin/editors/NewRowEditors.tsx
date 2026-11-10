@@ -506,6 +506,12 @@ export const CtaBandEditor = ({
       <Field label="Button link" value={content.button_url || ""} onChange={(v) => onChange("button_url", v)} />
     </SectionBox>
     <MoreFields label="Second link">
+      <SelectField
+        label="Look"
+        value={content.band_style || ""}
+        onChange={(v) => onChange("band_style", v)}
+        options={[{ label: "Follows the row style", value: "" }, { label: "Dark rounded band", value: "room" }]}
+      />
       <Field label="Text link label (optional)" value={content.link_text || ""} onChange={(v) => onChange("link_text", v)} />
       <Field label="Text link" value={content.link_url || ""} onChange={(v) => onChange("link_url", v)} />
     </MoreFields>

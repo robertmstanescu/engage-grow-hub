@@ -1,4 +1,4 @@
-import { SectionBox, Field, RichField, ArrayField, ColorField, CtaFields, MoreFields } from "./FieldComponents";
+import { SectionBox, Field, RichField, ArrayField, ColorField, CtaFields, MoreFields, SelectField } from "./FieldComponents";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImagePickerField from "../ImagePickerField";
@@ -50,6 +50,15 @@ const ProfileEditor = ({ content, onChange, bgColor }: Props) => {
       <CtaFields content={content} onChange={onChange} />
 
       <MoreFields>
+        <SelectField
+          label="Layout"
+          value={content.layout_style === "portrait" ? "portrait" : ""}
+          onChange={(v) => onChange("layout_style", v)}
+          options={[
+            { label: "Small photo, tags under it", value: "" },
+            { label: "Large portrait, tags under the text", value: "portrait" },
+          ]}
+        />
         <SubtitleEditor subtitle={content.subtitle || ""} subtitleColor={content.subtitle_color || ""} onSubtitleChange={(v) => onChange("subtitle", v)} onColorChange={(v) => onChange("subtitle_color", v)} handwritten={!!content.subtitle_handwritten} onHandwrittenChange={(v) => onChange("subtitle_handwritten", v)} />
         <SectionBox label="Credentials" group>
           <ArrayField

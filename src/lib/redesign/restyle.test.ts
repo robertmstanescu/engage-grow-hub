@@ -5,7 +5,7 @@
  * real content before it writes any SQL.
  */
 import { describe, it, expect } from "vitest";
-import { cleanRichText, restyleRows, visibleText, kindForSlug } from "./restyle";
+import { cleanRichText, restyleRows, visibleText, kindForSlug, joinHeroLines, accentSecondLine, accentPhrase, arrangeHome, arrangeServices, arrangeService, arrangeAbout } from "./restyle";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const row = (type: string, data: Record<string, any>, extra: Record<string, any> = {}) => ({
@@ -97,5 +97,72 @@ describe("kindForSlug", () => {
     expect(kindForSlug("about-us").kind).toBe("about");
     expect(kindForSlug("privacy-policy").kind).toBe("privacy");
     expect(kindForSlug("anything-else").kind).toBe("other");
+  });
+});
+
+describe("canvas arrangements", () => {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const row = (id: string, type: string, data: Record<string, any>, extra: Record<string, any> = {}) => ({
+    id, ...extra,
+    columns: [{ id: `${id}-c`, cells: [{ id: `${id}-k`, widgets: [{ id: `${id}-w`, type, data }] }] }],
+  });
+  const dataOf = (r: any) => r.columns[0].cells[0].widgets[0].data;
+
+  it("joins a hero headline's short lines and keeps the last line apart", () => {
+    const rows = [row("h", "hero", { title_lines: ["<p>Your organisation</p>", "<p>has vampires.</p>", "<p>We bring the coffin.</p>"] })];
+    joinHeroLines(rows);
+    expect(dataOf(rows[0]).title_lines).toEqual(["<p>Your organisation has vampires.</p>", "<p>We bring the coffin.</p>"]);
+    joinHeroLines(rows);
+    expect(dataOf(rows[0]).title_lines).toHaveLength(2);
+  });
+
+  it("accents a second line once and leaves the owner's accent alone", () => {
+    expect(accentSecondLine(["<p>One</p>", "<p>Two</p>"])).toEqual(["<p>One</p>", '<p><span class="mc-accent">Two</span></p>']);
+    expect(accentSecondLine(["<p>One</p><p>Two</p>"])).toEqual(['<p>One</p><p><span class="mc-accent">Two</span></p>']);
+    const own = ['<p><span class="mc-accent">One</span></p>', "<p>Two</p>"];
+    expect(accentSecondLine(own)).toBe(own);
+    expect(accentPhrase(["<p>Some things. These stay.</p>"], "These stay.")).toEqual(['<p>Some things. <span class="mc-accent">These stay.</span></p>']);
+  });
+
+  it("orders the homepage like the artboard and gives each row its gap", () => {
+    const out = arrangeHome([
+      row("h", "hero", {}),
+      row("s", "boxed", { cards: [{ title: "A" }] }),
+      row("w", "boxed", { cards: [{ title: "B" }] }),
+      row("i", "image_text", { floating_caption: "x", image_position: "left" }),
+      row("c", "contact", { title_lines: ["<p>a</p>", "<p>b</p>"] }),
+    ]);
+    expect(out.map((r) => r.id)).toEqual(["h", "s", "i", "w", "c"]);
+    expect(out[0].layout).toMatchObject({ spaceTop: "lead", spaceBottom: "none" });
+    expect(dataOf(out[2]).caption_position).toBe("bottom-right");
+    expect(dataOf(out[4]).title_lines[1]).toContain("mc-accent");
+    expect(arrangeHome(out)).toEqual(out);
+  });
+
+  it("moves the Services photo into the hero and its heading over the list, losing no word", () => {
+    const before = [
+      row("h", "hero", { title_lines: ["<p>Six ways in.</p>"] }),
+      row("l", "boxed", { layout_mode: "list", title_lines: ["<p>Our services</p>"], cards: [{ title: "IC" }] }),
+      row("p", "image_text", { image_url: "https://example.com/p.webp", image_alt: "Pillars", title_lines: ["<p>Six pillars.</p>"], description: "<p>Pick one.</p>" }),
+      row("f", "faq", {}),
+    ];
+    const out = arrangeServices(JSON.parse(JSON.stringify(before)));
+    expect(out.map((r) => r.id)).toEqual(["h", "l", "f"]);
+    expect(dataOf(out[0]).visual_image_url).toBe("https://example.com/p.webp");
+    expect(dataOf(out[1])).toMatchObject({ eyebrow: "Our services", title_lines: ["<p>Six pillars.</p>"], intro: "<p>Pick one.</p>" });
+    const words = (rows: unknown) => visibleText(rows as any).split(/\s+/).sort();
+    expect(words(out)).toEqual(words(before));
+    expect(arrangeServices(out)).toEqual(out);
+  });
+
+  it("gives service and About pages the artboard gaps and survives odd rows", () => {
+    const svc = arrangeService([row("h", "hero", {}), row("s", "process_steps", {}), row("t", "service", {}), {} as any]);
+    expect(svc[0].layout).toMatchObject({ spaceTop: "lead" });
+    expect(dataOf(svc[0]).label_dot).toBe(true);
+    expect(svc[1].layout).toMatchObject({ spaceBottom: "near" });
+    const about = arrangeAbout([row("h", "hero", { tagline: "A · B", title_lines: ['<p><span class="mc-accent">Slayer.</span></p>'] }), row("p", "profile", {}), {} as any]);
+    expect(dataOf(about[0]).tagline_style).toBe("chips");
+    expect(dataOf(about[0]).title_lines[0]).toContain("mc-accent-gold");
+    expect(dataOf(about[1]).layout_style).toBe("portrait");
   });
 });

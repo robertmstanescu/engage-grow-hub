@@ -63,9 +63,46 @@ describe("applyGapContent", () => {
 
   it("does nothing on other pages and survives odd input", () => {
     const rows = home();
-    expect(applyGapContent(rows, { kind: "about" })).toEqual(rows);
+    expect(applyGapContent(rows, { kind: "other" })).toEqual(rows);
     expect(applyGapContent(null as any, { kind: "home" })).toEqual([]);
     expect(() => applyGapContent([{} as any], { kind: "service" })).not.toThrow();
+  });
+
+  it("adds the artboard's small labels on the homepage, once", () => {
+    const rows = [
+      row("h", "hero", {}),
+      { ...row("v", "boxed", { cards: [{ title: "Precision" }] }), strip_title: "Vows" },
+      row("w", "boxed", { cards: [{ title: "The problem", variant: "dark" }, { title: "Who this is for" }] }),
+      row("c", "contact", { title_lines: ["<p>Start?</p>"] }),
+    ];
+    const once = applyGapContent(rows, { kind: "home" });
+    const boxed = once.filter((r) => r.columns[0].cells[0].widgets[0].type === "boxed").map((r) => r.columns[0].cells[0].widgets[0].data);
+    expect(boxed[0].eyebrow).toBe("Our vows");
+    expect(boxed[1].group_label).toBe("The fix");
+    expect(dataOf(once, "contact").stamp).toBe("Lid off");
+    expect(applyGapContent(once, { kind: "home" })).toEqual(once);
+  });
+
+  it("prints each pillar's own tier names and starting price on the Services index", () => {
+    const rows = [
+      row("h", "hero", {}),
+      row("l", "boxed", { layout_mode: "list", cards: [{ title: "Internal Communications", link_url: "/services/internal-communications" }, { title: "Elsewhere", link_url: "/elsewhere" }] }),
+    ];
+    const serviceRows = { "services/internal-communications": [row("s", "service", { services: [{ title: "The Autopsy", time: "From €900 · 2–3 weeks" }, { title: "The Burial", time: "From €2,250" }] })] };
+    const out = applyGapContent(rows, { kind: "services", serviceRows, homeRows: home() });
+    const [first, second] = dataOf(out, "boxed").cards;
+    expect(first.meta).toBe("The Autopsy · The Burial");
+    expect(first.price).toBe("€900");
+    expect(first.price_note).toBe("start with The Autopsy, from");
+    expect(second.price).toBeUndefined();
+    expect(types(out)).toEqual(["hero", "boxed", "contact"]);
+    expect(dataOf(out, "hero").cta_label).toBe("Book a free consultation");
+  });
+
+  it("uses the About page's own plain answer as its hero intro", () => {
+    const out = applyGapContent([row("h", "hero", { answer: "I am Robert & co.", body: "<p></p>" }), row("c", "contact", {})], { kind: "about" });
+    expect(dataOf(out, "hero").body).toBe("<p>I am Robert &amp; co.</p>");
+    expect(dataOf(out, "contact").stamp).toBe("Lid off");
   });
 
   it("writes new copy in the house selling voice: no negations, no em dashes", () => {

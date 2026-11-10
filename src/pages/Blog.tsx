@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { shortDate } from "@/lib/shortDate";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { buildImageSrcSet, transformImageUrl } from "@/services/mediaOptimization";
@@ -25,13 +26,7 @@ interface BlogPost {
 
 const POSTS_PER_PAGE = 7; // one wide lead card + six grid cards
 
-const calculateReadTime = (content: string) => {
-  const words = content.trim().split(/\s+/).length;
-  return `${Math.max(1, Math.ceil(words / 200))} min read`;
-};
-
-const formatDate = (dateStr: string) =>
-  new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+const formatDate = shortDate;
 
 const CategoryPill = ({ category }: { category: string }) => {
   const { getCategoryColors } = useTagColors();
@@ -43,36 +38,6 @@ const CategoryPill = ({ category }: { category: string }) => {
     >
       {category}
     </span>
-  );
-};
-
-const TagButtons = ({
-  post,
-  onTag,
-}: {
-  post: BlogPost;
-  onTag?: (tag: string) => void;
-}) => {
-  const { getTagColors } = useTagColors();
-  if (!post.tags || post.tags.length === 0) return null;
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {post.tags.map((tag) => {
-        const tc = getTagColors(tag);
-        return (
-          <button
-            type="button"
-            key={tag}
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onTag?.(tag); }}
-            title={`Show every article tagged ${tag}`}
-            className="font-body text-[10px] tracking-[0.12em] uppercase px-2 py-1 rounded-full font-medium hover:underline"
-            style={{ backgroundColor: tc.bgColor, color: tc.textColor }}
-          >
-            {tag}
-          </button>
-        );
-      })}
-    </div>
   );
 };
 
@@ -91,8 +56,8 @@ const CardCover = ({ post, heightClass }: { post: BlogPost; heightClass: string 
   );
 };
 
-const LeadCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => void }) => (
-  <article className="group">
+const LeadCard = ({ post }: { post: BlogPost }) => (
+  <article className="group min-w-0">
     <Link
       to={`/blog/${post.slug}`}
       className="glass rounded-3xl overflow-hidden grid lg:grid-cols-12 transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent"
@@ -100,21 +65,18 @@ const LeadCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => vo
       <div className="lg:col-span-7">
         <CardCover post={post} heightClass="h-64 md:h-80 lg:h-[440px] lg:min-h-full" />
       </div>
-      <div className="lg:col-span-5 p-6 md:p-10 flex flex-col gap-4 justify-center">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="lg:col-span-5 p-6 md:p-10 flex flex-col gap-4 justify-center min-w-0 [overflow-wrap:anywhere]">
+        <div className="flex flex-wrap items-center gap-2.5">
           <CategoryPill category={post.category} />
           {post.published_at && (
             <span className="font-body text-[13px]" style={{ color: "hsl(var(--muted-foreground))" }}>
               {formatDate(post.published_at)}
             </span>
           )}
-          <span className="font-body text-[13px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-            · {calculateReadTime(post.content)}
-          </span>
         </div>
         <h2
-          className="font-display font-extrabold leading-[1.08] group-hover:opacity-80"
-          style={{ color: "hsl(var(--deep))", fontSize: "var(--fs-h2)" }}
+          className="font-display font-extrabold leading-[1.08] group-hover:opacity-80 [overflow-wrap:anywhere]"
+          style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-lead-card-title)" }}
         >
           {post.title}
         </h2>
@@ -123,7 +85,6 @@ const LeadCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => vo
             {post.excerpt}
           </p>
         )}
-        <TagButtons post={post} onTag={onTag} />
         <span className="font-body font-semibold text-base" style={{ color: "hsl(var(--primary))" }}>
           Read the article <span aria-hidden="true">→</span>
         </span>
@@ -132,15 +93,15 @@ const LeadCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => vo
   </article>
 );
 
-const GridCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => void }) => (
-  <article className="group h-full">
+const GridCard = ({ post }: { post: BlogPost }) => (
+  <article className="group h-full min-w-0">
     <Link
       to={`/blog/${post.slug}`}
-      className="glass rounded-3xl overflow-hidden flex flex-col h-full transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent"
+      className="glass rounded-3xl overflow-hidden flex flex-col h-full min-w-0 transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent"
     >
       <CardCover post={post} heightClass="h-[200px]" />
-      <div className="p-6 flex flex-col gap-3 flex-grow">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="p-6 flex flex-col gap-3 flex-grow min-w-0 [overflow-wrap:anywhere]">
+        <div className="flex flex-wrap items-center gap-2.5">
           <CategoryPill category={post.category} />
           {post.published_at && (
             <span className="font-body text-[13px]" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -149,8 +110,8 @@ const GridCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => vo
           )}
         </div>
         <h3
-          className="font-display font-bold leading-[1.22] flex-grow group-hover:opacity-80"
-          style={{ color: "hsl(var(--deep))", fontSize: "var(--fs-h3, 20px)" }}
+          className="font-display font-bold leading-[1.22] flex-grow group-hover:opacity-80 [overflow-wrap:anywhere]"
+          style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-grid-card-title)" }}
         >
           {post.title}
         </h3>
@@ -159,7 +120,6 @@ const GridCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => vo
             {post.excerpt}
           </p>
         )}
-        <TagButtons post={post} onTag={onTag} />
       </div>
     </Link>
   </article>
@@ -235,6 +195,7 @@ const Blog = () => {
   const pageData = useSiteContent<{
     rows_above: PageRow[];
     rows_below: PageRow[];
+    header_label?: string;
     header_title: string;
     header_subtitle: string;
     meta_title: string;
@@ -253,6 +214,9 @@ const Blog = () => {
     description: pageData.meta_description || pageData.header_subtitle || undefined,
     breadcrumbs: [{ name: "Home", path: "/" }, { name: "Blog" }],
   });
+
+  // The small label over the title. An empty string in the admin hides it.
+  const headerLabel = pageData.header_label ?? "The blog";
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -295,22 +259,34 @@ const Blog = () => {
         <RowsRenderer rows={pageData.rows_above} promoteHeading={false} />
       )}
 
-      <section className="grain relative pt-28 pb-8">
-        <div className="relative z-10 max-w-[1280px] mx-auto px-8">
+      {/* Header follows the Blog artboard: small label, large title, lede.
+          The top padding clears the fixed menu (90px) like a hero's "lead". */}
+      <header className="blog-index-header relative px-8">
+        <div className="relative z-10 max-w-[1280px] mx-auto flex flex-col gap-5">
+          {headerLabel && (
+            <div
+              className="font-body font-bold uppercase"
+              style={{ color: "hsl(var(--gold-text))", fontSize: "var(--fs-eyebrow)", letterSpacing: "0.32em" }}
+            >
+              {headerLabel}
+            </div>
+          )}
           <h1
-            className="font-display font-extrabold mb-5"
-            style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-hero-title-compact)", lineHeight: 1, letterSpacing: "-0.02em" }}
+            className="font-display font-extrabold m-0"
+            style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-index-title)", lineHeight: 0.94, letterSpacing: "-0.025em" }}
           >
             {pageData.header_title || "Insights & Articles"}
           </h1>
-          <p
-            className="font-body text-base md:text-lg max-w-[720px]"
-            style={{ color: "hsl(var(--foreground) / 0.6)" }}
-          >
-            {pageData.header_subtitle || ""}
-          </p>
+          {pageData.header_subtitle && (
+            <p
+              className="font-body m-0 max-w-[720px]"
+              style={{ color: "hsl(var(--body))", fontSize: "var(--fs-lede)", lineHeight: 1.7 }}
+            >
+              {pageData.header_subtitle}
+            </p>
+          )}
         </div>
-      </section>
+      </header>
 
       <section aria-label="Filter articles" className="px-8">
         <div className="max-w-[1280px] mx-auto flex flex-wrap items-center gap-2.5">
@@ -355,11 +331,11 @@ const Blog = () => {
             </p>
           ) : (
             <div className="space-y-8">
-              {leadPost && <LeadCard post={leadPost} onTag={setTag} />}
+              {leadPost && <LeadCard post={leadPost} />}
               {gridPosts.length > 0 && (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {gridPosts.map((post) => (
-                    <GridCard key={post.slug} post={post} onTag={setTag} />
+                    <GridCard key={post.slug} post={post} />
                   ))}
                 </div>
               )}

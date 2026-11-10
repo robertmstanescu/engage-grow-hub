@@ -112,6 +112,33 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
             { label: 'Also as an "In short" strip under the hero', value: "strip" },
           ]}
         />
+        <SelectField
+          label="Tagline look"
+          value={content.tagline_style === "chips" ? "chips" : ""}
+          onChange={(v) => onChange("tagline_style", v)}
+          options={[
+            { label: "One line of small capitals", value: "" },
+            { label: "Pills under the buttons (split at each ·)", value: "chips" },
+          ]}
+        />
+        <SelectField
+          label="Dot before the small label"
+          value={content.label_dot ? "dot" : ""}
+          onChange={(v) => onChange("label_dot", v === "dot")}
+          options={[
+            { label: "No dot", value: "" },
+            { label: "Dot in the label colour", value: "dot" },
+          ]}
+        />
+        <SelectField
+          label="Intro text size"
+          value={content.body_size === "large" ? "large" : ""}
+          onChange={(v) => onChange("body_size", v)}
+          options={[
+            { label: "Standard", value: "" },
+            { label: "Large", value: "large" },
+          ]}
+        />
         <Field
           label="Word to underline (optional)"
           value={content.underline_word || ""}

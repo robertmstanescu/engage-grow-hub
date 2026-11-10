@@ -243,8 +243,8 @@
        with a dock), which read as "the text keeps getting smaller". */
     --fs-eyebrow: 12px;
     --fs-title: clamp(32px, 3.6vw, 52px);
-    --fs-subtitle: clamp(17px, 1rem + 0.2vw, 19px);
-    --fs-body: clamp(16px, 0.95rem + 0.15vw, 18px);
+    --fs-subtitle: 17px;
+    --fs-body: clamp(16px, 0.9rem + 0.25vw, 18px);
 
     /* Card-scale (secondary surfaces: service, boxed, vows, forms) */
     --fs-card-title: clamp(20px, 1.1rem + 0.45vw, 24px);
@@ -266,10 +266,27 @@
     --fs-work-title: clamp(44px, 6.4vw, 96px);
     --fs-case-heading: clamp(28px, 2.6vw, 38px);
     --fs-chip: 11px;
+    --fs-proof-number: clamp(44px, 4.4vw, 68px);
+    --fs-contact-title: clamp(36px, 4.6vw, 68px);
+    --fs-stamp: 15px;
     --fs-work-metric: clamp(24px, 2.2vw, 30px);
     --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
     --fs-hero-body: clamp(17px, 1.3vw, 19px);
+    --fs-hero-body-large: clamp(18px, 1.55vw, 22px);
+    --fs-list-title: clamp(22px, 2.1vw, 30px);
+    --fs-tier-title: clamp(22px, 1.8vw, 26px);
+    --fs-tier-price: clamp(20px, 1.7vw, 24px);
+    --fs-index-title: clamp(48px, 6.6vw, 104px);
+    --fs-post-title: clamp(40px, 5vw, 76px);
+    --fs-case-title: clamp(42px, 5.8vw, 88px);
+    --fs-post-lede: clamp(18px, 1.5vw, 21px);
+    --fs-article: 18px;
+    --fs-article-heading: clamp(24px, 2.1vw, 30px);
+    --fs-cta-room-title: clamp(30px, 3.4vw, 48px);
+    --fs-lede: 19px;
+    --fs-lead-card-title: clamp(26px, 2.4vw, 34px);
+    --fs-grid-card-title: 20px;
 
     /* ──────────────────────────────────────────────────────────────
        READING COMFORT — line-height, letter-spacing and line length.
@@ -285,7 +302,7 @@
     --ls-body: 0;            /* prose stays neutral */
     --ls-title: -0.015em;    /* large headings tighten slightly */
     --ls-display: -0.025em;
-    --measure-prose: 54ch;   /* ≈ 66–70 characters of Inter per line */
+    --measure-prose: 720px; /* the canvas reading column */
     --para-space: 1.1em;     /* about one line of air between paragraphs */
   }
 
@@ -314,7 +331,9 @@
   h2,
   h3 {
     font-family: var(--font-title);
-    text-wrap: balance;
+    /* Headings wrap as the canvas draws them: line by line, never
+       balanced (a balanced "36 countries. One / comms function." broke
+       the artboard's two-line heading). */
   }
 
   .font-display {
@@ -855,7 +874,7 @@
   /* Editorial measure — body copy stops around 65 characters so lines
      break near the middle of a wide page instead of running edge to edge. */
   .measure {
-    max-width: var(--measure-prose, 68ch);
+    max-width: var(--measure-prose, 720px);
   }
   .text-center > .measure,
   .measure.mx-auto {
@@ -866,7 +885,7 @@
      column, centred and no wider than the measure, whatever alignment
      the row carries. Landing pages keep their left/right hung columns. */
   [data-article-rows] section[data-row-type="text"] .row-container > [class*="max-w-["] {
-    max-width: var(--measure-prose, 68ch);
+    max-width: var(--measure-prose, 720px);
     margin-left: auto;
     margin-right: auto;
   }
@@ -1153,6 +1172,10 @@
     white-space: nowrap;
     cursor: pointer;
     transition: color 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    /* A menu label is a few words. One pasted paragraph must not push the
+       menu off the page: clip sideways only, so descenders stay whole. */
+    max-width: 26ch;
+    overflow-x: clip;
   }
   .top-nav-label:hover {
     color: hsl(var(--foreground)) !important;
@@ -1770,8 +1793,8 @@
     --btn-ink-fg: 0 0% 100%;
     --fs-eyebrow: 12px;
     --fs-title: clamp(32px, 3.6vw, 52px);
-    --fs-subtitle: clamp(17px, 1rem + 0.2vw, 19px);
-    --fs-body: clamp(16px, 0.95rem + 0.15vw, 18px);
+    --fs-subtitle: 17px;
+    --fs-body: clamp(16px, 0.9rem + 0.25vw, 18px);
     --fs-card-title: clamp(20px, 1.1rem + 0.45vw, 24px);
     --fs-card-body: clamp(15px, 0.9rem + 0.1vw, 16px);
     --fs-card-label: clamp(12px, 0.7rem + 0.15vw, 14px);
@@ -1786,10 +1809,27 @@
     --fs-work-title: clamp(44px, 6.4vw, 96px);
     --fs-case-heading: clamp(28px, 2.6vw, 38px);
     --fs-chip: 11px;
+    --fs-proof-number: clamp(44px, 4.4vw, 68px);
+    --fs-contact-title: clamp(36px, 4.6vw, 68px);
+    --fs-stamp: 15px;
     --fs-work-metric: clamp(24px, 2.2vw, 30px);
     --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
     --fs-hero-body: clamp(17px, 1.3vw, 19px);
+    --fs-hero-body-large: clamp(18px, 1.55vw, 22px);
+    --fs-list-title: clamp(22px, 2.1vw, 30px);
+    --fs-tier-title: clamp(22px, 1.8vw, 26px);
+    --fs-tier-price: clamp(20px, 1.7vw, 24px);
+    --fs-index-title: clamp(48px, 6.6vw, 104px);
+    --fs-post-title: clamp(40px, 5vw, 76px);
+    --fs-case-title: clamp(42px, 5.8vw, 88px);
+    --fs-post-lede: clamp(18px, 1.5vw, 21px);
+    --fs-article: 18px;
+    --fs-article-heading: clamp(24px, 2.1vw, 30px);
+    --fs-cta-room-title: clamp(30px, 3.4vw, 48px);
+    --fs-lede: 19px;
+    --fs-lead-card-title: clamp(26px, 2.4vw, 34px);
+    --fs-grid-card-title: 20px;
     --lh-body: 1.7;
     --lh-card-body: 1.65;
     --lh-subtitle: 1.45;
@@ -1799,7 +1839,7 @@
     --ls-body: 0;
     --ls-title: -0.015em;
     --ls-display: -0.025em;
-    --measure-prose: 54ch;
+    --measure-prose: 720px; /* the canvas reading column */
     --para-space: 1.1em;
   }
 }
@@ -2026,10 +2066,46 @@
 .tmc-tip { pointer-events: none; transform: translate(-50%, calc(-100% - 14px)); transition: opacity .15s ease; background: hsl(var(--deep)); color: hsl(var(--deep-fg)); border-radius: 12px; padding: 8px 12px; box-shadow: 0 8px 24px -10px hsl(var(--deep) / .45); white-space: nowrap; font-family: var(--font-body); }
 .tmc-tip-name { font-family: var(--font-heading, var(--font-body)); font-weight: 700; font-size: 15px; }
 .tmc-tip-status { font-size: 12px; color: hsl(var(--deep-fg) / .8); }
-.tmc-legend { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: hsl(var(--vows-card-body)); }
+.tmc-legend { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: hsl(var(--body)); }
 .tmc-legend-swatch { width: 18px; height: 12px; border-radius: 4px; }
 .tmc-replay { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; border: 1.5px solid hsl(var(--primary)); background: transparent; color: hsl(var(--primary)); font-family: var(--font-body); font-weight: 600; font-size: 14px; cursor: pointer; }
 .tmc-replay:hover { background: hsl(var(--primary) / .08); }
+
+/* ── Space above and below a row (Style ▸ Space). The page rhythm is
+      `py-row-fluid`; a row can ask for less, as the canvas does for a
+      section that follows another one. ── */
+/* "lead" is the first row of a page: the navigation's own zone, then the
+   canvas gap under it. The Style tab offers it on a hero only
+   ("Under menu"). */
+section.snap-section[data-space-top="lead"] { padding-top: calc(90px + clamp(40px, 5vw, 72px)); }
+section.snap-section[data-space-top="mid"] { padding-top: clamp(64px, 7vw, 112px); }
+section.snap-section[data-space-bottom="mid"] { padding-bottom: clamp(64px, 7vw, 112px); }
+section.snap-section[data-space-top="near"] { padding-top: clamp(48px, 5vw, 80px); }
+section.snap-section[data-space-bottom="near"] { padding-bottom: clamp(48px, 5vw, 80px); }
+section.snap-section[data-space-top="tight"] { padding-top: clamp(40px, 4vw, 64px); }
+section.snap-section[data-space-top="none"] { padding-top: 0; }
+section.snap-section[data-space-bottom="tight"] { padding-bottom: clamp(40px, 4vw, 64px); }
+section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
+
+/* ── Deep proof band (artboard Main, "Track record"): one deep plum panel
+      wider than the column, a gold rule beside each number. ── */
+.proof-deep {
+  margin: clamp(40px, 5vw, 72px) clamp(16px, 3vw, 48px) 0;
+  padding: clamp(48px, 5vw, 72px) clamp(24px, 5vw, 80px);
+  border-radius: 32px;
+  background: hsl(var(--deep));
+  color: hsl(var(--deep-fg));
+  text-align: left;
+}
+.proof-deep-inner { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+.proof-deep-eyebrow { font-size: var(--fs-eyebrow); font-weight: 700; letter-spacing: 0.32em; text-transform: uppercase; color: hsl(var(--gold-soft, 48 73% 67%)); }
+.proof-deep-title { font-family: var(--font-title); font-size: var(--fs-title); font-weight: 700; line-height: 1.05; color: hsl(var(--deep-fg)); }
+.proof-deep-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+@media (min-width: 900px) { .proof-deep-grid { grid-template-columns: repeat(var(--proof-cols, 4), minmax(0, 1fr)); } }
+@media (max-width: 479px) { .proof-deep-grid { grid-template-columns: minmax(0, 1fr); } }
+.proof-deep-item { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding-left: 20px; border-left: 2px solid hsl(var(--gold-decor) / 0.5); overflow-wrap: anywhere; }
+.proof-deep-item dt { font-family: var(--font-title); font-size: var(--fs-proof-number); font-weight: 700; line-height: 1; color: hsl(var(--gold-decor)); }
+.proof-deep-item dd { margin: 0; font-size: var(--fs-card-body); line-height: 1.5; color: hsl(285 28% 90%); }
 
 /* ── Work index and case study. Spec: docs/redesign/artboards/Work.dc.html
       and CaseStudy.dc.html. One 1280px column, glass cards on the mesh. ── */
@@ -2037,7 +2113,9 @@
 .work-gutter { padding-left: clamp(16px, 5vw, 96px); padding-right: clamp(16px, 5vw, 96px); }
 .work-column { max-width: 1280px; margin-left: auto; margin-right: auto; }
 /* The navbar is fixed, so the header starts below it. */
-.work-header { padding: calc(88px + clamp(32px, 5vw, 80px)) clamp(16px, 5vw, 96px) clamp(40px, 4vw, 64px); }
+/* 90px for the fixed menu, then the artboard's own top padding. */
+.work-header { padding: calc(90px + clamp(56px, 7vw, 112px)) clamp(16px, 5vw, 96px) clamp(40px, 4vw, 64px); }
+.work-header.case-header { padding-top: calc(90px + clamp(48px, 6vw, 96px)); }
 .work-header-stack { display: flex; flex-direction: column; gap: 24px; }
 .work-eyebrow {
   font-size: var(--fs-eyebrow);
@@ -2058,7 +2136,8 @@
 .work-underline { position: relative; display: inline-block; }
 .work-underline svg { position: absolute; left: -2%; bottom: -0.14em; width: 104%; height: 0.26em; overflow: visible; }
 .work-underline path { stroke: hsl(var(--gold-decor)); }
-.work-lede { max-width: 700px; font-size: var(--fs-subtitle); line-height: 1.7; color: hsl(var(--body)); }
+.work-lede { max-width: 680px; font-size: var(--fs-lede); line-height: 1.7; color: hsl(var(--body)); }
+.case-header .work-lede { max-width: 700px; line-height: 1.65; }
 .work-legend { display: flex; flex-wrap: wrap; gap: 12px 28px; padding-top: 8px; }
 .work-legend li { display: flex; align-items: center; gap: 10px; font-size: var(--fs-card-label); color: hsl(var(--body)); }
 
@@ -2083,7 +2162,8 @@
 .work-dot { flex: none; display: inline-block; width: 9px; height: 9px; border-radius: 999px; }
 
 /* Filter panel. */
-.work-filter { display: flex; flex-direction: column; gap: 16px; padding: 24px; }
+/* As drawn, the 1280px is the content: the padding sits outside it. */
+.work-filter { display: flex; flex-direction: column; gap: 16px; padding: 24px; box-sizing: content-box; }
 .work-filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .work-filter-name {
   width: 88px;
@@ -2197,7 +2277,7 @@
 .case-title {
   max-width: 1080px;
   font-family: var(--font-title);
-  font-size: var(--fs-document-title);
+  font-size: var(--fs-case-title);
   font-weight: 800;
   line-height: 0.95;
   letter-spacing: -0.025em;
@@ -2240,7 +2320,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
-    padding: 4px 28px 4px 14px;
+    padding: 4px 28px 4px 0;
     border-right: 1.5px solid hsl(var(--line-3));
   }
   .case-index-fold { display: none; }
@@ -2257,7 +2337,17 @@
 }
 .case-body .py-row-fluid { padding-top: 0; padding-bottom: 0; }
 .case-body .row-container { padding-left: 0; padding-right: 0; max-width: none; }
-.case-body [data-row-part="body"] { line-height: 1.75; }
+.case-body [data-row-part="body"] { font-size: var(--fs-subtitle); line-height: 1.75; }
+/* Row parts carry inline colours and tracking; inside a case study the
+   column decides, so these are forced. */
+.case-body [data-row-part="title"] { color: hsl(var(--heading)) !important; letter-spacing: 0 !important; line-height: 1.08 !important; }
+/* The section number: display face, no tracking (CaseStudy artboard). */
+.case-body [data-row-part="eyebrow"] {
+  font-family: var(--font-title) !important;
+  font-size: var(--fs-stamp) !important;
+  letter-spacing: 0 !important;
+  color: hsl(var(--gold-text)) !important;
+}
 .case-next-section { padding-bottom: clamp(80px, 9vw, 140px); }
 .case-next { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 24px; }
 .case-next-card { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: clamp(24px, 3vw, 36px); color: inherit; text-decoration: none; }
@@ -2282,7 +2372,8 @@
 /* ── Document pages (Privacy): heading above one glass card, 820px column.
       Spec: docs/redesign/03-appendix-section-layouts.md, "Privacy". ── */
 .document-page {
-  padding: clamp(96px, 11vw, 168px) clamp(16px, 5vw, 96px) clamp(80px, 9vw, 140px);
+  /* 90px for the fixed menu, then the artboard's own top padding. */
+  padding: calc(90px + clamp(56px, 7vw, 112px)) clamp(16px, 5vw, 96px) clamp(80px, 9vw, 140px);
 }
 .document-header {
   max-width: 820px;
@@ -2295,7 +2386,7 @@
   font-family: var(--font-body);
   font-size: var(--fs-eyebrow);
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
   color: hsl(var(--gold-text));
 }
@@ -2303,17 +2394,18 @@
   font-family: var(--font-title);
   font-size: var(--fs-document-title);
   font-weight: 800;
-  line-height: 1.02;
+  line-height: 0.98;
   letter-spacing: -0.02em;
   color: hsl(var(--heading));
   overflow-wrap: anywhere;
 }
 .document-date {
-  font-size: var(--fs-card-body);
-  color: hsl(var(--muted-foreground));
+  font-size: var(--fs-stamp);
+  color: hsl(var(--body));
 }
 .document-card {
-  max-width: 820px;
+  /* The artboard's 820px is the text column; the padding sits outside it. */
+  max-width: calc(820px + 2 * clamp(28px, 4vw, 56px));
   margin: 0 auto;
   padding: clamp(28px, 4vw, 56px);
   border-radius: 24px;
@@ -2328,3 +2420,152 @@
 .document-card [data-row-part="body"] > p:first-child { margin-top: 0; }
 .document-card [data-row-part="body"] > p:last-child { margin-bottom: 0; }
 .document-card [data-row-part="body"] strong { color: hsl(var(--heading)); }
+.document-card [data-row-part="body"] {
+  font-size: var(--fs-subtitle);
+  line-height: 1.8;
+  color: hsl(var(--foreground));
+  --para-space: 22px;
+}
+
+/* ── Row heading block (canvas: small heading, title and lede share one
+      760px measure, 16px apart). A centred row keeps the block centred. ── */
+section.snap-section [data-row-part="title"] { max-width: 760px; }
+section.snap-section .text-center [data-row-part="title"],
+section.snap-section [data-row-part="title"].text-center,
+section.snap-section [style*="text-align: center"] [data-row-part="title"],
+section.snap-section [data-row-part="title"][style*="text-align: center"] { margin-inline: auto; }
+
+/* ── Contact block (artboard Main): the closing headline is a step larger
+      and heavier than a row title, the copy keeps a 520px measure and a
+      tilted stamp can sit under it. ── */
+section.snap-section .contact-title[data-row-part="title"] {
+  font-size: var(--fs-contact-title) !important;
+  font-weight: 800;
+  line-height: 0.98 !important;
+  letter-spacing: -0.02em !important;
+  margin-bottom: 20px;
+}
+.contact-room [data-row-part="body"] { max-width: 520px; font-size: 18px; }
+.contact-stamp {
+  display: inline-block;
+  margin-top: 32px;
+  padding: 8px 14px;
+  border: 1.5px solid hsl(var(--link));
+  border-radius: 4px;
+  color: hsl(var(--link));
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: var(--fs-stamp);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+  overflow-wrap: anywhere;
+}
+
+/* Intro under a row heading (Services index): the canvas lede. */
+.boxed-intro { max-width: 760px; font-size: 18px; line-height: 1.7; color: hsl(var(--body)); }
+.boxed-intro p + p { margin-top: var(--para-space); }
+
+/* A second accent for a hero headline (About artboard: the gold line). */
+.mc-accent.mc-accent-gold { color: hsl(var(--gold-text)); }
+
+/* Blog index header (Blog artboard): the menu is fixed, so the artboard's
+   top padding sits under its 90px. */
+.blog-index-header {
+  padding-top: calc(90px + clamp(56px, 7vw, 112px));
+  padding-bottom: 40px;
+}
+
+/* ── Blog post (BlogPost artboard) ── */
+.post-header {
+  /* 90px for the fixed menu, then the artboard's own top padding. */
+  padding: calc(90px + clamp(48px, 6vw, 96px)) clamp(16px, 5vw, 96px) 40px;
+}
+.post-cover { padding: 0 clamp(16px, 5vw, 96px); }
+.article-column { padding: clamp(56px, 6vw, 96px) clamp(16px, 5vw, 96px); }
+.article-column > [data-article-body],
+.post-download {
+  max-width: 720px;
+  margin-inline: auto;
+}
+.post-download { padding: 0 clamp(16px, 5vw, 96px) clamp(56px, 6vw, 96px); box-sizing: content-box; }
+.article-column > [data-article-body] {
+  font-size: var(--fs-article);
+  font-weight: 400;
+  line-height: 1.8;
+  color: hsl(var(--foreground));
+  --para-space: 22px;
+  overflow-wrap: anywhere;
+}
+.article-column > [data-article-body] > :first-child { margin-top: 0; }
+.article-column > [data-article-body] > :last-child { margin-bottom: 0; }
+.article-column > [data-article-body] h2 {
+  font-family: var(--font-title);
+  font-size: var(--fs-article-heading);
+  font-weight: 700;
+  line-height: 1.15;
+  color: hsl(var(--heading));
+  letter-spacing: 0;
+  margin: 46px 0 22px;
+}
+.article-column > [data-article-body] a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Dark rounded call-to-action band (cta_band, "room" look) ── */
+.cta-room-wrap { width: 100%; min-width: 0; box-sizing: border-box; padding: 0 clamp(16px, 3vw, 48px); }
+.cta-room {
+  /* As drawn: 1280px of content with the padding outside it, so on a
+     laptop the band runs wider than the page column. */
+  box-sizing: content-box;
+  max-width: 1280px;
+  margin: 0 auto;
+  border-radius: 32px;
+  background: hsl(var(--deep));
+  padding: clamp(40px, 5vw, 72px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.cta-room-text { flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.cta-room-eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: hsl(var(--gold-soft, 48 73% 67%));
+}
+.cta-room-title {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: var(--fs-cta-room-title);
+  font-weight: 800;
+  line-height: 1.04;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+.cta-room-title .mc-accent { color: hsl(var(--gold-soft, 48 73% 67%)); }
+.cta-room-body { font-family: var(--font-body); font-size: var(--fs-subtitle); line-height: 1.7; color: rgba(255, 255, 255, 0.86); }
+.cta-room-body p { margin: 0; }
+.cta-room-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 30px;
+  border-radius: 999px;
+  background: hsl(var(--gold-decor));
+  color: hsl(var(--foreground));
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  transition: transform 160ms ease-out;
+}
+.cta-room-button:hover { transform: translateY(-1px); }

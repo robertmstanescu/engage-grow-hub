@@ -46,13 +46,13 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   // The two columns wrap to a stack on narrow screens (flex-basis, no
   // breakpoint), so the calendar never gets narrower than it can use.
   const innerContent = (
-    <div className="flex flex-wrap items-start" style={{ gap: "clamp(32px, 4vw, 56px)" }}>
-      <div className={`min-w-0 ${contentAlign}`} style={{ flex: "1 1 380px", ...revealStyle(isVisible, 0) }}>
+    <div className="flex flex-wrap items-start" style={{ gap: 56 }}>
+      <div className={`min-w-0 ${contentAlign}`} style={{ flex: "1 1 440px", ...revealStyle(isVisible, 0) }}>
         {c.eyebrow && (
           <RowEyebrow color={c.color_eyebrow || ""}>{c.eyebrow}</RowEyebrow>
         )}
         {titleLines.length > 0 && (
-          <RowTitle icon={c.icon}>
+          <RowTitle icon={c.icon} className="contact-title">
             {titleLines.map((line, i) => (
               <span key={i} style={{ display: "block" }}>
                 <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
@@ -67,11 +67,13 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         {c.note && (
           <p className="mt-rhythm-base text-card-body italic row-fg-muted measure">{c.note}</p>
         )}
+        {/* The tilted stamp under the copy (artboard Main: "LID OFF"). */}
+        {typeof c.stamp === "string" && c.stamp.trim() && <span className="contact-stamp">{c.stamp}</span>}
       </div>
 
       <div
         className="surface-card min-w-0 p-3 md:p-6"
-        style={{ flex: "1.25 1 420px", ...revealStyle(isVisible, 1) }}>
+        style={{ flex: "1 1 420px", ...revealStyle(isVisible, 1) }}>
         {showCalendar && (
           <div className="overflow-hidden rounded-2xl bg-card">
             <iframe

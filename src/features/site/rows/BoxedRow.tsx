@@ -252,7 +252,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       const pillarColor = pillarColorFromLink(cardLink) || pillarColorFromKey(card.pillar);
       const tileColor = pillarColor || card.accent_color?.trim() || "hsl(var(--primary))";
       const titleColor = "hsl(var(--row-heading))";
-      const bodyColor = "hsl(var(--row-body))";
+      const bodyColor = "var(--row-body)";
       const inner = (
         <>
           <span
@@ -263,9 +263,9 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
             {String(i + 1).padStart(2, "0")}
           </span>
           <span className="flex flex-col gap-1.5 min-w-0">
-            <span className="font-display font-bold leading-[1.1]" style={{ color: titleColor, fontSize: "var(--fs-card-title)" }}>{card.title}</span>
+            <span className="font-display font-bold leading-[1.1]" style={{ color: titleColor, fontSize: "var(--fs-list-title)" }}>{card.title}</span>
             {card.meta && (
-              <span className="font-body font-semibold" style={{ fontSize: 13, letterSpacing: "0.04em", color: tileColor }}>{card.meta}</span>
+              <span className="font-body font-semibold leading-[1.3]" style={{ fontSize: 13, letterSpacing: "0.04em", color: tileColor }}>{card.meta}</span>
             )}
           </span>
           <span
@@ -273,9 +273,9 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
             style={{ color: bodyColor, fontSize: "var(--fs-card-body)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }}
           />
-          <span className="flex flex-col items-start md:items-end gap-1">
-            {card.meta && card.price ? (
-              <span className="font-body" style={{ fontSize: 12, color: bodyColor }}>{card.meta}</span>
+          <span className="flex flex-col items-start md:items-end gap-1.5 leading-[1.2]">
+            {card.price_note && card.price ? (
+              <span className="font-body" style={{ fontSize: 12, color: bodyColor }}>{card.price_note}</span>
             ) : null}
             {card.price && (
               <span className="font-display font-bold" style={{ fontSize: 22, color: titleColor }}>{card.price}</span>
@@ -288,7 +288,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
           </span>
         </>
       );
-      const itemClass = "grid grid-cols-1 md:grid-cols-[96px_minmax(0,1.2fr)_minmax(0,1.6fr)_220px] gap-4 md:gap-8 items-start md:items-center py-8 border-b row-border text-left";
+      const itemClass = "grid grid-cols-1 md:grid-cols-[96px_minmax(0,1.2fr)_minmax(0,1.6fr)_220px] gap-4 md:gap-8 items-start md:items-center py-[34px] border-b row-border text-left";
       const itemStyle = revealStyle(isVisible, i + 2);
       if (cardLink) {
         return (
@@ -324,6 +324,11 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
           </RowSubtitle>
         )}
 
+        {/* A longer intro under the heading (Services index), on the
+            heading block's own measure. */}
+        {typeof c.intro === "string" && c.intro.replace(/<[^>]*>/g, "").trim() && (
+          <div className="rich-text boxed-intro" data-row-part="body" style={revealStyle(isVisible, 1)} dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.intro) }} />
+        )}
 
         {c.layout_mode === "list" ? (
           <div className={`border-t row-border ${headGap}`}>

@@ -67,20 +67,26 @@ Rules that are easy to get wrong:
 - Square boxes: the admin sets `--radius` to 6px, so `rounded-lg`/`-md`
   are the shell's corners. `rounded-full` and `rounded-xl+` are for
   swatches, dots, toggles and avatars only (`squareCorners.test.ts`).
-- A post page is one reading column (header, article, extras, author
-  block) with "More to read" (`site/MoreArticles.tsx`) beside it on
-  wide screens and below it on phones. `ArticleRow` is deliberately not
-  a RowSection: no padding or card of its own, flush with the headline.
-  The author appears ONCE, in the block under the article; the line
-  under the headline carries the date and the reading time only. That
-  block's name, photo and LinkedIn all come from the admin's Profile
-  screen (site content `author_profile`, publicly readable; `profiles`
-  is not), resolved by `site/authorProfile.ts` with the post's own
-  `author_name`/`author_image` columns as the fallback for anything
-  written before that move, and the company page in `social_links` as
-  the fallback for LinkedIn. The blog form does NOT ask for an author;
-  never add those fields back to it. `scripts/prerender-seo.mjs`
-  resolves the same way for the BlogPosting schema.
+- A post page follows the BlogPost artboard: a 920px header, the cover,
+  then the article in a centred 720px column (`.article-column`).
+  `ArticleRow` is deliberately not a RowSection: no card or background
+  of its own. The author appears ONCE, in the line under the excerpt
+  (picture, name, date, reading time); there is no author block under
+  the article and no sidebar. The name, photo and LinkedIn all come from
+  the admin's Profile screen (site content `author_profile`, publicly
+  readable; `profiles` is not), resolved by `site/authorProfile.ts` with
+  the post's own `author_name`/`author_image` columns as the fallback
+  for anything written before that move, and the company page in
+  `social_links` as the fallback for LinkedIn. The blog form does NOT
+  ask for an author; never add those fields back to it.
+  `scripts/prerender-seo.mjs` resolves the same way for the BlogPosting
+  schema. A post that was never arranged in the builder ends with two
+  default rows (`article/postRows.ts`, `defaultPostExtras`): the dark
+  call-to-action band (`cta_band` with `band_style: "room"`, its words
+  read from the site's `contact` content) and three more posts
+  (`from_the_blog`, which leaves out the post being read). They are
+  ordinary rows; a post with saved rows shows exactly what was saved.
+  Dates on cards and posts go through `lib/shortDate.ts`.
 - Recent posts are a row, not a page fixture: the `from_the_blog` row
   type (`src/features/widgets/from_the_blog/`) is placed on a page like
   any other block and edited there (heading, categories, how many,

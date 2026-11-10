@@ -14,7 +14,9 @@
  *   "button_text": "Book a free consultation",
  *   "button_url": "/contact/",
  *   "link_text": "See how we work",                  // optional
- *   "link_url": "/services/"
+ *   "link_url": "/services/",
+ *   "band_style": "room"                             // optional: the dark
+ *                                 rounded band of the BlogPost artboard
  * }
  * ───────────────────────────────────────────────────────────────────────── */
 
@@ -53,6 +55,36 @@ const CtaBandRow = ({
   const linkText = c.link_text || "";
   if (titleLines.length === 0 && !buttonText) return null;
   const coverImage = c.cover_image?.trim() || undefined;
+
+  /* "Dark rounded band" (BlogPost artboard): one inset plum room with a
+     gold small label, a white title, and a gold button on the right. */
+  if (c.band_style === "room") {
+    return (
+      <RowSection row={row} fullHeight={false}>
+        <div className="cta-room-wrap">
+          <div ref={ref as never} className="cta-room">
+            <div className="cta-room-text">
+              {c.eyebrow && <div className="cta-room-eyebrow">{c.eyebrow}</div>}
+              {titleLines.length > 0 && (
+                <h2
+                  className="cta-room-title"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(titleLines.map((line) => line.replace(/^<p[^>]*>|<\/p>$/g, "")).join(" ")),
+                  }}
+                />
+              )}
+              {c.body && <div className="cta-room-body" dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />}
+            </div>
+            {buttonText && (
+              <a href={safeHref(c.button_url, "/#contact")} className="cta-room-button">
+                {buttonText}
+              </a>
+            )}
+          </div>
+        </div>
+      </RowSection>
+    );
+  }
 
   const innerContent = (
     <>

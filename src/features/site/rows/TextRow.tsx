@@ -108,13 +108,13 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
                 value={c.body}
                 html
                 as="div"
-                className={`font-body font-medium leading-[var(--lh-body)] measure mt-rhythm-tight [&_p]:my-[var(--para-space)] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
-                style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)"), fontSize: "var(--fs-body)" }}
+                className={`font-body font-normal leading-[var(--lh-body)] measure mt-rhythm-tight [&_p]:my-[var(--para-space)] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
+                style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--body))"), fontSize: "var(--fs-body)" }}
               >
                 <EditableText sectionKey="page_rows" fieldPath={`${prefix}.body`} html as="div"
                   data-row-part="body"
-                  className={`font-body font-medium leading-[var(--lh-body)] measure mt-rhythm-tight [&_p]:my-[var(--para-space)] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
-                  style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--foreground) / 0.7)"), fontSize: "var(--fs-body)" }}
+                  className={`font-body font-normal leading-[var(--lh-body)] measure mt-rhythm-tight [&_p]:my-[var(--para-space)] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
+                  style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--body))"), fontSize: "var(--fs-body)" }}
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }} />
               </CanvasEditable>
             </div>

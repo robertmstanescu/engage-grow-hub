@@ -39,6 +39,11 @@ const ContactAdmin = ({ content, onChange }: Props) => (
 
     <MoreFields>
       <Field
+        label="Stamp under the text (a word or two)"
+        value={content.stamp || ""}
+        onChange={(v) => onChange("stamp", v)}
+      />
+      <Field
         label="Calendar embed link (Google Calendar)"
         value={content.calendar_embed_url || DEFAULT_CALENDAR_EMBED_URL}
         onChange={(v) => onChange("calendar_embed_url", v)}

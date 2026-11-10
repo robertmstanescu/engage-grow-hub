@@ -8,6 +8,8 @@ import { createContext, useContext } from "react";
 export interface ArticleSource {
   /** Sanitised HTML of the post body. */
   html: string;
+  /** The post's own address, so a "From the blog" row can leave it out. */
+  slug?: string;
 }
 
 export const ArticleContext = createContext<ArticleSource | null>(null);
