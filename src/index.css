@@ -2194,14 +2194,14 @@
 @media (prefers-reduced-motion: reduce) { .list-line-link::before { transition: none; } }
 
 /* World map row (redesign): staggered draw-on, replayable. */
-/* Map colours, the owner's choice of 11 Nov 2026: purple #7B3A91 for
-   internal comms, Revolver #2A0E33 for internal comms and HR, yellow
-   #FFD933 for the main markets. The map, its legend and its counters all
-   read these three tokens. */
+/* Map colours, the owner's choice of 11 Nov 2026: purple #3D348B for
+   internal comms, navy #002B67 for internal comms and HR, green #1A8164
+   for the main markets. The map, its legend and its counters all read
+   these three tokens. */
 :root {
-  --map-worked: 285 43% 40%;
-  --map-hr: 285 57% 13%;
-  --map-main: 49 100% 60%;
+  --map-worked: 246 46% 37%;
+  --map-hr: 215 100% 20%;
+  --map-main: 163 66% 30%;
 }
 .tmc-map .c { fill: hsl(280 24% 88%); stroke: hsl(var(--background)); stroke-width: 0.5; }
 .tmc-map .wm-worked, .tmc-map .wm-hr, .tmc-map .wm-main { fill: hsl(280 24% 88%); }

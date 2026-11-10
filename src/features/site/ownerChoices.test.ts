@@ -16,10 +16,10 @@ describe("owner's choices of 10 Nov 2026", () => {
     expect(css).toMatch(/--hero-label:\s*0 0% 0%/);
   });
 
-  it("map colours are the owner's of 11 Nov 2026: #7B3A91, #2A0E33, #FFD933", () => {
-    expect(css).toMatch(/--map-worked:\s*285 43% 40%/);
-    expect(css).toMatch(/--map-hr:\s*285 57% 13%/);
-    expect(css).toMatch(/--map-main:\s*49 100% 60%/);
+  it("map colours are the owner's of 11 Nov 2026: #3D348B, #002B67, #1A8164", () => {
+    expect(css).toMatch(/--map-worked:\s*246 46% 37%/);
+    expect(css).toMatch(/--map-hr:\s*215 100% 20%/);
+    expect(css).toMatch(/--map-main:\s*163 66% 30%/);
   });
 
   it("no coloured edge stripes on cards and no underline under title words", () => {

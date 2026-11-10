@@ -36,7 +36,7 @@ describe("world map", () => {
     expect(workedPlaces(c).comms.has("Romania")).toBe(false);
   });
 
-  it("the owner's list resolves to 36 worked places, 15 with HR, and eight main markets", () => {
+  it("the owner's list resolves to 36 worked places, 15 with HR, and nine main markets", () => {
     const c = { ...WORLD_MAP_DEFAULTS, worked: [...OWNER_MAP_LIST.worked], hr: [...OWNER_MAP_LIST.hr], main: [...OWNER_MAP_LIST.main] };
     // Every name on the list is a place the map can draw.
     for (const name of [...OWNER_MAP_LIST.worked, ...OWNER_MAP_LIST.hr, ...OWNER_MAP_LIST.main]) {
@@ -44,11 +44,11 @@ describe("world map", () => {
     }
     expect(OWNER_MAP_LIST.worked).toHaveLength(21);
     expect(OWNER_MAP_LIST.hr).toHaveLength(15);
-    expect(mapCounters(c)).toEqual({ comms: 36, hr: 15, main: 8 });
+    expect(mapCounters(c)).toEqual({ comms: 36, hr: 15, main: 9 });
     const g = resolveMapGroups(c);
-    expect(g.size).toBe(37); // the 36 plus Romania, a market only
+    expect(g.size).toBe(38); // the 36 plus Romania and Ireland, markets only
     expect([...g].filter(([, s]) => s === "main").map(([n]) => n).sort()).toEqual(
-      ["Denmark", "Finland", "Norway", "Romania", "Spain", "Sweden", "United Kingdom", "United States"],
+      ["Denmark", "Finland", "Ireland", "Norway", "Romania", "Spain", "Sweden", "United Kingdom", "United States"],
     );
   });
 
@@ -63,7 +63,7 @@ describe("world map", () => {
 
   it("the built-in shading matches the owner's list", () => {
     const g = defaultMapGroups();
-    expect(g.size).toBe(37);
+    expect(g.size).toBe(38);
     for (const name of OWNER_MAP_LIST.worked) expect(g.get(name), name).toBe("worked");
     for (const name of OWNER_MAP_LIST.main) expect(g.get(name), name).toBe("main");
   });

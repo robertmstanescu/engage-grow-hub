@@ -44,12 +44,14 @@ Rules that are easy to get wrong:
   settings ignore them. The only curve a row draws is Style ▸ Corners.
 - The world map's countries are the owner's list, kept in
   `widgets/world_map/ownerList.ts`. Never add or remove a country
-  without his word; a market that is in neither worked list (Romania)
-  is shaded and names itself on hover but stays out of the counters. The
+  without his word; a market that is in neither worked list (Romania, Ireland)
+  is shaded and names itself on hover; it counts as a main market but
+  not among the 36 worked places. The
   map zooms by narrowing its `viewBox` (`world_map/zoom.ts`); a plain
   wheel must keep scrolling the page. Map colours are
-  his of 11 Nov 2026 (`--map-worked` #7B3A91, `--map-hr` Revolver
-  #2A0E33, `--map-main` #FFD933). The three
+  his of 11 Nov 2026 (`--map-worked` #3D348B, `--map-hr` #002B67,
+  `--map-main` #1A8164); Ireland and Romania are markets only, and a
+  market names itself "Main market" on hover. The three
   counters (comms, HR, main markets) wear the same legend colours, and
   the map box does not brighten on hover (only clickable glass does). The map art
   is generated (`scripts/world-map/build-map-data.mjs`, amCharts

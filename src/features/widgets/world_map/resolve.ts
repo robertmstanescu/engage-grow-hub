@@ -93,8 +93,11 @@ export const mapCounters = (c: WorldMapContent): { comms: number; hr: number; ma
   return { comms: comms.size, hr: hr.size, main: main.size };
 };
 
-/** One-line hover/focus label for a country. */
+/**
+ * One-line hover/focus label for a country. A market says "Main market"
+ * in the singular (owner, 11 Nov 2026); the legend keeps its plural.
+ */
 export const statusLabel = (status: MapStatus, c: WorldMapContent): string =>
-  status === "main" ? c.legend_main || "Main markets today"
+  status === "main" ? "Main market"
     : status === "hr" ? c.legend_hr || "Internal comms and HR"
     : c.legend_worked || "Internal comms";

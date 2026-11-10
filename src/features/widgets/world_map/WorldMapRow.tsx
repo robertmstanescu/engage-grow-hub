@@ -45,7 +45,7 @@ const WorldMapRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow;
           </div>
           <div className="flex flex-wrap items-end gap-x-9 gap-y-4" aria-live="polite">
             {/* Each number wears its legend colour (owner, 11 Nov 2026):
-                purple for comms, Revolver for HR, yellow for markets. */}
+                purple for comms, navy for HR, green for markets. */}
             {([
               [counters.comms, c.worked_label, "--map-worked"],
               [counters.hr, c.hr_label, "--map-hr"],
