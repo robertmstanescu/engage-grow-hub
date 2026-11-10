@@ -146,8 +146,23 @@ const CmsPageBody = ({
      titled widget, so nothing can be promoted to <h1>. Print the page
      title as a visually-hidden heading so the document is never
      headless for crawlers and screen readers. */
+  const v3Rows = normalizeRowsToV3(rows);
   const needsFallbackHeading =
-    Boolean(pageTitle) && !rowsProvideHeading(normalizeRowsToV3(rows) as any);
+    Boolean(pageTitle) && !rowsProvideHeading(v3Rows as any);
+  /* Document pages (a privacy policy is the classic case) carry no hero:
+     give them the redesign's document treatment — the rows sit in one
+     glass card on an 820px column. */
+  const isDocumentPage =
+    rows.length > 0 && findWidgetsByType(v3Rows as never, "hero").length === 0;
+  /* Inside the document card the rows themselves go Plain — the glass
+     card is the only surface (render-time only; stored rows untouched). */
+  const documentRows = isDocumentPage
+    ? rows.map((r) => ({
+        ...r,
+        bg_color: "",
+        layout: { ...(r.layout || {}), surfaceRadius: "none", glass: false, coverImage: "", coverImageAlt: "" },
+      }))
+    : rows;
   return (
     <div ref={containerRef} className="snap-container page-shell">
       <Navbar />
@@ -158,7 +173,8 @@ const CmsPageBody = ({
         </div>
       )}
       {needsFallbackHeading && <h1 className="sr-only">{pageTitle}</h1>}
-      <div>
+      <div className={isDocumentPage ? "px-8 pt-28 md:pt-36 pb-24" : undefined}>
+        <div className={isDocumentPage ? "max-w-[820px] mx-auto glass rounded-3xl p-7 md:p-14 overflow-hidden" : undefined}>
         {rows.length === 0 ? (
           <>
             <div className="py-32 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -168,13 +184,17 @@ const CmsPageBody = ({
           </>
         ) : (
           <RowsRenderer
-            rows={rows}
-            footerSlot={
+            rows={documentRows}
+            footerSlot={isDocumentPage ? undefined : (
               <>
                 <Footer breadcrumbTrail={breadcrumbTrail} pageAnswer={heroAnswer} />
               </>
-            }
+            )}
           />
+        )}
+        </div>
+        {isDocumentPage && rows.length > 0 && (
+          <Footer breadcrumbTrail={breadcrumbTrail} pageAnswer={heroAnswer} />
         )}
       </div>
     </div>
