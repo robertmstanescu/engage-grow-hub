@@ -120,9 +120,17 @@ for (const route of ROUTES) {
         (await row.getAttribute("data-section")) ||
         "row";
       await row.scrollIntoViewIfNeeded();
+      // Liquid glass (backdrop blur over the WebGL page mesh) and the map's
+      // lighting filter make each frame slow in software-rendered Chromium,
+      // most of all on the first row of a page, which is shot while the
+      // mesh and the rest of the page are still being rasterised. The
+      // default 5s ran out while Playwright was still waiting for two
+      // matching frames ("waiting for element to be stable"), so give a
+      // row the same patience as the full-page shot below. The comparison
+      // itself (maxDiffPixelRatio in the config) is unchanged.
       await expect(row).toHaveScreenshot(
         `${fileSafe(route)}--${String(i).padStart(2, "0")}-${name}.png`,
-        { stylePath: HIDE_CHROME },
+        { stylePath: HIDE_CHROME, timeout: 30_000 },
       );
     }
 
