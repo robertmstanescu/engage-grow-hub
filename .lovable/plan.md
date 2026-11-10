@@ -69,6 +69,15 @@ Files: `tests/visual/rows.visual.spec.ts`, baselines, a frozen test page with fi
 
 - Add pay-transparency and manager-enablement pages; frozen test page for design checks (the suite runs on live data, so content edits otherwise turn it red); refresh darwin + linux baselines, stated in the commit.
 
+## Phase 7 — Quality check and break test (before anything goes live)
+
+A full pre-launch pass on the finished site, done after every bundle lands and before publishing:
+
+- **Quality check:** `npm run check` (typecheck, lint ratchet, unit tests, build) plus the full visual suite at 1440 and 390; every public page reviewed side-by-side against its artboard; WCAG AA contrast test green; SEO checks panel clean on every page (titles, descriptions, one H1, alt on every picture).
+- **Break test:** try to break it like a visitor would — phone, tablet and desktop widths; slow network; empty states (no work items, teaser with zero items, missing cover image); long titles; reduced motion on; keyboard-only navigation through navbar, filters, map tooltip and accordions; every link and button on every page; the booking calendar block; draft vs. live (unpublished work items must never appear).
+- **Final text diff:** the before/after text capture of every public page runs one last time and must be empty (except intentional chrome).
+- Only after all three pass do we publish. Anything found goes back to its bundle and is re-checked.
+
 ## Conflicts and what I suggest
 
 1. **`tokens/web.css` uses `vh` in font-size clamps** — our rules forbid `vh` in type sizes, and spec §2.2 agrees ("map onto the existing `--fs-*` tokens, never `vh`"). I follow §2.2 and ignore the web.css type clamps.

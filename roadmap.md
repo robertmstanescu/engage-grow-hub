@@ -7,6 +7,7 @@
   - [ ] Phase 4+: Page bundles, one at a time (Home, Services index, service pages, About, Blog index, Blog post, Privacy), each with empty text diff
   - [ ] World map row
   - [ ] Visual suite + baselines
+  - [ ] Phase 7: quality check + break test before publishing
 - [ ] Open: publish draft page `pay-transparency-check`? (asked, unanswered)
 - [ ] Open: make missing-alt-text a warning instead of a hard publish block? (offered, unanswered)
 - [ ] Open: move scheduled publishing to every 15 min? (offered, unanswered)
