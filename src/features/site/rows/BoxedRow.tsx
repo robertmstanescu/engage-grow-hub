@@ -7,7 +7,7 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 import Icon from "@/features/icons/Icon";
-import { pillarColorFromLink, pillarColorFromKey } from "@/lib/constants/pillarColors";
+import { pillarColorFromLink, pillarColorFromKey, pillarTintFrom } from "@/lib/constants/pillarColors";
 import { trackConversion } from "@/services/conversions";
 import RowCoverCard from "@/features/site/RowCoverCard";
 import type { BoxedContent, BoxedCard } from "@/features/widgets/boxed/schema";
@@ -229,7 +229,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
            carries the thin coloured top border; dark bands never do. */
         ...(cardAccent && !isDarkCard ? { borderTop: `3px solid ${cardAccent}` } : {}),
         /* …and the same colour, thinned to a quarter, as its glass fill. */
-        ...(cardAccent && !isDarkCard && !coverImage ? { ["--card-tint" as string]: cardAccent } : {}),
+        ...(cardAccent && !isDarkCard && !coverImage ? { ["--card-tint" as string]: pillarTintFrom(cardLink) || pillarTintFrom(card.pillar) || cardAccent } : {}),
       } as React.CSSProperties;
 
       if (cardLink) {

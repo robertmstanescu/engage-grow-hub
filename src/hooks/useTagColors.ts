@@ -28,10 +28,12 @@ const DEFAULT_TAGS: TagsConfig = {
   // "pillar branding" migration that seeds/updates this same set into
   // the live `tags_config` site_content row).
   blog_categories: [
-    { label: "Internal Communications", bgColor: "#43143B", textColor: "#FFFFFF" },
-    { label: "Employee Experience", bgColor: "#002B67", textColor: "#FFFFFF" },
-    { label: "People Operations", bgColor: "#6A010E", textColor: "#FFFFFF" },
-    { label: "Fractional HRBP", bgColor: "#003728", textColor: "#FFFFFF" },
+    { label: "Internal Communications", bgColor: "#3D348B", textColor: "#FFFFFF" },
+    { label: "Employee Experience", bgColor: "#0047AB", textColor: "#FFFFFF" },
+    { label: "People Operations", bgColor: "#B11226", textColor: "#FFFFFF" },
+    { label: "Fractional HRBP", bgColor: "#005C42", textColor: "#FFFFFF" },
+    { label: "Pay Transparency", bgColor: "#E36414", textColor: "#FFFFFF" },
+    { label: "Manager Enablement", bgColor: "#702963", textColor: "#FFFFFF" },
     { label: "General", bgColor: "#7B3A91", textColor: "#FFFFFF" },
   ],
 };

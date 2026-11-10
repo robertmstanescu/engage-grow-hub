@@ -101,7 +101,7 @@ describe("BoxedRow", () => {
       />,
     );
     // employee-experience pillar navy, not the card's own red
-    expect(cardOf(container)?.style.borderTop).toBe("3px solid #002B67");
+    expect(cardOf(container)?.style.borderTop).toBe("3px solid #0047AB");
   });
 
   it("treats a whitespace-only accent_color as unset and falls back to the row colour", () => {

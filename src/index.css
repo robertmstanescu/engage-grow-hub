@@ -543,12 +543,15 @@
     /* Redesign: the default card IS the glass card of the artboards:
        white at 74% over the mesh, a soft violet hairline, 24px corners
        and the card shadow. No ink border. */
-    background: hsl(var(--glass-bg));
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    border: 1px solid hsl(var(--glass-border) / 0.9);
+    /* Liquid glass (owner, 10 Nov 2026, after his reference canvas): a
+       see-through white that thins downwards, a strong blur that lifts
+       the mesh's colour, a white rim and a lit top edge. */
+    background: linear-gradient(180deg, hsl(var(--glass) / 0.8), hsl(var(--glass) / 0.6));
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgb(255 255 255 / 0.85);
     border-radius: var(--radius-card);
-    box-shadow: var(--shadow-card);
+    box-shadow: inset 0 1px 0 #fff, inset 0 -3px 8px hsl(282 40% 13% / 0.05), var(--shadow-card);
     transition: box-shadow 160ms ease-out,
       border-color 160ms ease-out,
       transform 160ms ease-out;
@@ -559,14 +562,27 @@
      10 Nov 2026). `--card-tint` is set on the card by BoxedRow; the same
      colour stays on the top line, dot, number and link. */
   .surface-card.tint-card {
-    background: color-mix(in srgb, var(--card-tint, hsl(var(--primary))) 25%, hsl(0 0% 100% / 0.5));
-    -webkit-backdrop-filter: blur(18px) saturate(1.35);
-    backdrop-filter: blur(18px) saturate(1.35);
-    border-color: hsl(0 0% 100% / 0.7);
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.85), var(--shadow-card);
+    /* Tinted liquid glass, after the owner's reference canvas: a pastel
+       of the card's colour that deepens downwards, a strong blur, a
+       white rim and a soft shadow in the same colour. */
+    --t: var(--card-tint, hsl(var(--primary)));
+    background: linear-gradient(180deg,
+      color-mix(in srgb, var(--t) 20%, rgb(255 255 255 / 0.82)),
+      color-mix(in srgb, var(--t) 30%, rgb(255 255 255 / 0.66)));
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border-color: rgb(255 255 255 / 0.85);
+    box-shadow: inset 0 1px 0 #fff,
+      inset 0 -3px 8px color-mix(in srgb, var(--t) 14%, transparent),
+      0 14px 32px -10px color-mix(in srgb, var(--t) 34%, transparent);
+  }
+  .surface-card.tint-card:hover {
+    box-shadow: inset 0 1px 0 #fff,
+      inset 0 -3px 8px color-mix(in srgb, var(--t) 14%, transparent),
+      0 22px 44px -14px color-mix(in srgb, var(--t) 46%, transparent);
   }
   .surface-card:hover {
-    box-shadow: 0 1px 2px hsl(282 40% 13% / 0.06), 0 22px 44px -22px hsl(282 40% 13% / 0.32);
+    box-shadow: inset 0 1px 0 #fff, inset 0 -3px 8px hsl(282 40% 13% / 0.05), 0 1px 2px hsl(282 40% 13% / 0.06), 0 22px 44px -22px hsl(282 40% 13% / 0.32);
   }
 
   /* Inverted (deep plum) card for colour rhythm */

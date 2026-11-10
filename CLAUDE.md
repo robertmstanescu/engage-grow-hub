@@ -51,8 +51,11 @@ Rules that are easy to get wrong:
   Mercator, no Antarctica); the "Map: amCharts" credit by the legend is
   the licence's condition and must stay. Small labels and eyebrows on
   light are pure black (`--gold-text`, `--hero-label`) and the named
-  "gold" title accent is Revolver; a boxed card with a service colour is glass in that
-  colour at a quarter strength (`.tint-card`, `--card-tint`). His choices of 10 Nov 2026.
+  "gold" title accent is Revolver; every card is liquid glass (`.surface-card`: thinning white, strong
+  blur, white rim) and a boxed card for a service is tinted with that
+  service's lighter partner colour (`.tint-card`, `--card-tint`,
+  `PILLAR_CARD_TINTS`); the six accent and tint pairs in
+  `lib/constants/pillarColors.ts` are his, from the secondary palette. His choices of 10 Nov 2026.
 - The tray shows eight block families (`builder/blockFamilies.ts`); a
   new row type must be added to exactly one family (the test fails
   otherwise) and the section library (`builder/sectionLibrary.ts`) is
