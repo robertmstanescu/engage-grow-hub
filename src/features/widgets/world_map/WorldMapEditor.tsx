@@ -32,7 +32,7 @@ const WorldMapEditor = ({ content, onChange, bgColor }: Props) => (
       </p>
       <CountryListField label="Internal comms" hint="Shaded gold." value={content.worked || []} onChange={(v) => onChange("worked", v)} />
       <CountryListField label="Internal comms and HR" hint="Shaded purple." value={content.hr || []} onChange={(v) => onChange("hr", v)} />
-      <CountryListField label="Main markets today" hint="Shaded orange (Mars Yellow)." value={content.main || []} onChange={(v) => onChange("main", v)} />
+      <CountryListField label="Main markets today" hint="Shaded yellow." value={content.main || []} onChange={(v) => onChange("main", v)} />
     </SectionBox>
   </div>
 );

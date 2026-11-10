@@ -48,8 +48,8 @@ Rules that are easy to get wrong:
   is shaded and names itself on hover but stays out of the counters. The
   map zooms by narrowing its `viewBox` (`world_map/zoom.ts`); a plain
   wheel must keep scrolling the page. Map colours are
-  from the secondary palette (`--map-worked` Prince, `--map-hr` Admiral,
-  `--map-main` Mars Yellow), chosen for him on 10 Nov 2026. The three
+  his of 11 Nov 2026 (`--map-worked` #7B3A91, `--map-hr` Revolver
+  #2A0E33, `--map-main` #FFD933). The three
   counters (comms, HR, main markets) wear the same legend colours, and
   the map box does not brighten on hover (only clickable glass does). The map art
   is generated (`scripts/world-map/build-map-data.mjs`, amCharts
