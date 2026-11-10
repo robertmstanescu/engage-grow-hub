@@ -35,7 +35,7 @@ describe("world map", () => {
     expect(workedPlaces(c).comms.has("Romania")).toBe(false);
   });
 
-  it("the owner's list resolves to 36 worked places, 15 with HR, and five main markets", () => {
+  it("the owner's list resolves to 36 worked places, 15 with HR, and eight main markets", () => {
     const c = { ...WORLD_MAP_DEFAULTS, worked: [...OWNER_MAP_LIST.worked], hr: [...OWNER_MAP_LIST.hr], main: [...OWNER_MAP_LIST.main] };
     // Every name on the list is a place the map can draw.
     for (const name of [...OWNER_MAP_LIST.worked, ...OWNER_MAP_LIST.hr, ...OWNER_MAP_LIST.main]) {
@@ -47,7 +47,7 @@ describe("world map", () => {
     const g = resolveMapGroups(c);
     expect(g.size).toBe(37); // the 36 plus Romania, a market only
     expect([...g].filter(([, s]) => s === "main").map(([n]) => n).sort()).toEqual(
-      ["Romania", "Spain", "Sweden", "United Kingdom", "United States"],
+      ["Denmark", "Finland", "Norway", "Romania", "Spain", "Sweden", "United Kingdom", "United States"],
     );
   });
 

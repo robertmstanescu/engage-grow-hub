@@ -46,7 +46,7 @@ Rules that are easy to get wrong:
   is shaded and names itself on hover but stays out of the counters. The
   map zooms by narrowing its `viewBox` (`world_map/zoom.ts`); a plain
   wheel must keep scrolling the page. Main markets
-  are drawn in the brand green (`--map-main`, #003728), his choice.
+  are drawn in Cobalt Blue (`--map-main`, #0047AB), his choice.
 - The tray shows eight block families (`builder/blockFamilies.ts`); a
   new row type must be added to exactly one family (the test fails
   otherwise) and the section library (`builder/sectionLibrary.ts`) is
