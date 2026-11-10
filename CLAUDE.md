@@ -43,7 +43,8 @@ Rules that are easy to get wrong:
 - The world map's countries are the owner's list, kept in
   `widgets/world_map/ownerList.ts`. Never add or remove a country
   without his word; a market that is in neither worked list (Romania)
-  is shaded but stays out of the counters and has no hover.
+  is shaded but stays out of the counters and has no hover. Main markets
+  are drawn in the brand green (`--map-main`, #003728), his choice.
 - The tray shows eight block families (`builder/blockFamilies.ts`); a
   new row type must be added to exactly one family (the test fails
   otherwise) and the section library (`builder/sectionLibrary.ts`) is
