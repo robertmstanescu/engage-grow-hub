@@ -13,6 +13,7 @@
 import type { PageRowV3, PageWidget, RowLayout } from "@/types/rows";
 import { buildEmptyV3Row, generateRowId } from "@/lib/constants/rowDefaults";
 import { getWidget } from "@/lib/WidgetRegistry";
+import { MAP_COUNTRIES } from "@/features/widgets/world_map/mapData";
 
 export interface LibrarySection {
   key: string;
@@ -98,6 +99,10 @@ export const SECTION_LIBRARY: LibrarySection[] = [
       eyebrow: "Where the work has travelled",
       title_lines: ["One comms function, many countries."],
       lede: "Gold marks internal comms. Purple marks the countries where the work covered HR as well, and the darkest purple marks the main markets today.",
+      // Pre-filled from the redesign artboard's shading; edit freely.
+      worked: MAP_COUNTRIES.filter((c) => c.status === "worked").map((c) => c.name),
+      hr: MAP_COUNTRIES.filter((c) => c.status === "hr").map((c) => c.name),
+      main: MAP_COUNTRIES.filter((c) => c.status === "main").map((c) => c.name),
     }, { strip_title: "World map" }),
   },
   {

@@ -5,7 +5,7 @@ import type { Alignment, VAlign } from "@/features/site/rows/PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "@/features/site/rows/typography";
 import { worldMapSchema, type WorldMapContent } from "./schema";
-import { resolveMapGroups, defaultMapGroups, hasAnyGroup, mapCounters } from "./resolve";
+import { resolveMapGroups, mapCounters } from "./resolve";
 
 // Code-split: the map art carries ~120KB of SVG path data.
 const WorldMapArt = lazy(() => import("./WorldMapArt"));
@@ -15,10 +15,9 @@ const WorldMapRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow;
   const c: WorldMapContent = worldMapSchema.parse(contents[0] ?? {});
   const { ref, isVisible } = useScrollReveal();
 
-  const groups = useMemo(
-    () => (hasAnyGroup(c) ? resolveMapGroups(c) : defaultMapGroups()),
-    [c],
-  );
+  // Defaults hold no countries — the owner fills the three lists (the
+  // section-library starter pre-fills them from the artboard shading).
+  const groups = useMemo(() => resolveMapGroups(c), [c]);
   const counters = useMemo(() => mapCounters(groups), [groups]);
 
   return (
