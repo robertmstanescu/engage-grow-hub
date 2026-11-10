@@ -8,7 +8,6 @@ import Footer from "@/features/site/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import usePageMeta from "@/hooks/usePageMeta";
-import { useImageTone } from "@/hooks/useImageTone";
 import type { PageRow } from "@/types/rows";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 
@@ -24,7 +23,7 @@ interface BlogPost {
   tags: string[] | null;
 }
 
-const POSTS_PER_PAGE = 5;
+const POSTS_PER_PAGE = 7; // one wide lead card + six grid cards
 
 const calculateReadTime = (content: string) => {
   const words = content.trim().split(/\s+/).length;
@@ -34,125 +33,180 @@ const calculateReadTime = (content: string) => {
 const formatDate = (dateStr: string) =>
   new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
-const BlogCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => void }) => {
-  const { getCategoryColors, getTagColors } = useTagColors();
-  const catColors = getCategoryColors(post.category);
-  const tone = useImageTone(post.cover_image);
-
-  const hasCover = !!post.cover_image;
-  const isLight = tone === "light";
-
-  const textColor = hasCover ? (isLight ? "hsl(var(--foreground))" : "#ffffff") : "hsl(var(--foreground))";
-  const mutedColor = hasCover
-    ? isLight
-      ? "hsl(var(--foreground) / 0.7)"
-      : "rgba(255,255,255,0.7)"
-    : "hsl(var(--muted-foreground))";
-  const excerptColor = hasCover
-    ? isLight
-      ? "hsl(var(--foreground) / 0.75)"
-      : "rgba(255,255,255,0.8)"
-    : "hsl(var(--foreground) / 0.5)";
-
+const CategoryPill = ({ category }: { category: string }) => {
+  const { getCategoryColors } = useTagColors();
+  const catColors = getCategoryColors(category);
   return (
-    <article key={post.slug} className="group">
-      <Link
-        to={`/blog/${post.slug}`}
-        style={{
-          border: "var(--outline-ink-border)",
-          ...(hasCover ? { boxShadow: "0 18px 40px -12px hsl(var(--foreground) / 0.28), 0 4px 12px -4px hsl(var(--foreground) / 0.12)" } : null),
-        }}
-        className={`relative block rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.01] ${
-          hasCover ? "hover:-translate-y-0.5" : "glass p-6 md:p-8 hover:glow-accent"
-        }`}
-      >
-        {hasCover && (
-          <>
-            <img
-              src={transformImageUrl(post.cover_image!, { width: 960, quality: 70, aspectRatio: 16 / 9 })}
-              srcSet={buildImageSrcSet(post.cover_image!, [480, 960, 1440], 70, 16 / 9)}
-              sizes="(min-width: 1024px) 720px, 100vw"
-              alt={post.cover_image_alt || `${post.title} cover image`}
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background: isLight
-                  ? "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 45%, rgba(255,255,255,0.9) 100%)"
-                  : "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.82) 100%)",
-              }}
-            />
-          </>
-        )}
-        <div className="relative z-10 flex flex-col justify-end min-h-[280px] md:min-h-[320px]">
-          <div className={hasCover ? "p-6 md:p-8" : ""}>
-            <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
-              <span
-                className="font-body text-[10px] tracking-[0.18em] uppercase px-3 py-1.5 rounded-full font-medium"
-                style={{ backgroundColor: catColors.bgColor, color: catColors.textColor }}
-              >
-                {post.category}
-              </span>
-              {post.published_at && (
-                <span className="font-body text-xs" style={{ color: mutedColor }}>
-                  {formatDate(post.published_at)}
-                </span>
-              )}
-              <span className="font-body text-xs" style={{ color: mutedColor }}>
-                · {calculateReadTime(post.content)}
-              </span>
-            </div>
-            <h2
-              className="font-display text-lg md:text-xl font-bold leading-tight mb-2 group-hover:opacity-80"
-              style={{ color: textColor }}
-            >
-              {post.title}
-            </h2>
-            {post.excerpt && (
-              <p className="font-body text-sm leading-relaxed line-clamp-2" style={{ color: excerptColor }}>
-                {post.excerpt}
-              </p>
-            )}
-            {post.tags && post.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
-                {post.tags.map((tag) => {
-                  const tc = getTagColors(tag);
-                  return (
-                    <button
-                      type="button"
-                      key={tag}
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onTag?.(tag); }}
-                      title={`Show every article tagged ${tag}`}
-                      className="font-body text-[10px] tracking-[0.12em] uppercase px-2 py-1 rounded-full font-medium hover:underline"
-                      style={{
-                        backgroundColor: hasCover
-                          ? isLight
-                            ? "hsl(var(--foreground) / 0.1)"
-                            : "rgba(255,255,255,0.15)"
-                          : tc.bgColor,
-                        color: hasCover ? textColor : tc.textColor,
-                      }}
-                    >
-                      {tag}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      </Link>
-    </article>
+    <span
+      className="font-body text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full"
+      style={{ backgroundColor: catColors.bgColor, color: catColors.textColor }}
+    >
+      {category}
+    </span>
   );
 };
+
+const TagButtons = ({
+  post,
+  onTag,
+}: {
+  post: BlogPost;
+  onTag?: (tag: string) => void;
+}) => {
+  const { getTagColors } = useTagColors();
+  if (!post.tags || post.tags.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {post.tags.map((tag) => {
+        const tc = getTagColors(tag);
+        return (
+          <button
+            type="button"
+            key={tag}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onTag?.(tag); }}
+            title={`Show every article tagged ${tag}`}
+            className="font-body text-[10px] tracking-[0.12em] uppercase px-2 py-1 rounded-full font-medium hover:underline"
+            style={{ backgroundColor: tc.bgColor, color: tc.textColor }}
+          >
+            {tag}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+const CardCover = ({ post, heightClass }: { post: BlogPost; heightClass: string }) => {
+  if (!post.cover_image) return null;
+  return (
+    <img
+      src={transformImageUrl(post.cover_image, { width: 960, quality: 70, aspectRatio: 16 / 9 })}
+      srcSet={buildImageSrcSet(post.cover_image, [480, 960, 1440], 70, 16 / 9)}
+      sizes="(min-width: 1024px) 720px, 100vw"
+      alt={post.cover_image_alt || `${post.title} cover image`}
+      className={`w-full object-cover block ${heightClass}`}
+      loading="lazy"
+      decoding="async"
+    />
+  );
+};
+
+const LeadCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => void }) => (
+  <article className="group">
+    <Link
+      to={`/blog/${post.slug}`}
+      className="glass rounded-3xl overflow-hidden grid lg:grid-cols-12 transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent"
+    >
+      <div className="lg:col-span-7">
+        <CardCover post={post} heightClass="h-64 md:h-80 lg:h-[440px] lg:min-h-full" />
+      </div>
+      <div className="lg:col-span-5 p-6 md:p-10 flex flex-col gap-4 justify-center">
+        <div className="flex flex-wrap items-center gap-3">
+          <CategoryPill category={post.category} />
+          {post.published_at && (
+            <span className="font-body text-[13px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+              {formatDate(post.published_at)}
+            </span>
+          )}
+          <span className="font-body text-[13px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+            · {calculateReadTime(post.content)}
+          </span>
+        </div>
+        <h2
+          className="font-display font-extrabold leading-[1.08] group-hover:opacity-80"
+          style={{ color: "hsl(var(--deep))", fontSize: "var(--fs-h2)" }}
+        >
+          {post.title}
+        </h2>
+        {post.excerpt && (
+          <p className="font-body text-[17px] leading-[1.7]" style={{ color: "hsl(var(--muted-foreground))" }}>
+            {post.excerpt}
+          </p>
+        )}
+        <TagButtons post={post} onTag={onTag} />
+        <span className="font-body font-semibold text-base" style={{ color: "hsl(var(--primary))" }}>
+          Read the article <span aria-hidden="true">→</span>
+        </span>
+      </div>
+    </Link>
+  </article>
+);
+
+const GridCard = ({ post, onTag }: { post: BlogPost; onTag?: (tag: string) => void }) => (
+  <article className="group h-full">
+    <Link
+      to={`/blog/${post.slug}`}
+      className="glass rounded-3xl overflow-hidden flex flex-col h-full transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent"
+    >
+      <CardCover post={post} heightClass="h-[200px]" />
+      <div className="p-6 flex flex-col gap-3 flex-grow">
+        <div className="flex flex-wrap items-center gap-3">
+          <CategoryPill category={post.category} />
+          {post.published_at && (
+            <span className="font-body text-[13px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+              {formatDate(post.published_at)}
+            </span>
+          )}
+        </div>
+        <h3
+          className="font-display font-bold leading-[1.22] flex-grow group-hover:opacity-80"
+          style={{ color: "hsl(var(--deep))", fontSize: "var(--fs-h3, 20px)" }}
+        >
+          {post.title}
+        </h3>
+        {post.excerpt && (
+          <p className="font-body text-[15px] leading-[1.6] line-clamp-3" style={{ color: "hsl(var(--muted-foreground))" }}>
+            {post.excerpt}
+          </p>
+        )}
+        <TagButtons post={post} onTag={onTag} />
+      </div>
+    </Link>
+  </article>
+);
+
+const CategoryChip = ({
+  label,
+  dotColor,
+  selected,
+  onClick,
+}: {
+  label: string;
+  dotColor?: string;
+  selected: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    aria-pressed={selected}
+    onClick={onClick}
+    className="inline-flex items-center gap-2 h-11 px-[18px] rounded-full font-body text-sm transition-colors"
+    style={{
+      border: selected ? "1px solid hsl(var(--deep))" : "1px solid hsl(var(--border))",
+      backgroundColor: selected ? "hsl(var(--deep))" : "hsl(var(--background))",
+      color: selected ? "hsl(var(--deep-fg))" : "hsl(var(--deep))",
+      fontWeight: selected ? 600 : 500,
+    }}
+  >
+    {dotColor && (
+      <span
+        aria-hidden="true"
+        className="w-[9px] h-[9px] rounded-full"
+        style={{
+          backgroundColor: dotColor,
+          boxShadow: selected ? "0 0 0 2px hsl(0 0% 100%)" : undefined,
+        }}
+      />
+    )}
+    {label}
+  </button>
+);
 
 const Blog = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { getCategoryColors } = useTagColors();
 
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
   const selectedCategory = searchParams.get("category") || "all";
@@ -231,6 +285,8 @@ const Blog = () => {
     (currentPage - 1) * POSTS_PER_PAGE,
     currentPage * POSTS_PER_PAGE
   );
+  const leadPost = currentPage === 1 ? paginatedPosts[0] : undefined;
+  const gridPosts = currentPage === 1 ? paginatedPosts.slice(1) : paginatedPosts;
 
   return (
     <div className="min-h-screen page-shell">
@@ -239,125 +295,114 @@ const Blog = () => {
         <RowsRenderer rows={pageData.rows_above} promoteHeading={false} />
       )}
 
-      <section className="grain relative pt-28 pb-8 text-center">
-        <div className="relative z-10 max-w-[800px] mx-auto px-8">
+      <section className="grain relative pt-28 pb-8">
+        <div className="relative z-10 max-w-[1280px] mx-auto px-8">
           <h1
-            className="font-display text-3xl md:text-5xl font-black leading-tight mb-5"
-            style={{ color: "hsl(var(--foreground))" }}
+            className="font-display font-black leading-tight mb-5"
+            style={{ color: "hsl(var(--foreground))", fontSize: "var(--fs-title)" }}
           >
             {pageData.header_title || "Insights & Articles"}
           </h1>
           <p
-            className="font-body text-base md:text-lg max-w-[600px] mx-auto"
-            style={{ color: "hsl(var(--foreground) / 0.5)" }}
+            className="font-body text-base md:text-lg max-w-[720px]"
+            style={{ color: "hsl(var(--foreground) / 0.6)" }}
           >
             {pageData.header_subtitle || ""}
           </p>
         </div>
       </section>
 
-      <section className="pt-6 pb-20 px-8">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
-            <div className="flex-1 min-w-0">
-              {selectedTag && (
-                <p className="font-body text-sm mb-4" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
-                  Tagged <strong style={{ color: "hsl(var(--foreground))" }}>{selectedTag}</strong> ·{" "}
-                  <button type="button" className="underline underline-offset-4" onClick={() => setTag("")}>Show all</button>
-                </p>
-              )}
-              {loading ? (
-                <p
-                  className="font-body text-sm text-center py-12"
-                  style={{ color: "hsl(var(--muted-foreground))" }}
-                >
-                  Loading articles…
-                </p>
-              ) : paginatedPosts.length === 0 ? (
-                <p
-                  className="font-body text-sm text-center py-12"
-                  style={{ color: "hsl(var(--muted-foreground))" }}
-                >
-                  No articles published yet.
-                </p>
-              ) : (
-                <div className="space-y-6">
-                  {paginatedPosts.map((post) => (
-                    <BlogCard key={post.slug} post={post} onTag={setTag} />
+      <section aria-label="Filter articles" className="px-8">
+        <div className="max-w-[1280px] mx-auto flex flex-wrap items-center gap-2.5">
+          <CategoryChip
+            label="All articles"
+            selected={selectedCategory === "all"}
+            onClick={() => setCategory("all")}
+          />
+          {categories.map((cat) => (
+            <CategoryChip
+              key={cat}
+              label={cat}
+              dotColor={getCategoryColors(cat).bgColor}
+              selected={selectedCategory === cat}
+              onClick={() => setCategory(cat)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="pt-8 pb-20 px-8">
+        <div className="max-w-[1280px] mx-auto">
+          {selectedTag && (
+            <p className="font-body text-sm mb-4" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
+              Tagged <strong style={{ color: "hsl(var(--foreground))" }}>{selectedTag}</strong> ·{" "}
+              <button type="button" className="underline underline-offset-4" onClick={() => setTag("")}>Show all</button>
+            </p>
+          )}
+          {loading ? (
+            <p
+              className="font-body text-sm text-center py-12"
+              style={{ color: "hsl(var(--muted-foreground))" }}
+            >
+              Loading articles…
+            </p>
+          ) : paginatedPosts.length === 0 ? (
+            <p
+              className="font-body text-sm text-center py-12"
+              style={{ color: "hsl(var(--muted-foreground))" }}
+            >
+              No articles published yet.
+            </p>
+          ) : (
+            <div className="space-y-8">
+              {leadPost && <LeadCard post={leadPost} onTag={setTag} />}
+              {gridPosts.length > 0 && (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {gridPosts.map((post) => (
+                    <GridCard key={post.slug} post={post} onTag={setTag} />
                   ))}
                 </div>
-              )}
-
-              {totalPages > 1 && (
-                <nav className="flex items-center justify-center gap-2 mt-12" aria-label="Blog pagination">
-                  <button
-                    onClick={() => setPage(currentPage - 1)}
-                    disabled={currentPage <= 1}
-                    className="p-2 rounded-lg border disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-80"
-                    style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                    aria-label="Previous page"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className="w-9 h-9 rounded-lg font-body text-sm transition-opacity"
-                      style={{
-                        backgroundColor: p === currentPage ? "hsl(var(--primary))" : "transparent",
-                        color: p === currentPage ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
-                        opacity: p === currentPage ? 1 : 0.7,
-                      }}
-                      aria-current={p === currentPage ? "page" : undefined}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setPage(currentPage + 1)}
-                    disabled={currentPage >= totalPages}
-                    className="p-2 rounded-lg border disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-80"
-                    style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                    aria-label="Next page"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </nav>
               )}
             </div>
+          )}
 
-            <aside className="lg:w-64 flex-shrink-0">
-              <div
-                className="rounded-xl p-5 sticky top-24"
-                style={{ backgroundColor: "hsl(var(--card))", border: "var(--outline-ink-border)" }}
+          {totalPages > 1 && (
+            <nav className="flex items-center justify-center gap-2 mt-12" aria-label="Blog pagination">
+              <button
+                onClick={() => setPage(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="p-2 rounded-lg border disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-80"
+                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
+                aria-label="Previous page"
               >
-                <h3
-                  className="font-display text-sm font-bold mb-4"
-                  style={{ color: "hsl(var(--foreground))" }}
+                <ChevronLeft size={18} />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className="w-9 h-9 rounded-lg font-body text-sm transition-opacity"
+                  style={{
+                    backgroundColor: p === currentPage ? "hsl(var(--primary))" : "transparent",
+                    color: p === currentPage ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
+                    opacity: p === currentPage ? 1 : 0.7,
+                  }}
+                  aria-current={p === currentPage ? "page" : undefined}
                 >
-                  Categories
-                </h3>
-                <div className="space-y-1">
-                  <CategoryButton
-                    label="All"
-                    count={posts.length}
-                    selected={selectedCategory === "all"}
-                    onClick={() => setCategory("all")}
-                  />
-                  {categories.map((cat) => (
-                    <CategoryButton
-                      key={cat}
-                      label={cat}
-                      count={posts.filter((p) => p.category === cat).length}
-                      selected={selectedCategory === cat}
-                      onClick={() => setCategory(cat)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </aside>
-          </div>
+                  {p}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="p-2 rounded-lg border disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-80"
+                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
+                aria-label="Next page"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </nav>
+          )}
         </div>
       </section>
 
@@ -368,39 +413,5 @@ const Blog = () => {
     </div>
   );
 };
-
-const CategoryButton = ({
-  label,
-  count,
-  selected,
-  onClick,
-}: {
-  label: string;
-  count: number;
-  selected: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    className="w-full flex items-start justify-between gap-3 px-3 py-2 rounded-lg font-body text-sm transition-all"
-    style={{
-      opacity: selected ? 1 : 0.55,
-      fontWeight: selected ? 700 : 400,
-      backgroundColor: selected ? "hsl(var(--accent) / 0.12)" : "transparent",
-      color: selected ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
-    }}
-  >
-    <span className="text-left leading-snug">{label}</span>
-    <span
-      className="text-xs px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5"
-      style={{
-        backgroundColor: selected ? "hsl(var(--accent) / 0.2)" : "hsl(var(--muted) / 0.5)",
-        color: selected ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
-      }}
-    >
-      {count}
-    </span>
-  </button>
-);
 
 export default Blog;

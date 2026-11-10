@@ -66,6 +66,33 @@ const WorkCase = () => {
     return () => { cancelled = true; };
   }, [slug]);
 
+  const caseRows = useMemo(
+    () => (item && Array.isArray(item.case_rows) ? item.case_rows : []),
+    [item],
+  );
+
+  /* "On this page" (redesign §6 E4): one entry per case row that has a
+     title or eyebrow; clicking scrolls to the row's anchor. */
+  const caseSections = useMemo(() => {
+    const v3 = normalizeRowsToV3(caseRows as Parameters<typeof normalizeRowsToV3>[0]);
+    const out: { id: string; label: string }[] = [];
+    v3.forEach((row, i) => {
+      for (const col of row.columns ?? []) {
+        for (const cell of col.cells ?? []) {
+          for (const w of cell.widgets ?? []) {
+            const data = (w.data ?? {}) as { title_lines?: string[]; eyebrow?: string };
+            const raw = data.title_lines?.[0] || data.eyebrow;
+            const label = raw ? stripHtml(String(raw)) : "";
+            if (label) { out.push({ id: `case-s-${i}`, label }); return; }
+          }
+        }
+      }
+    });
+    return out;
+  }, [caseRows]);
+  const anchorFor = (_row: unknown, index: number) =>
+    caseSections.some((s) => s.id === `case-s-${index}`) ? `case-s-${index}` : undefined;
+
   if (!looked) {
     return (
       <div className="min-h-screen">
@@ -86,29 +113,6 @@ const WorkCase = () => {
 
   const pillarColor = pillarColorFromKey(item.pillar);
   const eyebrow = [PILLAR_NAMES[item.pillar] ?? item.pillar, TYPE_NAMES[item.type] ?? item.type, item.year].filter(Boolean).join(" · ");
-  const caseRows = useMemo(() => (Array.isArray(item.case_rows) ? item.case_rows : []), [item.case_rows]);
-
-  /* "On this page" (redesign §6 E4): one entry per case row that has a
-     title or eyebrow; clicking scrolls to the row's anchor. */
-  const caseSections = useMemo(() => {
-    const v3 = normalizeRowsToV3(caseRows as any);
-    const out: { id: string; label: string }[] = [];
-    v3.forEach((row: any, i: number) => {
-      for (const col of row.columns ?? []) {
-        for (const cell of col.cells ?? []) {
-          for (const w of cell.widgets ?? []) {
-            const raw = w.data?.title_lines?.[0] || w.data?.eyebrow;
-            const label = raw ? stripHtml(String(raw)) : "";
-            if (label) { out.push({ id: `case-s-${i}`, label }); return; }
-          }
-        }
-      }
-    });
-    return out;
-  }, [caseRows]);
-  const anchorFor = (_row: any, index: number) =>
-    caseSections.some((s) => s.id === `case-s-${index}`) ? `case-s-${index}` : undefined;
-
   return (
     <div className="min-h-screen">
       <Navbar />
