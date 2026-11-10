@@ -540,15 +540,16 @@
   }
 
   .surface-card {
-    /* Redesign: the default card IS the glass card of the artboards:
-       white at 74% over the mesh, a soft violet hairline, 24px corners
-       and the card shadow. No ink border. */
-    background: hsl(var(--glass-bg));
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    border: 1px solid hsl(var(--glass-border) / 0.9);
+    /* The default card is liquid glass (owner, 10 Nov 2026, after his
+       reference canvas): see-through white that thins downwards, a
+       strong blur, a white rim, a bright top edge and a soft violet
+       shadow. Photos are never given this finish. */
+    background: var(--lg-light-bg);
+    -webkit-backdrop-filter: var(--lg-blur);
+    backdrop-filter: var(--lg-blur);
+    border: 1px solid var(--lg-rim);
     border-radius: var(--radius-card);
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--lg-light-shadow);
     transition: box-shadow 160ms ease-out,
       border-color 160ms ease-out,
       transform 160ms ease-out;
@@ -579,7 +580,7 @@
       0 22px 44px -14px color-mix(in srgb, var(--t) 46%, transparent);
   }
   .surface-card:hover {
-    box-shadow: 0 1px 2px hsl(282 40% 13% / 0.06), 0 22px 44px -22px hsl(282 40% 13% / 0.32);
+    box-shadow: inset 0 1px 0 #fff, inset 0 -3px 8px rgb(42 14 51 / 0.06), 0 22px 44px -16px rgb(42 14 51 / 0.3);
   }
 
   /* Inverted (deep plum) card for colour rhythm */
@@ -2750,3 +2751,63 @@ section.snap-section .contact-title[data-row-part="title"] {
   transition: transform 160ms ease-out;
 }
 .cta-room-button:hover { transform: translateY(-1px); }
+
+/* ── Liquid glass (owner, 10 Nov 2026) ─────────────────────────────────
+   One finish for everything that is not a photo: cards, pills, chips,
+   the menu and the dark bands. Three recipes:
+   - light: see-through white, strong blur, white rim, bright top edge;
+   - dark:  a sheen laid OVER the surface's own colour, so every dark
+            pill and band keeps the colour it was given;
+   - rim:   a bright top edge for small coloured tags.
+   Unlayered on purpose, so it wins over the component layer. */
+:root {
+  --lg-blur: blur(24px) saturate(180%);
+  --lg-rim: rgb(255 255 255 / 0.85);
+  --lg-light-bg: linear-gradient(180deg, rgb(255 255 255 / 0.72), rgb(255 255 255 / 0.44));
+  --lg-light-bg-solid: linear-gradient(180deg, rgb(255 255 255 / 0.94), rgb(255 255 255 / 0.84));
+  --lg-light-shadow: inset 0 1px 0 #fff, inset 0 -3px 8px rgb(42 14 51 / 0.06), 0 14px 32px -12px rgb(42 14 51 / 0.22);
+  --lg-dark-sheen: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0) 55%, rgb(0 0 0 / 0.18));
+  --lg-dark-shadow: inset 0 1px 0 rgb(255 255 255 / 0.42), inset 0 -3px 8px rgb(0 0 0 / 0.25), 0 14px 30px -10px rgb(42 14 51 / 0.55);
+}
+.lg-light,
+.btn-ghost-ink,
+.work-pill,
+.tmc-replay,
+.tmc-zoom-btn,
+.faq-toggle {
+  background: var(--lg-light-bg);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid var(--lg-rim);
+  box-shadow: var(--lg-light-shadow);
+}
+/* The menu once the page has scrolled under it: nearly solid, so the
+   links stay easy to read over any row. */
+.lg-light[data-solid="true"] { background: var(--lg-light-bg-solid); }
+.btn-ghost-ink:hover,
+.work-pill:hover,
+.tmc-replay:hover,
+.tmc-zoom-btn:hover:not(:disabled) { background: var(--lg-light-bg-solid); }
+.lg-dark,
+.btn-ink,
+.cta-room,
+.surface-invert,
+.work-pill[aria-pressed="true"] {
+  background-image: var(--lg-dark-sheen);
+  border: 1px solid rgb(255 255 255 / 0.28);
+  box-shadow: var(--lg-dark-shadow);
+}
+.work-pill[aria-pressed="true"],
+.work-pill[aria-pressed="true"]:hover {
+  background: var(--lg-dark-sheen), hsl(var(--heading));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.btn-ink:hover { box-shadow: var(--lg-dark-shadow); }
+.lg-tag,
+.pill-tag,
+.work-chip,
+.cta-room-button {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.24), rgb(255 255 255 / 0) 60%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 6px 14px -8px rgb(42 14 51 / 0.35);
+}

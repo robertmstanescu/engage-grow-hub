@@ -204,7 +204,7 @@ const RowSection = ({
           data-row-id={dataRowId ?? row.id}
           data-row-type={dataRowType ?? row.type}
           data-row-title={dataRowTitle ?? row.strip_title}
-          className={`relative w-full flex flex-col justify-center ${vAlignClass} ${className}`}
+          className={`relative w-full flex flex-col justify-center ${darkSurface && applyRadius ? "lg-dark" : ""} ${vAlignClass} ${className}`}
           style={style}
         >
           {row.layout?.overlays?.length ? (
@@ -276,10 +276,10 @@ const RowSection = ({
              all four corners. Never a full-bleed band. */
           ...(isGlass
             ? {
-                backdropFilter: "blur(10px)",
-                WebkitBackdropFilter: "blur(10px)",
-                border: "1px solid hsl(var(--glass-border))",
-                boxShadow: "var(--shadow-card)",
+                backdropFilter: "var(--lg-blur)",
+                WebkitBackdropFilter: "var(--lg-blur)",
+                border: "1px solid var(--lg-rim)",
+                boxShadow: "var(--lg-light-shadow)",
                 marginInline: "clamp(16px, 3vw, 48px)",
                 marginBlock: "clamp(24px, 3vw, 48px)",
               }

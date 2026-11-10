@@ -68,7 +68,7 @@ const TierCard = memo(({
       <div className="flex items-center justify-between gap-3" style={{ minHeight: 26 }}>
         {tag ? (
           <span
-            className="inline-block font-body font-bold uppercase rounded-full"
+            className="lg-tag inline-block font-body font-bold uppercase rounded-full"
             style={{ backgroundColor: tagBgColor || adminColors.bgColor || tone, color: tagTextColor || adminColors.textColor, fontSize: "var(--fs-chip)", letterSpacing: "0.16em", lineHeight: 1.3, padding: "6px 12px" }}
           >
             {tag}

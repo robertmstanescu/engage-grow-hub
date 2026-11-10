@@ -98,7 +98,7 @@ const FromTheBlogRow = ({ row }: { row: PageRow }) => {
                   <span className="flex flex-col flex-1 gap-3 p-6 min-w-0 [overflow-wrap:anywhere]">
                     <span className="flex flex-wrap items-center gap-2.5">
                       {p.category && chip && (
-                        <span className="font-body text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full" style={{ backgroundColor: chip.bgColor, color: chip.textColor }}>{p.category}</span>
+                        <span className="lg-tag font-body text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full" style={{ backgroundColor: chip.bgColor, color: chip.textColor }}>{p.category}</span>
                       )}
                       {p.published_at && <span className="font-body text-[13px]" style={{ color: "hsl(var(--body))" }}>{shortDate(p.published_at)}</span>}
                     </span>

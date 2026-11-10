@@ -54,7 +54,9 @@ Rules that are easy to get wrong:
   "gold" title accent is Revolver; a boxed card for a service is liquid glass tinted with that
   service's lighter partner colour (`.tint-card`, `--card-tint`,
   `PILLAR_CARD_TINTS`); the six accent and tint pairs in
-  `lib/constants/pillarColors.ts` are his, from the secondary palette. His choices of 10 Nov 2026.
+  `lib/constants/pillarColors.ts` are his, from the secondary palette. Everything that is not a
+  photo is liquid glass (`--lg-*` tokens and `.lg-light`/`.lg-dark`/`.lg-tag`
+  at the end of `src/index.css`): cards, pills, chips, the menu and dark bands. His choices of 10 Nov 2026.
 - The tray shows eight block families (`builder/blockFamilies.ts`); a
   new row type must be added to exactly one family (the test fails
   otherwise) and the section library (`builder/sectionLibrary.ts`) is

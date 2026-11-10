@@ -202,7 +202,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       // smaller-radius tiles nested inside that photo-card container
       // — `surface-card`'s own border-radius (var(--radius), 1.5rem)
       // would look wrong repeated at the same size one level down.
-      const cardClass = `${coverImage || isDarkCard ? "" : cardAccent ? "surface-card tint-card" : "surface-card"} text-left boxed-lift align-card flex flex-col ${cardLink ? "cursor-pointer" : ""}`;
+      const cardClass = `${isDarkCard ? "lg-dark" : coverImage ? "" : cardAccent ? "surface-card tint-card" : "surface-card"} text-left boxed-lift align-card flex flex-col ${cardLink ? "cursor-pointer" : ""}`;
       // Order matters: `border` is a shorthand that resets border-top, so
       // the accent's `borderTop` must come AFTER the cover-image block or
       // accent cards inside a cover-image row lose their top bar.
@@ -220,9 +220,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         ...(isDarkCard
           ? {
               backgroundColor: "hsl(var(--deep))",
-              border: "1px solid hsl(var(--deep) / 0.9)",
               borderRadius: "var(--radius-card, 24px)",
-              boxShadow: "var(--shadow-card)",
             }
           : {}),
         /* A card with a pillar (by link or key) or its own accent colour
@@ -364,8 +362,8 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
             {darkCards.map(({ card, i }) => (
               <article
                 key={i}
-                className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 text-left"
-                style={{ background: "hsl(var(--deep))", color: "hsl(var(--deep-fg))", borderRadius: 28, padding: "clamp(32px, 4vw, 52px)" }}
+                className="lg-dark grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 text-left"
+                style={{ backgroundColor: "hsl(var(--deep))", color: "hsl(var(--deep-fg))", borderRadius: 28, padding: "clamp(32px, 4vw, 52px)" }}
               >
                 <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
                   className="md:col-span-3 font-body font-bold uppercase"
