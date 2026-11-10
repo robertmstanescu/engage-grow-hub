@@ -26,17 +26,17 @@ describe("pillar colours", () => {
   });
 
   it("resolves a colour from a short key or a slug", () => {
-    expect(pillarColorFromKey("pay")).toBe("#883500");
-    expect(pillarColorFromKey("mgr")).toBe("#201A53");
-    expect(pillarColorFromKey("pay-transparency")).toBe("#883500");
+    expect(pillarColorFromKey("pay")).toBe("#E36414");
+    expect(pillarColorFromKey("mgr")).toBe("#702963");
+    expect(pillarColorFromKey("pay-transparency")).toBe("#E36414");
     expect(pillarColorFromKey("unknown")).toBeUndefined();
     expect(pillarColorFromKey(undefined)).toBeUndefined();
   });
 
   it("resolves a colour from a service link, including the new pillars", () => {
-    expect(pillarColorFromLink("/services/pay-transparency")).toBe("#883500");
-    expect(pillarColorFromLink("/services/manager-enablement/")).toBe("#201A53");
-    expect(pillarColorFromLink("/services/internal-communications")).toBe("#43143B");
+    expect(pillarColorFromLink("/services/pay-transparency")).toBe("#E36414");
+    expect(pillarColorFromLink("/services/manager-enablement/")).toBe("#702963");
+    expect(pillarColorFromLink("/services/internal-communications")).toBe("#3D348B");
     expect(pillarColorFromLink("/blog")).toBeUndefined();
   });
 });

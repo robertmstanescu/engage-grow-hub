@@ -86,7 +86,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
     <div className={`surface-card overflow-hidden ${compact ? "flex flex-col" : ""}`}>
       <div className={`${compact ? "p-6 flex-shrink-0" : "p-6 md:p-8"} ${alignClass}`}>
         <div className="flex items-center gap-3 mb-4">
-          <span className="inline-block font-body text-micro tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
+          <span className="lg-tag inline-block font-body text-micro tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
           {startHere && (
             <span
               className="inline-block"

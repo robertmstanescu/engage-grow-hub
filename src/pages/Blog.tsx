@@ -33,7 +33,7 @@ const CategoryPill = ({ category }: { category: string }) => {
   const catColors = getCategoryColors(category);
   return (
     <span
-      className="font-body text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full"
+      className="lg-tag font-body text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full"
       style={{ backgroundColor: catColors.bgColor, color: catColors.textColor }}
     >
       {category}

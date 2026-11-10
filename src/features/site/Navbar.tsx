@@ -261,19 +261,15 @@ const Navbar = () => {
       {/* Desktop navigation — wide floating island the page scrolls under */}
       <nav
         ref={railRef}
-        className="hidden lg:grid fixed left-1/2 -translate-x-1/2 z-50 w-[calc(100vw-2*clamp(16px,5vw,96px))] max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 pl-7 pr-3 transition-all duration-300"
+        data-solid={scrolled ? "true" : undefined}
+        className="lg-light hidden lg:grid fixed left-1/2 -translate-x-1/2 z-50 w-[calc(100vw-2*clamp(16px,5vw,96px))] max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 pl-7 pr-3 transition-all duration-300"
         style={{
           top: scrolled ? "10px" : "16px",
           paddingTop: scrolled ? "8px" : "12px",
           paddingBottom: scrolled ? "8px" : "12px",
-          /* Redesign chrome (NavStates artboard): 2.1rem island, 80%
-             white with a 12px blur, --line-2 border, soft shadow. */
+          /* A 2.1rem island in liquid glass (`.lg-light`, index.css);
+             nearly solid once the page has scrolled under it. */
           borderRadius: "2.1rem",
-          backgroundColor: scrolled ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.8)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          border: "1px solid hsl(var(--line-2))",
-          boxShadow: "var(--shadow-soft)",
         }}
       >
         <a href="/" className="flex items-center flex-shrink-0">
@@ -413,7 +409,7 @@ const Navbar = () => {
             href={safeHref(ctaHref)}
             onClick={(e) => handleNavClick(e, ctaHref)}
             title={ctaText}
-            className="px-6 h-11 rounded-full flex items-center justify-center text-[15px] font-semibold tracking-[0.02em] transition-colors duration-200 whitespace-nowrap"
+            className="lg-dark px-6 h-11 rounded-full flex items-center justify-center text-[15px] font-semibold tracking-[0.02em] transition-colors duration-200 whitespace-nowrap"
             style={{
               backgroundColor: "hsl(var(--nav-cta-bg, var(--deep)))",
               color: "hsl(var(--nav-cta-text, var(--deep-fg)))",
@@ -428,14 +424,10 @@ const Navbar = () => {
 
       {/* Mobile/tablet — compact floating island, content passes under */}
       <nav
-        className="lg:hidden fixed top-2 left-2 right-2 z-50 h-14 flex items-center justify-between px-4"
+        data-solid="true"
+        className="lg-light lg:hidden fixed top-2 left-2 right-2 z-50 h-14 flex items-center justify-between px-4"
         style={{
           borderRadius: "calc(var(--radius) * 1.4)",
-          backgroundColor: "hsl(var(--card) / 0.94)",
-          backdropFilter: "blur(16px) saturate(140%)",
-          WebkitBackdropFilter: "blur(16px) saturate(140%)",
-          border: "var(--outline-ink-navbar-width) solid var(--outline-ink)",
-          boxShadow: "var(--shadow-soft)",
         }}
       >
         <a
@@ -459,7 +451,7 @@ const Navbar = () => {
             <a
               href={safeHref(ctaHref)}
               onClick={(e) => handleNavClick(e, ctaHref)}
-              className="hidden sm:flex px-4 h-9 rounded-full items-center justify-center text-xs font-semibold whitespace-nowrap"
+              className="lg-dark hidden sm:flex px-4 h-9 rounded-full items-center justify-center text-xs font-semibold whitespace-nowrap"
               style={{
                 backgroundColor: "hsl(var(--nav-cta-bg, 280 57% 16%))",
                 color: "hsl(var(--nav-cta-text, 45 60% 96%))",

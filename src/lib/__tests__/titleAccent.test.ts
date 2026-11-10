@@ -7,8 +7,8 @@ describe("resolveAccentColor", () => {
     expect(resolveAccentColor("gold")).toBe("hsl(var(--revolver))");
   });
   it("resolves pillar keys and slugs", () => {
-    expect(resolveAccentColor("ic")).toBe("#43143B");
-    expect(resolveAccentColor("pay-transparency")).toBe("#883500");
+    expect(resolveAccentColor("ic")).toBe("#3D348B");
+    expect(resolveAccentColor("pay-transparency")).toBe("#E36414");
   });
   it("returns undefined for empty or unknown names", () => {
     expect(resolveAccentColor(undefined)).toBeUndefined();

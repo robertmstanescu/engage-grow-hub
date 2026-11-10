@@ -688,7 +688,7 @@ export const HeroView = ({
               {c.tagline.split(/\s*[·•|]\s*/).map((part) => part.trim()).filter(Boolean).map((part, i) => {
                 const key = part.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
                 const isPillar = Boolean(PILLAR_COLORS[key]);
-                const chipStyle: React.CSSProperties = { padding: "8px 14px", background: "rgba(255, 255, 255, 0.75)", border: "1px solid hsl(var(--line-2))", fontSize: 13, lineHeight: 1.4, color: "hsl(var(--foreground))", overflowWrap: "anywhere", textDecoration: "none" };
+                const chipStyle: React.CSSProperties = { padding: "8px 14px", fontSize: 13, lineHeight: 1.4, color: "hsl(var(--foreground))", overflowWrap: "anywhere", textDecoration: "none" };
                 const inner = (
                   <>
                     <span aria-hidden className="flex-none rounded-full" style={{ width: 8, height: 8, background: PILLAR_COLORS[key] || "hsl(var(--deep))" }} />
@@ -698,9 +698,9 @@ export const HeroView = ({
                 return (
                   <li key={i} className="flex">
                     {isPillar ? (
-                      <a href={safeHref(`/services/${key}`)} className="hero-chip inline-flex items-center gap-2 rounded-full font-body" style={chipStyle}>{inner}</a>
+                      <a href={safeHref(`/services/${key}`)} className="lg-light hero-chip inline-flex items-center gap-2 rounded-full font-body" style={chipStyle}>{inner}</a>
                     ) : (
-                      <span className="inline-flex items-center gap-2 rounded-full font-body" style={chipStyle}>{inner}</span>
+                      <span className="lg-light inline-flex items-center gap-2 rounded-full font-body" style={chipStyle}>{inner}</span>
                     )}
                   </li>
                 );

@@ -34,4 +34,16 @@ describe("owner's choices of 10 Nov 2026", () => {
     expect(footer.match(/activeLinks\.map\(/g)).toHaveLength(1);
     expect(footer).toContain('aria-label="Connect"');
   });
+
+  it("cards, pills, chips, the menu and dark bands are liquid glass; photos are not", () => {
+    expect(css).toMatch(/--lg-blur:\s*blur\(24px\) saturate\(180%\)/);
+    expect(css).toMatch(/\.surface-card\s*\{[^}]*var\(--lg-light-bg\)/);
+    for (const sel of [".btn-ink", ".btn-ghost-ink", ".cta-room", ".pill-tag", ".work-pill"]) {
+      expect(css).toContain(`${sel},`);
+    }
+    expect(read("src/features/site/Navbar.tsx")).toContain("lg-light");
+    expect(read("src/features/site/HeroSection.tsx")).toContain("lg-light hero-chip");
+    // A photo is never frosted: no liquid glass class sits on an <img>.
+    expect(read("src/features/site/rows/BoxedRow.tsx")).not.toMatch(/<img[^>]*lg-(light|dark|tag)/);
+  });
 });
