@@ -1,7 +1,6 @@
 import { EyebrowField, TextAreaField, SectionBox } from "@/features/admin/site-editor/FieldComponents";
 import TitleLinesEditor from "@/features/admin/editors/TitleLinesEditor";
-import { MAP_COUNTRIES } from "./mapData";
-import { parseCountryPaste } from "./resolve";
+import { MAP_PLACES, parseCountryPaste } from "./resolve";
 import type { WorldMapContent } from "./schema";
 
 interface Props {
@@ -28,7 +27,8 @@ const WorldMapEditor = ({ content, onChange, bgColor }: Props) => (
     <SectionBox group label="Countries">
       <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
         One country per line (or comma-separated). A country in several lists gets the last list's colour.
-        Known countries: {MAP_COUNTRIES.map((c) => c.name).join(", ")}.
+        A main market that is in neither of the first two lists is shaded but left out of the counters.
+        Known places: {MAP_PLACES.map((c) => c.name).join(", ")}.
       </p>
       <CountryListField label="Internal comms" hint="Shaded gold." value={content.worked || []} onChange={(v) => onChange("worked", v)} />
       <CountryListField label="Internal comms and HR" hint="Shaded purple." value={content.hr || []} onChange={(v) => onChange("hr", v)} />

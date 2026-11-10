@@ -19,7 +19,7 @@ const WorldMapRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow;
   // Defaults hold no countries — the owner fills the three lists (the
   // section-library starter pre-fills them from the artboard shading).
   const groups = useMemo(() => resolveMapGroups(c), [c]);
-  const counters = useMemo(() => mapCounters(groups), [groups]);
+  const counters = useMemo(() => mapCounters(c), [c])
 
   return (
     <RowSection row={row} vAlign={vAlign} innerRef={(el) => { (ref as { current: HTMLElement | null }).current = el; }} fullHeight={false}>

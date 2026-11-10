@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { findCountry, parseCountryPaste, resolveMapGroups, defaultMapGroups, mapCounters } from "./resolve";
+import { findCountry, parseCountryPaste, resolveMapGroups, defaultMapGroups, mapCounters, workedPlaces } from "./resolve";
+import { MAP_COUNTRIES, MAP_DOTS } from "./mapData";
+import { OWNER_MAP_LIST } from "./ownerList";
 import { WORLD_MAP_DEFAULTS } from "./schema";
 
 describe("world map", () => {
@@ -24,13 +26,50 @@ describe("world map", () => {
     expect(g.get("Spain")).toBe("worked");
   });
 
-  it("counts comms as all shaded and HR as hr + main", () => {
-    const g = resolveMapGroups({ ...WORLD_MAP_DEFAULTS, worked: ["Canada"], hr: ["Spain"], main: ["Sweden"] });
-    expect(mapCounters(g)).toEqual({ comms: 3, hr: 2 });
+  it("counts worked places only: a market in neither list is shaded but not counted", () => {
+    const c = { ...WORLD_MAP_DEFAULTS, worked: ["Canada"], hr: ["Spain", "Sweden"], main: ["Sweden", "Romania"] };
+    const g = resolveMapGroups(c);
+    expect(g.get("Romania")).toBe("main");
+    expect(g.get("Sweden")).toBe("main");
+    expect(mapCounters(c)).toEqual({ comms: 3, hr: 2 });
+    expect(workedPlaces(c).comms.has("Romania")).toBe(false);
   });
 
-  it("default groups match the artboard shading (36 worked, 16 with HR)", () => {
+  it("the owner's list resolves to 36 worked places, 15 with HR, and five main markets", () => {
+    const c = { ...WORLD_MAP_DEFAULTS, worked: [...OWNER_MAP_LIST.worked], hr: [...OWNER_MAP_LIST.hr], main: [...OWNER_MAP_LIST.main] };
+    // Every name on the list is a place the map can draw.
+    for (const name of [...OWNER_MAP_LIST.worked, ...OWNER_MAP_LIST.hr, ...OWNER_MAP_LIST.main]) {
+      expect(findCountry(name)?.name, name).toBe(name);
+    }
+    expect(OWNER_MAP_LIST.worked).toHaveLength(21);
+    expect(OWNER_MAP_LIST.hr).toHaveLength(15);
+    expect(mapCounters(c)).toEqual({ comms: 36, hr: 15 });
+    const g = resolveMapGroups(c);
+    expect(g.size).toBe(37); // the 36 plus Romania, a market only
+    expect([...g].filter(([, s]) => s === "main").map(([n]) => n).sort()).toEqual(
+      ["Romania", "Spain", "Sweden", "United Kingdom", "United States"],
+    );
+  });
+
+  it("draws Congo as the Democratic Republic, and Hong Kong and Singapore as dots", () => {
+    expect(findCountry("Democratic Republic of the Congo")?.name).toBe("Democratic Republic of the Congo");
+    expect(findCountry("DRC")?.name).toBe("Democratic Republic of the Congo");
+    expect(findCountry("Republic of the Congo")).toBeUndefined();
+    expect(MAP_COUNTRIES.some((c) => c.name === "Republic of the Congo")).toBe(false);
+    expect(MAP_DOTS.map((d) => d.name).sort()).toEqual(["Hong Kong", "Singapore"]);
+    expect(findCountry("Hong Kong (dot)")?.name).toBe("Hong Kong");
+  });
+
+  it("the built-in shading matches the owner's list", () => {
     const g = defaultMapGroups();
-    expect(mapCounters(g)).toEqual({ comms: 35, hr: 16 });
+    expect(g.size).toBe(37);
+    for (const name of OWNER_MAP_LIST.worked) expect(g.get(name), name).toBe("worked");
+    for (const name of OWNER_MAP_LIST.main) expect(g.get(name), name).toBe("main");
+  });
+
+  it("copes with empty, odd and hostile input", () => {
+    expect(findCountry("")).toBeUndefined();
+    expect(findCountry(null as unknown as string)).toBeUndefined();
+    expect(mapCounters({ ...WORLD_MAP_DEFAULTS, worked: ["<script>", "Sweden", "sweden", " SWEDEN "] })).toEqual({ comms: 1, hr: 0 });
   });
 });

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { MAP_BASE_PATHS, MAP_COUNTRIES } from "./mapData";
-import { statusLabel, type MapStatus } from "./resolve";
+import { MAP_BASE_PATHS, MAP_COUNTRIES, MAP_DOTS } from "./mapData";
+import { statusLabel, workedPlaces, type MapStatus } from "./resolve";
 import type { WorldMapContent } from "./schema";
 
 /**
@@ -13,13 +13,17 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
   const wrapRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(true);
   const [tip, setTip] = useState<{ x: number; y: number; name: string; status: string } | null>(null);
+  /* Hover and keyboard focus are for worked places only; a market that
+     is shaded but not worked in (Romania) stays quiet. */
+  const worked = useMemo(() => workedPlaces(content).comms, [content]);
+  const dots = useMemo(() => MAP_DOTS.filter((d) => groups.has(d.name)), [groups]);
 
   const shaded = useMemo(
     () => MAP_COUNTRIES.filter((c) => groups.has(c.name)),
     [groups],
   );
 
-  const showTip = useCallback((name: string, status: MapStatus, el: SVGPathElement) => {
+  const showTip = useCallback((name: string, status: MapStatus, el: SVGGraphicsElement) => {
     const wrap = wrapRef.current;
     if (!wrap) return;
     const w = wrap.getBoundingClientRect();
@@ -54,19 +58,50 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
             ))}
             {shaded.map((c) => {
               const status = groups.get(c.name)!;
+              const live = worked.has(c.name);
               return (
                 <path
                   key={c.name}
-                  className={`c wm-${status}`}
+                  className={`c wm-${status}${live ? " wm-live" : ""}`}
                   d={c.d}
                   style={{ ["--d" as string]: `${c.delay}s` }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`${c.name}: ${statusLabel(status, content)}`}
-                  onMouseEnter={(e) => showTip(c.name, status, e.currentTarget)}
-                  onMouseLeave={() => setTip(null)}
-                  onFocus={(e) => showTip(c.name, status, e.currentTarget)}
-                  onBlur={() => setTip(null)}
+                  {...(live
+                    ? {
+                        tabIndex: 0,
+                        role: "button",
+                        "aria-label": `${c.name}: ${statusLabel(status, content)}`,
+                        onMouseEnter: (e: React.MouseEvent<SVGPathElement>) => showTip(c.name, status, e.currentTarget),
+                        onMouseLeave: () => setTip(null),
+                        onFocus: (e: React.FocusEvent<SVGPathElement>) => showTip(c.name, status, e.currentTarget),
+                        onBlur: () => setTip(null),
+                      }
+                    : { "aria-hidden": true })}
+                />
+              );
+            })}
+            {/* Places too small for a shape (Hong Kong, Singapore). */}
+            {dots.map((d) => {
+              const status = groups.get(d.name)!;
+              const live = worked.has(d.name);
+              return (
+                <circle
+                  key={d.name}
+                  className={`c wm-${status}${live ? " wm-live" : ""}`}
+                  cx={d.cx}
+                  cy={d.cy}
+                  r={d.r}
+                  style={{ ["--d" as string]: `${d.delay}s` }}
+                  {...(live
+                    ? {
+                        tabIndex: 0,
+                        role: "button",
+                        "aria-label": `${d.name}: ${statusLabel(status, content)}`,
+                        onMouseEnter: (e: React.MouseEvent<SVGCircleElement>) => showTip(d.name, status, e.currentTarget),
+                        onMouseLeave: () => setTip(null),
+                        onFocus: (e: React.FocusEvent<SVGCircleElement>) => showTip(d.name, status, e.currentTarget),
+                        onBlur: () => setTip(null),
+                      }
+                    : { "aria-hidden": true })}
                 />
               );
             })}
@@ -89,7 +124,7 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
       </div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-x-6 gap-y-2">
-          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--accent))" }} />{content.legend_worked || "Internal comms"}</span>
+          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--gold-decor))" }} />{content.legend_worked || "Internal comms"}</span>
           <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--primary))" }} />{content.legend_hr || "Internal comms and HR"}</span>
           <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--map-main))" }} />{content.legend_main || "Main markets today"}</span>
           {content.legend_note && <span className="tmc-legend">{content.legend_note}</span>}

@@ -1995,24 +1995,24 @@
 
 /* World map row (redesign): staggered draw-on, replayable. */
 :root { --map-main: 281 53% 20%; }
-.tmc-map path.c { fill: hsl(280 24% 88%); stroke: hsl(var(--background)); stroke-width: 0.6; }
-.tmc-map path.wm-worked, .tmc-map path.wm-hr, .tmc-map path.wm-main { fill: hsl(280 24% 88%); }
-.tmc-map.play path.wm-worked { animation: tmcWorked .7s ease-out forwards; animation-delay: var(--d, 0s); }
-.tmc-map.play path.wm-hr { animation: tmcWorked .7s ease-out forwards, tmcHr .8s ease-out forwards; animation-delay: var(--d, 0s), calc(var(--d, 0s) + .35s); }
-.tmc-map.play path.wm-main { animation: tmcWorked .7s ease-out forwards, tmcHr .8s ease-out forwards, tmcMain .6s ease-out forwards; animation-delay: var(--d, 0s), calc(var(--d, 0s) + .35s), calc(var(--d, 0s) + .8s); }
-.tmc-map:not(.play) path.wm-worked { fill: hsl(var(--accent)); }
-.tmc-map:not(.play) path.wm-hr { fill: hsl(var(--primary)); }
-.tmc-map:not(.play) path.wm-main { fill: hsl(var(--map-main)); }
-.tmc-map path.wm-worked:hover, .tmc-map path.wm-hr:hover, .tmc-map path.wm-main:hover,
-.tmc-map path.wm-worked:focus-visible, .tmc-map path.wm-hr:focus-visible, .tmc-map path.wm-main:focus-visible { stroke: hsl(var(--deep)); stroke-width: 1.4; outline: none; cursor: default; }
-@keyframes tmcWorked { to { fill: hsl(var(--accent)); } }
+.tmc-map .c { fill: hsl(280 24% 88%); stroke: hsl(var(--background)); stroke-width: 0.6; }
+.tmc-map .wm-worked, .tmc-map .wm-hr, .tmc-map .wm-main { fill: hsl(280 24% 88%); }
+.tmc-map.play .wm-worked { animation: tmcWorked .7s ease-out forwards; animation-delay: var(--d, 0s); }
+.tmc-map.play .wm-hr { animation: tmcWorked .7s ease-out forwards, tmcHr .8s ease-out forwards; animation-delay: var(--d, 0s), calc(var(--d, 0s) + .35s); }
+.tmc-map.play .wm-main { animation: tmcWorked .7s ease-out forwards, tmcHr .8s ease-out forwards, tmcMain .6s ease-out forwards; animation-delay: var(--d, 0s), calc(var(--d, 0s) + .35s), calc(var(--d, 0s) + .8s); }
+.tmc-map:not(.play) .wm-worked { fill: hsl(var(--gold-decor)); }
+.tmc-map:not(.play) .wm-hr { fill: hsl(var(--primary)); }
+.tmc-map:not(.play) .wm-main { fill: hsl(var(--map-main)); }
+/* Hover and focus on worked places only (.wm-live). */
+.tmc-map .wm-live:hover, .tmc-map .wm-live:focus-visible { stroke: hsl(var(--deep)); stroke-width: 1.4; outline: none; cursor: default; }
+@keyframes tmcWorked { to { fill: hsl(var(--gold-decor)); } }
 @keyframes tmcHr { to { fill: hsl(var(--primary)); } }
 @keyframes tmcMain { to { fill: hsl(var(--map-main)); } }
 @media (prefers-reduced-motion: reduce) {
-  .tmc-map.play path.wm-worked, .tmc-map.play path.wm-hr, .tmc-map.play path.wm-main { animation: none; }
-  .tmc-map.play path.wm-worked { fill: hsl(var(--accent)); }
-  .tmc-map.play path.wm-hr { fill: hsl(var(--primary)); }
-  .tmc-map.play path.wm-main { fill: hsl(var(--map-main)); }
+  .tmc-map.play .wm-worked, .tmc-map.play .wm-hr, .tmc-map.play .wm-main { animation: none; }
+  .tmc-map.play .wm-worked { fill: hsl(var(--gold-decor)); }
+  .tmc-map.play .wm-hr { fill: hsl(var(--primary)); }
+  .tmc-map.play .wm-main { fill: hsl(var(--map-main)); }
 }
 .tmc-tip { pointer-events: none; transform: translate(-50%, calc(-100% - 14px)); transition: opacity .15s ease; background: hsl(var(--deep)); color: hsl(var(--deep-fg)); border-radius: 12px; padding: 8px 12px; box-shadow: 0 8px 24px -10px hsl(var(--deep) / .45); white-space: nowrap; font-family: var(--font-body); }
 .tmc-tip-name { font-family: var(--font-heading, var(--font-body)); font-weight: 700; font-size: 15px; }

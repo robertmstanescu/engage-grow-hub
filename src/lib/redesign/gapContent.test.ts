@@ -23,7 +23,10 @@ describe("applyGapContent", () => {
   it("adds hero buttons and a proof strip under the hero on the homepage", () => {
     const notes: GapNote[] = [];
     const out = applyGapContent(home(), { kind: "home" }, notes);
-    expect(types(out)).toEqual(["hero", "proof_band", "boxed", "contact"]);
+    expect(types(out)).toEqual(["hero", "proof_band", "world_map", "boxed", "contact"]);
+    expect(dataOf(out, "world_map").worked).toHaveLength(21);
+    expect(dataOf(out, "world_map").hr).toHaveLength(15);
+    expect(dataOf(out, "world_map").main).toContain("Romania");
     expect(dataOf(out, "hero").cta_url).toBe("#contact");
     expect(dataOf(out, "proof_band").items).toHaveLength(4);
     expect(notes.length).toBeGreaterThan(0);
