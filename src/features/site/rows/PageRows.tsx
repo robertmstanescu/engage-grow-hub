@@ -31,10 +31,16 @@ export const RowsRenderer = ({
   /* Pages that already print their own <h1> (Blog index, article
      pages) opt out so we never emit a second one. */
   promoteHeading = true,
+  /* Optional anchor targets: return an id for a row and its public
+     output is wrapped in a plain, unstyled <div id> (scroll-mt so a
+     fixed navbar never covers it). Used by the case study "On this
+     page" column; builder output is untouched. */
+  rowAnchorId,
 }: {
   rows: Array<PageRow | PageRowV3 | any>;
   footerSlot?: React.ReactNode;
   promoteHeading?: boolean;
+  rowAnchorId?: (row: PageRowV3, index: number) => string | undefined;
 }) => {
   // Memoize on `rows` identity so we don't re-walk the tree on every
   // parent re-render. Idempotent for already-v3 input.
@@ -118,7 +124,16 @@ export const RowsRenderer = ({
           );
         }
         // Public site: render the row directly (preserves scroll-snap).
-        if (!builderEnabled) return rendered;
+        if (!builderEnabled) {
+          const anchor = rowAnchorId?.(row, index);
+          return anchor ? (
+            <div key={row.id} id={anchor} className="scroll-mt-28">
+              {rendered}
+            </div>
+          ) : (
+            rendered
+          );
+        }
         // Admin canvas: wrap with a drop zone above each row.
         return (
           <div key={row.id}>

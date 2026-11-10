@@ -7,7 +7,7 @@
  * a closing nudge to book a call. Items without a case study never
  * link here; an unpublished slug 404s.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
@@ -16,8 +16,11 @@ import usePageMeta from "@/hooks/usePageMeta";
 import { fetchWorkItemBySlug, type WorkItemRecord } from "@/services/workItems";
 import { fetchProofPointsByIds, type ProofPointRecord } from "@/services/proofPoints";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
+import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import { transformImageUrl } from "@/services/mediaOptimization";
 import { pillarColorFromKey } from "@/lib/constants/pillarColors";
+
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, "").trim();
 
 const PILLAR_NAMES: Record<string, string> = {
   ic: "Internal Communications",
@@ -83,7 +86,28 @@ const WorkCase = () => {
 
   const pillarColor = pillarColorFromKey(item.pillar);
   const eyebrow = [PILLAR_NAMES[item.pillar] ?? item.pillar, TYPE_NAMES[item.type] ?? item.type, item.year].filter(Boolean).join(" · ");
-  const caseRows = Array.isArray(item.case_rows) ? item.case_rows : [];
+  const caseRows = useMemo(() => (Array.isArray(item.case_rows) ? item.case_rows : []), [item.case_rows]);
+
+  /* "On this page" (redesign §6 E4): one entry per case row that has a
+     title or eyebrow; clicking scrolls to the row's anchor. */
+  const caseSections = useMemo(() => {
+    const v3 = normalizeRowsToV3(caseRows as any);
+    const out: { id: string; label: string }[] = [];
+    v3.forEach((row: any, i: number) => {
+      for (const col of row.columns ?? []) {
+        for (const cell of col.cells ?? []) {
+          for (const w of cell.widgets ?? []) {
+            const raw = w.data?.title_lines?.[0] || w.data?.eyebrow;
+            const label = raw ? stripHtml(String(raw)) : "";
+            if (label) { out.push({ id: `case-s-${i}`, label }); return; }
+          }
+        }
+      }
+    });
+    return out;
+  }, [caseRows]);
+  const anchorFor = (_row: any, index: number) =>
+    caseSections.some((s) => s.id === `case-s-${index}`) ? `case-s-${index}` : undefined;
 
   return (
     <div className="min-h-screen">
@@ -154,7 +178,35 @@ const WorkCase = () => {
           </section>
         )}
 
-        {caseRows.length > 0 && <RowsRenderer rows={caseRows} promoteHeading={false} />}
+        {caseRows.length > 0 && (
+          <div className={caseSections.length > 1 ? "xl:grid xl:grid-cols-[240px_minmax(0,1fr)] xl:gap-10 max-w-[1280px] mx-auto" : ""}>
+            {caseSections.length > 1 && (
+              <aside className="hidden xl:block" aria-label="On this page">
+                <nav className="sticky top-32">
+                  <span className="font-body uppercase block mb-3" style={{ fontSize: "var(--fs-card-label)", letterSpacing: "var(--ls-label, 0.28em)", color: "hsl(var(--meta))" }}>
+                    On this page
+                  </span>
+                  <ul className="space-y-2">
+                    {caseSections.map((s) => (
+                      <li key={s.id}>
+                        <a
+                          href={`#${s.id}`}
+                          className="font-body no-underline transition-colors hover:opacity-100"
+                          style={{ fontSize: "var(--fs-card-body)", color: "hsl(var(--body) / 0.75)" }}
+                        >
+                          {s.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </aside>
+            )}
+            <div className="min-w-0">
+              <RowsRenderer rows={caseRows} promoteHeading={false} rowAnchorId={anchorFor} />
+            </div>
+          </div>
+        )}
 
         <section className="py-row-fluid">
           <div className="max-w-[820px] mx-auto row-container text-center">
