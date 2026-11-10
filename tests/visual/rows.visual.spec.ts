@@ -131,7 +131,9 @@ for (const route of ROUTES) {
     // padding, and a full-page PNG is ~2 MB per route in the repo.
     if (count === 0) {
       await page.evaluate(() => window.scrollTo(0, 0));
-      await expect(page).toHaveScreenshot(`${fileSafe(route)}--full.png`, { fullPage: true });
+      // A full page of frosted-glass cards takes software-rendered Chromium
+      // longer than the default 5s to paint twice and compare.
+      await expect(page).toHaveScreenshot(`${fileSafe(route)}--full.png`, { fullPage: true, timeout: 30_000 });
     }
   });
 }
