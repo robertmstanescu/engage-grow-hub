@@ -112,7 +112,9 @@ Rules that are easy to get wrong:
   (`pageAnswer`), which shows it as small print under "In plain words"
   beside the Connect column. Visible text, never hidden; it doubles as
   the search description and Service schema description when those are
-  empty. Blog pages pass nothing (owner's choice).
+  empty. Blog pages pass nothing (owner's choice). A hero can also print
+  it as an "In short" strip under the headline (`content.answer_strip`,
+  on by default on service pages after the restyle).
 - The public bundle must stay free of admin code: widget editors are
   `lazy()`, dnd-kit lives only in `*Live.tsx` / `CellDropTargets.tsx`
   loaded inside a builder, icons load per name through
@@ -157,3 +159,19 @@ Rules that are easy to get wrong:
   newsletter/sign-up boxes, contacts or campaigns. Never add an email
   form back. Admin login emails (auth-email-hook + process-email-queue)
   stay.
+- Content is never trusted on its way to the page. A link that comes
+  from a CMS field goes through `services/safeHref.ts`, custom CSS
+  through `services/safeCss.ts`, stored HTML through `sanitizeHtml`, and
+  a widget row reads its content with `lib/parseContent.ts` (it cannot
+  throw on null or malformed data). `services/publicLinks.test.ts` fails
+  on a raw content link, an unguarded `<style>` or a new-tab link without
+  `noopener`/`noreferrer`. Only `calendar.google.com` may be embedded.
+- Redesign data lives in `src/lib/redesign/`: `restyle.ts` changes
+  layout and variants only and proves the text is unchanged;
+  `gapContent.ts` holds new copy for sections the design added. Both are
+  run by `scripts/redesign/build-restyle.ts` into SQL for DRAFT columns,
+  which Lovable runs. Never write restyle data to a live column.
+- A page with no hero is a document page (Privacy): `CmsPage` lifts the
+  first text block's small heading, title and date line above one glass
+  card (`site/documentHeader.ts`, render-time only) and prints the body
+  inside it on an 820px column.
