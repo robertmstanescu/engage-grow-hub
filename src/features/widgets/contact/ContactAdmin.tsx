@@ -3,7 +3,7 @@
  * Google Calendar appointment scheduling (embedded calendar + button).
  */
 
-import { MoreFields, Field, RichField } from "@/features/admin/site-editor/FieldComponents";
+import { MoreFields, Field, RichField, SelectField } from "@/features/admin/site-editor/FieldComponents";
 import TitleLinesEditor from "@/features/admin/editors/TitleLinesEditor";
 import ImagePickerField from "@/features/admin/ImagePickerField";
 import { DEFAULT_BOOKING_URL, DEFAULT_CALENDAR_EMBED_URL } from "@/features/site/rows/ContactRow";
@@ -38,6 +38,15 @@ const ContactAdmin = ({ content, onChange }: Props) => (
     </label>
 
     <MoreFields>
+      <SelectField
+        label="Calendar position"
+        value={content.layout === "side" ? "side" : "stacked"}
+        onChange={(v) => onChange("layout", v)}
+        options={[
+          { label: "Under the text, full width", value: "stacked" },
+          { label: "Beside the text", value: "side" },
+        ]}
+      />
       <Field
         label="Stamp under the text (a word or two)"
         value={content.stamp || ""}

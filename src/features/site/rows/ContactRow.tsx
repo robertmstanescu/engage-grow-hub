@@ -42,12 +42,17 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   const { ref, isVisible } = useScrollReveal();
   const coverImage = c.cover_image?.trim() || undefined;
 
-  // Artboard layout: copy on the left, the booking card on the right.
-  // The two columns wrap to a stack on narrow screens (flex-basis, no
-  // breakpoint), so the calendar never gets narrower than it can use.
+  // Two layouts (Content ▸ More ▸ "Calendar position"):
+  //  - "stacked" (default; owner, 10 Nov 2026): the copy, then the
+  //    booking card across the full column underneath. The row is much
+  //    shorter because the wide calendar shows its times beside the month.
+  //  - "side" (the artboard): copy on the left, the card on the right;
+  //    the two wrap to a stack on narrow screens (flex-basis, no
+  //    breakpoint), so the calendar never gets narrower than it can use.
+  const stacked = c.layout !== "side";
   const innerContent = (
-    <div className="flex flex-wrap items-start" style={{ gap: 56 }}>
-      <div className={`min-w-0 ${contentAlign}`} style={{ flex: "1 1 440px", ...revealStyle(isVisible, 0) }}>
+    <div className={stacked ? "flex flex-col" : "flex flex-wrap items-start"} style={{ gap: stacked ? 36 : 56 }}>
+      <div className={`min-w-0 ${contentAlign}`} style={{ ...(stacked ? { maxWidth: 820, ...(align === "center" ? { marginInline: "auto" } : align === "right" ? { marginLeft: "auto" } : {}) } : { flex: "1 1 440px" }), ...revealStyle(isVisible, 0) }}>
         {c.eyebrow && (
           <RowEyebrow color={c.color_eyebrow || ""}>{c.eyebrow}</RowEyebrow>
         )}
@@ -73,7 +78,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
 
       <div
         className="surface-card min-w-0 p-3 md:p-6"
-        style={{ flex: "1 1 420px", ...revealStyle(isVisible, 1) }}>
+        style={{ ...(stacked ? { width: "100%" } : { flex: "1 1 420px" }), ...revealStyle(isVisible, 1) }}>
         {showCalendar && (
           <div className="overflow-hidden rounded-2xl bg-card">
             <iframe

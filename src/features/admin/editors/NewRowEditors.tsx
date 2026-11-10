@@ -304,6 +304,15 @@ export const FaqEditor = ({
           </>
         )}
       />
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={content.start_open === true}
+          onChange={(e) => onChange("start_open", e.target.checked)}
+          className="rounded"
+        />
+        <span className="font-body text-xs text-muted-foreground">Start with the answers open</span>
+      </label>
     </div>
   );
 };

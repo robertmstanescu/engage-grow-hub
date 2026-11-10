@@ -198,6 +198,14 @@ Rules that are easy to get wrong:
   and a closed `<details>` below). Only published items and APPROVED
   proof points reach the page. The Work link is navbar data: never
   hard-code it into the navigation.
+- Cards in a line share their rows: the grid carries `.align-cards` and
+  each card `.align-card` with `--slots` (CSS subgrid, `src/index.css`),
+  so prices, text and buttons sit level whatever the title length. Every
+  part must render (an empty one as `.align-empty`). On a tier card
+  "What's inside" is a closed `<details>` and the note prints under the
+  card, outside it. Q&A answers start closed (`start_open` turns that
+  round) but stay in the HTML (`forceMount`). The booking calendar sits
+  full width under the copy unless the block says "Beside the text".
 - A page with no hero is a document page (Privacy): `CmsPage` lifts the
   first text block's small heading, title and date line above one glass
   card (`site/documentHeader.ts`, render-time only) and prints the body
