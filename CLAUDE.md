@@ -51,8 +51,7 @@ Rules that are easy to get wrong:
   Mercator, no Antarctica); the "Map: amCharts" credit by the legend is
   the licence's condition and must stay. Small labels and eyebrows on
   light are pure black (`--gold-text`, `--hero-label`) and the named
-  "gold" title accent is Revolver; every card is liquid glass (`.surface-card`: thinning white, strong
-  blur, white rim) and a boxed card for a service is tinted with that
+  "gold" title accent is Revolver; a boxed card for a service is liquid glass tinted with that
   service's lighter partner colour (`.tint-card`, `--card-tint`,
   `PILLAR_CARD_TINTS`); the six accent and tint pairs in
   `lib/constants/pillarColors.ts` are his, from the secondary palette. His choices of 10 Nov 2026.
