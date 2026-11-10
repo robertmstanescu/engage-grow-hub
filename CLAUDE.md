@@ -217,7 +217,9 @@ Rules that are easy to get wrong:
   hard-code it into the navigation.
 - Cards in a line share their rows: the grid carries `.align-cards` and
   each card `.align-card` with `--slots` (CSS subgrid, `src/index.css`),
-  so prices, text and buttons sit level whatever the title length. Every
+  so prices, text and buttons sit level whatever the title length. This is
+  a rule for EVERY card grid (tiers, boxed cards, process steps, blog
+  cards): a new card grid opts in too, so bodies start on the same line. Every
   part must render (an empty one as `.align-empty`). On a tier card
   "What's inside" is a closed `<details>` and the note prints under the
   card, outside it. Q&A answers start closed (`start_open` turns that

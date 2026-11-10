@@ -82,12 +82,14 @@ const ProcessStepsRow = ({
         )}
         {c.body && <RowBody html={sanitizeHtml(c.body)} className="measure" style={revealStyle(isVisible, 0.35)} />}
 
-        <ol className={`mt-10 grid grid-cols-1 ${cols} ${asCards ? "gap-4 lg:gap-5" : "gap-8 lg:gap-10"} text-left`}>
+        {/* align-cards: the number, title and text of every step in a line sit on
+            shared rows, so a two-line title moves its neighbours' text down too. */}
+        <ol className={`mt-10 grid grid-cols-1 ${cols} ${asCards ? "gap-4 lg:gap-5" : "gap-8 lg:gap-10"} text-left align-cards`}>
           {shown.map((step, i) => (
             <li
               key={i}
-              className={asCards ? "surface-card flex flex-col gap-2" : "border-t row-border pt-5 flex flex-col gap-2"}
-              style={{ ...revealStyle(isVisible, 0.4 + i * 0.08), ...(asCards ? { padding: "clamp(20px, 2vw, 28px)" } : {}) }}
+              className={`align-card ${asCards ? "surface-card flex flex-col gap-2" : "border-t row-border pt-5 flex flex-col gap-2"}`}
+              style={{ ...revealStyle(isVisible, 0.4 + i * 0.08), ...(asCards ? { padding: "clamp(20px, 2vw, 28px)" } : {}), ["--slots" as string]: 3, ["--slot-gap" as string]: "8px", alignContent: "start" }}
             >
               {/* Understated number: a quiet counter, not a badge. */}
               <span
@@ -96,17 +98,21 @@ const ProcessStepsRow = ({
               >
                 {String(i + 1).padStart(2, "0")}
               </span>
-              {step.title && (
+              {step.title ? (
                 <h3 className="font-display font-bold leading-tight row-fg" style={{ fontSize: "var(--fs-step-title)", ...(asCards ? { color: "hsl(var(--heading))" } : {}) }}>
                   {step.title}
                 </h3>
+              ) : (
+                <span className="align-empty" aria-hidden />
               )}
-              {step.description && (
+              {step.description ? (
                 <div
                   className="rich-text font-body row-fg-muted [&_p]:my-1"
                   style={{ fontSize: "var(--fs-card-body)", lineHeight: "var(--lh-card-body)" }}
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(step.description) }}
                 />
+              ) : (
+                <span className="align-empty" aria-hidden />
               )}
             </li>
           ))}

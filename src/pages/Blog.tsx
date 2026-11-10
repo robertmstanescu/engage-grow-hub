@@ -94,33 +94,31 @@ const LeadCard = ({ post }: { post: BlogPost }) => (
 );
 
 const GridCard = ({ post }: { post: BlogPost }) => (
-  <article className="group h-full min-w-0">
+  // Four shared rows (picture, date line, title, excerpt) so every card in a
+  // line starts its title and its excerpt at the same height.
+  <article className="group h-full min-w-0 align-card" style={{ ["--slots" as string]: 4 }}>
     <Link
       to={`/blog/${post.slug}`}
-      className="glass rounded-3xl overflow-hidden flex flex-col h-full min-w-0 transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent"
+      className="align-card-inner glass rounded-3xl overflow-hidden flex flex-col h-full min-w-0 transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent [overflow-wrap:anywhere]"
     >
-      <CardCover post={post} heightClass="h-[200px]" />
-      <div className="p-6 flex flex-col gap-3 flex-grow min-w-0 [overflow-wrap:anywhere]">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <CategoryPill category={post.category} />
-          {post.published_at && (
-            <span className="font-body text-[13px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-              {formatDate(post.published_at)}
-            </span>
-          )}
-        </div>
-        <h3
-          className="font-display font-bold leading-[1.22] flex-grow group-hover:opacity-80 [overflow-wrap:anywhere]"
-          style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-grid-card-title)" }}
-        >
-          {post.title}
-        </h3>
-        {post.excerpt && (
-          <p className="font-body text-[15px] leading-[1.6] line-clamp-3" style={{ color: "hsl(var(--muted-foreground))" }}>
-            {post.excerpt}
-          </p>
+      {post.cover_image ? <CardCover post={post} heightClass="h-[200px]" /> : <span className="align-empty" aria-hidden />}
+      <div className="px-6 pt-6 pb-3 flex flex-wrap items-center gap-2.5 min-w-0">
+        <CategoryPill category={post.category} />
+        {post.published_at && (
+          <span className="font-body text-[13px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+            {formatDate(post.published_at)}
+          </span>
         )}
       </div>
+      <h3
+        className="px-6 pb-3 font-display font-bold leading-[1.22] group-hover:opacity-80 [overflow-wrap:anywhere]"
+        style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-grid-card-title)" }}
+      >
+        {post.title}
+      </h3>
+      <p className="px-6 pb-6 font-body text-[15px] leading-[1.6] line-clamp-3 flex-grow" style={{ color: "hsl(var(--muted-foreground))" }}>
+        {post.excerpt || ""}
+      </p>
     </Link>
   </article>
 );
@@ -332,7 +330,7 @@ const Blog = () => {
             <div className="space-y-8">
               {leadPost && <LeadCard post={leadPost} />}
               {gridPosts.length > 0 && (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 align-cards">
                   {gridPosts.map((post) => (
                     <GridCard key={post.slug} post={post} />
                   ))}

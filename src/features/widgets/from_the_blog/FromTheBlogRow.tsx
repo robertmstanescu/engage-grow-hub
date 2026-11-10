@@ -86,25 +86,27 @@ const FromTheBlogRow = ({ row }: { row: PageRow }) => {
         </div>
         {/* Cards follow the artboards: 180px picture, category chip in its
             own colour beside the date, 20px title, three lines of excerpt. */}
-        <ul className="grid grid-cols-1 md:grid-cols-3 gap-6" style={revealStyle(isVisible, 0.3)}>
+        <ul className="grid grid-cols-1 md:grid-cols-3 gap-6 align-cards" style={revealStyle(isVisible, 0.3)}>
           {posts.map((p) => {
             const chip = p.category ? getCategoryColors(p.category) : null;
             return (
-              <li key={p.slug} className="min-w-0">
-                <Link to={`/blog/${p.slug}/`} className="glass rounded-3xl group flex flex-col h-full overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
-                  {p.cover_image && (
+              <li key={p.slug} className="min-w-0 align-card" style={{ ["--slots" as string]: 4 }}>
+                {/* Picture, date line, title, excerpt: four rows shared with
+                    the neighbouring cards, so titles and excerpts start level. */}
+                <Link to={`/blog/${p.slug}/`} className="align-card-inner glass rounded-3xl group flex flex-col h-full overflow-hidden transition-all duration-300 hover:-translate-y-0.5 [overflow-wrap:anywhere]">
+                  {p.cover_image ? (
                     <img src={transformImageUrl(p.cover_image, { width: 640, aspectRatio: 16 / 9, quality: 70 })} alt={p.cover_image_alt || ""} loading="lazy" decoding="async" className="block w-full h-[180px] object-cover" />
+                  ) : (
+                    <span className="align-empty" aria-hidden />
                   )}
-                  <span className="flex flex-col flex-1 gap-3 p-6 min-w-0 [overflow-wrap:anywhere]">
-                    <span className="flex flex-wrap items-center gap-2.5">
-                      {p.category && chip && (
-                        <span className="lg-tag font-body text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full" style={{ backgroundColor: chip.bgColor, color: chip.textColor }}>{p.category}</span>
-                      )}
-                      {p.published_at && <span className="font-body text-[13px]" style={{ color: "hsl(var(--body))" }}>{shortDate(p.published_at)}</span>}
-                    </span>
-                    <span className="block font-display font-bold leading-[1.22] flex-grow group-hover:opacity-80" style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-grid-card-title)", overflowWrap: "anywhere" }}>{p.title}</span>
-                    {p.excerpt && <span className="font-body text-[15px] leading-[1.6] line-clamp-3" style={{ color: "hsl(var(--body))" }}>{p.excerpt}</span>}
+                  <span className="px-6 pt-6 pb-3 flex flex-wrap items-center gap-2.5 min-w-0">
+                    {p.category && chip && (
+                      <span className="lg-tag font-body text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full" style={{ backgroundColor: chip.bgColor, color: chip.textColor }}>{p.category}</span>
+                    )}
+                    {p.published_at && <span className="font-body text-[13px]" style={{ color: "hsl(var(--body))" }}>{shortDate(p.published_at)}</span>}
                   </span>
+                  <span className="block px-6 pb-3 font-display font-bold leading-[1.22] group-hover:opacity-80" style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-grid-card-title)", overflowWrap: "anywhere" }}>{p.title}</span>
+                  <span className="block px-6 pb-6 font-body text-[15px] leading-[1.6] line-clamp-3 flex-grow" style={{ color: "hsl(var(--body))" }}>{p.excerpt || ""}</span>
                 </Link>
               </li>
             );
