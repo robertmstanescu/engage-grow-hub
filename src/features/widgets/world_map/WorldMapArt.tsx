@@ -167,10 +167,27 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
           onPointerLeave={(e) => { if (!dragging) onPointerEnd(e); }}
           onDoubleClick={(e) => { const { fx, fy } = fractionOf(e.clientX, e.clientY); zoomBy(ZOOM_STEP, fx, fy); }}
         >
-          <g>
+          {/* "3D within 3D" (owner, 10 Nov 2026): only the countries worked
+              in are lit from the top left and lifted off the glass box, so
+              they read as raised glass; the rest of the world stays flat.
+              One filter on that group keeps it cheap. */}
+          <defs>
+            <filter id="tmc-glass-3d" x="-3%" y="-3%" width="106%" height="110%" colorInterpolationFilters="sRGB">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="soft" />
+              <feSpecularLighting in="soft" surfaceScale="2.5" specularConstant="0.85" specularExponent="18" lightingColor="#ffffff" result="shine">
+                <feDistantLight azimuth="225" elevation="42" />
+              </feSpecularLighting>
+              <feComposite in="shine" in2="SourceAlpha" operator="in" result="shineIn" />
+              <feComposite in="SourceGraphic" in2="shineIn" operator="arithmetic" k1="0" k2="1" k3="0.55" k4="0" result="lit" />
+              <feDropShadow in="lit" dx="0" dy="2.5" stdDeviation="2.2" floodColor="#2A0E33" floodOpacity="0.24" />
+            </filter>
+          </defs>
+          <g className="tmc-land">
             {MAP_BASE_PATHS.map((d, i) => (
               <path key={i} className="c" d={d} />
             ))}
+          </g>
+          <g className="tmc-worked" filter="url(#tmc-glass-3d)">
             {shaded.map((c) => {
               const status = groups.get(c.name)!;
               /* Every shaded place names itself on hover and focus,
@@ -241,9 +258,9 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
       </div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-x-6 gap-y-2">
-          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--gold-decor))" }} />{content.legend_worked || "Internal comms"}</span>
-          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--primary))" }} />{content.legend_hr || "Internal comms and HR"}</span>
-          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--map-main))" }} />{content.legend_main || "Main markets today"}</span>
+          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch dot-3d" style={{ backgroundColor: "hsl(var(--map-worked))" }} />{content.legend_worked || "Internal comms"}</span>
+          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch dot-3d" style={{ backgroundColor: "hsl(var(--map-hr))" }} />{content.legend_hr || "Internal comms and HR"}</span>
+          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch dot-3d" style={{ backgroundColor: "hsl(var(--map-main))" }} />{content.legend_main || "Main markets today"}</span>
           {content.legend_note && <span className="tmc-legend">{content.legend_note}</span>}
           {/* The map art's licence asks for this credit; keep it visible. */}
           <a className="tmc-legend tmc-credit" href="https://www.amcharts.com/svg-maps/" target="_blank" rel="noopener noreferrer">Map: amCharts</a>

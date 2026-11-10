@@ -1,4 +1,4 @@
-import { Instagram, Linkedin, Twitter, Facebook, Youtube } from "lucide-react";
+import { Instagram, Linkedin, Twitter, Facebook, Youtube, Mail } from "lucide-react";
 import { transformImageUrl } from "@/services/mediaOptimization";
 import { useLocation } from "react-router-dom";
 import { safeHref } from "@/services/safeHref";
@@ -6,6 +6,10 @@ import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import PageBreadcrumbs, { type BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
 import { pillarColorFromLink } from "@/lib/constants/pillarColors";
 
+
+/** The studio's inbox, printed under the socials (owner, 10 Nov 2026).
+ *  A plain mailto link: the site still sends no email itself. */
+const CONTACT_EMAIL = "hello@themagiccoffin.com";
 
 const PLATFORMS = [
   { key: "linkedin", icon: Linkedin, label: "LinkedIn" },
@@ -136,6 +140,10 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
                 })}
               </ul>
             ) : null}
+            <a href={safeHref(`mailto:${CONTACT_EMAIL}`)} className={linkClass} style={{ ...linkStyle, gap: 8, marginTop: 14 }}>
+              <Mail className="w-4 h-4" aria-hidden />
+              {CONTACT_EMAIL}
+            </a>
           </div>
 
           <div className="flex flex-wrap" style={{ gap: "32px clamp(32px, 5vw, 80px)" }}>
@@ -151,7 +159,7 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
                     return (
                       <li key={j}>
                         <a href={resolveHref(link.href)} className={linkClass} style={linkStyle}>
-                          {dot ? <span aria-hidden className="inline-block rounded-full flex-none" style={{ width: 10, height: 10, backgroundColor: dot }} /> : null}
+                          {dot ? <span aria-hidden className="dot-3d inline-block rounded-full flex-none" style={{ width: 10, height: 10, backgroundColor: dot }} /> : null}
                           {link.label}
                         </a>
                       </li>

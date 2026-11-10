@@ -7,7 +7,7 @@
  * - `hr`: internal comms AND HR (15, purple).
  * - `worked`: internal comms only (21, gold). Hong Kong and Singapore
  *   are drawn as dots.
- * - `main`: main markets today (Cobalt Blue #0047AB). Norway, Finland and
+ * - `main`: main markets today (Mars Yellow #E36414). Norway, Finland and
  *   Denmark joined on 10 Nov 2026 (owner). Romania is a market only:
  *   shaded, but not one of the 36 and not counted.
  * - Congo is the Democratic Republic of the Congo (Kinshasa).
@@ -31,6 +31,6 @@ export const OWNER_MAP_LIST = {
 export const OWNER_MAP_COPY = {
   eyebrow: "Where the work has travelled",
   title_lines: ["36 countries.", "One comms function."],
-  lede: "Town halls across time zones, onboarding in every office and news that lands the same day wherever people sit. Gold marks internal comms. Purple marks the countries where the work covered HR as well, and blue marks the main markets today.",
+  lede: "Town halls across time zones, onboarding in every office and news that lands the same day wherever people sit. Violet marks internal comms. Deep indigo marks the countries where the work covered HR as well, and orange marks the main markets today.",
   legend_note: "Learning and development: all 36",
 } as const;

@@ -10,7 +10,7 @@ const RowNote = ({ children, color, handwritten }: { children: React.ReactNode; 
       className={handwritten ? "leading-[1.4]" : "font-body text-xs italic leading-[1.6]"}
       style={{
         color: color || (handwritten ? "hsl(var(--link))" : "var(--row-fg-muted, color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 68%, transparent))"),
-        ...(handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: 20 } : {}),
+        ...(handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: "var(--fs-hand)", textWrap: "balance" } : {}),
       }}
     >
       {children}

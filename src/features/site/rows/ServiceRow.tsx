@@ -243,7 +243,14 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
              screen, stacked on a phone. No carousel, nothing hidden. */
           <div
             className="grid gap-6 text-left align-cards"
-            style={{ ...revealStyle(isVisible, 4), gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))" }}
+            style={{
+              ...revealStyle(isVisible, 4),
+              /* Four tiers sit two and two, never three and one (owner,
+                 10 Nov 2026): each column is at least half the row. */
+              gridTemplateColumns: services.length === 4
+                ? "repeat(auto-fit, minmax(min(100%, max(300px, calc(50% - 12px))), 1fr))"
+                : "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
+            }}
           >
             {services.map((service: Record<string, unknown>, i: number) => (
               <TierCard key={i} {...service} accent={pillarColorFromKey(c.pillar)} />

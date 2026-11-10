@@ -63,7 +63,7 @@ const TierCard = memo(({
          (an empty one as `.align-empty`) so the rows stay in step. */
       className="surface-card align-card-inner flex flex-col flex-1 text-left"
      
-      style={{ padding: "clamp(22px, 2.1vw, 30px)", gap: 14, ["--slots" as string]: 7, ["--slot-gap" as string]: "14px", ...(accent ? { borderTop: `4px solid ${accent}` } : {}) }}
+      style={{ padding: "clamp(22px, 2.1vw, 30px)", gap: 14, ["--slots" as string]: 7, ["--slot-gap" as string]: "14px" }}
     >
       <div className="flex items-center justify-between gap-3" style={{ minHeight: 26 }}>
         {tag ? (
@@ -103,8 +103,11 @@ const TierCard = memo(({
         <p className="font-body" style={{ color: "hsl(var(--body))", fontSize: 15, lineHeight: 1.7 }}>{split.lead}</p>
       ) : <div aria-hidden className="align-empty" />}
       {split.done ? (
-        <p className="font-body" style={{ borderRadius: 14, background: "rgba(250, 236, 192, 0.55)", padding: "14px 16px", fontSize: 14, lineHeight: 1.6, color: "hsl(var(--foreground))" }}>
-          <strong>{split.label}</strong> {split.done}
+        /* The box shares its height with its neighbours (subgrid), so the
+           words sit in its middle rather than at the top (owner, 10 Nov
+           2026). */
+        <p className="font-body tier-done" style={{ display: "flex", alignItems: "center", borderRadius: 14, padding: "14px 16px", fontSize: 14, lineHeight: 1.6, color: "hsl(var(--foreground))" }}>
+          <span><strong>{split.label}</strong> {split.done}</span>
         </p>
       ) : <div aria-hidden className="align-empty" />}
 

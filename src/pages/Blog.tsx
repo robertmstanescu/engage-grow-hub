@@ -140,10 +140,9 @@ const CategoryChip = ({
     type="button"
     aria-pressed={selected}
     onClick={onClick}
-    className="inline-flex items-center gap-2 h-11 px-[18px] rounded-full font-body text-sm transition-colors"
+    className={`${selected ? "lg-dark" : "lg-light"} inline-flex items-center gap-2 h-11 px-[18px] rounded-full font-body text-sm transition-colors`}
     style={{
-      border: selected ? "1px solid hsl(var(--deep))" : "1px solid hsl(var(--border))",
-      backgroundColor: selected ? "hsl(var(--deep))" : "hsl(var(--background))",
+      ...(selected ? { backgroundColor: "hsl(var(--deep))" } : null),
       color: selected ? "hsl(var(--deep-fg))" : "hsl(var(--deep))",
       fontWeight: selected ? 600 : 500,
     }}
@@ -347,8 +346,8 @@ const Blog = () => {
               <button
                 onClick={() => setPage(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="p-2 rounded-lg border disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-80"
-                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
+                className="lg-light p-2 rounded-full disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-80"
+                style={{ color: "hsl(var(--foreground))" }}
                 aria-label="Previous page"
               >
                 <ChevronLeft size={18} />
@@ -357,9 +356,9 @@ const Blog = () => {
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className="w-9 h-9 rounded-lg font-body text-sm transition-opacity"
+                  className={`${p === currentPage ? "lg-dark" : "lg-light"} w-9 h-9 rounded-full font-body text-sm transition-opacity`}
                   style={{
-                    backgroundColor: p === currentPage ? "hsl(var(--primary))" : "transparent",
+                    ...(p === currentPage ? { backgroundColor: "hsl(var(--primary))" } : null),
                     color: p === currentPage ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
                     opacity: p === currentPage ? 1 : 0.7,
                   }}
@@ -371,8 +370,8 @@ const Blog = () => {
               <button
                 onClick={() => setPage(currentPage + 1)}
                 disabled={currentPage >= totalPages}
-                className="p-2 rounded-lg border disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-80"
-                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
+                className="lg-light p-2 rounded-full disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-80"
+                style={{ color: "hsl(var(--foreground))" }}
                 aria-label="Next page"
               >
                 <ChevronRight size={18} />

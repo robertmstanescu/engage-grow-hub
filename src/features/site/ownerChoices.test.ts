@@ -16,8 +16,17 @@ describe("owner's choices of 10 Nov 2026", () => {
     expect(css).toMatch(/--hero-label:\s*0 0% 0%/);
   });
 
-  it("main markets are Cobalt Blue", () => {
-    expect(css).toMatch(/--map-main:\s*215 100% 34%/);
+  it("map colours come from the secondary palette: Prince, Admiral, Mars Yellow", () => {
+    expect(css).toMatch(/--map-worked:\s*246 45% 57%/);
+    expect(css).toMatch(/--map-hr:\s*246 52% 21%/);
+    expect(css).toMatch(/--map-main:\s*23 84% 48%/);
+  });
+
+  it("no coloured edge stripes on cards and no underline under title words", () => {
+    expect(read("src/features/site/rows/BoxedRow.tsx")).not.toMatch(/borderTop: `\dpx solid/);
+    expect(read("src/features/site/TierCard.tsx")).not.toMatch(/borderTop: `\dpx solid/);
+    expect(read("src/features/site/rows/HeroRow.tsx")).not.toMatch(/borderLeft: `\dpx solid/);
+    expect(css).toMatch(/\.mc-underline::after \{ display: none; \}/);
   });
 
   it("the map keeps the credit its licence asks for", () => {

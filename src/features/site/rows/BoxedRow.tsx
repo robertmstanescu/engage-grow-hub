@@ -7,7 +7,7 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 import Icon from "@/features/icons/Icon";
-import { pillarColorFromLink, pillarColorFromKey, pillarTintFrom } from "@/lib/constants/pillarColors";
+import { pillarColorFromLink, pillarColorFromKey, pillarTintFrom, pillarTextColor } from "@/lib/constants/pillarColors";
 import { trackConversion } from "@/services/conversions";
 import RowCoverCard from "@/features/site/RowCoverCard";
 import type { BoxedContent, BoxedCard } from "@/features/widgets/boxed/schema";
@@ -16,6 +16,14 @@ import type { BoxedContent, BoxedCard } from "@/features/widgets/boxed/schema";
  * Smart link helper — internal anchors / paths stay in-tab, external
  * URLs open in a new tab with safe rel.
  */
+/** Split a " · " list into lines of at most two names each. */
+const pairLines = (meta: string): string[] => {
+  const parts = meta.split(/\s*·\s*/).map((p) => p.trim()).filter(Boolean);
+  const lines: string[] = [];
+  for (let i = 0; i < parts.length; i += 2) lines.push(parts.slice(i, i + 2).join(" · "));
+  return lines.length ? lines : [meta];
+};
+
 const isExternal = (url: string) => /^https?:\/\//i.test(url);
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
@@ -94,12 +102,19 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       /* Titles are heading purple on every light card (artboards): the
          pillar colour lives on the top border, dot, number and link. A
          colour the owner set on the card itself still tints its title. */
+      /* Inside a service-coloured glass card the title and text are
+         pure black (owner, 10 Nov 2026); only the number, dot and link
+         keep the service colour. */
       const titleColor = isDarkCard
         ? "hsl(var(--deep-fg))"
-        : (!pillarColor && card.accent_color?.trim()) || c.color_card_title || "hsl(var(--heading))";
+        : pillarColor ? "#000000" : (card.accent_color?.trim()) || c.color_card_title || "hsl(var(--heading))";
       const bodyColor = isDarkCard
         ? "hsl(var(--deep-fg) / 0.8)"
-        : c.color_card_body || "hsl(var(--body))";
+        : pillarColor ? "#000000" : c.color_card_body || "hsl(var(--body))";
+      /* Small text in the service colour (number, link): Pay
+         Transparency's Mars Yellow reads too light at that size, so it
+         takes its darker brand partner. */
+      const cardTextAccent = pillarTextColor(cardLink, card.pillar) || cardAccent;
       const cardCtaUrl: string | undefined = card.cta_url?.trim() ? safeHref(card.cta_url) : undefined;
       const cardCtaLabel: string | undefined = card.cta_label?.trim() || undefined;
 
@@ -126,8 +141,8 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
           )}
           {marker === "pillar_number" && (
             <span aria-hidden className="flex items-center gap-2.5" style={{ marginBottom: 14 }}>
-              <span style={{ width: 12, height: 12, borderRadius: 999, background: cardAccent || "hsl(var(--heading))" }} />
-              <span className="font-display font-bold" style={{ fontSize: 15, color: cardAccent || "hsl(var(--heading))" }}>
+              <span className="dot-3d" style={{ width: 12, height: 12, borderRadius: 999, backgroundColor: cardAccent || "hsl(var(--heading))" }} />
+              <span className="font-display font-bold" style={{ fontSize: 15, color: cardTextAccent || "hsl(var(--heading))" }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
             </span>
@@ -149,7 +164,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
 
           <div className="flex flex-col items-start">
           {marker === "pillar_number" && cardLink && (
-            <span className="font-body font-semibold" style={{ fontSize: 15, color: cardAccent || "hsl(var(--link))", marginTop: 14 }}>
+            <span className="font-body font-semibold" style={{ fontSize: 15, color: cardTextAccent || "hsl(var(--link))", marginTop: 14 }}>
               {card.cta_label?.trim() || `Explore ${card.title}`} <span aria-hidden>→</span>
             </span>
           )}
@@ -224,9 +239,8 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
             }
           : {}),
         /* A card with a pillar (by link or key) or its own accent colour
-           carries the thin coloured top border; dark bands never do. */
-        ...(cardAccent && !isDarkCard ? { borderTop: `3px solid ${cardAccent}` } : {}),
-        /* …and the same colour, thinned to a quarter, as its glass fill. */
+           is glass in that colour. No coloured edge stripe: the owner
+           retired those everywhere (10 Nov 2026). */
         ...(cardAccent && !isDarkCard && !coverImage ? { ["--card-tint" as string]: pillarTintFrom(cardLink) || pillarTintFrom(card.pillar) || cardAccent } : {}),
       } as React.CSSProperties;
 
@@ -259,13 +273,15 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       const cardLink: string | undefined = card.link_url?.trim() ? safeHref(card.link_url) : undefined;
       const pillarColor = pillarColorFromLink(cardLink) || pillarColorFromKey(card.pillar);
       const tileColor = pillarColor || card.accent_color?.trim() || "hsl(var(--primary))";
+      /* Small text (tier names, link) takes the readable shade. */
+      const smallColor = pillarTextColor(cardLink, card.pillar) || tileColor;
       const titleColor = "hsl(var(--row-heading))";
       const bodyColor = "var(--row-body)";
       const inner = (
         <>
           <span
             aria-hidden
-            className="flex items-center justify-center font-display font-extrabold text-white"
+            className="lg-dark flex items-center justify-center font-display font-extrabold text-white"
             style={{ width: 72, height: 72, borderRadius: 22, backgroundColor: tileColor, fontSize: 24 }}
           >
             {String(i + 1).padStart(2, "0")}
@@ -273,7 +289,11 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
           <span className="flex flex-col gap-1.5 min-w-0">
             <span className="font-display font-bold leading-[1.1]" style={{ color: titleColor, fontSize: "var(--fs-list-title)" }}>{card.title}</span>
             {card.meta && (
-              <span className="font-body font-semibold leading-[1.3]" style={{ fontSize: 13, letterSpacing: "0.04em", color: tileColor }}>{card.meta}</span>
+              /* At most two names per line (owner, 10 Nov 2026): the
+                 " · " list is printed in pairs, one pair a line. */
+              <span className="font-body font-semibold leading-[1.3]" style={{ fontSize: 13, letterSpacing: "0.04em", color: smallColor }}>
+                {pairLines(card.meta).map((line, li) => (<span key={li} className="block">{line}</span>))}
+              </span>
             )}
           </span>
           <span
@@ -289,7 +309,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               <span className="font-display font-bold" style={{ fontSize: 22, color: titleColor }}>{card.price}</span>
             )}
             {cardLink && (
-              <span className="font-body font-semibold" style={{ fontSize: 15, color: tileColor }}>
+              <span className="font-body font-semibold" style={{ fontSize: 15, color: smallColor }}>
                 {card.cta_label || "Explore"} <span aria-hidden>→</span>
               </span>
             )}
@@ -394,7 +414,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               className={c.note_handwritten ? "leading-[1.4]" : "font-body text-xs italic leading-[1.6]"}
               style={{
                 color: c.note_handwritten && !c.color_note ? "hsl(var(--link))" : noteColor,
-                ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: 20 } : {}),
+                ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: "var(--fs-hand)", textWrap: "balance" } : {}),
               }}
             >{c.note}</p>
           </div>

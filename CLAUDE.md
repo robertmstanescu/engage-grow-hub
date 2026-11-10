@@ -17,7 +17,9 @@ Rules that are easy to get wrong:
   `CoverImageField.tsx` instead of copying label + input blocks.
 - Public rendering is guarded by screenshots (`npm run test:visual`).
   Refresh the baseline only after an intentional design change, and say
-  so in the PR.
+  so in the PR. Glass makes software-rendered frames slow: a row shot
+  has 30s to settle. If it times out, find what keeps moving; never
+  loosen the comparison tolerance.
 - Type sizes come from the `--fs-*` tokens in `src/index.css`, sized
   by viewport width only. Never put `vh` in a font-size clamp, never
   shrink copy with JavaScript to make a row fit a screen, and never
@@ -45,8 +47,9 @@ Rules that are easy to get wrong:
   without his word; a market that is in neither worked list (Romania)
   is shaded and names itself on hover but stays out of the counters. The
   map zooms by narrowing its `viewBox` (`world_map/zoom.ts`); a plain
-  wheel must keep scrolling the page. Main markets
-  are drawn in Cobalt Blue (`--map-main`, #0047AB), his choice. The map art
+  wheel must keep scrolling the page. Map colours are
+  from the secondary palette (`--map-worked` Prince, `--map-hr` Admiral,
+  `--map-main` Mars Yellow), chosen for him on 10 Nov 2026. The map art
   is generated (`scripts/world-map/build-map-data.mjs`, amCharts
   Mercator, no Antarctica); the "Map: amCharts" credit by the legend is
   the licence's condition and must stay. Small labels and eyebrows on
@@ -56,7 +59,11 @@ Rules that are easy to get wrong:
   `PILLAR_CARD_TINTS`); the six accent and tint pairs in
   `lib/constants/pillarColors.ts` are his, from the secondary palette. Everything that is not a
   photo is liquid glass (`--lg-*` tokens and `.lg-light`/`.lg-dark`/`.lg-tag`
-  at the end of `src/index.css`): cards, pills, chips, the menu and dark bands. His choices of 10 Nov 2026.
+  at the end of `src/index.css`): cards, pills, chips, the menu and dark bands.
+  No coloured edge stripes (top or left borders) on cards and no underline
+  stroke under title words: he calls them a tell. Text inside a service
+  card is pure black; small Pay Transparency text is Peru Tan
+  (`PILLAR_TEXT_COLORS`). Blog categories are the six services plus General. His choices of 10 Nov 2026.
 - The tray shows eight block families (`builder/blockFamilies.ts`); a
   new row type must be added to exactly one family (the test fails
   otherwise) and the section library (`builder/sectionLibrary.ts`) is

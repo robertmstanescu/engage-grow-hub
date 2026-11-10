@@ -17,6 +17,10 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,
+  // One test shoots every row of a page, and a row may take up to 30s to
+  // settle under software rendering (see rows.visual.spec.ts), so the
+  // default 30s per test is too short for a long page.
+  timeout: 180_000,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   // One baseline per OS: text antialiasing differs between macOS (local
   // runs) and Linux (CI), so a Mac-rendered PNG never matches Ubuntu's.

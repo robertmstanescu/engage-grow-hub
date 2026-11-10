@@ -168,14 +168,13 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
         {c.floating_caption && (
           /* Handwritten tag hanging off the picture's corner (Main artboard). */
           <span
-            className="absolute"
+            className="lg-light absolute"
             style={{
               ...(captionPos.startsWith("top") ? { top: -22 } : { bottom: -22 }),
               ...(captionPos.endsWith("left") ? { left: -12 } : captionPos.endsWith("center") ? { left: "50%", transform: "translateX(-50%)" } : { right: -12 }),
-              background: c.color_caption_bg || "#FFFFFF",
+              ...(c.color_caption_bg ? { backgroundColor: c.color_caption_bg } : null),
               padding: "10px 18px",
               borderRadius: 14,
-              boxShadow: "0 12px 30px -18px rgba(38,20,46,0.4)",
             }}
           >
             <span style={{ fontFamily: "'Playwrite CU', cursive", fontSize: 20, lineHeight: 1.4, color: c.color_caption_text || "hsl(var(--link))", transform: "rotate(-3deg)", display: "inline-block" }}>
@@ -242,7 +241,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             className={c.note_handwritten ? "leading-[1.4]" : "font-body text-xs italic leading-[1.6]"}
             style={{
               color: c.note_handwritten && !c.color_note ? "hsl(var(--link))" : noteColor,
-              ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: 20 } : {}),
+              ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: "var(--fs-hand)", textWrap: "balance" } : {}),
             }}
           >{c.note}</p>
         </div>
@@ -275,10 +274,10 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
         style={{ padding: "clamp(24px, 3vw, 48px) clamp(16px, 3vw, 48px)" }}
       >
         <div
-          className="relative z-10 w-full flex flex-wrap items-end text-left"
+          className="lg-dark relative z-10 w-full flex flex-wrap items-end text-left"
           style={{
             borderRadius: 32,
-            background: panelBg,
+            backgroundColor: panelBg,
             padding: "clamp(48px, 6vw, 96px) clamp(24px, 5vw, 80px)",
             gap: 48,
             ["--row-heading" as string]: "#FFFFFF",

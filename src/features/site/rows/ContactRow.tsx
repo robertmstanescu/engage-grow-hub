@@ -96,13 +96,18 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
         className="surface-card min-w-0 p-3 md:p-6"
         style={{ ...(stacked ? { width: "100%" } : { flex: "1 1 420px" }), ...revealStyle(isVisible, 1) }}>
         {showCalendar && (
-          <div className="overflow-hidden rounded-2xl bg-card">
+          /* Google's booking page has no inner scroll here, so the frame
+             must be as tall as Google's own layout: the month above the
+             times when the box is narrow, side by side when it is wide.
+             `.contact-cal` measures the box itself (container query), so
+             the calendar is never cut at the bottom. */
+          <div className="contact-cal overflow-hidden rounded-2xl bg-card">
             <iframe
               src={embedUrl}
               title="Book a time with The Magic Coffin"
               loading="lazy"
               scrolling="no"
-              className="block w-full h-[1180px] md:h-[680px]"
+              className="contact-cal-frame block w-full"
               style={{ border: 0, background: "hsl(var(--card))" }}
             />
           </div>
