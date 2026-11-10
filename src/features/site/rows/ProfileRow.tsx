@@ -53,7 +53,9 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
   // Use column_widths to control the image/text split ratio
   const colWidths = l.column_widths || [35, 65];
   /* "portrait" is the About artboard: a large portrait on five of twelve
-     columns with the name under it, the story and the chips on seven. */
+     columns with the name under it, the story on seven. The chips sit
+     under the name in both layouts (owner's choice, 10 Nov 2026; the
+     artboard draws them under the story). */
   const portrait = c.layout_style === "portrait";
   const gridCols = portrait ? "minmax(0, 5fr) minmax(0, 7fr)" : `${colWidths[0]}fr ${colWidths[1]}fr`;
 
@@ -142,7 +144,7 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
               </div>
             )}
 
-            {!portrait && credentialChips}
+            {credentialChips}
           </div>
 
           {/* Right column: Header + RTE body */}
@@ -197,7 +199,6 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
               </SelectableWrapper>
             )}
 
-            {portrait && credentialChips}
 
             {c.note && (
               <div className="mt-rhythm-base pt-3" style={{ borderTop: `1px solid ${eyebrowColor}30` }}>
