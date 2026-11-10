@@ -239,13 +239,16 @@ async function main() {
     console.warn("[prerender-seo] Missing Supabase env — skipping prerender.");
     return;
   }
-  const [siteRows, cmsPages, blogPosts] = await Promise.all([
+  const [siteRows, cmsPages, blogPosts, workItems] = await Promise.all([
     rest("site_content?select=section_key,content,updated_at"),
     rest(
       "cms_pages?status=eq.published&select=slug,title,meta_title,meta_description,og_image,page_rows,updated_at",
     ),
     rest(
       "blog_posts?status=eq.published&select=slug,title,excerpt,content,meta_title,meta_description,og_image,cover_image,author_name,published_at,updated_at&order=published_at.desc",
+    ),
+    rest(
+      "work_items?status=eq.published&select=slug,title,summary,cover_image,case_rows,updated_at&order=sort_order.asc",
     ),
   ]);
 
@@ -517,6 +520,77 @@ async function main() {
       },
 
     });
+  }
+
+  // Work (portfolio) — index + one route per published case study.
+  if (Array.isArray(workItems) && workItems.length > 0) {
+    const latestWorkTimestamp = workItems.reduce((latest, item) => {
+      const t = item.updated_at || "";
+      return t > latest ? t : latest;
+    }, "");
+    routes.push({
+      path: "/work/",
+      meta: {
+        title: titleFor(null, `Work — ${brandName}`),
+        description: "Client work and case studies.",
+        url: abs("/work/"),
+        image: defaultImage,
+        jsonLd: [
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "Work",
+            url: abs("/work/"),
+            hasPart: workItems.map((item) => ({
+              "@type": "Article",
+              headline: item.title,
+              url: abs(`/work/${trailing(item.slug)}`),
+            })),
+          },
+          breadcrumbLd([
+            ["Home", `${origin}/`],
+            ["Work", abs("/work/")],
+          ]),
+        ],
+      },
+      sitemap: { lastmod: latestWorkTimestamp, changefreq: "weekly", priority: "0.8" },
+    });
+
+    for (const item of workItems) {
+      if (!item.slug) continue;
+      const path = `/work/${trailing(item.slug)}`;
+      const rows = Array.isArray(item.case_rows) ? item.case_rows : [];
+      const description = plain(item.summary) || plain(extractReadableContent(rows)?.paragraphs?.[0]);
+      routes.push({
+        path,
+        meta: {
+          title: titleFor(null, item.title),
+          description,
+          url: abs(path),
+          image: absImage(item.cover_image),
+          ogType: "article",
+          jsonLd: [
+            {
+              "@context": "https://schema.org",
+              "@type": "Article",
+              headline: item.title,
+              description,
+              image: absImage(item.cover_image),
+              url: abs(path),
+              dateModified: item.updated_at || undefined,
+              ...(brandName ? { publisher: { "@type": "Organization", name: brandName } } : {}),
+            },
+            breadcrumbLd([
+              ["Home", `${origin}/`],
+              ["Work", abs("/work/")],
+              [item.title, abs(path)],
+            ]),
+          ],
+          readable: extractReadableContent(rows),
+        },
+        sitemap: { lastmod: item.updated_at, changefreq: "monthly", priority: "0.6" },
+      });
+    }
   }
 
   if (routes.length > MAX_PRERENDER_PAGES) {

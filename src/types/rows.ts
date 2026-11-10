@@ -326,6 +326,9 @@ export interface ProofItem {
   /** Optional client logo shown instead of the value. */
   logo?: string;
   logo_alt?: string;
+  /** Link to an approved proof point: its value shows instead of the
+      typed one, and the number hides while the proof is unapproved. */
+  proof_id?: string;
 }
 
 /** One numbered step in a "How we work" strip. */

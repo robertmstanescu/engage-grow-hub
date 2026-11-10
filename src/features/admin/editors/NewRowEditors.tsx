@@ -29,13 +29,54 @@
  * so the heading hierarchy stays consistent across the site.
  * ───────────────────────────────────────────────────────────────────── */
 
+import { useEffect, useState } from "react";
 import { Field, RichField, SectionBox, ColorField, EyebrowField, MoreFields, NoteField } from "../site-editor/FieldComponents";
 import { CoverImageField } from "../site-editor/CoverImageField";
 import ImagePickerField from "../ImagePickerField";
 import TitleLinesEditor from "./TitleLinesEditor";
 import SubtitleEditor from "../site-editor/SubtitleEditor";
 import { Plus, Trash2 } from "lucide-react";
+import { fetchAllProofPoints, type ProofPointRecord } from "@/services/proofPoints";
 import type { TestimonialItem, FaqItem, LogoCloudLogo, ProofItem, ProcessStep } from "@/types/rows";
+
+/** Optional link to a proof point: the approved value shows on the site. */
+const ProofLinkField = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+  const [proofs, setProofs] = useState<ProofPointRecord[]>([]);
+  useEffect(() => {
+    /* Tolerant of a mocked/partial client in tests: the select simply
+       stays empty when the fetch cannot run. */
+    try {
+      Promise.resolve(fetchAllProofPoints())
+        .then(({ data }) => setProofs(data ?? []))
+        .catch(() => setProofs([]));
+    } catch {
+      setProofs([]);
+    }
+  }, []);
+  return (
+    <div>
+      <label className="font-body text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Link a proof point (optional)</label>
+      <select
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-3 py-2 rounded-lg font-body text-sm border cursor-pointer"
+        style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}
+      >
+        <option value="">Typed number (as above)</option>
+        {proofs.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.value} — {p.label}{p.approved ? "" : " (not approved yet)"}
+          </option>
+        ))}
+      </select>
+      {value ? (
+        <p className="font-body text-[9px] text-muted-foreground/60 mt-1">
+          The approved proof's number shows instead of the typed one; the number hides while the proof is unapproved.
+        </p>
+      ) : null}
+    </div>
+  );
+};
 
 /* ────────────────────────────────────────────────────────────────────
  * Reusable "Brand Header" block. Renders the standard set of fields
@@ -299,6 +340,12 @@ export const ProofBandEditor = ({
               value={item.label || ""}
               onChange={(v) => update({ ...item, label: v })}
             />
+            <MoreFields>
+              <ProofLinkField
+                value={item.proof_id || ""}
+                onChange={(v) => update({ ...item, proof_id: v })}
+              />
+            </MoreFields>
             <ImagePickerField
               label="Client logo (optional — replaces the stat)"
               value={item.logo || ""}

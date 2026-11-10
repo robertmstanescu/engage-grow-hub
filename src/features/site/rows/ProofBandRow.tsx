@@ -18,7 +18,9 @@
  * place of the number so the same row doubles as a client logo strip.
  * ───────────────────────────────────────────────────────────────────────── */
 
+import { useEffect, useState } from "react";
 import type { PageRow, ProofItem } from "@/types/rows";
+import { fetchProofPointsByIds, type ProofPointRecord } from "@/services/proofPoints";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import { resolveImageAlt } from "@/services/imageAlt";
@@ -39,7 +41,40 @@ const ProofBandRow = ({
 }) => {
   const c = row.content || {};
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
-  const items: ProofItem[] = Array.isArray(c.items) ? c.items : [];
+  const rawItems: ProofItem[] = Array.isArray(c.items) ? c.items : [];
+
+  /* Proof-linked items (redesign §6 E6): a linked item shows the proof
+     point's value. RLS only returns APPROVED proofs to visitors, so an
+     unapproved link resolves to nothing and the number hides — the
+     typed label stays. Typed items (no link) render exactly as before. */
+  const proofIds = rawItems.map((i) => i.proof_id).filter((v): v is string => Boolean(v));
+  const [proofs, setProofs] = useState<Record<string, ProofPointRecord>>({});
+  const proofKey = proofIds.slice().sort().join(",");
+  useEffect(() => {
+    const ids = proofKey ? proofKey.split(",") : [];
+    if (!ids.length) { setProofs({}); return; }
+    let cancelled = false;
+    fetchProofPointsByIds(ids).then(({ data }) => {
+      if (cancelled) return;
+      const map: Record<string, ProofPointRecord> = {};
+      for (const p of data ?? []) map[p.id] = p;
+      setProofs(map);
+    });
+    return () => { cancelled = true; };
+  }, [proofKey]);
+
+  const items = rawItems
+    .map((item) => {
+      if (!item.proof_id) return item;
+      const proof = proofs[item.proof_id];
+      if (!proof) {
+        /* Linked but not approved (or still loading): keep a typed
+           label, drop the number. Nothing typed → the tile goes. */
+        return { ...item, value: "", logo: "" };
+      }
+      return { ...item, value: proof.value, label: item.label || proof.label };
+    })
+    .filter((item) => item.value || item.logo || item.label);
   const titleLines: string[] = (c.title_lines || []).map((li: any) =>
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`,
   );
