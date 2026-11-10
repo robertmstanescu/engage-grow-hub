@@ -1,6 +1,7 @@
 import { Instagram, Linkedin, Twitter, Facebook, Youtube } from "lucide-react";
 import { transformImageUrl } from "@/services/mediaOptimization";
 import { useLocation } from "react-router-dom";
+import { safeHref } from "@/services/safeHref";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import PageBreadcrumbs, { type BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
 import { pillarColorFromLink } from "@/lib/constants/pillarColors";
@@ -56,8 +57,10 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
      on the homepage. When the footer renders on /blog or a CMS page we
      rewrite them to absolute `/#slug` links so they navigate home and
      then scroll, instead of silently doing nothing. */
-  const resolveHref = (href: string) =>
-    href.startsWith("#") && pathname !== "/" ? `/${href}` : href;
+  const resolveHref = (raw: string) => {
+    const href = safeHref(raw);
+    return href.startsWith("#") && href.length > 1 && pathname !== "/" ? `/${href}` : href;
+  };
 
   const { isLoading: socialLoading, content: socialLinks } =
     useSiteContentWithStatus<Record<string, string>>("social_links", {});
@@ -78,9 +81,9 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
   const emblemUrl = darkEmblem || lightEmblem;
   const needsDarken = !darkEmblem;
 
-  const columns = !footerLoading && Array.isArray(footer.columns) ? footer.columns : [];
+  const columns = (!footerLoading && Array.isArray(footer.columns) ? footer.columns : []).filter((col) => col && typeof col === "object");
   const activeLinks = socialLoading ? [] : PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
-  const connectColumn = columns.find((c) => String(c?.title || "").toLowerCase() === "connect");
+  const connectColumn = columns.find((c) => !!c && String(c?.title || "").toLowerCase() === "connect");
   const answer = pageAnswer?.trim();
 
   const headingClass = "font-body font-bold uppercase mb-4";
@@ -103,7 +106,7 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
   ) : null;
 
   return (
-    <footer className="site-footer relative" style={{ borderTop: "1px solid hsl(var(--line-1))", scrollSnapAlign: "end" }}>
+    <footer className="site-footer relative [overflow-wrap:anywhere]" style={{ borderTop: "1px solid hsl(var(--line-1))", scrollSnapAlign: "end" }}>
       <div className="relative z-10 max-w-[1280px] mx-auto row-container" style={{ paddingTop: 56, paddingBottom: 40 }}>
         {breadcrumbTrail && breadcrumbTrail.length > 1 ? (
           <PageBreadcrumbs trail={breadcrumbTrail} placement="footer" />
@@ -122,7 +125,7 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
 
           <div className="flex flex-wrap" style={{ gap: "32px clamp(32px, 5vw, 80px)" }}>
             {columns.map((col, i) => (
-              <div key={i} style={{ minWidth: 140 }}>
+              <div key={i} className="min-w-0" style={{ flex: "0 1 auto", minWidth: "min(140px, 100%)" }}>
                 <h4 className={headingClass} style={headingStyle}>{col.title}</h4>
                 <ul className="flex flex-col" style={{ gap: 12 }}>
                   {(Array.isArray(col.links) ? col.links : []).map((link, j) => {
@@ -142,7 +145,7 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
                     const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;
                     return (
                       <li key={p.key}>
-                        <a href={socialLinks[p.key]} target="_blank" rel="noopener noreferrer" className={linkClass} style={linkStyle}>
+                        <a href={safeHref(socialLinks[p.key])} target="_blank" rel="noopener noreferrer" className={linkClass} style={linkStyle}>
                           {Icon && <Icon className="w-4 h-4" />}
                           {p.label}
                         </a>
