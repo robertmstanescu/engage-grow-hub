@@ -57,7 +57,7 @@ const CardCover = ({ post, heightClass }: { post: BlogPost; heightClass: string 
 };
 
 const LeadCard = ({ post }: { post: BlogPost }) => (
-  <article className="group">
+  <article className="group min-w-0">
     <Link
       to={`/blog/${post.slug}`}
       className="glass rounded-3xl overflow-hidden grid lg:grid-cols-12 transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent"
@@ -65,7 +65,7 @@ const LeadCard = ({ post }: { post: BlogPost }) => (
       <div className="lg:col-span-7">
         <CardCover post={post} heightClass="h-64 md:h-80 lg:h-[440px] lg:min-h-full" />
       </div>
-      <div className="lg:col-span-5 p-6 md:p-10 flex flex-col gap-4 justify-center">
+      <div className="lg:col-span-5 p-6 md:p-10 flex flex-col gap-4 justify-center min-w-0 [overflow-wrap:anywhere]">
         <div className="flex flex-wrap items-center gap-2.5">
           <CategoryPill category={post.category} />
           {post.published_at && (
@@ -75,7 +75,7 @@ const LeadCard = ({ post }: { post: BlogPost }) => (
           )}
         </div>
         <h2
-          className="font-display font-extrabold leading-[1.08] group-hover:opacity-80"
+          className="font-display font-extrabold leading-[1.08] group-hover:opacity-80 [overflow-wrap:anywhere]"
           style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-lead-card-title)" }}
         >
           {post.title}
@@ -94,13 +94,13 @@ const LeadCard = ({ post }: { post: BlogPost }) => (
 );
 
 const GridCard = ({ post }: { post: BlogPost }) => (
-  <article className="group h-full">
+  <article className="group h-full min-w-0">
     <Link
       to={`/blog/${post.slug}`}
-      className="glass rounded-3xl overflow-hidden flex flex-col h-full transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent"
+      className="glass rounded-3xl overflow-hidden flex flex-col h-full min-w-0 transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent"
     >
       <CardCover post={post} heightClass="h-[200px]" />
-      <div className="p-6 flex flex-col gap-3 flex-grow">
+      <div className="p-6 flex flex-col gap-3 flex-grow min-w-0 [overflow-wrap:anywhere]">
         <div className="flex flex-wrap items-center gap-2.5">
           <CategoryPill category={post.category} />
           {post.published_at && (
@@ -110,7 +110,7 @@ const GridCard = ({ post }: { post: BlogPost }) => (
           )}
         </div>
         <h3
-          className="font-display font-bold leading-[1.22] flex-grow group-hover:opacity-80"
+          className="font-display font-bold leading-[1.22] flex-grow group-hover:opacity-80 [overflow-wrap:anywhere]"
           style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-grid-card-title)" }}
         >
           {post.title}

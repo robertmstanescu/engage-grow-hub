@@ -222,7 +222,7 @@ const BlogPost = () => {
                   style={{ border: "1px solid hsl(var(--border))" }}
                 />
               )}
-              <span>
+              <span className="min-w-0 [overflow-wrap:anywhere]">
                 {author.name && (
                   <>
                     {authorHref ? (

@@ -90,12 +90,12 @@ const FromTheBlogRow = ({ row }: { row: PageRow }) => {
           {posts.map((p) => {
             const chip = p.category ? getCategoryColors(p.category) : null;
             return (
-              <li key={p.slug}>
+              <li key={p.slug} className="min-w-0">
                 <Link to={`/blog/${p.slug}/`} className="glass rounded-3xl group flex flex-col h-full overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
                   {p.cover_image && (
                     <img src={transformImageUrl(p.cover_image, { width: 640, aspectRatio: 16 / 9, quality: 70 })} alt={p.cover_image_alt || ""} loading="lazy" decoding="async" className="block w-full h-[180px] object-cover" />
                   )}
-                  <span className="flex flex-col flex-1 gap-3 p-6">
+                  <span className="flex flex-col flex-1 gap-3 p-6 min-w-0 [overflow-wrap:anywhere]">
                     <span className="flex flex-wrap items-center gap-2.5">
                       {p.category && chip && (
                         <span className="font-body text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full" style={{ backgroundColor: chip.bgColor, color: chip.textColor }}>{p.category}</span>
