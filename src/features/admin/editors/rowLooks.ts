@@ -5,21 +5,23 @@
  *   Card   its own colour with rounded top corners (the card lip)
  *   Band   its own colour, square, full width
  *   Cover  a picture fading into the row
+ *   Glass  translucent panel blurring the page mesh behind it
  *
  * A Look is DERIVED from the stored row (bg_color, surfaceRadius,
- * coverImage), never stored itself, so every existing row already has
- * one and nothing migrates. `applyLook` writes only the fields that
- * define the Look and leaves everything else alone.
+ * coverImage, glass flag), never stored itself, so every existing row
+ * already has one and nothing migrates. `applyLook` writes only the
+ * fields that define the Look and leaves everything else alone.
  */
 import type { PageRow } from "@/types/rows";
 
-export type RowLook = "plain" | "card" | "band" | "cover";
+export type RowLook = "plain" | "card" | "band" | "cover" | "glass";
 
 export const ROW_LOOKS: { key: RowLook; label: string; hint: string }[] = [
   { key: "plain", label: "Plain", hint: "Sits on the page background" },
   { key: "card", label: "Card", hint: "Own colour, rounded top corners" },
   { key: "band", label: "Band", hint: "Own colour, square, full width" },
   { key: "cover", label: "Cover", hint: "A picture fading into the row" },
+  { key: "glass", label: "Glass", hint: "Frosted panel over the page background" },
 ];
 
 /** Default colour when a colourless row becomes a Card or Band. */
@@ -27,6 +29,7 @@ export const DEFAULT_SURFACE = "#FFFFFF";
 
 export const deriveLook = (row: PageRow): RowLook => {
   if (row.layout?.coverImage) return "cover";
+  if (row.layout?.glass === true) return "glass";
   const radius = row.layout?.surfaceRadius || "none";
   if (row.bg_color) return radius === "none" ? "band" : "card";
   return "plain";
@@ -40,7 +43,7 @@ export const hasRoundedTop = (row: PageRow): boolean => (row.layout?.surfaceRadi
  * (`bg_color`) and a `layout` patch to spread over the existing layout.
  */
 export const applyLook = (row: PageRow, look: RowLook): { bg_color?: string; layout: Record<string, unknown> } => {
-  const layout: Record<string, unknown> = {};
+  const layout: Record<string, unknown> = { glass: false };
   const leavingCover = deriveLook(row) === "cover" && look !== "cover";
   if (leavingCover) { layout.coverImage = ""; layout.coverImageAlt = ""; }
   switch (look) {
@@ -54,5 +57,9 @@ export const applyLook = (row: PageRow, look: RowLook): { bg_color?: string; lay
       /* The picture itself is chosen in the Cover picture group, which
          the tab opens for this Look. Keep whatever colour was there. */
       return { layout: { ...layout, coverMode: row.layout?.coverMode || "fade" } };
+    case "glass":
+      /* Translucent: no own colour, the page mesh shows through the
+         blur. Rounded by default; the Corners control still applies. */
+      return { bg_color: "", layout: { ...layout, glass: true, surfaceRadius: hasRoundedTop(row) ? row.layout?.surfaceRadius : "medium" } };
   }
 };

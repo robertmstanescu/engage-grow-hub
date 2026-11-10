@@ -175,6 +175,8 @@ export interface RowLayout {
    * an assigned edge shape stay square — the shape cap curves them.
    */
   surfaceRadius?: "none" | "subtle" | "medium" | "dramatic";
+  /** Glass look: translucent blurred panel over the page mesh. */
+  glass?: boolean;
   /**
    * Text tone for everything in this row. "auto" (default) picks light
    * or dark from the row's background; "light"/"dark" force it; "accent"

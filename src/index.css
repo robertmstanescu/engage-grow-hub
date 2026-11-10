@@ -1615,6 +1615,7 @@
   .row-look-swatch.card { background: #fff; border: 1px solid hsl(282 45% 10%); border-radius: 7px 7px 2px 2px; }
   .row-look-swatch.band { background: hsl(282 45% 10%); border-color: hsl(282 45% 10%); }
   .row-look-swatch.cover { background: linear-gradient(180deg, #7B3A91 0%, #B98DC8 55%, #FBF6EA 100%); border: 0; }
+  .row-look-swatch.glass { background: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.35)), linear-gradient(135deg, #F6EFF7, #FBF6EA); border: 1px solid #D6C9DC; border-radius: 5px; }
 }
 
 /* Elements tray: sections, families, variants */

@@ -6,7 +6,7 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 import Icon from "@/features/icons/Icon";
-import { pillarColorFromLink } from "@/lib/constants/pillarColors";
+import { pillarColorFromLink, pillarColorFromKey } from "@/lib/constants/pillarColors";
 import { trackConversion } from "@/services/conversions";
 import RowCoverCard from "@/features/site/RowCoverCard";
 import type { BoxedContent, BoxedCard } from "@/features/widgets/boxed/schema";
@@ -75,10 +75,20 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       // Neither present → the row's shared Card Title Color applies.
       // Trimmed like the sibling string fields: a whitespace-only value
       // is not a colour and must fall through, not produce `3px solid  `.
-      const pillarColor = pillarColorFromLink(cardLink);
+      const pillarColor = pillarColorFromLink(cardLink) || pillarColorFromKey(card.pillar);
       const cardAccent: string | undefined = pillarColor || card.accent_color?.trim() || undefined;
-      const titleColor = cardAccent || c.color_card_title || "hsl(var(--vows-card-title))";
-      const bodyColor = c.color_card_body || "hsl(var(--vows-card-body))";
+      /* Named card looks (redesign §2.3): "" keeps the default surface;
+         "dark" flips to the deep band tokens; "glass" frosts over the
+         page mesh; "pillar" only steers the accent (border/icon/title). */
+      const variant = card.variant || "";
+      const isDarkCard = variant === "dark";
+      const isGlassCard = variant === "glass";
+      const titleColor = isDarkCard
+        ? "hsl(var(--deep-fg))"
+        : cardAccent || c.color_card_title || "hsl(var(--vows-card-title))";
+      const bodyColor = isDarkCard
+        ? "hsl(var(--deep-fg) / 0.8)"
+        : c.color_card_body || "hsl(var(--vows-card-body))";
       const cardCtaUrl: string | undefined = card.cta_url?.trim() || undefined;
       const cardCtaLabel: string | undefined = card.cta_label?.trim() || undefined;
 
@@ -142,7 +152,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       // smaller-radius tiles nested inside that photo-card container
       // — `surface-card`'s own border-radius (var(--radius), 1.5rem)
       // would look wrong repeated at the same size one level down.
-      const cardClass = `${coverImage ? "" : "surface-card"} p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
+      const cardClass = `${coverImage || variant ? "" : "surface-card"} p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
       // Order matters: `border` is a shorthand that resets border-top, so
       // the accent's `borderTop` must come AFTER the cover-image block or
       // accent cards inside a cover-image row lose their top bar.
@@ -155,7 +165,25 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               borderRadius: "1rem",
             }
           : {}),
-        ...(cardAccent ? { borderTop: `3px solid ${cardAccent}` } : {}),
+        ...(isDarkCard
+          ? {
+              backgroundColor: "hsl(var(--deep))",
+              border: "1px solid hsl(var(--deep) / 0.9)",
+              borderRadius: "var(--radius-card, 24px)",
+              boxShadow: "var(--shadow-card)",
+            }
+          : {}),
+        ...(isGlassCard
+          ? {
+              backgroundColor: "hsl(var(--glass-bg))",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              border: "1px solid hsl(var(--glass-border))",
+              borderRadius: "var(--radius-card, 24px)",
+              boxShadow: "var(--shadow-card)",
+            }
+          : {}),
+        ...(cardAccent ? { borderTop: `${variant === "pillar" ? 4 : 3}px solid ${cardAccent}` } : {}),
       } as React.CSSProperties;
 
       if (cardLink) {

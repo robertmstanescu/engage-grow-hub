@@ -38,6 +38,14 @@ export const boxedCardSchema = z.looseObject({
   /** Optional CTA button under the card body. */
   cta_label: z.optional(z.string()),
   cta_url: z.optional(z.string()),
+  /** Named card look: "" (default surface) | "glass" | "dark" | "pillar". */
+  variant: str(),
+  /** Pillar key or slug when variant is "pillar" (sets border/icon/title). */
+  pillar: str(),
+  /** Small line under the title (list layout: the tier line). */
+  meta: str(),
+  /** Right-column price (list layout). */
+  price: str(),
 });
 
 export const boxedSchema = z.looseObject({
@@ -57,6 +65,8 @@ export const boxedSchema = z.looseObject({
   cards: z._default(z.array(boxedCardSchema), []),
   color_card_title: color(),
   color_card_body: color(),
+  /** "" or "grid" = card grid (default); "list" = numbered rows. */
+  layout_mode: str(),
 
   /* ── Footer bits ── */
   note: str(),

@@ -235,7 +235,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
       {/* Look */}
       <div>
         <label className={LABEL}>Look</label>
-        <div className="grid grid-cols-4 gap-1" role="radiogroup" aria-label="Look">
+        <div className="grid grid-cols-5 gap-1" role="radiogroup" aria-label="Look">
           {ROW_LOOKS.map((l) => (
             <button
               key={l.key}

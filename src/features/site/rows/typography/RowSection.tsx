@@ -155,7 +155,11 @@ const RowSection = ({
    *  colour for it, in which case that colour wins and the text flips
    *  to a readable tone.                                            */
   const hasOwnPaint = Boolean(row.bg_color);
-  const surfaceColor = getRowBgColor(row);
+  /* Glass look: a translucent, blurred panel — the page mesh shows
+     through, so it does NOT count as own paint (text tone still follows
+     the mesh) but it does paint a surface colour. */
+  const isGlass = row.layout?.glass === true && !maskShapes;
+  const surfaceColor = isGlass ? "hsl(var(--glass-bg))" : getRowBgColor(row);
   /* Transparent rows inherit `--page-fg`, which PageRows derives from the
      hero's mesh brightness — so a dark mesh flips them to light text. */
   const bandFg = applyTextTone(
@@ -195,7 +199,7 @@ const RowSection = ({
    *  visible "cut" at the seam). Clipping is only safe when neither edge
    *  paints a cap outside the section. */
   const radiusValue = { none: 0, subtle: 16, medium: 24, dramatic: 48 }[
-    row.layout?.surfaceRadius || "none"
+    row.layout?.surfaceRadius || (isGlass ? "medium" : "none")
   ];
   const topHasShape = Boolean(shapeTop && shapeTop.kind !== "none");
   const bottomHasShape = Boolean(shapeBottom && shapeBottom.kind !== "none");
@@ -347,6 +351,14 @@ const RowSection = ({
              shape cap needs to paint beyond the section boundary. */
           ...(radiusStyle ?? null),
           ...(clipToRadius ? { overflow: "hidden" } : null),
+          ...(isGlass
+            ? {
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid hsl(var(--glass-border))",
+                boxShadow: "var(--shadow-card)",
+              }
+            : null),
           /* Ink outline on every SET edge: the sides always, the top and
              bottom when they are square corners of a rounded surface. An
              edge that carries a cap is outlined by the cap itself
