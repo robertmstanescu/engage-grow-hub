@@ -7,6 +7,8 @@ import { RowsRenderer } from "@/features/site/rows/PageRows";
 import { rowsProvideHeading, extractFaqItems } from "@/features/site/rows/PrimaryHeadingContext";
 import type { BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
 import { findWidgetsByType } from "@/lib/rowWidgets";
+import { splitDocumentHeader } from "@/features/site/documentHeader";
+import { sanitizeHtml } from "@/services/sanitize";
 import { cmsPagePath } from "@/lib/cmsPagePath";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import type { PageRow } from "@/types/rows";
@@ -156,8 +158,14 @@ const CmsPageBody = ({
     rows.length > 0 && findWidgetsByType(v3Rows as never, "hero").length === 0;
   /* Inside the document card the rows themselves go Plain — the glass
      card is the only surface (render-time only; stored rows untouched). */
+  /* The document's heading prints above the card (design: Privacy), the
+     article inside it. Render-time only; see documentHeader.ts. */
+  const split = isDocumentPage
+    ? splitDocumentHeader(v3Rows as unknown as PageRow[])
+    : { header: null, rows };
+  const docHeader = split.header;
   const documentRows = isDocumentPage
-    ? rows.map((r) => ({
+    ? split.rows.map((r) => ({
         ...r,
         bg_color: "",
         layout: { ...(r.layout || {}), surfaceRadius: "none", glass: false, coverImage: "", coverImageAlt: "" },
@@ -172,9 +180,23 @@ const CmsPageBody = ({
           Draft Preview — This page is not published yet
         </div>
       )}
-      {needsFallbackHeading && <h1 className="sr-only">{pageTitle}</h1>}
-      <div className={isDocumentPage ? "px-8 pt-28 md:pt-36 pb-24" : undefined}>
-        <div className={isDocumentPage ? "max-w-[820px] mx-auto glass rounded-3xl p-7 md:p-14 overflow-hidden" : undefined}>
+      {needsFallbackHeading && !docHeader && <h1 className="sr-only">{pageTitle}</h1>}
+      <div className={isDocumentPage ? "document-page" : undefined}>
+        {docHeader && (
+          <header className="document-header">
+            {docHeader.eyebrow && <p className="document-eyebrow">{docHeader.eyebrow}</p>}
+            <h1 className="document-title">
+              {docHeader.titleLines.map((line, i) => (
+                <span key={i}>
+                  {i > 0 && <br />}
+                  <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(line.replace(/^<p>/, "").replace(/<\/p>$/, "")) }} />
+                </span>
+              ))}
+            </h1>
+            {docHeader.subtitle && <p className="document-date">{docHeader.subtitle}</p>}
+          </header>
+        )}
+        <div className={isDocumentPage ? "document-card glass" : undefined}>
         {rows.length === 0 ? (
           <>
             <div className="py-32 text-center font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -193,10 +215,10 @@ const CmsPageBody = ({
           />
         )}
         </div>
-        {isDocumentPage && rows.length > 0 && (
-          <Footer breadcrumbTrail={breadcrumbTrail} pageAnswer={heroAnswer} />
-        )}
       </div>
+      {isDocumentPage && rows.length > 0 && (
+        <Footer breadcrumbTrail={breadcrumbTrail} pageAnswer={heroAnswer} />
+      )}
     </div>
   );
 };

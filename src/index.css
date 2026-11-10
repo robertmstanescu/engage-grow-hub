@@ -262,6 +262,7 @@
     --fs-hero-title: clamp(46px, 6vw, 100px);
     --fs-hero-title-display: clamp(52px, 7vw, 116px);
     --fs-hero-title-compact: clamp(38px, 4.3vw, 66px);
+    --fs-document-title: clamp(44px, 5.6vw, 84px);
     --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
     --fs-hero-body: clamp(17px, 1.3vw, 19px);
@@ -1856,6 +1857,7 @@
     --fs-hero-title: clamp(46px, 6vw, 100px);
     --fs-hero-title-display: clamp(52px, 7vw, 116px);
     --fs-hero-title-compact: clamp(38px, 4.3vw, 66px);
+    --fs-document-title: clamp(44px, 5.6vw, 84px);
     --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
     --fs-hero-body: clamp(17px, 1.3vw, 19px);
@@ -2098,3 +2100,53 @@
 .tmc-legend-swatch { width: 18px; height: 12px; border-radius: 4px; }
 .tmc-replay { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; border: 1.5px solid hsl(var(--primary)); background: transparent; color: hsl(var(--primary)); font-family: var(--font-body); font-weight: 600; font-size: 14px; cursor: pointer; }
 .tmc-replay:hover { background: hsl(var(--primary) / .08); }
+
+/* ── Document pages (Privacy): heading above one glass card, 820px column.
+      Spec: docs/redesign/03-appendix-section-layouts.md, "Privacy". ── */
+.document-page {
+  padding: clamp(96px, 11vw, 168px) clamp(16px, 5vw, 96px) clamp(80px, 9vw, 140px);
+}
+.document-header {
+  max-width: 820px;
+  margin: 0 auto 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.document-eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--gold-text));
+}
+.document-title {
+  font-family: var(--font-title);
+  font-size: var(--fs-document-title);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: hsl(var(--heading));
+  overflow-wrap: anywhere;
+}
+.document-date {
+  font-size: var(--fs-card-body);
+  color: hsl(var(--muted-foreground));
+}
+.document-card {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: clamp(28px, 4vw, 56px);
+  border-radius: 24px;
+  overflow: hidden;
+  /* The card is the measure: prose fills it. */
+  --measure-prose: none;
+}
+/* Rows inside the card are plain text: the card supplies the spacing. */
+.document-card .py-row-fluid { padding-top: 0; padding-bottom: 0; }
+.document-card .row-container { padding-left: 0; padding-right: 0; max-width: none; }
+.document-card .mt-rhythm-tight:first-child { margin-top: 0; }
+.document-card [data-row-part="body"] > p:first-child { margin-top: 0; }
+.document-card [data-row-part="body"] > p:last-child { margin-bottom: 0; }
+.document-card [data-row-part="body"] strong { color: hsl(var(--heading)); }
