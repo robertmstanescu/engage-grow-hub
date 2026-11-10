@@ -32,7 +32,26 @@ export const PILLAR_CARD_TINTS: Record<string, string> = {
 };
 
 /**
- * The colours the six services carried before 10 Nov 2026. Kept so a
+ * Small text in a service colour (numbers, links, tags with white text)
+ * needs enough contrast. Mars Yellow is too light at that size, so Pay
+ * Transparency's small text uses Peru Tan from the brand book (owner,
+ * 10 Nov 2026). Every other service uses its accent.
+ */
+export const PILLAR_TEXT_COLORS: Record<string, string> = {
+  ...PILLAR_COLORS,
+  "pay-transparency": "#883500", // Peru Tan
+};
+
+/** The small-text colour for a card, from its service link or key. */
+export const pillarTextColor = (link: string | undefined, key?: string): string | undefined => {
+  const slug = link?.match(/^\/services\/([a-z0-9-]+)\/?$/)?.[1] ?? (key ? PILLAR_KEY_TO_SLUG[key] ?? key : undefined);
+  return slug ? PILLAR_TEXT_COLORS[slug] : undefined;
+};
+
+/**
+ * The colours the six services carried before 10 Nov 2026. Peru Tan
+ * #883500 is listed because it was Pay Transparency's accent; it now
+ * serves only as that service's small-text colour. Kept so a
  * check can tell saved content that still names one.
  */
 export const RETIRED_PILLAR_COLORS = ["#43143B", "#002B67", "#6A010E", "#003728", "#883500", "#201A53"] as const;

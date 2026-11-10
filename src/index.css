@@ -244,6 +244,10 @@
     --fs-eyebrow: 12px;
     --fs-title: clamp(32px, 3.6vw, 52px);
     --fs-subtitle: 17px;
+    /* Handwritten notes (Playwrite Cuba runs wide): small enough that a
+       one-line note stays on one line beside a heading (owner, 10 Nov
+       2026). Width-only, like every --fs token. */
+    --fs-hand: clamp(14px, 0.75rem + 0.2vw, 16px);
     --fs-body: clamp(16px, 0.9rem + 0.25vw, 18px);
 
     /* Card-scale (secondary surfaces: service, boxed, vows, forms) */
@@ -565,8 +569,8 @@
        white rim and a soft shadow in the same colour. */
     --t: var(--card-tint, hsl(var(--primary)));
     background: linear-gradient(180deg,
-      color-mix(in srgb, var(--t) 20%, rgb(255 255 255 / 0.82)),
-      color-mix(in srgb, var(--t) 30%, rgb(255 255 255 / 0.66)));
+      color-mix(in srgb, var(--t) 12%, rgb(255 255 255 / 0.82)),
+      color-mix(in srgb, var(--t) 18%, rgb(255 255 255 / 0.66)));
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     backdrop-filter: blur(24px) saturate(180%);
     border-color: rgb(255 255 255 / 0.85);
@@ -1715,8 +1719,11 @@
 
   /* Hand-drawn gold underline under a chosen title word (redesign §2.3).
      The stroke is the hand-underline path from the Main artboard. */
+  /* Retired by the owner (10 Nov 2026): the word keeps its class so
+     saved titles stay valid, but no stroke is drawn. */
   .mc-underline { position: relative; display: inline-block; }
-  .mc-underline::after {
+  .mc-underline::after { display: none; }
+  .mc-underline-retired::after {
     content: ""; position: absolute; left: -2%; bottom: -0.14em; width: 104%; height: 0.26em;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M1 13 C 22 5 48 9 70 12 C 81 13 90 14 99 8' fill='none' stroke='%23E5C54F' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat;
     background-size: 100% 100%;
@@ -1871,6 +1878,10 @@
     --fs-eyebrow: 12px;
     --fs-title: clamp(32px, 3.6vw, 52px);
     --fs-subtitle: 17px;
+    /* Handwritten notes (Playwrite Cuba runs wide): small enough that a
+       one-line note stays on one line beside a heading (owner, 10 Nov
+       2026). Width-only, like every --fs token. */
+    --fs-hand: clamp(14px, 0.75rem + 0.2vw, 16px);
     --fs-body: clamp(16px, 0.9rem + 0.25vw, 18px);
     --fs-card-title: clamp(20px, 1.1rem + 0.45vw, 24px);
     --fs-card-body: clamp(15px, 0.9rem + 0.1vw, 16px);
@@ -2090,12 +2101,11 @@
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-card);
   }
-  /* Pillar accent: white card with a 3px pillar-coloured top edge.
-     The pillar colour arrives via --pillar from pillarColors.ts. */
+  /* Pillar card. Coloured edge stripes were retired by the owner
+     (10 Nov 2026); the pillar colour stays on dots and labels. */
   .mc-card-pillar {
     background: hsl(var(--card));
     border: 1px solid hsl(var(--line-2));
-    border-top: 3px solid var(--pillar, hsl(var(--primary)));
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-soft);
   }
@@ -2179,7 +2189,14 @@
 
 /* World map row (redesign): staggered draw-on, replayable. */
 /* Main markets: Cobalt Blue (#0047AB, brand secondary palette), the owner's choice of 10 Nov 2026 (it replaced the green #003728). */
-:root { --map-main: 215 100% 34%; }
+:root {
+  /* Map colours from the brand's secondary palette (owner left the
+     choice to Claude, 10 Nov 2026): Prince for internal comms, Admiral
+     for internal comms and HR, Mars Yellow for the main markets. */
+  --map-worked: 246 45% 57%;
+  --map-hr: 246 52% 21%;
+  --map-main: 23 84% 48%;
+}
 .tmc-map .c { fill: hsl(280 24% 88%); stroke: hsl(var(--background)); stroke-width: 0.5; }
 .tmc-map .wm-worked, .tmc-map .wm-hr, .tmc-map .wm-main { fill: hsl(280 24% 88%); }
 /* Pace (owner, 10 Nov 2026): slower than the artboard. `--pace` stretches
@@ -2193,19 +2210,19 @@
 .tmc-map.play .wm-worked { animation: tmcWorked 1.2s ease-out forwards; animation-delay: calc(var(--d, 0s) * var(--pace)); }
 .tmc-map.play .wm-hr { animation: tmcWorked 1.2s ease-out forwards, tmcHr 1.3s ease-out forwards; animation-delay: calc(var(--d, 0s) * var(--pace)), calc(var(--d, 0s) * var(--pace) + .6s); }
 .tmc-map.play .wm-main { animation: tmcWorked 1.2s ease-out forwards, tmcHr 1.3s ease-out forwards, tmcMain 1s ease-out forwards; animation-delay: calc(var(--d, 0s) * var(--pace)), calc(var(--d, 0s) * var(--pace) + .6s), calc(var(--d, 0s) * var(--pace) + 1.4s); }
-.tmc-map:not(.play):not(.wait) .wm-worked { fill: hsl(var(--gold-decor)); }
-.tmc-map:not(.play):not(.wait) .wm-hr { fill: hsl(var(--primary)); }
+.tmc-map:not(.play):not(.wait) .wm-worked { fill: hsl(var(--map-worked)); }
+.tmc-map:not(.play):not(.wait) .wm-hr { fill: hsl(var(--map-hr)); }
 .tmc-map:not(.play):not(.wait) .wm-main { fill: hsl(var(--map-main)); }
 /* Hover and focus on every shaded place (.wm-live). Lines are screen pixels (non-scaling): borders 0.5px, the hover line 1px at most (owner, 10 Nov 2026). */
 .tmc-map .wm-live:hover, .tmc-map .wm-live:focus-visible { stroke: hsl(var(--deep)); stroke-width: 1; outline: none; cursor: default; }
-@keyframes tmcWorked { to { fill: hsl(var(--gold-decor)); } }
-@keyframes tmcHr { to { fill: hsl(var(--primary)); } }
+@keyframes tmcWorked { to { fill: hsl(var(--map-worked)); } }
+@keyframes tmcHr { to { fill: hsl(var(--map-hr)); } }
 @keyframes tmcMain { to { fill: hsl(var(--map-main)); } }
 @media (prefers-reduced-motion: reduce) {
   .tmc-map.play .wm-worked, .tmc-map.play .wm-hr, .tmc-map.play .wm-main { animation: none; }
   /* No motion: the finished map from the start, waiting or not. */
-  .tmc-map.play .wm-worked, .tmc-map.wait .wm-worked { fill: hsl(var(--gold-decor)); }
-  .tmc-map.play .wm-hr, .tmc-map.wait .wm-hr { fill: hsl(var(--primary)); }
+  .tmc-map.play .wm-worked, .tmc-map.wait .wm-worked { fill: hsl(var(--map-worked)); }
+  .tmc-map.play .wm-hr, .tmc-map.wait .wm-hr { fill: hsl(var(--map-hr)); }
   .tmc-map.play .wm-main, .tmc-map.wait .wm-main { fill: hsl(var(--map-main)); }
 }
 .tmc-tip { pointer-events: none; transform: translate(-50%, calc(-100% - 14px)); transition: opacity .15s ease; background: hsl(var(--deep)); color: hsl(var(--deep-fg)); border-radius: 12px; padding: 8px 12px; box-shadow: 0 8px 24px -10px hsl(var(--deep) / .45); white-space: nowrap; font-family: var(--font-body); }
@@ -2288,7 +2305,7 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
   color: hsl(var(--heading));
 }
 .work-underline { position: relative; display: inline-block; }
-.work-underline svg { position: absolute; left: -2%; bottom: -0.14em; width: 104%; height: 0.26em; overflow: visible; }
+.work-underline svg { display: none; position: absolute; left: -2%; bottom: -0.14em; width: 104%; height: 0.26em; overflow: visible; }
 .work-underline path { stroke: hsl(var(--gold-decor)); }
 .work-lede { max-width: 680px; font-size: var(--fs-lede); line-height: 1.7; color: hsl(var(--body)); }
 .case-header .work-lede { max-width: 700px; line-height: 1.65; }
@@ -2377,7 +2394,6 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
   min-width: 0;
   overflow: hidden;
   overflow-wrap: anywhere;
-  border-top: 4px solid var(--pillar, hsl(var(--line-3)));
   color: inherit;
   text-decoration: none;
 }
@@ -2417,7 +2433,6 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
 }
 .work-card-note { font-size: var(--fs-card-label); color: hsl(var(--body)); }
 /* Dark style: light text on the deep plum card. */
-.work-card.mc-card-dark { border-top-color: hsl(var(--gold)); }
 .work-card.mc-card-dark :is(.work-card-title, .work-card-quote, .work-card-number, .work-card-metric) { color: hsl(var(--deep-fg)); }
 .work-card.mc-card-dark :is(.work-card-summary, .work-card-note, .work-card-pillar) { color: hsl(var(--deep-fg) / 0.8); }
 .work-card.mc-card-dark .work-dot { box-shadow: 0 0 0 1.5px hsl(var(--deep-fg) / 0.7); }
@@ -2811,3 +2826,14 @@ section.snap-section .contact-title[data-row-part="title"] {
   background-image: linear-gradient(180deg, rgb(255 255 255 / 0.24), rgb(255 255 255 / 0) 60%);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 6px 14px -8px rgb(42 14 51 / 0.35);
 }
+
+/* A handwritten note that must wrap splits evenly instead of leaving
+   one word alone on the second line. */
+.hand-note { text-wrap: balance; }
+
+/* Booking calendar: tall enough for Google's stacked layout (month,
+   then the day's times) in a narrow box, shorter once the box is wide
+   enough for Google to put them side by side. */
+.contact-cal { container-type: inline-size; }
+.contact-cal-frame { height: 1240px; }
+@container (min-width: 780px) { .contact-cal-frame { height: 760px; } }

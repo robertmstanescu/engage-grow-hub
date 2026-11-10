@@ -75,21 +75,22 @@ describe("BoxedRow", () => {
   const cardOf = (container: HTMLElement) =>
     container.querySelector("p")?.closest(".boxed-lift") as HTMLElement | null;
 
-  it("applies accent_color to the card title and top border", () => {
+  it("applies accent_color to the card title and its glass, with no edge stripe", () => {
     const { container } = render(
       <BoxedRow row={makeRow({ title: "Accent", body: "<p>x</p>", accent_color: "#c00" })} />,
     );
     const title = container.querySelector("p") as HTMLElement;
     expect(title.style.color).toBe("rgb(204, 0, 0)");
-    expect(cardOf(container)?.style.borderTop).toBe("3px solid #c00");
+    expect(cardOf(container)?.style.borderTop).toBe("");
+    expect(cardOf(container)?.style.getPropertyValue("--card-tint")).toBe("#c00");
   });
 
-  it("keeps the accent top border on cover-image rows (border shorthand must not wipe it)", () => {
+  it("draws no accent stripe on cover-image rows either", () => {
     const row = makeRow({ title: "Accent", body: "<p>x</p>", accent_color: "#c00" });
     row.content.cover_image = "https://example.com/cover.jpg";
     const { container } = render(<BoxedRow row={row} />);
     const card = cardOf(container);
-    expect(card?.style.borderTop).toBe("3px solid #c00");
+    expect(card?.style.borderTop).toBe("");
     // the cover-image card chrome is still there
     expect(card?.style.borderRadius).toBe("1rem");
   });
@@ -100,8 +101,9 @@ describe("BoxedRow", () => {
         row={makeRow({ title: "EX", body: "<p>x</p>", link_url: "/services/employee-experience", accent_color: "#c00" })}
       />,
     );
-    // employee-experience pillar navy, not the card's own red
-    expect(cardOf(container)?.style.borderTop).toBe("3px solid #0047AB");
+    // employee-experience tint, not the card's own red; text is black
+    expect(cardOf(container)?.style.getPropertyValue("--card-tint")).toBe("#307FEF");
+    expect((container.querySelector("p") as HTMLElement).style.color).toBe("rgb(0, 0, 0)");
   });
 
   it("treats a whitespace-only accent_color as unset and falls back to the row colour", () => {

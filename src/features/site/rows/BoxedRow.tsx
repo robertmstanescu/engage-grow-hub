@@ -7,7 +7,7 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 import Icon from "@/features/icons/Icon";
-import { pillarColorFromLink, pillarColorFromKey, pillarTintFrom } from "@/lib/constants/pillarColors";
+import { pillarColorFromLink, pillarColorFromKey, pillarTintFrom, pillarTextColor } from "@/lib/constants/pillarColors";
 import { trackConversion } from "@/services/conversions";
 import RowCoverCard from "@/features/site/RowCoverCard";
 import type { BoxedContent, BoxedCard } from "@/features/widgets/boxed/schema";
@@ -94,12 +94,19 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       /* Titles are heading purple on every light card (artboards): the
          pillar colour lives on the top border, dot, number and link. A
          colour the owner set on the card itself still tints its title. */
+      /* Inside a service-coloured glass card the title and text are
+         pure black (owner, 10 Nov 2026); only the number, dot and link
+         keep the service colour. */
       const titleColor = isDarkCard
         ? "hsl(var(--deep-fg))"
-        : (!pillarColor && card.accent_color?.trim()) || c.color_card_title || "hsl(var(--heading))";
+        : pillarColor ? "#000000" : (card.accent_color?.trim()) || c.color_card_title || "hsl(var(--heading))";
       const bodyColor = isDarkCard
         ? "hsl(var(--deep-fg) / 0.8)"
-        : c.color_card_body || "hsl(var(--body))";
+        : pillarColor ? "#000000" : c.color_card_body || "hsl(var(--body))";
+      /* Small text in the service colour (number, link): Pay
+         Transparency's Mars Yellow reads too light at that size, so it
+         takes its darker brand partner. */
+      const cardTextAccent = pillarTextColor(cardLink, card.pillar) || cardAccent;
       const cardCtaUrl: string | undefined = card.cta_url?.trim() ? safeHref(card.cta_url) : undefined;
       const cardCtaLabel: string | undefined = card.cta_label?.trim() || undefined;
 
@@ -127,7 +134,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
           {marker === "pillar_number" && (
             <span aria-hidden className="flex items-center gap-2.5" style={{ marginBottom: 14 }}>
               <span style={{ width: 12, height: 12, borderRadius: 999, background: cardAccent || "hsl(var(--heading))" }} />
-              <span className="font-display font-bold" style={{ fontSize: 15, color: cardAccent || "hsl(var(--heading))" }}>
+              <span className="font-display font-bold" style={{ fontSize: 15, color: cardTextAccent || "hsl(var(--heading))" }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
             </span>
@@ -149,7 +156,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
 
           <div className="flex flex-col items-start">
           {marker === "pillar_number" && cardLink && (
-            <span className="font-body font-semibold" style={{ fontSize: 15, color: cardAccent || "hsl(var(--link))", marginTop: 14 }}>
+            <span className="font-body font-semibold" style={{ fontSize: 15, color: cardTextAccent || "hsl(var(--link))", marginTop: 14 }}>
               {card.cta_label?.trim() || `Explore ${card.title}`} <span aria-hidden>→</span>
             </span>
           )}
@@ -224,9 +231,8 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
             }
           : {}),
         /* A card with a pillar (by link or key) or its own accent colour
-           carries the thin coloured top border; dark bands never do. */
-        ...(cardAccent && !isDarkCard ? { borderTop: `3px solid ${cardAccent}` } : {}),
-        /* …and the same colour, thinned to a quarter, as its glass fill. */
+           is glass in that colour. No coloured edge stripe: the owner
+           retired those everywhere (10 Nov 2026). */
         ...(cardAccent && !isDarkCard && !coverImage ? { ["--card-tint" as string]: pillarTintFrom(cardLink) || pillarTintFrom(card.pillar) || cardAccent } : {}),
       } as React.CSSProperties;
 
@@ -394,7 +400,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               className={c.note_handwritten ? "leading-[1.4]" : "font-body text-xs italic leading-[1.6]"}
               style={{
                 color: c.note_handwritten && !c.color_note ? "hsl(var(--link))" : noteColor,
-                ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: 20 } : {}),
+                ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: "var(--fs-hand)", textWrap: "balance" } : {}),
               }}
             >{c.note}</p>
           </div>

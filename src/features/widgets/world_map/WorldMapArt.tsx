@@ -241,8 +241,8 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
       </div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-x-6 gap-y-2">
-          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--gold-decor))" }} />{content.legend_worked || "Internal comms"}</span>
-          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--primary))" }} />{content.legend_hr || "Internal comms and HR"}</span>
+          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--map-worked))" }} />{content.legend_worked || "Internal comms"}</span>
+          <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--map-hr))" }} />{content.legend_hr || "Internal comms and HR"}</span>
           <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--map-main))" }} />{content.legend_main || "Main markets today"}</span>
           {content.legend_note && <span className="tmc-legend">{content.legend_note}</span>}
           {/* The map art's licence asks for this credit; keep it visible. */}

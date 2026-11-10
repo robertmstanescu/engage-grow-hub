@@ -242,7 +242,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             className={c.note_handwritten ? "leading-[1.4]" : "font-body text-xs italic leading-[1.6]"}
             style={{
               color: c.note_handwritten && !c.color_note ? "hsl(var(--link))" : noteColor,
-              ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: 20 } : {}),
+              ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: "var(--fs-hand)", textWrap: "balance" } : {}),
             }}
           >{c.note}</p>
         </div>

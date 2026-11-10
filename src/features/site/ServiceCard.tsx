@@ -143,7 +143,6 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
         // showed up. Wired here as the intended left-accent stripe.
         <div
           className="border-t border-border px-6 py-4 flex-shrink-0"
-          style={{ borderLeft: "3px solid hsl(var(--pillar-note-border))" }}
         >
           <p className={`font-body text-micro italic leading-relaxed ${alignClass}`} style={{ color: "hsl(var(--foreground) / 0.55)" }}>{note}</p>
         </div>

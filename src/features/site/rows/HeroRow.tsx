@@ -35,7 +35,7 @@ const HeroRow = ({ row }: Props) => {
           the left edge. Stacks on a phone. */}
       <div
         className="surface-card grid grid-cols-1 md:grid-cols-12 items-start"
-        style={{ gap: 24, padding: "clamp(24px, 3vw, 36px) clamp(24px, 4vw, 48px)", borderLeft: `4px solid ${c.color_label || "hsl(var(--deep))"}` }}
+        style={{ gap: 24, padding: "clamp(24px, 3vw, 36px) clamp(24px, 4vw, 48px)" }}
         data-answer-strip
       >
         <p className="font-body font-bold uppercase md:col-span-2" style={{ color: "hsl(var(--gold-text))", fontSize: "var(--fs-chip)", letterSpacing: "0.24em", paddingTop: 6 }}>

@@ -38,10 +38,10 @@ interface Props {
  */
 const RowSubtitle = ({ children, color, style, className, handwritten }: Props) => (
   <p
-    className={`${handwritten ? "leading-tight" : "leading-[1.7]"} mb-rhythm-base ${className ?? ""}`}
+    className={`${handwritten ? "leading-tight hand-note" : "leading-[1.7]"} mb-rhythm-base ${className ?? ""}`}
     style={{
       ...(handwritten ? { fontFamily: "'Playwrite CU', cursive" } : {}),
-      fontSize: "var(--fs-subtitle)",
+      fontSize: handwritten ? "var(--fs-hand)" : "var(--fs-subtitle)",
       // Inherit the row's auto-resolved foreground unless the admin
       // set a per-row override. `--row-fg` is published by RowSection.
       // `||` so a cleared or schema-defaulted "" counts as "no override".
