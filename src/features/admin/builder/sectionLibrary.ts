@@ -93,6 +93,14 @@ export const SECTION_LIBRARY: LibrarySection[] = [
     }, { strip_title: "Vows" }),
   },
   {
+    key: "world-map", name: "World map", family: "Numbers",
+    build: () => rowWith("world_map", {
+      eyebrow: "Where the work has travelled",
+      title_lines: ["One comms function, many countries."],
+      lede: "Gold marks internal comms. Purple marks the countries where the work covered HR as well, and the darkest purple marks the main markets today.",
+    }, { strip_title: "World map" }),
+  },
+  {
     key: "proof-strip", name: "Proof strip", family: "Numbers",
     build: () => rowWith("proof_band", {
       eyebrow: "Proof, not promises",

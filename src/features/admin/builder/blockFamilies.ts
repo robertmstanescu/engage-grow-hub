@@ -44,6 +44,7 @@ export const BLOCK_FAMILIES: BlockFamily[] = [
       { type: "logo_cloud", label: "Logos", hint: "A row of client logos" },
       { type: "from_the_blog", label: "From the blog", hint: "Recent posts, chosen by category" },
       { type: "work_teaser", label: "Work teaser", hint: "Work cards, chosen or automatic" },
+      { type: "world_map", label: "World map", hint: "Countries shaded by how far the work went" },
     ],
   },
   {

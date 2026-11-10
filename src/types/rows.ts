@@ -269,6 +269,7 @@ export const ROW_TYPES = [
   "cta_band",
   "from_the_blog",
   "work_teaser",
+  "world_map",
 ] as const;
 
 export type RowType = (typeof ROW_TYPES)[number];

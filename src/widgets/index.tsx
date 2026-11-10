@@ -67,6 +67,7 @@ import "@/features/widgets/contact";
 import "@/features/widgets/cta-button";
 import "@/features/widgets/from_the_blog";
 import "@/features/widgets/work_teaser";
+import "@/features/widgets/world_map";
 
 /* ──────────────────────────────────────────────────────────────────────
  * Built-in widget registrations.
