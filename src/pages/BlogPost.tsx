@@ -8,7 +8,6 @@ import Footer from "@/features/site/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
-import CoverFadeImage from "@/features/site/CoverFadeImage";
 import MoreArticles from "@/features/site/MoreArticles";
 import { resolveAuthor, type AuthorProfile } from "@/features/site/authorProfile";
 import { useSiteContent } from "@/hooks/useSiteContent";
@@ -52,7 +51,7 @@ const BlogPost = () => {
   const authorLinkedin = ((authorProfile.linkedin || "").trim() || (socialLinks.linkedin || "").trim());
   const author = resolveAuthor(authorProfile, article);
   const [loading, setLoading] = useState(true);
-  const { getTagColors } = useTagColors();
+  const { getTagColors, getCategoryColors } = useTagColors();
   // BlogPost has its own bespoke "not found" branch below — it does NOT
   // render <NotFound/>, so it needs its own redirect check (NotFound.tsx's
   // check doesn't cover this route).
@@ -165,63 +164,79 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen page-shell">
       <Navbar />
-      <article className={article.cover_image ? "" : "pt-24 md:pt-28"}>
-        <div className="relative">
-          {article.cover_image && (
-            <CoverFadeImage
-              src={article.cover_image}
-              alt={article.cover_image_alt || `${article.title} — cover image`}
-              aspectRatio={16 / 9}
-              className="max-h-[70vh]"
-            />
-          )}
-
-
-          <header className={`relative z-10 px-8 ${article.cover_image ? "-mt-24 md:-mt-32 pb-6" : "pt-10 pb-12"}`}>
-            <div className="relative z-10 max-w-[1100px] mx-auto lg:pr-[352px]">
-              <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.15em] mb-4 transition-opacity hover:opacity-70" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
-                <ArrowLeft size={14} /> All blogs &amp; insights
+      <article>
+        {/* Redesign (BlogPost artboard): header first in a 920px column —
+            breadcrumb + category pill, big title, excerpt, date and read
+            time — then the cover as a contained, rounded picture. */}
+        <header className="relative z-10 px-8 pt-28 md:pt-32 pb-10">
+          <div className="max-w-[920px] mx-auto flex flex-col gap-5">
+            <div className="flex flex-wrap items-center gap-3 font-body text-sm" style={{ color: "hsl(var(--foreground) / 0.55)" }}>
+              <Link to="/blog/" className="transition-opacity hover:opacity-70" style={{ color: "inherit" }}>
+                Blog
               </Link>
-              <div>
-                <h1 className="font-display text-2xl md:text-4xl lg:text-5xl font-black leading-tight" style={{ color: "hsl(var(--foreground))" }}>{article.title}</h1>
-
-                {/* The author is shown ONCE, in the block under the
-                    article (owner's decision); the line here carries the
-                    date and the reading time only. */}
-                <div className="flex flex-wrap items-center gap-3 mt-3">
-                  <span className="font-body text-sm" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
-                    {article.published_at ? formatDate(article.published_at) : ""}
-                    {article.published_at && <span style={{ color: "hsl(var(--foreground) / 0.3)" }}> · </span>}
-                    {calculateReadTime(article.content)}
-                  </span>
-                </div>
-
-                {article.tags && article.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {article.tags.map((tag) => {
-                      const tc = getTagColors(tag);
-                      return (
-                        <span
-                          key={tag}
-                          className="font-body text-[10px] tracking-[0.12em] uppercase px-2.5 py-1 rounded-full font-medium"
-                          style={{ backgroundColor: tc.bgColor, color: tc.textColor }}
-                        >
-                          {tag}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {article.excerpt && (
-                  <p className="font-body text-base md:text-lg leading-relaxed mt-3" style={{ color: "hsl(var(--foreground) / 0.72)" }}>
-                    {article.excerpt}
-                  </p>
-                )}
-              </div>
+              <span aria-hidden="true">/</span>
+              {article.category && (
+                <span
+                  className="font-body text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full"
+                  style={{ backgroundColor: getCategoryColors(article.category).bgColor, color: getCategoryColors(article.category).textColor }}
+                >
+                  {article.category}
+                </span>
+              )}
             </div>
-          </header>
-        </div>
+            <h1
+              className="font-display font-extrabold"
+              style={{ color: "hsl(var(--deep))", fontSize: "clamp(40px, 5vw, 76px)", lineHeight: 1.0, letterSpacing: "-0.02em" }}
+            >
+              {article.title}
+            </h1>
+            {article.excerpt && (
+              <p className="font-body leading-[1.6] max-w-[720px]" style={{ color: "hsl(var(--foreground) / 0.65)", fontSize: "var(--fs-hero-body)" }}>
+                {article.excerpt}
+              </p>
+            )}
+
+            {/* The author is shown ONCE, in the block under the
+                article (owner's decision); the line here carries the
+                date and the reading time only. */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="font-body text-sm" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
+                {article.published_at ? formatDate(article.published_at) : ""}
+                {article.published_at && <span style={{ color: "hsl(var(--foreground) / 0.3)" }}> · </span>}
+                {calculateReadTime(article.content)}
+              </span>
+            </div>
+
+            {article.tags && article.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {article.tags.map((tag) => {
+                  const tc = getTagColors(tag);
+                  return (
+                    <span
+                      key={tag}
+                      className="font-body text-[10px] tracking-[0.12em] uppercase px-2.5 py-1 rounded-full font-medium"
+                      style={{ backgroundColor: tc.bgColor, color: tc.textColor }}
+                    >
+                      {tag}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </header>
+
+        {article.cover_image && (
+          <div className="px-8">
+            <img
+              src={transformImageUrl(article.cover_image, { width: 1280, quality: 75 })}
+              alt={article.cover_image_alt || `${article.title} — cover image`}
+              className="block w-full max-w-[1280px] mx-auto rounded-[28px] object-cover h-64 md:h-[420px] lg:h-[520px]"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+        )}
 
         <div className="section-light pt-2 pb-16 px-8">
           <div className="max-w-[1100px] mx-auto lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-[52px] lg:items-start">
