@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { ADMIN_DESTINATIONS, LEGACY_REDIRECTS, adminPath, resolveAdminTab } from "../navigation";
 
 describe("admin navigation", () => {
-  it("has eight destinations and every sub-tab key is unique within its destination", () => {
-    expect(ADMIN_DESTINATIONS).toHaveLength(8);
+  it("has nine destinations and every sub-tab key is unique within its destination", () => {
+    expect(ADMIN_DESTINATIONS).toHaveLength(9);
     for (const d of ADMIN_DESTINATIONS) {
       const keys = (d.tabs || []).map((t) => t.key);
       expect(new Set(keys).size).toBe(keys.length);

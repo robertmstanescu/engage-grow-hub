@@ -110,7 +110,7 @@ export const saveCmsPageRows = (id: string, rows: PageRow[]) => {
 };
 
 /** Slugs reserved by the system — block users from claiming them. */
-export const RESERVED_SLUGS = ["admin", "blog", "unsubscribe", "api", "auth", "login", "signup", "p"];
+export const RESERVED_SLUGS = ["admin", "blog", "work", "unsubscribe", "api", "auth", "login", "signup", "p"];
 
 /**
  * Duplicate a CMS page. The clone:

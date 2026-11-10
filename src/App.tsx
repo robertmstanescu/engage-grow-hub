@@ -27,6 +27,8 @@ import NotFound from "./pages/NotFound";
 // just one tier down. PublicLayout supplies the Suspense boundary.
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Work = lazy(() => import("./pages/Work"));
+const WorkCase = lazy(() => import("./pages/WorkCase"));
 const CmsPage = lazy(() => import("./pages/CmsPage"));
 // Admin routes — lazy so the editor stack stays out of the public bundle.
 const Admin = lazy(() => import("./pages/Admin"));
@@ -72,6 +74,8 @@ const router = createBrowserRouter(
         <Route path="/" element={<Index />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/work" element={<Work />} />
+        <Route path="/work/:slug" element={<WorkCase />} />
         <Route path="/unsubscribe" element={<Navigate to="/" replace />} />
         <Route path="/services/:slug" element={<CmsPage prefix="services/" />} />
         <Route path="/p/:slug" element={<CmsPage />} />

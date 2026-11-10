@@ -30,6 +30,8 @@ import AdminOverviewDashboard from "./AdminOverviewDashboard";
 import ManageTeam from "./ManageTeam";
 import BlogEditor from "./BlogEditor";
 import TagsManager from "./TagsManager";
+import WorkItemsManager from "./WorkItemsManager";
+import ProofPointsManager from "./ProofPointsManager";
 import RedirectsManager from "./RedirectsManager";
 import PagesManager from "./PagesManager";
 import NavigationManager from "./NavigationManager";
@@ -238,6 +240,7 @@ const AdminDashboard = ({ theme = "light", onToggleTheme }: Props) => {
             {activeTab === "overview" && <AdminOverviewDashboard onGo={go} onOpenInBuilder={openInBuilder} />}
             {activeTab === "pages" && <PagesManager onEditPage={openInBuilder} />}
             {activeTab === "blog" && (activeSub === "tags" ? <TagsManager /> : <BlogEditor />)}
+            {activeTab === "work" && (activeSub === "proof" ? <ProofPointsManager /> : <WorkItemsManager />)}
             {activeTab === "media" && <MediaGallery />}
             {activeTab === "navigation" && <NavigationManager />}
             {activeTab === "design" && <DesignScreen />}

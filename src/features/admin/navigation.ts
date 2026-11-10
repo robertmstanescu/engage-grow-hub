@@ -11,11 +11,11 @@
  */
 import {
   LayoutDashboard, FileText, BookOpen, Image, Compass, Palette,
-  LineChart, Settings,
+  LineChart, Settings, Briefcase,
 } from "lucide-react";
 
 export type AdminTab =
-  | "overview" | "pages" | "blog" | "media" | "navigation"
+  | "overview" | "pages" | "blog" | "work" | "media" | "navigation"
   | "design" | "insights" | "settings";
 
 export interface SubTab { key: string; label: string }
@@ -34,6 +34,7 @@ export const ADMIN_DESTINATIONS: AdminDestination[] = [
   { key: "overview", label: "Overview", icon: LayoutDashboard },
   { key: "pages", label: "Pages", icon: FileText },
   { key: "blog", label: "Blog", icon: BookOpen, tabs: [{ key: "posts", label: "Posts" }, { key: "tags", label: "Tags" }] },
+  { key: "work", label: "Work", icon: Briefcase, tabs: [{ key: "items", label: "Work items" }, { key: "proof", label: "Proof points" }] },
   { key: "media", label: "Media", icon: Image },
   { key: "navigation", label: "Navigation", icon: Compass },
   { key: "design", label: "Design", icon: Palette },

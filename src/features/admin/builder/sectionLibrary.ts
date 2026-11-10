@@ -74,6 +74,10 @@ export const SECTION_LIBRARY: LibrarySection[] = [
     build: () => rowWith("from_the_blog", { title: "From the blog" }, { strip_title: "From the blog" }),
   },
   {
+    key: "work-teaser", name: "Work teaser", family: "Cards",
+    build: () => rowWith("work_teaser", { eyebrow: "Work", title: "Selected work" }, { strip_title: "Work teaser" }),
+  },
+  {
     key: "proof-strip", name: "Proof strip", family: "Numbers",
     build: () => rowWith("proof_band", {
       eyebrow: "Proof, not promises",

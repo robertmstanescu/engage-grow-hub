@@ -669,6 +669,42 @@ export type Database = {
         }
         Relationships: []
       }
+      proof_points: {
+        Row: {
+          approved: boolean
+          created_at: string
+          id: string
+          label: string
+          pillars: string[]
+          sort_order: number
+          source_note: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          approved?: boolean
+          created_at?: string
+          id?: string
+          label?: string
+          pillars?: string[]
+          sort_order?: number
+          source_note?: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          approved?: boolean
+          created_at?: string
+          id?: string
+          label?: string
+          pillars?: string[]
+          sort_order?: number
+          source_note?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       redirects: {
         Row: {
           created_at: string
@@ -932,6 +968,128 @@ export type Database = {
           visitor_id?: string | null
         }
         Relationships: []
+      }
+      work_items: {
+        Row: {
+          ai_summary: string
+          card_style: string
+          case_proof_ids: string[]
+          case_rows: Json
+          cover_image: string
+          cover_image_alt: string
+          created_at: string
+          draft_case_rows: Json
+          expiry_at: string | null
+          featured_home: boolean
+          gallery: Json
+          has_case_study: boolean
+          honesty_label: string
+          id: string
+          link_out: string
+          meta_description: string
+          meta_title: string
+          metric: string
+          metric_label: string
+          og_image: string
+          pillar: string
+          proof_point_id: string | null
+          publish_at: string | null
+          published_at: string | null
+          pull_line: string
+          role_title: string
+          slug: string
+          sort_order: number
+          status: string
+          summary: string
+          tags: string[]
+          title: string
+          type: string
+          updated_at: string
+          year: string
+        }
+        Insert: {
+          ai_summary?: string
+          card_style?: string
+          case_proof_ids?: string[]
+          case_rows?: Json
+          cover_image?: string
+          cover_image_alt?: string
+          created_at?: string
+          draft_case_rows?: Json
+          expiry_at?: string | null
+          featured_home?: boolean
+          gallery?: Json
+          has_case_study?: boolean
+          honesty_label?: string
+          id?: string
+          link_out?: string
+          meta_description?: string
+          meta_title?: string
+          metric?: string
+          metric_label?: string
+          og_image?: string
+          pillar?: string
+          proof_point_id?: string | null
+          publish_at?: string | null
+          published_at?: string | null
+          pull_line?: string
+          role_title?: string
+          slug: string
+          sort_order?: number
+          status?: string
+          summary?: string
+          tags?: string[]
+          title?: string
+          type?: string
+          updated_at?: string
+          year?: string
+        }
+        Update: {
+          ai_summary?: string
+          card_style?: string
+          case_proof_ids?: string[]
+          case_rows?: Json
+          cover_image?: string
+          cover_image_alt?: string
+          created_at?: string
+          draft_case_rows?: Json
+          expiry_at?: string | null
+          featured_home?: boolean
+          gallery?: Json
+          has_case_study?: boolean
+          honesty_label?: string
+          id?: string
+          link_out?: string
+          meta_description?: string
+          meta_title?: string
+          metric?: string
+          metric_label?: string
+          og_image?: string
+          pillar?: string
+          proof_point_id?: string | null
+          publish_at?: string | null
+          published_at?: string | null
+          pull_line?: string
+          role_title?: string
+          slug?: string
+          sort_order?: number
+          status?: string
+          summary?: string
+          tags?: string[]
+          title?: string
+          type?: string
+          updated_at?: string
+          year?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_items_proof_point_id_fkey"
+            columns: ["proof_point_id"]
+            isOneToOne: false
+            referencedRelation: "proof_points"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
