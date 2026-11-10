@@ -2622,7 +2622,7 @@ section.snap-section .contact-title[data-row-part="title"] {
 .hero-chip-copy { display: flex; flex-direction: column; gap: 1.75rem; flex: 1 1 380px; max-width: 580px; min-width: 0; }
 .hero-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .hero-chip { transition: background-color .2s ease, border-color .2s ease; }
-.hero-chip:hover, .hero-chip:focus-visible { background: rgba(255, 255, 255, 0.95) !important; border-color: hsl(var(--link)) !important; }
+.hero-chip:hover, .hero-chip:focus-visible { background: var(--lg-light-bg-solid) !important; border-color: hsl(var(--link)) !important; }
 @media (min-width: 1024px) {
   .hero-chip-split .hero-chips { display: grid; grid-template-columns: repeat(2, max-content); gap: 10px; flex: 0 0 auto; }
 }
