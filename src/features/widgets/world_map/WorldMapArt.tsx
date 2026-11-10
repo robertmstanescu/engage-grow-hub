@@ -167,9 +167,10 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
           onPointerLeave={(e) => { if (!dragging) onPointerEnd(e); }}
           onDoubleClick={(e) => { const { fx, fy } = fractionOf(e.clientX, e.clientY); zoomBy(ZOOM_STEP, fx, fy); }}
         >
-          {/* "3D within 3D" (owner, 10 Nov 2026): the land is lit from the
-              top left and lifted off the glass box, so it reads as raised
-              glass. One filter on the whole land group keeps it cheap. */}
+          {/* "3D within 3D" (owner, 10 Nov 2026): only the countries worked
+              in are lit from the top left and lifted off the glass box, so
+              they read as raised glass; the rest of the world stays flat.
+              One filter on that group keeps it cheap. */}
           <defs>
             <filter id="tmc-glass-3d" x="-3%" y="-3%" width="106%" height="110%" colorInterpolationFilters="sRGB">
               <feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="soft" />
@@ -181,10 +182,12 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
               <feDropShadow in="lit" dx="0" dy="2.5" stdDeviation="2.2" floodColor="#2A0E33" floodOpacity="0.24" />
             </filter>
           </defs>
-          <g className="tmc-land" filter="url(#tmc-glass-3d)">
+          <g className="tmc-land">
             {MAP_BASE_PATHS.map((d, i) => (
               <path key={i} className="c" d={d} />
             ))}
+          </g>
+          <g className="tmc-worked" filter="url(#tmc-glass-3d)">
             {shaded.map((c) => {
               const status = groups.get(c.name)!;
               /* Every shaded place names itself on hover and focus,
