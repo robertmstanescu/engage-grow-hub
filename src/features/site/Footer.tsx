@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { useSiteContentWithStatus } from "@/hooks/useSiteContent";
 import SectionShape from "@/features/site/rows/SectionShape";
 import PageBreadcrumbs, { type BreadcrumbEntry } from "@/features/site/PageBreadcrumbs";
+import { pillarColorFromLink } from "@/lib/constants/pillarColors";
 import type { SectionShapeConfig } from "@/types/rows";
 
 
@@ -123,13 +124,19 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
                 {col.title}
               </h4>
               <ul className="space-y-2.5">
-                {col.links.map((link, j) => (
-                  <li key={j}>
-                    <a href={resolveHref(link.href)} className="font-body text-xs transition-all duration-500 hover:opacity-100" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
+                {col.links.map((link, j) => {
+                  /* Services column: a small pillar-coloured dot before
+                     each service link (redesign footer). */
+                  const dot = pillarColorFromLink(link.href);
+                  return (
+                    <li key={j}>
+                      <a href={resolveHref(link.href)} className="font-body text-xs transition-all duration-500 hover:opacity-100 inline-flex items-center gap-2" style={{ color: "hsl(var(--foreground) / 0.65)" }}>
+                        {dot ? <span aria-hidden className="inline-block w-2 h-2 rounded-full flex-none" style={{ backgroundColor: dot }} /> : null}
+                        {link.label}
+                      </a>
+                    </li>
+                  );
+                })}
 
                 {col === connectColumn && activeLinks.map((p) => {
                   const Icon = p.key === "tiktok" ? TikTokIcon : p.key === "threads" ? ThreadsIcon : p.icon;

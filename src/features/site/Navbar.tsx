@@ -265,11 +265,13 @@ const Navbar = () => {
           top: scrolled ? "10px" : "16px",
           paddingTop: scrolled ? "8px" : "12px",
           paddingBottom: scrolled ? "8px" : "12px",
-          borderRadius: "calc(var(--radius) * 1.6)",
-          backgroundColor: `hsl(var(--card) / ${scrolled ? 0.97 : 0.92})`,
-          backdropFilter: "blur(18px) saturate(140%)",
-          WebkitBackdropFilter: "blur(18px) saturate(140%)",
-          border: "var(--outline-ink-navbar-width) solid var(--outline-ink)",
+          /* Redesign chrome (NavStates artboard): 2.1rem island, 80%
+             white with a 12px blur, --line-2 border, soft shadow. */
+          borderRadius: "2.1rem",
+          backgroundColor: scrolled ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.8)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          border: "1px solid hsl(var(--line-2))",
           boxShadow: "var(--shadow-soft)",
         }}
       >
@@ -316,8 +318,9 @@ const Navbar = () => {
                     className="top-nav-label font-body inline-flex items-center gap-1 h-[1.1rem]"
                     data-active={active}
                     style={{
-                      color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
-                      fontWeight: active ? 700 : 450,
+                      fontSize: 14,
+                      color: active ? "hsl(var(--heading))" : "hsl(var(--body))",
+                      fontWeight: active ? 600 : 450,
                     }}
                   >
                     {item.label}
@@ -379,8 +382,9 @@ const Navbar = () => {
                 className="top-nav-label font-body inline-flex items-center h-[1.1rem]"
                 data-active={active}
                 style={{
-                  color: active ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.72)",
-                  fontWeight: active ? 700 : 450,
+                  fontSize: 14,
+                  color: active ? "hsl(var(--heading))" : "hsl(var(--body))",
+                  fontWeight: active ? 600 : 450,
                 }}
               >
                 {item.label}
@@ -395,10 +399,10 @@ const Navbar = () => {
             href={ctaHref}
             onClick={(e) => handleNavClick(e, ctaHref)}
             title={ctaText}
-            className="px-6 h-10 rounded-full flex items-center justify-center text-xs font-semibold tracking-[0.02em] transition-colors duration-200 whitespace-nowrap"
+            className="px-6 h-11 rounded-full flex items-center justify-center text-[15px] font-semibold tracking-[0.02em] transition-colors duration-200 whitespace-nowrap"
             style={{
-              backgroundColor: "hsl(var(--nav-cta-bg, 280 57% 16%))",
-              color: "hsl(var(--nav-cta-text, 45 60% 96%))",
+              backgroundColor: "hsl(var(--nav-cta-bg, var(--deep)))",
+              color: "hsl(var(--nav-cta-text, var(--deep-fg)))",
             }}
           >
             {ctaText}
