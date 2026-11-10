@@ -243,7 +243,7 @@
        with a dock), which read as "the text keeps getting smaller". */
     --fs-eyebrow: 12px;
     --fs-title: clamp(32px, 3.6vw, 52px);
-    --fs-subtitle: clamp(17px, 1rem + 0.2vw, 19px);
+    --fs-subtitle: 17px;
     --fs-body: clamp(16px, 0.95rem + 0.15vw, 18px);
 
     /* Card-scale (secondary surfaces: service, boxed, vows, forms) */
@@ -266,6 +266,9 @@
     --fs-work-title: clamp(44px, 6.4vw, 96px);
     --fs-case-heading: clamp(28px, 2.6vw, 38px);
     --fs-chip: 11px;
+    --fs-proof-number: clamp(44px, 4.4vw, 68px);
+    --fs-contact-title: clamp(36px, 4.6vw, 68px);
+    --fs-stamp: 15px;
     --fs-work-metric: clamp(24px, 2.2vw, 30px);
     --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
@@ -314,7 +317,9 @@
   h2,
   h3 {
     font-family: var(--font-title);
-    text-wrap: balance;
+    /* Headings wrap as the canvas draws them: line by line, never
+       balanced (a balanced "36 countries. One / comms function." broke
+       the artboard's two-line heading). */
   }
 
   .font-display {
@@ -1770,7 +1775,7 @@
     --btn-ink-fg: 0 0% 100%;
     --fs-eyebrow: 12px;
     --fs-title: clamp(32px, 3.6vw, 52px);
-    --fs-subtitle: clamp(17px, 1rem + 0.2vw, 19px);
+    --fs-subtitle: 17px;
     --fs-body: clamp(16px, 0.95rem + 0.15vw, 18px);
     --fs-card-title: clamp(20px, 1.1rem + 0.45vw, 24px);
     --fs-card-body: clamp(15px, 0.9rem + 0.1vw, 16px);
@@ -1786,6 +1791,9 @@
     --fs-work-title: clamp(44px, 6.4vw, 96px);
     --fs-case-heading: clamp(28px, 2.6vw, 38px);
     --fs-chip: 11px;
+    --fs-proof-number: clamp(44px, 4.4vw, 68px);
+    --fs-contact-title: clamp(36px, 4.6vw, 68px);
+    --fs-stamp: 15px;
     --fs-work-metric: clamp(24px, 2.2vw, 30px);
     --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
@@ -2026,10 +2034,44 @@
 .tmc-tip { pointer-events: none; transform: translate(-50%, calc(-100% - 14px)); transition: opacity .15s ease; background: hsl(var(--deep)); color: hsl(var(--deep-fg)); border-radius: 12px; padding: 8px 12px; box-shadow: 0 8px 24px -10px hsl(var(--deep) / .45); white-space: nowrap; font-family: var(--font-body); }
 .tmc-tip-name { font-family: var(--font-heading, var(--font-body)); font-weight: 700; font-size: 15px; }
 .tmc-tip-status { font-size: 12px; color: hsl(var(--deep-fg) / .8); }
-.tmc-legend { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: hsl(var(--vows-card-body)); }
+.tmc-legend { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: hsl(var(--body)); }
 .tmc-legend-swatch { width: 18px; height: 12px; border-radius: 4px; }
 .tmc-replay { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; border: 1.5px solid hsl(var(--primary)); background: transparent; color: hsl(var(--primary)); font-family: var(--font-body); font-weight: 600; font-size: 14px; cursor: pointer; }
 .tmc-replay:hover { background: hsl(var(--primary) / .08); }
+
+/* ── Space above and below a row (Style ▸ Space). The page rhythm is
+      `py-row-fluid`; a row can ask for less, as the canvas does for a
+      section that follows another one. ── */
+/* "lead" is the first row of a page: the navigation's own zone, then the
+   canvas gap under it. The Style tab offers it on a hero only
+   ("Under menu"). */
+section.snap-section[data-space-top="lead"] { padding-top: calc(90px + clamp(40px, 5vw, 72px)); }
+section.snap-section[data-space-top="mid"] { padding-top: clamp(64px, 7vw, 112px); }
+section.snap-section[data-space-bottom="mid"] { padding-bottom: clamp(64px, 7vw, 112px); }
+section.snap-section[data-space-top="tight"] { padding-top: clamp(40px, 4vw, 64px); }
+section.snap-section[data-space-top="none"] { padding-top: 0; }
+section.snap-section[data-space-bottom="tight"] { padding-bottom: clamp(40px, 4vw, 64px); }
+section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
+
+/* ── Deep proof band (artboard Main, "Track record"): one deep plum panel
+      wider than the column, a gold rule beside each number. ── */
+.proof-deep {
+  margin: clamp(40px, 5vw, 72px) clamp(16px, 3vw, 48px) 0;
+  padding: clamp(48px, 5vw, 72px) clamp(24px, 5vw, 80px);
+  border-radius: 32px;
+  background: hsl(var(--deep));
+  color: hsl(var(--deep-fg));
+  text-align: left;
+}
+.proof-deep-inner { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+.proof-deep-eyebrow { font-size: var(--fs-eyebrow); font-weight: 700; letter-spacing: 0.32em; text-transform: uppercase; color: hsl(var(--gold-soft, 48 73% 67%)); }
+.proof-deep-title { font-family: var(--font-title); font-size: var(--fs-title); font-weight: 700; line-height: 1.05; color: hsl(var(--deep-fg)); }
+.proof-deep-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+@media (min-width: 900px) { .proof-deep-grid { grid-template-columns: repeat(var(--proof-cols, 4), minmax(0, 1fr)); } }
+@media (max-width: 479px) { .proof-deep-grid { grid-template-columns: minmax(0, 1fr); } }
+.proof-deep-item { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding-left: 20px; border-left: 2px solid hsl(var(--gold-decor) / 0.5); overflow-wrap: anywhere; }
+.proof-deep-item dt { font-family: var(--font-title); font-size: var(--fs-proof-number); font-weight: 700; line-height: 1; color: hsl(var(--gold-decor)); }
+.proof-deep-item dd { margin: 0; font-size: var(--fs-card-body); line-height: 1.5; color: hsl(285 28% 90%); }
 
 /* ── Work index and case study. Spec: docs/redesign/artboards/Work.dc.html
       and CaseStudy.dc.html. One 1280px column, glass cards on the mesh. ── */
@@ -2328,3 +2370,38 @@
 .document-card [data-row-part="body"] > p:first-child { margin-top: 0; }
 .document-card [data-row-part="body"] > p:last-child { margin-bottom: 0; }
 .document-card [data-row-part="body"] strong { color: hsl(var(--heading)); }
+
+/* ── Row heading block (canvas: small heading, title and lede share one
+      760px measure, 16px apart). A centred row keeps the block centred. ── */
+section.snap-section [data-row-part="title"] { max-width: 760px; }
+section.snap-section .text-center [data-row-part="title"],
+section.snap-section [data-row-part="title"].text-center,
+section.snap-section [style*="text-align: center"] [data-row-part="title"],
+section.snap-section [data-row-part="title"][style*="text-align: center"] { margin-inline: auto; }
+
+/* ── Contact block (artboard Main): the closing headline is a step larger
+      and heavier than a row title, the copy keeps a 520px measure and a
+      tilted stamp can sit under it. ── */
+section.snap-section .contact-title[data-row-part="title"] {
+  font-size: var(--fs-contact-title) !important;
+  font-weight: 800;
+  line-height: 0.98 !important;
+  letter-spacing: -0.02em !important;
+  margin-bottom: 20px;
+}
+.contact-room [data-row-part="body"] { max-width: 520px; font-size: 18px; }
+.contact-stamp {
+  display: inline-block;
+  margin-top: 32px;
+  padding: 8px 14px;
+  border: 1.5px solid hsl(var(--link));
+  border-radius: 4px;
+  color: hsl(var(--link));
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: var(--fs-stamp);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+  overflow-wrap: anywhere;
+}

@@ -4,7 +4,7 @@ import type { PageRow } from "@/types/rows";
 import { getRowColumns } from "@/lib/constants/rowDefaults";
 import type { Alignment, VAlign } from "@/features/site/rows/PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "@/features/site/rows/typography";
+import { RowEyebrow, RowTitle, RowSection } from "@/features/site/rows/typography";
 import { worldMapSchema, type WorldMapContent } from "./schema";
 import { resolveMapGroups, mapCounters } from "./resolve";
 
@@ -23,15 +23,24 @@ const WorldMapRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow;
 
   return (
     <RowSection row={row} vAlign={vAlign} innerRef={(el) => { (ref as { current: HTMLElement | null }).current = el; }} fullHeight={false}>
+      {/* The card fills the 1280px column (artboard Main); the row
+          container supplies the page gutter. */}
+      <div className="row-container max-w-[1280px] w-full">
       <div
-        className="max-w-[1280px] mx-auto glass rounded-[24px] p-7 md:p-14 flex flex-col gap-7"
+        className="w-full glass rounded-[24px] p-7 md:p-14 flex flex-col gap-7"
         style={revealStyle(isVisible, 0)}
       >
         <div className="flex flex-wrap items-end justify-between gap-8">
           <div className="flex min-w-0 max-w-[640px] flex-1 flex-col gap-4" style={{ flexBasis: 520 }}>
-            <RowEyebrow>{c.eyebrow}</RowEyebrow>
-            <RowTitle>{(c.title_lines || []).join(" ")}</RowTitle>
-            <RowSubtitle>{c.lede}</RowSubtitle>
+            <RowEyebrow className="!mb-0">{c.eyebrow}</RowEyebrow>
+            {/* The first line prints in the heading colour, the rest in the
+                lighter violet, as the artboard draws it. */}
+            <RowTitle className="!mb-0">
+              {(c.title_lines || []).map((line, i) => (
+                <span key={i} style={i > 0 ? { color: "hsl(var(--link))" } : undefined}>{i > 0 ? " " : ""}{line}</span>
+              ))}
+            </RowTitle>
+            <p className="font-body" style={{ margin: 0, fontSize: "var(--fs-subtitle)", lineHeight: 1.7, color: "hsl(var(--body))" }}>{c.lede}</p>
           </div>
           <div className="flex items-end gap-9" aria-live="polite">
             <div className="flex flex-col gap-1">
@@ -53,6 +62,7 @@ const WorldMapRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow;
             <WorldMapArt groups={groups} content={c} />
           </Suspense>
         )}
+      </div>
       </div>
     </RowSection>
   );

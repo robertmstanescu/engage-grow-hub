@@ -13,7 +13,7 @@ import { pickForeground } from "@/lib/pickForeground";
 /** Brand default — the plum / gold wash the site shipped with. */
 export const DEFAULT_PAGE_MESH: PageMeshConfig = {
   colors: ["#EBD3F0", "#FAECC0", "#E8D6F2", "#F6E9C4"],
-  strength: 55,
+  strength: 70, /* every artboard but Privacy draws the mesh at 70 */
   motion: "calm",
   grain: 35,
 };

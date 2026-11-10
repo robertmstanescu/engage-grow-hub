@@ -19,7 +19,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { restyleRows, kindForSlug, visibleText } from "../../src/lib/redesign/restyle";
+import { arrangeHome, restyleRows, kindForSlug, visibleText } from "../../src/lib/redesign/restyle";
 import { applyGapContent, type GapNote } from "../../src/lib/redesign/gapContent";
 
 const [snapshotDir, outDir] = process.argv.slice(2);
@@ -82,7 +82,7 @@ if (home) {
   const before = rowsOf(home.content);
   const restyled = restyleRows(before, { kind: "home" });
   check("home", before, restyled);
-  homeRows = applyGapContent(restyled, { kind: "home" }, gapNotes);
+  homeRows = arrangeHome(applyGapContent(restyled, { kind: "home" }, gapNotes));
   home.content = withRows(home.content, homeRows);
   sql.push(`update public.site_content set draft_content = ${sqlJson(home.content)} where section_key = 'page_rows';`);
 }

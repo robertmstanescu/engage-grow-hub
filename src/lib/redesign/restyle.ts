@@ -300,6 +300,85 @@ const splitServiceAndFaq = (rows: Json[]): Json[] => {
   return out;
 };
 
+/* ── Page rhythm ───────────────────────────────────────────────────────
+   The canvas gives each section its own room: a full section keeps the
+   page rhythm above and below, a section that follows another one sits
+   closer to it. `space` writes that as the row's Style ▸ Space setting. */
+type Space = "lead" | "full" | "mid" | "tight" | "none";
+const space = (row: Json, top: Space, bottom: Space): void => {
+  row.layout = { ...(row.layout || {}), spaceTop: top, spaceBottom: bottom };
+};
+const hasWidget = (row: Json, type: string): boolean => widgetsOf(row).some((w) => w?.type === type);
+
+/** Wrap the words of a title's second line (or second paragraph) in the
+ *  named accent. Tags and text are untouched; idempotent. */
+export const accentSecondLine = (lines: Json[]): Json[] => {
+  const strs = lines.map((l) => String(l ?? ""));
+  if (strs.some((l) => l.includes("mc-accent"))) return lines;
+  const wrap = (html: string): string => {
+    const m = html.match(/^<p>([\s\S]*)<\/p>$/i);
+    return m ? `<p><span class="mc-accent">${m[1]}</span></p>` : `<span class="mc-accent">${html}</span>`;
+  };
+  if (strs.length >= 2) return strs.map((l, i) => (i === strs.length - 1 && l.trim() ? wrap(l) : l));
+  const paras = strs[0]?.match(/<p>[\s\S]*?<\/p>/gi);
+  if (paras && paras.length >= 2 && paras.join("") === strs[0]) return [paras.slice(0, -1).join("") + wrap(paras[paras.length - 1])];
+  return lines;
+};
+
+/**
+ * Homepage in the canvas order and rhythm (artboard Main): hero, proof,
+ * map, services, the picture-and-text row, problem and fix, vows, FAQ,
+ * contact. Rows only move and change their spacing; no word changes.
+ * Idempotent; the build script runs it again after the gap rows are added
+ * so the proof band and the map get their spacing too.
+ */
+export const arrangeHome = (rows: Json[]): Json[] => {
+  const out = [...rows];
+  /* The picture-and-text row sits straight after the services grid. */
+  const pic = out.findIndex((r) => hasWidget(r, "image_text"));
+  const services = out.findIndex((r) => hasWidget(r, "boxed"));
+  if (pic > -1 && services > -1 && pic !== services + 1) {
+    const [row] = out.splice(pic, 1);
+    out.splice(out.findIndex((r) => hasWidget(r, "boxed")) + 1, 0, row);
+  }
+  /* Two-tone headlines (artboard Main): the vows and the closing
+     headline print their second line in the accent. Only a class is
+     added; a line the owner already accented is left alone. */
+  out.forEach((row) => {
+    const isVows = hasWidget(row, "boxed") && /vow/i.test(String(row.strip_title || ""));
+    if (!isVows && !hasWidget(row, "contact")) return;
+    for (const w of widgetsOf(row)) if (w?.data && Array.isArray(w.data.title_lines)) w.data.title_lines = accentSecondLine(w.data.title_lines);
+  });
+  /* The caption on the picture sits on its outer bottom corner. */
+  out.forEach((row) => {
+    for (const w of widgetsOf(row)) if (w?.type === "image_text" && w.data?.floating_caption) w.data.caption_position = w.data.image_position === "right" ? "bottom-left" : "bottom-right";
+  });
+  let boxedSeen = 0;
+  out.forEach((row, i) => {
+    const next = out[i + 1];
+    /* The hero opens the page just under the navigation and the band
+       below carries its own gap (canvas: 5vw above the band). */
+    if (hasWidget(row, "hero")) space(row, "lead", "none");
+    else if (hasWidget(row, "proof_band")) space(row, "none", "none");
+    else if (hasWidget(row, "world_map")) space(row, "mid", "none");
+    else if (hasWidget(row, "image_text")) space(row, "tight", "full");
+    else if (hasWidget(row, "faq")) space(row, "tight", "none");
+    else if (hasWidget(row, "contact")) space(row, "full", "full");
+    else if (hasWidget(row, "boxed")) {
+      boxedSeen += 1;
+      const data = widgetsOf(row)[0]?.data || {};
+      const cards = Array.isArray(data.cards) ? data.cards.length : 0;
+      /* A boxed row with no cards is a closing line under the row above. */
+      const closingNext = !!next && hasWidget(next, "boxed") && !((widgetsOf(next)[0]?.data?.cards || []).some((c: Json) => c?.title));
+      if (!cards || !data.cards.some((c: Json) => c?.title)) space(row, "tight", "full");
+      else if (boxedSeen <= 2) space(row, "full", "full");
+      /* A closing handwritten line below belongs to this row: no gap of its own. */
+      else space(row, "tight", closingNext ? "none" : "full");
+    }
+  });
+  return out;
+};
+
 export const restyleRows = (input: Json[], ctx: RestyleContext): Json[] => {
   let rows: Json[] = clone(input);
   if (ctx.kind === "service") rows = splitServiceAndFaq(rows);
@@ -329,6 +408,7 @@ export const restyleRows = (input: Json[], ctx: RestyleContext): Json[] => {
     }
   }
   if (ctx.kind === "about") movePhotoToHero(rows);
+  if (ctx.kind === "home") rows = arrangeHome(rows);
   return rows;
 };
 

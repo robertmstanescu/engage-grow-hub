@@ -29,7 +29,7 @@ export const OWNER_MAP_LIST = {
 /** Copy for the row, from the homepage artboard and the owner's notes. */
 export const OWNER_MAP_COPY = {
   eyebrow: "Where the work has travelled",
-  title_lines: ["36 countries. One comms function."],
+  title_lines: ["36 countries.", "One comms function."],
   lede: "Town halls across time zones, onboarding in every office and news that lands the same day wherever people sit. Gold marks internal comms. Purple marks the countries where the work covered HR as well, and green marks the main markets today.",
-  legend_note: "Learning and development ran in all 36.",
+  legend_note: "Learning and development: all 36",
 } as const;

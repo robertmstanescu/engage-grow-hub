@@ -42,16 +42,19 @@ export interface GapNote {
 }
 
 const BOOK_LABEL = "Book a free consultation";
+/** Small labels from the Main artboard. */
+export const HOME_LABELS = { vows: "Our vows", fix: "The fix", stamp: "Lid off" };
 const SERVICES_LABEL = "See the six services";
 const BADGE_LABEL = "Start with";
 
+/* Wording from the homepage artboard ("Track record" band). */
 export const HOME_PROOF = {
-  eyebrow: "Before the coffin, the in-house record",
+  eyebrow: "Before the coffin: the in-house record",
   items: [
-    { value: "36", label: "countries on one internal comms function" },
-    { value: "300K+", label: "internal page views in a single year" },
-    { value: "~60%", label: "average live town hall attendance" },
-    { value: "~300", label: "new hires onboarded through one programme" },
+    { value: "36", label: "countries run from one comms function" },
+    { value: "300K+", label: "internal page views a year" },
+    { value: "~60%", label: "average live Town Hall attendance" },
+    { value: "~300", label: "new hires through a rebuilt Buddy Programme" },
   ],
 };
 
@@ -154,6 +157,20 @@ const homeGaps = (rows: Json[], notes: GapNote[]): Json[] => {
     notes.push({ where, field: "title", value: OWNER_MAP_COPY.title_lines.join(" "), kind: "new" });
     notes.push({ where, field: "intro", value: OWNER_MAP_COPY.lede, kind: "new" });
     notes.push({ where, field: "legend note", value: OWNER_MAP_COPY.legend_note, kind: "new" });
+  }
+  /* Small labels the artboard draws and the page never had: the label
+     over the vows, "The fix" over the cards that answer "The problem",
+     and the stamp under the closing headline. */
+  for (const row of rows) {
+    for (const w of widgetsOf(row)) {
+      const data = w.data || (w.data = {});
+      if (w.type === "boxed" && Array.isArray(data.cards)) {
+        const titles = data.cards.map((c: Json) => String(c?.title || "").trim().toLowerCase());
+        if (/vow/i.test(String(row.strip_title || "")) && blank(data.eyebrow)) fill(data, "eyebrow", HOME_LABELS.vows, "Home, vows", "label", notes);
+        if (titles.includes("the problem") && blank(data.group_label)) fill(data, "group_label", HOME_LABELS.fix, "Home, problem and fix", "label", notes);
+      }
+      if (w.type === "contact" && blank(data.stamp)) fill(data, "stamp", HOME_LABELS.stamp, "Home, contact block", "label", notes);
+    }
   }
   return rows;
 };

@@ -148,7 +148,7 @@ export default {
         // its own vertical rhythm; the row chrome stays minimal so small
         // CTAs (e.g. the Intro subscribe row) don't dominate the viewport.
         // Bands breathe: 72px on small screens up to 128px on wide ones.
-        "row-fluid": "clamp(72px, 8vw, 128px)",
+        "row-fluid": "clamp(80px, 9vw, 140px)", /* the canvas section rhythm */
         "row-fluid-lg": "clamp(88px, 10vw, 160px)",
         // Compact variant for utility strips (logo clouds, notices).
         "row-compact": "clamp(40px, 4vw, 64px)",

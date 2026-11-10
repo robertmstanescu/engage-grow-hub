@@ -238,6 +238,30 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
         </div>
       </div>
 
+      {/* Space: how much room the row keeps above and below. "Full" is the
+          page rhythm; a row that follows another one usually sits "Close". */}
+      {([
+        ["spaceTop", "Space above"],
+        ["spaceBottom", "Space below"],
+      ] as const).map(([key, name]) => (
+        <div key={key}>
+          <label className={LABEL}>{name}</label>
+          <div className={`grid gap-1 ${key === "spaceTop" && isHero ? "grid-cols-5" : "grid-cols-4"}`} role="radiogroup" aria-label={name}>
+            {([
+              /* A page's opening row can sit straight under the menu. */
+              ...(key === "spaceTop" && isHero ? [["lead", "Under menu"] as const] : []),
+              ["full", "Full"],
+              ["mid", "Medium"],
+              ["tight", "Close"],
+              ["none", "None"],
+            ] as const).map(([value, label]) => {
+              const active = (row.layout?.[key] || "full") === value;
+              return <button key={value} type="button" role="radio" aria-checked={active} onClick={() => patchLayout({ [key]: value })} className={SEG(active)}>{label}</button>;
+            })}
+          </div>
+        </div>
+      ))}
+
       {isHero && (
         <div className="pt-3 border-t border-border">
           <label className={LABEL}>Page background (whole page)</label>
