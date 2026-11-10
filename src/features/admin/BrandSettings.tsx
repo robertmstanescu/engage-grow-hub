@@ -37,7 +37,7 @@ const FONT_OPTIONS = [
   
   { label: "Bricolage Grotesque", value: "'Bricolage Grotesque', sans-serif" },
   { label: "Inter", value: "'Inter', sans-serif" },
-  { label: "Architects Daughter", value: "'Architects Daughter', cursive" },
+  { label: "Playwrite Cuba", value: "'Playwrite CU', cursive" },
 ];
 
 const WEIGHT_OPTIONS = ["300", "400", "500", "600", "700", "800", "900"];

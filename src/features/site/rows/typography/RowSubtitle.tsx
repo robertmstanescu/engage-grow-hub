@@ -6,7 +6,7 @@ interface Props {
   style?: CSSProperties;
   className?: string;
   /**
-   * Opt-in handwritten treatment. The "Architects Daughter" script font is
+   * Opt-in handwritten treatment. The "Playwrite Cuba" script font is
    * reserved for genuine human-touch annotations — ordinary marketing
    * subtitles render in the normal body font. Defaults to false.
    */
@@ -23,7 +23,7 @@ interface Props {
  *
  * ## Design choices (the "why")
  *
- * - **`Architects Daughter` (opt-in)**: the script font adds warmth, but it
+ * - **`Playwrite Cuba` (opt-in)**: the script font adds warmth, but it
  *   only reads well as an occasional annotation. It is applied ONLY when
  *   the row/widget sets `subtitle_handwritten: true`.
  *
@@ -40,7 +40,7 @@ const RowSubtitle = ({ children, color, style, className, handwritten }: Props) 
   <p
     className={`${handwritten ? "leading-tight" : "leading-[1.7]"} mb-rhythm-base ${className ?? ""}`}
     style={{
-      ...(handwritten ? { fontFamily: "'Architects Daughter', cursive" } : {}),
+      ...(handwritten ? { fontFamily: "'Playwrite CU', cursive" } : {}),
       fontSize: "var(--fs-subtitle)",
       // Inherit the row's auto-resolved foreground unless the admin
       // set a per-row override. `--row-fg` is published by RowSection.

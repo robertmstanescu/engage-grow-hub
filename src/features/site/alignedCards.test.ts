@@ -46,7 +46,7 @@ describe("Q&A and booking defaults", () => {
     expect(read("src/index.css")).toMatch(/\.faq-list \[role="region"\]\[data-state="closed"\] \{ display: none; \}/);
   });
 
-  it("the calendar sits under the copy unless the block says beside", () => {
-    expect(read("src/features/site/rows/ContactRow.tsx")).toMatch(/const stacked = c\.layout !== "side";/);
+  it("the calendar sits beside the copy unless the block says under", () => {
+    expect(read("src/features/site/rows/ContactRow.tsx")).toMatch(/const stacked = c\.layout === "stacked";/);
   });
 });

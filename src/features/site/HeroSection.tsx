@@ -40,7 +40,7 @@ interface HeroContent {
   title_lines?: any[];
   subtitle?: string;
   subtitle_color?: string;
-  /** Opt-in handwritten (Architects Daughter) styling for the subtitle. */
+  /** Opt-in handwritten (Playwrite Cuba) styling for the subtitle. */
   subtitle_handwritten?: boolean;
   /** Show the tagline as a handwritten note under the buttons instead of spaced capitals under the title. */
   tagline_handwritten?: boolean;
@@ -629,7 +629,7 @@ export const HeroView = ({
                 style={{
                   // Opt-in only: the script font is reserved for genuine
                   // handwritten annotations, not ordinary subtitle copy.
-                  ...(c.subtitle_handwritten ? { fontFamily: "'Architects Daughter', cursive" } : {}),
+                  ...(c.subtitle_handwritten ? { fontFamily: "'Playwrite CU', cursive" } : {}),
                   color: c.subtitle_color || "hsl(var(--hero-body))",
                   fontSize: "var(--fs-hero-subtitle)",
                 }}>
@@ -693,7 +693,7 @@ export const HeroView = ({
               className="mc-rise flex-shrink-0"
               style={{
                 "--rise-dur": "1s", "--rise-delay": "1.3s",
-                fontFamily: "'Architects Daughter', cursive",
+                fontFamily: "'Playwrite CU', cursive",
                 color: c.tagline_color || c.color_tagline || "hsl(var(--link))",
                 fontSize: 20,
                 lineHeight: 1.4,

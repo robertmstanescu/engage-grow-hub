@@ -243,7 +243,7 @@ const GlobalSettings = () => {
             <option value="inter">Inter</option>
             <option value="bricolage">Bricolage Grotesque</option>
             <option value="playfair">Playfair Display</option>
-            <option value="architects">Architects Daughter</option>
+            <option value="architects">Playwrite Cuba</option>
           </select>
         </div>
         <div className="mt-3">

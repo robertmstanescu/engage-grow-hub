@@ -350,7 +350,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               <div
                 key={i}
                 className="rich-text"
-                style={{ fontFamily: "'Architects Daughter', cursive", fontSize: "clamp(18px, 1.5vw, 22px)", lineHeight: 1.4, color: "hsl(var(--link))", transform: "rotate(-1deg)" }}
+                style={{ fontFamily: "'Playwrite CU', cursive", fontSize: "clamp(18px, 1.5vw, 22px)", lineHeight: 1.4, color: "hsl(var(--link))", transform: "rotate(-1deg)" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }}
               />
             ))}
@@ -394,7 +394,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               className={c.note_handwritten ? "leading-[1.4]" : "font-body text-xs italic leading-[1.6]"}
               style={{
                 color: c.note_handwritten && !c.color_note ? "hsl(var(--link))" : noteColor,
-                ...(c.note_handwritten ? { fontFamily: "'Architects Daughter', cursive", fontSize: 20 } : {}),
+                ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: 20 } : {}),
               }}
             >{c.note}</p>
           </div>

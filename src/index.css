@@ -774,7 +774,7 @@
   }
 
   /* Handwritten asides (redesign): notes, captions, "start here". */
-  .font-hand { font-family: 'Architects Daughter', cursive; font-weight: 400; }
+  .font-hand { font-family: 'Playwrite CU', cursive; font-weight: 400; }
 
   .link-arrow-mc:hover { color: hsl(var(--heading)); text-decoration: underline; text-underline-offset: 4px; }
 
@@ -2583,6 +2583,21 @@ section.snap-section .contact-title[data-row-part="title"] {
   text-transform: uppercase;
   transform: rotate(-6deg);
   overflow-wrap: anywhere;
+}
+
+/* "You can reach out about": a short list under the stamp. */
+.contact-reach { margin-top: 28px; }
+.contact-reach-label { font-family: var(--font-body); font-weight: 600; font-size: 15px; color: hsl(var(--heading)); margin: 0 0 10px; }
+.contact-reach ul { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.contact-reach li { position: relative; padding-left: 18px; font-family: var(--font-body); font-size: 16px; line-height: 1.5; color: hsl(var(--body)); }
+.contact-reach li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 999px; background: hsl(var(--link)); }
+/* Phone: the booking copy is centred, title included (owner, 10 Nov 2026). */
+@media (max-width: 767px) {
+  .contact-copy { text-align: center !important; }
+  .contact-copy [data-row-part="body"], .contact-copy .measure { margin-left: auto; margin-right: auto; }
+  .contact-reach ul { align-items: center; }
+  .contact-reach li { padding-left: 0; }
+  .contact-reach li::before { display: none; }
 }
 
 /* Intro under a row heading (Services index): the canvas lede. */

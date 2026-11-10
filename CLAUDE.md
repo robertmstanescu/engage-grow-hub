@@ -205,7 +205,10 @@ Rules that are easy to get wrong:
   "What's inside" is a closed `<details>` and the note prints under the
   card, outside it. Q&A answers start closed (`start_open` turns that
   round) but stay in the HTML (`forceMount`). The booking calendar sits
-  full width under the copy unless the block says "Beside the text".
+  beside the copy (the block can say "Under the text"); on a phone the
+  copy is centred. The handwritten face is Playwrite Cuba
+  (`'Playwrite CU'`); `sanitizeHtml` reads the old Architects Daughter
+  name in saved text as the new face.
 - A page with no hero is a document page (Privacy): `CmsPage` lifts the
   first text block's small heading, title and date line above one glass
   card (`site/documentHeader.ts`, render-time only) and prints the body

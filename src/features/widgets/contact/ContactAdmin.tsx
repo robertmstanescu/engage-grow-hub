@@ -3,10 +3,11 @@
  * Google Calendar appointment scheduling (embedded calendar + button).
  */
 
-import { MoreFields, Field, RichField, SelectField } from "@/features/admin/site-editor/FieldComponents";
+import { MoreFields, Field, RichField, SelectField, ArrayField } from "@/features/admin/site-editor/FieldComponents";
 import TitleLinesEditor from "@/features/admin/editors/TitleLinesEditor";
 import ImagePickerField from "@/features/admin/ImagePickerField";
 import { DEFAULT_BOOKING_URL, DEFAULT_CALENDAR_EMBED_URL } from "@/features/site/rows/ContactRow";
+import { DEFAULT_REACH_LABEL, DEFAULT_REACH_TOPICS } from "@/features/site/rows/contactDefaults";
 
 interface Props {
   content: Record<string, any>;
@@ -40,13 +41,33 @@ const ContactAdmin = ({ content, onChange }: Props) => (
     <MoreFields>
       <SelectField
         label="Calendar position"
-        value={content.layout === "side" ? "side" : "stacked"}
+        value={content.layout === "stacked" ? "stacked" : "side"}
         onChange={(v) => onChange("layout", v)}
         options={[
-          { label: "Under the text, full width", value: "stacked" },
           { label: "Beside the text", value: "side" },
+          { label: "Under the text, full width", value: "stacked" },
         ]}
       />
+      <Field
+        label="Line above the examples"
+        value={content.reach_label || DEFAULT_REACH_LABEL}
+        onChange={(v) => onChange("reach_label", v)}
+      />
+      <ArrayField
+        label="What people can reach out about"
+        items={Array.isArray(content.reach_topics) && content.reach_topics.length > 0 ? content.reach_topics : DEFAULT_REACH_TOPICS}
+        onChange={(v) => onChange("reach_topics", v)}
+        placeholder="One example"
+      />
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={content.show_reach !== false}
+          onChange={(e) => onChange("show_reach", e.target.checked)}
+          className="rounded"
+        />
+        <span className="font-body text-xs text-muted-foreground">Show the examples under the stamp</span>
+      </label>
       <Field
         label="Stamp under the text (a word or two)"
         value={content.stamp || ""}
