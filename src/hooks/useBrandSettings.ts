@@ -37,10 +37,8 @@ export const MESH_STRENGTH_VALUES: Record<MeshStrength, string> = {
 };
 
 /**
- * The ink outline drawn on set row edges, image frames, the contact box,
- * blog cards and the navbar island. Site-wide defaults; a row can
- * override colour and width in its Style tab (`layout.outlineColor`,
- * `layout.outlineWidth`).
+ * The hairline drawn on image frames and the navbar island. Site-wide
+ * only: rows no longer draw or override an outline of their own.
  */
 export interface OutlineSettings {
   /** CSS colour. */

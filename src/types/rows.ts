@@ -122,10 +122,6 @@ export interface RowLayout {
   heightValue?: number;
   /** Unit for the custom height. Defaults to vh. */
   heightUnit?: "vh" | "px";
-  /** Decorative shape on the row's top edge. */
-  shapeTop?: SectionShapeConfig;
-  /** Decorative shape on the row's bottom edge. */
-  shapeBottom?: SectionShapeConfig;
   /**
    * Hairline separator drawn along the row's top edge. Off by default.
    * "full" spans the viewport, "content" is inset to the row container
@@ -185,15 +181,6 @@ export interface RowLayout {
    */
   textTone?: "auto" | "light" | "dark" | "accent";
   /**
-   * Per-row override of the ink outline colour (CSS colour). Unset =
-   * the site default from Brand settings ▸ Outline. Cascades to
-   * everything inside the row: its lip, cover picture, image frames
-   * and boxes.
-   */
-  outlineColor?: string;
-  /** Per-row override of the outline width in px; 0 turns it off. */
-  outlineWidth?: number;
-  /**
    * How blocks sitting side by side in one row line up vertically.
    * "stretch" (default) gives the Ruul-style symmetry — every block,
    * picture included, fills the full row height so tops and bottoms
@@ -206,27 +193,6 @@ export interface RowLayout {
   columnGap?: "tight" | "normal" | "wide";
 }
 
-
-
-/* ─── Section shapes ───────────────────────────────────────────────── */
-
-export type SectionShapeKind =
-  | "none"
-  | "rounded"
-  | "wave"
-  | "arch"
-  | "angled"
-  | "taper"
-  | "notch";
-
-export type SectionShapeSize = "subtle" | "medium" | "dramatic";
-
-export interface SectionShapeConfig {
-  kind: SectionShapeKind;
-  size?: SectionShapeSize;
-  /** Mirror the shape horizontally (e.g. angled leaning the other way). */
-  flip?: boolean;
-}
 
 
 /* ─── Legacy single-type row (v1) ──────────────────────────────────── */

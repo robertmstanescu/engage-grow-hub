@@ -56,7 +56,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import type { PageRow, SectionShapeConfig, SectionShapeKind, SectionShapeSize } from "@/types/rows";
+import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { ROW_HEIGHT_MODES } from "@/lib/rowHeight";
 import PageBackgroundPanel from "./PageBackgroundPanel";
@@ -87,92 +87,6 @@ const TRIGGER_CLASS =
   "font-body text-[10px] uppercase tracking-[0.12em] text-foreground";
 
 const CONTENT_CLASS = "pt-3 pb-1";
-
-/* ─── Section shape picker ────────────────────────────────────────────
- * Shapes the row's top or bottom edge. "None" is the default; sizes are
- * subtle / medium / dramatic (all flatten on mobile). `flip` mirrors the
- * shape horizontally, which matters most for the angled cut.           */
-const SHAPE_KINDS: [SectionShapeKind, string][] = [
-  ["none", "None"],
-  ["rounded", "Rounded"],
-  ["wave", "Wave"],
-  ["arch", "Arch"],
-  ["angled", "Angled"],
-  ["taper", "Taper"],
-  ["notch", "Notch"],
-];
-
-const SHAPE_SIZES: [SectionShapeSize, string][] = [
-  ["subtle", "Subtle"],
-  ["medium", "Medium"],
-  ["dramatic", "Dramatic"],
-];
-
-export const ShapePicker = ({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value?: SectionShapeConfig;
-  onChange: (v: SectionShapeConfig | undefined) => void;
-}) => {
-  const kind = value?.kind ?? "none";
-  const size = value?.size ?? "medium";
-  return (
-    <div>
-      <label className="font-body text-[10px] uppercase tracking-wider mb-1 block text-muted-foreground">
-        {label}
-      </label>
-      <div className="grid grid-cols-4 gap-1">
-        {SHAPE_KINDS.map(([k, l]) => (
-          <button
-            key={k}
-            type="button"
-            onClick={() => onChange(k === "none" ? undefined : { ...value, kind: k, size })}
-            className={`font-body text-[10px] py-2 rounded-lg border transition-colors ${
-              kind === k
-                ? "bg-secondary/15 border-secondary/40 text-foreground"
-                : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
-            }`}
-          >
-            {l}
-          </button>
-        ))}
-      </div>
-      {kind !== "none" && (
-        <div className="flex items-center gap-1 mt-1.5">
-          {SHAPE_SIZES.map(([sz, l]) => (
-            <button
-              key={sz}
-              type="button"
-              onClick={() => onChange({ kind, size: sz, flip: value?.flip })}
-              className={`flex-1 font-body text-[10px] py-1.5 rounded-lg border transition-colors ${
-                size === sz
-                  ? "bg-secondary/15 border-secondary/40 text-foreground"
-                  : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
-              }`}
-            >
-              {l}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => onChange({ kind, size, flip: !value?.flip })}
-            className={`font-body text-[10px] px-2.5 py-1.5 rounded-lg border transition-colors ${
-              value?.flip
-                ? "bg-secondary/15 border-secondary/40 text-foreground"
-                : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
-            }`}
-          >
-            Flip
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
 
 const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
   // ── Column count derivation ────────────────────────────────────────
@@ -214,7 +128,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
     onRowMetaChange({ layout: { ...layout, ...patch } });
 
   /* ── The everyday five ───────────────────────────────────────────
-     Look · Background · Text · Rounded top · Edge · Height. Everything
+     Look · Background · Text · Rounded top · Height. Everything
      else is still here, under "Show all", unchanged. */
   const look = deriveLook(row);
   const brandColors = useBrandColors();
@@ -223,7 +137,6 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
     onRowMetaChange({ ...(patch.bg_color !== undefined ? { bg_color: patch.bg_color } : {}), layout: { ...layout, ...patch.layout } });
   };
   const tone = row.layout?.textTone || "auto";
-  const edgeKind = row.layout?.shapeTop?.kind ?? "none";
   const SEG = (active: boolean) =>
     `font-body text-[10px] py-1.5 rounded-md border transition-colors ${
       active ? "bg-secondary/15 border-secondary/40 text-foreground" : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
@@ -312,22 +225,6 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
         >
           <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-card shadow transition-transform ${hasRoundedTop(row) ? "translate-x-[18px]" : "translate-x-0.5"}`} />
         </button>
-      </div>
-
-      {/* Edge */}
-      <div>
-        <label className={LABEL}>Edge shape (top)</label>
-        <select
-          value={edgeKind}
-          onChange={(e) => {
-            const kind = e.target.value as SectionShapeKind;
-            patchLayout({ shapeTop: kind === "none" ? undefined : { ...(row.layout?.shapeTop || {}), kind, size: row.layout?.shapeTop?.size || "medium" } });
-          }}
-          className="w-full px-2 py-1.5 rounded-md border border-border bg-background font-body text-xs"
-          aria-label="Edge shape"
-        >
-          {SHAPE_KINDS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-        </select>
       </div>
 
       {/* Height */}
@@ -553,48 +450,8 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
             })}
           </div>
           <p className="font-body text-[10px] text-muted-foreground leading-snug mt-2">
-            Corners round this row's own box — they stay inside the row. Edges
-            (below) are curves that spill over the row above or below. An edge
-            with a shape keeps its own curve and ignores the corner setting, so
-            the two never clash.
+            Corners round this row's own box. They stay inside the row.
           </p>
-
-          {/* ── Outline ──
-              The ink line drawn on this row's set edges (and inherited by
-              everything inside it: lip, cover picture, image frames,
-              boxes). Empty = the site default from Brand ▸ Outline. */}
-          <div className="mt-4 pt-3 border-t border-border/60 space-y-2">
-            <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground block">
-              Outline (this row)
-            </span>
-            <ColorField
-              label="Outline colour"
-              description="Leave empty for the site default (Brand ▸ Outline)."
-              value={row.layout?.outlineColor || ""}
-              fallback="site default"
-              onChange={(v) => patchLayout({ outlineColor: v.trim() || undefined })}
-            />
-            <div className="flex items-center gap-2">
-              <span className="font-body text-[9px] uppercase tracking-wider text-muted-foreground min-w-[70px]">
-                Width
-              </span>
-              <input
-                type="number"
-                min={0}
-                max={12}
-                step={1}
-                placeholder="default"
-                value={row.layout?.outlineWidth ?? ""}
-                onChange={(e) =>
-                  patchLayout({
-                    outlineWidth: e.target.value === "" ? undefined : Math.max(0, Math.min(12, Number(e.target.value))),
-                  })
-                }
-                className="w-20 px-2 py-1 rounded border border-border bg-background font-body text-xs"
-              />
-              <span className="font-body text-[10px] text-muted-foreground">px · 0 hides it · empty = site default</span>
-            </div>
-          </div>
         </AccordionContent>
       </AccordionItem>
 
@@ -858,7 +715,7 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
 
       {/* ═══ EDGES ═══ */}
       <AccordionItem value="edges" className="border-none">
-        <AccordionTrigger className={TRIGGER_CLASS}>Edge shapes &amp; lines</AccordionTrigger>
+        <AccordionTrigger className={TRIGGER_CLASS}>Separator line</AccordionTrigger>
         <AccordionContent className={CONTENT_CLASS}>
           <div className="flex flex-col gap-3">
             <div>
@@ -890,27 +747,6 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
               </div>
             </div>
 
-            {!row.bg_color ? (
-              <p className="font-body text-[10px] text-muted-foreground leading-snug">
-                Pick a row colour under Surface to use a shaped edge — a
-                transparent row has no surface to spill over its neighbour.
-              </p>
-            ) : null}
-            <ShapePicker
-              label="Shape — top edge"
-              value={row.layout?.shapeTop}
-              onChange={(shapeTop) => patchLayout({ shapeTop })}
-            />
-            <ShapePicker
-              label="Shape — bottom edge"
-              value={row.layout?.shapeBottom}
-              onChange={(shapeBottom) => patchLayout({ shapeBottom })}
-            />
-            <p className="font-body text-[10px] text-muted-foreground leading-snug">
-              The shape is painted in this row's own colour and sits over the
-              neighbouring section — the top edge spills up over the row
-              above, the bottom edge down over the row below.
-            </p>
           </div>
         </AccordionContent>
       </AccordionItem>

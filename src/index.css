@@ -676,44 +676,6 @@
     .page-mesh-grain { animation: none; }
   }
 
-  /* ── Section shapes ──
-     Decorative top/bottom edges, painted in the ROW's own colour and
-     positioned outside the section so they overlap the neighbouring
-     section — the row appears to spill over the seam. */
-  .section-shape {
-    position: absolute;
-    left: 0;
-    right: 0;
-    width: 100%;
-    pointer-events: none;
-    display: block;
-    /* Sits above the neighbouring section so the row's colour reads as
-       one surface spilling over the seam. */
-    z-index: 2;
-  }
-  /* Top edge: rendered ABOVE the section, filled mass flush against it,
-     curve cutting into the section above. */
-  .section-shape[data-edge="top"] {
-    bottom: 100%;
-    transform: none;
-  }
-  /* Bottom edge: rendered BELOW the section, flipped so the filled mass
-     stays flush with the section. */
-  .section-shape[data-edge="bottom"] {
-    top: 100%;
-    transform: scaleY(-1);
-  }
-  .section-shape[data-edge="top"][data-flip="true"] {
-    transform: scaleX(-1);
-  }
-  .section-shape[data-edge="bottom"][data-flip="true"] {
-    transform: scaleY(-1) scaleX(-1);
-  }
-  /* The rounded cap is a plain div, not a mirrored SVG — never flip it. */
-  .section-shape[data-kind="rounded"] {
-    transform: none !important;
-  }
-
   /* ── Row decorative image layer ──
      Overlay PNGs sit ABOVE the row's own colour but below its content.
      (They used to be at z-index:-1, which put them behind the section's
@@ -724,27 +686,10 @@
   /* Static children need a stacking position to sit above the overlay
      layer; already-positioned ones (absolute/fixed/sticky) are left
      alone so their own layout isn't broken. */
-  .snap-section > *:not(.row-overlay-layer):not(.section-shape):not(.absolute):not(.fixed):not(.sticky) {
+  .snap-section > *:not(.row-overlay-layer):not(.absolute):not(.fixed):not(.sticky) {
     position: relative;
     z-index: 1;
   }
-
-  /* Dramatic curves eat vertical space on phones — flatten them. */
-  @media (max-width: 767px) {
-    .section-shape:not([data-kind="rounded"]) {
-      height: 28px !important;
-    }
-    .section-shape[data-kind="rounded"] {
-      height: 24px !important;
-      border-radius: 24px 24px 0 0;
-    }
-    .section-shape[data-kind="rounded"][data-edge="bottom"] {
-      border-radius: 0 0 24px 24px;
-    }
-  }
-
-
-
 
   /* ──────────────────────────────────────────────────────────────────
      BUTTONS — ink pill / arrow link / ghost pill
@@ -1153,30 +1098,6 @@
   @media (prefers-reduced-motion: reduce) {
     .hero-enter { animation: none; }
   }
-
-  /* Fallback used when no dark logo asset is uploaded: invert the light
-     mark so it reads on the light theme surfaces. */
-  /* Footer is a dark revolver band: force every token the footer uses to
-     the white end of the scale so all text, links and icons read light. */
-  .footer-dark {
-    --foreground: 0 0% 100%;
-    --border: 0 0% 100%;
-    color: hsl(0 0% 100%);
-    /* Keep the footer at the bottom of the paint order so a row's
-       bottom edge shape can spill down over it. */
-    position: relative;
-    z-index: 0;
-  }
-  /* The generic `.snap-section > *` stacking rule below also matches the
-     footer and lifted it to z-index 1, which covered the last row's
-     bottom edge cap. Keep the footer underneath. */
-  .snap-section > .footer-dark,
-  .snap-section > footer.footer-dark {
-    position: relative;
-    z-index: 0 !important;
-  }
-
-  .footer-dark .hover\:text-foreground:hover { color: hsl(0 0% 100%); }
 
   /* Whiten a dark logo asset when no light variant is uploaded. */
   .logo-whiten { filter: brightness(0) invert(1); }

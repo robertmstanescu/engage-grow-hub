@@ -61,7 +61,7 @@ interface CoverFadeImageProps {
    * Corner radius to use when `roundedTop` is set, as a CSS length (e.g.
    * "48px"). Defaults to `var(--radius)` — pass an explicit value when the
    * caller needs this to match a SPECIFIC surrounding curve (e.g. a row's
-   * own shapeTop/shapeBottom size) rather than the generic card radius.
+   * own Corners size) rather than the generic card radius.
    */
   radius?: string;
   /** Which alpha fade to apply (see the header comment). Defaults to "hold". */

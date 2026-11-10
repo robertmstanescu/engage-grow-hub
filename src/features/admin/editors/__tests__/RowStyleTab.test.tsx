@@ -14,13 +14,15 @@ vi.mock("../../site-editor/ColumnWidthControl", () => ({ default: () => null }))
 const row = (o: Partial<PageRow> = {}): PageRow => ({ id: "r", type: "text", content: {}, ...o } as PageRow);
 
 describe("RowStyleTab", () => {
-  it("opens with the four Looks and the five everyday controls, everything else behind Show all", () => {
+  it("opens with the four Looks and the everyday controls, everything else behind Show all", () => {
     render(<RowStyleTab row={row()} onRowMetaChange={() => {}} onUpdateColumnWidths={() => {}} />);
     expect(screen.getAllByRole("radio", { name: /plain|card|band|cover/i })).toHaveLength(4);
     expect(screen.getByRole("radio", { name: "Plain" }).getAttribute("aria-checked")).toBe("true");
     expect(screen.getByRole("radiogroup", { name: "Text tone" })).toBeTruthy();
     expect(screen.getByRole("switch", { name: "Rounded top corners" })).toBeTruthy();
-    expect(screen.getByRole("combobox", { name: "Edge shape" })).toBeTruthy();
+    /* Retired with the redesign: no edge shapes, no per-row outline. */
+    expect(screen.queryByRole("combobox", { name: "Edge shape" })).toBeNull();
+    expect(screen.queryByText(/outline/i)).toBeNull();
     expect(screen.getByRole("radiogroup", { name: "Height" })).toBeTruthy();
     const more = document.querySelector("[data-style-show-all]") as HTMLDetailsElement;
     expect(more.open).toBe(false);

@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
 import { safeCss } from "@/services/safeCss";
 import type { PageRow } from "@/types/rows";
 import { getRowBgColor } from "../rowBackground";
@@ -6,26 +6,8 @@ import { renderOverlayElements } from "@/features/site/rows/overlayRender";
 import type { VAlign } from "../PageRows";
 import { applyTextTone, resolveRowForeground } from "@/lib/rowForeground";
 import { LIGHT_FG } from "@/lib/pickForeground";
-import SectionShape, { shapeHeightPx, shapeMaskStyle } from "../SectionShape";
 import { resolveRowMinHeight } from "@/lib/rowHeight";
 import { useInsideRowSurface } from "../RowSurfaceContext";
-
-/** Tracks the same breakpoint index.css uses to flatten shapes. */
-const useFlatShapes = () => {
-  const [flat, setFlat] = useState(
-    typeof window !== "undefined" ? window.matchMedia("(max-width: 767px)").matches : false
-  );
-  useEffect(() => {
-    const mql = window.matchMedia("(max-width: 767px)");
-    const onChange = () => setFlat(mql.matches);
-    mql.addEventListener("change", onChange);
-    setFlat(mql.matches);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-  return flat;
-};
-
-
 
 interface Props {
   row: PageRow;
@@ -54,12 +36,6 @@ interface Props {
    * the section's top edge and the content follows underneath.
    */
   flushTop?: boolean;
-  /**
-   * The row's CONTENT is its surface (image page-breakers): edge shapes
-   * mask the section itself and pull it over the neighbouring rows, so
-   * the picture spills instead of a colour cap.
-   */
-  maskShapes?: boolean;
   /**
    * Treat the admin height as an EXACT height (crop) rather than a
    * minimum. Used by image bands so "Small" really is small.
@@ -118,7 +94,6 @@ const RowSection = ({
   fullHeight = true,
   bleed = false,
   flushTop = false,
-  maskShapes = false,
   exactHeight = false,
 
   dataRowId,
@@ -159,7 +134,7 @@ const RowSection = ({
   /* Glass look: a translucent, blurred panel — the page mesh shows
      through, so it does NOT count as own paint (text tone still follows
      the mesh) but it does paint a surface colour. */
-  const isGlass = row.layout?.glass === true && !maskShapes;
+  const isGlass = row.layout?.glass === true;
   const surfaceColor = isGlass ? "hsl(var(--glass-bg))" : getRowBgColor(row);
   /* Transparent rows inherit `--page-fg`, which PageRows derives from the
      hero's mesh brightness — so a dark mesh flips them to light text. */
@@ -178,80 +153,28 @@ const RowSection = ({
   const rowBody = darkSurface ? bandFg : "hsl(var(--body))";
   const rowEyebrow = darkSurface ? "hsl(var(--gold))" : "hsl(var(--gold-text))";
 
-  /* ── Section shapes ──
-   *  Decorative curved / angled edges, off by default. The shape is
-   *  painted in THIS row's own colour and sits OUTSIDE the section, so
-   *  the row's surface bleeds up over the section above (top edge) or
-   *  down over the section below (bottom edge). A transparent row spills
-   *  the page mesh instead, so it can curve over its neighbours too. */
-  const shapeTop = !maskShapes ? row.layout?.shapeTop : undefined;
-  const shapeBottom = !maskShapes ? row.layout?.shapeBottom : undefined;
-  /* A row that spills an edge must always paint ABOVE its neighbours —
-   * including the footer — otherwise the overhang gets covered. */
-  const hasExternalShape = Boolean(
-    (shapeTop && shapeTop.kind !== "none") || (shapeBottom && shapeBottom.kind !== "none"),
-  );
-
   /* ── Surface corner radius ──
    *  One curve scale for every row surface, OFF unless an admin picks a
-   *  size in Style ▸ Corners. Corners are applied per edge: an edge that
-   *  already carries a decorative shape stays square, so the shape's cap
-   *  and the section's own box never draw two mismatched curves (the
-   *  visible "cut" at the seam). Clipping is only safe when neither edge
-   *  paints a cap outside the section. */
+   *  size in Style ▸ Corners (glass panels default to medium). The old
+   *  decorative edge shapes and the ink outline were retired with the
+   *  redesign: sections float on the mesh with no dark frame. */
   const radiusValue = { none: 0, subtle: 16, medium: 24, dramatic: 48 }[
     row.layout?.surfaceRadius || (isGlass ? "medium" : "none")
   ];
-  const topHasShape = Boolean(shapeTop && shapeTop.kind !== "none");
-  const bottomHasShape = Boolean(shapeBottom && shapeBottom.kind !== "none");
-  const applyRadius = radiusValue > 0 && !maskShapes;
-  const clipToRadius = applyRadius && !hasExternalShape;
-  /* The ink outline is OPT-IN (redesign: sections float on the mesh with
-     no dark frame). A row draws it only when an admin sets an outline
-     width above zero in Style. Shapes and corners alone no longer imply
-     an outline. */
-  const outlineWidth = row.layout?.outlineWidth;
-  const outlineColor = row.layout?.outlineColor?.trim() || undefined;
-  const outlined = !maskShapes && (hasExternalShape || applyRadius) && (outlineWidth ?? 0) > 0;
-  /* Per-row override of the outline tokens. `--outline-ink-border` is
-     re-declared here so it resolves against THIS row's colour and width
-     (a custom property defined on :root would already have substituted
-     the site-wide values). Children — the lip, cover picture, frames,
-     boxes — inherit the same tokens. */
-  const outlineVars: Record<string, string> = {};
-  if (outlineColor) outlineVars["--outline-ink"] = outlineColor;
-  if (outlineWidth != null && outlineWidth > 0) outlineVars["--outline-ink-width"] = `${outlineWidth}px`;
-  if (Object.keys(outlineVars).length) outlineVars["--outline-ink-border"] = "var(--outline-ink-width) solid var(--outline-ink)";
+  const applyRadius = radiusValue > 0;
   const radiusStyle: CSSProperties | null = applyRadius
     ? {
-        borderTopLeftRadius: topHasShape ? 0 : radiusValue,
-        borderTopRightRadius: topHasShape ? 0 : radiusValue,
+        borderTopLeftRadius: radiusValue,
+        borderTopRightRadius: radiusValue,
         /* Bottom corners stay square: rows stack like cards, and the next
            card's lip covers this one's foot. Rounding it drew a second
            curve just above the lip and broke the stack. A bottom edge
-           that should curve gets a bottom cap (Style ▸ Edges). */
+           stays square by design. */
         borderBottomLeftRadius: isGlass ? radiusValue : 0,
         borderBottomRightRadius: isGlass ? radiusValue : 0,
       }
     : null;
 
-
-  /* ── Optical centring ──
-   *  A cap paints OUTSIDE the section, so a row with only a bottom edge
-   *  has more coloured surface below the content than above it. Add the
-   *  opposite padding by the shape's own height so the content sits in
-   *  the middle of the total painted mass. Two shapes cancel out. */
-  const flatShapes = useFlatShapes();
-  /* Only decorative caps (wave, arch, angled, …) get that compensation.
-   * A "rounded" edge is the stacked-card lip: the row climbs over its
-   * neighbour like a card in a wallet or a sheet in a dossier, and the
-   * height it adds IS the overlap, not extra surface around the content.
-   * Padding the opposite side to match made every rounded row ~50px
-   * taller than a plain one — the "too much space" between sections. */
-  const isCardLip = (s: typeof shapeTop) => s?.kind === "rounded";
-  const topShapeH = isCardLip(shapeTop) ? 0 : shapeHeightPx(shapeTop, flatShapes);
-  const bottomShapeH = isCardLip(shapeBottom) ? 0 : shapeHeightPx(shapeBottom, flatShapes);
-  const basePad = "clamp(72px, 8vw, 128px)";
 
   /* Hairline separator on the top edge — independent of shapes so a row
    * can have a plain rule without taking on a decorative curve. */
@@ -266,12 +189,6 @@ const RowSection = ({
       ? { height: heightValue, minHeight: heightValue, overflow: "hidden" as const }
       : { minHeight: heightValue }
     : null;
-
-  /* Mask mode: the section itself is shaped and pulled over its
-     neighbours, so the row's CONTENT (a photo) does the spilling. */
-  const maskStyle = maskShapes
-    ? shapeMaskStyle(row.layout?.shapeTop, row.layout?.shapeBottom, flatShapes)
-    : {};
 
   /* The row already painted its own surface around every widget: render
      as a bare, transparent content block (no colour, no shapes, no
@@ -317,16 +234,12 @@ const RowSection = ({
         className={`snap-section ${grain && !hasOwnPaint ? "grain" : ""} relative ${fullHeight && snapEnabled ? "min-h-screen" : ""} flex flex-col justify-center ${vAlignClass} ${bleed ? "" : "py-row-fluid"} ${className}`}
         style={{
           backgroundColor: surfaceColor,
-          zIndex: hasExternalShape ? 2 : undefined,
           ...heightStyle,
           ...(bleed
             ? { paddingTop: 0, paddingBottom: 0 }
             : {
                 ...(flushTop ? { paddingTop: 0 } : null),
-                ...(bottomShapeH ? { paddingTop: `calc(${basePad} + ${bottomShapeH}px)` } : null),
-                ...(topShapeH ? { paddingBottom: `calc(${basePad} + ${topShapeH}px)` } : null),
               }),
-          ...maskStyle,
 
 
           scrollMarginTop: "0px",
@@ -351,10 +264,9 @@ const RowSection = ({
              lifted slightly toward its foreground, so cards stay light
              on light rows and dark on dark ones. */
           ["--row-surface" as string]: `color-mix(in srgb, ${surfaceColor || "hsl(var(--background))"} 94%, ${bandFg})`,
-          /* Surface corners — shared scale, clipped unless an external
-             shape cap needs to paint beyond the section boundary. */
+          /* Surface corners: shared scale, content clipped to the curve. */
           ...(radiusStyle ?? null),
-          ...(clipToRadius ? { overflow: "hidden" } : null),
+          ...(applyRadius ? { overflow: "hidden" } : null),
           /* Glass look (artboards: world map, work teaser panels): an
              INSET frosted panel, clear of the viewport edges, rounded on
              all four corners. Never a full-bleed band. */
@@ -366,19 +278,6 @@ const RowSection = ({
                 boxShadow: "var(--shadow-card)",
                 marginInline: "clamp(16px, 3vw, 48px)",
                 marginBlock: "clamp(24px, 3vw, 48px)",
-              }
-            : null),
-          /* Ink outline on every SET edge: the sides always, the top and
-             bottom when they are square corners of a rounded surface. An
-             edge that carries a cap is outlined by the cap itself
-             (SectionShape), so the outline follows the curve. */
-          ...outlineVars,
-          ...(outlined
-            ? {
-                borderLeft: "var(--outline-ink-border)",
-                borderRight: "var(--outline-ink-border)",
-                ...(applyRadius && !topHasShape ? { borderTop: "var(--outline-ink-border)" } : null),
-                /* No bottom line: the foot runs under the next card's lip. */
               }
             : null),
           ...style,
@@ -404,12 +303,6 @@ const RowSection = ({
               <div className="border-t row-border" />
             )}
           </div>
-        ) : null}
-        {shapeTop ? (
-          <SectionShape edge="top" config={shapeTop} color={surfaceColor || "transparent"} useMesh={!hasOwnPaint} outlined={outlined} />
-        ) : null}
-        {shapeBottom ? (
-          <SectionShape edge="bottom" config={shapeBottom} color={surfaceColor || "transparent"} useMesh={!hasOwnPaint} outlined={outlined} />
         ) : null}
         {row.layout?.overlays?.length ? (
           <div className="row-overlay-layer absolute inset-0 pointer-events-none overflow-hidden">

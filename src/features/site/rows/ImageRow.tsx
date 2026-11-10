@@ -74,7 +74,7 @@ const ImageRow = ({ row }: FrontendProps) => {
   const presetAspect = resolveAspectRatio(data.ratio);
 
   return (
-    <RowSection row={row as any} bleed={bleed} maskShapes exactHeight={cropped}>
+    <RowSection row={row as any} bleed={bleed} exactHeight={cropped}>
       <figure
         className={`relative z-10 w-full ${
           bleed ? "self-stretch flex-1 flex flex-col min-h-0" : "row-container mx-auto max-w-[1280px]"
