@@ -171,6 +171,25 @@ function* walkWidgets(
 export const findMissingAltViolations = (rows: PageRow[]): AccessibilityViolation[] => {
   const violations: AccessibilityViolation[] = [];
 
+  // Row-level cover image (layout.coverImage — the picture that fills
+  // the row's background behind the widgets, RowCoverImage). It lives
+  // on the ROW, not on any widget, so the widget walk below never sees
+  // it — which used to let row covers publish with no alt text.
+  for (const row of rows || []) {
+    if (!row || typeof row !== "object") continue;
+    const layout = (row as any).layout;
+    const url = layout?.coverImage;
+    if (typeof url !== "string" || url.trim().length === 0) continue;
+    if (isMissingAlt(layout?.coverImageAlt)) {
+      violations.push({
+        rowId: row.id,
+        rowType: row.type,
+        label: "Row cover image",
+        stripTitle: (row as any).strip_title || "Row cover image",
+      });
+    }
+  }
+
   for (const widget of walkWidgets(rows)) {
     const fields = IMAGE_FIELDS_BY_TYPE[widget.type as PageRow["type"]];
     if (!fields) continue;

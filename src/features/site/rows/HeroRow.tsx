@@ -1,6 +1,4 @@
 import type { PageRow } from "@/types/rows";
-import { getRowBgColor } from "./rowBackground";
-import { resolveRowMinHeight } from "@/lib/rowHeight";
 import { HeroView } from "@/features/site/HeroSection";
 import Icon from "@/features/icons/Icon";
 
@@ -15,22 +13,20 @@ interface Props {
  * page's hero shares one layout, type scale and entrance animation.
  * Inline editing is disabled here: a CMS row's copy is edited in the page
  * builder, not through the site_content "hero" section.
+ *
+ * The row's surface (background colour, edge shapes, radius, outline,
+ * height) is painted by RowSection — RowRenderer wraps every hero row
+ * in one, so this component deliberately passes no sectionStyle of its
+ * own. HeroView detects the surrounding surface (useInsideRowSurface)
+ * and drops its own padding/height compensation.
  */
 const HeroRow = ({ row }: Props) => {
   const c = row.content || {};
-  /* Heroes hug their content unless the admin picks a Height (Full
-   * screen, a preset, or Custom) — so the row after a hero stacks right
-   * under its title instead of under half a screen of empty band. */
-  const minHeight = resolveRowMinHeight(row.layout);
 
   return (
     <HeroView
       editable={false}
       content={c as any}
-      sectionStyle={{
-        backgroundColor: getRowBgColor(row),
-        ...(minHeight ? { minHeight } : null),
-      }}
       leading={
         c.icon ? (
           <div style={{ color: "hsl(var(--hero-title))" }}>

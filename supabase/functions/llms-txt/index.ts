@@ -18,8 +18,9 @@
  *   - GET  …/llms-txt/llms-full.txt→ long manifest (path-based)
  *
  * Side-effect:
- *   Every successful request is logged to `ai_crawler_logs` so the admin
- *   AI Insights dashboard can show which bots have visited.
+ *   Every successful request is logged to `unified_analytics_logs`
+ *   (category "manifest") so the admin AI Insights dashboard can show
+ *   which bots have visited.
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";

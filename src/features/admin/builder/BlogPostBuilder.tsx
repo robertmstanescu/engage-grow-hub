@@ -169,54 +169,6 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
     return true;
   }, [record, pageSlug]);
 
-  const onSaveDraft = useCallback(async () => {
-    if (!record) return;
-    const slugOk = await checkSlugAvailable();
-    if (!slugOk) return;
-    if (visibility === "scheduled") {
-      if (!publishAt || new Date(publishAt).getTime() <= Date.now()) {
-        toast.error("Choose a future date and time for this blog to go live.");
-        return;
-      }
-      if (expiryAt && new Date(expiryAt).getTime() <= new Date(publishAt).getTime()) {
-        toast.error("The stop date must be after the go-live date.");
-        return;
-      }
-    }
-    setSaving(true);
-    const { error } = await supabase
-      .from("blog_posts")
-      .update({
-        page_rows: visibility === "live" ? draftRows as any : record.page_rows as any,
-        draft_page_rows: draftRows as any,
-        meta_title: seoTitle,
-        meta_description: seoDescription,
-        title: pageTitle,
-        slug: pageSlug,
-        status: stateToStatus(visibility),
-        publish_at: visibility === "scheduled" ? publishAt : null,
-        expiry_at: visibility === "scheduled" ? expiryAt : null,
-      } as any)
-      .eq("id", record.id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success(visibility === "scheduled" ? "Blog scheduled" : visibility === "live" ? "Blog saved live" : "Draft saved");
-      setRecord({
-        ...record,
-        page_rows: visibility === "live" ? draftRows : record.page_rows,
-        draft_page_rows: draftRows,
-        meta_title: seoTitle,
-        meta_description: seoDescription,
-        title: pageTitle,
-        slug: pageSlug,
-        status: stateToStatus(visibility),
-        publish_at: visibility === "scheduled" ? publishAt : null,
-        expiry_at: visibility === "scheduled" ? expiryAt : null,
-      });
-    }
-    setSaving(false);
-  }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, visibility, publishAt, expiryAt, checkSlugAvailable]);
-
   const onPublish = useCallback(async () => {
     if (!record) return;
 
@@ -278,6 +230,61 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
     setPublishing(false);
   }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, checkSlugAvailable]);
 
+  const onSaveDraft = useCallback(async () => {
+    if (!record) return;
+    const slugOk = await checkSlugAvailable();
+    if (!slugOk) return;
+    if (visibility === "scheduled") {
+      if (!publishAt || new Date(publishAt).getTime() <= Date.now()) {
+        toast.error("Choose a future date and time for this blog to go live.");
+        return;
+      }
+      if (expiryAt && new Date(expiryAt).getTime() <= new Date(publishAt).getTime()) {
+        toast.error("The stop date must be after the go-live date.");
+        return;
+      }
+    }
+    // Save ALWAYS writes the draft only; the live `page_rows` column is
+    // touched exclusively by onPublish (alt-text check). A post that
+    // isn't live yet but whose visibility control sits on "Live" is
+    // published through onPublish so the safeguards run — saving must
+    // never promote content on its own.
+    if (visibility === "live" && record.status !== "published") {
+      await onPublish();
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase
+      .from("blog_posts")
+      .update({
+        draft_page_rows: draftRows as any,
+        meta_title: seoTitle,
+        meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
+        status: stateToStatus(visibility),
+        publish_at: visibility === "scheduled" ? publishAt : null,
+        expiry_at: visibility === "scheduled" ? expiryAt : null,
+      } as any)
+      .eq("id", record.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(visibility === "scheduled" ? "Blog scheduled" : "Draft saved");
+      setRecord({
+        ...record,
+        draft_page_rows: draftRows,
+        meta_title: seoTitle,
+        meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
+        status: stateToStatus(visibility),
+        publish_at: visibility === "scheduled" ? publishAt : null,
+        expiry_at: visibility === "scheduled" ? expiryAt : null,
+      });
+    }
+    setSaving(false);
+  }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, visibility, publishAt, expiryAt, checkSlugAvailable, onPublish]);
+
   /** Revert post to draft so it leaves /blog without losing content. */
   const onUnpublish = useCallback(async () => {
     if (!record) return;
@@ -299,7 +306,7 @@ const BlogPostBuilder = ({ postId, onExit }: Props) => {
 
   const onPreview = useCallback(() => {
     if (!record) return;
-    onSaveDraft().then(() => window.open(`/blog/${pageSlug || record.slug}?preview=1`, "_blank"));
+    onSaveDraft().then(() => window.open(`/blog/${pageSlug || record.slug}?preview=draft`, "_blank"));
   }, [record, onSaveDraft, pageSlug]);
 
   if (!record) {

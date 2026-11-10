@@ -95,9 +95,14 @@ export async function renameEditorImage(oldPath: string, newPath: string) {
    ───────────────────────────────────────────────────────────────────────── */
 
 export async function uploadRowOverlay(file: File): Promise<UploadResult> {
-  const ext = file.name.split(".").pop() || "png";
+  // Every picture upload goes through shrinkImage first (2400px long
+  // edge, WebP) — overlays were the one path that skipped it, so a huge
+  // PNG overlay reached Storage untouched and broke sized URLs. SVG,
+  // GIF and small files pass through unchanged (alpha is preserved).
+  const shrunk = await shrinkImage(file);
+  const ext = shrunk.name.split(".").pop() || "png";
   const path = `${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage.from(OVERLAY_BUCKET).upload(path, file);
+  const { error } = await supabase.storage.from(OVERLAY_BUCKET).upload(path, shrunk);
   if (error) return { publicUrl: null, error };
   const { data: { publicUrl } } = supabase.storage.from(OVERLAY_BUCKET).getPublicUrl(path);
   return { publicUrl, error: null };

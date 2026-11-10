@@ -412,8 +412,13 @@ async function main() {
   for (const page of cmsPages) {
     if (!page.slug) continue;
     const path = cmsPagePath(page.slug);
-    const description = page.meta_description || "";
     const rows = Array.isArray(page.page_rows) ? page.page_rows : [];
+    // The hero's plain answer doubles as the search description when the
+    // page has none of its own — mirrors the runtime fallback in
+    // CmsPage.tsx so crawlers and visitors see the same description.
+    const heroAnswer =
+      plain(flattenWidgets(rows).find((w) => w.type === "hero")?.data?.answer, 300) || "";
+    const description = page.meta_description || heroAnswer;
     // Individual service pages (not the /services/ index itself) get a
     // Service schema block — mirrors the client-side version usePageMeta
     // emits in CmsPage.tsx, so bots and real users see the same markup.
@@ -438,7 +443,9 @@ async function main() {
               "@context": "https://schema.org",
               "@type": "Service",
               name: page.title,
-              ...(description ? { description } : {}),
+              // Runtime (CmsPage.tsx) prefers the plain answer for the
+              // Service schema; keep the two in lock-step.
+              ...((heroAnswer || description) ? { description: heroAnswer || description } : {}),
               url: abs(path),
               provider: { "@type": "Organization", name: brandName, url: origin },
               ...(serviceAreas.length

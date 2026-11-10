@@ -197,66 +197,6 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
     return true;
   }, [record, pageSlug]);
 
-  const onSaveDraft = useCallback(async (): Promise<boolean> => {
-    if (!record) return false;
-    const slugOk = await checkSlugAvailable();
-    if (!slugOk) return false;
-    if (visibility === "scheduled") {
-      if (!publishAt || new Date(publishAt).getTime() <= Date.now()) {
-        toast.error("Choose a future date and time for this page to go live.");
-        return false;
-      }
-      if (expiryAt && new Date(expiryAt).getTime() <= new Date(publishAt).getTime()) {
-        toast.error("The stop date must be after the go-live date.");
-        return false;
-      }
-    }
-    setSaving(true);
-    // Choosing "Live" and saving is an explicit publish: promote the
-    // edited draft rows into the live column in the same write, otherwise
-    // the page would flip to published while visitors still see the old
-    // (or empty) content. Draft/scheduled saves never touch page_rows.
-    const goingLive = visibility === "live";
-    const { error } = await supabase
-      .from("cms_pages")
-      .update({
-        draft_page_rows: draftRows as any,
-        ...(goingLive ? { page_rows: draftRows as any } : {}),
-        meta_title: seoTitle,
-        meta_description: seoDescription,
-        title: pageTitle,
-        slug: pageSlug,
-        status: stateToStatus(visibility),
-        publish_at: visibility === "scheduled" ? publishAt : null,
-        expiry_at: visibility === "scheduled" ? expiryAt : null,
-      } as any)
-      .eq("id", record.id);
-    let ok = true;
-    if (error) { toast.error(error.message); ok = false; }
-    else {
-      toast.success(
-        goingLive ? "Page published" : visibility === "scheduled" ? "Page scheduled" : "Draft saved",
-      );
-      // Refresh the snapshot so hasChanges resets.
-      setRecord({
-        ...record,
-        draft_page_rows: draftRows,
-        ...(goingLive ? { page_rows: draftRows } : {}),
-        meta_title: seoTitle,
-        meta_description: seoDescription,
-        title: pageTitle,
-        slug: pageSlug,
-        status: stateToStatus(visibility),
-        publish_at: visibility === "scheduled" ? publishAt : null,
-        expiry_at: visibility === "scheduled" ? expiryAt : null,
-      });
-    }
-    setSaving(false);
-    return ok;
-  }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, visibility, publishAt, expiryAt, checkSlugAvailable]);
-
-  saveRef.current = onSaveDraft;
-
   const onPublish = useCallback(async () => {
     if (!record) return;
 
@@ -320,6 +260,66 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
     setPublishing(false);
   }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, checkSlugAvailable]);
 
+  const onSaveDraft = useCallback(async (): Promise<boolean> => {
+    if (!record) return false;
+    const slugOk = await checkSlugAvailable();
+    if (!slugOk) return false;
+    if (visibility === "scheduled") {
+      if (!publishAt || new Date(publishAt).getTime() <= Date.now()) {
+        toast.error("Choose a future date and time for this page to go live.");
+        return false;
+      }
+      if (expiryAt && new Date(expiryAt).getTime() <= new Date(publishAt).getTime()) {
+        toast.error("The stop date must be after the go-live date.");
+        return false;
+      }
+    }
+    // Save ALWAYS writes the draft only; the live `page_rows` column is
+    // touched exclusively by onPublish (alt-text check + IndexNow). A
+    // page that isn't live yet but whose visibility control sits on
+    // "Live" is published through onPublish so the safeguards run —
+    // saving must never promote content on its own.
+    if (visibility === "live" && record.status !== "published") {
+      await onPublish();
+      return true;
+    }
+    setSaving(true);
+    const { error } = await supabase
+      .from("cms_pages")
+      .update({
+        draft_page_rows: draftRows as any,
+        meta_title: seoTitle,
+        meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
+        status: stateToStatus(visibility),
+        publish_at: visibility === "scheduled" ? publishAt : null,
+        expiry_at: visibility === "scheduled" ? expiryAt : null,
+      } as any)
+      .eq("id", record.id);
+    let ok = true;
+    if (error) { toast.error(error.message); ok = false; }
+    else {
+      toast.success(visibility === "scheduled" ? "Page scheduled" : "Draft saved");
+      // Refresh the snapshot so hasChanges resets.
+      setRecord({
+        ...record,
+        draft_page_rows: draftRows,
+        meta_title: seoTitle,
+        meta_description: seoDescription,
+        title: pageTitle,
+        slug: pageSlug,
+        status: stateToStatus(visibility),
+        publish_at: visibility === "scheduled" ? publishAt : null,
+        expiry_at: visibility === "scheduled" ? expiryAt : null,
+      });
+    }
+    setSaving(false);
+    return ok;
+  }, [record, draftRows, seoTitle, seoDescription, pageTitle, pageSlug, visibility, publishAt, expiryAt, checkSlugAvailable, onPublish]);
+
+  saveRef.current = onSaveDraft;
+
   /** Revert the page back to draft so it disappears from the public
    *  site. We deliberately do NOT touch page_rows / draft_page_rows so
    *  the user keeps everything they had — only the visibility flips. */
@@ -345,7 +345,7 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
     if (!record) return;
     // Use the latest in-memory slug — typing a new slug and hitting
     // Preview should land on the new URL once the save completes.
-    onSaveDraft().then(() => window.open(`/${pageSlug || record.slug}?preview=1`, "_blank"));
+    onSaveDraft().then(() => window.open(`/${pageSlug || record.slug}?preview=draft`, "_blank"));
   }, [record, onSaveDraft, pageSlug]);
 
   if (!record) {

@@ -187,19 +187,19 @@ const SiteEditor = ({ onExit, onDirtyChange, onRegisterSave }: Props) => {
     const targets = sections.filter(
       (s) => dirty.includes(s) || (hasTimingChanges && s.section_key === "page_rows"),
     );
-    // Choosing "Live" and saving is an explicit publish: promote the
-    // draft content into the live `content` column in the same write,
-    // otherwise the homepage would flip to published while visitors
-    // still see the old content. Draft/scheduled saves keep `content`
-    // untouched.
-    const goingLive = visibility === "live";
+    // Save ALWAYS writes the draft only. The live `content` column is
+    // touched exclusively by onPublish, which runs the alt-text check,
+    // invalidates the site-content cache and pings IndexNow. (Saving
+    // used to promote draft → live whenever the visibility control sat
+    // on "Live" — the homepage's default — so every save published
+    // without any of those safeguards.)
     const updates = targets.map((s) => {
       const draft = (s.draft_content || s.content) as any;
       const isPageRows = s.section_key === "page_rows";
       return supabase.from("site_content").upsert(
         {
           section_key: s.section_key,
-          content: goingLive ? draft : s.content,
+          content: s.content,
           draft_content: draft,
           publish_at: isPageRows && visibility === "scheduled" ? publishAt : null,
           expiry_at: isPageRows && visibility === "scheduled" ? expiryAt : null,
@@ -215,7 +215,6 @@ const SiteEditor = ({ onExit, onDirtyChange, onRegisterSave }: Props) => {
       setSections((prev) => prev.map((s) => targets.includes(s)
         ? {
             ...s,
-            content: goingLive ? ((s.draft_content || s.content) as any) : s.content,
             publish_at: s.section_key === "page_rows" && visibility === "scheduled" ? publishAt : null,
             expiry_at: s.section_key === "page_rows" && visibility === "scheduled" ? expiryAt : null,
           }
@@ -223,11 +222,7 @@ const SiteEditor = ({ onExit, onDirtyChange, onRegisterSave }: Props) => {
       setSavedVisibility(visibility);
       setSavedDrafts(Object.fromEntries(sections.map((s) => [s.section_key, s.draft_content ?? s.content])));
       toast.success(
-        goingLive
-          ? "Homepage published"
-          : visibility === "scheduled"
-            ? "Homepage schedule saved"
-            : "Homepage draft saved",
+        visibility === "scheduled" ? "Homepage schedule saved" : "Homepage draft saved",
       );
     }
     setSaving(false);

@@ -113,7 +113,15 @@ const RowRenderer = ({
     0,
   );
   const coverImage = row.layout?.coverImage?.trim() || "";
-  const paintsSurface = widgetCount > 1 || Boolean(coverImage);
+  // A hero always lives INSIDE the row surface: RowSection paints the
+  // background colour, edge shapes, radius and outline around it, and
+  // HeroView detects the surface (useInsideRowSurface) and drops its
+  // own padding/height compensation. Before this, a lone hero rendered
+  // bare, so the row's style settings (shape, radius, outline, text
+  // tone) silently did nothing on hero rows.
+  const hasHero = row.columns.some((col) =>
+    (col.cells || []).some((cell) => (cell.widgets || []).some((w) => w.type === "hero")));
+  const paintsSurface = widgetCount > 1 || Boolean(coverImage) || hasHero;
   /* ── How far the content climbs over the cover picture ──
    *  A share of the picture's rendered height (`coverTextOverlapPct`,
    *  default 60%), measured live because the band's height depends on
@@ -167,6 +175,7 @@ const RowRenderer = ({
       className=""
       grain={false}
       flushTop={Boolean(coverImage)}
+      fullHeight={!hasHero}
       dataRowId={row.id}
     >
       {/* The provider sits INSIDE the section so only the widgets' own
