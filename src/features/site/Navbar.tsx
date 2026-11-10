@@ -334,18 +334,23 @@ const Navbar = () => {
                     />
                   </a>
                     {open && (
-                      <div
-                        className="mc-rise absolute left-1/2 -translate-x-1/2 top-full pt-3 min-w-[240px] z-50" style={{ "--rise-y": "-6px", "--rise-dur": "0.18s" } as React.CSSProperties}>
+                      /* Centred under its label by this box; the rise animation
+                         sits one level in, because its `transform` would
+                         replace the centring one and push the menu right. */
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 min-w-[240px] z-50">
                         <div
-                          className="flex flex-col py-2"
+                          className="mc-rise flex flex-col py-2 overflow-hidden"
+                          data-nav-dropdown
                           style={{
+                            "--rise-y": "-6px",
+                            "--rise-dur": "0.18s",
                             borderRadius: "calc(var(--radius) * 1.2)",
                             backgroundColor: "hsl(var(--card) / 0.98)",
                             backdropFilter: "blur(18px) saturate(140%)",
                             WebkitBackdropFilter: "blur(18px) saturate(140%)",
                             border: "1px solid hsl(var(--border))",
                             boxShadow: "var(--shadow-soft)",
-                          }}
+                          } as React.CSSProperties}
                         >
                           {item.items.map((sub) => {
                             const subActive = isActive(sub.href);
@@ -357,14 +362,22 @@ const Navbar = () => {
                                   setOpenDropdown(null);
                                   handleNavClick(e, sub.href);
                                 }}
-                                className="top-nav-label font-body px-4 py-2 whitespace-nowrap transition-colors duration-150 hover:bg-[hsl(var(--muted))]"
-                                data-active={subActive}
-                                style={{
-                                  color: subActive ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.78)",
-                                  fontWeight: subActive ? 700 : 450,
-                                }}
+                                /* The link is the full row, so the hover tint
+                                   reaches both edges; the label inside keeps
+                                   the menu-label rules (and their width cap). */
+                                className="block px-4 py-2 transition-colors duration-150 hover:bg-[hsl(var(--muted))] focus-visible:bg-[hsl(var(--muted))]"
+                                style={{ textDecoration: "none" }}
                               >
-                                {sub.label}
+                                <span
+                                  className="top-nav-label font-body block"
+                                  data-active={subActive}
+                                  style={{
+                                    color: subActive ? "hsl(var(--primary))" : "hsl(var(--foreground) / 0.78)",
+                                    fontWeight: subActive ? 700 : 450,
+                                  }}
+                                >
+                                  {sub.label}
+                                </span>
                               </a>
                             );
                           })}

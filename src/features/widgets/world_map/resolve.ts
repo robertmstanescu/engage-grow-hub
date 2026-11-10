@@ -70,7 +70,8 @@ export const hasAnyGroup = (c: WorldMapContent): boolean =>
 /**
  * The places that count as "worked in": everything in the comms list or
  * the HR list. A main market that is in neither (Romania) is shaded but
- * is a market only, so it is left out of the counters and has no hover.
+ * is a market only, so it is left out of the counters. It still names
+ * itself on hover (owner, 10 Nov 2026).
  */
 export const workedPlaces = (c: WorldMapContent): { comms: Set<string>; hr: Set<string> } => {
   const comms = new Set<string>();
