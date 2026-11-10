@@ -67,6 +67,8 @@ export const boxedSchema = z.looseObject({
   color_card_body: color(),
   /** "" or "grid" = card grid (default); "list" = numbered rows. */
   layout_mode: str(),
+  /** Grid-card marker above the title: "" = none, "roman" = gold Roman numerals (the vows look). */
+  marker_style: str(),
 
   /* ── Footer bits ── */
   note: str(),

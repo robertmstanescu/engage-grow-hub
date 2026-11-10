@@ -78,6 +78,21 @@ export const SECTION_LIBRARY: LibrarySection[] = [
     build: () => rowWith("work_teaser", { eyebrow: "Work", title: "Selected work" }, { strip_title: "Work teaser" }),
   },
   {
+    key: "vows", name: "Vows", family: "Cards",
+    build: () => rowWith("boxed", {
+      eyebrow: "Our vows",
+      title_lines: ["Before we shake hands,", "here is what we vow."],
+      marker_style: "roman",
+      cards: [
+        { title: "First vow", body: p("What you promise, in plain words."), variant: "glass" },
+        { title: "Second vow", body: p("What you promise, in plain words."), variant: "glass" },
+        { title: "Third vow", body: p("What you promise, in plain words."), variant: "glass" },
+      ],
+      note: "A handwritten closing line.",
+      note_handwritten: true,
+    }, { strip_title: "Vows" }),
+  },
+  {
     key: "proof-strip", name: "Proof strip", family: "Numbers",
     build: () => rowWith("proof_band", {
       eyebrow: "Proof, not promises",

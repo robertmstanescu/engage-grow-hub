@@ -19,6 +19,9 @@ const isExternal = (url: string) => /^https?:\/\//i.test(url);
 
 const stripP = (html: string) => html.replace(/^<p>/, "").replace(/<\/p>$/, "");
 
+/** Grid-card markers for the vows look (marker_style === "roman"). */
+const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+
 const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const { contents, widths, isMultiCol } = getRowColumns(row);
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
@@ -94,6 +97,15 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
 
       const innerCard = (
         <>
+          {c.marker_style === "roman" && (
+            <span
+              aria-hidden
+              className="block font-display font-extrabold leading-none mb-4"
+              style={{ color: "hsl(var(--gold-text))", fontSize: 44 }}
+            >
+              {ROMAN_NUMERALS[i] ?? String(i + 1)}
+            </span>
+          )}
           {card.icon && (
             <div className="mb-3" style={{ color: titleColor }}>
               <Icon value={card.icon} size={28} />

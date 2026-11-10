@@ -50,6 +50,17 @@ const BoxedRowEditor = ({ content, onChange, bgColor }: Props) => {
           { label: "Numbered list", value: "list" },
         ]}
       />
+      {!(content.layout_mode === "list") && (
+        <SelectField
+          label="Card markers"
+          value={content.marker_style || ""}
+          onChange={(v) => onChange("marker_style", v)}
+          options={[
+            { label: "None", value: "" },
+            { label: "Roman numerals (vows)", value: "roman" },
+          ]}
+        />
+      )}
       <BoxedArrayField content={content} onChange={onChange} bgColor={bgColor} />
       <div className="grid grid-cols-2 gap-3">
         <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onChange("color_card_title", v)} />
