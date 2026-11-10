@@ -379,7 +379,7 @@ export const arrangeService = (rows: Json[]): Json[] => {
     if (hasWidget(row, "hero")) {
       space(row, "lead", "none");
       for (const w of widgetsOf(row)) if (w?.type === "hero") (w.data || (w.data = {})).label_dot = true;
-    } else if (hasWidget(row, "steps")) space(row, "full", "near");
+    } else if (hasWidget(row, "process_steps")) space(row, "full", "near");
     else if (hasWidget(row, "boxed") || hasWidget(row, "service") || hasWidget(row, "faq")) space(row, "full", "tight");
     else if (hasWidget(row, "from_the_blog")) space(row, "full", "none");
     else if (hasWidget(row, "contact")) space(row, "full", "full");

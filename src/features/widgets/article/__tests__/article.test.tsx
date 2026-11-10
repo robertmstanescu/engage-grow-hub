@@ -3,7 +3,7 @@ import { render } from "@testing-library/react";
 import "@/widgets";
 import { ArticleContext } from "../articleContext";
 import ArticleRow from "../ArticleRow";
-import { ensureArticleRow, hasArticleRow, makeArticleRow } from "../postRows";
+import { ensureArticleRow, postRowsFor, hasArticleRow, makeArticleRow } from "../postRows";
 import type { PageRow } from "@/types/rows";
 
 const row = (type: string, id = type): PageRow => ({ id, type, content: {} } as PageRow);
@@ -22,7 +22,18 @@ describe("article block", () => {
     );
     const body = container.querySelector("[data-article-body]");
     expect(body?.innerHTML).toContain("<h2>Section</h2>");
-    expect(body?.className).toContain("measure");
+    // The reading column is the artboard's 720px `.article-column`.
+    expect(container.querySelector("section")?.className).toContain("article-column");
+  });
+
+  it("gives a post that was never arranged the band and three more posts, and leaves saved rows alone", () => {
+    const fresh = postRowsFor(null, "<p>Hi</p>", { title_line1: "A <b>", title_line2: "B", body: "C" }, "Pay");
+    expect(fresh.map((r) => r.type)).toEqual(["article", "cta_band", "from_the_blog"]);
+    expect(fresh[1].content.title_lines[0]).toBe("A &lt;b&gt;");
+    expect(fresh[1].content.band_style).toBe("room");
+    expect(fresh[2].content.categories).toEqual(["Pay"]);
+    const saved = postRowsFor([makeArticleRow("x")], "<p>Hi</p>");
+    expect(saved.map((r) => r.type)).toEqual(["article"]);
   });
 
   it("puts one article row into an empty post and leaves rows that have one alone", () => {

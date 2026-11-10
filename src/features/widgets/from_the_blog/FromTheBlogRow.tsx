@@ -9,6 +9,9 @@ import AllPostsButton from "@/features/site/AllPostsButton";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
 import { fromTheBlogSchema } from "./schema";
+import { shortDate } from "@/lib/shortDate";
+import { useTagColors } from "@/hooks/useTagColors";
+import { useArticle } from "@/features/widgets/article/articleContext";
 import { blogLinkFor, pickPosts, type PostLite } from "./postPick";
 
 /**
@@ -26,7 +29,6 @@ import { blogLinkFor, pickPosts, type PostLite } from "./postPick";
  * opened — which is exactly when the owner needs to change the
  * categories it is asking for.
  */
-const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "");
 
 const FromTheBlogRow = ({ row }: { row: PageRow }) => {
   const c = parseContent(fromTheBlogSchema, row.content);
@@ -35,6 +37,9 @@ const FromTheBlogRow = ({ row }: { row: PageRow }) => {
   const { enabled: builderEnabled } = useBuilder();
   const { ref, isVisible } = useScrollReveal();
   const catKey = c.categories.join("|");
+  // On a post page the row never offers the post being read.
+  const currentSlug = useArticle()?.slug || "";
+  const { getCategoryColors } = useTagColors();
 
   useEffect(() => {
     let cancelled = false;
@@ -46,11 +51,11 @@ const FromTheBlogRow = ({ row }: { row: PageRow }) => {
       .limit(24)
       .then(({ data }) => {
         if (cancelled) return;
-        setPosts(data ? pickPosts(data as PostLite[], catKey.split("|"), c.limit) : []);
+        setPosts(data ? pickPosts((data as PostLite[]).filter((p) => p.slug !== currentSlug), catKey.split("|"), c.limit) : []);
         setLooked(true);
       }, () => { if (!cancelled) setLooked(true); });
     return () => { cancelled = true; };
-  }, [catKey, c.limit]);
+  }, [catKey, c.limit, currentSlug]);
 
   if (posts.length === 0) {
     if (!builderEnabled || !looked) return null;
@@ -70,35 +75,40 @@ const FromTheBlogRow = ({ row }: { row: PageRow }) => {
   return (
     <RowSection row={row}>
       <div ref={ref as never} className="max-w-[1280px] mx-auto row-container">
-        <div className="flex items-end justify-between gap-4 mb-6">
+        <div className="flex flex-wrap items-end justify-between gap-6 mb-12">
           <div>
             {c.eyebrow && <RowEyebrow color={c.color_eyebrow} style={revealStyle(isVisible, -0.5)}>{c.eyebrow}</RowEyebrow>}
-            {c.title && <RowTitle color={c.color_title} style={revealStyle(isVisible, 0)}><span className="block">{c.title}</span></RowTitle>}
+            {c.title && <RowTitle color={c.color_title} className="!mb-0" style={revealStyle(isVisible, 0)}><span className="block">{c.title}</span></RowTitle>}
           </div>
           {c.link_label && (
             <span style={revealStyle(isVisible, 0.2)}><AllPostsButton to={listHref} label={c.link_label} /></span>
           )}
         </div>
-        <ul className="grid grid-cols-1 md:grid-cols-3 gap-5" style={revealStyle(isVisible, 0.3)}>
-          {posts.map((p) => (
-            <li key={p.slug}>
-              <Link to={`/blog/${p.slug}/`} className="surface-card group flex flex-col h-full overflow-hidden">
-                {p.cover_image && (
-                  <span className="block w-full overflow-hidden" style={{ aspectRatio: "16 / 9" }}>
-                    <img src={transformImageUrl(p.cover_image, { width: 640, aspectRatio: 16 / 9, quality: 70 })} alt={p.cover_image_alt || ""} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+        {/* Cards follow the artboards: 180px picture, category chip in its
+            own colour beside the date, 20px title, three lines of excerpt. */}
+        <ul className="grid grid-cols-1 md:grid-cols-3 gap-6" style={revealStyle(isVisible, 0.3)}>
+          {posts.map((p) => {
+            const chip = p.category ? getCategoryColors(p.category) : null;
+            return (
+              <li key={p.slug}>
+                <Link to={`/blog/${p.slug}/`} className="glass rounded-3xl group flex flex-col h-full overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                  {p.cover_image && (
+                    <img src={transformImageUrl(p.cover_image, { width: 640, aspectRatio: 16 / 9, quality: 70 })} alt={p.cover_image_alt || ""} loading="lazy" decoding="async" className="block w-full h-[180px] object-cover" />
+                  )}
+                  <span className="flex flex-col flex-1 gap-3 p-6">
+                    <span className="flex flex-wrap items-center gap-2.5">
+                      {p.category && chip && (
+                        <span className="font-body text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full" style={{ backgroundColor: chip.bgColor, color: chip.textColor }}>{p.category}</span>
+                      )}
+                      {p.published_at && <span className="font-body text-[13px]" style={{ color: "hsl(var(--body))" }}>{shortDate(p.published_at)}</span>}
+                    </span>
+                    <span className="block font-display font-bold leading-[1.22] flex-grow group-hover:opacity-80" style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-grid-card-title)", overflowWrap: "anywhere" }}>{p.title}</span>
+                    {p.excerpt && <span className="font-body text-[15px] leading-[1.6] line-clamp-3" style={{ color: "hsl(var(--body))" }}>{p.excerpt}</span>}
                   </span>
-                )}
-                <span className="flex flex-col flex-1" style={{ padding: "18px 20px 22px" }}>
-                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3">
-                    {p.category && <span className="pill-tag">{p.category}</span>}
-                    {p.published_at && <span className="font-body" style={{ color: "hsl(var(--meta))", fontSize: 12.5 }}>{fmt(p.published_at)}</span>}
-                  </span>
-                  <span className="block font-display font-bold leading-snug group-hover:underline" style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-card-title)" }}>{p.title}</span>
-                  {p.excerpt && <span className="block font-body mt-auto pt-3" style={{ color: "hsl(var(--body))", fontSize: "var(--fs-card-body)" }}>{p.excerpt}</span>}
-                </span>
-              </Link>
-            </li>
-          ))}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </RowSection>

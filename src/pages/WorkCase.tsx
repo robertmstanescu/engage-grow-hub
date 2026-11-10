@@ -162,7 +162,7 @@ const WorkCase = () => {
     <div className="min-h-screen">
       <Navbar />
       <main className="work-page">
-        <header className="work-header">
+        <header className="work-header case-header">
           <div className="work-column work-header-stack">
             <p className="case-crumb">
               <Link to="/work/">Work</Link>

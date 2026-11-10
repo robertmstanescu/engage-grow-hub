@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { PageRow } from "@/types/rows";
 import { ArticleContext } from "@/features/widgets/article/articleContext";
-import { articleRowIndex, ensureArticleRow, hasArticleRow, makeArticleRow } from "@/features/widgets/article/postRows";
+import { articleRowIndex, defaultPostExtras, ensureArticleRow, hasArticleRow, makeArticleRow } from "@/features/widgets/article/postRows";
 import {
   findMissingAltViolations,
   formatAltMissingMessage,
@@ -53,7 +53,9 @@ interface Props {
  * post's `content` (edited under Posts) and is never copied; other
  * blocks go above or below it.
  */
-const seedRows = (): PageRow[] => [makeArticleRow()];
+/* A post that was never arranged opens as the public page shows it: the
+   article, then the default call-to-action band and "Keep reading". */
+const seedRows = (): PageRow[] => [makeArticleRow(), ...defaultPostExtras()];
 
 const BlogPostBuilder = ({ postId, onExit }: Props) => {
   const [record, setRecord] = useState<BlogPostRecord | null>(null);

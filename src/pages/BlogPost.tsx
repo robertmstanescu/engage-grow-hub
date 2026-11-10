@@ -1,7 +1,6 @@
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { safeHref } from "@/services/safeHref";
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeHtml } from "@/services/sanitize";
 import Navbar from "@/features/site/Navbar";
@@ -9,7 +8,6 @@ import Footer from "@/features/site/Footer";
 import { useTagColors } from "@/hooks/useTagColors";
 import ResourceWidget from "@/features/site/ResourceWidget";
 import usePageMeta from "@/hooks/usePageMeta";
-import MoreArticles from "@/features/site/MoreArticles";
 import { resolveAuthor, type AuthorProfile } from "@/features/site/authorProfile";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { transformImageUrl } from "@/services/mediaOptimization";
@@ -22,8 +20,9 @@ import { readLivePreviewState, subscribeLivePreview } from "@/services/livePrevi
 // existing posts keep working unchanged.
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import { ArticleContext } from "@/features/widgets/article/articleContext";
-import { ensureArticleRow } from "@/features/widgets/article/postRows";
+import { articleRowIndex, postRowsFor, type ClosingWords } from "@/features/widgets/article/postRows";
 import type { PageRow } from "@/types/rows";
+import { shortDate } from "@/lib/shortDate";
 
 interface BlogArticle {
   slug: string; title: string; excerpt: string | null; published_at: string | null; content: string; category: string;
@@ -38,7 +37,7 @@ interface BlogArticle {
 }
 
 const calculateReadTime = (content: string) => `${Math.max(1, Math.ceil(content.trim().split(/\s+/).length / 200))} min read`;
-const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+const formatDate = shortDate;
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -52,7 +51,10 @@ const BlogPost = () => {
   const authorLinkedin = ((authorProfile.linkedin || "").trim() || (socialLinks.linkedin || "").trim());
   const author = resolveAuthor(authorProfile, article);
   const [loading, setLoading] = useState(true);
-  const { getTagColors, getCategoryColors } = useTagColors();
+  /* The closing words of the call-to-action band are the site's own
+     contact words, so they are written in one place. */
+  const closingWords = useSiteContent<ClosingWords>("contact", {});
+  const { getCategoryColors } = useTagColors();
   // BlogPost has its own bespoke "not found" branch below — it does NOT
   // render <NotFound/>, so it needs its own redirect check (NotFound.tsx's
   // check doesn't cover this route).
@@ -162,16 +164,24 @@ const BlogPost = () => {
     );
   }
 
+  /* Rows: what the owner saved, or the article with its default extras
+     (call-to-action band and three more posts). The download block, when
+     a post has one, sits straight after the article. */
+  const rows = postRowsFor(((isPreview && article.draft_page_rows) || article.page_rows) as PageRow[] | null, article.content, closingWords, article.category);
+  const articleAt = articleRowIndex(rows);
+  const cut = articleAt >= 0 ? articleAt + 1 : rows.length;
+  const authorHref = authorLinkedin ? safeHref(authorLinkedin) : "";
+
   return (
     <div className="min-h-screen page-shell">
       <Navbar />
       <article>
-        {/* Redesign (BlogPost artboard): header first in a 920px column —
-            breadcrumb + category pill, big title, excerpt, date and read
-            time — then the cover as a contained, rounded picture. */}
-        <header className="relative z-10 px-8 pt-28 md:pt-32 pb-10">
-          <div className="max-w-[920px] mx-auto flex flex-col gap-5">
-            <div className="flex flex-wrap items-center gap-3 font-body text-sm" style={{ color: "hsl(var(--foreground) / 0.55)" }}>
+        {/* BlogPost artboard: a 920px header (breadcrumb and category,
+            title, excerpt, one author line), then the cover as a
+            contained, rounded picture. */}
+        <header className="post-header relative z-10">
+          <div className="max-w-[920px] mx-auto flex flex-col gap-[22px]">
+            <div className="flex flex-wrap items-center gap-3 font-body text-sm" style={{ color: "hsl(var(--body))" }}>
               <Link to="/blog/" className="transition-opacity hover:opacity-70" style={{ color: "inherit" }}>
                 Blog
               </Link>
@@ -186,49 +196,52 @@ const BlogPost = () => {
               )}
             </div>
             <h1
-              className="font-display font-extrabold"
-              style={{ color: "hsl(var(--heading))", fontSize: "clamp(40px, 5vw, 76px)", lineHeight: 1.0, letterSpacing: "-0.02em" }}
+              className="font-display font-extrabold m-0"
+              style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-post-title)", lineHeight: 1.0, letterSpacing: "-0.02em", overflowWrap: "anywhere" }}
             >
               {article.title}
             </h1>
             {article.excerpt && (
-              <p className="font-body leading-[1.6] max-w-[720px]" style={{ color: "hsl(var(--foreground) / 0.65)", fontSize: "var(--fs-hero-body)" }}>
+              <p className="font-body leading-[1.6] max-w-[720px] m-0" style={{ color: "hsl(var(--body))", fontSize: "var(--fs-post-lede)" }}>
                 {article.excerpt}
               </p>
             )}
 
-            {/* The author is shown ONCE, in the block under the
-                article (owner's decision); the line here carries the
-                date and the reading time only. */}
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-body text-sm" style={{ color: "hsl(var(--foreground) / 0.5)" }}>
-                {article.published_at ? formatDate(article.published_at) : ""}
-                {article.published_at && <span style={{ color: "hsl(var(--foreground) / 0.3)" }}> · </span>}
+            {/* The author is shown ONCE, here (artboard): picture, name,
+                date and reading time on one line. The name leads to the
+                author's LinkedIn when the Profile screen has one. */}
+            <div className="flex flex-wrap items-center gap-3.5 font-body text-sm" style={{ color: "hsl(var(--body))" }} data-author-block>
+              {author.name && author.photo && (
+                <img
+                  src={transformImageUrl(author.photo, { width: 72, aspectRatio: 1 })}
+                  alt={author.photoAlt}
+                  width={36}
+                  height={36}
+                  decoding="async"
+                  className="w-9 h-9 rounded-full object-cover bg-white"
+                  style={{ border: "1px solid hsl(var(--border))" }}
+                />
+              )}
+              <span>
+                {author.name && (
+                  <>
+                    {authorHref ? (
+                      <a href={authorHref} target="_blank" rel="noreferrer me" className="font-bold hover:underline" style={{ color: "hsl(var(--foreground))" }}>{author.name}</a>
+                    ) : (
+                      <strong style={{ color: "hsl(var(--foreground))" }}>{author.name}</strong>
+                    )}
+                    {" · "}
+                  </>
+                )}
+                {article.published_at ? `${formatDate(article.published_at)} · ` : ""}
                 {calculateReadTime(article.content)}
               </span>
             </div>
-
-            {article.tags && article.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {article.tags.map((tag) => {
-                  const tc = getTagColors(tag);
-                  return (
-                    <span
-                      key={tag}
-                      className="font-body text-[10px] tracking-[0.12em] uppercase px-2.5 py-1 rounded-full font-medium"
-                      style={{ backgroundColor: tc.bgColor, color: tc.textColor }}
-                    >
-                      {tag}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
           </div>
         </header>
 
         {article.cover_image && (
-          <div className="px-8">
+          <div className="post-cover">
             <img
               src={transformImageUrl(article.cover_image, { width: 1280, quality: 75 })}
               alt={article.cover_image_alt || `${article.title} — cover image`}
@@ -239,60 +252,22 @@ const BlogPost = () => {
           </div>
         )}
 
-        <div className="section-light pt-2 pb-16 px-8">
-          <div className="max-w-[1100px] mx-auto lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-[52px] lg:items-start">
-          <div className="min-w-0">
-          {/* The article is the post. Rows are extras around it: a post
-              with no rows renders exactly one article block, and any rows
-              the builder saved render with the article block among them.
-              The words always come from `content`, never from a copy. */}
-          <ArticleContext.Provider value={{ html: sanitizeHtml(article.content) }}>
-            <div data-article-rows>
-              <RowsRenderer
-                rows={ensureArticleRow(((isPreview && article.draft_page_rows) || article.page_rows || []) as PageRow[], 0, article.content)}
-                promoteHeading={false}
-              />
-            </div>
-          </ArticleContext.Provider>
-          {article.lead_magnet_asset_id && (
-            <div className="w-full mt-12">
-              <ResourceWidget
-                resourceAssetId={article.lead_magnet_asset_id}
-                coverAssetId={article.lead_magnet_cover_id}
-              />
-            </div>
-          )}
-
-          {author.name && (
-            <div className="w-full mt-10 pt-6 flex items-center gap-4" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }} data-author-block>
-              {author.photo && (
-                <img src={transformImageUrl(author.photo, { width: 112, aspectRatio: 1 })} alt={author.photoAlt} width={56} height={56} loading="lazy" decoding="async" className="w-14 h-14 rounded-full object-cover" style={{ border: "var(--outline-ink-border)" }} />
-              )}
-              <div className="min-w-0 font-body">
-                <p className="font-medium" style={{ color: "hsl(var(--foreground))" }}>{author.name}</p>
-                <p className="text-sm" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
-                  Founder, The Magic Coffin ·{" "}
-                  <Link to="/p/about-us/" className="underline underline-offset-4 hover:opacity-70">About</Link>
-                  {authorLinkedin && (<>{" · "}<a href={safeHref(authorLinkedin)} target="_blank" rel="noreferrer me" className="underline underline-offset-4 hover:opacity-70">LinkedIn</a></>)}
-                </p>
+        {/* The article is the post. Rows are extras around it: the words
+            always come from `content`, never from a copy. */}
+        <ArticleContext.Provider value={{ html: sanitizeHtml(article.content), slug: article.slug }}>
+          <div data-article-rows>
+            <RowsRenderer rows={rows.slice(0, cut)} promoteHeading={false} />
+            {article.lead_magnet_asset_id && (
+              <div className="post-download">
+                <ResourceWidget
+                  resourceAssetId={article.lead_magnet_asset_id}
+                  coverAssetId={article.lead_magnet_cover_id}
+                />
               </div>
-            </div>
-          )}
-
-
-          <MoreArticles currentSlug={article.slug} category={article.category} className="lg:hidden w-full mt-10 pt-8" />
-
-          <div className="w-full mt-8 pt-8" style={{ borderTop: "1px solid hsl(var(--light-fg) / 0.1)" }}>
-            <Link to="/blog/" className="inline-flex items-center gap-1.5 font-body text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "hsl(var(--primary))" }}>
-              <ArrowLeft size={16} /> Back to all blogs &amp; insights
-            </Link>
+            )}
+            {cut < rows.length && <RowsRenderer rows={rows.slice(cut)} promoteHeading={false} />}
           </div>
-          </div>
-          <aside className="hidden lg:block lg:sticky lg:top-28 pt-2">
-            <MoreArticles currentSlug={article.slug} category={article.category} />
-          </aside>
-          </div>
-        </div>
+        </ArticleContext.Provider>
       </article>
       <Footer breadcrumbTrail={[{ name: "Home", path: "/" }, { name: "Blog", path: "/blog/" }, { name: article.title }]} />
     </div>

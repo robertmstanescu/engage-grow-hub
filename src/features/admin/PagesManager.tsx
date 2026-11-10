@@ -102,8 +102,8 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   const [editingError, setEditingError] = useState<"404" | "boundary" | null>(null);
   const [error404, setError404] = useState<Error404Content>(ERROR_404_DEFAULTS);
   const [errorBoundary, setErrorBoundary] = useState<ErrorBoundaryContent>(ERROR_BOUNDARY_DEFAULTS);
-  const [blogContent, setBlogContent] = useState<{ rows_above: PageRow[]; rows_below: PageRow[]; header_title: string; header_subtitle: string; meta_title: string; meta_description: string }>({
-    rows_above: [], rows_below: [], header_title: "Blog", header_subtitle: "Articles, updates and ideas.", meta_title: "", meta_description: "",
+  const [blogContent, setBlogContent] = useState<{ rows_above: PageRow[]; rows_below: PageRow[]; header_label: string; header_title: string; header_subtitle: string; meta_title: string; meta_description: string }>({
+    rows_above: [], rows_below: [], header_label: "The blog", header_title: "Blog", header_subtitle: "Articles, updates and ideas.", meta_title: "", meta_description: "",
   });
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -158,6 +158,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
       setBlogContent({
         rows_above: c.rows_above || [],
         rows_below: c.rows_below || [],
+        header_label: c.header_label ?? "The blog",
         header_title: c.header_title || "Blog",
         header_subtitle: c.header_subtitle || "Articles, updates and ideas.",
         meta_title: c.meta_title || "",
@@ -408,6 +409,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
         </h2>
 
         <div className="grid grid-cols-2 gap-3">
+          <Field label="Small label above the title" value={blogContent.header_label} onChange={(v) => saveBlogPage({ header_label: v })} />
           <Field label="Header Title" value={blogContent.header_title} onChange={(v) => saveBlogPage({ header_title: v })} />
           <Field label="Header Subtitle" value={blogContent.header_subtitle} onChange={(v) => saveBlogPage({ header_subtitle: v })} />
         </div>

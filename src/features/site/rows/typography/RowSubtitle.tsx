@@ -47,7 +47,7 @@ const RowSubtitle = ({ children, color, style, className, handwritten }: Props) 
       // `||` so a cleared or schema-defaulted "" counts as "no override".
       // A plain (not handwritten) subtitle is the canvas lede: body
       // colour on the heading block's 760px measure.
-      color: color || (handwritten ? "var(--row-fg, inherit)" : "var(--row-body, inherit)"),
+      color: color || (handwritten ? "var(--row-fg, inherit)" : "var(--row-body, var(--row-fg, inherit))"),
       ...(handwritten ? {} : { maxWidth: 760 }),
       ...style,
     }}

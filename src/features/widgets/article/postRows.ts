@@ -45,3 +45,46 @@ export const ensureArticleRow = (rows: PageRow[], at = 0, articleHtml?: string):
 
 /** Index of the article row (v1 shape), or -1. */
 export const articleRowIndex = (rows: PageRow[]): number => rows.findIndex((r) => r.type === "article");
+
+/** The closing words the site already uses in its contact block. */
+export interface ClosingWords { title_line1?: string; title_line2?: string; body?: string }
+
+const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/**
+ * What follows the article on a post that has never been arranged in the
+ * builder (BlogPost artboard): the dark call-to-action band, then three
+ * more posts. They are ordinary rows, so the builder shows them, and the
+ * owner can edit or remove them like any other block. A post whose rows
+ * were saved keeps exactly what was saved.
+ */
+export const defaultPostExtras = (closing: ClosingWords = {}, category?: string | null): PageRow[] => {
+  const line1 = (closing.title_line1 || "Not sure where to start?").trim();
+  const line2 = (closing.title_line2 || "Lift the lid first.").trim();
+  const body = (closing.body || "").trim();
+  return [
+    {
+      id: "post-default-cta", type: "cta_band", strip_title: "Call to action", bg_color: "",
+      content: {
+        band_style: "room",
+        eyebrow: "What to do about it",
+        title_lines: [esc(line1), `<span class="mc-accent">${esc(line2)}</span>`],
+        body: body ? `<p>${esc(body)}</p>` : "",
+        button_text: "Book a free consultation",
+        button_url: "/#contact",
+      },
+      layout: { ...DEFAULT_ROW_LAYOUT, spaceTop: "none", spaceBottom: "none" },
+    },
+    {
+      id: "post-default-more", type: "from_the_blog", strip_title: "Keep reading", bg_color: "",
+      content: { eyebrow: "Keep reading", title: "More on people, pay and AI", limit: 3, categories: category ? [category] : [] },
+      layout: { ...DEFAULT_ROW_LAYOUT },
+    },
+  ] as PageRow[];
+};
+
+/** A post's rows as the page shows them: saved rows, or the article and its default extras. */
+export const postRowsFor = (saved: PageRow[] | null | undefined, articleHtml: string, closing?: ClosingWords, category?: string | null): PageRow[] =>
+  saved && saved.length > 0
+    ? ensureArticleRow(saved, 0, articleHtml)
+    : [makeArticleRow("post-article"), ...defaultPostExtras(closing, category)];
