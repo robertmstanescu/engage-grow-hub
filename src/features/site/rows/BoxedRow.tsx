@@ -293,7 +293,7 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       if (cardLink) {
         return (
           <a key={i} href={cardLink} target={isExternal(cardLink) ? "_blank" : undefined} rel={isExternal(cardLink) ? "noopener noreferrer" : undefined}
-            className={`${itemClass} block hover:bg-[hsl(var(--foreground)/0.03)] transition-colors`} style={{ ...itemStyle, textDecoration: "none", color: "inherit" }}>
+            className={`${itemClass} block list-line-link`} style={{ ...itemStyle, textDecoration: "none", color: "inherit" }}>
             {inner}
           </a>
         );

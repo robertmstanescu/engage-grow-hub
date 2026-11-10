@@ -2092,6 +2092,27 @@
   }
 }
 
+/* Services list line: the hover tint has no hard edge. It fades out
+   towards all four sides inside the line (owner, 10 Nov 2026), so it
+   never adds width to the page. */
+.list-line-link { position: relative; isolation: isolate; }
+.list-line-link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: hsl(var(--foreground) / 0.075);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent), linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent), linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+.list-line-link:hover::before, .list-line-link:focus-visible::before { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .list-line-link::before { transition: none; } }
+
 /* World map row (redesign): staggered draw-on, replayable. */
 /* Main markets: the brand green (#003728, the Fractional HRBP pillar colour), the owner's choice of 10 Nov 2026, so they stand apart from the two purples. */
 :root { --map-main: 164 100% 11%; }
