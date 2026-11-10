@@ -45,7 +45,7 @@ describe("section library", () => {
     for (const s of SECTION_LIBRARY) {
       const row = s.build();
       expect(row.bg_color || "", `${s.key} sets a background`).toBe("");
-      expect((row.layout as Record<string, unknown>)?.surfaceRadius, `${s.key} sets a surface`).toBeUndefined();
+      expect((row.layout as unknown as Record<string, unknown> | undefined)?.surfaceRadius, `${s.key} sets a surface`).toBeUndefined();
     }
   });
 
