@@ -205,12 +205,13 @@ const RowSection = ({
   const bottomHasShape = Boolean(shapeBottom && shapeBottom.kind !== "none");
   const applyRadius = radiusValue > 0 && !maskShapes;
   const clipToRadius = applyRadius && !hasExternalShape;
-  /* A row is outlined when any of its edges is "set": a rounded lip or
-     other edge shape, or a Corners size on its own surface. Plain rows
-     stay outline-free. */
+  /* The ink outline is OPT-IN (redesign: sections float on the mesh with
+     no dark frame). A row draws it only when an admin sets an outline
+     width above zero in Style. Shapes and corners alone no longer imply
+     an outline. */
   const outlineWidth = row.layout?.outlineWidth;
   const outlineColor = row.layout?.outlineColor?.trim() || undefined;
-  const outlined = !maskShapes && (hasExternalShape || applyRadius) && outlineWidth !== 0;
+  const outlined = !maskShapes && (hasExternalShape || applyRadius) && (outlineWidth ?? 0) > 0;
   /* Per-row override of the outline tokens. `--outline-ink-border` is
      re-declared here so it resolves against THIS row's colour and width
      (a custom property defined on :root would already have substituted
@@ -228,8 +229,8 @@ const RowSection = ({
            card's lip covers this one's foot. Rounding it drew a second
            curve just above the lip and broke the stack. A bottom edge
            that should curve gets a bottom cap (Style ▸ Edges). */
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
+        borderBottomLeftRadius: isGlass ? radiusValue : 0,
+        borderBottomRightRadius: isGlass ? radiusValue : 0,
       }
     : null;
 
@@ -339,6 +340,8 @@ const RowSection = ({
           ["--row-heading" as string]: rowHeading,
           ["--row-body" as string]: rowBody,
           ["--row-eyebrow" as string]: rowEyebrow,
+          /* Named title accent (.mc-accent): gold on dark, link purple on light. */
+          ["--row-accent" as string]: darkSurface ? "hsl(var(--gold))" : "hsl(var(--link))",
           /* Derived tones so muted copy and hairlines follow the row's
              foreground too (dark row ⇒ light text AND light rules). */
           ["--row-fg-muted" as string]: `color-mix(in srgb, ${bandFg} 68%, transparent)`,
@@ -351,12 +354,17 @@ const RowSection = ({
              shape cap needs to paint beyond the section boundary. */
           ...(radiusStyle ?? null),
           ...(clipToRadius ? { overflow: "hidden" } : null),
+          /* Glass look (artboards: world map, work teaser panels): an
+             INSET frosted panel, clear of the viewport edges, rounded on
+             all four corners. Never a full-bleed band. */
           ...(isGlass
             ? {
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
                 border: "1px solid hsl(var(--glass-border))",
                 boxShadow: "var(--shadow-card)",
+                marginInline: "clamp(16px, 3vw, 48px)",
+                marginBlock: "clamp(24px, 3vw, 48px)",
               }
             : null),
           /* Ink outline on every SET edge: the sides always, the top and

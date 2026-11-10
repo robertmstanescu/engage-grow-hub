@@ -198,7 +198,10 @@ const RowRenderer = ({
             </div>
           </>
         ) : (
-          grid
+          /* `w-full`: the section is a centred flex column, so an unsized
+             grid shrank to its content and a lone hero sat in a narrow
+             centred strip instead of spanning the page. */
+          <div className="w-full">{grid}</div>
         )}
       </RowSurfaceProvider>
     </RowSection>

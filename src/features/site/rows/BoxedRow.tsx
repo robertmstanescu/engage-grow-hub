@@ -30,8 +30,8 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
     : align === "right" ? "text-right"
     : "text-left";
   const containerPos = align === "center" ? "mx-auto"
-    : align === "right" ? "ml-auto mr-6"
-    : "mr-auto ml-6";
+    : align === "right" ? "mx-auto"
+    : "mx-auto";
 
   const { ref, isVisible } = useScrollReveal();
 
@@ -46,7 +46,8 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
     if (count <= 1) return "grid-cols-1";
     if (count === 2) return "grid-cols-1 md:grid-cols-2";
     if (count === 3) return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
-    if (count === 4) return "grid-cols-1 md:grid-cols-2 lg:grid-cols-4";
+    /* Four cards sit two by two (artboards), never four across. */
+    if (count === 4) return "grid-cols-1 md:grid-cols-2";
     return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
   };
 
@@ -64,6 +65,10 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       .filter((li) => li.replace(/<[^>]*>/g, "").trim().length > 0);
     const cards: BoxedCard[] = c.cards || [];
     const noteColor = c.color_note || "hsl(var(--foreground) / 0.5)";
+    const headGap = titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base";
+    const indexed = cards.slice(0, 12).map((card, i) => ({ card, i }));
+    const darkCards = c.marker_style ? indexed.filter(({ card }) => card.variant === "dark") : [];
+    const lightCards = indexed.filter((entry) => !darkCards.includes(entry));
 
     const renderCard = (card: BoxedCard, i: number) => {
       const cardLink: string | undefined = card.link_url?.trim() || undefined;
@@ -85,37 +90,62 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
          page mesh; "pillar" only steers the accent (border/icon/title). */
       const variant = card.variant || "";
       const isDarkCard = variant === "dark";
-      const isGlassCard = variant === "glass";
+      /* Titles are heading purple on every light card (artboards): the
+         pillar colour lives on the top border, dot, number and link. A
+         colour the owner set on the card itself still tints its title. */
       const titleColor = isDarkCard
         ? "hsl(var(--deep-fg))"
-        : cardAccent || c.color_card_title || "hsl(var(--vows-card-title))";
+        : (!pillarColor && card.accent_color?.trim()) || c.color_card_title || "hsl(var(--heading))";
       const bodyColor = isDarkCard
         ? "hsl(var(--deep-fg) / 0.8)"
-        : c.color_card_body || "hsl(var(--vows-card-body))";
+        : c.color_card_body || "hsl(var(--body))";
       const cardCtaUrl: string | undefined = card.cta_url?.trim() || undefined;
       const cardCtaLabel: string | undefined = card.cta_label?.trim() || undefined;
 
+      /* Marker above the title (redesign): replaces the icon when set.
+         "roman" = gold numeral (vows), "pillar_number" = pillar dot and
+         a two-digit number (service cards), "bar" = short heading-colour
+         rule (fix cards). */
+      const marker = c.marker_style || "";
+      const showIcon = Boolean(card.icon) && !marker;
       const innerCard = (
         <>
-          {c.marker_style === "roman" && (
+          {marker === "roman" && (
             <span
               aria-hidden
-              className="block font-display font-extrabold leading-none mb-4"
-              style={{ color: "hsl(var(--gold-text))", fontSize: 44 }}
+              className="block font-display font-extrabold leading-none"
+              style={{ color: "hsl(var(--gold-text))", fontSize: 40, marginBottom: 14 }}
             >
               {ROMAN_NUMERALS[i] ?? String(i + 1)}
             </span>
           )}
-          {card.icon && (
+          {marker === "pillar_number" && (
+            <span aria-hidden className="flex items-center gap-2.5" style={{ marginBottom: 14 }}>
+              <span style={{ width: 12, height: 12, borderRadius: 999, background: cardAccent || "hsl(var(--heading))" }} />
+              <span className="font-display font-bold" style={{ fontSize: 15, color: cardAccent || "hsl(var(--heading))" }}>
+                {String(i + 1).padStart(2, "0")}
+              </span>
+            </span>
+          )}
+          {marker === "bar" && !isDarkCard && (
+            <span aria-hidden className="block" style={{ width: 36, height: 4, borderRadius: 4, background: "hsl(var(--heading))", marginBottom: 14 }} />
+          )}
+          {showIcon && (
             <div className="mb-3" style={{ color: titleColor }}>
-              <Icon value={card.icon} size={28} />
+              <Icon value={card.icon!} size={28} />
             </div>
           )}
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
-            className="font-body-heading font-bold mb-3 leading-[1.3]" style={{ color: titleColor, fontSize: "var(--fs-card-title)" }}>{card.title}</EditableText>
+            className="font-display font-bold leading-[1.15]" style={{ color: titleColor, fontSize: "var(--fs-card-title)", marginBottom: 12 }}>{card.title}</EditableText>
           <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
-            className="rich-text font-body leading-[var(--lh-card-body)]" style={{ color: bodyColor, fontSize: "var(--fs-card-body)", overflow: "visible", height: "auto", ["--para-space" as string]: "0.75em" } as React.CSSProperties}
+            className="rich-text font-body leading-[var(--lh-card-body)] flex-grow" style={{ color: bodyColor, fontSize: "var(--fs-card-body)", overflow: "visible", height: "auto", ["--para-space" as string]: "0.75em" } as React.CSSProperties}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
+
+          {marker === "pillar_number" && cardLink && (
+            <span className="font-body font-semibold" style={{ fontSize: 15, color: cardAccent || "hsl(var(--link))", marginTop: 14 }}>
+              {card.cta_label?.trim() || `Explore ${card.title}`} <span aria-hidden>→</span>
+            </span>
+          )}
 
           {cardCtaUrl && cardCtaLabel && (
             <div className="mt-rhythm-base">
@@ -164,12 +194,13 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       // smaller-radius tiles nested inside that photo-card container
       // — `surface-card`'s own border-radius (var(--radius), 1.5rem)
       // would look wrong repeated at the same size one level down.
-      const cardClass = `${coverImage || variant ? "" : "surface-card"} p-6 md:p-8 text-left boxed-lift ${cardLink ? "block hover:shadow-md cursor-pointer" : ""}`;
+      const cardClass = `${coverImage || isDarkCard ? "" : "surface-card"} text-left boxed-lift flex flex-col ${cardLink ? "cursor-pointer" : ""}`;
       // Order matters: `border` is a shorthand that resets border-top, so
       // the accent's `borderTop` must come AFTER the cover-image block or
       // accent cards inside a cover-image row lose their top bar.
       const cardStyle = {
         ...revealStyle(isVisible, i + 2),
+        padding: marker === "roman" ? 34 : 30,
         ...(coverImage
           ? {
               backgroundColor: "hsl(var(--primary) / 0.045)",
@@ -185,17 +216,9 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
               boxShadow: "var(--shadow-card)",
             }
           : {}),
-        ...(isGlassCard
-          ? {
-              backgroundColor: "hsl(var(--glass-bg))",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              border: "1px solid hsl(var(--glass-border))",
-              borderRadius: "var(--radius-card, 24px)",
-              boxShadow: "var(--shadow-card)",
-            }
-          : {}),
-        ...(cardAccent ? { borderTop: `${variant === "pillar" ? 4 : 3}px solid ${cardAccent}` } : {}),
+        /* A card with a pillar (by link or key) or its own accent colour
+           carries the thin coloured top border; dark bands never do. */
+        ...(cardAccent && !isDarkCard ? { borderTop: `3px solid ${cardAccent}` } : {}),
       } as React.CSSProperties;
 
       if (cardLink) {
@@ -302,27 +325,51 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
 
 
         {c.layout_mode === "list" ? (
-          <div className={`border-t row-border ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
+          <div className={`border-t row-border ${headGap}`}>
             {cards.map((card, i) => renderListItem(card, i))}
           </div>
-        ) : cards.length === 5 ? (
-          // A single grid can't split 5 cards as 2-then-3 with each row's
-          // cards stretching to fill the full row width — the column count
-          // is fixed for the whole grid, so a short final row leaves a dead
-          // empty track instead of redistributing width. Two independent
-          // full-width sub-grids (2-col, then 3-col) each stretch their own
-          // cards to fill their own row.
-          <div className={`flex flex-col gap-6 lg:gap-8 ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-stretch">
-              {cards.slice(0, 2).map((card, i) => renderCard(card, i))}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
-              {cards.slice(2, 5).map((card, i) => renderCard(card, i + 2))}
-            </div>
+        ) : c.marker_style === "note" ? (
+          /* A lone untitled card is a handwritten pull line (the note
+             under the vows): centred script, no box. */
+          <div className="text-center mx-auto" style={{ maxWidth: 900 }}>
+            {cards.map((card, i) => (
+              <div
+                key={i}
+                className="rich-text"
+                style={{ fontFamily: "'Architects Daughter', cursive", fontSize: "clamp(18px, 1.5vw, 22px)", lineHeight: 1.4, color: "hsl(var(--link))", transform: "rotate(-1deg)" }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }}
+              />
+            ))}
           </div>
         ) : (
-          <div className={`grid ${getGridCols(cards.length)} gap-6 lg:gap-8 items-stretch ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
-            {cards.slice(0, 6).map((card, i) => renderCard(card, i))}
+          <div className={`flex flex-col gap-6 ${headGap}`}>
+            {/* Dark cards lead as full-width bands (the problem), with
+                their title as the gold label and the body set large. */}
+            {darkCards.map(({ card, i }) => (
+              <article
+                key={i}
+                className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 text-left"
+                style={{ background: "hsl(var(--deep))", color: "hsl(var(--deep-fg))", borderRadius: 28, padding: "clamp(32px, 4vw, 52px)" }}
+              >
+                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.title`} as="p"
+                  className="md:col-span-3 font-body font-bold uppercase"
+                  style={{ fontSize: 12, letterSpacing: "0.28em", color: "hsl(var(--gold))", paddingTop: 6 }}>{card.title}</EditableText>
+                <EditableText sectionKey="page_rows" fieldPath={`${prefix}.cards.${i}.body`} html as="div"
+                  className="md:col-span-9 rich-text font-display"
+                  style={{ fontSize: "clamp(18px, 1.7vw, 24px)", lineHeight: 1.45, fontWeight: 500, color: "hsl(var(--deep-fg))" } as React.CSSProperties}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }} />
+              </article>
+            ))}
+            {c.group_label && lightCards.length > 0 && (
+              <p className="font-body font-bold uppercase" style={{ fontSize: 12, letterSpacing: "0.28em", color: "var(--row-eyebrow, hsl(var(--gold-text)))", marginTop: 8 }}>
+                {c.group_label}
+              </p>
+            )}
+            {lightCards.length > 0 && (
+              <div className={`grid ${getGridCols(lightCards.length)} gap-6 items-stretch`}>
+                {lightCards.map(({ card, i }) => renderCard(card, i))}
+              </div>
+            )}
           </div>
         )}
 

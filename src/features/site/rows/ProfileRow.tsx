@@ -40,10 +40,10 @@ const ProfileRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" }:
   const credentials: string[] = c.credentials || [];
 
   const containerPos = align === "center" ? "mx-auto"
-    : align === "right" ? "ml-auto mr-6"
-    : "mr-auto ml-6";
+    : align === "right" ? "mx-auto"
+    : "mx-auto";
 
-  const titleLines: string[] = (c.title_lines || []).map((li: any) =>
+  const titleLines: string[] = (c.title_lines || []).map((li: unknown) =>
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
   );
 

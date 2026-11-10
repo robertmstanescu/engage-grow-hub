@@ -60,9 +60,19 @@ describe("row surface corners", () => {
   /* jsdom drops `var()` border values from the DOM style, so the outline
      is asserted on the server-rendered markup, which keeps the literal
      declarations. */
-  it("outlines the sides and top of a rounded surface, never the foot", () => {
+  it("draws no outline on a rounded surface unless the row asks for one", () => {
     const markup = renderToStaticMarkup(
       <RowSection row={makeRow({ surfaceRadius: "medium" })}>
+        <p>content</p>
+      </RowSection>,
+    );
+    const style = /<section[^>]*style="([^"]*)"/.exec(markup)?.[1] ?? "";
+    expect(style).not.toContain("--outline-ink-border)");
+  });
+
+  it("outlines the sides and top of a rounded surface that sets a width, never the foot", () => {
+    const markup = renderToStaticMarkup(
+      <RowSection row={makeRow({ surfaceRadius: "medium", outlineWidth: 5 })}>
         <p>content</p>
       </RowSection>,
     );

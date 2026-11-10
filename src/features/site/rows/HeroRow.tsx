@@ -40,7 +40,7 @@ const HeroRow = ({ row }: Props) => {
             href={c.cta_url}
             target={c.cta_url.startsWith("http") ? "_blank" : undefined}
             rel="noopener noreferrer"
-            className="btn-ink"
+            className="btn-ink btn-lg"
           >
             {c.cta_label}
           </a>

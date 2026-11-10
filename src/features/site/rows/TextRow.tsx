@@ -51,7 +51,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
     const prefix = rowIndex !== undefined
       ? (colIndex === 0 ? `rows.${rowIndex}.content` : `rows.${rowIndex}.columns_data.${colIndex - 1}`)
       : "";
-    const titleLines: string[] = (c.title_lines || []).map((li: any) =>
+    const titleLines: string[] = (c.title_lines || []).map((li: unknown) =>
       applyUnderlineWord(typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`, c.underline_word)
     );
     const noteColor = c.color_note || (isLight ? "hsl(var(--light-fg) / 0.5)" : "hsl(var(--foreground) / 0.5)");
@@ -80,7 +80,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
                 /* When editing, the user types the title as plain text with
                    newlines splitting lines. The provider's writeRowsAtPath
                    re-splits on \n to populate `title_lines`. */
-                value={(c.title_lines || []).map((li: any) => typeof li === "string" ? li.replace(/<[^>]+>/g, "") : "").join("\n")}
+                value={(c.title_lines || []).map((li: unknown) => typeof li === "string" ? li.replace(/<[^>]+>/g, "") : "").join("\n")}
                 as="span"
               >
                 {titleLines.map((line, i) => (<span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>))}

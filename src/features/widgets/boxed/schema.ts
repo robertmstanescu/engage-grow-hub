@@ -67,8 +67,17 @@ export const boxedSchema = z.looseObject({
   color_card_body: color(),
   /** "" or "grid" = card grid (default); "list" = numbered rows. */
   layout_mode: str(),
-  /** Grid-card marker above the title: "" = none, "roman" = gold Roman numerals (the vows look). */
+  /**
+   * Grid-card marker above the title, replacing the icon:
+   * "" = icon (if any), "roman" = gold Roman numerals (vows),
+   * "pillar_number" = pillar dot + two-digit number and an "Explore"
+   * link (service cards), "bar" = short heading-colour rule; dark cards
+   * lead as full-width bands (problem and fix), "note" = a lone card
+   * rendered as a centred handwritten line.
+   */
   marker_style: str(),
+  /** Small label between the dark band(s) and the remaining cards. */
+  group_label: str(),
 
   /* ── Footer bits ── */
   note: str(),

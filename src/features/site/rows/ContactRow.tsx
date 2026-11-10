@@ -24,7 +24,7 @@ const safeLink = (url?: string) => {
 
 const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; align?: Alignment; vAlign?: VAlign }) => {
   const c = row.content;
-  const titleLines: string[] = (c.title_lines || []).map((l: any) =>
+  const titleLines: string[] = (c.title_lines || []).map((l: unknown) =>
     typeof l === "string" ? l.startsWith("<") ? l : `<p>${l}</p>` : `<p>${l}</p>`
   );
   const buttonText = c.booking_button_text || "Book a discovery call";
@@ -33,8 +33,8 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   const showCalendar = c.show_calendar !== false;
 
   const containerPos = align === "center" ? "mx-auto"
-    : align === "right" ? "ml-auto mr-6"
-    : "mr-auto ml-6";
+    : align === "right" ? "mx-auto"
+    : "mx-auto";
   const contentAlign = align === "center" ? "text-center"
     : align === "right" ? "text-right"
     : "text-left";
@@ -42,61 +42,61 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   const { ref, isVisible } = useScrollReveal();
   const coverImage = c.cover_image?.trim() || undefined;
 
+  // Artboard layout: copy on the left, the booking card on the right.
+  // The two columns wrap to a stack on narrow screens (flex-basis, no
+  // breakpoint), so the calendar never gets narrower than it can use.
   const innerContent = (
-    <>
-        <div className={`mb-rhythm-base ${contentAlign}`} style={revealStyle(isVisible, 0)}>
-          {c.eyebrow && (
-            <RowEyebrow color={c.color_eyebrow || ""}>{c.eyebrow}</RowEyebrow>
-          )}
-          {titleLines.length > 0 && (
-            <RowTitle icon={c.icon}>
-              {titleLines.map((line, i) => (
-                <span key={i} style={{ display: "block" }}>
-                  <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
-                </span>
-              ))}
-            </RowTitle>
-          )}
-          {c.subtitle && (
-            <RowSubtitle handwritten={!!c.subtitle_handwritten} color={c.subtitle_color || ""}>{c.subtitle}</RowSubtitle>
-          )}
-          {c.body && <RowBody html={sanitizeHtml(c.body)} />}
-        </div>
-
-        <div
-          className="surface-card p-3 md:p-8"
-          style={{ ...revealStyle(isVisible, 1), border: "var(--outline-ink-border)" }}>
-          {showCalendar && (
-            <div className="overflow-hidden rounded-lg bg-card">
-              <iframe
-                src={embedUrl}
-                title="Book a time with The Magic Coffin"
-                loading="lazy"
-                scrolling="no"
-                className="block w-full h-[1180px] md:h-[680px]"
-                style={{ border: 0, background: "hsl(var(--card))" }}
-              />
-            </div>
-          )}
-          <div className={`flex ${showCalendar ? "mt-6 pt-6 border-t row-border" : ""} ${align === "center" ? "justify-center" : align === "right" ? "justify-end" : "justify-start"}`}>
-            <a
-              href={bookingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => trackConversion("cta_click", "booking")}
-              className="btn-ink"
-            >
-              {buttonText}
-            </a>
-          </div>
-        </div>
-
+    <div className="flex flex-wrap items-start" style={{ gap: "clamp(32px, 4vw, 56px)" }}>
+      <div className={`min-w-0 ${contentAlign}`} style={{ flex: "1 1 380px", ...revealStyle(isVisible, 0) }}>
+        {c.eyebrow && (
+          <RowEyebrow color={c.color_eyebrow || ""}>{c.eyebrow}</RowEyebrow>
+        )}
+        {titleLines.length > 0 && (
+          <RowTitle icon={c.icon}>
+            {titleLines.map((line, i) => (
+              <span key={i} style={{ display: "block" }}>
+                <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} />
+              </span>
+            ))}
+          </RowTitle>
+        )}
+        {c.subtitle && (
+          <RowSubtitle handwritten={!!c.subtitle_handwritten} color={c.subtitle_color || ""}>{c.subtitle}</RowSubtitle>
+        )}
+        {c.body && <RowBody html={sanitizeHtml(c.body)} />}
         {c.note && (
-          <div className={`mt-rhythm-base pt-3 border-t row-border ${contentAlign}`}>
-            <p className="text-card-body italic row-fg-muted measure">{c.note}</p>
+          <p className="mt-rhythm-base text-card-body italic row-fg-muted measure">{c.note}</p>
+        )}
+      </div>
+
+      <div
+        className="surface-card min-w-0 p-3 md:p-6"
+        style={{ flex: "1.25 1 420px", ...revealStyle(isVisible, 1) }}>
+        {showCalendar && (
+          <div className="overflow-hidden rounded-2xl bg-card">
+            <iframe
+              src={embedUrl}
+              title="Book a time with The Magic Coffin"
+              loading="lazy"
+              scrolling="no"
+              className="block w-full h-[1180px] md:h-[680px]"
+              style={{ border: 0, background: "hsl(var(--card))" }}
+            />
           </div>
         )}
-    </>
+        <div className={`flex ${showCalendar ? "mt-5" : ""} justify-start`}>
+          <a
+            href={bookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackConversion("cta_click", "booking")}
+            className="btn-ink"
+          >
+            {buttonText}
+          </a>
+        </div>
+      </div>
+    </div>
   );
 
   return (
