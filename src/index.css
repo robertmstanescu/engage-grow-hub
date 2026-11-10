@@ -140,7 +140,6 @@
     --glass: 0 0% 100%;         /* glass ground, used at 74% alpha */
     --glass-alpha: 0.74;
     --glass-bg: 0 0% 100% / 0.74; /* ready-made `hsl(var(--glass-bg))` ground for glass cards */
-    --tint-card: 281 60% 96%;   /* lightest violet, the boxed cards' glass fill */
     --glass-border: 290 17% 83%;/* glass card border at 90% alpha */
 
     /* Shape & depth (web surface: soft, never the deck's 4px) */
@@ -554,13 +553,13 @@
       border-color 160ms ease-out,
       transform 160ms ease-out;
   }
-  /* Boxed cards (the six services and their kin): one fill for all, the
-     lightest tint of the brand violet at 75% (a quarter see-through),
-     with a stronger blur and a bright top edge so it reads as glass
-     (owner, 10 Nov 2026). The pillar colour stays on the top line, dot,
-     number and link. */
+  /* A boxed card with a service colour (the six services and their
+     kin) is glass in THAT colour: the colour at a quarter strength over
+     a see-through white, a stronger blur and a bright top edge (owner,
+     10 Nov 2026). `--card-tint` is set on the card by BoxedRow; the same
+     colour stays on the top line, dot, number and link. */
   .surface-card.tint-card {
-    background: hsl(var(--tint-card) / 0.75);
+    background: color-mix(in srgb, var(--card-tint, hsl(var(--primary))) 25%, hsl(0 0% 100% / 0.5));
     -webkit-backdrop-filter: blur(18px) saturate(1.35);
     backdrop-filter: blur(18px) saturate(1.35);
     border-color: hsl(0 0% 100% / 0.7);
@@ -2172,6 +2171,11 @@
 /* Pace (owner, 10 Nov 2026): slower than the artboard. `--pace` stretches
    each place's own delay; the map waits (`.wait`) until it is in full view. */
 .tmc-map { --pace: 1.8; }
+/* The Mercator art is tall (1200 x 788): the box is capped so the whole
+   map fits a laptop screen, and centred in the card. */
+.tmc-map-box { width: 100%; max-width: 980px; margin-inline: auto; }
+.tmc-credit { color: hsl(var(--muted-foreground)); text-decoration: underline; text-underline-offset: 3px; }
+.tmc-credit:hover { color: hsl(var(--heading)); }
 .tmc-map.play .wm-worked { animation: tmcWorked 1.2s ease-out forwards; animation-delay: calc(var(--d, 0s) * var(--pace)); }
 .tmc-map.play .wm-hr { animation: tmcWorked 1.2s ease-out forwards, tmcHr 1.3s ease-out forwards; animation-delay: calc(var(--d, 0s) * var(--pace)), calc(var(--d, 0s) * var(--pace) + .6s); }
 .tmc-map.play .wm-main { animation: tmcWorked 1.2s ease-out forwards, tmcHr 1.3s ease-out forwards, tmcMain 1s ease-out forwards; animation-delay: calc(var(--d, 0s) * var(--pace)), calc(var(--d, 0s) * var(--pace) + .6s), calc(var(--d, 0s) * var(--pace) + 1.4s); }

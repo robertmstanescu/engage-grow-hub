@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { findCountry, parseCountryPaste, resolveMapGroups, defaultMapGroups, mapCounters, workedPlaces } from "./resolve";
-import { MAP_COUNTRIES, MAP_DOTS } from "./mapData";
+import { MAP_ART_H, MAP_ART_W, MAP_BASE_PATHS, MAP_COUNTRIES, MAP_DOTS } from "./mapData";
+import { MAP_H, MAP_W } from "./zoom";
 import { OWNER_MAP_LIST } from "./ownerList";
 import { WORLD_MAP_DEFAULTS } from "./schema";
 
@@ -71,5 +72,14 @@ describe("world map", () => {
     expect(findCountry("")).toBeUndefined();
     expect(findCountry(null as unknown as string)).toBeUndefined();
     expect(mapCounters({ ...WORLD_MAP_DEFAULTS, worked: ["<script>", "Sweden", "sweden", " SWEDEN "] })).toEqual({ comms: 1, hr: 0 });
+  });
+
+  it("the row's box matches the generated art, which leaves Antarctica out", () => {
+    expect([MAP_W, MAP_H]).toEqual([MAP_ART_W, MAP_ART_H]);
+    // Every point of every shape sits inside the box: nothing below Cape Horn.
+    const all = [...MAP_BASE_PATHS, ...MAP_COUNTRIES.map((c) => c.d)].join("");
+    const ys = [...all.matchAll(/,(-?[\d.]+)/g)].map((m) => Number(m[1]));
+    expect(Math.max(...ys)).toBeLessThanOrEqual(MAP_ART_H);
+    expect(Math.min(...ys)).toBeGreaterThanOrEqual(0);
   });
 });

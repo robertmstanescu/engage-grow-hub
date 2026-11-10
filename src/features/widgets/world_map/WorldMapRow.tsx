@@ -7,6 +7,7 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSection } from "@/features/site/rows/typography";
 import { worldMapSchema, type WorldMapContent } from "./schema";
 import { resolveMapGroups, mapCounters } from "./resolve";
+import { MAP_H, MAP_W } from "./zoom";
 
 // Code-split: the map art carries ~120KB of SVG path data.
 const WorldMapArt = lazy(() => import("./WorldMapArt"));
@@ -58,7 +59,7 @@ const WorldMapRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow;
           </div>
         </div>
         {!isMultiCol && (
-          <Suspense fallback={<div style={{ aspectRatio: "1200 / 560" }} aria-hidden />}>
+          <Suspense fallback={<div className="tmc-map-box" style={{ aspectRatio: `${MAP_W} / ${MAP_H}` }} aria-hidden />}>
             <WorldMapArt groups={groups} content={c} />
           </Suspense>
         )}

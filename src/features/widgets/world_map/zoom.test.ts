@@ -10,15 +10,15 @@ describe("world map zoom", () => {
 
   it("zooms about the middle and keeps the middle still", () => {
     const v = zoomAt(WHOLE_WORLD, 2);
-    expect(v).toEqual({ k: 2, x: 300, y: 140 });
-    expect(viewBoxOf(v)).toBe("300 140 600 280");
+    expect(v).toEqual({ k: 2, x: 300, y: MAP_H / 4 });
+    expect(viewBoxOf(v)).toBe(`300 ${MAP_H / 4} 600 ${MAP_H / 2}`);
   });
 
   it("keeps the point under the pointer still", () => {
     const v = zoomAt(WHOLE_WORLD, 2, 0.25, 0.75);
-    // The point at 25% / 75% of the box is still drawing point 300, 420.
+    // The point at 25% / 75% of the box is still the same drawing point.
     expect(v.x + (MAP_W / v.k) * 0.25).toBeCloseTo(300);
-    expect(v.y + (MAP_H / v.k) * 0.75).toBeCloseTo(420);
+    expect(v.y + (MAP_H / v.k) * 0.75).toBeCloseTo(MAP_H * 0.75);
   });
 
   it("never zooms out past the whole world or in past the limit", () => {
@@ -34,9 +34,9 @@ describe("world map zoom", () => {
 
   it("drags the window but never off the drawing", () => {
     const v = zoomAt(WHOLE_WORLD, 2);
-    expect(panBy(v, 0.1, 0)).toEqual({ k: 2, x: 240, y: 140 });
+    expect(panBy(v, 0.1, 0)).toEqual({ k: 2, x: 240, y: MAP_H / 4 });
     expect(panBy(v, 50, 50)).toEqual({ k: 2, x: 0, y: 0 });
-    expect(panBy(v, -50, -50)).toEqual({ k: 2, x: 600, y: 280 });
+    expect(panBy(v, -50, -50)).toEqual({ k: 2, x: 600, y: MAP_H / 2 });
     expect(panBy(WHOLE_WORLD, 0.5, 0.5)).toEqual(WHOLE_WORLD);
   });
 

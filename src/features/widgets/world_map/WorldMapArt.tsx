@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MAP_BASE_PATHS, MAP_COUNTRIES, MAP_DOTS } from "./mapData";
 import { statusLabel, type MapStatus } from "./resolve";
 import type { WorldMapContent } from "./schema";
-import { MAX_ZOOM, WHOLE_WORLD, ZOOM_STEP, panBy, viewBoxOf, zoomAt, type MapView } from "./zoom";
+import { MAP_H, MAP_W, MAX_ZOOM, WHOLE_WORLD, ZOOM_STEP, panBy, viewBoxOf, zoomAt, type MapView } from "./zoom";
 
 /**
  * The map itself, code-split out of the public bundle (the path data is
@@ -69,9 +69,14 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
     const io = new IntersectionObserver(
       (entries) => {
         // 0.9, not 1: a pixel of rounding must not keep the map waiting.
-        if (entries.some((en) => en.intersectionRatio >= 0.9)) { setStarted(true); io.disconnect(); }
+        // On a short screen the map can be taller than the window and
+        // would never be 90% visible: filling most of the window counts.
+        const seen = (en: IntersectionObserverEntry) =>
+          en.intersectionRatio >= 0.9 ||
+          en.intersectionRect.height >= (en.rootBounds?.height ?? window.innerHeight) * 0.7;
+        if (entries.some(seen)) { setStarted(true); io.disconnect(); }
       },
-      { threshold: [0.9, 1] },
+      { threshold: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] },
     );
     io.observe(svg);
     return () => io.disconnect();
@@ -145,7 +150,7 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
 
   return (
     <>
-      <div ref={wrapRef} className="relative">
+      <div ref={wrapRef} className="relative tmc-map-box">
         <svg
           ref={svgRef}
           className={`tmc-map${!started ? " wait" : playing ? " play" : ""}${zoomed ? " is-zoomed" : ""}${dragging ? " is-dragging" : ""}`}
@@ -154,7 +159,7 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
           viewBox={viewBoxOf(view)}
           /* The box keeps the whole map's shape at every zoom. Zoomed
              in, one finger moves the map; at rest it scrolls the page. */
-          style={{ display: "block", width: "100%", height: "auto", aspectRatio: "1200 / 560", touchAction: zoomed ? "none" : "pan-y" }}
+          style={{ display: "block", width: "100%", height: "auto", aspectRatio: `${MAP_W} / ${MAP_H}`, touchAction: zoomed ? "none" : "pan-y" }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerEnd}
@@ -240,6 +245,8 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
           <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--primary))" }} />{content.legend_hr || "Internal comms and HR"}</span>
           <span className="tmc-legend"><span aria-hidden className="tmc-legend-swatch" style={{ background: "hsl(var(--map-main))" }} />{content.legend_main || "Main markets today"}</span>
           {content.legend_note && <span className="tmc-legend">{content.legend_note}</span>}
+          {/* The map art's licence asks for this credit; keep it visible. */}
+          <a className="tmc-legend tmc-credit" href="https://www.amcharts.com/svg-maps/" target="_blank" rel="noopener noreferrer">Map: amCharts</a>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="tmc-zoom" role="group" aria-label="Zoom the map">

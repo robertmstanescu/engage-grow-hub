@@ -7,7 +7,9 @@
  * corner (`x`, `y`) of the window, in drawing units.
  */
 export const MAP_W = 1200;
-export const MAP_H = 560;
+/** Must equal MAP_ART_H in mapData.ts (worldMap.test.ts checks it); kept
+ *  here so the row can size its box without loading the map art. */
+export const MAP_H = 788;
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 8;
 /** One press of the plus or minus button. */
