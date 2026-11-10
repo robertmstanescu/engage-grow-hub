@@ -8,7 +8,7 @@
  * now lives here and the copy is gone.
  */
 
-import { ColorField, EyebrowField, NoteField } from "./FieldComponents";
+import { ColorField, EyebrowField, NoteField, SelectField } from "./FieldComponents";
 import { CoverImageField } from "./CoverImageField";
 import SubtitleEditor from "./SubtitleEditor";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
@@ -41,12 +41,21 @@ const BoxedRowEditor = ({ content, onChange, bgColor }: Props) => {
         onHandwrittenChange={(v) => onChange("subtitle_handwritten", v)}
         bgColor={bgColor}
       />
+      <SelectField
+        label="Cards layout"
+        value={content.layout_mode || ""}
+        onChange={(v) => onChange("layout_mode", v)}
+        options={[
+          { label: "Grid of cards", value: "" },
+          { label: "Numbered list", value: "list" },
+        ]}
+      />
       <BoxedArrayField content={content} onChange={onChange} bgColor={bgColor} />
       <div className="grid grid-cols-2 gap-3">
         <ColorField label="Card Title Color" value={content.color_card_title || ""} fallback="" onChange={(v) => onChange("color_card_title", v)} />
         <ColorField label="Card Body Color" value={content.color_card_body || ""} fallback="" onChange={(v) => onChange("color_card_body", v)} />
       </div>
-      <NoteField value={content.note || ""} onChange={(v) => onChange("note", v)} />
+      <NoteField value={content.note || ""} onChange={(v) => onChange("note", v)} handwritten={!!content.note_handwritten} onHandwrittenChange={(v) => onChange("note_handwritten", v)} />
       <ColorField label="Note colour" value={content.color_note || ""} fallback="" onChange={(v) => onChange("color_note", v)} />
       <CoverImageField content={content} onChange={onChange} shape />
     </div>

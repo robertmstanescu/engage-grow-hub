@@ -6,6 +6,7 @@ import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { isTextRowEmpty } from "./textRowContent";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
+import { applyUnderlineWord } from "@/lib/titleAccent";
 // EPIC 1 / US 1.1 — atomic-node selection on text-row fields.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
 // EPIC 1 / US 1.4 — direct-on-canvas text editing (double-click → contentEditable).
@@ -51,7 +52,7 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
       ? (colIndex === 0 ? `rows.${rowIndex}.content` : `rows.${rowIndex}.columns_data.${colIndex - 1}`)
       : "";
     const titleLines: string[] = (c.title_lines || []).map((li: any) =>
-      typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
+      applyUnderlineWord(typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`, c.underline_word)
     );
     const noteColor = c.color_note || (isLight ? "hsl(var(--light-fg) / 0.5)" : "hsl(var(--foreground) / 0.5)");
 

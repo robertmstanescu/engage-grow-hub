@@ -234,7 +234,13 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
       )}
       {c.note && (
         <div className="mt-rhythm-base pt-3" style={{ borderTop: `1px solid var(--row-border, hsl(var(--border)))` }}>
-          <p className="font-body text-xs italic leading-[1.6]" style={{ color: noteColor }}>{c.note}</p>
+          <p
+            className={c.note_handwritten ? "leading-[1.4]" : "font-body text-xs italic leading-[1.6]"}
+            style={{
+              color: c.note_handwritten && !c.color_note ? "hsl(var(--link))" : noteColor,
+              ...(c.note_handwritten ? { fontFamily: "'Architects Daughter', cursive", fontSize: 20 } : {}),
+            }}
+          >{c.note}</p>
         </div>
       )}
       {c.cta_url && c.cta_label && (

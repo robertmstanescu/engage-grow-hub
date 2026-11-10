@@ -1,7 +1,7 @@
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Field, TextArea, RichField, ArrayField, SelectField, SectionBox, ColorField, MoreFields } from "./FieldComponents";
+import { Field, TextArea, RichField, ArrayField, SelectField, SectionBox, ColorField, MoreFields, NoteField } from "./FieldComponents";
 import { CoverImageField } from "./CoverImageField";
 
 interface Service {
@@ -17,6 +17,9 @@ interface Service {
   price: string;
   time: string;
   note?: string;
+  ctaUrl?: string;
+  doneLooksLike?: string;
+  startHere?: string;
 }
 
 interface Props {
@@ -151,6 +154,12 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
         <Field label="Label above title" value={pillarContent.eyebrow || pillarContent.pillar_number || ""} onChange={(v) => onPillarChange("eyebrow", v)} />
         <Field label="Title" value={pillarContent.title || ""} onChange={(v) => onPillarChange("title", v)} />
         <RichField label="Description" value={pillarContent.description || ""} onChange={(v) => onPillarChange("description", v)} bgColor={pillarContent.color_section_bg || bgColor} />
+        <NoteField
+          value={pillarContent.note || ""}
+          onChange={(v) => onPillarChange("note", v)}
+          handwritten={!!pillarContent.note_handwritten}
+          onHandwrittenChange={(v) => onPillarChange("note_handwritten", v)}
+        />
       </SectionBox>
 
       <MoreFields>
@@ -266,6 +275,24 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
                     <Field label="Price / CTA" value={svc.price} onChange={(v) => updateService(i, "price", v)} />
                     <Field label="Timeline" value={svc.time} onChange={(v) => updateService(i, "time", v)} />
                   </div>
+                  <Field
+                    label="Button link"
+                    value={svc.ctaUrl || ""}
+                    onChange={(v) => updateService(i, "ctaUrl", v)}
+                    hint="Where the price button goes. Empty = the contact section."
+                  />
+                  <TextArea
+                    label="Done looks like (optional)"
+                    value={svc.doneLooksLike || ""}
+                    onChange={(v) => updateService(i, "doneLooksLike", v)}
+                    rows={2}
+                  />
+                  <Field
+                    label="Handwritten note by the tag (optional)"
+                    value={svc.startHere || ""}
+                    onChange={(v) => updateService(i, "startHere", v)}
+                    hint='e.g. "start here" — a small handwritten nudge next to the tag.'
+                  />
                   <TextArea label="Small print (optional)" value={svc.note || ""} onChange={(v) => updateService(i, "note", v)} rows={2} />
 
                   <button

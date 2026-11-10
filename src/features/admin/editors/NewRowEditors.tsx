@@ -29,7 +29,7 @@
  * so the heading hierarchy stays consistent across the site.
  * ───────────────────────────────────────────────────────────────────── */
 
-import { Field, RichField, SectionBox, ColorField, EyebrowField, MoreFields } from "../site-editor/FieldComponents";
+import { Field, RichField, SectionBox, ColorField, EyebrowField, MoreFields, NoteField } from "../site-editor/FieldComponents";
 import { CoverImageField } from "../site-editor/CoverImageField";
 import ImagePickerField from "../ImagePickerField";
 import TitleLinesEditor from "./TitleLinesEditor";
@@ -78,10 +78,11 @@ export const BrandHeaderFields = ({
         onChange={(v) => onChange("body", v)}
         bgColor={bgColor}
       />
-      <Field
-        label="Small print (optional)"
+      <NoteField
         value={content.note || ""}
         onChange={(v) => onChange("note", v)}
+        handwritten={!!content.note_handwritten}
+        onHandwrittenChange={(v) => onChange("note_handwritten", v)}
       />
       {/* Colour overrides. Leaving a picker empty keeps the automatic
           light/dark colour the row derives from its background. */}

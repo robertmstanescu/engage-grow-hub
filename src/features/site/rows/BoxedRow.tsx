@@ -208,6 +208,63 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
       );
     };
 
+    /* List layout (redesign §2.3, Services artboard): numbered rows —
+       * pillar-coloured number tile, title + tier line, body, price and
+       * an "Explore →" link, separated by hairlines. Stacks on phones. */
+    const renderListItem = (card: BoxedCard, i: number) => {
+      const cardLink: string | undefined = card.link_url?.trim() || undefined;
+      const pillarColor = pillarColorFromLink(cardLink) || pillarColorFromKey(card.pillar);
+      const tileColor = pillarColor || card.accent_color?.trim() || "hsl(var(--primary))";
+      const titleColor = "hsl(var(--row-heading))";
+      const bodyColor = "hsl(var(--row-body))";
+      const inner = (
+        <>
+          <span
+            aria-hidden
+            className="flex items-center justify-center font-display font-extrabold text-white"
+            style={{ width: 72, height: 72, borderRadius: 22, backgroundColor: tileColor, fontSize: 24 }}
+          >
+            {String(i + 1).padStart(2, "0")}
+          </span>
+          <span className="flex flex-col gap-1.5 min-w-0">
+            <span className="font-display font-bold leading-[1.1]" style={{ color: titleColor, fontSize: "var(--fs-card-title)" }}>{card.title}</span>
+            {card.meta && (
+              <span className="font-body font-semibold" style={{ fontSize: 13, letterSpacing: "0.04em", color: tileColor }}>{card.meta}</span>
+            )}
+          </span>
+          <span
+            className="rich-text font-body leading-[var(--lh-card-body)] min-w-0"
+            style={{ color: bodyColor, fontSize: "var(--fs-card-body)" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.body) }}
+          />
+          <span className="flex flex-col items-start md:items-end gap-1">
+            {card.meta && card.price ? (
+              <span className="font-body" style={{ fontSize: 12, color: bodyColor }}>{card.meta}</span>
+            ) : null}
+            {card.price && (
+              <span className="font-display font-bold" style={{ fontSize: 22, color: titleColor }}>{card.price}</span>
+            )}
+            {cardLink && (
+              <span className="font-body font-semibold" style={{ fontSize: 15, color: tileColor }}>
+                {card.cta_label || "Explore"} <span aria-hidden>→</span>
+              </span>
+            )}
+          </span>
+        </>
+      );
+      const itemClass = "grid grid-cols-1 md:grid-cols-[96px_minmax(0,1.2fr)_minmax(0,1.6fr)_220px] gap-4 md:gap-8 items-start md:items-center py-8 border-b row-border text-left";
+      const itemStyle = revealStyle(isVisible, i + 2);
+      if (cardLink) {
+        return (
+          <a key={i} href={cardLink} target={isExternal(cardLink) ? "_blank" : undefined} rel={isExternal(cardLink) ? "noopener noreferrer" : undefined}
+            className={`${itemClass} block hover:bg-[hsl(var(--foreground)/0.03)] transition-colors`} style={{ ...itemStyle, textDecoration: "none", color: "inherit" }}>
+            {inner}
+          </a>
+        );
+      }
+      return <div key={i} className={itemClass} style={itemStyle}>{inner}</div>;
+    };
+
     return (
       <div key={colIndex}>
         {c.eyebrow && (
@@ -232,7 +289,11 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         )}
 
 
-        {cards.length === 5 ? (
+        {c.layout_mode === "list" ? (
+          <div className={`border-t row-border ${titleLines.length > 0 && !c.subtitle ? "mt-rhythm-loose" : "mt-rhythm-base"}`}>
+            {cards.map((card, i) => renderListItem(card, i))}
+          </div>
+        ) : cards.length === 5 ? (
           // A single grid can't split 5 cards as 2-then-3 with each row's
           // cards stretching to fill the full row width — the column count
           // is fixed for the whole grid, so a short final row leaves a dead
@@ -256,7 +317,13 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
 
         {c.note && (
           <div className="mt-rhythm-base pt-3" style={{ ...revealStyle(isVisible, cards.length + 2), borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
-            <p className="font-body text-xs italic leading-[1.6]" style={{ color: noteColor }}>{c.note}</p>
+            <p
+              className={c.note_handwritten ? "leading-[1.4]" : "font-body text-xs italic leading-[1.6]"}
+              style={{
+                color: c.note_handwritten && !c.color_note ? "hsl(var(--link))" : noteColor,
+                ...(c.note_handwritten ? { fontFamily: "'Architects Daughter', cursive", fontSize: 20 } : {}),
+              }}
+            >{c.note}</p>
           </div>
         )}
 

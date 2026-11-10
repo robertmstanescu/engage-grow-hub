@@ -16,9 +16,18 @@
  */
 
 import { Plus, Trash2 } from "lucide-react";
-import { Field, RichField, SectionBox, ColorField } from "../site-editor/FieldComponents";
+import { Field, RichField, SectionBox, ColorField, SelectField } from "../site-editor/FieldComponents";
 import { IconPickerField } from "@/features/icons/IconPicker";
+import { PILLAR_COLORS, PILLAR_KEY_TO_SLUG } from "@/lib/constants/pillarColors";
 import type { BoxedCard } from "@/features/widgets/boxed/schema";
+
+const PILLAR_OPTIONS = [
+  { label: "None", value: "" },
+  ...Object.keys(PILLAR_COLORS).map((slug) => ({
+    label: Object.entries(PILLAR_KEY_TO_SLUG).find(([, s]) => s === slug)?.[0]?.toUpperCase() || slug,
+    value: slug,
+  })),
+];
 
 interface Props {
   content: Record<string, any>;
@@ -76,6 +85,35 @@ const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {
               />
 
               <RichField label="Body" value={card.body} onChange={(v) => updateCard(i, "body", v)} bgColor={bgColor} />
+
+              <div className="grid grid-cols-2 gap-2">
+                <SelectField
+                  label="Card look"
+                  value={card.variant || ""}
+                  onChange={(v) => updateCard(i, "variant", v)}
+                  options={[
+                    { label: "Default", value: "" },
+                    { label: "Glass", value: "glass" },
+                    { label: "Dark", value: "dark" },
+                    { label: "Pillar", value: "pillar" },
+                  ]}
+                />
+                {(card.variant === "pillar" || content.layout_mode === "list") && (
+                  <SelectField
+                    label="Pillar"
+                    value={card.pillar || ""}
+                    onChange={(v) => updateCard(i, "pillar", v)}
+                    options={PILLAR_OPTIONS}
+                  />
+                )}
+              </div>
+
+              {content.layout_mode === "list" && (
+                <div className="grid grid-cols-2 gap-2">
+                  <Field label="Small line under the title" value={card.meta || ""} onChange={(v) => updateCard(i, "meta", v)} />
+                  <Field label="Price (right side)" value={card.price || ""} onChange={(v) => updateCard(i, "price", v)} />
+                </div>
+              )}
 
               <ColorField
                 label="Accent colour"

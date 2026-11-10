@@ -8,6 +8,7 @@ import EditableText from "@/features/admin/EditableText";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSection } from "./typography";
+import RowNote from "./typography/RowNote";
 // EPIC 1 / US 1.1 — atomic-node selection. SelectableWrapper renders
 // as a passthrough fragment on the public site (no BuilderProvider).
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
@@ -257,10 +258,12 @@ const ServiceRow = ({ row, rowIndex, align = "center", vAlign: _vAlign = "middle
             <div className="relative min-h-[420px] md:min-h-[460px]" style={revealStyle(isVisible, 4)}>
 
 
-              <ServiceCard key={safeCurrent} {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} carouselControls={controls} />
+               <ServiceCard key={safeCurrent} {...services[safeCurrent]} compact cardTextAlign={cardTextAlign} carouselControls={controls} />
             </div>
           );
         })()}
+
+        {c.note ? <RowNote color={c.color_note} handwritten={!!c.note_handwritten}>{c.note}</RowNote> : null}
 
     </>
   );

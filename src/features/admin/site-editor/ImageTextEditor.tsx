@@ -93,6 +93,18 @@ const ImageTextEditor = ({ content, onChange, bgColor, legacySplitWidths }: Prop
        * all — see the conditional `{c.cta_label && (…)}` block there.
        */}
       <CtaFields content={content} onChange={onChange} />
+      <button
+        type="button"
+        role="switch"
+        aria-checked={!!content.note_handwritten}
+        onClick={() => onChange("note_handwritten", !content.note_handwritten)}
+        className="flex items-center gap-2 font-body text-[10px] uppercase tracking-wider text-muted-foreground hover:opacity-80"
+      >
+        <span className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${content.note_handwritten ? "bg-secondary" : "bg-muted-foreground/30"}`}>
+          <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-card shadow transition-transform ${content.note_handwritten ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+        </span>
+        Handwritten style for the small print
+      </button>
 
       <MoreFields>
         <SectionBox label="Picture shape">

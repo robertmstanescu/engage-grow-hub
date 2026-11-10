@@ -12,6 +12,7 @@ import {
 import { resolveAspectRatio, focalObjectPosition } from "@/lib/imageShape";
 import { useInsideRowSurface } from "@/features/site/rows/RowSurfaceContext";
 import { hasText } from "@/features/site/rows/textRowContent";
+import { applyUnderlineWord, resolveAccentColor } from "@/lib/titleAccent";
 
 /** The row-fluid padding token (tailwind.config.ts, RowSection basePad). */
 const HERO_ROW_PADDING = "clamp(72px, 8vw, 128px)";
@@ -48,6 +49,8 @@ interface HeroContent {
   title_line1?: string;
   title_accent?: string;
   title_line2?: string;
+  /** A word in the title to underline with the hand-drawn gold stroke. */
+  underline_word?: string;
   /**
    * Optional small foreground photo card next to the text — separate
    * from `bg_type`/`bg_url` (the full-bleed background). Alt text is
@@ -326,10 +329,16 @@ export const HeroView = ({
 
   const titleLines: string[] = (c.title_lines || [])
     .map((line: any) => {
-      if (typeof line === "string") return line;
-      return line.type === "accent"
-        ? `<p><span style="color: hsl(var(--hero-title-accent))">${line.text}</span></p>`
-        : `<p>${line.text}</p>`;
+      if (typeof line === "string") return applyUnderlineWord(line, c.underline_word);
+      /* Named accents (redesign §2.3): a line may name "brand", "gold" or
+         a pillar instead of carrying inline rgb. Legacy `type: "accent"`
+         lines keep the hero accent token. */
+      const named = resolveAccentColor(line.accent);
+      const colour = named || (line.type === "accent" ? "hsl(var(--hero-title-accent))" : undefined);
+      return applyUnderlineWord(
+        colour ? `<p><span style="color: ${colour}">${line.text}</span></p>` : `<p>${line.text}</p>`,
+        c.underline_word,
+      );
     })
     /* Drop blank / markup-only lines so an empty hero never emits an
        empty <h1> (worse for SEO than no heading at all). */

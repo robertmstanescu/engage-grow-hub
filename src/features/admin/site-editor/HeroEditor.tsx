@@ -84,6 +84,14 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
       <ColorField label="Tagline Color" description="Color of the tagline text below the title" value={content.color_tagline || ""} fallback="" onChange={(v) => onChange("color_tagline", v)} />
 
       <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
+      <MoreFields>
+        <Field
+          label="Word to underline (optional)"
+          value={content.underline_word || ""}
+          onChange={(v) => onChange("underline_word", v)}
+          hint='One word from the title, underlined with the hand-drawn gold stroke — e.g. "coffin."'
+        />
+      </MoreFields>
       <TextAreaField
         label="Plain answer (small print in the footer)"
         value={content.answer || ""}

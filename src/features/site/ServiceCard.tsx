@@ -54,6 +54,12 @@ interface ServiceCardProps {
   tag: string; tagType: "fixed" | "retainer" | string; tagBgColor?: string; tagTextColor?: string;
   title: string; subtitle: string; description: string; deliverables: string[];
   deliverablesLabel?: string; price: string; time: string; note?: string; compact?: boolean;
+  /** Where the price/CTA button points. Defaults to the contact anchor. */
+  ctaUrl?: string;
+  /** "Done looks like" box content (redesign tier card). */
+  doneLooksLike?: string;
+  /** Handwritten note next to the tag pill, e.g. "start here". */
+  startHere?: string;
   cardTextAlign?: CardTextAlign;
   /**
    * Optional carousel navigation rendered inside the card header row.
@@ -61,7 +67,7 @@ interface ServiceCardProps {
   carouselControls?: React.ReactNode;
 }
 
-const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, description, deliverables, deliverablesLabel = "What's inside", price, time, note, compact, cardTextAlign = "left", carouselControls }: ServiceCardProps) => {
+const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subtitle, description, deliverables, deliverablesLabel = "What's inside", price, time, note, compact, ctaUrl, doneLooksLike, startHere, cardTextAlign = "left", carouselControls }: ServiceCardProps) => {
   const { getTagColors } = useTagColors();
   const adminColors = getTagColors(tagType);
   const bgHex = tagBgColor || adminColors.bgColor;
@@ -80,6 +86,14 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
       <div className={`${compact ? "p-6 flex-shrink-0" : "p-6 md:p-8"} ${alignClass}`}>
         <div className="flex items-center gap-3 mb-4">
           <span className="inline-block font-body text-micro tracking-[0.18em] uppercase px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: bgHex, color: fgHex }}>{tag}</span>
+          {startHere && (
+            <span
+              className="inline-block"
+              style={{ fontFamily: "'Architects Daughter', cursive", fontSize: 18, lineHeight: 1.4, color: "hsl(var(--link))", transform: "rotate(-3deg)" }}
+            >
+              {startHere}
+            </span>
+          )}
           {carouselControls && (
             <div className="ml-auto">{carouselControls}</div>
           )}
@@ -94,6 +108,14 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
           <p className="font-body text-micro uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(var(--pillar-subtitle))" }}>{serviceName}</p>
         )}
         <p className="font-body text-sm leading-relaxed measure" style={{ color: "hsl(var(--pillar-card-description))" }}>{description}</p>
+        {doneLooksLike && (
+          <div
+            className="mt-4 font-body leading-[1.6]"
+            style={{ borderRadius: 14, background: "hsl(var(--gold) / 0.28)", padding: "14px 16px", fontSize: 14, color: "hsl(var(--foreground))" }}
+          >
+            <strong>Done looks like:</strong> {doneLooksLike}
+          </div>
+        )}
       </div>
 
       <div className={compact ? "flex-1 min-h-0 overflow-visible" : ""}>
@@ -104,7 +126,7 @@ const ServiceCard = memo(({ tag, tagType, tagBgColor, tagTextColor, title, subti
       {/* Structured CTA row */}
       <div className="border-t border-border px-6 py-4 flex items-center justify-between gap-4 flex-wrap flex-shrink-0">
         <a
-          href="/#contact"
+          href={ctaUrl || "/#contact"}
           className="font-display text-micro uppercase tracking-[0.1em] font-bold px-4 py-2 rounded-full inline-block transition-opacity duration-300 hover:opacity-90"
           style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >

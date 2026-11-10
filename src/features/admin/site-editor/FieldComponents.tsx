@@ -365,8 +365,24 @@ export const ColorField = ({
  * CTA. One component so the label, key (`note`) and placement are the
  * same in every editor.
  */
-export const NoteField = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-  <Field label="Small print (optional)" value={value} onChange={onChange} />
+export const NoteField = ({ value, onChange, handwritten, onHandwrittenChange }: { value: string; onChange: (v: string) => void; handwritten?: boolean; onHandwrittenChange?: (v: boolean) => void }) => (
+  <div>
+    <Field label="Small print (optional)" value={value} onChange={onChange} />
+    {onHandwrittenChange && (
+      <button
+        type="button"
+        role="switch"
+        aria-checked={!!handwritten}
+        onClick={() => onHandwrittenChange(!handwritten)}
+        className="mt-1 flex items-center gap-2 font-body text-[10px] uppercase tracking-wider text-muted-foreground hover:opacity-80"
+      >
+        <span className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${handwritten ? "bg-secondary" : "bg-muted-foreground/30"}`}>
+          <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-card shadow transition-transform ${handwritten ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+        </span>
+        Handwritten style
+      </button>
+    )}
+  </div>
 );
 
 /**

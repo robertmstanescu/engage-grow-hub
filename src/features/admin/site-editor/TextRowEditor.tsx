@@ -6,7 +6,7 @@
  * widget-level Inspector panel.
  */
 
-import { RichField, EyebrowField, NoteField } from "./FieldComponents";
+import { RichField, EyebrowField, NoteField, Field } from "./FieldComponents";
 import { CoverImageField } from "./CoverImageField";
 import SubtitleEditor from "./SubtitleEditor";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
@@ -23,6 +23,12 @@ const TextRowEditor = ({ content, onChange, bgColor }: Props) => {
     <div className="space-y-3">
       <EyebrowField value={content.eyebrow || ""} color={content.color_eyebrow || ""} onChange={(v) => onChange("eyebrow", v)} onColorChange={(v) => onChange("color_eyebrow", v)} />
       <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
+      <Field
+        label="Word to underline (optional)"
+        value={content.underline_word || ""}
+        onChange={(v) => onChange("underline_word", v)}
+        hint="One word from the title, underlined with the hand-drawn gold stroke."
+      />
       <SubtitleEditor
         subtitle={content.subtitle || ""}
         subtitleColor={content.subtitle_color || ""}

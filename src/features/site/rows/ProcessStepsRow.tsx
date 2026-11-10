@@ -92,7 +92,7 @@ const ProcessStepsRow = ({
           ))}
         </ol>
 
-        {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
+        {c.note && <RowNote color={c.color_note} handwritten={!!c.note_handwritten}>{c.note}</RowNote>}
     </>
   );
 

@@ -1616,6 +1616,16 @@
   .row-look-swatch.band { background: hsl(282 45% 10%); border-color: hsl(282 45% 10%); }
   .row-look-swatch.cover { background: linear-gradient(180deg, #7B3A91 0%, #B98DC8 55%, #FBF6EA 100%); border: 0; }
   .row-look-swatch.glass { background: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.35)), linear-gradient(135deg, #F6EFF7, #FBF6EA); border: 1px solid #D6C9DC; border-radius: 5px; }
+
+  /* Hand-drawn gold underline under a chosen title word (redesign §2.3).
+     The stroke is the hand-underline path from the Main artboard. */
+  .mc-underline { position: relative; display: inline-block; }
+  .mc-underline::after {
+    content: ""; position: absolute; left: -2%; bottom: -0.14em; width: 104%; height: 0.26em;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M1 13 C 22 5 48 9 70 12 C 81 13 90 14 99 8' fill='none' stroke='%23E5C54F' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat;
+    background-size: 100% 100%;
+    pointer-events: none;
+  }
 }
 
 /* Elements tray: sections, families, variants */
