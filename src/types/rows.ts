@@ -104,8 +104,8 @@ export interface RowLayout {
    * the page rhythm `row-fluid`, "mid" is `clamp(64px, 7vw, 112px)`, "tight" is
    * `clamp(40px, 4vw, 64px)`, "none" is 0. Applied by RowSection through `data-space-*`.
    */
-  spaceTop?: "lead" | "full" | "mid" | "tight" | "none";
-  spaceBottom?: "full" | "mid" | "tight" | "none";
+  spaceTop?: "lead" | "full" | "mid" | "near" | "tight" | "none";
+  spaceBottom?: "full" | "mid" | "near" | "tight" | "none";
   overlays?: OverlayElement[];
   /**
    * Page-wide mesh gradient. Only read from the page's HERO row: the

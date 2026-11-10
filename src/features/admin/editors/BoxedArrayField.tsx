@@ -112,6 +112,7 @@ const BoxedArrayField = ({ content, onChange, bgColor }: Props) => {
                 <div className="grid grid-cols-2 gap-2">
                   <Field label="Small line under the title" value={card.meta || ""} onChange={(v) => updateCard(i, "meta", v)} />
                   <Field label="Price (right side)" value={card.price || ""} onChange={(v) => updateCard(i, "price", v)} />
+                  <Field label="Small line over the price" value={card.price_note || ""} onChange={(v) => updateCard(i, "price_note", v)} />
                 </div>
               )}
 

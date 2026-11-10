@@ -1,4 +1,4 @@
-import { SectionBox, Field, RichField, ArrayField, ColorField, CtaFields, MoreFields } from "./FieldComponents";
+import { SectionBox, Field, RichField, ArrayField, ColorField, CtaFields, MoreFields, SelectField } from "./FieldComponents";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImagePickerField from "../ImagePickerField";
@@ -21,6 +21,15 @@ const ProfileEditor = ({ content, onChange, bgColor }: Props) => {
       </SectionBox>
 
       <SectionBox label="Image & Name Tag">
+        <SelectField
+          label="Layout"
+          value={content.layout_style === "portrait" ? "portrait" : ""}
+          onChange={(v) => onChange("layout_style", v)}
+          options={[
+            { label: "Small photo, tags under it", value: "" },
+            { label: "Large portrait, tags under the text", value: "portrait" },
+          ]}
+        />
         {/* Profile photos benefit hugely from real alt text ("Photo of Jane Smith, HR Director")
             — much better than the file-name fallback a screen reader would otherwise read. */}
         <ImagePickerField

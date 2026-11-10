@@ -244,7 +244,7 @@
     --fs-eyebrow: 12px;
     --fs-title: clamp(32px, 3.6vw, 52px);
     --fs-subtitle: 17px;
-    --fs-body: clamp(16px, 0.95rem + 0.15vw, 18px);
+    --fs-body: clamp(16px, 0.9rem + 0.25vw, 18px);
 
     /* Card-scale (secondary surfaces: service, boxed, vows, forms) */
     --fs-card-title: clamp(20px, 1.1rem + 0.45vw, 24px);
@@ -273,6 +273,10 @@
     --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
     --fs-hero-body: clamp(17px, 1.3vw, 19px);
+    --fs-hero-body-large: clamp(18px, 1.55vw, 22px);
+    --fs-list-title: clamp(22px, 2.1vw, 30px);
+    --fs-tier-title: clamp(22px, 1.8vw, 26px);
+    --fs-tier-price: clamp(20px, 1.7vw, 24px);
 
     /* ──────────────────────────────────────────────────────────────
        READING COMFORT — line-height, letter-spacing and line length.
@@ -288,7 +292,7 @@
     --ls-body: 0;            /* prose stays neutral */
     --ls-title: -0.015em;    /* large headings tighten slightly */
     --ls-display: -0.025em;
-    --measure-prose: 54ch;   /* ≈ 66–70 characters of Inter per line */
+    --measure-prose: 720px; /* the canvas reading column */
     --para-space: 1.1em;     /* about one line of air between paragraphs */
   }
 
@@ -860,7 +864,7 @@
   /* Editorial measure — body copy stops around 65 characters so lines
      break near the middle of a wide page instead of running edge to edge. */
   .measure {
-    max-width: var(--measure-prose, 68ch);
+    max-width: var(--measure-prose, 720px);
   }
   .text-center > .measure,
   .measure.mx-auto {
@@ -871,7 +875,7 @@
      column, centred and no wider than the measure, whatever alignment
      the row carries. Landing pages keep their left/right hung columns. */
   [data-article-rows] section[data-row-type="text"] .row-container > [class*="max-w-["] {
-    max-width: var(--measure-prose, 68ch);
+    max-width: var(--measure-prose, 720px);
     margin-left: auto;
     margin-right: auto;
   }
@@ -1776,7 +1780,7 @@
     --fs-eyebrow: 12px;
     --fs-title: clamp(32px, 3.6vw, 52px);
     --fs-subtitle: 17px;
-    --fs-body: clamp(16px, 0.95rem + 0.15vw, 18px);
+    --fs-body: clamp(16px, 0.9rem + 0.25vw, 18px);
     --fs-card-title: clamp(20px, 1.1rem + 0.45vw, 24px);
     --fs-card-body: clamp(15px, 0.9rem + 0.1vw, 16px);
     --fs-card-label: clamp(12px, 0.7rem + 0.15vw, 14px);
@@ -1798,6 +1802,10 @@
     --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
     --fs-hero-body: clamp(17px, 1.3vw, 19px);
+    --fs-hero-body-large: clamp(18px, 1.55vw, 22px);
+    --fs-list-title: clamp(22px, 2.1vw, 30px);
+    --fs-tier-title: clamp(22px, 1.8vw, 26px);
+    --fs-tier-price: clamp(20px, 1.7vw, 24px);
     --lh-body: 1.7;
     --lh-card-body: 1.65;
     --lh-subtitle: 1.45;
@@ -1807,7 +1815,7 @@
     --ls-body: 0;
     --ls-title: -0.015em;
     --ls-display: -0.025em;
-    --measure-prose: 54ch;
+    --measure-prose: 720px; /* the canvas reading column */
     --para-space: 1.1em;
   }
 }
@@ -2048,6 +2056,8 @@
 section.snap-section[data-space-top="lead"] { padding-top: calc(90px + clamp(40px, 5vw, 72px)); }
 section.snap-section[data-space-top="mid"] { padding-top: clamp(64px, 7vw, 112px); }
 section.snap-section[data-space-bottom="mid"] { padding-bottom: clamp(64px, 7vw, 112px); }
+section.snap-section[data-space-top="near"] { padding-top: clamp(48px, 5vw, 80px); }
+section.snap-section[data-space-bottom="near"] { padding-bottom: clamp(48px, 5vw, 80px); }
 section.snap-section[data-space-top="tight"] { padding-top: clamp(40px, 4vw, 64px); }
 section.snap-section[data-space-top="none"] { padding-top: 0; }
 section.snap-section[data-space-bottom="tight"] { padding-bottom: clamp(40px, 4vw, 64px); }
@@ -2405,3 +2415,10 @@ section.snap-section .contact-title[data-row-part="title"] {
   transform: rotate(-6deg);
   overflow-wrap: anywhere;
 }
+
+/* Intro under a row heading (Services index): the canvas lede. */
+.boxed-intro { max-width: 760px; font-size: 18px; line-height: 1.7; color: hsl(var(--body)); }
+.boxed-intro p + p { margin-top: var(--para-space); }
+
+/* A second accent for a hero headline (About artboard: the gold line). */
+.mc-accent.mc-accent-gold { color: hsl(var(--gold-text)); }

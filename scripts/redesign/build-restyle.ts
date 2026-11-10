@@ -64,10 +64,15 @@ let homeRows: Row[] = [];
 let failed = false;
 
 const check = (label: string, before: Row[], after: Row[]) => {
-  const a = visibleText(before).split("\n").sort();
-  const b = visibleText(after).split("\n").sort();
-  const missing = a.filter((line) => !b.includes(line));
-  const added = b.filter((line) => !a.includes(line));
+  /* Word by word, not line by line: the restyle may join a headline's
+     short lines or move a block, and every word must still be there,
+     the same number of times. */
+  const words = (rows: Row[]) => visibleText(rows).split(/\s+/).filter(Boolean).sort();
+  const a = words(before);
+  const b = words(after);
+  const diff = (x: string[], y: string[]) => { const pool = [...y]; return x.filter((w) => { const i = pool.indexOf(w); if (i < 0) return true; pool.splice(i, 1); return false; }); };
+  const missing = diff(a, b);
+  const added = diff(b, a);
   if (!missing.length && !added.length) {
     report.push(`${label}: same`);
     return;
@@ -87,14 +92,30 @@ if (home) {
   sql.push(`update public.site_content set draft_content = ${sqlJson(home.content)} where section_key = 'page_rows';`);
 }
 
+/* Engagement chips (service artboards): a fixed project is the cream
+   chip with ink text; a retainer takes its page's pillar colour (an
+   empty background means exactly that) with white text. */
+const tags = siteContent.find((r) => r.section_key === "tags_config");
+if (tags && Array.isArray((tags.content as Row)?.service_tag_types)) {
+  const content = JSON.parse(JSON.stringify(tags.content)) as Row;
+  for (const t of content.service_tag_types as Row[]) {
+    if (t.value === "fixed") { t.bgColor = "#FBEFC9"; t.textColor = "#26142E"; }
+    if (t.value === "retainer") { t.bgColor = ""; t.textColor = "#FFFFFF"; }
+  }
+  tags.content = content;
+  sql.push(`update public.site_content set draft_content = ${sqlJson(content)} where section_key = 'tags_config';`);
+}
+
 const pages = read("cms_pages.json");
+const serviceRows: Record<string, Row[]> = {};
+for (const page of pages) if (String(page.slug).startsWith("services/")) serviceRows[String(page.slug)] = rowsOf(page.page_rows);
 for (const page of pages) {
   const slug = String(page.slug);
   const ctx = kindForSlug(slug);
   const before = rowsOf(page.page_rows);
   const restyled = restyleRows(before, ctx);
   check(slug, before, restyled);
-  page.page_rows = withRows(page.page_rows, applyGapContent(restyled, { ...ctx, homeRows }, gapNotes));
+  page.page_rows = withRows(page.page_rows, applyGapContent(restyled, { ...ctx, homeRows, serviceRows }, gapNotes));
   sql.push(`update public.cms_pages set draft_page_rows = ${sqlJson(page.page_rows)} where slug = '${slug.replace(/'/g, "''")}';`);
 }
 sql.push("commit;");

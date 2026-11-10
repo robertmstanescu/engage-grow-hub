@@ -29,16 +29,19 @@ const HeroRow = ({ row }: Props) => {
      (`answer_strip`); the footer keeps showing the same answer. */
   const answer = typeof c.answer === "string" ? c.answer.trim() : "";
   const strip = c.answer_strip && answer ? (
-    <div className="relative z-10 w-full max-w-[1280px] mx-auto row-container" style={{ marginTop: "clamp(20px, 3vw, 40px)" }}>
+    <div className="relative z-10 w-full max-w-[1280px] mx-auto row-container" style={{ marginTop: 6, paddingBottom: "clamp(24px, 3vw, 40px)" }}>
+      {/* Artboard ServiceIC, "In short": a 12-column glass strip, the
+          label on two columns, the answer on ten, the pillar colour down
+          the left edge. Stacks on a phone. */}
       <div
-        className="surface-card flex flex-wrap items-baseline"
-        style={{ gap: "8px 40px", padding: "clamp(20px, 2.4vw, 32px) clamp(20px, 3vw, 40px)", borderLeft: "3px solid hsl(var(--deep))" }}
+        className="surface-card grid grid-cols-1 md:grid-cols-12 items-start"
+        style={{ gap: 24, padding: "clamp(24px, 3vw, 36px) clamp(24px, 4vw, 48px)", borderLeft: `4px solid ${c.color_label || "hsl(var(--deep))"}` }}
         data-answer-strip
       >
-        <p className="font-body font-bold uppercase flex-none" style={{ color: "hsl(var(--gold-text))", fontSize: "var(--fs-eyebrow)", letterSpacing: "0.26em", minWidth: 110 }}>
+        <p className="font-body font-bold uppercase md:col-span-2" style={{ color: "hsl(var(--gold-text))", fontSize: "var(--fs-chip)", letterSpacing: "0.24em", paddingTop: 6 }}>
           In short
         </p>
-        <p className="font-body" style={{ flex: "1 1 320px", color: "hsl(var(--foreground))", fontSize: "var(--fs-body)", lineHeight: 1.65 }}>
+        <p className="font-body md:col-span-10" style={{ color: "hsl(var(--foreground))", fontSize: "var(--fs-hero-body)", lineHeight: 1.6 }}>
           {answer}
         </p>
       </div>

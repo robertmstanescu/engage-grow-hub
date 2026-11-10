@@ -38,14 +38,17 @@ interface Props {
  */
 const RowSubtitle = ({ children, color, style, className, handwritten }: Props) => (
   <p
-    className={`leading-tight mb-rhythm-base ${className ?? ""}`}
+    className={`${handwritten ? "leading-tight" : "leading-[1.7]"} mb-rhythm-base ${className ?? ""}`}
     style={{
       ...(handwritten ? { fontFamily: "'Architects Daughter', cursive" } : {}),
       fontSize: "var(--fs-subtitle)",
       // Inherit the row's auto-resolved foreground unless the admin
       // set a per-row override. `--row-fg` is published by RowSection.
       // `||` so a cleared or schema-defaulted "" counts as "no override".
-      color: color || "var(--row-fg, inherit)",
+      // A plain (not handwritten) subtitle is the canvas lede: body
+      // colour on the heading block's 760px measure.
+      color: color || (handwritten ? "var(--row-fg, inherit)" : "var(--row-body, inherit)"),
+      ...(handwritten ? {} : { maxWidth: 760 }),
       ...style,
     }}
   >

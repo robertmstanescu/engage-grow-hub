@@ -230,8 +230,8 @@ const RowSection = ({
         data-snap-enabled={snapEnabled ? "true" : undefined}
         /* Space above and below, when the row asks for less than the page
            rhythm (Style ▸ Space). CSS in index.css reads these. */
-        data-space-top={["lead", "mid", "tight", "none"].includes(row.layout?.spaceTop ?? "") ? row.layout?.spaceTop : undefined}
-        data-space-bottom={["mid", "tight", "none"].includes(row.layout?.spaceBottom ?? "") ? row.layout?.spaceBottom : undefined}
+        data-space-top={["lead", "mid", "near", "tight", "none"].includes(row.layout?.spaceTop ?? "") ? row.layout?.spaceTop : undefined}
+        data-space-bottom={["mid", "near", "tight", "none"].includes(row.layout?.spaceBottom ?? "") ? row.layout?.spaceBottom : undefined}
         /* Column count of a v3 row, so CSS can tighten the gutters that
            side-by-side widgets would otherwise double up between them. */
         data-columns={(() => { const cols = (row as unknown as { columns?: unknown[] }).columns; return Array.isArray(cols) ? cols.length : undefined; })()}

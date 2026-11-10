@@ -8,7 +8,7 @@
  * now lives here and the copy is gone.
  */
 
-import { ColorField, EyebrowField, Field, MoreFields, NoteField, SelectField } from "./FieldComponents";
+import { ColorField, EyebrowField, Field, MoreFields, NoteField, RichField, SelectField } from "./FieldComponents";
 import { CoverImageField } from "./CoverImageField";
 import SubtitleEditor from "./SubtitleEditor";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
@@ -70,6 +70,7 @@ const BoxedRowEditor = ({ content, onChange, bgColor }: Props) => {
           value={content.group_label || ""}
           onChange={(v) => onChange("group_label", v)}
         />
+        <RichField label="Intro under the heading (optional)" value={content.intro || ""} onChange={(v) => onChange("intro", v)} />
       </MoreFields>
       <BoxedArrayField content={content} onChange={onChange} bgColor={bgColor} />
       <div className="grid grid-cols-2 gap-3">

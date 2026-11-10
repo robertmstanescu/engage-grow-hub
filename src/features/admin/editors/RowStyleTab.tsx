@@ -246,12 +246,13 @@ const RowStyleTab = ({ row, onRowMetaChange, onUpdateColumnWidths }: Props) => {
       ] as const).map(([key, name]) => (
         <div key={key}>
           <label className={LABEL}>{name}</label>
-          <div className={`grid gap-1 ${key === "spaceTop" && isHero ? "grid-cols-5" : "grid-cols-4"}`} role="radiogroup" aria-label={name}>
+          <div className={`grid gap-1 ${key === "spaceTop" && isHero ? "grid-cols-3" : "grid-cols-5"}`} role="radiogroup" aria-label={name}>
             {([
               /* A page's opening row can sit straight under the menu. */
               ...(key === "spaceTop" && isHero ? [["lead", "Under menu"] as const] : []),
               ["full", "Full"],
               ["mid", "Medium"],
+              ["near", "Near"],
               ["tight", "Close"],
               ["none", "None"],
             ] as const).map(([value, label]) => {
