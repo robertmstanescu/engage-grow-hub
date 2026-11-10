@@ -14,6 +14,7 @@
  * opened — which is exactly when the owner needs to change what it
  * is asking for.
  */
+import { parseContent } from "@/lib/parseContent";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { PageRow } from "@/types/rows";
@@ -73,7 +74,7 @@ const pickPicked = (items: CardRecord[], c: WorkTeaserContent): ResolvedCard[] =
     .slice(0, c.limit);
 
 const WorkTeaserRow = ({ row }: { row: PageRow }) => {
-  const c = workTeaserSchema.parse(row.content || {});
+  const c = parseContent(workTeaserSchema, row.content);
   const [cards, setCards] = useState<ResolvedCard[]>([]);
   const [looked, setLooked] = useState(false);
   const { enabled: builderEnabled } = useBuilder();

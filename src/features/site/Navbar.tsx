@@ -1,3 +1,4 @@
+import { safeHref } from "@/services/safeHref";
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { transformImageUrl } from "@/services/mediaOptimization";
 import { Menu, X, ChevronDown } from "lucide-react";
@@ -303,7 +304,7 @@ const Navbar = () => {
                   onMouseLeave={() => setOpenDropdown(null)}
                 >
                   <a
-                    href={item.href || "#"}
+                    href={safeHref(item.href)}
                     onClick={(e) => {
                       if (!item.href) {
                         e.preventDefault();
@@ -351,7 +352,7 @@ const Navbar = () => {
                             return (
                               <a
                                 key={sub.href + sub.label}
-                                href={sub.href}
+                                href={safeHref(sub.href)}
                                 onClick={(e) => {
                                   setOpenDropdown(null);
                                   handleNavClick(e, sub.href);
@@ -377,7 +378,7 @@ const Navbar = () => {
             return (
               <a
                 key={item.label}
-                href={item.href}
+                href={safeHref(item.href)}
                 onClick={(e) => handleNavClick(e, item.href)}
                 className="top-nav-label font-body inline-flex items-center h-[1.1rem]"
                 data-active={active}
@@ -396,7 +397,7 @@ const Navbar = () => {
 
         {!navLoading && ctaHref ? (
           <a
-            href={ctaHref}
+            href={safeHref(ctaHref)}
             onClick={(e) => handleNavClick(e, ctaHref)}
             title={ctaText}
             className="px-6 h-11 rounded-full flex items-center justify-center text-[15px] font-semibold tracking-[0.02em] transition-colors duration-200 whitespace-nowrap"
@@ -443,7 +444,7 @@ const Navbar = () => {
         <div className="flex items-center gap-2">
           {!navLoading && ctaHref && ctaText ? (
             <a
-              href={ctaHref}
+              href={safeHref(ctaHref)}
               onClick={(e) => handleNavClick(e, ctaHref)}
               className="hidden sm:flex px-4 h-9 rounded-full items-center justify-center text-xs font-semibold whitespace-nowrap"
               style={{
@@ -478,7 +479,7 @@ const Navbar = () => {
                 return (
                   <div key={item.label} className="flex flex-col items-center gap-3">
                     <a
-                      href={item.href || "#"}
+                      href={safeHref(item.href)}
                       onClick={(e) => (item.href ? handleNavClick(e, item.href) : e.preventDefault())}
                       className="mobile-nav-link font-body text-sm uppercase tracking-[0.2em] transition-colors duration-200"
                       style={{
@@ -495,7 +496,7 @@ const Navbar = () => {
                         return (
                           <a
                             key={sub.href + sub.label}
-                            href={sub.href}
+                            href={safeHref(sub.href)}
                             onClick={(e) => handleNavClick(e, sub.href)}
                             data-active={subActive}
                             className="mobile-nav-link font-body text-xs tracking-[0.12em] transition-colors duration-200"
@@ -515,7 +516,7 @@ const Navbar = () => {
               return (
                 <a
                   key={item.label}
-                  href={item.href}
+                  href={safeHref(item.href)}
                   onClick={(e) => handleNavClick(e, item.href)}
                   data-active={active}
                   className="mobile-nav-link font-body text-sm uppercase tracking-[0.2em] transition-colors duration-200"
@@ -528,7 +529,7 @@ const Navbar = () => {
 
             {ctaHref && ctaText ? (
               <a
-                href={ctaHref}
+                href={safeHref(ctaHref)}
                 onClick={(e) => handleNavClick(e, ctaHref)}
                 className="font-display text-micro uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
                 style={{
