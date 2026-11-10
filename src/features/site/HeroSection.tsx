@@ -63,6 +63,15 @@ interface HeroContent {
   visual_image_ratio?: string;
   visual_image_focal_x?: number;
   visual_image_focal_y?: number;
+  /** "centred" (default card beside the text) | "half_bleed" (photo bleeds off the right edge). */
+  visual_layout?: string;
+  /** Second, quieter link next to the primary button. */
+  secondary_cta_label?: string;
+  secondary_cta_url?: string;
+  /** Glass badge overlaid on the hero photo. */
+  visual_badge_label?: string;
+  visual_badge_title?: string;
+  visual_badge_text?: string;
 }
 
 // No hardcoded copy — DB is the single source of truth. The hero is
@@ -358,6 +367,10 @@ export const HeroView = ({
      soon as an admin picks one. */
   const hasVisual = Boolean(c.visual_image_url);
   const visualAspect = resolveAspectRatio(c.visual_image_ratio, 3 / 4) ?? 3 / 4;
+  /* Half-bleed (redesign §2.3, Main artboard): the photo leaves the
+     content container and bleeds off the right edge with a 28px left
+     radius; the text column keeps the page gutter. Stacks on phones. */
+  const halfBleed = c.visual_layout === "half_bleed" && hasVisual;
 
   /* Admin alignment (Style ▸ Hero alignment). A hero with a foreground
      visual defaults to left, matching the side-by-side layout. */
@@ -517,7 +530,9 @@ export const HeroView = ({
 
       <div
         className={
-          hasVisual
+          halfBleed
+            ? "relative z-10 w-full flex flex-col lg:flex-row lg:items-stretch"
+            : hasVisual
             ? // A fixed (not fr-based) width for the visual, and `lg:` for
               // the breakpoint. The title uses a shrink-to-fit floor, so
               // the text side needs real room: a fixed ~340px visual keeps
@@ -533,7 +548,10 @@ export const HeroView = ({
           and consistent instead of vh-driven, keeping the layout clean at
           every breakpoint while the headline stays poster-sized.
         */}
-        <div className={`flex w-full min-w-0 flex-col gap-6 ${alignClass} ${hasVisual ? "lg:flex-1" : ""}`}>
+        <div
+          className={`flex w-full min-w-0 flex-col gap-6 ${alignClass} ${halfBleed ? "justify-center lg:flex-[999_1_560px]" : hasVisual ? "lg:flex-1" : ""}`}
+          style={halfBleed ? { padding: "clamp(32px, 5vw, 80px) clamp(16px, 5vw, 64px) clamp(48px, 6vw, 96px) clamp(16px, 5vw, 96px)" } : undefined}
+        >
 
           {leading}
           {c.label && (
@@ -611,15 +629,64 @@ export const HeroView = ({
             </div>
           )}
 
-          {trailing && (
+          {(trailing || (c.secondary_cta_label && c.secondary_cta_url)) && (
             <div
-              className="mc-rise flex-shrink-0" style={{ "--rise-y": "20px", "--rise-dur": "0.8s", "--rise-delay": "1.2s" } as React.CSSProperties}>
+              className="mc-rise flex-shrink-0 flex flex-wrap items-center gap-5" style={{ "--rise-y": "20px", "--rise-dur": "0.8s", "--rise-delay": "1.2s" } as React.CSSProperties}>
               {trailing}
+              {c.secondary_cta_label && c.secondary_cta_url && (
+                <a
+                  href={c.secondary_cta_url}
+                  target={c.secondary_cta_url.startsWith("http") ? "_blank" : undefined}
+                  rel={c.secondary_cta_url.startsWith("http") ? "noopener noreferrer" : undefined}
+                  className="font-body font-semibold inline-flex items-center gap-2"
+                  style={{ color: "hsl(var(--link))", fontSize: "var(--fs-body)" }}
+                >
+                  {c.secondary_cta_label} <span aria-hidden>→</span>
+                </a>
+              )}
             </div>
           )}
         </div>
 
-        {hasVisual && (
+        {halfBleed && (
+          <div
+            className="mc-rise relative w-full lg:flex-[1_1_420px] min-h-[clamp(360px,46vw,700px)]" style={{ "--rise-y": "20px", "--rise-dur": "0.8s", "--rise-delay": "0.65s" } as React.CSSProperties}>
+            <img
+              src={transformImageUrl(c.visual_image_url!, { width: 1200 })}
+              srcSet={buildImageSrcSet(c.visual_image_url)}
+              sizes="(min-width: 1024px) 45vw, 100vw"
+              alt={c.visual_image_alt || ""}
+              className="absolute inset-0 w-full h-full object-cover rounded-[28px_28px_0_0] lg:rounded-[28px_0_0_28px]"
+              style={{ objectPosition: focalObjectPosition(c.visual_image_focal_x, c.visual_image_focal_y) }}
+              loading="eager"
+              decoding="async"
+            />
+            {(c.visual_badge_title || c.visual_badge_text) && (
+              <div
+                className="absolute bottom-5 left-5 right-5 lg:right-auto lg:max-w-[320px] p-4"
+                style={{
+                  background: "hsl(var(--glass-bg))",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                  border: "1px solid hsl(var(--glass-border))",
+                  borderRadius: 16,
+                  boxShadow: "var(--shadow-card)",
+                }}
+              >
+                {c.visual_badge_label && (
+                  <p className="font-body uppercase font-bold" style={{ fontSize: 11, letterSpacing: "0.16em", color: "hsl(var(--gold-text))" }}>{c.visual_badge_label}</p>
+                )}
+                {c.visual_badge_title && (
+                  <p className="font-display font-bold mt-1" style={{ fontSize: "var(--fs-card-title)", color: "hsl(var(--heading))" }}>{c.visual_badge_title}</p>
+                )}
+                {c.visual_badge_text && (
+                  <p className="font-body mt-1 leading-[1.6]" style={{ fontSize: 14, color: "hsl(var(--body))" }}>{c.visual_badge_text}</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+        {hasVisual && !halfBleed && (
           // Entrance timing sits between the title's own stagger (which
           // finishes around 0.3 + (lineCount-1)*0.12 + 0.7 ≈ 1.24s for a
           // 3-line title... but this card isn't part of that stagger chain,

@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 import { Upload, X } from "lucide-react";
-import { Field, RichField, SectionBox, ColorField, CtaFields, MoreFields, TextAreaField } from "./FieldComponents";
+import { Field, RichField, SectionBox, ColorField, CtaFields, MoreFields, TextAreaField, SelectField } from "./FieldComponents";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImageAltInput from "../ImageAltInput";
@@ -120,6 +120,16 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
        */}
       <CtaFields content={content} onChange={onChange} />
 
+      <MoreFields>
+        <SectionBox label="Second link (optional)">
+          <div className="grid grid-cols-2 gap-2">
+            <Field label="Link text" value={content.secondary_cta_label || ""} onChange={(v) => onChange("secondary_cta_label", v)} />
+            <Field label="Link address" value={content.secondary_cta_url || ""} onChange={(v) => onChange("secondary_cta_url", v)} />
+          </div>
+          <p className="font-body text-[9px] text-muted-foreground/60 mt-1">A quieter text link next to the main button, e.g. "See the work →".</p>
+        </SectionBox>
+      </MoreFields>
+
       <SectionBox label="Background Media">
         <div className="space-y-3">
           <div className="flex gap-2">
@@ -183,6 +193,24 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
           altValue={content.visual_image_alt || ""}
           onAltChange={(v) => onChange("visual_image_alt", v)}
         />
+        {content.visual_image_url ? (
+          <>
+            <SelectField
+              label="Photo layout"
+              value={content.visual_layout || ""}
+              onChange={(v) => onChange("visual_layout", v)}
+              options={[
+                { label: "Card beside the text", value: "" },
+                { label: "Half-bleed (photo to the edge)", value: "half_bleed" },
+              ]}
+            />
+            <SectionBox label="Badge on the photo (optional)">
+              <Field label="Small label" value={content.visual_badge_label || ""} onChange={(v) => onChange("visual_badge_label", v)} />
+              <Field label="Badge title" value={content.visual_badge_title || ""} onChange={(v) => onChange("visual_badge_title", v)} />
+              <TextAreaField label="Badge text" value={content.visual_badge_text || ""} onChange={(v) => onChange("visual_badge_text", v)} rows={2} />
+            </SectionBox>
+          </>
+        ) : null}
       </SectionBox>
 
       <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleImageUpload(file); e.target.value = ""; }} />
