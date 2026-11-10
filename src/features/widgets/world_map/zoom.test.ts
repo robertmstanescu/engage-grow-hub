@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { MAP_H, MAP_W, MAX_ZOOM, WHOLE_WORLD, clampView, panBy, viewBoxOf, zoomAt } from "./zoom";
 
@@ -42,5 +44,18 @@ describe("world map zoom", () => {
     expect(clampView({ k: NaN, x: Infinity, y: -5 })).toEqual(WHOLE_WORLD);
     expect(zoomAt(WHOLE_WORLD, NaN, NaN, NaN)).toEqual(WHOLE_WORLD);
     expect(panBy(WHOLE_WORLD, NaN, NaN)).toEqual(WHOLE_WORLD);
+  });
+});
+
+/* Source-level guards for the two choices the owner made on 10 Nov 2026. */
+describe("world map art", () => {
+  const art = readFileSync(resolve(process.cwd(), "src/features/widgets/world_map/WorldMapArt.tsx"), "utf8");
+
+  it("a plain wheel scrolls the page: only Ctrl/Cmd + wheel zooms", () => {
+    expect(art).toMatch(/if \(!e\.ctrlKey && !e\.metaKey\) return;/);
+  });
+
+  it("every shaded place names itself on hover, a market-only one included", () => {
+    expect(art).not.toMatch(/worked\.has\(/);
   });
 });

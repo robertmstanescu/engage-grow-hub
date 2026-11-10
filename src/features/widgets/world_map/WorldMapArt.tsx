@@ -6,7 +6,8 @@ import { MAX_ZOOM, WHOLE_WORLD, ZOOM_STEP, panBy, viewBoxOf, zoomAt, type MapVie
 
 /**
  * The map itself, code-split out of the public bundle (the path data is
- * ~120KB). Countries shade in with a staggered draw-on animation; the
+ * ~120KB). Countries shade in with a staggered draw-on animation that starts
+ * when the map is in full view; the
  * `play` class is re-applied by the Replay button. Reduced motion shows
  * the end state instantly (CSS).
  *
@@ -18,6 +19,8 @@ import { MAX_ZOOM, WHOLE_WORLD, ZOOM_STEP, panBy, viewBoxOf, zoomAt, type MapVie
 const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; content: WorldMapContent }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(true);
+  /* The draw-on waits until the map is in full view (owner, 10 Nov 2026). */
+  const [started, setStarted] = useState(false);
   const [tip, setTip] = useState<{ x: number; y: number; name: string; status: string } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [view, setView] = useState<MapView>(WHOLE_WORLD);
@@ -58,6 +61,21 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
     setTip(null);
     setView((v) => zoomAt(v, factor, fx, fy));
   };
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    // No observer (old browser, tests): show the map at once, never leave it blank.
+    if (!svg || typeof IntersectionObserver === "undefined") { setStarted(true); return; }
+    const io = new IntersectionObserver(
+      (entries) => {
+        // 0.9, not 1: a pixel of rounding must not keep the map waiting.
+        if (entries.some((en) => en.intersectionRatio >= 0.9)) { setStarted(true); io.disconnect(); }
+      },
+      { threshold: [0.9, 1] },
+    );
+    io.observe(svg);
+    return () => io.disconnect();
+  }, []);
 
   /* Ctrl/Cmd + wheel zooms (this is also what a trackpad pinch sends).
      React's wheel listener is passive, so it is attached by hand to be
@@ -119,6 +137,7 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
   };
 
   const replay = () => {
+    setStarted(true);
     setPlaying(false);
     // Let the class come off before re-adding so the animation restarts.
     requestAnimationFrame(() => requestAnimationFrame(() => setPlaying(true)));
@@ -129,7 +148,7 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
       <div ref={wrapRef} className="relative">
         <svg
           ref={svgRef}
-          className={`tmc-map${playing ? " play" : ""}${zoomed ? " is-zoomed" : ""}${dragging ? " is-dragging" : ""}`}
+          className={`tmc-map${!started ? " wait" : playing ? " play" : ""}${zoomed ? " is-zoomed" : ""}${dragging ? " is-dragging" : ""}`}
           role="img"
           aria-label="World map of the countries worked across"
           viewBox={viewBoxOf(view)}
