@@ -4,6 +4,7 @@ import { getRowBgColor } from "../rowBackground";
 import { renderOverlayElements } from "@/features/site/rows/overlayRender";
 import type { VAlign } from "../PageRows";
 import { applyTextTone, resolveRowForeground } from "@/lib/rowForeground";
+import { LIGHT_FG } from "@/lib/pickForeground";
 import SectionShape, { shapeHeightPx, shapeMaskStyle } from "../SectionShape";
 import { resolveRowMinHeight } from "@/lib/rowHeight";
 import { useInsideRowSurface } from "../RowSurfaceContext";
@@ -161,6 +162,16 @@ const RowSection = ({
     row,
     hasOwnPaint ? resolveRowForeground(row) : "var(--page-fg, hsl(var(--foreground)))",
   );
+  /* Weight→colour mapping (redesign §2.2): on light surfaces headings
+     take the violet --heading token, body the softer --body token and
+     eyebrows the legible --gold-text; on dark surfaces all three follow
+     the light foreground (the eyebrow takes the bright gold fill, which
+     reads well on deep plum). A transparent row sits on the light page
+     mesh, so it counts as a light surface. */
+  const darkSurface = bandFg === LIGHT_FG || bandFg.includes("--accent");
+  const rowHeading = darkSurface ? bandFg : "hsl(var(--heading))";
+  const rowBody = darkSurface ? bandFg : "hsl(var(--body))";
+  const rowEyebrow = darkSurface ? "hsl(var(--gold))" : "hsl(var(--gold-text))";
 
   /* ── Section shapes ──
    *  Decorative curved / angled edges, off by default. The shape is
@@ -321,6 +332,9 @@ const RowSection = ({
            * pickers in the admin still override via the `color` prop.
            */
           ["--row-fg" as string]: bandFg,
+          ["--row-heading" as string]: rowHeading,
+          ["--row-body" as string]: rowBody,
+          ["--row-eyebrow" as string]: rowEyebrow,
           /* Derived tones so muted copy and hairlines follow the row's
              foreground too (dark row ⇒ light text AND light rules). */
           ["--row-fg-muted" as string]: `color-mix(in srgb, ${bandFg} 68%, transparent)`,

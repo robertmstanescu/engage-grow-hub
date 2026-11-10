@@ -35,11 +35,12 @@ const RowBody = ({ children, html, color, style, className, ...rest }: Props) =>
     // line-height, tracking and line length for all prose.
     lineHeight: "var(--lh-body, 1.6)",
     letterSpacing: "var(--ls-body, 0)",
-    // Default to the row's auto-resolved foreground (`--row-fg`,
-    // published by RowSection). Per-row admin colour pickers still
-    // win via the `color` prop. `||` so a cleared or schema-defaulted ""
+    // Default to the row's body tone (`--row-body`, published by
+    // RowSection): the softer --body token on light surfaces, the light
+    // foreground on dark ones. Per-row admin colour pickers still win
+    // via the `color` prop. `||` so a cleared or schema-defaulted ""
     // counts as "no override" (see RowTitle).
-    color: color || "var(--row-fg, hsl(var(--foreground) / 0.85))",
+    color: color || "var(--row-body, var(--row-fg, hsl(var(--foreground) / 0.85)))",
     ...style,
   };
 

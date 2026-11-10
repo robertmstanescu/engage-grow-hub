@@ -56,6 +56,26 @@ export default {
         violet: "hsl(var(--violet))",
         plum: "hsl(var(--plum))",
         isabelline: "hsl(var(--isabelline))",
+        /* Redesign token layer (docs/redesign §2.1) — role names, no hex */
+        paper: "hsl(var(--paper))",
+        ink: "hsl(var(--ink))",
+        heading: "hsl(var(--heading))",
+        body: "hsl(var(--body))",
+        meta: "hsl(var(--meta))",
+        link: "hsl(var(--link))",
+        "gold-text": "hsl(var(--gold-text))",
+        gold: "hsl(var(--gold))",
+        "gold-decor": "hsl(var(--gold-decor))",
+        deep: {
+          DEFAULT: "hsl(var(--deep))",
+          foreground: "hsl(var(--deep-fg))",
+        },
+        line: {
+          1: "hsl(var(--line-1))",
+          2: "hsl(var(--line-2))",
+          3: "hsl(var(--line-3))",
+        },
+        tint: "hsl(var(--tint))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -71,6 +91,14 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        card: "var(--radius-card)",
+        inner: "var(--radius-inner)",
+        island: "var(--radius-island)",
+        pill: "var(--radius-pill)",
+      },
+      boxShadow: {
+        soft: "var(--shadow-soft)",
+        card: "var(--shadow-card)",
       },
       /**
        * VERTICAL RHYTHM SPACING SCALE

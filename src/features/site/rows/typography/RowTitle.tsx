@@ -37,12 +37,14 @@ const RowTitle = ({ children, as, color, style, className, icon, iconSize = 32 }
   // (`--row-fg`, published by RowSection) must win. With `??` the empty
   // string was applied as-is, which is invalid CSS, so the heading
   // inherited the section's static colour and dark rows got dark text.
-  const resolvedColor = color || "var(--row-fg, hsl(var(--foreground)))";
-  // H1 (the page's Hero, or this row when it stands in for a missing Hero)
-  // stays at the heaviest weight; H2/H3 row titles drop to font-bold so
-  // there's an actual weight step down from H1 instead of every level
-  // maxing out at font-black and reading as the same weight, just smaller.
-  const weightClass = Tag === "h1" ? "font-black" : "font-bold";
+  // Headings read the row's heading tone (`--row-heading`, published by
+  // RowSection): the violet --heading token on light surfaces, the light
+  // foreground on dark ones. Falls back to --row-fg outside a row.
+  const resolvedColor = color || "var(--row-heading, var(--row-fg, hsl(var(--foreground))))";
+  // Weight scale (redesign §2.2): H1 and H2 at 800, H3 at 700, so the
+  // levels step down by weight as well as size. Bricolage Grotesque is
+  // a variable font capped at 800, so extrabold IS the heaviest cut.
+  const weightClass = Tag === "h3" ? "font-bold" : "font-extrabold";
   return (
     <>
       {icon && (

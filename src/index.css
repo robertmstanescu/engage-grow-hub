@@ -115,6 +115,54 @@
     --pillar-dot-active: 280 55% 24%;
     --pillar-dot-inactive: 282 20% 60%;
 
+    /* ──────────────────────────────────────────────────────────────
+       REDESIGN TOKEN LAYER (web surface, docs/redesign §2)
+       Named text/ground/line roles so every component reads a role,
+       never a hex. The older alias tokens above stay for back-compat;
+       new work reads these.
+       ────────────────────────────────────────────────────────────── */
+    --paper: 30 33% 97%;        /* #FAF8F5 page ground under the mesh */
+    --ink: 282 45% 10%;         /* #26142E strong text, body on cards */
+    --heading: 281 55% 24%;     /* #481C5F every H1–H3 on light */
+    --body: 285 15% 34%;        /* #5C4965 default body text, nav links */
+    --meta: 290 12% 42%;        /* captions, meta, dates — darkened from the
+                                   spec's #8A7A92 (3.8:1) so captions pass AA */
+    --link: 281 55% 34%;        /* #672786 links; hover → --heading */
+    --gold-text: 40 69% 30%;    /* #815E18 eyebrows on light (only gold as text) */
+    --gold: 45 75% 60%;         /* #E6C24C fills, underline strokes, focus ring */
+    --gold-decor: 46 73% 60%;   /* #E5C54F map "comms" fill, decorative marks */
+    --deep: 281 59% 13%;        /* #2A0E33 deep plum bands, primary pill, nav CTA */
+    --deep-fg: 44 67% 95%;      /* #FBF7EC text on --deep */
+    --line-1: 288 33% 89%;      /* #E5D7EA hairlines, footer rules */
+    --line-2: 288 22% 86%;      /* #DED3E4 card and nav borders */
+    --line-3: 290 17% 83%;      /* #D6C9DC strong borders, inputs */
+    --tint: 285 29% 96%;        /* #F6F2F7 faint violet fills */
+    --glass: 0 0% 100%;         /* glass ground, used at 74% alpha */
+    --glass-alpha: 0.74;
+    --glass-border: 290 17% 83%;/* glass card border at 90% alpha */
+
+    /* Shape & depth (web surface: soft, never the deck's 4px) */
+    --radius-card: 1.5rem;      /* 24px cards, panels, image frames */
+    --radius-inner: 14px;       /* images and tiles inside cards */
+    --radius-island: 2.1rem;    /* floating navbar */
+    --radius-pill: 999px;       /* buttons, tags, chips, filter pills */
+
+    /* Motion — one easing curve for every entrance */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur-nav: 200ms;
+    --dur-reveal: 700ms;
+    --stagger: 120ms;
+
+    /* Type weights — headings carry weight, weight is mapped to colour */
+    --fw-hero: 800;
+    --fw-h2: 800;
+    --fw-h3: 700;
+    --fw-eyebrow: 700;
+
+    /* Section-scale headings (hero keeps its poster scale above) */
+    --fs-h2: clamp(32px, 3.6vw, 52px);
+    --fs-h3: clamp(22px, 1.4rem + 0.4vw, 26px);
+
     /* ── Vows/boxed tokens ── */
     --vows-bg: 32 30% 97%;
     --vows-title: 282 40% 13%;
@@ -1880,4 +1928,61 @@
   @keyframes mc-rise { from { opacity: 0; transform: translateY(var(--rise-y, 12px)); } to { opacity: var(--rise-to, 1); transform: none; } }
   .mc-rise { animation: mc-rise var(--rise-dur, .6s) cubic-bezier(.22, 1, .36, 1) both; animation-delay: var(--rise-delay, 0s); opacity: var(--rise-to, 1); }
   @media (prefers-reduced-motion: reduce) { .mc-rise { animation: none; transform: none; } }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   BOX VARIANTS (redesign §3) — one base card plus named variants.
+   Every boxed/card surface composes these instead of inventing its
+   own ground, border and shadow, so a token change re-skins the site.
+   ────────────────────────────────────────────────────────────────── */
+@layer components {
+  .mc-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--line-2));
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft);
+  }
+  /* Glass: translucent card on the page mesh. */
+  .mc-card-glass {
+    background: hsl(var(--glass) / var(--glass-alpha));
+    border: 1px solid hsl(var(--glass-border) / 0.9);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  /* Dark: deep plum ground for "problem and fix" style blocks. */
+  .mc-card-dark {
+    background: hsl(var(--deep));
+    color: hsl(var(--deep-fg));
+    border: 1px solid hsl(var(--deep));
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+  /* Pillar accent: white card with a 3px pillar-coloured top edge.
+     The pillar colour arrives via --pillar from pillarColors.ts. */
+  .mc-card-pillar {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--line-2));
+    border-top: 3px solid var(--pillar, hsl(var(--primary)));
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft);
+  }
+  /* Shared hover/focus lift for interactive cards (spec §8). */
+  .mc-card-lift {
+    transition: transform 160ms ease-out, box-shadow 160ms ease-out;
+  }
+  .mc-card-lift:hover,
+  .mc-card-lift:focus-within {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card);
+  }
+}
+
+/* Focus: one gold ring on every interactive element (spec §2.3). */
+@layer base {
+  :focus-visible {
+    outline: 2px solid hsl(var(--gold));
+    outline-offset: 2px;
+  }
 }
