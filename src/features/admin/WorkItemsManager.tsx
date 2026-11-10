@@ -20,6 +20,8 @@ import {
 import { fetchAllProofPoints, type ProofPointRecord } from "@/services/proofPoints";
 import { Field, SelectField, SectionBox, MoreFields, TextAreaField } from "./site-editor/FieldComponents";
 import ImagePickerField from "./ImagePickerField";
+import WorkTypeChip from "@/features/site/work/WorkTypeChip";
+import { pillarColorFromKey } from "@/lib/constants/pillarColors";
 
 const PILLAR_OPTIONS = [
   { label: "Internal Communications", value: "ic" },
@@ -96,18 +98,19 @@ const WorkItemsManager = () => {
   if (loading) return <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Loading work items…</p>;
 
   return (
-    <div className="space-y-3 max-w-4xl">
-      <div className="flex items-center justify-between">
-        <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+    <div className="work-admin">
+      <div className="space-y-3 min-w-0">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="admin-sub">
           {items.length} item{items.length === 1 ? "" : "s"}. Published items appear on the Work page in this order.
         </p>
-        <button type="button" className="admin-btn" onClick={addItem}>
-          <Plus size={14} aria-hidden /> New item
+        <button type="button" className="admin-btn primary" onClick={addItem}>
+          <Plus size={14} aria-hidden /> New work item
         </button>
       </div>
 
       {items.length === 0 && (
-        <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+        <p className="admin-panel admin-empty">
           No work items yet. The Work page shows "New work is on its way." until the first one is published.
         </p>
       )}
@@ -115,9 +118,11 @@ const WorkItemsManager = () => {
       <ul className="space-y-2">
         {items.map((item, index) => {
           const editing = editingId === item.id;
+          const pillarColour = pillarColorFromKey(item.pillar);
+          const proof = item.proof_point_id ? proofs.find((p) => p.id === item.proof_point_id) : undefined;
           return (
-            <li key={item.id} className="rounded-md border" style={{ borderColor: "hsl(var(--input))", background: "hsl(var(--card))" }}>
-              <div className="flex items-center gap-2 px-3 py-2">
+            <li key={item.id} className="admin-panel overflow-hidden">
+              <div className="work-admin-row">
                 <div className="flex flex-col">
                   <button type="button" className="admin-btn ghost icon" aria-label="Move up" disabled={index === 0} onClick={() => move(index, -1)}>
                     <ArrowUp size={12} />
@@ -126,29 +131,37 @@ const WorkItemsManager = () => {
                     <ArrowDown size={12} />
                   </button>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{item.title || "(untitled)"}</p>
-                  <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-                    {PILLAR_OPTIONS.find((p) => p.value === item.pillar)?.label ?? item.pillar} · {item.type} · /work/{item.slug}
+                {item.cover_image ? (
+                  <img src={item.cover_image} alt="" loading="lazy" className="work-admin-thumb" />
+                ) : (
+                  <span aria-hidden className="work-admin-thumb" />
+                )}
+                <div className="min-w-0">
+                  <p className="work-admin-title truncate">
+                    {String(index + 1).padStart(2, "0")} · {item.title || "(untitled)"}
                   </p>
+                  <p className="admin-sub truncate">/work/{item.slug}</p>
                 </div>
-                <span
-                  className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-md"
-                  style={{
-                    background: item.status === "published" ? "hsl(var(--admin-ok) / 0.15)" : "hsl(var(--muted))",
-                    color: item.status === "published" ? "hsl(var(--admin-ok))" : "hsl(var(--muted-foreground))",
-                  }}
-                >
-                  {item.status}
+                <WorkTypeChip type={item.type} />
+                <span className="work-admin-pillar">
+                  {pillarColour && <span aria-hidden className="admin-dot" style={{ background: pillarColour }} />}
+                  {PILLAR_OPTIONS.find((p) => p.value === item.pillar)?.label ?? item.pillar}
                 </span>
-                <label className="flex items-center gap-1 text-xs" title="Show among the featured items on the homepage">
+                <span className="work-admin-number">
+                  {item.metric && <strong>{item.metric}</strong>} {item.metric_label || item.honesty_label}
+                  {proof && !proof.approved && <em> (number hidden until its proof point is approved)</em>}
+                </span>
+                <span className={`admin-st ${item.status === "published" ? "live" : "draft"}`}>
+                  {item.status === "published" ? "Published" : "Draft"}
+                </span>
+                <label className="flex items-center gap-1.5" title="Show among the featured items on the homepage">
                   <input
                     type="checkbox"
                     className="accent-current"
                     checked={item.featured_home}
                     onChange={(e) => patch(item.id, { featured_home: e.target.checked }, e.target.checked ? "Featured on the homepage" : "Removed from the homepage")}
                   />
-                  Featured
+                  Home
                 </label>
                 <button type="button" className="admin-btn ghost icon" aria-label={editing ? "Close editor" : "Edit item"} onClick={() => setEditingId(editing ? null : item.id)}>
                   <Pencil size={13} />
@@ -219,6 +232,16 @@ const WorkItemsManager = () => {
           );
         })}
       </ul>
+      </div>
+
+      {/* Where a work item turns up on the site (design: AdminWork). */}
+      <aside className="admin-panel work-admin-where">
+        <h2>Where this shows</h2>
+        <p><strong>Work page:</strong> every published item, in this order, with the pillar and type filters.</p>
+        <p><strong>Homepage and service pages:</strong> wherever a "Work teaser" block is placed. It shows the items ticked Home, or a pillar's items.</p>
+        <p><strong>Case study pages:</strong> items with a case study switched on.</p>
+        <p><strong>Drafts stay off the site.</strong> A number linked to a proof point shows only once that proof point is approved.</p>
+      </aside>
     </div>
   );
 };

@@ -40,4 +40,17 @@ describe("section library", () => {
       expect(a.strip_title.length).toBeGreaterThan(0);
     }
   });
+
+  it("sets no background slab: rows float on the page mesh after the redesign", () => {
+    for (const s of SECTION_LIBRARY) {
+      const row = s.build();
+      expect(row.bg_color || "", `${s.key} sets a background`).toBe("");
+      expect((row.layout as Record<string, unknown>)?.surfaceRadius, `${s.key} sets a surface`).toBeUndefined();
+    }
+  });
+
+  it("offers no email form: the contact section is the booking calendar", () => {
+    const names = SECTION_LIBRARY.map((s) => s.name.toLowerCase()).join(" | ");
+    expect(names).not.toMatch(/form|newsletter|sign.?up/);
+  });
 });

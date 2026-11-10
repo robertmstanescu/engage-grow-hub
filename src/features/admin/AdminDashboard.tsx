@@ -156,7 +156,7 @@ const AdminDashboard = ({ theme = "light", onToggleTheme }: Props) => {
   const bottomItems = ADMIN_DESTINATIONS.filter((d) => d.bottom);
 
   return (
-    <div className="h-screen flex admin-shell">
+    <div className={`h-screen flex admin-shell${isBuilderRoute ? " building" : ""}`}>
       {/* ═══ RAIL ═══ */}
       {isAdminMobile && mobileDrawerOpen && (
         <div onClick={() => setMobileDrawerOpen(false)} aria-hidden className="absolute inset-0 z-40" style={{ background: "hsl(var(--foreground) / 0.4)" }} />

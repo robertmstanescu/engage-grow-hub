@@ -6,6 +6,10 @@
  * product and never depend on a database write; an editor's own saved
  * rows still appear under "My snippets".
  *
+ * After the redesign rows float on the page mesh, so no section sets a
+ * background slab: cards are glass, the founder block is the portrait
+ * layout and the call to action is the dark "room" band.
+ *
  * Inserting one goes through the same path as a snippet
  * (`insertPrebuiltRow`), which clones every id, so a section can be
  * dropped twice on one page without collisions.
@@ -47,7 +51,7 @@ export const SECTION_LIBRARY: LibrarySection[] = [
       eyebrow: "What we do",
       title_lines: ["Say the thing", "everyone is thinking."],
       body: "One sentence on who this is for and what changes when they work with you.",
-      cta_label: "Book a call", cta_url: "#contact",
+      cta_label: "Book a free consultation", cta_url: "#contact",
     }, { strip_title: "Hero" }),
   },
   {
@@ -64,15 +68,15 @@ export const SECTION_LIBRARY: LibrarySection[] = [
       eyebrow: "What you get",
       title_lines: ["Three things, plainly."],
       cards: [
-        { title: "The problem", body: p("Name the pain in one sentence.") },
-        { title: "Who this is for", body: p("The person, the size of team, the moment.") },
-        { title: "What changes", body: p("The result, with a number if you have one.") },
+        { title: "The problem", body: p("Name the pain in one sentence."), variant: "glass" },
+        { title: "Who this is for", body: p("The person, the size of team, the moment."), variant: "glass" },
+        { title: "What changes", body: p("The result, with a number if you have one."), variant: "glass" },
       ],
-    }, { strip_title: "Feature trio", bg_color: "#FFFFFF", layout: { surfaceRadius: "medium" } }),
+    }, { strip_title: "Feature trio" }),
   },
   {
     key: "from-the-blog", name: "From the blog", family: "Cards",
-    build: () => rowWith("from_the_blog", { title: "From the blog" }, { strip_title: "From the blog" }),
+    build: () => rowWith("from_the_blog", { eyebrow: "Latest thinking", title: "From the blog" }, { strip_title: "From the blog" }),
   },
   {
     key: "work-teaser", name: "Work teaser", family: "Cards",
@@ -143,8 +147,9 @@ export const SECTION_LIBRARY: LibrarySection[] = [
       eyebrow: "Who you'll work with",
       title_lines: ["This is who I am"],
       name: "Your name", role: "Founder",
+      layout_style: "portrait",
       body: p("Two short paragraphs. Where you've been, what you've seen, why you do this."),
-    }, { strip_title: "Founder profile", bg_color: "#26142E" }),
+    }, { strip_title: "Founder profile" }),
   },
   {
     key: "testimonials", name: "What clients say", family: "Cards",
@@ -153,7 +158,7 @@ export const SECTION_LIBRARY: LibrarySection[] = [
         { quote: "They named the problem in a week. We'd been circling it for a year.", name: "A client", role: "COO" },
         { quote: "The first plan we've actually followed.", name: "Another client", role: "Head of People" },
       ],
-    }, { strip_title: "Testimonials", bg_color: "#FFFFFF", layout: { surfaceRadius: "medium" } }),
+    }, { strip_title: "Testimonials" }),
   },
   {
     key: "faq", name: "Questions people ask", family: "Questions",
@@ -165,27 +170,30 @@ export const SECTION_LIBRARY: LibrarySection[] = [
         { question: "Do you work outside the UK?", answer: p("Yes. Say where.") },
         { question: "How fast can we start?", answer: p("Give a real number of weeks.") },
       ],
-    }, { strip_title: "FAQ", bg_color: "#FFFFFF", layout: { surfaceRadius: "medium" } }),
+    }, { strip_title: "FAQ" }),
   },
   {
     key: "quote", name: "One quote", family: "Banner",
     build: () => rowWith("quote_band", {
       quote: p("The sentence you'd put on a wall."),
       name: "Who said it", role: "Their role",
-    }, { strip_title: "Quote", bg_color: "#26142E" }),
+    }, { strip_title: "Quote" }),
   },
   {
     key: "cta", name: "Call to action", family: "Banner",
     build: () => rowWith("cta_band", {
+      eyebrow: "What to do about it",
       title_lines: ["Not sure where to start?", "Lift the lid."],
-      button_text: "Book a call", button_url: "#contact",
-    }, { strip_title: "Call to action", bg_color: "#26142E" }),
+      button_text: "Book a free consultation", button_url: "/#contact",
+      band_style: "room",
+    }, { strip_title: "Call to action" }),
   },
   {
-    key: "contact", name: "Contact form", family: "Form",
+    // The site sends no visitor email: contact is the booking calendar.
+    key: "contact", name: "Book a call", family: "Form",
     build: () => rowWith("contact", {
       title_lines: ["Tell us what's haunting you."],
-      body: p("Name, email and one sentence is enough."),
+      body: p("Pick a time that suits you. Thirty minutes, no preparation needed."),
     }, { strip_title: "Contact" }),
   },
 ];

@@ -223,41 +223,22 @@ const BrandSettings = () => {
           contrastRatio(primaryHex, "#FFFFFF") >= contrastRatio(primaryHex, "#1A1A1A")
             ? "#FFFFFF"
             : "#1A1A1A";
-        const subtleFg = fg === "#FFFFFF" ? "rgba(255,255,255,0.72)" : "rgba(26,26,26,0.72)";
-        const dividerFg = fg === "#FFFFFF" ? "rgba(255,255,255,0.18)" : "rgba(26,26,26,0.15)";
         const logo = branding.logo_url || branding.emblem_logo_url || "";
         const t = brand.typography;
         return (
-          <div
-            className="rounded-lg border overflow-hidden"
-            style={{ borderColor: "hsl(var(--border))", backgroundColor: primaryHex }}
-            aria-label="Live brand preview"
-          >
-            <div className="px-6 py-7 md:px-8 md:py-9">
-              <div
-                className="flex items-center justify-between gap-4 pb-5 border-b"
-                style={{ borderColor: dividerFg }}
-              >
+          /* The sample is drawn like the site: a glass card floating on the
+             page mesh, the headline in the heading colour, one pill button
+             in the Primary colour. `.admin-canvas` keeps the site's own
+             tokens inside the admin's night theme. */
+          <div className="admin-canvas brand-sample" aria-label="Live brand preview">
+            <div className="mc-card-glass brand-sample-card">
+              <div className="flex items-center justify-between gap-4 pb-5 border-b" style={{ borderColor: "hsl(var(--line-1))" }}>
                 {logo ? (
-                  <img
-                    src={logo}
-                    alt="Brand logo preview"
-                    className="max-h-10 md:max-h-12 max-w-[180px] object-contain"
-                  />
+                  <img src={logo} alt="Brand logo preview" className="max-h-10 md:max-h-12 max-w-[180px] object-contain" />
                 ) : (
-                  <span
-                    className="font-body text-xs uppercase tracking-[0.25em]"
-                    style={{ color: subtleFg }}
-                  >
-                    No logo uploaded
-                  </span>
+                  <span className="brand-sample-label">No logo uploaded</span>
                 )}
-                <span
-                  className="font-body text-[10px] uppercase tracking-[0.25em]"
-                  style={{ color: subtleFg }}
-                >
-                  Brand Preview · Live
-                </span>
+                <span className="brand-sample-label">Brand preview · live</span>
               </div>
 
               <div className="pt-5 space-y-3">
@@ -267,11 +248,11 @@ const BrandSettings = () => {
                     fontSize: t.h1.fontSize,
                     lineHeight: t.h1.lineHeight,
                     fontWeight: Number(t.h1.fontWeight),
-                    color: fg,
+                    color: "hsl(var(--heading))",
                     margin: 0,
                   }}
                 >
-                  Building unforgettable brands.
+                  A headline in your H1 style
                 </h1>
                 <h2
                   style={{
@@ -279,7 +260,7 @@ const BrandSettings = () => {
                     fontSize: t.h2.fontSize,
                     lineHeight: t.h2.lineHeight,
                     fontWeight: Number(t.h2.fontWeight),
-                    color: fg,
+                    color: "hsl(var(--heading))",
                     margin: 0,
                   }}
                 >
@@ -291,34 +272,28 @@ const BrandSettings = () => {
                     fontSize: t.body.fontSize,
                     lineHeight: t.body.lineHeight,
                     fontWeight: Number(t.body.fontWeight),
-                    color: subtleFg,
+                    color: "hsl(var(--body))",
                     margin: 0,
                     maxWidth: "60ch",
                   }}
                 >
-                  Body text rendered with your selected font family, size, weight, and
-                  line-height — paired against the Primary brand colour and a contrast-safe
-                  foreground so you can judge legibility before publishing.
+                  Body text in your chosen font, size, weight and line height, on the same glass card the site uses.
+                  The button below takes the Primary colour with text that stays readable on it.
                 </p>
+                <span className="brand-sample-button" style={{ background: primaryHex, color: fg }}>
+                  A button
+                </span>
               </div>
 
               {brand.colors.length > 1 && (
-                <div
-                  className="pt-5 mt-5 border-t flex flex-wrap items-center gap-2"
-                  style={{ borderColor: dividerFg }}
-                >
-                  <span
-                    className="font-body text-[10px] uppercase tracking-[0.25em]"
-                    style={{ color: subtleFg }}
-                  >
-                    Palette
-                  </span>
+                <div className="pt-5 mt-5 border-t flex flex-wrap items-center gap-2" style={{ borderColor: "hsl(var(--line-1))" }}>
+                  <span className="brand-sample-label">Palette</span>
                   {brand.colors.map((c) => (
                     <div
                       key={c.id}
                       title={`${c.name} · ${c.hex}`}
                       className="w-6 h-6 rounded-full border"
-                      style={{ backgroundColor: c.hex, borderColor: dividerFg }}
+                      style={{ backgroundColor: c.hex, borderColor: "hsl(var(--line-3))" }}
                     />
                   ))}
                 </div>
@@ -399,24 +374,23 @@ const BrandSettings = () => {
         </div>
       </AccordionSection>
 
-      {/* ── Outline ── the ink line on set row edges, image frames, the
-       *  contact box, blog cards and the navbar island. Site-wide default;
-       *  a row's Style tab can override colour and width for that row. */}
-      <AccordionSection id="outline" label="Outline">
+      {/* ── Fine line ── the hairline on image frames, the contact box,
+       *  blog cards and the navbar island. Site-wide; the per-row ink
+       *  outline was retired with the redesign. */}
+      <AccordionSection id="outline" label="Fine line">
         <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
-          The line drawn on rows with set edges, on picture frames, the contact box, blog cards and the navbar.
-          Any row can override colour and width in its Style ▸ Corners panel.
+          The fine line around picture frames, the contact box, blog cards and the navbar. It is the same on every page.
         </p>
         <div className="space-y-3">
           <ColorField
             label="Colour"
             value={brand.outline?.color ?? ""}
-            fallback="#26142E"
-            onChange={(v) => setBrand((prev) => ({ ...prev, outline: { ...prev.outline, color: v.trim() || "#26142E" } }))}
+            fallback="#D8CCDB"
+            onChange={(v) => setBrand((prev) => ({ ...prev, outline: { ...prev.outline, color: v.trim() || "#D8CCDB" } }))}
           />
           <div className="grid grid-cols-2 gap-3">
             {([
-              ["width", "Rows, frames & boxes"],
+              ["width", "Frames and boxes"],
               ["navbarWidth", "Navbar"],
             ] as const).map(([key, label]) => (
               <label key={key} className="block">

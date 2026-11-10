@@ -984,31 +984,34 @@
 
   /* Admin uses semantic aliases of the site's light brand palette. */
   .admin-light {
-    --background: 30 20% 96%;
-    --foreground: 282 40% 13%;
-    --card: 0 0% 100%;
-    --card-foreground: 282 40% 13%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 282 40% 13%;
-    --muted: 285 38% 94%;
-    --muted-foreground: 282 18% 32%;
-    --border: 285 18% 84%;
-    --input: 285 18% 84%;
-    --ring: 282 55% 32%;
+    /* Every colour here READS a site token (redesign bundle 9B), so the
+       admin and the site are one palette and a brand change moves both.
+       `adminSiteTokens.test.ts` fails if a literal comes back. */
+    --background: var(--tint);
+    --foreground: var(--ink);
+    --card: var(--glass);
+    --card-foreground: var(--ink);
+    --popover: var(--glass);
+    --popover-foreground: var(--ink);
+    --muted: var(--line-1);
+    --muted-foreground: var(--body);
+    --border: var(--line-2);
+    --input: var(--line-3);
+    --ring: var(--gold);
 
     /* Sidebars */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 282 40% 13%;
-    --sidebar-accent: 285 38% 94%;
-    --sidebar-accent-foreground: 282 40% 13%;
-    --sidebar-border: 285 18% 84%;
+    --sidebar-background: var(--glass);
+    --sidebar-foreground: var(--ink);
+    --sidebar-accent: var(--line-1);
+    --sidebar-accent-foreground: var(--ink);
+    --sidebar-border: var(--line-2);
 
-    --admin-primary: 282 55% 32%;
-    --admin-primary-hover: 282 55% 25%;
-    --admin-primary-foreground: 0 0% 100%;
+    --admin-primary: var(--heading);
+    --admin-primary-hover: var(--deep);
+    --admin-primary-foreground: var(--glass);
 
-    --secondary: 282 55% 32%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: var(--heading);
+    --secondary-foreground: var(--glass);
   }
 
 
@@ -1494,9 +1497,10 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   ADMIN SHELL — the dense, hairline look (Phase 1 of the admin reset).
-   Tokens come from .admin-light / .admin-dark; these classes only
-   arrange them. Corners 4px, no shadows on surfaces, one accent.
+   ADMIN SHELL — the site's look on a working tool (redesign bundle 9B).
+   Tokens come from .admin-light / .admin-dark, which read the SITE's
+   tokens; these classes only arrange them. White panels on the lilac
+   tint, pill buttons and chips, display type for titles, one accent.
    ══════════════════════════════════════════════════════════════════ */
 @layer components {
   .admin-dark {
@@ -1529,91 +1533,104 @@
     --destructive-foreground: 270 12% 8%;
     color-scheme: dark;
   }
-  /* Square boxes: the admin uses a 6px radius everywhere (rounded-lg = 6, rounded-md = 4);
-     the site canvas keeps its own 1.5rem so previews stay true. */
-  .admin-light, .admin-dark { --radius: 6px; }
+  /* Soft boxes, like the site: fields and inner boxes use a 12px radius
+     (rounded-lg = 12, rounded-md = 10), panels and tables 20px, buttons and
+     chips are pills. The site canvas keeps its own 1.5rem so previews stay true. */
+  .admin-light, .admin-dark { --radius: 12px; --admin-radius-panel: 20px; }
   .admin-light .admin-canvas, .admin-dark .admin-canvas { --radius: 1.5rem; }
   .admin-light, .admin-dark { --admin-accent: 46 76% 52%; --admin-ok: 156 46% 34%; --admin-warn: 43 75% 41%; --admin-info: 222 52% 47%; --admin-bad: 352 52% 46%; }
   .admin-dark { --admin-accent: 46 76% 60%; --admin-ok: 156 46% 62%; --admin-warn: 46 76% 60%; --admin-info: 222 70% 75%; --admin-bad: 352 70% 72%; }
 
-  .admin-shell { background: hsl(var(--background)); color: hsl(var(--foreground)); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .admin-shell { background: hsl(var(--background)); color: hsl(var(--foreground)); font-size: 13px; font-variant-numeric: tabular-nums; }
   /* Rail */
-  .admin-rail { position: relative; width: 44px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0; background: hsl(var(--card)); border-right: 1px solid hsl(var(--border)); z-index: 30; }
+  .admin-rail { position: relative; width: 52px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 0; background: hsl(var(--card)); border-right: 1px solid hsl(var(--border)); z-index: 30; }
   .admin-rail.mobile { position: absolute; top: 0; bottom: 0; left: 0; width: 220px; align-items: stretch; padding: 10px 8px; transition: transform .2s ease; z-index: 50; }
   .admin-rail.mobile.closed { transform: translateX(-100%); }
-  .admin-rail-logo { width: 28px; height: 28px; margin: 0 auto 10px; border-radius: 4px; display: grid; place-items: center; background: hsl(var(--foreground)); color: hsl(var(--background)); font-family: var(--font-title); font-weight: 800; font-size: 13px; text-decoration: none; }
+  .admin-rail-logo { width: 32px; height: 32px; margin: 0 auto 12px; border-radius: 10px; display: grid; place-items: center; background: hsl(var(--admin-primary)); color: hsl(var(--admin-primary-foreground)); font-family: var(--font-title); font-weight: 800; font-size: 14px; text-decoration: none; }
   .admin-rail.mobile .admin-rail-logo { margin: 0 0 12px 6px; }
   .admin-rail-logo:has(img) { background: transparent; }
-  .admin-rail-item { position: relative; width: 30px; height: 30px; border-radius: 4px; display: grid; place-items: center; color: hsl(var(--muted-foreground)); background: none; border: 0; cursor: pointer; }
+  .admin-rail-item { position: relative; width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; color: hsl(var(--muted-foreground)); background: none; border: 0; cursor: pointer; }
   .admin-rail-item.mobile { width: auto; height: auto; display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: hsl(var(--foreground)); }
   .admin-rail-item:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
-  .admin-rail-item[aria-current="page"] { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
-  .admin-rail-item[aria-current="page"]::before { content: ""; position: absolute; left: -7px; top: 8px; bottom: 8px; width: 2px; border-radius: 1px; background: hsl(var(--admin-accent)); }
+  .admin-rail-item[aria-current="page"] { background: hsl(var(--muted)); color: hsl(var(--admin-primary)); font-weight: 600; }
+  .admin-rail-item[aria-current="page"]::before { content: ""; position: absolute; left: -8px; top: 9px; bottom: 9px; width: 3px; border-radius: 2px; background: hsl(var(--admin-accent)); }
   .admin-rail-item.mobile[aria-current="page"]::before { left: -8px; }
-  .admin-rail-tip { position: absolute; left: 38px; top: 50%; transform: translateY(-50%); padding: 3px 7px; border-radius: 3px; background: hsl(var(--foreground)); color: hsl(var(--background)); font-size: 11.5px; font-weight: 500; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .1s; z-index: 40; }
+  .admin-rail-tip { position: absolute; left: 46px; top: 50%; transform: translateY(-50%); padding: 4px 10px; border-radius: 999px; background: hsl(var(--foreground)); color: hsl(var(--background)); font-size: 12px; font-weight: 500; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .1s; z-index: 40; }
   .admin-rail-item:hover .admin-rail-tip, .admin-rail-item:focus-visible .admin-rail-tip { opacity: 1; }
-  .admin-rail-label { font-size: 13px; font-weight: 500; }
+  .admin-rail-label { font-size: 14px; font-weight: 500; }
+  /* Wide screens: the rail opens into a labelled sidebar (design: AdminWork).
+     The builder keeps the narrow rail so the canvas has the room. */
+  @media (min-width: 1280px) {
+    .admin-shell:not(.building) .admin-rail:not(.mobile) { width: 216px; align-items: stretch; padding: 16px 12px; }
+    .admin-shell:not(.building) .admin-rail:not(.mobile) .admin-rail-logo { margin: 0 0 16px 8px; }
+    .admin-shell:not(.building) .admin-rail:not(.mobile) .admin-rail-item { width: auto; height: 40px; display: flex; align-items: center; gap: 12px; padding: 0 12px; }
+    .admin-shell:not(.building) .admin-rail:not(.mobile) .admin-rail-tip { position: static; transform: none; padding: 0; background: none; color: inherit; font-size: 14px; font-weight: inherit; opacity: 1; }
+    .admin-shell:not(.building) .admin-rail:not(.mobile) .admin-rail-item[aria-current="page"]::before { left: -12px; }
+  }
   /* Topbar */
-  .admin-topbar { display: flex; align-items: center; gap: 12px; height: 40px; flex: none; padding: 0 12px; background: hsl(var(--card)); border-bottom: 1px solid hsl(var(--border)); }
-  .admin-title { font-family: var(--font-body); font-size: 13px; font-weight: 600; margin: 0; white-space: nowrap; }
-  .admin-subtabs { display: flex; gap: 2px; margin-left: 4px; }
-  .admin-subtab { padding: 5px 9px; border-radius: 4px; border: 0; background: none; color: hsl(var(--muted-foreground)); font-size: 12.5px; font-weight: 500; cursor: pointer; }
+  .admin-topbar { display: flex; align-items: center; gap: 12px; min-height: 56px; flex: none; padding: 8px 24px; background: hsl(var(--card)); border-bottom: 1px solid hsl(var(--border)); }
+  .admin-title { font-family: var(--font-title); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: hsl(var(--admin-primary)); margin: 0; white-space: nowrap; }
+  .admin-subtabs { display: flex; gap: 4px; margin-left: 8px; }
+  .admin-subtab { padding: 7px 14px; border-radius: 999px; border: 0; background: none; color: hsl(var(--muted-foreground)); font-size: 13px; font-weight: 500; cursor: pointer; }
   .admin-subtab:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
-  .admin-subtab[aria-selected="true"] { background: hsl(var(--muted)); color: hsl(var(--foreground)); font-weight: 600; }
+  .admin-subtab[aria-selected="true"] { background: hsl(var(--admin-primary)); color: hsl(var(--admin-primary-foreground)); font-weight: 600; }
   /* Main */
-  .admin-main { padding: 20px 24px; }
+  .admin-main { padding: 28px clamp(16px, 2.4vw, 32px); }
   .admin-page { max-width: 1400px; }
   .admin-page-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-  .admin-h2 { font-family: var(--font-body); font-size: 15px; font-weight: 600; margin: 0; }
+  .admin-h2 { font-family: var(--font-title); font-size: 18px; font-weight: 700; color: hsl(var(--admin-primary)); margin: 0; }
   .admin-sub { color: hsl(var(--muted-foreground)); margin: 2px 0 0; }
   .admin-grow { flex: 1; }
   /* Buttons */
-  .admin-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 4px; border: 1px solid hsl(var(--input)); background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: 12.5px; font-weight: 500; line-height: 16px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+  .admin-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 6px 16px; border-radius: 999px; border: 1px solid hsl(var(--input)); background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: 13px; font-weight: 600; line-height: 16px; cursor: pointer; text-decoration: none; white-space: nowrap; }
   .admin-btn:hover:not(:disabled) { background: hsl(var(--muted)); }
   .admin-btn:disabled { opacity: .45; cursor: default; }
-  .admin-btn.primary { background: hsl(var(--foreground)); color: hsl(var(--background)); border-color: hsl(var(--foreground)); }
-  .admin-btn.primary:hover:not(:disabled) { background: hsl(var(--foreground) / .88); }
+  .admin-btn.primary { background: hsl(var(--admin-primary)); color: hsl(var(--admin-primary-foreground)); border-color: hsl(var(--admin-primary)); }
+  .admin-btn.primary:hover:not(:disabled) { background: hsl(var(--admin-primary-hover)); }
   .admin-btn.ghost { border-color: transparent; background: transparent; color: hsl(var(--muted-foreground)); }
   .admin-btn.ghost:hover:not(:disabled) { color: hsl(var(--foreground)); background: hsl(var(--muted)); }
-  .admin-btn.icon { padding: 5px 6px; }
+  .admin-btn.icon { padding: 6px 9px; }
   .admin-link { background: none; border: 0; padding: 0; color: hsl(var(--foreground)); font-weight: 500; cursor: pointer; text-decoration: underline; text-decoration-color: hsl(var(--input)); text-underline-offset: 3px; }
   .admin-link:hover { text-decoration-color: hsl(var(--foreground)); }
-  .admin-search { width: 240px; max-width: 100%; padding: 5px 8px; border: 1px solid hsl(var(--input)); border-radius: 4px; background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: 12.5px; }
-  .admin-input { width: 100%; padding: 6px 8px; border: 1px solid hsl(var(--input)); border-radius: 4px; background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: 12.5px; }
+  .admin-search { width: 260px; max-width: 100%; min-height: 34px; padding: 6px 14px; border: 1px solid hsl(var(--input)); border-radius: 999px; background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: 13px; }
+  .admin-input { width: 100%; padding: 8px 12px; border: 1px solid hsl(var(--input)); border-radius: 10px; background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: 13px; }
   /* Panels and tables */
-  .admin-panel { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 4px; }
+  .admin-panel { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--admin-radius-panel); box-shadow: var(--shadow-soft); }
   .admin-empty { padding: 28px 16px; text-align: center; color: hsl(var(--muted-foreground)); }
-  .admin-table { width: 100%; border-collapse: collapse; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 4px; }
-  .admin-table th { text-align: left; font-weight: 500; color: hsl(var(--muted-foreground)); font-size: 11.5px; padding: 7px 10px; border-bottom: 1px solid hsl(var(--border)); white-space: nowrap; }
-  .admin-table td { padding: 8px 10px; border-bottom: 1px solid hsl(var(--border)); vertical-align: middle; }
+  .admin-table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--admin-radius-panel); box-shadow: var(--shadow-soft); }
+  .admin-table th { text-align: left; font-weight: 700; color: hsl(var(--muted-foreground)); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 12px 14px; background: hsl(var(--muted) / .6); border-bottom: 1px solid hsl(var(--border)); white-space: nowrap; }
+  .admin-table td { padding: 12px 14px; border-bottom: 1px solid hsl(var(--border)); vertical-align: middle; }
   .admin-table tr:last-child td { border-bottom: 0; }
   .admin-table tbody tr:hover td { background: hsl(var(--muted) / .6); }
-  .admin-table .n { font-weight: 500; }
+  .admin-table .n { font-weight: 600; color: hsl(var(--admin-primary)); }
   .admin-table .m { color: hsl(var(--muted-foreground)); }
   .admin-table .m code { font: inherit; }
   .admin-table .r { text-align: right; white-space: nowrap; width: 1%; }
   .admin-table .act { text-align: right; white-space: nowrap; width: 1%; }
   .admin-table .act > * + * { margin-left: 6px; }
   .admin-table .addr { white-space: nowrap; }
-  /* Status: a dot and a word, never a pill */
-  .admin-st { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  /* Status: a tinted pill with a dot, as on the site's chips */
+  .admin-st { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: hsl(var(--muted)); font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .admin-st.live { background: hsl(var(--admin-ok) / .14); color: hsl(var(--admin-ok)); }
+  .admin-st.changes { background: hsl(var(--admin-warn) / .16); color: hsl(var(--admin-warn)); }
+  .admin-st.draft, .admin-st.scheduled { background: hsl(var(--admin-info) / .12); color: hsl(var(--admin-info)); }
   .admin-dot, .admin-st::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: hsl(var(--muted-foreground)); flex: none; }
   .admin-st.live::before, .admin-dot.live { background: hsl(var(--admin-ok)); }
   .admin-st.changes::before, .admin-dot.changes, .admin-dot.seo { background: hsl(var(--admin-warn)); }
   .admin-st.draft::before, .admin-dot.draft { background: hsl(var(--admin-info)); }
   .admin-st.scheduled::before { background: hsl(var(--admin-info)); }
   .admin-dot.leads { background: hsl(var(--admin-bad)); }
-  .admin-tag { display: inline-block; font-size: 10.5px; line-height: 14px; padding: 0 4px; border-radius: 3px; border: 1px solid hsl(var(--admin-accent)); color: hsl(var(--admin-accent)); margin-left: 6px; vertical-align: 1px; }
+  .admin-tag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; line-height: 16px; padding: 0 8px; border-radius: 999px; background: hsl(var(--admin-accent) / .25); color: hsl(var(--foreground)); margin-left: 8px; vertical-align: 1px; }
   /* Overview */
-  .admin-todo-item { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: center; padding: 9px 12px; border-bottom: 1px solid hsl(var(--border)); }
+  .admin-todo-item { display: grid; grid-template-columns: 14px 1fr auto; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid hsl(var(--border)); }
   .admin-todo-item:last-child { border-bottom: 0; }
   .admin-todo-title { font-weight: 500; }
   .admin-todo-detail { color: hsl(var(--muted-foreground)); }
   /* Quick-action menu */
-  .admin-kebab { width: 24px; height: 22px; border-radius: 4px; border: 0; background: none; color: hsl(var(--muted-foreground)); display: inline-grid; place-items: center; vertical-align: middle; cursor: pointer; }
+  .admin-kebab { width: 28px; height: 28px; border-radius: 999px; border: 0; background: none; color: hsl(var(--muted-foreground)); display: inline-grid; place-items: center; vertical-align: middle; cursor: pointer; }
   .admin-kebab:hover, .admin-kebab[data-state="open"] { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
-  .admin-menu { background: hsl(var(--popover)); color: hsl(var(--popover-foreground)); border: 1px solid hsl(var(--input)); border-radius: 4px; box-shadow: 0 8px 24px rgba(0,0,0,.18); font-size: 12.5px; }
-  .admin-menu-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 6px 8px; border-radius: 3px; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; }
+  .admin-menu { background: hsl(var(--popover)); color: hsl(var(--popover-foreground)); border: 1px solid hsl(var(--border)); border-radius: 14px; box-shadow: var(--shadow-card); font-size: 13px; }
+  .admin-menu-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 10px; border-radius: 8px; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; }
   .admin-menu-item:hover { background: hsl(var(--muted)); }
   .admin-menu-item.danger { color: hsl(var(--admin-bad)); }
   .admin-menu-hint { color: hsl(var(--muted-foreground)); font-size: 11px; margin-left: 12px; }
@@ -1623,6 +1640,40 @@
   .admin-details > summary::-webkit-details-marker { display: none; }
   .admin-details > summary::before { content: "▸ "; font-size: 10px; }
   .admin-details[open] > summary::before { content: "▾ "; }
+}
+
+/* Work list (design: AdminWork): one panel per item, the site's chip and
+   pillar dot, and a side note on where items show. */
+@layer components {
+  .work-admin { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; max-width: 1400px; }
+  @media (min-width: 1500px) { .work-admin { grid-template-columns: minmax(0, 1fr) 280px; } }
+  .work-admin-row { display: grid; grid-template-columns: auto 56px minmax(140px, 2fr) auto minmax(0, 1fr) minmax(0, 1.2fr) auto auto auto auto; align-items: center; gap: 14px; padding: 10px 14px; }
+  .work-admin-thumb { display: block; width: 56px; height: 40px; border-radius: 10px; object-fit: cover; background: hsl(var(--muted)); }
+  .work-admin-title { font-weight: 600; color: hsl(var(--admin-primary)); margin: 0; }
+  .work-admin-pillar { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+  .work-admin-number { min-width: 0; color: hsl(var(--muted-foreground)); }
+  .work-admin-number strong { color: hsl(var(--admin-primary)); }
+  .work-admin-number em { font-style: normal; color: hsl(var(--admin-warn)); }
+  @media (max-width: 1100px) {
+    .work-admin-row { grid-template-columns: auto 56px minmax(0, 1fr) auto auto auto; }
+    .work-admin-row > .work-chip, .work-admin-pillar, .work-admin-number { display: none; }
+  }
+  @media (max-width: 640px) {
+    .work-admin-row { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+    .work-admin-thumb, .work-admin-row > label { display: none; }
+  }
+  .work-admin-where { padding: 20px; display: flex; flex-direction: column; gap: 12px; color: hsl(var(--muted-foreground)); }
+  .work-admin-where h2 { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: hsl(var(--gold-text)); }
+  .work-admin-where p { margin: 0; line-height: 1.55; }
+  .work-admin-where strong { color: hsl(var(--admin-primary)); }
+}
+
+/* Design screen sample: the site's glass card on the page mesh. */
+@layer components {
+  .brand-sample { padding: clamp(16px, 3vw, 32px); border: 1px solid hsl(var(--line-2)); border-radius: 20px; background: var(--gradient-mesh-page, linear-gradient(135deg, hsl(var(--tint)), hsl(var(--paper)))); }
+  .brand-sample-card { padding: clamp(20px, 3vw, 36px); }
+  .brand-sample-label { font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: hsl(var(--gold-text)); }
+  .brand-sample-button { display: inline-flex; align-items: center; min-height: 44px; margin-top: 8px; padding: 0 24px; border-radius: 999px; font-family: var(--font-body); font-size: 15px; font-weight: 600; }
 }
 
 /* Design screen: controls left, a live sample page right. */
