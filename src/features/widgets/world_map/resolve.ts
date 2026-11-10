@@ -81,10 +81,16 @@ export const workedPlaces = (c: WorldMapContent): { comms: Set<string>; hr: Set<
   return { comms, hr };
 };
 
-/** Counter maths: comms = every worked place; HR = the HR list. */
-export const mapCounters = (c: WorldMapContent): { comms: number; hr: number } => {
+/**
+ * Counter maths: comms = every worked place; HR = the HR list; main = the
+ * main-markets list (Romania included: it is a market, just not a worked
+ * place). Unknown names are skipped and duplicates count once.
+ */
+export const mapCounters = (c: WorldMapContent): { comms: number; hr: number; main: number } => {
   const { comms, hr } = workedPlaces(c);
-  return { comms: comms.size, hr: hr.size };
+  const main = new Set<string>();
+  for (const raw of c.main || []) { const hit = findCountry(raw); if (hit) main.add(hit.name); }
+  return { comms: comms.size, hr: hr.size, main: main.size };
 };
 
 /** One-line hover/focus label for a country. */

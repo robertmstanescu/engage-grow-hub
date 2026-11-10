@@ -49,7 +49,9 @@ Rules that are easy to get wrong:
   map zooms by narrowing its `viewBox` (`world_map/zoom.ts`); a plain
   wheel must keep scrolling the page. Map colours are
   from the secondary palette (`--map-worked` Prince, `--map-hr` Admiral,
-  `--map-main` Mars Yellow), chosen for him on 10 Nov 2026. The map art
+  `--map-main` Mars Yellow), chosen for him on 10 Nov 2026. The three
+  counters (comms, HR, main markets) wear the same legend colours, and
+  the map box does not brighten on hover (only clickable glass does). The map art
   is generated (`scripts/world-map/build-map-data.mjs`, amCharts
   Mercator, no Antarctica); the "Map: amCharts" credit by the legend is
   the licence's condition and must stay. Small labels and eyebrows on

@@ -505,8 +505,10 @@
     transition: border-color 300ms ease, box-shadow 300ms ease, background-color 300ms ease;
   }
 
-  /* Hover: gentle lift + slightly deeper soft shadow (no dark glow). */
-  .glass:hover {
+  /* Hover: gentle lift + slightly deeper soft shadow (no dark glow), only on
+     glass you can click. A static box such as the world map or a document
+     card keeps its see-through glass under the pointer (owner, 11 Nov 2026). */
+  a.glass:hover, button.glass:hover {
     background: hsl(0 0% 100% / 0.9);
     border-color: hsl(280 30% 78%);
     box-shadow: var(--shadow-card);
