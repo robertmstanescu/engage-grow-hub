@@ -312,8 +312,8 @@ const Navbar = () => {
                     onFocus={() => setOpenDropdown(item.label)}
                     aria-haspopup="true"
                     aria-expanded={open}
-                    className="top-nav-label font-body inline-flex items-center gap-1 h-[1.1rem]"
-                    data-active={active}
+                    className="nav-pill top-nav-label font-body inline-flex items-center gap-1"
+                    data-active={active || item.items.some((s) => isActive(s.href))}
                     style={{
                       fontSize: 14,
                       color: active ? "hsl(var(--heading))" : "hsl(var(--body))",
@@ -335,17 +335,12 @@ const Navbar = () => {
                          replace the centring one and push the menu right. */
                       <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 min-w-[240px] z-50">
                         <div
-                          className="mc-rise flex flex-col py-2 overflow-hidden"
+                          className="lg-light mc-rise flex flex-col p-2 gap-0.5 overflow-hidden"
                           data-nav-dropdown
                           style={{
                             "--rise-y": "-6px",
                             "--rise-dur": "0.18s",
                             borderRadius: "calc(var(--radius) * 1.2)",
-                            backgroundColor: "hsl(var(--card) / 0.98)",
-                            backdropFilter: "blur(18px) saturate(140%)",
-                            WebkitBackdropFilter: "blur(18px) saturate(140%)",
-                            border: "1px solid hsl(var(--border))",
-                            boxShadow: "var(--shadow-soft)",
                           } as React.CSSProperties}
                         >
                           {item.items.map((sub) => {
@@ -361,7 +356,8 @@ const Navbar = () => {
                                 /* The link is the full row, so the hover tint
                                    reaches both edges; the label inside keeps
                                    the menu-label rules (and their width cap). */
-                                className="block px-4 py-2 transition-colors duration-150 hover:bg-[hsl(var(--muted))] focus-visible:bg-[hsl(var(--muted))]"
+                                className="nav-sub block px-4 py-2 text-center"
+                                data-active={subActive}
                                 style={{ textDecoration: "none" }}
                               >
                                 <span
@@ -389,7 +385,7 @@ const Navbar = () => {
                 key={item.label}
                 href={safeHref(item.href)}
                 onClick={(e) => handleNavClick(e, item.href)}
-                className="top-nav-label font-body inline-flex items-center h-[1.1rem]"
+                className="nav-pill top-nav-label font-body inline-flex items-center"
                 data-active={active}
                 style={{
                   fontSize: 14,

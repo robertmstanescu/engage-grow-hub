@@ -159,7 +159,7 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
                     return (
                       <li key={j}>
                         <a href={resolveHref(link.href)} className={linkClass} style={linkStyle}>
-                          {dot ? <span aria-hidden className="inline-block rounded-full flex-none" style={{ width: 10, height: 10, backgroundColor: dot }} /> : null}
+                          {dot ? <span aria-hidden className="dot-3d inline-block rounded-full flex-none" style={{ width: 10, height: 10, backgroundColor: dot }} /> : null}
                           {link.label}
                         </a>
                       </li>

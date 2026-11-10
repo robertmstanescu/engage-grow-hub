@@ -2122,9 +2122,13 @@
 
 /* Focus: one gold ring on every interactive element (spec §2.3). */
 @layer base {
+  /* Keyboard focus: a white glass ring with a soft violet halo that
+     follows the element's own curve (owner, 10 Nov 2026: no yellow
+     frame). Still clearly visible for keyboard users. */
   :focus-visible {
-    outline: 2px solid hsl(var(--gold));
+    outline: 2px solid rgb(255 255 255 / 0.95);
     outline-offset: 2px;
+    box-shadow: 0 0 0 5px rgb(77 27 94 / 0.35);
   }
 }
 
@@ -2785,6 +2789,10 @@ section.snap-section .contact-title[data-row-part="title"] {
   --lg-dark-shadow: inset 0 1px 0 rgb(255 255 255 / 0.42), inset 0 -3px 8px rgb(0 0 0 / 0.25), 0 14px 30px -10px rgb(42 14 51 / 0.55);
 }
 .lg-light,
+.glass,
+.mc-card,
+.mc-card-pillar,
+.work-card,
 .btn-ghost-ink,
 .work-pill,
 .tmc-replay,
@@ -2806,6 +2814,7 @@ section.snap-section .contact-title[data-row-part="title"] {
 .lg-dark,
 .btn-ink,
 .cta-room,
+.proof-deep,
 .surface-invert,
 .work-pill[aria-pressed="true"] {
   background-image: var(--lg-dark-sheen);
@@ -2822,6 +2831,7 @@ section.snap-section .contact-title[data-row-part="title"] {
 .lg-tag,
 .pill-tag,
 .work-chip,
+.work-chip[data-type],
 .cta-room-button {
   background-image: linear-gradient(180deg, rgb(255 255 255 / 0.24), rgb(255 255 255 / 0) 60%);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 6px 14px -8px rgb(42 14 51 / 0.35);
@@ -2837,3 +2847,42 @@ section.snap-section .contact-title[data-row-part="title"] {
 .contact-cal { container-type: inline-size; }
 .contact-cal-frame { height: 1240px; }
 @container (min-width: 780px) { .contact-cal-frame { height: 760px; } }
+
+/* 3D dots (owner, 10 Nov 2026): a small glass bead. The dot keeps its
+   own background-color; a highlight and a soft inner shade sit on top. */
+.dot-3d {
+  background-image: radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.75), rgb(255 255 255 / 0) 52%);
+  box-shadow: inset 0 -1.5px 2px rgb(0 0 0 / 0.35), 0 1px 2px rgb(42 14 51 / 0.3);
+}
+
+/* Menu: each link sits in a pill. The current page (or the open menu,
+   or a page inside it) shows as a raised glass pill (owner, 10 Nov 2026). */
+.nav-pill { padding: 8px 14px; border-radius: 999px; border: 1px solid transparent; transition: background 200ms ease, box-shadow 200ms ease, border-color 200ms ease; }
+.nav-pill:hover,
+.nav-pill[data-active="true"],
+.nav-pill[aria-expanded="true"] {
+  background: var(--lg-light-bg-solid);
+  border-color: var(--lg-rim);
+  box-shadow: var(--lg-light-shadow);
+}
+/* Dropdown entries: centred, each one a glass pill on hover, focus or
+   when it is the page being read. */
+.nav-sub { border-radius: 999px; border: 1px solid transparent; transition: background 160ms ease, box-shadow 160ms ease; }
+.nav-sub .top-nav-label { margin-inline: auto; }
+.nav-sub:hover,
+.nav-sub:focus-visible,
+.nav-sub[data-active="true"] {
+  background: var(--lg-light-bg-solid);
+  border-color: var(--lg-rim);
+  box-shadow: var(--lg-light-shadow);
+}
+
+/* "Done looks like": warm yellow glass inside the glass card (glass
+   within glass, owner 10 Nov 2026), more see-through than before. */
+.tier-done {
+  background: linear-gradient(180deg, rgb(250 236 192 / 0.42), rgb(250 236 192 / 0.22));
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid rgb(255 255 255 / 0.8);
+  box-shadow: inset 0 1px 0 #fff, inset 0 -3px 8px rgb(153 125 0 / 0.08), 0 10px 22px -14px rgb(153 125 0 / 0.35);
+}

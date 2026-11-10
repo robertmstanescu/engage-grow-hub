@@ -147,11 +147,9 @@ const CookieConsent = () => {
         className="w-[calc(100vw-3.25rem)] max-w-[420px] flex flex-col"
       >
         <div
-          className="rounded-xl backdrop-blur-md overflow-hidden flex flex-col min-h-0"
+          data-solid="true"
+          className="lg-light rounded-xl overflow-hidden flex flex-col min-h-0"
           style={{
-            backgroundColor: "hsl(var(--card) / 0.98)",
-            border: "1px solid hsl(var(--border))",
-            boxShadow: "var(--shadow-card)",
             color: "hsl(var(--foreground))",
           }}
         >
@@ -286,7 +284,7 @@ const CookieConsent = () => {
               <button
                 type="button"
                 onClick={() => recordChoice("accepted", false)}
-                className="flex-1 font-display text-micro uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
+                className="lg-tag flex-1 font-display text-micro uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
                 style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
               >
                 {currentStatus === "rejected" ? "Accept cookies" : "Accept cookies"}
@@ -317,11 +315,9 @@ const CookieConsent = () => {
       className="w-[calc(100vw-3.25rem)] max-w-[340px]"
     >
       <div
-        className="rounded-xl p-4 backdrop-blur-md"
+        data-solid="true"
+        className="lg-light rounded-xl p-4"
         style={{
-          backgroundColor: "hsl(var(--card) / 0.98)",
-          border: "1px solid hsl(var(--border))",
-          boxShadow: "var(--shadow-card)",
           color: "hsl(var(--foreground))",
         }}
       >
@@ -350,7 +346,7 @@ const CookieConsent = () => {
                 <button
                   type="button"
                   onClick={() => recordChoice("accepted")}
-                  className="flex-1 font-display text-micro uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
+                  className="lg-tag flex-1 font-display text-micro uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
                   style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
                 >
                   Accept
@@ -369,7 +365,7 @@ const CookieConsent = () => {
                 <button
                   type="button"
                   onClick={() => recordChoice("accepted")}
-                  className="flex-1 font-display text-micro uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
+                  className="lg-tag flex-1 font-display text-micro uppercase tracking-[0.15em] font-bold px-3 py-2 rounded-full transition-opacity hover:opacity-90"
                   style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}
                 >
                   Accept

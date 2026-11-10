@@ -691,7 +691,7 @@ export const HeroView = ({
                 const chipStyle: React.CSSProperties = { padding: "8px 14px", fontSize: 13, lineHeight: 1.4, color: "hsl(var(--foreground))", overflowWrap: "anywhere", textDecoration: "none" };
                 const inner = (
                   <>
-                    <span aria-hidden className="flex-none rounded-full" style={{ width: 8, height: 8, background: PILLAR_COLORS[key] || "hsl(var(--deep))" }} />
+                    <span aria-hidden className="dot-3d flex-none rounded-full" style={{ width: 8, height: 8, backgroundColor: PILLAR_COLORS[key] || "hsl(var(--deep))" }} />
                     {part}
                   </>
                 );

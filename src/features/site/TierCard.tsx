@@ -106,7 +106,7 @@ const TierCard = memo(({
         /* The box shares its height with its neighbours (subgrid), so the
            words sit in its middle rather than at the top (owner, 10 Nov
            2026). */
-        <p className="font-body tier-done" style={{ display: "flex", alignItems: "center", borderRadius: 14, background: "rgba(250, 236, 192, 0.55)", padding: "14px 16px", fontSize: 14, lineHeight: 1.6, color: "hsl(var(--foreground))" }}>
+        <p className="font-body tier-done" style={{ display: "flex", alignItems: "center", borderRadius: 14, padding: "14px 16px", fontSize: 14, lineHeight: 1.6, color: "hsl(var(--foreground))" }}>
           <span><strong>{split.label}</strong> {split.done}</span>
         </p>
       ) : <div aria-hidden className="align-empty" />}
