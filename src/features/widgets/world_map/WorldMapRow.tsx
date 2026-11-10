@@ -1,3 +1,4 @@
+import { parseContent } from "@/lib/parseContent";
 import { lazy, Suspense, useMemo } from "react";
 import type { PageRow } from "@/types/rows";
 import { getRowColumns } from "@/lib/constants/rowDefaults";
@@ -12,7 +13,7 @@ const WorldMapArt = lazy(() => import("./WorldMapArt"));
 
 const WorldMapRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; rowIndex?: number; align?: Alignment; vAlign?: VAlign }) => {
   const { contents, isMultiCol } = getRowColumns(row);
-  const c: WorldMapContent = worldMapSchema.parse(contents[0] ?? {});
+  const c: WorldMapContent = parseContent(worldMapSchema, contents[0]);
   const { ref, isVisible } = useScrollReveal();
 
   // Defaults hold no countries — the owner fills the three lists (the

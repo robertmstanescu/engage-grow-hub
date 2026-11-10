@@ -11,6 +11,7 @@ import { resolveAspectRatio, focalObjectPosition } from "@/lib/imageShape";
 import { RowEyebrow, RowTitle, RowSubtitle, RowSection } from "./typography";
 // EPIC 1 / US 1.1 — atomic-node selection.
 import SelectableWrapper from "@/features/admin/builder/SelectableWrapper";
+import { pillarColorFromKey } from "@/lib/constants/pillarColors";
 
 /**
  * Percentage/function-based clip-path values — these scale correctly to
@@ -75,7 +76,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
 
   /* Shape preset + focal point (shared vocabulary — see src/lib/imageShape.ts).
      Falls back to the historic 4:5 frame so untouched rows don't move. */
-  const imgAspect = resolveAspectRatio(c.image_ratio, 4 / 5) ?? 4 / 5;
+  const imgAspect = resolveAspectRatio(c.image_ratio, 6 / 5) ?? 6 / 5;
   const imgFocal = focalObjectPosition(c.image_focal_x, c.image_focal_y);
 
   const captionBg = c.color_caption_bg || "hsl(var(--card) / 0.9)";
@@ -83,10 +84,10 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
   const noteColor = c.color_note || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 55%, transparent)";
 
   const containerPos = align === "center" ? "mx-auto"
-    : align === "right" ? "ml-auto mr-6"
-    : "mr-auto ml-6";
+    : align === "right" ? "mx-auto"
+    : "mx-auto";
 
-  const titleLines: string[] = (c.title_lines || []).map((li: any) =>
+  const titleLines: string[] = (c.title_lines || []).map((li: unknown) =>
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`
   );
 
@@ -126,10 +127,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
           style={{
             aspectRatio: String(imgAspect),
             /* Match every other box on the site rather than a 4px sliver. */
-            borderRadius: shape === "default" ? "var(--radius)" : 0,
-            /* Ink outline on the picture frame. Only the rectangular frame:
-               a clip-path shape would cut the border off. */
-            ...(shape === "default" ? { border: "var(--outline-ink-border)" } : null),
+            borderRadius: shape === "default" ? 28 : 0,
             clipPath: obbPath ? `url(#img-clip-${clipId})` : CLIP_PATHS[shape] || undefined,
             backfaceVisibility: "hidden",
             transform: "translateZ(0)",
@@ -167,17 +165,22 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
           )}
         </div>
         {c.floating_caption && (
-          <div
-            className="absolute px-3 py-1.5 rounded-lg font-body text-xs backdrop-blur-md"
+          /* Handwritten tag hanging off the picture's corner (Main artboard). */
+          <span
+            className="absolute"
             style={{
-              ...CAPTION_STYLE[captionPos],
-              backgroundColor: captionBg,
-              color: captionText,
-              backfaceVisibility: "hidden",
+              ...(captionPos.startsWith("top") ? { top: -22 } : { bottom: -22 }),
+              ...(captionPos.endsWith("left") ? { left: -12 } : captionPos.endsWith("center") ? { left: "50%", transform: "translateX(-50%)" } : { right: -12 }),
+              background: c.color_caption_bg || "#FFFFFF",
+              padding: "10px 18px",
+              borderRadius: 14,
+              boxShadow: "0 12px 30px -18px rgba(38,20,46,0.4)",
             }}
           >
-            {c.floating_caption}
-          </div>
+            <span style={{ fontFamily: "'Architects Daughter', cursive", fontSize: 20, lineHeight: 1.4, color: c.color_caption_text || "hsl(var(--link))", transform: "rotate(-3deg)", display: "inline-block" }}>
+              {c.floating_caption}
+            </span>
+          </span>
         )}
       </div>
     </SelectableWrapper>
@@ -226,8 +229,8 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
             html
             as="div"
             data-row-part="body"
-            className="font-body leading-[var(--lh-body)] measure [&_p]:my-[var(--para-space)]"
-            style={{ fontSize: "var(--fs-body)", color: c.color_description || "color-mix(in srgb, var(--row-fg, hsl(var(--foreground))) 80%, transparent)", height: "auto", overflow: "visible" }}
+            className="font-body leading-[var(--lh-body)] [&_p]:my-[var(--para-space)] [&_p:first-child]:mt-0"
+            style={{ fontSize: 17, color: c.color_description || "var(--row-body, hsl(var(--body)))", height: "auto", overflow: "visible" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
           />
         </SelectableWrapper>
@@ -255,6 +258,61 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
     </div>
   );
 
+  /* Panel look (service artboards, "What good looks like"): one rounded
+     colour panel, eyebrow and headline on the left, the text on the
+     right, no picture. "pillar" takes the page's pillar colour, "dark"
+     the deep plum. */
+  const panelStyle: string = c.panel_style || "";
+  if (panelStyle === "pillar" || panelStyle === "dark") {
+    const panelBg = (panelStyle === "pillar" && pillarColorFromKey(c.pillar)) || "hsl(var(--deep))";
+    return (
+      <RowSection
+        row={row}
+        vAlign={vAlign}
+        bleed
+        innerRef={(el) => { (ref as React.MutableRefObject<HTMLElement | null>).current = el; }}
+        style={{ padding: "clamp(24px, 3vw, 48px) clamp(16px, 3vw, 48px)" }}
+      >
+        <div
+          className="relative z-10 w-full flex flex-wrap items-end text-left"
+          style={{
+            borderRadius: 32,
+            background: panelBg,
+            padding: "clamp(48px, 6vw, 96px) clamp(24px, 5vw, 80px)",
+            gap: 48,
+            ["--row-heading" as string]: "#FFFFFF",
+            ["--row-fg" as string]: "#FFFFFF",
+            ["--row-body" as string]: "rgba(255,255,255,0.86)",
+            ["--row-eyebrow" as string]: "hsl(var(--gold-crush))",
+            ["--row-accent" as string]: "hsl(var(--gold-crush))",
+            ["--fs-title" as string]: "clamp(36px, 4.4vw, 64px)",
+          } as React.CSSProperties}
+        >
+          <div className="flex flex-col" style={{ flex: "1 1 520px", gap: 8, minWidth: 0 }}>
+            {c.eyebrow && <RowEyebrow color={c.color_eyebrow}>{c.eyebrow}</RowEyebrow>}
+            {(titleLines.length > 0 || c.title) && (
+              <RowTitle color={c.color_title} className="!mb-0 !font-extrabold">
+                {titleLines.length > 0
+                  ? titleLines.map((line, i) => (
+                      <span key={i}>{i > 0 && <br />}<span dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripP(line)) }} /></span>
+                    ))
+                  : c.title}
+              </RowTitle>
+            )}
+          </div>
+          {c.description && (
+            <div
+              data-row-part="body"
+              className="font-body [&_p]:my-[var(--para-space)] [&_p:first-child]:mt-0 [&_p:last-child]:mb-0"
+              style={{ flex: "1 1 380px", minWidth: 0, fontSize: 17, lineHeight: 1.75, color: "var(--row-body)" }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.description) }}
+            />
+          )}
+        </div>
+      </RowSection>
+    );
+  }
+
   return (
     <RowSection
       row={row}
@@ -273,7 +331,7 @@ const ImageTextRow = memo(({ row, rowIndex, align = "center", vAlign = "middle" 
           className="grid grid-cols-1 items-center"
           style={{
             gridTemplateColumns: isWide ? gridCols : "1fr",
-            gap: "2rem",
+            gap: isWide ? 56 : 40,
           }}
         >
           {imgPos === "left" ? (

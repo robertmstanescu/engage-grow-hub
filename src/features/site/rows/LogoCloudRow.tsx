@@ -46,7 +46,7 @@ const LogoCloudRow = ({
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const logos: LogoCloudLogo[] = Array.isArray(c.logos) ? c.logos : [];
   // Normalise title_lines: older entries may be plain strings.
-  const titleLines: string[] = (c.title_lines || []).map((li: any) =>
+  const titleLines: string[] = (c.title_lines || []).map((li: unknown) =>
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`,
   );
   const hasHeader = !!c.eyebrow || titleLines.length > 0 || !!c.subtitle || !!c.body;

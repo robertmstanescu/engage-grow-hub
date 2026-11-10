@@ -67,6 +67,8 @@ interface HeroContent {
   visual_image_focal_y?: number;
   /** "centred" (default card beside the text) | "half_bleed" (photo bleeds off the right edge). */
   visual_layout?: string;
+  /** Headline size: "" (default) | "display" (index pages) | "compact" (service pages). */
+  title_size?: string;
   /** Second, quieter link next to the primary button. */
   secondary_cta_label?: string;
   secondary_cta_url?: string;
@@ -385,7 +387,15 @@ export const HeroView = ({
 
   /* Per-line shrink-to-fit so no title line ever wraps unintentionally
      (see useFitTitleLines above). */
-  const titleRef = useFitTitleLines(titleLines.length, align === "left");
+  /* Titles wrap naturally at the design's size (redesign): the old
+     shrink-to-fit pass scaled the homepage headline down to under half
+     its drawn size, and the project rule is never to shrink copy with
+     script. `--hero-fit-scale` therefore stays at its default of 1. */
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const titleSizeVar =
+    c.title_size === "display" ? "var(--fs-hero-title-display)"
+    : c.title_size === "compact" ? "var(--fs-hero-title-compact)"
+    : "var(--fs-hero-title)";
 
   /**
    * Cold-load guard — `isLoading` is an explicit prop the caller
@@ -551,14 +561,14 @@ export const HeroView = ({
           every breakpoint while the headline stays poster-sized.
         */}
         <div
-          className={`flex w-full min-w-0 flex-col gap-6 ${alignClass} ${halfBleed ? "justify-center lg:flex-[999_1_560px]" : hasVisual ? "lg:flex-1" : ""}`}
+          className={`flex w-full min-w-0 flex-col gap-7 ${alignClass} ${halfBleed ? "justify-center lg:flex-[999_1_560px]" : hasVisual ? "lg:flex-1" : ""}`}
           style={halfBleed ? { padding: "clamp(32px, 5vw, 80px) clamp(16px, 5vw, 64px) clamp(48px, 6vw, 96px) clamp(16px, 5vw, 96px)" } : undefined}
         >
 
           {leading}
           {c.label && (
             <p
-              className="mc-rise font-body tracking-[0.32em] uppercase flex-shrink-0"
+              className="mc-rise font-body font-bold tracking-[0.32em] uppercase flex-shrink-0"
               style={{ "--rise-dur": "1s", "--rise-delay": "0.2s", color: c.color_label || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" } as React.CSSProperties}>
               <Field fieldPath="label" as="span">
                 {c.label}
@@ -568,11 +578,14 @@ export const HeroView = ({
 
           <h1
             ref={titleRef}
-            className="font-display font-black leading-[0.9] tracking-tight flex-shrink-0 w-full"
+            className="font-display font-extrabold flex-shrink-0 w-full"
             style={{
               color: "hsl(var(--hero-title))",
-              fontSize: "calc(var(--fs-hero-title) * var(--hero-fit-scale, 1))",
-            }}>
+              fontSize: titleSizeVar,
+              lineHeight: 0.94,
+              letterSpacing: "-0.025em",
+              textWrap: "balance",
+            } as React.CSSProperties}>
             {titleLines.map((line, i) => (
               <span
                 key={i}
@@ -624,8 +637,8 @@ export const HeroView = ({
                 fieldPath="body"
                 html
                 as="div"
-                className={`rich-text font-body max-w-[640px] leading-relaxed ${marginClass}`}
-                style={{ color: "hsl(var(--hero-body))", opacity: 0.75, fontSize: "var(--fs-hero-body)" }}
+                className={`rich-text font-body max-w-[580px] ${marginClass}`}
+                style={{ color: "hsl(var(--hero-body))", fontSize: "var(--fs-hero-body)", lineHeight: 1.7 }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body) }}
               />
             </div>
@@ -640,8 +653,7 @@ export const HeroView = ({
                   href={c.secondary_cta_url}
                   target={c.secondary_cta_url.startsWith("http") ? "_blank" : undefined}
                   rel={c.secondary_cta_url.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="font-body font-semibold inline-flex items-center gap-2"
-                  style={{ color: "hsl(var(--link))", fontSize: "var(--fs-body)" }}
+                  className="link-arrow-mc"
                 >
                   {c.secondary_cta_label} <span aria-hidden>→</span>
                 </a>
@@ -656,9 +668,11 @@ export const HeroView = ({
               style={{
                 "--rise-dur": "1s", "--rise-delay": "1.3s",
                 fontFamily: "'Architects Daughter', cursive",
-                color: c.tagline_color || c.color_tagline || "hsl(var(--primary))",
-                fontSize: "var(--fs-h3)",
-                transform: "rotate(-1.5deg)",
+                color: c.tagline_color || c.color_tagline || "hsl(var(--link))",
+                fontSize: 20,
+                lineHeight: 1.4,
+                transform: "rotate(-2deg)",
+                transformOrigin: "left center",
               } as React.CSSProperties}>
               <Field fieldPath="tagline" as="span">
                 {c.tagline}
@@ -669,7 +683,7 @@ export const HeroView = ({
 
         {halfBleed && (
           <div
-            className="mc-rise relative w-full lg:flex-[1_1_420px] min-h-[clamp(360px,46vw,700px)]" style={{ "--rise-y": "20px", "--rise-dur": "0.8s", "--rise-delay": "0.65s" } as React.CSSProperties}>
+            className="mc-rise relative w-full lg:flex-[1_1_420px] min-h-[clamp(420px,46vw,700px)]" style={{ "--rise-y": "20px", "--rise-dur": "0.8s", "--rise-delay": "0.65s" } as React.CSSProperties}>
             <img
               src={transformImageUrl(c.visual_image_url!, { width: 1200 })}
               srcSet={buildImageSrcSet(c.visual_image_url)}

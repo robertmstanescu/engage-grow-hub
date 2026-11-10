@@ -139,9 +139,11 @@
     --tint: 285 29% 96%;        /* #F6F2F7 faint violet fills */
     --glass: 0 0% 100%;         /* glass ground, used at 74% alpha */
     --glass-alpha: 0.74;
+    --glass-bg: 0 0% 100% / 0.74; /* ready-made `hsl(var(--glass-bg))` ground for glass cards */
     --glass-border: 290 17% 83%;/* glass card border at 90% alpha */
 
     /* Shape & depth (web surface: soft, never the deck's 4px) */
+    --page-gutter: clamp(16px, 5vw, 96px); /* left/right padding of every section */
     --radius-card: 1.5rem;      /* 24px cards, panels, image frames */
     --radius-inner: 14px;       /* images and tiles inside cards */
     --radius-island: 2.1rem;    /* floating navbar */
@@ -239,14 +241,14 @@
     /* Sized by viewport WIDTH only. The earlier mix of vh + vw made
        every size shrink when the browser window was short (a laptop
        with a dock), which read as "the text keeps getting smaller". */
-    --fs-eyebrow: clamp(12px, 0.7rem + 0.15vw, 14px);
-    --fs-title: clamp(1.875rem, 1.35rem + 1.3vw, 3.25rem);
-    --fs-subtitle: clamp(1.125rem, 1rem + 0.35vw, 1.5rem);
-    --fs-body: clamp(1.0625rem, 0.9rem + 0.25vw, 1.25rem);
+    --fs-eyebrow: 12px;
+    --fs-title: clamp(32px, 3.6vw, 52px);
+    --fs-subtitle: clamp(17px, 1rem + 0.2vw, 19px);
+    --fs-body: clamp(16px, 0.95rem + 0.15vw, 18px);
 
     /* Card-scale (secondary surfaces: service, boxed, vows, forms) */
-    --fs-card-title: clamp(1.1875rem, 1.05rem + 0.35vw, 1.375rem);
-    --fs-card-body: clamp(1rem, 0.9rem + 0.25vw, 1.125rem);
+    --fs-card-title: clamp(20px, 1.1rem + 0.45vw, 24px);
+    --fs-card-body: clamp(15px, 0.9rem + 0.1vw, 16px);
     --fs-card-label: clamp(12px, 0.7rem + 0.15vw, 14px);
     --fs-card-input: clamp(15px, 0.9rem + 0.1vw, 16px);
 
@@ -257,22 +259,24 @@
     --fs-step-title: clamp(18px, 1.6vw, 24px);
 
     /* Hero (poster scale — deliberately larger than the row scale) */
-    --fs-hero-title: clamp(40px, 8.4vw, 132px);
-    --fs-hero-label: clamp(11px, 0.9vw, 14px);
+    --fs-hero-title: clamp(46px, 6vw, 100px);
+    --fs-hero-title-display: clamp(52px, 7vw, 116px);
+    --fs-hero-title-compact: clamp(38px, 4.3vw, 66px);
+    --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
-    --fs-hero-body: clamp(15px, 1.15vw, 19px);
+    --fs-hero-body: clamp(17px, 1.3vw, 19px);
 
     /* ──────────────────────────────────────────────────────────────
        READING COMFORT — line-height, letter-spacing and line length.
        Shared so every row, card and rich-text block inherits the same
        accessible defaults instead of inventing its own.
        ────────────────────────────────────────────────────────────── */
-    --lh-body: 1.6;          /* 1.5–1.7 is the accessible band for prose */
-    --lh-card-body: 1.55;
+    --lh-body: 1.7;          /* 1.5–1.7 is the accessible band for prose */
+    --lh-card-body: 1.65;
     --lh-subtitle: 1.45;
-    --lh-title: 1.05;        /* headings breathe less than prose */
+    --lh-title: 1.04;        /* headings breathe less than prose */
     --lh-display: 0.95;      /* hero-scale display type */
-    --ls-label: 0.28em;      /* small uppercase labels need open tracking */
+    --ls-label: 0.32em;      /* small uppercase labels need open tracking */
     --ls-body: 0;            /* prose stays neutral */
     --ls-title: -0.015em;    /* large headings tighten slightly */
     --ls-display: -0.025em;
@@ -508,24 +512,25 @@
   /* Thin lines inside a card (form inputs, FAQ dividers) use the ink too. */
   .surface-card .row-border,
   .ink-lines .row-border {
-    border-color: var(--outline-ink);
+    border-color: hsl(var(--line-3));
   }
 
   .surface-card {
-    background: var(--gradient-card);
-    /* Boxed widgets keep a thin line, not the 5px outline — but in the
-       same ink, so cards, the FAQ box and the contact box's inputs share
-       one colour with the row edges. */
-    border: 1px solid var(--outline-ink);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-soft);
-    transition: box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),
-      border-color 320ms cubic-bezier(0.16, 1, 0.3, 1),
-      transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+    /* Redesign: the default card IS the glass card of the artboards:
+       white at 74% over the mesh, a soft violet hairline, 24px corners
+       and the card shadow. No ink border. */
+    background: hsl(var(--glass-bg));
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid hsl(var(--glass-border) / 0.9);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 160ms ease-out,
+      border-color 160ms ease-out,
+      transform 160ms ease-out;
   }
   .surface-card:hover {
-    box-shadow: var(--shadow-card);
-    border-color: hsl(280 30% 80%);
+    box-shadow: 0 1px 2px hsl(282 40% 13% / 0.06), 0 22px 44px -22px hsl(282 40% 13% / 0.32);
   }
 
   /* Inverted (deep plum) card for colour rhythm */
@@ -744,28 +749,69 @@
      BUTTONS — ink pill / arrow link / ghost pill
      ────────────────────────────────────────────────────────────────── */
   .btn-ink {
+    /* Primary pill (redesign §2.3): deep plum, 44px, 15px/600. */
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    min-height: 2.75rem;
-    padding: 0 1.5rem;
-    border-radius: 999px;
+    min-height: 44px;
+    padding: 0 24px;
+    border-radius: var(--radius-pill);
     font-family: var(--font-body);
     font-weight: 600;
-    font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
+    font-size: 15px;
     line-height: 1;
-    /* Base fill — without it the pill only appeared on hover. */
-    background-color: hsl(var(--foreground));
-    color: hsl(var(--btn-ink-fg));
+    background-color: hsl(var(--deep));
+    color: hsl(var(--deep-fg));
     border: 1px solid transparent;
-    transition: background-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+    text-decoration: none;
+    transition: background-color 160ms ease-out, transform 160ms ease-out, box-shadow 160ms ease-out;
   }
   .btn-ink:hover {
-    background-color: hsl(var(--primary));
+    background-color: hsl(var(--heading));
     transform: translateY(-1px);
     box-shadow: var(--shadow-card);
   }
+  /* The hero's primary action is one size up (52px, 16px). */
+  .btn-ink.btn-lg {
+    min-height: 52px;
+    padding: 0 28px;
+    font-size: 16px;
+  }
+  /* Arrow link: the only secondary action. */
+  .link-arrow-mc {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 16px;
+    color: hsl(var(--link));
+    text-decoration: none;
+  }
+  .link-arrow-mc:hover { color: hsl(var(--heading)); text-decoration: underline; text-underline-offset: 4px; }
+
+  /* FAQ toggle: a 34px hairline circle showing − when open, + when closed. */
+  .faq-toggle {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--line-3));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: hsl(var(--heading));
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 400;
+  }
+  .faq-toggle::before { content: "+"; }
+  .faq-trigger[data-state="open"] .faq-toggle::before { content: "\2212"; }
+
+  /* Named title accent (stored as class="mc-accent" in title lines):
+     link purple on light surfaces, gold on dark ones. */
+  .mc-accent { color: var(--row-accent, hsl(var(--link))); }
 
   .btn-ghost-ink {
     display: inline-flex;
@@ -1187,10 +1233,10 @@
   /* ── Hero scope ── */
   .scope-hero {
     --hero-bg: 32 40% 97%;
-    --hero-title: 282 40% 13%;
-    --hero-title-accent: 280 55% 34%;
+    --hero-title: 281 55% 24%;
+    --hero-title-accent: 281 55% 34%;
     --hero-label: 40 68% 30%;
-    --hero-body: 281 16% 34%;
+    --hero-body: 285 15% 34%;
   }
 
   .scope-footer {
@@ -1211,7 +1257,13 @@
   .row-container {
     width: 100%;
     margin-inline: auto;
-    padding-inline: clamp(24px, 5vw, 96px);
+    padding-inline: var(--page-gutter);
+  }
+  /* The 1280px cap is the CONTENT width (redesign §2.3): the gutter sits
+     outside it, so a 1440px screen shows an 80px margin and 1280px of
+     content, exactly as the artboards draw it. */
+  .row-container[class*="max-w-[1280px]"] {
+    max-width: calc(1280px + 2 * var(--page-gutter));
   }
   /* Widgets placed side by side in one row each keep their own gutter,
      which doubled up BETWEEN the columns (64px + 64px at 1280 wide, on
@@ -1236,8 +1288,8 @@
       padding-top: 0 !important;
     }
     [data-row-grid] > * .row-container {
-      padding-left: clamp(24px, 5vw, 96px);
-      padding-right: clamp(24px, 5vw, 96px);
+      padding-left: var(--page-gutter);
+      padding-right: var(--page-gutter);
     }
   }
 
@@ -1772,27 +1824,29 @@
     --mesh-grain: 0.315;
     --mesh-motion: 1;
     --btn-ink-fg: 0 0% 100%;
-    --fs-eyebrow: clamp(12px, 0.7rem + 0.15vw, 14px);
-    --fs-title: clamp(1.875rem, 1.35rem + 1.3vw, 3.25rem);
-    --fs-subtitle: clamp(1.125rem, 1rem + 0.35vw, 1.5rem);
-    --fs-body: clamp(1.0625rem, 0.9rem + 0.25vw, 1.25rem);
-    --fs-card-title: clamp(1.1875rem, 1.05rem + 0.35vw, 1.375rem);
-    --fs-card-body: clamp(1rem, 0.9rem + 0.25vw, 1.125rem);
+    --fs-eyebrow: 12px;
+    --fs-title: clamp(32px, 3.6vw, 52px);
+    --fs-subtitle: clamp(17px, 1rem + 0.2vw, 19px);
+    --fs-body: clamp(16px, 0.95rem + 0.15vw, 18px);
+    --fs-card-title: clamp(20px, 1.1rem + 0.45vw, 24px);
+    --fs-card-body: clamp(15px, 0.9rem + 0.1vw, 16px);
     --fs-card-label: clamp(12px, 0.7rem + 0.15vw, 14px);
     --fs-card-input: clamp(15px, 0.9rem + 0.1vw, 16px);
     --fs-stat: clamp(2rem, 3.4vw, 3.5rem);
     --fs-quote: clamp(26px, 3.4vw, 46px);
     --fs-step-title: clamp(18px, 1.6vw, 24px);
-    --fs-hero-title: clamp(40px, 8.4vw, 132px);
-    --fs-hero-label: clamp(11px, 0.9vw, 14px);
+    --fs-hero-title: clamp(46px, 6vw, 100px);
+    --fs-hero-title-display: clamp(52px, 7vw, 116px);
+    --fs-hero-title-compact: clamp(38px, 4.3vw, 66px);
+    --fs-hero-label: 12px;
     --fs-hero-subtitle: clamp(16px, 1.6vw, 24px);
-    --fs-hero-body: clamp(15px, 1.15vw, 19px);
-    --lh-body: 1.6;
-    --lh-card-body: 1.55;
+    --fs-hero-body: clamp(17px, 1.3vw, 19px);
+    --lh-body: 1.7;
+    --lh-card-body: 1.65;
     --lh-subtitle: 1.45;
-    --lh-title: 1.05;
+    --lh-title: 1.04;
     --lh-display: 0.95;
-    --ls-label: 0.28em;
+    --ls-label: 0.32em;
     --ls-body: 0;
     --ls-title: -0.015em;
     --ls-display: -0.025em;

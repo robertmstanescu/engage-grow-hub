@@ -1,3 +1,4 @@
+import { parseContent } from "@/lib/parseContent";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { PageRow } from "@/types/rows";
@@ -28,7 +29,7 @@ import { blogLinkFor, pickPosts, type PostLite } from "./postPick";
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "");
 
 const FromTheBlogRow = ({ row }: { row: PageRow }) => {
-  const c = fromTheBlogSchema.parse(row.content || {});
+  const c = parseContent(fromTheBlogSchema, row.content);
   const [posts, setPosts] = useState<PostLite[]>([]);
   const [looked, setLooked] = useState(false);
   const { enabled: builderEnabled } = useBuilder();

@@ -44,7 +44,7 @@ const RowTitle = ({ children, as, color, style, className, icon, iconSize = 32 }
   // Weight scale (redesign §2.2): H1 and H2 at 800, H3 at 700, so the
   // levels step down by weight as well as size. Bricolage Grotesque is
   // a variable font capped at 800, so extrabold IS the heaviest cut.
-  const weightClass = Tag === "h3" ? "font-bold" : "font-extrabold";
+  const weightClass = Tag === "h1" ? "font-extrabold" : "font-bold";
   return (
     <>
       {icon && (

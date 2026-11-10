@@ -67,14 +67,14 @@ const TestimonialRow = ({
   const c = row.content || {};
   const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const items: TestimonialItem[] = Array.isArray(c.items) ? c.items : [];
-  const titleLines: string[] = (c.title_lines || []).map((li: any) =>
+  const titleLines: string[] = (c.title_lines || []).map((li: unknown) =>
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`,
   );
   const maxW = l.fullWidth ? "max-w-none" : "max-w-[1280px]";
   const contentAlign =
     align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left";
   const containerPos =
-    align === "center" ? "mx-auto" : align === "right" ? "ml-auto mr-6" : "mr-auto ml-6";
+    align === "center" ? "mx-auto" : align === "right" ? "mx-auto" : "mx-auto";
   const { ref, isVisible } = useScrollReveal();
 
   if (items.length === 0) return null;

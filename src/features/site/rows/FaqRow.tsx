@@ -24,7 +24,6 @@
  * ───────────────────────────────────────────────────────────────────────── */
 
 import type { PageRow, FaqItem } from "@/types/rows";
-import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
 import {
   Accordion,
@@ -36,7 +35,8 @@ import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 import RowNote from "./typography/RowNote";
 import type { Alignment, VAlign } from "./PageRows";
-import RowCoverCard from "@/features/site/RowCoverCard";
+import { transformImageUrl } from "@/services/mediaOptimization";
+import { focalObjectPosition } from "@/lib/imageShape";
 
 const FaqRow = ({
   row,
@@ -48,104 +48,103 @@ const FaqRow = ({
   vAlign?: VAlign;
 }) => {
   const c = row.content || {};
-  const l = { ...DEFAULT_ROW_LAYOUT, ...row.layout };
   const items: FaqItem[] = Array.isArray(c.items) ? c.items : [];
-  const titleLines: string[] = (c.title_lines || []).map((li: any) =>
+  const titleLines: string[] = (c.title_lines || []).map((li: unknown) =>
     typeof li === "string" ? (li.startsWith("<") ? li : `<p>${li}</p>`) : `<p>${li}</p>`,
   );
-  const maxW = l.fullWidth ? "max-w-none" : "max-w-[820px]";
   const contentAlign =
     align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left";
-  const containerPos =
-    align === "center" ? "mx-auto" : align === "right" ? "ml-auto mr-6" : "mr-auto ml-6";
   const { ref, isVisible } = useScrollReveal();
 
   if (items.length === 0 && titleLines.length === 0) return null;
   const coverImage = c.cover_image?.trim() || undefined;
 
-  const innerContent = (
-    <>
-        {c.eyebrow && (
-          <RowEyebrow color={c.color_eyebrow || ""} style={revealStyle(isVisible, -0.5)}>
-            {c.eyebrow}
-          </RowEyebrow>
-        )}
-        {titleLines.length > 0 && (
-          <RowTitle icon={c.icon} style={revealStyle(isVisible, 0)}>
-            {titleLines.map((line, i) => (
-              <span
-                key={i}
-                className="block"
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(line) }}
-              />
-            ))}
-          </RowTitle>
-        )}
-        {c.subtitle && (
-          <RowSubtitle handwritten={!!c.subtitle_handwritten} color={c.subtitle_color || ""} style={revealStyle(isVisible, 0.3)}>
-            {c.subtitle}
-          </RowSubtitle>
-        )}
-        {/* Optional rich-text body — part of the standard Brand Header
-         *  block exposed by every "new" row editor. RowBody does NOT
-         *  sanitise the html prop itself, so we MUST pass it through
-         *  sanitizeHtml() here. */}
-        {c.body && (
-          <RowBody html={sanitizeHtml(c.body)} style={revealStyle(isVisible, 0.35)} />
-        )}
-
-        <Accordion
-          type="multiple"
-          className="mt-8 w-full text-left"
-          style={revealStyle(isVisible, 0.4)}
-        >
-          {items.map((item, i) => (
-            <AccordionItem
-              key={i}
-              value={`item-${i}`}
-              className="border-b row-border"
-            >
-              {/* Questions and answers ALWAYS read left — the row's own
-                  alignment setting only moves the heading block. */}
-              <AccordionTrigger
-                className="font-display row-fg hover:no-underline py-5 text-left"
-                style={{ fontSize: "var(--fs-card-title)" }}
-              >
-                <span className="text-left w-full">{item.question}</span>
-              </AccordionTrigger>
-              <AccordionContent
-                className="font-body row-fg-muted leading-relaxed pb-5 text-left"
-                style={{ fontSize: "var(--fs-card-body)" }}
-              >
-                <div
-                  className="rich-text [&>p]:my-1 text-left"
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.answer || "") }}
-                />
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-
-        {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
-
-    </>
-  );
+  /* Two columns from 1024px (artboards): the heading block on the left
+     (with the row's picture under it when one is set), every question
+     on the right, open by default so the answers are readable and
+     indexable without a click. Stacks below 1024px. */
+  const headSpan = coverImage ? "lg:col-span-5" : "lg:col-span-4";
+  const listSpan = coverImage ? "lg:col-span-7" : "lg:col-span-8";
 
   return (
     <RowSection row={row}>
-      {coverImage ? (
-        <div className={`${maxW} w-full mx-auto`}>
-          {/* FAQ is the one row that keeps the legacy padded photo-card
-              look — every other row type uses the flush fade. */}
-          <RowCoverCard row={row} variant="card">
-            <div ref={ref as any} className={contentAlign}>{innerContent}</div>
-          </RowCoverCard>
+      <div ref={ref} className={`max-w-[1280px] mx-auto w-full row-container text-left`}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
+          <div className={`${headSpan} flex flex-col ${contentAlign}`} style={{ gap: 6 }}>
+            {c.eyebrow && (
+              <RowEyebrow color={c.color_eyebrow || ""} style={revealStyle(isVisible, -0.5)}>
+                {c.eyebrow}
+              </RowEyebrow>
+            )}
+            {titleLines.length > 0 && (
+              <RowTitle icon={c.icon} className="!mb-0" style={{ ...revealStyle(isVisible, 0), ...(coverImage ? null : { fontSize: "clamp(30px, 3vw, 44px)" }) }}>
+                {titleLines.map((line, i) => (
+                  <span
+                    key={i}
+                    className="block"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(line) }}
+                  />
+                ))}
+              </RowTitle>
+            )}
+            {c.subtitle && (
+              <RowSubtitle handwritten={!!c.subtitle_handwritten} color={c.subtitle_color || ""} style={{ ...revealStyle(isVisible, 0.3), marginTop: 12 }}>
+                {c.subtitle}
+              </RowSubtitle>
+            )}
+            {c.body && (
+              <RowBody html={sanitizeHtml(c.body)} style={revealStyle(isVisible, 0.35)} />
+            )}
+            {coverImage && (
+              <img
+                src={transformImageUrl(coverImage, { width: 1000, aspectRatio: 3 / 2 })}
+                alt={c.cover_image_alt || ""}
+                loading="lazy"
+                decoding="async"
+                className="w-full object-cover"
+                style={{ height: 360, borderRadius: 24, marginTop: 24, objectPosition: focalObjectPosition(c.cover_image_focal_x, c.cover_image_focal_y) }}
+              />
+            )}
+          </div>
+
+          <div className={listSpan}>
+            <Accordion
+              type="multiple"
+              defaultValue={items.map((_, i) => `item-${i}`)}
+              className="w-full text-left"
+              style={revealStyle(isVisible, 0.4)}
+            >
+              {items.map((item, i) => (
+                <AccordionItem
+                  key={i}
+                  value={`item-${i}`}
+                  className="border-b"
+                  style={{ borderColor: "hsl(var(--line-1))" }}
+                >
+                  <AccordionTrigger
+                    className="faq-trigger font-display hover:no-underline text-left [&>svg]:hidden"
+                    style={{ fontSize: 19, fontWeight: 600, lineHeight: 1.3, color: "var(--row-heading, hsl(var(--heading)))", padding: "22px 0 12px", gap: 24 }}
+                  >
+                    <span className="text-left w-full">{item.question}</span>
+                    <span aria-hidden className="faq-toggle" />
+                  </AccordionTrigger>
+                  <AccordionContent
+                    className="font-body text-left"
+                    style={{ fontSize: 16, lineHeight: 1.7, color: "var(--row-body, hsl(var(--body)))", paddingBottom: 14 }}
+                  >
+                    <div
+                      className="rich-text text-left [&>p]:mt-0 [&>p]:mb-[10px]"
+                      style={{ maxWidth: 720 }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.answer || "") }}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+            {c.note && <RowNote color={c.color_note}>{c.note}</RowNote>}
+          </div>
         </div>
-      ) : (
-        <div ref={ref as any} className={`${maxW} ${containerPos} ${contentAlign} row-container`}>
-          {innerContent}
-        </div>
-      )}
+      </div>
     </RowSection>
   );
 };
