@@ -46,7 +46,8 @@ const PageBreadcrumbs = ({
           {trail.map((entry, i) => (
             <Fragment key={`${entry.name}-${i}`}>
               {i > 0 && <BreadcrumbSeparator />}
-              <BreadcrumbItem>
+              {/* A long page title wraps inside the trail instead of pushing the page sideways. */}
+              <BreadcrumbItem className="min-w-0 max-w-full [overflow-wrap:anywhere]">
                 {entry.path ? (
                   <BreadcrumbLink asChild>
                     <Link className={placement === "footer" ? "hover:text-foreground" : undefined} to={entry.path}>{entry.name}</Link>

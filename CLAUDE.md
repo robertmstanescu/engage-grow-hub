@@ -180,6 +180,15 @@ Rules that are easy to get wrong:
   `gapContent.ts` holds new copy for sections the design added. Both are
   run by `scripts/redesign/build-restyle.ts` into SQL for DRAFT columns,
   which Lovable runs. Never write restyle data to a live column.
+- Work (`/work`, `/work/:slug`) follows the Work and CaseStudy artboards:
+  one glass card per piece (`site/WorkCard.tsx`, four styles), a type
+  chip that is the honesty label (`site/work/WorkTypeChip.tsx`; names in
+  `work/workLabels.ts`, never a second list), and a case study whose
+  body is the item's rows inside `.case-body` (760px column,
+  `RowsRenderer forceAlign="left"`, "On this page" sticky from 1024px
+  and a closed `<details>` below). Only published items and APPROVED
+  proof points reach the page. The Work link is navbar data: never
+  hard-code it into the navigation.
 - A page with no hero is a document page (Privacy): `CmsPage` lifts the
   first text block's small heading, title and date line above one glass
   card (`site/documentHeader.ts`, render-time only) and prints the body
