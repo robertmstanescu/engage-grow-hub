@@ -11,3 +11,5 @@
 - [ ] Open: publish draft page `pay-transparency-check`? (asked, unanswered)
 - [ ] Open: make missing-alt-text a warning instead of a hard publish block? (offered, unanswered)
 - [ ] Open: move scheduled publishing to every 15 min? (offered, unanswered)
+
+- [ ] Redesign every page to match the mockups exactly, keeping the current copy (in progress: homepage first, then services, about, service pages)

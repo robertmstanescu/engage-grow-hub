@@ -80,6 +80,14 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
       <ColorField label="Label Color" description="Color of the small label text above the title" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
       <MoreFields label="Tagline">
         <Field label="Tagline (below title)" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
+        <label className="flex items-center gap-2 text-[13px]">
+          <input
+            type="checkbox"
+            checked={!!content.tagline_handwritten}
+            onChange={(e) => onChange("tagline_handwritten", e.target.checked)}
+          />
+          Handwritten, under the buttons
+        </label>
       </MoreFields>
       <ColorField label="Tagline Color" description="Color of the tagline text below the title" value={content.color_tagline || ""} fallback="" onChange={(v) => onChange("color_tagline", v)} />
 

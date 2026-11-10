@@ -40,6 +40,8 @@ interface HeroContent {
   subtitle_color?: string;
   /** Opt-in handwritten (Architects Daughter) styling for the subtitle. */
   subtitle_handwritten?: boolean;
+  /** Show the tagline as a handwritten note under the buttons instead of spaced capitals under the title. */
+  tagline_handwritten?: boolean;
   body: string;
   bg_type?: "none" | "image" | "video";
   bg_url?: string;
@@ -583,7 +585,7 @@ export const HeroView = ({
           {/* `c.answer` (the plain answer) is deliberately NOT rendered
               here: the page passes it to the Footer as small print. */}
 
-          {c.tagline && (
+          {c.tagline && !c.tagline_handwritten && (
             <p
               className="mc-rise font-body tracking-[0.28em] uppercase flex-shrink-0"
               style={{ "--rise-to": 0.4, "--rise-dur": "1s", "--rise-delay": "0.8s", color: c.tagline_color || c.color_tagline || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" } as React.CSSProperties}>
@@ -645,6 +647,23 @@ export const HeroView = ({
                 </a>
               )}
             </div>
+          )}
+
+          {/* Handwritten tagline (Main artboard): a slanted script note under the buttons. */}
+          {c.tagline && c.tagline_handwritten && (
+            <p
+              className="mc-rise flex-shrink-0"
+              style={{
+                "--rise-dur": "1s", "--rise-delay": "1.3s",
+                fontFamily: "'Architects Daughter', cursive",
+                color: c.tagline_color || c.color_tagline || "hsl(var(--primary))",
+                fontSize: "var(--fs-h3)",
+                transform: "rotate(-1.5deg)",
+              } as React.CSSProperties}>
+              <Field fieldPath="tagline" as="span">
+                {c.tagline}
+              </Field>
+            </p>
           )}
         </div>
 
