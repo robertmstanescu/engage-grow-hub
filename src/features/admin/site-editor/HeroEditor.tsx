@@ -155,12 +155,6 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
             { label: "Large", value: "large" },
           ]}
         />
-        <Field
-          label="Word to underline (optional)"
-          value={content.underline_word || ""}
-          onChange={(v) => onChange("underline_word", v)}
-          hint='One word from the title, underlined with the hand-drawn gold stroke — e.g. "coffin."'
-        />
       </MoreFields>
       <TextAreaField
         label="Plain answer (small print in the footer)"

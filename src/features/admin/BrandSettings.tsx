@@ -33,15 +33,6 @@ const contrastRatio = (hex1: string, hex2: string) => {
 
 const INPUT_STYLE: React.CSSProperties = { backgroundColor: "hsl(var(--card))", color: "hsl(var(--foreground))", borderColor: "hsl(var(--border))" };
 
-const FONT_OPTIONS = [
-  
-  { label: "Funnel Display", value: "'Funnel Display', sans-serif" },
-  { label: "Inter", value: "'Inter', sans-serif" },
-  { label: "Playwrite Cuba", value: "'Playwrite CU', cursive" },
-];
-
-const WEIGHT_OPTIONS = ["300", "400", "500", "600", "700", "800", "900"];
-
 const BrandSettings = () => {
   const [brand, setBrand] = useState<BrandSettingsType>(DEFAULT_BRAND);
   const [published, setPublished] = useState<BrandSettingsType>(DEFAULT_BRAND);
@@ -464,46 +455,10 @@ const BrandSettings = () => {
         </button>
       </AccordionSection>
 
-      {/* ── Typography ── */}
-      <AccordionSection id="typography" label="Typography">
-        <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
-          Set default typography for each heading level and body text. These serve as site-wide defaults.
-        </p>
-        {(["h1", "h2", "h3", "body"] as const).map((level) => {
-          const t = brand.typography[level];
-          return (
-            <SectionBox key={level} label={level.toUpperCase()}>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="font-body text-[9px] uppercase tracking-wider block mb-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>Font Family</label>
-                  <select value={t.fontFamily} onChange={(e) => updateTypography(level, "fontFamily", e.target.value)} className="w-full px-2 py-1.5 rounded font-body text-xs border" style={INPUT_STYLE}>
-                    {FONT_OPTIONS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="font-body text-[9px] uppercase tracking-wider block mb-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>Font Size</label>
-                  <input value={t.fontSize} onChange={(e) => updateTypography(level, "fontSize", e.target.value)} className="w-full px-2 py-1.5 rounded font-body text-xs border" style={INPUT_STYLE} />
-                </div>
-                <div>
-                  <label className="font-body text-[9px] uppercase tracking-wider block mb-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>Line Height</label>
-                  <input value={t.lineHeight} onChange={(e) => updateTypography(level, "lineHeight", e.target.value)} className="w-full px-2 py-1.5 rounded font-body text-xs border" style={INPUT_STYLE} />
-                </div>
-                <div>
-                  <label className="font-body text-[9px] uppercase tracking-wider block mb-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>Font Weight</label>
-                  <select value={t.fontWeight} onChange={(e) => updateTypography(level, "fontWeight", e.target.value)} className="w-full px-2 py-1.5 rounded font-body text-xs border" style={INPUT_STYLE}>
-                    {WEIGHT_OPTIONS.map((w) => <option key={w} value={w}>{w}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="mt-2 px-3 py-2 rounded border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "#1a1a1a" }}>
-                <span style={{ fontFamily: t.fontFamily, fontSize: level === "body" ? t.fontSize : "clamp(14px, 2vw, 20px)", lineHeight: t.lineHeight, fontWeight: Number(t.fontWeight), color: "#F4F0EC" }}>
-                  The quick brown fox jumps over the lazy dog
-                </span>
-              </div>
-            </SectionBox>
-          );
-        })}
-      </AccordionSection>
+      {/* Typography lived here. Type sizes, faces and weights come from the
+          --fs-* tokens and the two brand faces in src/index.css; the old
+          per-level picker wrote CSS variables nothing read, so it was
+          removed in the admin sweep of 11 Nov 2026. */}
 
       {/* ── Contrast Checker ── */}
       <AccordionSection id="contrast" label="Accessibility Contrast Checker">

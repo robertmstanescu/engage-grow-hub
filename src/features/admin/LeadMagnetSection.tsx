@@ -162,7 +162,7 @@ const LeadMagnetSection = ({ resourceAssetId, coverAssetId, onChange }: Props) =
           className="font-body text-[10px] uppercase tracking-wider font-medium block"
           style={{ color: "hsl(var(--foreground))" }}
         >
-          Lead Magnet (gated download)
+          Download (direct link)
         </label>
         <p className="font-body text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
           Optional — when set, the resource widget is rendered at the bottom of the post.
