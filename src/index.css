@@ -2832,6 +2832,19 @@ section.snap-section .contact-title[data-row-part="title"] {
   backdrop-filter: none;
 }
 .btn-ink:hover { box-shadow: var(--lg-dark-shadow); }
+/* The menu's Contact pill behaves like every other action pill: deep plum
+   that lifts to the heading plum on hover (owner, 11 Nov 2026). It used
+   an inline background, which no hover rule could reach. */
+.nav-cta {
+  background-color: hsl(var(--nav-cta-bg, var(--deep)));
+  color: hsl(var(--nav-cta-text, var(--deep-fg)));
+  transition: background-color 160ms ease-out, transform 160ms ease-out;
+}
+.nav-cta:hover,
+.nav-cta:focus-visible {
+  background-color: hsl(var(--heading));
+  transform: translateY(-1px);
+}
 .lg-tag,
 .pill-tag,
 .work-chip,
