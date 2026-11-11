@@ -348,6 +348,17 @@ export const HeroView = ({
     return <El {...rest}>{children}</El>;
   };
 
+  /* The tagline (the handwritten note on Home) is edited in the same
+     one-box editor as titles, so it may arrive as HTML: one `<p>` per
+     line with colours or bold picked on a selection. It prints inline
+     (it sits inside a <p>), so paragraphs become line breaks; plain
+     text from older saves is escaped. Chips read the words only. */
+  const taglineRaw = typeof c.tagline === "string" ? c.tagline : "";
+  const taglineHtml = taglineRaw.trim().startsWith("<")
+    ? taglineRaw.replace(/<p[^>]*>/gi, "").replace(/<\/p>\s*/gi, "<br>").replace(/(<br>\s*)+$/i, "")
+    : taglineRaw.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const taglineText = taglineHtml.replace(/<br>/gi, " ").replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").trim();
+
   const titleLines: string[] = (c.title_lines || [])
     .map((line: any) => {
       if (typeof line === "string") return applyUnderlineWord(line, c.underline_word);
@@ -383,7 +394,7 @@ export const HeroView = ({
      content container and bleeds off the right edge with a 28px left
      radius; the text column keeps the page gutter. Stacks on phones. */
   const halfBleed = c.visual_layout === "half_bleed" && hasVisual;
-  const chipSplit = Boolean(c.tagline) && !c.tagline_handwritten && c.tagline_style === "chips";
+  const chipSplit = Boolean(taglineText) && !c.tagline_handwritten && c.tagline_style === "chips";
 
   /* Admin alignment (Style ▸ Hero alignment). A hero with a foreground
      visual defaults to left, matching the side-by-side layout. */
@@ -610,13 +621,11 @@ export const HeroView = ({
           {/* `c.answer` (the plain answer) is deliberately NOT rendered
               here: the page passes it to the Footer as small print. */}
 
-          {c.tagline && !c.tagline_handwritten && c.tagline_style !== "chips" && (
+          {taglineText && !c.tagline_handwritten && c.tagline_style !== "chips" && (
             <p
               className="mc-rise font-body tracking-[0.28em] uppercase flex-shrink-0"
               style={{ "--rise-to": 0.4, "--rise-dur": "1s", "--rise-delay": "0.8s", color: c.tagline_color || c.color_tagline || "hsl(var(--hero-label))", fontSize: "var(--fs-hero-label)" } as React.CSSProperties}>
-              <Field fieldPath="tagline" as="span">
-                {c.tagline}
-              </Field>
+              <Field fieldPath="tagline" as="span" dangerouslySetInnerHTML={{ __html: sanitizeHtml(taglineHtml) }} />
             </p>
           )}
 
@@ -683,9 +692,9 @@ export const HeroView = ({
           {/* Tagline as chips (About artboard): each part between the dots
               is a pill; a part that names a service pillar carries that
               pillar's dot and links to that service's page. */}
-          {c.tagline && !c.tagline_handwritten && c.tagline_style === "chips" && (
+          {taglineText && !c.tagline_handwritten && c.tagline_style === "chips" && (
             <ul className="mc-rise hero-chips flex-shrink-0 list-none p-0 m-0" style={{ "--rise-dur": "0.8s", "--rise-delay": "1.3s" } as React.CSSProperties}>
-              {c.tagline.split(/\s*[·•|]\s*/).map((part) => part.trim()).filter(Boolean).map((part, i) => {
+              {taglineText.split(/\s*[·•|]\s*/).map((part) => part.trim()).filter(Boolean).map((part, i) => {
                 const key = part.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
                 const isPillar = Boolean(PILLAR_COLORS[key]);
                 const chipStyle: React.CSSProperties = { padding: "8px 14px", fontSize: 13, lineHeight: 1.4, color: "hsl(var(--foreground))", overflowWrap: "anywhere", textDecoration: "none" };
@@ -710,7 +719,7 @@ export const HeroView = ({
           </div>
 
           {/* Handwritten tagline (Main artboard): a slanted script note under the buttons. */}
-          {c.tagline && c.tagline_handwritten && (
+          {taglineText && c.tagline_handwritten && (
             <p
               className="mc-rise flex-shrink-0"
               style={{
@@ -722,9 +731,7 @@ export const HeroView = ({
                 transform: "rotate(-2deg)",
                 transformOrigin: "left center",
               } as React.CSSProperties}>
-              <Field fieldPath="tagline" as="span">
-                {c.tagline}
-              </Field>
+              <Field fieldPath="tagline" as="span" dangerouslySetInnerHTML={{ __html: sanitizeHtml(taglineHtml) }} />
             </p>
           )}
         </div>

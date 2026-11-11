@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import { Upload, X } from "lucide-react";
 import { Field, RichField, SectionBox, ColorField, CtaFields, MoreFields, TextAreaField, SelectField } from "./FieldComponents";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
+import TitleEditor from "./TitleEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImageAltInput from "../ImageAltInput";
 import ImagePickerField from "../ImagePickerField";
@@ -76,10 +77,25 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
           ))}
         </div>
       </div>
-      <Field label="Label (above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
-      <ColorField label="Label Color" description="Color of the small label text above the title" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
-      <MoreFields label="Tagline">
-        <Field label="Tagline (below title)" value={content.tagline || ""} onChange={(v) => onChange("tagline", v)} />
+      <SectionBox label="Small words around the title" group>
+        <Field label="Label (above title)" value={content.label || ""} onChange={(v) => onChange("label", v)} />
+        <ColorField label="Label Color" description="Color of the small label text above the title" value={content.color_label || ""} fallback="" onChange={(v) => onChange("color_label", v)} />
+        {/* The tagline is the hero's handwritten note when the box is ticked
+            (the Home hero). It sits in plain view, not behind a "More"
+            toggle: hidden there, the owner could not find where to edit the
+            note (11 Nov 2026). */}
+        {/* Same one-box editor as titles: select words for bold, italic or
+            a brand colour (owner, 11 Nov 2026). Stored as one HTML string;
+            HeroSection prints its lines as line breaks. */}
+        <TitleEditor
+          label={content.tagline_handwritten ? "Handwritten note (under the buttons)" : "Tagline (below the title)"}
+          lines={content.tagline ? [String(content.tagline)] : []}
+          onChange={(lines) => {
+            const html = lines.join("");
+            onChange("tagline", html.replace(/<[^>]*>/g, "").trim() ? html : "");
+          }}
+          bgColor={bgColor}
+        />
         <label className="flex items-center gap-2 text-[13px]">
           <input
             type="checkbox"
@@ -88,7 +104,7 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
           />
           Handwritten, under the buttons
         </label>
-      </MoreFields>
+      </SectionBox>
       <ColorField label="Tagline Color" description="Color of the tagline text below the title" value={content.color_tagline || ""} fallback="" onChange={(v) => onChange("color_tagline", v)} />
 
       <TitleLinesEditor titleLines={content.title_lines || []} onChange={(v) => onChange("title_lines", v)} bgColor={bgColor} />
