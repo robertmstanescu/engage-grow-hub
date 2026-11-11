@@ -101,3 +101,18 @@ export const statusLabel = (status: MapStatus, c: WorldMapContent): string =>
   status === "main" ? "Main market"
     : status === "hr" ? c.legend_hr || "Internal comms and HR"
     : c.legend_worked || "Internal comms";
+
+/**
+ * The map title's lines as HTML, ready for `sanitizeHtml`. The title box
+ * stores each line as HTML (`<p>36 countries.</p>`); lines saved before
+ * it, or written in code (ownerList), are plain text and are wrapped and
+ * escaped so they read the same. Empty lines are dropped.
+ */
+export const titleLinesHtml = (lines: unknown): string[] =>
+  (Array.isArray(lines) ? lines : [])
+    .filter((l): l is string => typeof l === "string" && l.replace(/<[^>]*>/g, "").trim() !== "")
+    .map((l) =>
+      l.trim().startsWith("<")
+        ? l
+        : `<p>${l.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`,
+    );

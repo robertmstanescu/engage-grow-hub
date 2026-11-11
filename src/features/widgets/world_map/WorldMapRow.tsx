@@ -6,7 +6,8 @@ import type { Alignment, VAlign } from "@/features/site/rows/PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { RowEyebrow, RowTitle, RowSection } from "@/features/site/rows/typography";
 import { worldMapSchema, type WorldMapContent } from "./schema";
-import { resolveMapGroups, mapCounters } from "./resolve";
+import { resolveMapGroups, mapCounters, titleLinesHtml } from "./resolve";
+import { sanitizeHtml } from "@/services/sanitize";
 import { MAP_H, MAP_W } from "./zoom";
 
 // Code-split: the map art carries ~120KB of SVG path data.
@@ -34,11 +35,21 @@ const WorldMapRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow;
         <div className="flex flex-wrap items-end justify-between gap-8">
           <div className="flex min-w-0 max-w-[640px] flex-1 flex-col gap-4" style={{ flexBasis: 520 }}>
             <RowEyebrow className="!mb-0">{c.eyebrow}</RowEyebrow>
-            {/* The first line prints in the heading colour, the rest in the
-                lighter violet, as the artboard draws it. */}
+            {/* One title line per row of the title box, each on its own line.
+                The box saves each line as a little HTML (`<p>…</p>`, plus any
+                bold or colour picked on a selection), so it is rendered as
+                sanitised HTML like every other row title, never as text: as
+                text the tags printed on the page (owner, 11 Nov 2026). The
+                first line prints in the heading colour, the rest in the
+                lighter violet unless the line carries its own colour. */}
             <RowTitle className="!mb-0">
-              {(c.title_lines || []).map((line, i) => (
-                <span key={i} style={i > 0 ? { color: "hsl(var(--link))" } : undefined}>{i > 0 ? " " : ""}{line}</span>
+              {titleLinesHtml(c.title_lines).map((line, i) => (
+                <span
+                  key={i}
+                  className="block"
+                  style={i > 0 ? { color: "hsl(var(--link))" } : undefined}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(line) }}
+                />
               ))}
             </RowTitle>
             <p className="font-body" style={{ margin: 0, fontSize: "var(--fs-subtitle)", lineHeight: 1.7, color: "hsl(var(--body))" }}>{c.lede}</p>

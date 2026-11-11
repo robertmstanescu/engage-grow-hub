@@ -19,7 +19,10 @@ Rules that are easy to get wrong:
   Refresh the baseline only after an intentional design change, and say
   so in the PR. Glass makes software-rendered frames slow: a row shot
   has 30s to settle. If it times out, find what keeps moving; never
-  loosen the comparison tolerance.
+  loosen the comparison tolerance. The suite renders LIVE content, so an
+  owner's edit moves a shot; `settle()` waits for the Google Fonts sheet
+  and loads the faces first (it loads async, and a Playwrite row once
+  flipped between 194px and 236px tall).
 - Type sizes come from the `--fs-*` tokens in `src/index.css`, sized
   by viewport width only. Never put `vh` in a font-size clamp, never
   shrink copy with JavaScript to make a row fit a screen, and never
@@ -56,7 +59,8 @@ Rules that are easy to get wrong:
   the map box does not brighten on hover (only clickable glass does). The map
   fits the window height (`.tmc-map-box`), its hover label sits at the
   pointer, and hover only switches on once the colours finish drawing
-  (`is-ready`). The map art
+  (`is-ready`). Its title lines are HTML from the title box and render
+  through `titleLinesHtml` + `sanitizeHtml`, like every row title. The map art
   is generated (`scripts/world-map/build-map-data.mjs`, amCharts
   Mercator, no Antarctica); the "Map: amCharts" credit by the legend is
   the licence's condition and must stay. Small labels and eyebrows on
