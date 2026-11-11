@@ -36,19 +36,44 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
     [groups],
   );
 
-  const showTip = useCallback((name: string, status: MapStatus, el: SVGGraphicsElement) => {
+  /* Hover names a place only once the draw-on has finished (owner,
+     11 Nov 2026): before that the shapes are still colouring in. */
+  const [ready, setReady] = useState(false);
+  const lastDelay = useMemo(
+    () => Math.max(0, ...shaded.map((c) => c.delay), ...dots.map((d) => d.delay)),
+    [shaded, dots],
+  );
+  useEffect(() => {
+    if (!started || !playing) return;
+    const still = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    // The last place starts at its delay x --pace (1.8 in index.css) and
+    // finishes its three fills 2.4s later; a short margin on top.
+    const ms = still ? 0 : (lastDelay * 1.8 + 2.4) * 1000 + 150;
+    const t = window.setTimeout(() => setReady(true), ms);
+    return () => window.clearTimeout(t);
+  }, [started, playing, lastDelay]);
+
+  /**
+   * The label sits just above the pointer, not above the middle of the
+   * country's box: the United States box runs from Alaska to Hawaii and
+   * Canada's reaches the Arctic islands, so a box-centred label landed
+   * far from the cursor. Keyboard focus has no pointer and uses the box.
+   */
+  const showTip = useCallback((name: string, status: MapStatus, el: SVGGraphicsElement, at?: { x: number; y: number }) => {
     const wrap = wrapRef.current;
-    if (!wrap) return;
+    if (!wrap || !ready) return;
     const w = wrap.getBoundingClientRect();
     const b = el.getBoundingClientRect();
-    // Zoomed in, a country can run past the edge: keep the label in the box.
+    const px = at ? at.x - w.left : b.left - w.left + b.width / 2;
+    const py = at ? at.y - w.top : b.top - w.top;
+    // Keep the label inside the box, zoomed in or near an edge.
     setTip({
-      x: Math.min(w.width, Math.max(0, b.left - w.left + b.width / 2)),
-      y: Math.max(0, b.top - w.top),
+      x: Math.min(w.width - 60, Math.max(60, px)),
+      y: Math.max(48, py),
       name,
       status: statusLabel(status, content),
     });
-  }, [content]);
+  }, [content, ready]);
 
   /** Where a screen point sits across the map box, 0 to 1. */
   const fractionOf = (clientX: number, clientY: number): { fx: number; fy: number } => {
@@ -143,6 +168,8 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
 
   const replay = () => {
     setStarted(true);
+    setReady(false);
+    setTip(null);
     setPlaying(false);
     // Let the class come off before re-adding so the animation restarts.
     requestAnimationFrame(() => requestAnimationFrame(() => setPlaying(true)));
@@ -153,7 +180,7 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
       <div ref={wrapRef} className="relative tmc-map-box">
         <svg
           ref={svgRef}
-          className={`tmc-map${!started ? " wait" : playing ? " play" : ""}${zoomed ? " is-zoomed" : ""}${dragging ? " is-dragging" : ""}`}
+          className={`tmc-map${!started ? " wait" : playing ? " play" : ""}${ready ? " is-ready" : ""}${zoomed ? " is-zoomed" : ""}${dragging ? " is-dragging" : ""}`}
           role="img"
           aria-label="World map of the countries worked across"
           viewBox={viewBoxOf(view)}
@@ -204,7 +231,8 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
                         tabIndex: 0,
                         role: "button",
                         "aria-label": `${c.name}: ${statusLabel(status, content)}`,
-                        onMouseEnter: (e: React.MouseEvent<SVGPathElement>) => { if (!dragging) showTip(c.name, status, e.currentTarget); },
+                        onMouseEnter: (e: React.MouseEvent<SVGPathElement>) => { if (!dragging) showTip(c.name, status, e.currentTarget, { x: e.clientX, y: e.clientY }); },
+                        onMouseMove: (e: React.MouseEvent<SVGPathElement>) => { if (!dragging) showTip(c.name, status, e.currentTarget, { x: e.clientX, y: e.clientY }); },
                         onMouseLeave: () => setTip(null),
                         onFocus: (e: React.FocusEvent<SVGPathElement>) => showTip(c.name, status, e.currentTarget),
                         onBlur: () => setTip(null),
@@ -230,7 +258,8 @@ const WorldMapArt = ({ groups, content }: { groups: Map<string, MapStatus>; cont
                         tabIndex: 0,
                         role: "button",
                         "aria-label": `${d.name}: ${statusLabel(status, content)}`,
-                        onMouseEnter: (e: React.MouseEvent<SVGCircleElement>) => { if (!dragging) showTip(d.name, status, e.currentTarget); },
+                        onMouseEnter: (e: React.MouseEvent<SVGCircleElement>) => { if (!dragging) showTip(d.name, status, e.currentTarget, { x: e.clientX, y: e.clientY }); },
+                        onMouseMove: (e: React.MouseEvent<SVGCircleElement>) => { if (!dragging) showTip(d.name, status, e.currentTarget, { x: e.clientX, y: e.clientY }); },
                         onMouseLeave: () => setTip(null),
                         onFocus: (e: React.FocusEvent<SVGCircleElement>) => showTip(d.name, status, e.currentTarget),
                         onBlur: () => setTip(null),
