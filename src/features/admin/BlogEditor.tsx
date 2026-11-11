@@ -607,7 +607,7 @@ const BlogEditor = () => {
           </AdminField>
         </AdminSection>
 
-        <AdminSection title="Download offer" description="Optional gated file readers get in exchange for their email." defaultCollapsed>
+        <AdminSection title="Download offer" description="An optional file readers can download straight from the post. No email is asked for." defaultCollapsed>
           <LeadMagnetSection
             resourceAssetId={form.lead_magnet_asset_id}
             coverAssetId={form.lead_magnet_cover_id}

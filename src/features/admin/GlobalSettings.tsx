@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Save, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { invalidateSiteContent } from "@/hooks/useSiteContent";
 import SocialLinksEditor from "./site-editor/SocialLinksEditor";
-import { Field, ColorField } from "./site-editor/FieldComponents";
+import { Field } from "./site-editor/FieldComponents";
 import { fetchSections, saveDraft as saveDraftSection, publishSection } from "@/services/siteContent";
 import { runDbAction } from "@/services/db-helpers";
 import { SpinnerButton } from "@/components/ui/spinner-button";
@@ -12,7 +12,7 @@ interface SectionState {
   draft: Record<string, any>;
 }
 
-const SECTIONS = ["social_links", "footer", "theme"] as const;
+const SECTIONS = ["social_links", "footer"] as const;
 
 // No hardcoded brand-specific footer columns. Admins start from a blank
 // slate; the SocialLinksEditor will auto-inject a "Connect" column the
@@ -178,78 +178,9 @@ const GlobalSettings = () => {
         />
       </AccordionSection>
 
-      <AccordionSection id="theme" label="Global Theme Defaults">
-        <p className="font-body text-xs mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>
-          These defaults apply to all new rows. Existing rows keep their own settings.
-        </p>
-
-        {/* Default alignment */}
-        <div className="mb-4">
-          <label className="font-body text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>Default Alignment</label>
-          <div className="flex gap-1.5">
-            {ALIGNMENT_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => updateField("theme", "defaultAlignment", opt.value)}
-                className="flex-1 py-1.5 rounded text-[10px] font-body font-medium transition-all"
-                style={{
-                  backgroundColor: (getDraft("theme").defaultAlignment || "auto") === opt.value ? "hsl(var(--primary))" : "hsl(var(--background))",
-                  color: (getDraft("theme").defaultAlignment || "auto") === opt.value ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
-                  border: `1px solid ${(getDraft("theme").defaultAlignment || "auto") === opt.value ? "hsl(var(--primary))" : "hsl(var(--border))"}`,
-                }}>
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Default Padding Top</label>
-            <div className="flex items-center gap-2">
-              <input type="range" min={0} max={200} step={4} value={getDraft("theme").defaultPaddingTop || 64} onChange={(e) => updateField("theme", "defaultPaddingTop", Number(e.target.value))} className="flex-1" style={{ accentColor: "hsl(var(--primary))" }} />
-              <span className="font-body text-xs w-10 text-right" style={{ color: "hsl(var(--foreground))" }}>{getDraft("theme").defaultPaddingTop || 64}px</span>
-            </div>
-          </div>
-          <div>
-            <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Default Padding Bottom</label>
-            <div className="flex items-center gap-2">
-              <input type="range" min={0} max={200} step={4} value={getDraft("theme").defaultPaddingBottom || 64} onChange={(e) => updateField("theme", "defaultPaddingBottom", Number(e.target.value))} className="flex-1" style={{ accentColor: "hsl(var(--primary))" }} />
-              <span className="font-body text-xs w-10 text-right" style={{ color: "hsl(var(--foreground))" }}>{getDraft("theme").defaultPaddingBottom || 64}px</span>
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3 mt-3">
-          <div>
-            <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Primary Brand Color</label>
-            <div className="flex gap-1.5">
-              <input type="color" value={getDraft("theme").primaryColor || "#4D1B5E"} onChange={(e) => updateField("theme", "primaryColor", e.target.value)} className="w-10 h-9 rounded border-0 cursor-pointer" />
-              <input value={getDraft("theme").primaryColor || "#4D1B5E"} onChange={(e) => updateField("theme", "primaryColor", e.target.value)} placeholder="#HEX" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }} />
-            </div>
-          </div>
-          <div>
-            <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Accent Color</label>
-            <div className="flex gap-1.5">
-              <input type="color" value={getDraft("theme").accentColor || "#E5C54F"} onChange={(e) => updateField("theme", "accentColor", e.target.value)} className="w-10 h-9 rounded border-0 cursor-pointer" />
-              <input value={getDraft("theme").accentColor || "#E5C54F"} onChange={(e) => updateField("theme", "accentColor", e.target.value)} placeholder="#HEX" className="flex-1 px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }} />
-            </div>
-          </div>
-        </div>
-        <div className="mt-3">
-          <label className="font-body text-[10px] uppercase tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Default Font Family</label>
-          <select value={getDraft("theme").fontFamily || "default"} onChange={(e) => updateField("theme", "fontFamily", e.target.value)} className="w-full px-3 py-2 rounded-lg font-body text-sm border" style={{ borderColor: "hsl(var(--border))", backgroundColor: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
-            <option value="default">System Default</option>
-            <option value="inter">Inter</option>
-            <option value="bricolage">Funnel Display</option>
-            <option value="playfair">Playfair Display</option>
-            <option value="architects">Playwrite Cuba</option>
-          </select>
-        </div>
-        <div className="mt-3">
-          <ColorField label="Default Subtitle Color" description="Default color for subtitle text across all rows (can be overridden per row)" value={getDraft("theme").subtitleColor || ""} fallback="#E5C54F" onChange={(v) => updateField("theme", "subtitleColor", v)} />
-        </div>
-      </AccordionSection>
+      {/* "Global Theme Defaults" (alignment, padding, colours, font) was
+          removed in the admin sweep of 11 Nov 2026: no page read it. Row
+          spacing, colours and faces are set per row and by the brand tokens. */}
     </div>
   );
 };
