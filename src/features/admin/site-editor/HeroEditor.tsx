@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import { Upload, X } from "lucide-react";
 import { Field, RichField, SectionBox, ColorField, CtaFields, MoreFields, TextAreaField, SelectField } from "./FieldComponents";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
+import TitleEditor from "./TitleEditor";
 import SubtitleEditor from "./SubtitleEditor";
 import ImageAltInput from "../ImageAltInput";
 import ImagePickerField from "../ImagePickerField";
@@ -83,10 +84,17 @@ const HeroEditor = ({ content, onChange, bgColor }: Props) => {
             (the Home hero). It sits in plain view, not behind a "More"
             toggle: hidden there, the owner could not find where to edit the
             note (11 Nov 2026). */}
-        <Field
+        {/* Same one-box editor as titles: select words for bold, italic or
+            a brand colour (owner, 11 Nov 2026). Stored as one HTML string;
+            HeroSection prints its lines as line breaks. */}
+        <TitleEditor
           label={content.tagline_handwritten ? "Handwritten note (under the buttons)" : "Tagline (below the title)"}
-          value={content.tagline || ""}
-          onChange={(v) => onChange("tagline", v)}
+          lines={content.tagline ? [String(content.tagline)] : []}
+          onChange={(lines) => {
+            const html = lines.join("");
+            onChange("tagline", html.replace(/<[^>]*>/g, "").trim() ? html : "");
+          }}
+          bgColor={bgColor}
         />
         <label className="flex items-center gap-2 text-[13px]">
           <input
