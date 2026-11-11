@@ -405,11 +405,7 @@ const Navbar = () => {
             href={safeHref(ctaHref)}
             onClick={(e) => handleNavClick(e, ctaHref)}
             title={ctaText}
-            className="lg-dark px-6 h-11 rounded-full flex items-center justify-center text-[15px] font-semibold tracking-[0.02em] transition-colors duration-200 whitespace-nowrap"
-            style={{
-              backgroundColor: "hsl(var(--nav-cta-bg, var(--deep)))",
-              color: "hsl(var(--nav-cta-text, var(--deep-fg)))",
-            }}
+            className="nav-cta lg-dark px-6 h-11 rounded-full flex items-center justify-center text-[15px] font-semibold tracking-[0.02em] transition-colors duration-200 whitespace-nowrap"
           >
             {ctaText}
           </a>
@@ -447,11 +443,7 @@ const Navbar = () => {
             <a
               href={safeHref(ctaHref)}
               onClick={(e) => handleNavClick(e, ctaHref)}
-              className="lg-dark hidden sm:flex px-4 h-9 rounded-full items-center justify-center text-xs font-semibold whitespace-nowrap"
-              style={{
-                backgroundColor: "hsl(var(--nav-cta-bg, 280 57% 16%))",
-                color: "hsl(var(--nav-cta-text, 45 60% 96%))",
-              }}
+              className="nav-cta lg-dark hidden sm:flex px-4 h-9 rounded-full items-center justify-center text-xs font-semibold whitespace-nowrap"
             >
               {ctaText}
             </a>
@@ -532,11 +524,7 @@ const Navbar = () => {
               <a
                 href={safeHref(ctaHref)}
                 onClick={(e) => handleNavClick(e, ctaHref)}
-                className="font-display text-micro uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
-                style={{
-                  backgroundColor: "hsl(var(--nav-cta-bg, 280 57% 16%))",
-                  color: "hsl(var(--nav-cta-text, 45 60% 96%))",
-                }}
+                className="nav-cta lg-dark font-display text-micro uppercase tracking-[0.1em] font-bold px-8 py-3 rounded-full mt-4"
               >
                 {ctaText}
               </a>
