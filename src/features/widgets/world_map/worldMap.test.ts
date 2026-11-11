@@ -83,3 +83,23 @@ describe("world map", () => {
     expect(Math.min(...ys)).toBeGreaterThanOrEqual(0);
   });
 });
+
+describe("map title lines (owner, 11 Nov 2026)", () => {
+  it("keeps the title box's HTML and wraps plain lines, so no tags print", async () => {
+    const { titleLinesHtml } = await import("./resolve");
+    expect(titleLinesHtml(["<p>36 countries.</p>", "<p>One comms function.</p>"])).toEqual([
+      "<p>36 countries.</p>",
+      "<p>One comms function.</p>",
+    ]);
+    expect(titleLinesHtml(["36 countries.", "A & B"])).toEqual(["<p>36 countries.</p>", "<p>A &amp; B</p>"]);
+    expect(titleLinesHtml(["<p></p>", "", null, undefined])).toEqual([]);
+    expect(titleLinesHtml(undefined)).toEqual([]);
+  });
+
+  it("renders the title as sanitised HTML, never as text", async () => {
+    const { readFileSync } = await import("node:fs");
+    const src = readFileSync(`${process.cwd()}/src/features/widgets/world_map/WorldMapRow.tsx`, "utf8");
+    expect(src).toMatch(/titleLinesHtml\(c\.title_lines\)/);
+    expect(src).toMatch(/__html: sanitizeHtml\(line\)/);
+  });
+});

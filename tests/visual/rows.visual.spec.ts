@@ -87,6 +87,27 @@ const settle = async (page: Page) => {
     );
     await (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts?.ready;
   });
+  // index.html loads the Google Fonts stylesheet asynchronously (preload,
+  // then rel=stylesheet on load). `document.fonts.ready` can resolve
+  // before that sheet arrives, when no web face is declared yet, so a row
+  // in Playwrite CU was sometimes shot in the fallback script face, which
+  // wraps differently (the Home note row came out 194px or 236px tall
+  // from one load to the next). Wait for the sheet, then load the three
+  // faces the site uses, then let fonts settle again.
+  await page.waitForFunction(
+    () => Array.from(document.styleSheets).some((s) => (s.href || "").includes("fonts.googleapis.com")),
+    null,
+    { timeout: 20_000 },
+  );
+  await page.evaluate(async () => {
+    const fonts = (document as Document & { fonts: FontFaceSet }).fonts;
+    await Promise.all(
+      ["400 20px 'Playwrite CU'", "700 40px 'Funnel Display'", "400 16px 'Inter'", "600 16px 'Inter'"].map((f) =>
+        fonts.load(f).catch(() => []),
+      ),
+    );
+    await fonts.ready;
+  });
   await page.waitForLoadState("networkidle");
 };
 
