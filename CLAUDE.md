@@ -53,7 +53,10 @@ Rules that are easy to get wrong:
   `--map-main` #1A8164); Ireland and Romania are markets only, and a
   market names itself "Main market" on hover. The three
   counters (comms, HR, main markets) wear the same legend colours, and
-  the map box does not brighten on hover (only clickable glass does). The map art
+  the map box does not brighten on hover (only clickable glass does). The map
+  fits the window height (`.tmc-map-box`), its hover label sits at the
+  pointer, and hover only switches on once the colours finish drawing
+  (`is-ready`). The map art
   is generated (`scripts/world-map/build-map-data.mjs`, amCharts
   Mercator, no Antarctica); the "Map: amCharts" credit by the legend is
   the licence's condition and must stay. Small labels and eyebrows on

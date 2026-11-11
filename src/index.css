@@ -2208,9 +2208,11 @@
 /* Pace (owner, 10 Nov 2026): slower than the artboard. `--pace` stretches
    each place's own delay; the map waits (`.wait`) until it is in full view. */
 .tmc-map { --pace: 1.8; }
-/* The Mercator art is tall (1200 x 788): the box is capped so the whole
-   map fits a laptop screen, and centred in the card. */
-.tmc-map-box { width: 100%; max-width: 980px; margin-inline: auto; }
+/* The Mercator art is 1200 x 788: the box takes the card's full width
+   but never more than the window's height allows, so the whole map fits
+   the screen at any size (owner, 11 Nov 2026). 200px leaves room for the menu above
+   and the legend below. */
+.tmc-map-box { width: 100%; max-width: min(100%, calc((100svh - 200px) * 1200 / 788)); margin-inline: auto; }
 .tmc-credit { color: hsl(var(--muted-foreground)); text-decoration: underline; text-underline-offset: 3px; }
 .tmc-credit:hover { color: hsl(var(--heading)); }
 .tmc-map.play .wm-worked { animation: tmcWorked 1.2s ease-out forwards; animation-delay: calc(var(--d, 0s) * var(--pace)); }
@@ -2220,7 +2222,7 @@
 .tmc-map:not(.play):not(.wait) .wm-hr { fill: hsl(var(--map-hr)); }
 .tmc-map:not(.play):not(.wait) .wm-main { fill: hsl(var(--map-main)); }
 /* Hover and focus on every shaded place (.wm-live). Lines are screen pixels (non-scaling): borders 0.5px, the hover line 1px at most (owner, 10 Nov 2026). */
-.tmc-map .wm-live:hover, .tmc-map .wm-live:focus-visible { stroke: hsl(var(--deep)); stroke-width: 1; outline: none; cursor: default; }
+.tmc-map.is-ready .wm-live:hover, .tmc-map .wm-live:focus-visible { stroke: hsl(var(--deep)); stroke-width: 1; outline: none; cursor: default; }
 @keyframes tmcWorked { to { fill: hsl(var(--map-worked)); } }
 @keyframes tmcHr { to { fill: hsl(var(--map-hr)); } }
 @keyframes tmcMain { to { fill: hsl(var(--map-main)); } }
