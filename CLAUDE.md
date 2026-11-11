@@ -56,7 +56,8 @@ Rules that are easy to get wrong:
   the map box does not brighten on hover (only clickable glass does). The map
   fits the window height (`.tmc-map-box`), its hover label sits at the
   pointer, and hover only switches on once the colours finish drawing
-  (`is-ready`). The map art
+  (`is-ready`). Its title lines are HTML from the title box and render
+  through `titleLinesHtml` + `sanitizeHtml`, like every row title. The map art
   is generated (`scripts/world-map/build-map-data.mjs`, amCharts
   Mercator, no Antarctica); the "Map: amCharts" credit by the legend is
   the licence's condition and must stay. Small labels and eyebrows on
