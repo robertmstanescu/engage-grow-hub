@@ -29,7 +29,8 @@ permissions:
 
 jobs:
   baseline:
-    runs-on: ubuntu-latest
+    # Pinned to match the visual job in check.yml (baselines made on 24.04).
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
