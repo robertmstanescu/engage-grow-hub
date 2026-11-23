@@ -29,6 +29,14 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
+import {
+  WORK_SELECT,
+  workIndexDescription,
+  workItemArticleLd,
+  workItemMeta,
+  workLlmsLines,
+  workReadable,
+} from "./lib/workSeo.mjs";
 
 /* ── Config ─────────────────────────────────────────────────────────── */
 
@@ -248,7 +256,7 @@ async function main() {
       "blog_posts?status=eq.published&select=slug,title,excerpt,content,meta_title,meta_description,og_image,cover_image,author_name,published_at,updated_at&order=published_at.desc",
     ),
     rest(
-      "work_items?status=eq.published&select=slug,title,summary,cover_image,case_rows,updated_at&order=sort_order.asc",
+      `work_items?status=eq.published&select=${WORK_SELECT}&order=sort_order.asc`,
     ),
   ]);
 
@@ -532,7 +540,7 @@ async function main() {
       path: "/work/",
       meta: {
         title: titleFor(null, `Work — ${brandName}`),
-        description: "Client work and case studies.",
+        description: workIndexDescription(workItems, brandName),
         url: abs("/work/"),
         image: defaultImage,
         jsonLd: [
@@ -541,9 +549,11 @@ async function main() {
             "@type": "CollectionPage",
             name: "Work",
             url: abs("/work/"),
+            description: workIndexDescription(workItems, brandName),
             hasPart: workItems.map((item) => ({
               "@type": "Article",
               headline: item.title,
+              description: workItemMeta(item).description,
               url: abs(`/work/${trailing(item.slug)}`),
             })),
           },
@@ -560,33 +570,27 @@ async function main() {
       if (!item.slug) continue;
       const path = `/work/${trailing(item.slug)}`;
       const rows = Array.isArray(item.case_rows) ? item.case_rows : [];
-      const description = plain(item.summary) || plain(extractReadableContent(rows)?.paragraphs?.[0]);
+      const meta = workItemMeta(item);
+      const description = meta.description || plain(extractReadableContent(rows)?.paragraphs?.[0]);
       routes.push({
         path,
         meta: {
-          title: titleFor(null, item.title),
+          title: titleFor(item.meta_title, item.title),
           description,
           url: abs(path),
-          image: absImage(item.cover_image),
+          image: absImage(meta.image),
           ogType: "article",
           jsonLd: [
-            {
-              "@context": "https://schema.org",
-              "@type": "Article",
-              headline: item.title,
-              description,
-              image: absImage(item.cover_image),
-              url: abs(path),
-              dateModified: item.updated_at || undefined,
-              ...(brandName ? { publisher: { "@type": "Organization", name: brandName } } : {}),
-            },
+            workItemArticleLd(item, { abs, absImage, path, brandName, origin, person: personLd }),
+            // Questions answered on the page become FAQPage data for answer engines.
+            faqLd(rows),
             breadcrumbLd([
               ["Home", `${origin}/`],
               ["Work", abs("/work/")],
               [item.title, abs(path)],
             ]),
-          ],
-          readable: extractReadableContent(rows),
+          ].filter(Boolean),
+          readable: workReadable(item, extractReadableContent(rows)),
         },
         sitemap: { lastmod: item.updated_at, changefreq: "monthly", priority: "0.6" },
       });
@@ -635,6 +639,10 @@ async function main() {
     lines.push(
       `- [${post.title}](${abs(`/blog/${trailing(post.slug)}`)}): ${plain(post.excerpt || post.meta_description || post.content, 160)}`,
     );
+  }
+  if (workItems.length) {
+    // Work pieces, with their plain-facts summary, so AI answers can cite them.
+    lines.push("", "## Work", "", ...workLlmsLines(workItems, abs));
   }
   const llmsTxt = `${lines.join("\n")}\n`;
   writeFileSync(resolve("public", "llms.txt"), llmsTxt);

@@ -6,8 +6,8 @@
  * strip (role, timeframe, pillar and the item's APPROVED proof
  * points), the cover, then the case body: a sticky "On this page" list
  * beside one 760px reading column. Under 1024px the list folds into a
- * closed <details>. The page ends on the related service and a nudge
- * to book a call.
+ * closed <details>. The page ends on up to three more pieces of work
+ * (same pillar first), the related service and a nudge to book a call.
  *
  * The body is the item's rows through the normal row renderer, so
  * every row type works here; `.case-body` strips the rows' own padding
@@ -20,8 +20,10 @@ import Navbar from "@/features/site/Navbar";
 import Footer from "@/features/site/Footer";
 import NotFound from "@/pages/NotFound";
 import usePageMeta from "@/hooks/usePageMeta";
-import { fetchWorkItemBySlug, type WorkItemRecord } from "@/services/workItems";
-import { fetchProofPointsByIds, type ProofPointRecord } from "@/services/proofPoints";
+import { fetchPublishedWorkItems, fetchWorkItemBySlug, type WorkItemRecord } from "@/services/workItems";
+import { fetchApprovedProofPoints, fetchProofPointsByIds, type ProofPointRecord } from "@/services/proofPoints";
+import WorkCard, { type WorkCardItem } from "@/features/site/WorkCard";
+import { pickRelatedWork } from "@/features/site/work/relatedWork";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import { transformImageUrl } from "@/services/mediaOptimization";
@@ -43,6 +45,8 @@ const WorkCase = () => {
   const [proofs, setProofs] = useState<ProofPointRecord[]>([]);
   const [looked, setLooked] = useState(false);
   const [current, setCurrent] = useState("");
+  const [others, setOthers] = useState<WorkCardItem[]>([]);
+  const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
 
   usePageMeta({
     title: item?.meta_title || item?.title || "Work",
@@ -73,6 +77,26 @@ const WorkCase = () => {
     });
     return () => { cancelled = true; };
   }, [slug]);
+
+  /* More work: the published cards, loaded after the piece itself. A
+     failed load only hides the section. */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [{ data }, { data: approved }] = await Promise.all([fetchPublishedWorkItems(), fetchApprovedProofPoints()]);
+      if (cancelled) return;
+      setOthers(Array.isArray(data) ? (data as WorkCardItem[]) : []);
+      setApprovedIds(new Set((Array.isArray(approved) ? approved : []).map((p: { id: string }) => p.id)));
+    })().catch(() => {
+      if (!cancelled) setOthers([]);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const related = useMemo(
+    () => (item ? pickRelatedWork(others, { slug: item.slug, pillar: item.pillar }) : []),
+    [others, item],
+  );
 
   const caseRows = useMemo(() => cleanRows(item?.case_rows), [item]);
 
@@ -242,6 +266,21 @@ const WorkCase = () => {
               <article className="case-body">
                 <RowsRenderer rows={caseRows} promoteHeading={false} rowAnchorId={anchorFor} forceAlign="left" />
               </article>
+            </div>
+          </section>
+        )}
+
+        {related.length > 0 && (
+          <section aria-labelledby="case-more" className="work-gutter case-more-section">
+            <div className="work-column">
+              <h2 id="case-more" className="case-more-title">More work in this area</h2>
+              <ul className="work-grid">
+                {related.map((r) => (
+                  <li key={r.slug}>
+                    <WorkCard item={r} proofApproved={r.proof_point_id ? approvedIds.has(r.proof_point_id) : undefined} />
+                  </li>
+                ))}
+              </ul>
             </div>
           </section>
         )}

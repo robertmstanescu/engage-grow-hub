@@ -484,6 +484,7 @@ export const QuoteBandEditor = ({
       />
       <Field label="Client name" value={content.name || ""} onChange={(v) => onChange("name", v)} />
       <Field label="Role / Company" value={content.role || ""} onChange={(v) => onChange("role", v)} />
+      <Field label="Link on the name, e.g. their LinkedIn (optional)" value={content.name_url || ""} onChange={(v) => onChange("name_url", v)} />
       <ImagePickerField
         label="Portrait (optional)"
         value={content.avatar || ""}
