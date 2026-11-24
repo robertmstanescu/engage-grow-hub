@@ -13,13 +13,15 @@
  *   "quote": "<p>They saved our quarter.</p>",
  *   "name": "Ada Lovelace",
  *   "role": "Head of People · Engine Co.",
- *   "avatar": "…", "avatar_alt": "…"   // optional
+ *   "avatar": "…", "avatar_alt": "…",  // optional
+ *   "name_url": "https://…"            // optional: the name links here
  * }
  * ───────────────────────────────────────────────────────────────────────── */
 
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT } from "@/lib/constants/rowDefaults";
 import { sanitizeHtml } from "@/services/sanitize";
+import { safeHref } from "@/services/safeHref";
 import { resolveImageAlt } from "@/services/imageAlt";
 import { transformImageUrl } from "@/services/mediaOptimization";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
@@ -46,6 +48,9 @@ const QuoteBandRow = ({
 
   if (!c.quote) return null;
   const coverImage = c.cover_image?.trim() || undefined;
+  /* The name can link to the person's own profile (proof that the
+     quote is real). Only a safe http(s) link is kept. */
+  const nameHref = /^https?:\/\//i.test(safeHref(c.name_url, "")) ? safeHref(c.name_url, "") : "";
 
   const innerContent = (
     <>
@@ -72,7 +77,17 @@ const QuoteBandRow = ({
               />
             )}
             <div className="text-left">
-              {c.name && <div className="font-display text-sm font-semibold">{c.name}</div>}
+              {c.name && (
+                <div className="font-display text-sm font-semibold">
+                  {nameHref ? (
+                    <a href={nameHref} target="_blank" rel="noopener noreferrer" className="hover:opacity-80">
+                      {c.name}
+                    </a>
+                  ) : (
+                    c.name
+                  )}
+                </div>
+              )}
               {c.role && <div className="font-body text-xs opacity-70">{c.role}</div>}
             </div>
           </footer>
