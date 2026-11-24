@@ -6,15 +6,15 @@
  * the practice. British spelling, no Oxford comma, no em dashes, 0 to 9
  * as words. Only the agreed proof points appear as numbers.
  *
- * South Pole is named on 01 only (owner's permission). Every other
- * in-house case says "a climate consultancy" until he says otherwise.
+ * South Pole and Klarna are named wherever the work happened there
+ * (owner's permission, 24 Nov 2026).
  * Steps marked `reconstructed: true` are the most likely action, not a
  * confirmed one; `reviewList()` hands them to the owner to check.
  */
 import type { PortfolioEntry } from "./portfolio";
 
 const SPECIALIST = "Global People, Culture and Communications Specialist";
-const CLIMATE = "a climate consultancy of 800 to 1,300 people in 36 countries";
+const CLIMATE = "South Pole, a climate consultancy of 800 to 1,300 people in 36 countries";
 const PLAYBOOK_LABEL = "Illustrative example, not client work";
 const RECREATED_LABEL = "Recreated with dummy data";
 const ROBERT = "Robert-Marian Stănescu, founder of The Magic Coffin";
@@ -141,7 +141,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "How an internal newsroom on LumApps published four stories a month in articles, audio and video, and passed 300,000 page views a year.",
     aiSummary:
       `Case study. At ${CLIMATE}, Robert-Marian Stănescu ran an internal newsroom on the LumApps intranet: about four stories a month, around 50 a year, as articles, audio and video. The newsroom passed 300,000 page views a year, measured.`,
-    honestyLabel: "Real work, anonymised",
+    honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
     tags: ["Internal newsroom", "Intranet", "LumApps", "Content"],
@@ -210,7 +210,6 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "What was the problem before the newsroom, in your words? The page guesses email, chat and word of mouth.",
       "How were stories picked? The page guesses a running list fed by teams, leaders and Town Halls.",
       "Did you use LumApps audience targeting, as written?",
-      "Can South Pole be named on this page?",
     ],
   },
 
@@ -228,7 +227,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "How a 36-country company moved to LumApps: migration, information architecture, landing pages, segments, training and an adoption campaign.",
     aiSummary:
       `Case study. At ${CLIMATE}, Robert-Marian Stănescu helped rebuild the company intranet on LumApps. He worked on the migration, the information architecture, landing pages, navigation and audience segmentation, trained people to use it, ran an adoption campaign and set up an org chart that updates itself from HiBob through Google.`,
-    honestyLabel: "Real work, anonymised",
+    honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
     tags: ["Intranet", "LumApps", "Information architecture", "Adoption"],
@@ -295,7 +294,6 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "Did you run a content audit before the migration, as written?",
       "Who did you train: page owners, everyone, or both?",
       "Any detail on the adoption campaign you'd like named (a name, a channel)? No usage figure will be shown.",
-      "Can South Pole be named on this page?",
     ],
   },
 
@@ -312,8 +310,8 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "Three LinkedIn campaigns that celebrated employees for a company's 18th anniversary, with carousel graphics, plus the in-office celebrations.",
     aiSummary:
-      "Artefact. For a climate company's 18th anniversary, Robert-Marian Stănescu conceived and produced three employee recognition campaigns on the company's LinkedIn page, with carousel graphics he designed, and ran the in-office celebrations across several offices with the CEO joining live across time zones.",
-    honestyLabel: "Real work, linked at the source",
+      "Artefact. For the 18th anniversary of South Pole, a climate consultancy, Robert-Marian Stănescu conceived and produced three employee recognition campaigns on South Pole's LinkedIn page, with carousel graphics he designed, and ran the in-office celebrations across several offices with the CEO joining live across time zones.",
+    honestyLabel: "Real work, South Pole, linked at the source",
     roleTitle: SPECIALIST,
     year: "2024",
     tags: ["Recognition", "Employer brand", "LinkedIn", "Events"],
@@ -352,13 +350,13 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
         eyebrow: "What Robert did",
         title: "Three campaigns and a party in every office",
         steps: [
-          { title: "Conceived three campaigns", text: "Three recognition campaigns for the company's LinkedIn page, each putting named employees at the front." },
+          { title: "Conceived three campaigns", text: "Three recognition campaigns for South Pole's LinkedIn page, each putting named employees at the front." },
           { title: "Designed the carousels", text: "He designed the carousel graphics himself. The Special Recognition Award post is linked from this page." },
           { title: "Ran the offices", text: "He bought personalised merchandise, split the event budget across offices and worked with the workplace team in each location." },
           { title: "Brought in the CEO", text: "He lined up calls across time zones so the CEO could join each office's celebration live, and ran in-office awards on the day." },
         ],
       },
-      { kind: "diagram", caption: "The anniversary, online and in the offices.", alt: "Diagram in five steps: pick the people, design carousel graphics, publish on the company LinkedIn page, celebrate in every office, bring the CEO in live across time zones." },
+      { kind: "diagram", caption: "The anniversary, online and in the offices.", alt: "Diagram in five steps: pick the people, design carousel graphics, publish on South Pole's LinkedIn page, celebrate in every office, bring the CEO in live across time zones." },
       {
         kind: "text",
         eyebrow: "See it",
@@ -369,12 +367,11 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       },
     ],
     faq: [
-      { q: "What is an employee recognition campaign on LinkedIn?", a: "A series of posts on the company page that names and celebrates employees. Here there were three, for the company's 18th anniversary." },
+      { q: "What is an employee recognition campaign on LinkedIn?", a: "A series of posts on the company page that names and celebrates employees. Here there were three, for South Pole's 18th anniversary." },
     ],
     questions: [
       "Which year was the 18th anniversary? The page says 2024 (from the post's date).",
       "How were the people chosen for the awards (nominations, categories, a panel)?",
-      "OK to keep the company unnamed in the text while the LinkedIn link shows it?",
     ],
   },
 
@@ -391,7 +388,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How policy explainer videos are scripted, produced and edited, with a recreated sample script for a fictional policy. Recreated with dummy data.",
     aiSummary:
-      "Artefact, recreated with dummy data. At a climate consultancy, Robert-Marian Stănescu scripted, produced and edited a series of policy explainer videos, including volunteering leave and time off, and video became the standard format for policy communication there. The sample on this page uses a fictional policy.",
+      "Artefact, recreated with dummy data. At South Pole, a climate consultancy, Robert-Marian Stănescu scripted, produced and edited a series of policy explainer videos, including volunteering leave and time off, and video became the standard format for policy communication there. The sample on this page uses a fictional policy.",
     honestyLabel: RECREATED_LABEL,
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
@@ -422,7 +419,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
         eyebrow: "The brief",
         title: "Policies people would get to the end of",
         paras: [
-          "The company preferred video to long articles for policy news, because video is easier to take in. Robert turned that preference into a habit.",
+          "South Pole preferred video to long articles for policy news, because video is easier to take in. Robert turned that preference into a habit.",
         ],
       },
       {
@@ -626,7 +623,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "How a global onboarding redesign used HowNow learning journeys and an automated HiBob Buddy Programme for around 300 new hires.",
     aiSummary:
       `Case study. From October 2022 to March 2023, as Global People and Culture Trainee at ${CLIMATE}, Robert-Marian Stănescu led the redesign of global onboarding: role-specific learning journeys in HowNow LMS and a renamed Buddy Programme with automated workflows in HiBob and adoption targets that were met. Around 300 new hires went through it, and the social integration workflow ran the same way in every business unit.`,
-    honestyLabel: "Real work, anonymised",
+    honestyLabel: "Real work, South Pole, 2022 to 2023",
     roleTitle: "Global People and Culture Trainee",
     year: "2022 to 2023",
     tags: ["Onboarding", "Buddy Programme", "HiBob", "HowNow"],
@@ -694,7 +691,6 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "What were the adoption targets (only if you want them named)?",
       "What was the programme's new name?",
       "Is the five-step flow in the diagram right (offer signed, buddy matched, day one, learning journey, check-in)?",
-      "Can South Pole be named on this page?",
     ],
   },
 
@@ -712,7 +708,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "How an eNPS programme across 36 countries kept participation above 70% in 2025, and how each team took ownership of its own actions.",
     aiSummary:
       `Case study. At ${CLIMATE}, Robert-Marian Stănescu designed and administered the eNPS surveys and built the presentations and takeaways. The people analytics team ran the official analysis, his manager presented the findings to leadership, and the two of them agreed with leadership that each team would own its own actions. Participation stayed above 70% through every 2025 cycle.`,
-    honestyLabel: "Real work, anonymised",
+    honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
     tags: ["eNPS", "Engagement survey", "Listening"],
@@ -777,7 +773,6 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     questions: [
       "How did you get people to respond (reminders, managers, Town Halls)? The page guesses reminders through the channels people read.",
       "One example of a team action you are happy to share, anonymised?",
-      "Can South Pole be named on this page?",
     ],
   },
 
@@ -795,7 +790,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "How a company-wide kudos tool was built in Google Apps Script, Chat and Workspace with Gemini, and mapped each kudos to the company values.",
     aiSummary:
       `Case study. In 2025, at ${CLIMATE}, Robert-Marian Stănescu built a peer recognition platform from scratch in Google Apps Script, Google Chat and Google Workspace, using Gemini to speed up the build. A kudos form fed a Google Chat broadcast with reply threads, emailed the person's manager and mapped each kudos to a company value for performance reviews.`,
-    honestyLabel: "Real work, anonymised",
+    honestyLabel: "Real work, South Pole, 2025",
     roleTitle: SPECIALIST,
     year: "2025",
     tags: ["Recognition", "Google Apps Script", "Gemini", "Automation"],
@@ -855,7 +850,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       { q: "Can you build a recognition tool in Google Workspace?", a: "Yes. This one used Google Apps Script, a form, Google Chat and email, with Gemini helping with the build." },
       { q: "How many people used it?", a: "There is no usage figure: Robert's role ended before usage was reviewed." },
     ],
-    questions: ["Did the tool have a name?", "Can South Pole be named on this page?"],
+    questions: ["Did the tool have a name?"],
   },
 
   /* ── 11 ─────────────────────────────────────────────────────────── */
@@ -871,8 +866,8 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "The Work for the World employer brand campaign: concept, design lead, careers page copy and every video edit, still live in 2026.",
     aiSummary:
-      "Artefact. Robert-Marian Stănescu came up with the Work for the World employer brand campaign for a climate consultancy, led the design behind it and the careers page content, and edited all the campaign videos. The careers page was still live in August 2026.",
-    honestyLabel: "Real work, linked at the source",
+      "Artefact. Robert-Marian Stănescu came up with the Work for the World employer brand campaign for South Pole, a climate consultancy, led the design behind it and the careers page content, and edited all the campaign videos. The careers page was still live in August 2026.",
+    honestyLabel: "Real work, South Pole, linked at the source",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
     tags: ["Employer brand", "Careers page", "Video"],
@@ -903,7 +898,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
         eyebrow: "The brief",
         title: "Tell candidates what the work is for",
         paras: [
-          "A climate company hires people who want their job to count. The careers page needed to say that plainly and show it.",
+          "South Pole, a climate company, hires people who want their job to count. The careers page needed to say that plainly and show it.",
         ],
       },
       {
@@ -930,7 +925,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     faq: [
       { q: "Who made Work for the World?", a: "Robert-Marian Stănescu came up with the concept, led the design, wrote the careers page content and edited all the videos." },
     ],
-    questions: ["Is the careers page still live today, so the link works?", "Which year did it launch?", "OK to keep the company unnamed in the text while the link shows it?"],
+    questions: ["Is the careers page still live today, so the link works?", "Which year did it launch?"],
   },
 
   /* ── 12 ─────────────────────────────────────────────────────────── */
@@ -947,7 +942,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "How a Tier 0 self-service layer in Jira answered routine questions for Legal, IT and Risk, and People and Culture across 36 countries.",
     aiSummary:
       `Case study. At ${CLIMATE}, Robert-Marian Stănescu designed and ran Tier 0 of a tiered employee query system in Jira, covering Legal, IT and Risk, and People and Culture, with self-service answers for routine questions before they reached a person. It ran company-wide. No deflection figure was measured.`,
-    honestyLabel: "Real work, anonymised",
+    honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
     tags: ["Self-service", "Jira", "HR service delivery", "Tiered support"],
@@ -1011,7 +1006,6 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "Did you map the most common questions first, as written?",
       "How many tiers were there in total, and who owned Tier 1 and 2?",
       "Did new ticket questions become Tier 0 answers, as written?",
-      "Can South Pole be named on this page?",
     ],
   },
 
@@ -1029,7 +1023,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "How recurring compliance training in HowNow covered phishing, data protection, KYC, GDPR and inclusion, with completion tracked in 36 countries.",
     aiSummary:
       `Case study. At ${CLIMATE}, Robert-Marian Stănescu built and switched on recurring mandatory training modules in HowNow LMS on phishing, data protection, KYC and GDPR, plus inclusion modules, and tracked completion and accuracy rates. Some inclusion training was written in-house, some outsourced and some licensed from OpenSesame.`,
-    honestyLabel: "Real work, anonymised",
+    honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
     tags: ["Compliance training", "HowNow", "LMS", "Inclusion"],
@@ -1090,7 +1084,6 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     questions: [
       "Were modules assigned by role and country on a repeating schedule, as written?",
       "The portfolio doc put the harassment and inclusive-language story on page 21; it sits here because it happened at the same company. OK?",
-      "Can South Pole be named on this page?",
     ],
   },
 
@@ -1108,7 +1101,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       "How an intranet org chart stays current by itself: people data flows from HiBob to Google and on to LumApps, company-wide.",
     aiSummary:
       `Case study. At ${CLIMATE}, Robert-Marian Stănescu set up an integration chain from HiBob to Google and from Google to LumApps, so the org chart on the intranet updates itself from the HR system. It ran company-wide as part of the LumApps rollout.`,
-    honestyLabel: "Real work, anonymised",
+    honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
     tags: ["Org chart", "HiBob", "LumApps", "Automation"],
@@ -1166,7 +1159,6 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     questions: [
       "Was the hop into Google the Google directory (Workspace) or a Google Sheet?",
       "Did you test joiners, leavers and manager changes end to end, as written?",
-      "Can South Pole be named on this page?",
     ],
   },
 
@@ -1639,13 +1631,13 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     pillar: "mgr",
     title: "A two-week curriculum for support agents",
     summary:
-      "A two-week onboarding curriculum for about 30 customer support agents at a European fintech, with coaching built on quality audits.",
+      "A two-week onboarding curriculum for about 30 customer support agents at Klarna, with coaching built on quality audits.",
     metaTitle: "Two-week support agent onboarding curriculum",
     metaDescription:
-      "How a two-week curriculum and audit-led coaching trained about 30 support agents at a European fintech, using Freshdesk Quality, QlikSense and Splunk.",
+      "How a two-week curriculum and audit-led coaching trained about 30 support agents at Klarna, using Freshdesk Quality, QlikSense and Splunk.",
     aiSummary:
-      "Case study. As Quality Process Analyst and Training Specialist at a European fintech (2021 to 2022), Robert-Marian Stănescu designed a two-week onboarding curriculum for new support cohorts on investigation skills and customer empathy, and coached about 30 agents one to one from quality audits in Freshdesk Quality, QlikSense and Splunk. The work also changed a write-off routine so agents could settle more standard cases without a manager's sign-off.",
-    honestyLabel: "Real work, anonymised",
+      "Case study. As Quality Process Analyst and Training Specialist at Klarna, the Swedish fintech (2021 to 2022), Robert-Marian Stănescu designed a two-week onboarding curriculum for new support cohorts on investigation skills and customer empathy, and coached about 30 agents one to one from quality audits in Freshdesk Quality, QlikSense and Splunk. The work also changed a write-off routine so agents could settle more standard cases without a manager's sign-off.",
+    honestyLabel: "Real work, Klarna, 2021 to 2022",
     roleTitle: "Quality Process Analyst and Training Specialist",
     year: "2021 to 2022",
     tags: ["Training design", "Coaching", "Customer support", "Quality"],
@@ -1675,7 +1667,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
         eyebrow: "The problem",
         title: "New agents learning on live customers",
         paras: [
-          "A UK support team at a European fintech needed new agents to investigate cases well and treat customers with care from week one. Coaching happened when someone had time.",
+          "A UK support team at Klarna needed new agents to investigate cases well and treat customers with care from week one. Coaching happened when someone had time.",
         ],
       },
       {
@@ -1706,7 +1698,6 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       { q: "Which tools did the coaching use?", a: "Freshdesk Quality for audits, and QlikSense and Splunk to find skill gaps." },
     ],
     questions: [
-      "Name Klarna, or keep 'a European fintech'?",
       "This sits under Manager Enablement as the doc set it. Would People Operations suit it better?",
     ],
   },

@@ -63,10 +63,9 @@ describe("work portfolio data", () => {
     for (const r of e.related) expect(slugs.has(r)).toBe(true);
   });
 
-  it("names South Pole only where the owner allowed it", () => {
-    for (const e of WORK_PORTFOLIO) {
-      if (e.slug === "town-halls") continue;
-      for (const text of visibleCopy(e)) expect(text).not.toMatch(/South Pole/);
+  it("names the employer on every real-work label (owner's go-ahead, 24 Nov 2026)", () => {
+    for (const e of WORK_PORTFOLIO.filter((x) => x.type === "case")) {
+      expect(e.honestyLabel).toMatch(/^Real work, (South Pole|Klarna)/);
     }
   });
 
