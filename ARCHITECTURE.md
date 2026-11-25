@@ -138,6 +138,9 @@ every PR, then runs the visual suite.
   next real commit on the branch (or a docs note like this one) to get
   `check` green on the refreshed baseline.
   Never refresh a baseline to make an unexpected red job green.
+  `settle()` loads every face the site uses before a shot (Playwrite
+  CU, Funnel Display, Inter and Literata for quotes); a new face goes on
+  that list in the same change, or its rows get shot in the fallback.
 - **strictNullChecks** is on. `noImplicitAny` is not yet.
 
 ## Conventions and things not to touch
