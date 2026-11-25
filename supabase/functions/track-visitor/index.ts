@@ -74,6 +74,10 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+// The service client as createClient(url, key) returns it (untyped schema).
+// deno-lint-ignore no-explicit-any
+type AdminClient = ReturnType<typeof createClient<any, "public", any>>;
 import { countryFromTimezone } from "./tzCountry.ts";
 import { issueEngagementToken, verifyEngagementToken } from "./engagementToken.ts";
 
@@ -247,7 +251,7 @@ const SYSTEM_ROUTES = new Set(["blog", "admin", "unsubscribe", "api", "auth", "l
  */
 async function canonicalizeCmsAlias(
   path: string,
-  supabaseAdmin: ReturnType<typeof createClient>,
+  supabaseAdmin: AdminClient,
 ): Promise<string> {
   const segments = path.split("/").filter(Boolean);
   if (segments.length !== 1) return path;
@@ -350,7 +354,7 @@ const automationFromSignals = (signals: unknown): string | null => {
 const ENGAGED_MIN_SECONDS = 1;
 const PENDING_LABEL = "No engagement";
 
-async function recordEngagement(body: Record<string, unknown>, supabaseAdmin: ReturnType<typeof createClient>): Promise<void> {
+async function recordEngagement(body: Record<string, unknown>, supabaseAdmin: AdminClient): Promise<void> {
   const viewId = truncate(body?.viewId, 64);
   if (!viewId) return;
   const seconds = Math.max(0, Math.min(86_400, Number(body?.seconds) || 0));

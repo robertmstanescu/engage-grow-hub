@@ -45,6 +45,10 @@ export interface WorkItemRecord {
   meta_description: string;
   og_image: string;
   ai_summary: string;
+  /** Unpublished search fields; null means "same as live". */
+  draft_meta_title: string | null;
+  draft_meta_description: string | null;
+  draft_ai_summary: string | null;
   created_at: string;
   updated_at: string;
 }
