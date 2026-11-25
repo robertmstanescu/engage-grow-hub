@@ -14,9 +14,16 @@ export interface WorkPageContent {
   answer: string;
   meta_title: string;
   meta_description: string;
+  /** Small label over the self-scrolling top three under the header. */
+  featured_label: string;
+  /** Slugs of the top three pieces, in order; empty = no featured band. */
+  featured_slugs: string[];
   rows_above: PageRow[];
   rows_below: PageRow[];
 }
+
+/** How many pieces the featured band shows. */
+export const FEATURED_MAX = 3;
 
 export const WORK_PAGE_KEY = "work_page";
 
@@ -29,6 +36,10 @@ export const WORK_PAGE_DEFAULTS: WorkPageContent = {
     "Case studies, artefacts and playbooks by Robert-Marian Stănescu, founder of The Magic Coffin, in internal communications, employee experience, people operations, HR business partnering, pay transparency and manager enablement. Each piece says whether it is real work from South Pole or Klarna, a recreation with dummy data or an illustrative playbook.",
   meta_title: "",
   meta_description: "",
+  featured_label: "Start with these three",
+  // The three real cases with the strongest measured results (25 Nov 2026);
+  // the owner changes them under Admin, Pages, Work.
+  featured_slugs: ["town-halls", "onboarding-buddy-programme", "enps-programme"],
   rows_above: [],
   rows_below: [],
 };
@@ -39,6 +50,10 @@ export const readWorkPage = (raw: unknown): WorkPageContent => {
   const text = (k: keyof WorkPageContent) =>
     typeof c[k] === "string" ? (c[k] as string) : (WORK_PAGE_DEFAULTS[k] as string);
   const rows = (k: "rows_above" | "rows_below") => (Array.isArray(c[k]) ? (c[k] as PageRow[]) : []);
+  // Never saved = the defaults; saved = exactly what was saved (clean strings, no repeats, at most three).
+  const featured = Array.isArray(c.featured_slugs)
+    ? [...new Set((c.featured_slugs as unknown[]).filter((v): v is string => typeof v === "string" && v.trim() !== "").map((v) => v.trim()))].slice(0, FEATURED_MAX)
+    : WORK_PAGE_DEFAULTS.featured_slugs;
   return {
     header_label: text("header_label"),
     header_title: text("header_title") || WORK_PAGE_DEFAULTS.header_title,
@@ -46,6 +61,8 @@ export const readWorkPage = (raw: unknown): WorkPageContent => {
     answer: text("answer"),
     meta_title: text("meta_title"),
     meta_description: text("meta_description"),
+    featured_label: text("featured_label"),
+    featured_slugs: featured,
     rows_above: rows("rows_above"),
     rows_below: rows("rows_below"),
   };

@@ -5,8 +5,9 @@ import ActionMenu from "./ui/ActionMenu";
 import { MENU_DIVIDER } from "./ui/menu";
 import { toast } from "sonner";
 import RowsManager from "./site-editor/RowsManager";
-import { SectionBox, Field, TextArea } from "./site-editor/FieldComponents";
-import { WORK_PAGE_DEFAULTS, WORK_PAGE_KEY, readWorkPage, type WorkPageContent } from "@/features/site/work/workPageContent";
+import { SectionBox, Field, TextArea, SelectField } from "./site-editor/FieldComponents";
+import { FEATURED_MAX, WORK_PAGE_DEFAULTS, WORK_PAGE_KEY, readWorkPage, type WorkPageContent } from "@/features/site/work/workPageContent";
+import { fetchPublishedWorkItems } from "@/services/workItems";
 import SeoFields from "./site-editor/SeoFields";
 import type { PageRow } from "@/types/rows";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
@@ -102,6 +103,8 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   // The /work index: its header, plain answer, search fields and extra rows.
   const [editingWork, setEditingWork] = useState(false);
   const [workContent, setWorkContent] = useState<WorkPageContent>(WORK_PAGE_DEFAULTS);
+  // Published pieces offered for the top three on the Work page.
+  const [workOptions, setWorkOptions] = useState<{ label: string; value: string }[]>([]);
   // Which error-page editor is open (null = none).
   const [editingError, setEditingError] = useState<"404" | "boundary" | null>(null);
   const [error404, setError404] = useState<Error404Content>(ERROR_404_DEFAULTS);
@@ -156,8 +159,13 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   };
 
   const loadWorkPage = async () => {
-    const { data } = await fetchSection(WORK_PAGE_KEY);
+    const [{ data }, { data: pieces }] = await Promise.all([fetchSection(WORK_PAGE_KEY), fetchPublishedWorkItems()]);
     if (data?.content) setWorkContent(readWorkPage(data.content));
+    setWorkOptions(
+      (Array.isArray(pieces) ? (pieces as { slug?: string; title?: string }[]) : [])
+        .filter((p) => typeof p.slug === "string" && p.slug)
+        .map((p) => ({ label: p.title || (p.slug as string), value: p.slug as string })),
+    );
   };
 
   const saveWorkPage = (updates: Partial<WorkPageContent>) => {
@@ -447,6 +455,25 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
           onTitleChange={(v) => saveWorkPage({ meta_title: v })}
           onDescriptionChange={(v) => saveWorkPage({ meta_description: v })}
         />
+
+        <SectionBox label="Top three (scrolls by itself under the title)">
+          <Field label="Small label above them" value={workContent.featured_label} onChange={(v) => saveWorkPage({ featured_label: v })} />
+          <div className="grid grid-cols-3 gap-3 mt-3">
+            {Array.from({ length: FEATURED_MAX }, (_, slot) => (
+              <SelectField
+                key={slot}
+                label={`Piece ${slot + 1}`}
+                value={workContent.featured_slugs[slot] ?? ""}
+                options={[{ label: "None", value: "" }, ...workOptions]}
+                onChange={(v) => {
+                  const next = [...workContent.featured_slugs];
+                  next[slot] = v;
+                  saveWorkPage({ featured_slugs: [...new Set(next.filter(Boolean))].slice(0, FEATURED_MAX) });
+                }}
+              />
+            ))}
+          </div>
+        </SectionBox>
 
         <SectionBox label="Rows above the work cards">
           <RowsManager rows={workContent.rows_above} onChange={(rows) => saveWorkPage({ rows_above: rows })} />
