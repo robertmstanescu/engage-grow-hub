@@ -131,16 +131,20 @@ const FaqRow = ({
                   </AccordionTrigger>
                   <AccordionContent
                     /* Closed answers stay in the page so search engines and
-                       the prerender still read them; `.faq-list` hides them. */
+                       the prerender still read them; `.faq-list` folds them away. */
                     forceMount
-                    className="font-body text-left"
-                    style={{ fontSize: 16, lineHeight: 1.7, color: "var(--row-body, hsl(var(--body)))", paddingBottom: 14 }}
+                    /* `.faq-fold` slides the answer open and shut; the
+                       padding sits inside it so a closed answer folds to nothing. */
+                    className="faq-fold font-body text-left pb-0"
+                    style={{ fontSize: 16, lineHeight: 1.7, color: "var(--row-body, hsl(var(--body)))" }}
                   >
-                    <div
-                      className="rich-text text-left [&>p]:mt-0 [&>p]:mb-[10px]"
-                      style={{ maxWidth: 720 }}
-                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.answer || "") }}
-                    />
+                    <div>
+                      <div
+                        className="rich-text text-left [&>p]:mt-0 [&>p]:mb-[10px]"
+                        style={{ maxWidth: 720, paddingBottom: 14 }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.answer || "") }}
+                      />
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
               ))}

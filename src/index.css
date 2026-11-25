@@ -2162,8 +2162,53 @@
   .align-cards .align-empty { display: block; }
 }
 
-/* Q&A: answers are always in the HTML (forceMount); a closed one is hidden here. */
-.faq-list [role="region"][data-state="closed"] { display: none; }
+/* Q&A: answers are always in the HTML (forceMount). Opening and closing
+   glide on a grid row (0fr to 1fr) instead of snapping with display:none,
+   so the answer slides and fades both ways (owner, 25 Nov 2026: "it
+   should be more fluid"). The fold lives on the box INSIDE the Radix
+   region: Radix zeroes the region's own transition while it measures,
+   which made the region snap open. A closed answer turns invisible once
+   it has folded away, so screen readers and Tab skip it. */
+.faq-list [role="region"] { animation: none !important; }
+.faq-list .faq-fold {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease,
+    visibility 0s linear 320ms;
+}
+.faq-list [role="region"][data-state="open"] > .faq-fold {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 260ms ease 60ms,
+    visibility 0s linear 0s;
+}
+.faq-list .faq-fold > div { min-height: 0; overflow: hidden; }
+/* The +/− turns into itself: the upright bar folds flat when open. */
+.faq-list .faq-trigger[data-state] .faq-toggle::before,
+.faq-list .faq-trigger[data-state] .faq-toggle::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.faq-list .faq-toggle { position: relative; }
+.faq-list .faq-toggle::after { transform: rotate(90deg); }
+.faq-list .faq-trigger[data-state="open"] .faq-toggle::after { transform: rotate(0deg); }
+@media (prefers-reduced-motion: reduce) {
+  .faq-list .faq-fold,
+  .faq-list [role="region"][data-state="open"] > .faq-fold,
+  .faq-list .faq-trigger[data-state] .faq-toggle::after { transition: none; }
+}
 
 /* Tier card: "What's inside" opens on a click; the note sits under the card. */
 .tier-inside > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; padding: 4px 0; }

@@ -57,7 +57,12 @@ describe("Q&A and booking defaults", () => {
     const faq = read("src/features/site/rows/FaqRow.tsx");
     expect(faq).toMatch(/c\.start_open === true \?/);
     expect(faq).toMatch(/forceMount/);
-    expect(read("src/index.css")).toMatch(/\.faq-list \[role="region"\]\[data-state="closed"\] \{ display: none; \}/);
+    // A closed answer folds to nothing and turns invisible (no display:none,
+    // so the open and close can glide); the fold box lives inside the region.
+    expect(faq).toMatch(/className="faq-fold /);
+    const css = read("src/index.css");
+    expect(css).toMatch(/\.faq-list \.faq-fold \{[^}]*grid-template-rows: 0fr;[^}]*visibility: hidden;/);
+    expect(css).toMatch(/\[data-state="open"\] > \.faq-fold \{[^}]*grid-template-rows: 1fr;/);
   });
 
   it("the calendar sits beside the copy unless the block says under", () => {
