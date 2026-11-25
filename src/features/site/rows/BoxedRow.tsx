@@ -411,8 +411,11 @@ const BoxedRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: P
         {c.note && (
           <div className="mt-rhythm-base pt-3" style={{ ...revealStyle(isVisible, cards.length + 2), borderTop: "1px solid hsl(var(--foreground) / 0.1)" }}>
             <p
-              className={c.note_handwritten ? "leading-[1.4]" : "font-body text-xs italic leading-[1.6]"}
+              className={c.note_handwritten ? "leading-[1.4]" : "font-body italic leading-[1.6]"}
               style={{
+                /* A plain note is prose at body size (owner, 25 Nov 2026:
+                   the fit lines); italic keeps it apart from the cards. */
+                ...(c.note_handwritten ? {} : { fontSize: "var(--fs-body)" }),
                 color: c.note_handwritten && !c.color_note ? "hsl(var(--link))" : noteColor,
                 ...(c.note_handwritten ? { fontFamily: "'Playwrite CU', cursive", fontSize: "var(--fs-hand)", textWrap: "balance" } : {}),
               }}

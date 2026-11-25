@@ -214,7 +214,13 @@ as a centred reading column, reading it from `ArticleContext`, which
 rows renders `[article]`; the builder seeds `[article]` and puts the
 block back if a change removes it. The tray offers the Article block
 only inside a post (`BlockVariant.postsOnly`). Rows are extras placed
-above or below the article.
+above or below the article. A post in a service category also gets the
+next step at render time (`withNextStep`): a boxed row before the
+call-to-action band with that service page's bold "Try this" paragraph,
+read from the page by `useServiceTryThis` (`tryThisFromRows` finds it in
+the page's image-and-text block), and an "Explore <service>" link.
+Until the paragraph loads, or if it is missing, the row is the plain
+related-service card. The builder does not show it on saved rows.
 
 ## Analytics
 

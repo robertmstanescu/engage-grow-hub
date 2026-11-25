@@ -143,7 +143,12 @@ const WorkTeaserRow = ({ row }: { row: PageRow }) => {
             </span>
           )}
         </div>
-        <ul className="grid grid-cols-1 md:grid-cols-3 gap-5 align-cards" style={revealStyle(isVisible, 0.3)}>
+        {/* One or two cards keep the three-column card width and sit
+            centred (owner, 25 Nov 2026), instead of hugging the left. */}
+        <ul
+          className={`grid grid-cols-1 md:grid-cols-3 gap-5 align-cards${cards.length < 3 ? " work-teaser-few" : ""}`}
+          style={{ ...revealStyle(isVisible, 0.3), ["--cards" as string]: String(cards.length) } as React.CSSProperties}
+        >
           {cards.map((card) => (
             <li key={card.item.slug} className="align-card" style={WORK_CARD_SLOTS}>
               <WorkCard item={card.item} style={card.style} proofApproved={card.proofApproved} />

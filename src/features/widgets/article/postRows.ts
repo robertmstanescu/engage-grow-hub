@@ -8,15 +8,62 @@ import { PILLAR_NAMES } from "@/features/site/work/workLabels";
  * The service page an article's category belongs to (US15). Categories
  * are the six service names plus General, which has none.
  */
-export const serviceForCategory = (category?: string | null): { name: string; path: string } | null => {
+export const serviceForCategory = (category?: string | null): { name: string; path: string; pageSlug: string } | null => {
   const wanted = (category || "").trim().toLowerCase();
   if (!wanted) return null;
   for (const [key, slug] of Object.entries(PILLAR_KEY_TO_SLUG)) {
     const name = PILLAR_NAMES[key];
-    if (name && name.toLowerCase() === wanted) return { name, path: `/services/${slug}/` };
+    if (name && name.toLowerCase() === wanted) return { name, path: `/services/${slug}/`, pageSlug: `services/${slug}` };
   }
   return null;
 };
+
+/** A paragraph that opens with a bold "Try this…" lead. */
+const TRY_THIS = /<p>\s*<strong>\s*Try this[\s\S]*?<\/p>/i;
+
+/**
+ * The "Try this" paragraph of a service page (owner, 25 Nov 2026): the
+ * paragraph opening with a bold "Try this…" in the page's "What good
+ * looks like" image-and-text block. It stays written in one place, the
+ * service page, and blog posts in that service's category borrow it as
+ * their next step. Returns "" when the page has none.
+ */
+export const tryThisFromRows = (rows: unknown): string => {
+  if (!Array.isArray(rows)) return "";
+  for (const w of findWidgetsByType(rows as never, "image_text")) {
+    const data = (w as { data?: Record<string, unknown> }).data || {};
+    for (const value of Object.values(data)) {
+      if (typeof value !== "string") continue;
+      const hit = TRY_THIS.exec(value);
+      if (hit) return hit[0];
+    }
+  }
+  return "";
+};
+
+/** Id of the next-step row, so it is added once and found again. */
+export const NEXT_STEP_ROW_ID = "post-default-service";
+
+/**
+ * The next step under a post in a service category: the service's
+ * "Try this" paragraph and a link to the service. Without the paragraph
+ * (not loaded yet, or none written) it is the plain related-service card.
+ */
+export const makeNextStepRow = (service: { name: string; path: string }, tryThis = ""): PageRow =>
+  ({
+    id: NEXT_STEP_ROW_ID, type: "boxed", strip_title: "Related service", bg_color: "",
+    content: {
+      eyebrow: "Related service",
+      cards: [{
+        title: service.name,
+        body: tryThis,
+        link_url: service.path,
+        cta_url: service.path,
+        cta_label: tryThis ? `Explore ${service.name}` : "See the service",
+      }],
+    },
+    layout: { ...DEFAULT_ROW_LAYOUT },
+  }) as PageRow;
 
 /**
  * A blog post is its article. Rows are extras placed around it. These
@@ -75,25 +122,14 @@ const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
  * owner can edit or remove them like any other block. A post whose rows
  * were saved keeps exactly what was saved.
  */
-export const defaultPostExtras = (closing: ClosingWords = {}, category?: string | null): PageRow[] => {
+export const defaultPostExtras = (closing: ClosingWords = {}, category?: string | null, tryThis = ""): PageRow[] => {
   const line1 = (closing.title_line1 || "Not sure where to start?").trim();
   const line2 = (closing.title_line2 || "Lift the lid first.").trim();
   const body = (closing.body || "").trim();
   const service = serviceForCategory(category);
   return [
-    // US15: the related service, as on the Work case studies.
-    ...(service
-      ? [
-          {
-            id: "post-default-service", type: "boxed", strip_title: "Related service", bg_color: "",
-            content: {
-              eyebrow: "Related service",
-              cards: [{ title: service.name, link_url: service.path, cta_label: "See the service" }],
-            },
-            layout: { ...DEFAULT_ROW_LAYOUT },
-          },
-        ]
-      : []),
+    // US15 + the next step (25 Nov 2026): the related service with its "Try this" paragraph.
+    ...(service ? [makeNextStepRow(service, tryThis)] : []),
     {
       id: "post-default-cta", type: "cta_band", strip_title: "Call to action", bg_color: "",
       content: {
@@ -114,8 +150,25 @@ export const defaultPostExtras = (closing: ClosingWords = {}, category?: string 
   ] as PageRow[];
 };
 
-/** A post's rows as the page shows them: saved rows, or the article and its default extras. */
-export const postRowsFor = (saved: PageRow[] | null | undefined, articleHtml: string, closing?: ClosingWords, category?: string | null): PageRow[] =>
+/**
+ * Saved rows with the next step in place (owner, 25 Nov 2026): a related
+ * service row already there is refreshed, otherwise the row goes in just
+ * before the first call-to-action band, or straight after the article
+ * when there is no band. General posts come back unchanged.
+ */
+export const withNextStep = (rows: PageRow[], category?: string | null, tryThis = ""): PageRow[] => {
+  const service = serviceForCategory(category);
+  if (!service) return rows;
+  const step = makeNextStepRow(service, tryThis);
+  const existing = rows.findIndex((r) => r.id === NEXT_STEP_ROW_ID);
+  if (existing >= 0) return rows.map((r, i) => (i === existing ? step : r));
+  const band = rows.findIndex((r) => r.type === "cta_band" || findWidgetsByType([r] as never, "cta_band").length > 0);
+  const at = band >= 0 ? band : articleRowIndex(rows) + 1;
+  return [...rows.slice(0, at), step, ...rows.slice(at)];
+};
+
+/** A post's rows as the page shows them: saved rows (plus the next step), or the article and its default extras. */
+export const postRowsFor = (saved: PageRow[] | null | undefined, articleHtml: string, closing?: ClosingWords, category?: string | null, tryThis = ""): PageRow[] =>
   saved && saved.length > 0
-    ? ensureArticleRow(saved, 0, articleHtml)
-    : [makeArticleRow("post-article"), ...defaultPostExtras(closing, category)];
+    ? withNextStep(ensureArticleRow(saved, 0, articleHtml), category, tryThis)
+    : [makeArticleRow("post-article"), ...defaultPostExtras(closing, category, tryThis)];
