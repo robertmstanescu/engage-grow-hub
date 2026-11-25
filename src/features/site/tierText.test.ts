@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { splitDoneLooksLike, splitPriceLine } from "./tierText";
+import { splitDoneLooksLike, splitPriceLine, splitTierTitle } from "./tierText";
 
 describe("tier card text helpers", () => {
   it("splits the outcome off a description and keeps every word", () => {
@@ -21,5 +21,14 @@ describe("tier card text helpers", () => {
     expect(splitPriceLine("From €900 · 2–3 weeks · ~15–20 hours")).toEqual({ price: "From €900", detail: "2–3 weeks · ~15–20 hours" });
     expect(splitPriceLine("From €900")).toEqual({ price: "From €900", detail: "" });
     expect(splitPriceLine(null as unknown as string)).toEqual({ price: "", detail: "" });
+  });
+
+  it("splits 'Brand: plain descriptor' tier titles and leaves short names whole", () => {
+    expect(splitTierTitle("The Autopsy: Internal Comms Audit")).toEqual({ brand: "The Autopsy", descriptor: "Internal Comms Audit" });
+    expect(splitTierTitle("The Burial: Comms Strategy & Playbook")).toEqual({ brand: "The Burial", descriptor: "Comms Strategy & Playbook" });
+    expect(splitTierTitle("The Autopsy")).toEqual({ brand: "The Autopsy", descriptor: "" });
+    expect(splitTierTitle("Ratio 3:2")).toEqual({ brand: "Ratio 3:2", descriptor: "" });
+    expect(splitTierTitle("Dangling: ")).toEqual({ brand: "Dangling:", descriptor: "" });
+    expect(splitTierTitle(undefined as unknown as string)).toEqual({ brand: "", descriptor: "" });
   });
 });
