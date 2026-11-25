@@ -29,6 +29,13 @@
       "when": 1795594869424,
       "tag": "0003_allow_public_work_page_section",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795609245081,
+      "tag": "0004_add_draft_search_columns",
+      "breakpoints": true
     }
   ]
 }

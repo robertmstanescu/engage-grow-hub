@@ -165,6 +165,10 @@ export type Database = {
         Row: {
           ai_summary: string | null
           created_at: string
+          draft_ai_summary: string | null
+          draft_meta_description: string | null
+          draft_meta_title: string | null
+          draft_og_image: string | null
           draft_page_rows: Json | null
           expiry_at: string | null
           id: string
@@ -182,6 +186,10 @@ export type Database = {
         Insert: {
           ai_summary?: string | null
           created_at?: string
+          draft_ai_summary?: string | null
+          draft_meta_description?: string | null
+          draft_meta_title?: string | null
+          draft_og_image?: string | null
           draft_page_rows?: Json | null
           expiry_at?: string | null
           id?: string
@@ -199,6 +207,10 @@ export type Database = {
         Update: {
           ai_summary?: string | null
           created_at?: string
+          draft_ai_summary?: string | null
+          draft_meta_description?: string | null
+          draft_meta_title?: string | null
+          draft_og_image?: string | null
           draft_page_rows?: Json | null
           expiry_at?: string | null
           id?: string
@@ -978,7 +990,10 @@ export type Database = {
           cover_image: string
           cover_image_alt: string
           created_at: string
+          draft_ai_summary: string | null
           draft_case_rows: Json
+          draft_meta_description: string | null
+          draft_meta_title: string | null
           expiry_at: string | null
           featured_home: boolean
           gallery: Json
@@ -1015,7 +1030,10 @@ export type Database = {
           cover_image?: string
           cover_image_alt?: string
           created_at?: string
+          draft_ai_summary?: string | null
           draft_case_rows?: Json
+          draft_meta_description?: string | null
+          draft_meta_title?: string | null
           expiry_at?: string | null
           featured_home?: boolean
           gallery?: Json
@@ -1052,7 +1070,10 @@ export type Database = {
           cover_image?: string
           cover_image_alt?: string
           created_at?: string
+          draft_ai_summary?: string | null
           draft_case_rows?: Json
+          draft_meta_description?: string | null
+          draft_meta_title?: string | null
           expiry_at?: string | null
           featured_home?: boolean
           gallery?: Json
