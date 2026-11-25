@@ -137,6 +137,9 @@ every PR, then runs the visual suite.
   workflow for that push, so `check` does not run on it. Push the
   next real commit on the branch (or a docs note like this one) to get
   `check` green on the refreshed baseline.
+  Do not dispatch it while the PR-triggered run is still going: both
+  try to push, and the second one fails with a rejected push (harmless,
+  but it shows as a red `baseline` check).
   Never refresh a baseline to make an unexpected red job green.
   `settle()` loads every face the site uses before a shot (Playwrite
   CU, Funnel Display, Inter and Literata for quotes); a new face goes on
