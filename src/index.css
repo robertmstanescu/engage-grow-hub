@@ -84,6 +84,8 @@
     --font-title: "Funnel Display", sans-serif;
     --font-header: "Funnel Display", sans-serif;
     --font-body: "Inter", sans-serif;
+    /* Quotes (owner, 25 Nov 2026): Literata, a serif that reads as a person speaking. */
+    --font-quote: "Literata", Georgia, serif;
 
     /* ── Pillar/service tokens ── */
     --pillar-label: 40 68% 30%;
@@ -811,6 +813,9 @@
 
   /* Handwritten asides (redesign): notes, captions, "start here". */
   .font-hand { font-family: 'Playwrite CU', cursive; font-weight: 400; }
+  /* Every quote is Literata: quote bands, testimonials, Work pull lines and
+     any blockquote in an article or text block. Handwriting stays Playwrite. */
+  .font-quote, blockquote { font-family: var(--font-quote); }
 
   .link-arrow-mc:hover { color: hsl(var(--heading)); text-decoration: underline; text-underline-offset: 4px; }
 
@@ -1816,6 +1821,8 @@
     --font-title: "Funnel Display", sans-serif;
     --font-header: "Funnel Display", sans-serif;
     --font-body: "Inter", sans-serif;
+    /* Quotes (owner, 25 Nov 2026): Literata, a serif that reads as a person speaking. */
+    --font-quote: "Literata", Georgia, serif;
     --pillar-label: 40 68% 30%;
     --pillar-heading: 282 40% 13%;
     --pillar-heading-sub: 281 20% 32%;
@@ -2468,7 +2475,7 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
 .work-card-pillar { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-card-label); color: hsl(var(--body)); }
 .work-card-title { font-family: var(--font-title); font-size: var(--fs-card-title); font-weight: 700; line-height: 1.18; color: hsl(var(--heading)); }
 .work-card-summary { flex-grow: 1; font-size: var(--fs-card-body); line-height: 1.6; color: hsl(var(--body)); }
-.work-card-quote { font-family: var(--font-title); font-size: var(--fs-step-title); font-weight: 700; line-height: 1.25; color: hsl(var(--heading)); }
+.work-card-quote { font-family: var(--font-quote); font-size: var(--fs-step-title); font-weight: 500; line-height: 1.25; color: hsl(var(--heading)); }
 .work-card-number {
   font-family: var(--font-title);
   font-size: var(--fs-stat);
