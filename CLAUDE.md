@@ -122,6 +122,11 @@ Rules that are easy to get wrong:
   page (`useServiceTryThis`), and an "Explore <service>" link. General
   posts get none. Never copy the paragraph into a post.
   Dates on cards and posts go through `lib/shortDate.ts`.
+  `blog_posts` has two BEFORE UPDATE triggers that stamp `updated_at =
+  now()`, and `updated_at` is the BlogPosting `dateModified`. A copy-only
+  fix the owner wants kept off the date (excerpts, 25 Nov 2026) disables
+  `blog_posts_set_updated_at` and `update_blog_posts_updated_at` inside the
+  same transaction and enables them again before commit.
 - Recent posts are a row, not a page fixture: the `from_the_blog` row
   type (`src/features/widgets/from_the_blog/`) is placed on a page like
   any other block and edited there (heading, categories, how many,
@@ -260,8 +265,8 @@ Rules that are easy to get wrong:
   Daughter are read as the new faces (`lib/typefaces.ts`).
 - Long reference text goes in the text block's fold, never a second
   row: `fold_label`, `folded_body` and `body_after` render a closed
-  `<details>` (`.text-fold`) that stays in the HTML and the prerender, so
-  search and AI still read it. The Pay Transparency country list and the
+  `<details>` (`.text-fold`) on the live page; the prerendered noscript
+  HTML carries the folded text flat, so search and AI still read it. The Pay Transparency country list and the
   About story (paragraphs 3 to 5) use it; the About words are Robert's own
   and every one is kept.
 - A page with no hero is a document page (Privacy): `CmsPage` lifts the
