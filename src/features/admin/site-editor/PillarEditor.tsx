@@ -138,7 +138,7 @@ const PillarEditor = ({ pillarContent, servicesContent, onPillarChange, onServic
       subtitle: "",
       description: "",
       deliverables: [],
-      price: "Book a free consultation",
+      price: "Book a free call",
       time: "",
     }]);
   };

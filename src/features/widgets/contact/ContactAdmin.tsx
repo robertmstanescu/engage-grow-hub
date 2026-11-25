@@ -20,7 +20,7 @@ const ContactAdmin = ({ content, onChange }: Props) => (
     <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} />
     <Field
       label="Button text"
-      value={content.booking_button_text || "Book a discovery call"}
+      value={content.booking_button_text || "Book a free call"}
       onChange={(v) => onChange("booking_button_text", v)}
     />
     <Field

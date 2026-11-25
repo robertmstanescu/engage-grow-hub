@@ -51,7 +51,7 @@ export const SECTION_LIBRARY: LibrarySection[] = [
       eyebrow: "What we do",
       title_lines: ["Say the thing", "everyone is thinking."],
       body: "One sentence on who this is for and what changes when they work with you.",
-      cta_label: "Book a free consultation", cta_url: "#contact",
+      cta_label: "Book a free call", cta_url: "#contact",
     }, { strip_title: "Hero" }),
   },
   {
@@ -184,7 +184,7 @@ export const SECTION_LIBRARY: LibrarySection[] = [
     build: () => rowWith("cta_band", {
       eyebrow: "What to do about it",
       title_lines: ["Not sure where to start?", "Lift the lid."],
-      button_text: "Book a free consultation", button_url: "/#contact",
+      button_text: "Book a free call", button_url: "/#contact",
       band_style: "room",
     }, { strip_title: "Call to action" }),
   },

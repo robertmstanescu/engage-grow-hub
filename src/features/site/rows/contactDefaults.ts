@@ -3,8 +3,11 @@ export const DEFAULT_REACH_LABEL = "You can reach out about:";
 /* Each line is an outcome for the people who book: founders, HR and
    people leads (owner, 10 Nov 2026: clear, specific, benefit first). */
 export const DEFAULT_REACH_TOPICS = [
+  // All six services, in the site's order (search plan US16, 25 Nov 2026).
   "Town halls and updates your people read, remember and act on",
   "Onboarding that keeps new hires engaged well past week one",
-  "HR processes written down, so work carries on when one person is away",
   "Pay bands and manager answers ready for the EU pay transparency rules",
+  "HR processes written down, so work carries on when one person is away",
+  "A senior HR partner for a hard decision or a difficult exit",
+  "New managers who need a starter kit, a cohort or a coach",
 ];

@@ -9,9 +9,9 @@
  * DATA CONTRACT
  * {
  *   "eyebrow": "",                                   // optional
- *   "title_lines": ["<p>Book a free consultation</p>"],
+ *   "title_lines": ["<p>Book a free call</p>"],
  *   "body": "<p>…</p>",                              // optional
- *   "button_text": "Book a free consultation",
+ *   "button_text": "Book a free call",
  *   "button_url": "/contact/",
  *   "link_text": "See how we work",                  // optional
  *   "link_url": "/services/",

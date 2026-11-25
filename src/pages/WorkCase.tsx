@@ -299,9 +299,9 @@ const WorkCase = () => {
             )}
             <div className="mc-card-glass case-next-card">
               <h2 id="case-next" className="case-next-title">Facing something similar?</h2>
-              <p className="work-count">Book a discovery call and we will talk it through.</p>
+              <p className="work-count">Book a free 30-minute call and we will talk it through.</p>
               <Link to="/#contact" className="case-next-button">
-                Book a discovery call
+                Book a free call
               </Link>
             </div>
           </div>

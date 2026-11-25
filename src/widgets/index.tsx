@@ -274,7 +274,7 @@ registerWidget({
   category: "Marketing",
   defaultData: {
     title_lines: [],
-    button_text: "Book a free consultation",
+    button_text: "Book a free call",
     button_url: "#contact",
     link_text: "",
     link_url: "",

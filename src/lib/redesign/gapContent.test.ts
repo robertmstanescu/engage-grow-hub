@@ -96,7 +96,7 @@ describe("applyGapContent", () => {
     expect(first.price_note).toBe("start with The Autopsy, from");
     expect(second.price).toBeUndefined();
     expect(types(out)).toEqual(["hero", "boxed", "contact"]);
-    expect(dataOf(out, "hero").cta_label).toBe("Book a free consultation");
+    expect(dataOf(out, "hero").cta_label).toBe("Book a free call");
   });
 
   it("uses the About page's own plain answer as its hero intro", () => {

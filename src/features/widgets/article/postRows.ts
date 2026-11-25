@@ -1,6 +1,22 @@
 import type { PageRow } from "@/types/rows";
 import { DEFAULT_ROW_LAYOUT, generateRowId } from "@/lib/constants/rowDefaults";
 import { findWidgetsByType } from "@/lib/rowWidgets";
+import { PILLAR_KEY_TO_SLUG } from "@/lib/constants/pillarColors";
+import { PILLAR_NAMES } from "@/features/site/work/workLabels";
+
+/**
+ * The service page an article's category belongs to (US15). Categories
+ * are the six service names plus General, which has none.
+ */
+export const serviceForCategory = (category?: string | null): { name: string; path: string } | null => {
+  const wanted = (category || "").trim().toLowerCase();
+  if (!wanted) return null;
+  for (const [key, slug] of Object.entries(PILLAR_KEY_TO_SLUG)) {
+    const name = PILLAR_NAMES[key];
+    if (name && name.toLowerCase() === wanted) return { name, path: `/services/${slug}/` };
+  }
+  return null;
+};
 
 /**
  * A blog post is its article. Rows are extras placed around it. These
@@ -53,7 +69,8 @@ const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 
 /**
  * What follows the article on a post that has never been arranged in the
- * builder (BlogPost artboard): the dark call-to-action band, then three
+ * builder (BlogPost artboard): the related service card for the post's
+ * category (none for General), the dark call-to-action band, then three
  * more posts. They are ordinary rows, so the builder shows them, and the
  * owner can edit or remove them like any other block. A post whose rows
  * were saved keeps exactly what was saved.
@@ -62,7 +79,21 @@ export const defaultPostExtras = (closing: ClosingWords = {}, category?: string 
   const line1 = (closing.title_line1 || "Not sure where to start?").trim();
   const line2 = (closing.title_line2 || "Lift the lid first.").trim();
   const body = (closing.body || "").trim();
+  const service = serviceForCategory(category);
   return [
+    // US15: the related service, as on the Work case studies.
+    ...(service
+      ? [
+          {
+            id: "post-default-service", type: "boxed", strip_title: "Related service", bg_color: "",
+            content: {
+              eyebrow: "Related service",
+              cards: [{ title: service.name, link_url: service.path, cta_label: "See the service" }],
+            },
+            layout: { ...DEFAULT_ROW_LAYOUT },
+          },
+        ]
+      : []),
     {
       id: "post-default-cta", type: "cta_band", strip_title: "Call to action", bg_color: "",
       content: {
@@ -70,14 +101,14 @@ export const defaultPostExtras = (closing: ClosingWords = {}, category?: string 
         eyebrow: "What to do about it",
         title_lines: [esc(line1), `<span class="mc-accent">${esc(line2)}</span>`],
         body: body ? `<p>${esc(body)}</p>` : "",
-        button_text: "Book a free consultation",
+        button_text: "Book a free call",
         button_url: "/#contact",
       },
       layout: { ...DEFAULT_ROW_LAYOUT, spaceTop: "none", spaceBottom: "none" },
     },
     {
       id: "post-default-more", type: "from_the_blog", strip_title: "Keep reading", bg_color: "",
-      content: { eyebrow: "Keep reading", title: "More on people, pay and AI", limit: 3, categories: category ? [category] : [] },
+      content: { eyebrow: "Keep reading", title: "More on people, communication and pay", limit: 3, categories: category ? [category] : [] },
       layout: { ...DEFAULT_ROW_LAYOUT },
     },
   ] as PageRow[];
