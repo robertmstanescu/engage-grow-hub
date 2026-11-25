@@ -256,6 +256,12 @@ Rules that are easy to get wrong:
   600 only) and handwritten notes keep Playwrite; saved text and
   brand settings that still name Bricolage Grotesque or Architects
   Daughter are read as the new faces (`lib/typefaces.ts`).
+- Long reference text goes in the text block's fold, never a second
+  row: `fold_label`, `folded_body` and `body_after` render a closed
+  `<details>` (`.text-fold`) that stays in the HTML and the prerender, so
+  search and AI still read it. The Pay Transparency country list and the
+  About story (paragraphs 3 to 5) use it; the About words are Robert's own
+  and every one is kept.
 - A page with no hero is a document page (Privacy): `CmsPage` lifts the
   first text block's small heading, title and date line above one glass
   card (`site/documentHeader.ts`, render-time only) and prints the body
