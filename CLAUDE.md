@@ -245,7 +245,10 @@ Rules that are easy to get wrong:
   round) but stay in the HTML (`forceMount`). The booking calendar sits
   beside the copy (the block can say "Under the text"); on a phone the
   copy is centred. Headings are Funnel Display and the
-  handwritten face is Playwrite Cuba (`'Playwrite CU'`); saved text and
+  handwritten face is Playwrite Cuba (`'Playwrite CU'`); every quote
+  (quote bands, testimonials, Work pull lines, any `blockquote`) is
+  Literata (`--font-quote`, `.font-quote`, `QUOTE_FACE`, roman 400 to
+  600 only) and handwritten notes keep Playwrite; saved text and
   brand settings that still name Bricolage Grotesque or Architects
   Daughter are read as the new faces (`lib/typefaces.ts`).
 - A page with no hero is a document page (Privacy): `CmsPage` lifts the

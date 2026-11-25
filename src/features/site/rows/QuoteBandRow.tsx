@@ -61,7 +61,7 @@ const QuoteBandRow = ({
         )}
         <blockquote style={revealStyle(isVisible, 0)}>
           <div
-            className="rich-text font-display font-semibold leading-[1.2] [&_p]:my-0"
+            className="rich-text font-quote font-medium leading-[1.25] [&_p]:my-0"
             style={{ fontSize: "var(--fs-quote)" }}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.quote) }}
           />

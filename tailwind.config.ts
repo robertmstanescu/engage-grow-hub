@@ -159,6 +159,7 @@ export default {
         display: ["Funnel Display", "sans-serif"],
         "body-heading": ["Funnel Display", "sans-serif"],
         body: ["Inter", "sans-serif"],
+        quote: ["Literata", "Georgia", "serif"],
       },
       keyframes: {
         "accordion-down": {
