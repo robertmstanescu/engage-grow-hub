@@ -1,6 +1,6 @@
 # The Magic Coffin website: how the CMS drives the design
 
-2026-10-12 · Robert-Marian Stănescu
+2026-10-12 · Robert Stănescu
 
 ## In short
 
