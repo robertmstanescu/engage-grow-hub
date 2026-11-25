@@ -1199,6 +1199,8 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_public_site_section: { Args: { _key: string }; Returns: boolean }
+      is_published_global_widget: { Args: { _id: string }; Returns: boolean }
       lookup_public_redirect: {
         Args: { _from_path: string }
         Returns: {

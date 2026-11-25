@@ -1,5 +1,16 @@
 import { useEffect } from "react";
 
+/** Highlight commands are accepted only from this site's preview window. */
+export const highlightSectionKey = (event: MessageEvent): string | null => {
+  if (event.origin !== window.location.origin) return null;
+  if (event.source !== window.opener && event.source !== window.parent) return null;
+  const data: unknown = event.data;
+  if (!data || typeof data !== "object") return null;
+  const message = data as Record<string, unknown>;
+  if (message.type !== "HIGHLIGHT_SECTION" || typeof message.sectionKey !== "string") return null;
+  return /^[a-zA-Z0-9_-]{1,100}$/.test(message.sectionKey) ? message.sectionKey : null;
+};
+
 /**
  * Listens for `HIGHLIGHT_SECTION` postMessages (sent by the admin
  * preview frame) and briefly outlines the matching `[data-section]`
@@ -8,8 +19,9 @@ import { useEffect } from "react";
 const HighlightListener = () => {
   useEffect(() => {
     const handler = (e: MessageEvent) => {
-      if (e.data?.type !== "HIGHLIGHT_SECTION") return;
-      const el = document.querySelector(`[data-section="${e.data.sectionKey}"]`);
+      const sectionKey = highlightSectionKey(e);
+      if (!sectionKey) return;
+      const el = document.querySelector(`[data-section="${sectionKey}"]`);
       if (!el) return;
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       (el as HTMLElement).style.outline = "2px solid rgba(229,197,79,0.6)";

@@ -197,6 +197,11 @@ Rules that are easy to get wrong:
 - Redirect records are admin-only. Public missing-page and missing-post
   handling uses `services/redirects.ts`'s exact-path lookup, never a
   public table query; it returns only the destination and status.
+- Security: public CMS sections are allowlisted, reusable blocks require
+  a live published reference, and icon catalogues/listings are admin-only.
+  Metered picture and SEO helpers verify admin sessions. Analytics engagement
+  uses the server-issued view receipt in `services/trackedEngagement.ts`;
+  never accept a caller-chosen view identifier alone as permission to update.
 - `bun.lock` is the lockfile. Use `bun add` / `bun remove` for
   dependency changes so CI's `--frozen-lockfile` install passes.
 - `npm run build` rewrites `public/sitemap.xml`, `public/llms.txt` and

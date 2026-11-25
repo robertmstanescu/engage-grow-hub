@@ -10,7 +10,8 @@ import {
 import { captureAttribution, getAttributionForPayload } from "@/services/attribution";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { collectSignals, isDeviceExcluded, isTrackableHost } from "@/services/analyticsGuards";
-import { sendBeaconJson, startEngagement, type EngagementTracker } from "@/services/engagement";
+import { startEngagement } from "@/services/engagement";
+import { applyViewReceipt, flushTrackedView, type TrackedView } from "@/services/trackedEngagement";
 
 const TRACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/track-visitor`;
 /** Hosts allowed to record traffic; VITE_ANALYTICS_HOSTS overrides for a staging domain. */
@@ -74,7 +75,7 @@ export function useAnalyticsBeacon(): void {
   // Track the last logged path to deduplicate StrictMode double-effects.
   const lastLoggedRef = useRef<string | null>(null);
   // The view being measured right now: its id and its engagement clock.
-  const viewRef = useRef<{ id: string; tracker: EngagementTracker } | null>(null);
+  const viewRef = useRef<TrackedView | null>(null);
   // Re-read on every mount; kept as state (not a plain read inside the
   // effect) so the CookieConsent panel's "tmc:consent-changed" event can
   // unlock capture immediately when someone accepts mid-session, without
@@ -115,11 +116,9 @@ export function useAnalyticsBeacon(): void {
     lastLoggedRef.current = pathname;
 
     // Close the previous view's engagement before opening the next one.
-    flushView(viewRef.current);
-    const viewId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-      ? crypto.randomUUID()
-      : `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-    viewRef.current = { id: viewId, tracker: startEngagement() };
+    flushTrackedView(TRACK_URL, viewRef.current);
+    const view: TrackedView = { id: null, token: null, tracker: startEngagement(), pending: false };
+    viewRef.current = view;
 
     // Build the beacon body. The edge function handles country detection
     // and bot identification authoritatively; everything we send here is
@@ -137,7 +136,6 @@ export function useAnalyticsBeacon(): void {
     const body = {
       pagePath: pathname,
       host: window.location.host,
-      viewId,
       browser,
       device,
       referrer,
@@ -158,8 +156,8 @@ export function useAnalyticsBeacon(): void {
       const result = supabase.functions.invoke("track-visitor", { body });
       // Some SDK versions return a thenable that rejects; guard both.
       if (result && typeof (result as Promise<unknown>).then === "function") {
-        (result as Promise<unknown>).then(
-          () => {},
+        result.then(
+          ({ data }) => applyViewReceipt(TRACK_URL, view, data),
           () => {},
         );
       }
@@ -172,8 +170,8 @@ export function useAnalyticsBeacon(): void {
   // pagehide (tab close, navigation away). Totals are cumulative, so
   // sending twice is harmless; the server keeps the greatest values.
   useEffect(() => {
-    const onHide = () => { if (document.visibilityState === "hidden") flushView(viewRef.current); };
-    const onPageHide = () => flushView(viewRef.current);
+    const onHide = () => { if (document.visibilityState === "hidden") flushTrackedView(TRACK_URL, viewRef.current); };
+    const onPageHide = () => flushTrackedView(TRACK_URL, viewRef.current);
     document.addEventListener("visibilitychange", onHide);
     window.addEventListener("pagehide", onPageHide);
     return () => {
@@ -181,12 +179,4 @@ export function useAnalyticsBeacon(): void {
       window.removeEventListener("pagehide", onPageHide);
     };
   }, []);
-}
-
-/** Report a view's engagement so far. Silent on every failure. */
-function flushView(view: { id: string; tracker: EngagementTracker } | null): void {
-  if (!view) return;
-  const snap = view.tracker.snapshot();
-  if (snap.seconds < 1 && !snap.interacted && snap.scrollDepth === 0) return;
-  sendBeaconJson(TRACK_URL, { kind: "engagement", viewId: view.id, seconds: snap.seconds, scrollDepth: snap.scrollDepth, interacted: snap.interacted });
 }

@@ -206,3 +206,16 @@ the country from the browser time zone (`tzCountry.ts`). The dashboard
 (median time, read depth) and `services/channels.ts` (Search / Social /
 Referral / Direct, counted in people).
 
+Security: the view endpoint creates a random view identifier and signs a
+short-lived engagement capability. `services/trackedEngagement.ts` keeps
+the receipt in that view's memory and queues engagement until it arrives;
+hide, pagehide and route changes share this path. The function verifies
+the capability before any privileged analytics update.
+
+Public site content is allowlisted, and public reusable blocks are limited
+to references in live published content. Icon catalogues and icon storage
+listings are administrator-only; individual public icon URLs still render.
+Picture descriptions and search suggestions use `_shared/adminGuard.ts`
+before contacting the metered service. `is_admin` binds account checks to
+the current session or the trusted service role.
+

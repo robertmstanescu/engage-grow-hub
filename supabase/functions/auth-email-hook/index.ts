@@ -150,14 +150,14 @@ async function handleWebhook(req: Request): Promise<Response> {
         case 'missing_timestamp':
         case 'invalid_timestamp':
         case 'stale_timestamp':
-          console.error('Invalid webhook signature', { error: error.message })
+          console.error('Invalid webhook signature')
           return new Response(JSON.stringify({ error: 'Invalid signature' }), {
             status: 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           })
         case 'invalid_payload':
         case 'invalid_json':
-          console.error('Invalid webhook payload', { error: error.message })
+          console.error('Invalid webhook payload')
           return new Response(
             JSON.stringify({ error: 'Invalid webhook payload' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -165,7 +165,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       }
     }
 
-    console.error('Webhook verification failed', { error })
+    console.error('Webhook verification failed')
     return new Response(
       JSON.stringify({ error: 'Invalid webhook payload' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -197,7 +197,7 @@ async function handleWebhook(req: Request): Promise<Response> {
   // The email action type is in payload.data.action_type (e.g., "signup", "recovery")
   // payload.type is the hook event type ("auth")
   const emailType = payload.data.action_type
-  console.log('Received auth event', { emailType, email: payload.data.email, run_id })
+  console.log('Received auth event', { emailType, run_id })
 
   const EmailTemplate = EMAIL_TEMPLATES[emailType]
   if (!EmailTemplate) {
@@ -259,7 +259,7 @@ async function handleWebhook(req: Request): Promise<Response> {
   })
 
   if (enqueueError) {
-    console.error('Failed to enqueue auth email', { error: enqueueError, run_id, emailType })
+    console.error('Failed to enqueue auth email', { run_id, emailType })
     await supabase.from('email_send_log').insert({
       message_id: messageId,
       template_name: emailType,
@@ -273,7 +273,7 @@ async function handleWebhook(req: Request): Promise<Response> {
     })
   }
 
-  console.log('Auth email enqueued', { emailType, email: payload.data.email, run_id })
+  console.log('Auth email enqueued', { emailType, run_id })
 
   return new Response(
     JSON.stringify({ success: true, queued: true }),
@@ -298,7 +298,7 @@ Deno.serve(async (req) => {
   try {
     return await handleWebhook(req)
   } catch (error) {
-    console.error('Webhook handler error:', error)
+    console.error('Webhook handler error')
     const message = error instanceof Error ? error.message : 'Unknown error'
     return new Response(JSON.stringify({ error: message }), {
       status: 500,

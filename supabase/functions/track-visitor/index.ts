@@ -75,6 +75,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { countryFromTimezone } from "./tzCountry.ts";
+import { issueEngagementToken, verifyEngagementToken } from "./engagementToken.ts";
 
 // ── CORS — every browser-originating call needs this preflight. ──────────
 const corsHeaders = {
@@ -397,6 +398,7 @@ Deno.serve(async (req) => {
   let attribution: Record<string, string> | null = null;
   let pageHost = "";
   let viewId: string | null = null;
+  let engagementToken: string | null = null;
   let signals: unknown = null;
   let timezone: string | null = null;
 
@@ -405,7 +407,12 @@ Deno.serve(async (req) => {
     // Second beacon of a view: how long it stayed and how far it read.
     if (body?.kind === "engagement") {
       try {
-        const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        const url = Deno.env.get("SUPABASE_URL");
+        const secret = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        if (!url || !secret || !await verifyEngagementToken(body.viewId, body.engagementToken, secret)) {
+          return new Response(JSON.stringify({ tracked: false }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        const supabaseAdmin = createClient(url, secret);
         await recordEngagement(body, supabaseAdmin);
       } catch (e) {
         console.error("track-visitor engagement failed:", e);
@@ -414,7 +421,6 @@ Deno.serve(async (req) => {
     }
     pagePath = normalizePath(truncate(body?.pagePath, 500) || "/");
     pageHost = truncate(body?.host, 200);
-    viewId = body?.viewId ? truncate(body.viewId, 64) : null;
     signals = body?.signals ?? null;
     timezone = body?.signals?.timezone ? truncate(body.signals.timezone, 64) : null;
     clientBrowser = truncate(body?.browser, 50);
@@ -460,10 +466,10 @@ Deno.serve(async (req) => {
     "";
 
   try {
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    const url = Deno.env.get("SUPABASE_URL");
+    const secret = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !secret) throw new Error("Analytics is not configured");
+    const supabaseAdmin = createClient(url, secret);
     // Collapse CmsPage's bare-slug route alias (see canonicalizeCmsAlias
     // above) before this path gets categorised/stored/throttled on.
     pagePath = await canonicalizeCmsAlias(pagePath, supabaseAdmin);
@@ -509,10 +515,12 @@ Deno.serve(async (req) => {
     }
     const label = detectedBotName ?? (fleet ? "Fleet (fresh ids)" : PENDING_LABEL);
     if (!throttled) {
-      await supabaseAdmin.from("unified_analytics_logs").insert({
+      // The caller cannot choose an existing view and obtain its capability.
+      const issuedViewId = crypto.randomUUID();
+      const { error } = await supabaseAdmin.from("unified_analytics_logs").insert({
         is_bot: isBot || fleet || label === PENDING_LABEL,
         entity_name: label,
-        view_id: viewId,
+        view_id: issuedViewId,
         engaged: false,
         timezone,
         path: pagePath,
@@ -529,6 +537,9 @@ Deno.serve(async (req) => {
         source: "client",
         attribution,
       });
+      if (error) throw error;
+      viewId = issuedViewId;
+      engagementToken = await issueEngagementToken(issuedViewId, secret);
     }
   } catch (insertError) {
     console.error("track-visitor insert failed:", insertError);
@@ -536,7 +547,7 @@ Deno.serve(async (req) => {
   }
 
   return new Response(
-    JSON.stringify({ tracked: true, isBot, entityName: detectedBotName ?? PENDING_LABEL }),
+    JSON.stringify({ tracked: viewId !== null, isBot, entityName: detectedBotName ?? PENDING_LABEL, viewId, engagementToken }),
     { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
   );
 });

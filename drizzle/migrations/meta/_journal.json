@@ -15,6 +15,13 @@
       "when": 1795591290531,
       "tag": "0001_restrict_redirect_records_to_admins",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795593450879,
+      "tag": "0002_restrict_selected_public_catalogues_and_admin_checks",
+      "breakpoints": true
     }
   ]
 }

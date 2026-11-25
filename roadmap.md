@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Fix only the eleven selected security findings; verify public pages and administrator tools, then update their scan status.
+
 - [x] Fix the selected redirect-record exposure only; verify public link resolution and administrator management.
 
 - [ ] Redesign themagiccoffin.com per `docs/redesign/00-HANDOVER.md` — plan approved first, then build in per-page bundles (see `.lovable/plan.md`)
