@@ -584,7 +584,7 @@ export const HeroView = ({
         */}
         <div
           className={`flex w-full min-w-0 flex-col gap-7 ${alignClass} ${halfBleed ? "justify-center lg:flex-[999_1_560px]" : hasVisual ? "lg:flex-1" : ""}`}
-          style={halfBleed ? { padding: "clamp(32px, 5vw, 80px) clamp(16px, 5vw, 64px) clamp(48px, 6vw, 96px) clamp(16px, 5vw, 96px)" } : undefined}
+          style={halfBleed ? { padding: "clamp(32px, 5vw, 80px) clamp(16px, 5vw, 64px) clamp(48px, 6vw, 96px) var(--page-gutter)" } : undefined}
         >
 
           {leading}
