@@ -31,7 +31,7 @@ const AdminOverviewDashboard = ({ onGo, onOpenInBuilder }: Props) => {
     let cancelled = false;
     (async () => {
       const [pagesQ, postsQ, leadsQ, homeQ] = await Promise.all([
-        supabase.from("cms_pages").select("id, title, slug, status, updated_at, meta_description, page_rows, draft_page_rows").order("updated_at", { ascending: false }),
+        supabase.from("cms_pages").select("id, title, slug, status, updated_at, meta_description, meta_title, ai_summary, og_image, page_rows, draft_page_rows, draft_meta_title, draft_meta_description, draft_ai_summary, draft_og_image").order("updated_at", { ascending: false }),
         supabase.from("blog_posts").select("id, title, slug, status, updated_at, published_at").order("updated_at", { ascending: false }),
         Promise.resolve({ data: [] }),
         supabase.from("site_content").select("content, draft_content, updated_at").eq("section_key", "page_rows").maybeSingle(),

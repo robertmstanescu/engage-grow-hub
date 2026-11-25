@@ -7,6 +7,8 @@
  * rest under "More". The case-study body itself is edited in the page
  * builder (Phase 6); the form only flags whether one exists.
  */
+import { editedSearchValue, hasSearchDrafts, searchFieldsPublish, searchFieldsSave } from "@/services/searchDrafts";
+import { notifyIndexNow } from "@/services/searchEngines";
 import { useCallback, useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import { runDbAction } from "@/services/db-helpers";
@@ -42,6 +44,9 @@ const STYLE_OPTIONS = [
   { label: "Big number", value: "number" },
   { label: "Quote", value: "quote" },
 ];
+
+/** The search columns a Work item has (it has no draft share picture). */
+const WORK_SEARCH_FIELDS = ["meta_title", "meta_description", "ai_summary"] as const;
 
 const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `item-${Date.now()}`;
@@ -222,8 +227,25 @@ const WorkItemsManager = () => {
                           { label: "Has a case study", value: "yes" },
                         ]}
                       />
-                      <Field label="Search title" value={item.meta_title} onChange={(v) => patch(item.id, { meta_title: v })} />
-                      <Field label="Search description" value={item.meta_description} onChange={(v) => patch(item.id, { meta_description: v })} />
+                      {/* US11: on a published piece these wait for "Publish search fields". */}
+                      <Field label="Search title" value={editedSearchValue(item, "meta_title")} onChange={(v) => patch(item.id, searchFieldsSave(item.status === "published", { meta_title: v }), item.status === "published" ? "Draft saved" : "Saved")} />
+                      <Field label="Search description" value={editedSearchValue(item, "meta_description")} onChange={(v) => patch(item.id, searchFieldsSave(item.status === "published", { meta_description: v }), item.status === "published" ? "Draft saved" : "Saved")} />
+                      {hasSearchDrafts(item, WORK_SEARCH_FIELDS) && (
+                        <div className="md:col-span-2 flex items-center gap-3 flex-wrap">
+                          <span className="admin-st changes">Search fields not live yet</span>
+                          <button
+                            type="button"
+                            className="admin-btn primary"
+                            onClick={() =>
+                              patch(item.id, searchFieldsPublish(item, {}, WORK_SEARCH_FIELDS), "Search fields published").then(() =>
+                                notifyIndexNow([`/work/${item.slug}/`]),
+                              )
+                            }
+                          >
+                            Publish search fields
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </MoreFields>
                 </div>

@@ -68,6 +68,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Loader2, Search, Globe, Code2, Sparkles, AlertCircle, ExternalLink, ChevronDown, ChevronRight, Plus, Trash2, BarChart3, Building2 } from "lucide-react";
 import { fetchAllCmsPages, updateCmsPageMeta } from "@/services/cmsPages";
+import { editedSearchValue } from "@/services/searchDrafts";
 import { fetchAllBlogPosts, updateBlogPost } from "@/services/blogPosts";
 import { fetchAllPages } from "@/services/pagination";
 import { fetchSection, publishSection } from "@/services/siteContent";
@@ -114,6 +115,8 @@ interface HeadingRow {
   /** Plain-text body used as source material for AI summary generation. */
   bodyText: string;
   editPath?: string;
+  /** Live page: edits wait in the drafts until Publish (US11). */
+  live?: boolean;
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -316,33 +319,36 @@ const HeadingsAudit = () => {
     if (homeRes.data) {
       const home = homeRes.data as { content?: { rows?: unknown[] }; draft_content?: { rows?: unknown[] } | null };
       const liveRows = home.content?.rows || [];
-      const { h1s, h2s } = extractHeadings(liveRows);
+      // US11: check what Publish will send, so the draft rows come first.
+      const checkRows = Array.isArray(home.draft_content?.rows) ? home.draft_content.rows : liveRows;
+      const { h1s, h2s } = extractHeadings(checkRows);
       homeRows.push({
         source: "home", id: "home", pageTitle: "Home", slug: "/", metaTitle: "", metaDescription: "",
-        h1s, h2s, answer: heroAnswerOf(liveRows), answerEditable: true,
+        h1s, h2s, answer: heroAnswerOf(checkRows), answerEditable: true, live: true,
         homeContent: (home.content || {}) as Record<string, unknown>, homeDraft: (home.draft_content as Record<string, unknown> | null) || null,
-        aiSummary: "", bodyText: rowsToPlainText(liveRows as never),
+        aiSummary: "", bodyText: rowsToPlainText(checkRows as never),
       });
     }
 
     const cmsRows: HeadingRow[] = (cmsRes.data || []).map((p: any) => {
-      // Prefer published rows, fall back to draft if nothing has shipped yet.
-      const sourceRows = p.page_rows?.length ? p.page_rows : p.draft_page_rows || [];
+      // US11: check what Publish will send, so the draft rows come first.
+      const sourceRows = p.draft_page_rows?.length ? p.draft_page_rows : p.page_rows || [];
       const { h1s, h2s } = extractHeadings(sourceRows);
       return {
         source: "cms_page",
         id: p.id,
         pageTitle: p.title || "(untitled)",
         slug: `/p/${p.slug}`,
-        metaTitle: p.meta_title || "",
-        metaDescription: p.meta_description || "",
+        metaTitle: editedSearchValue(p, "meta_title"),
+        metaDescription: editedSearchValue(p, "meta_description"),
+        live: p.status === "published",
         h1s,
         h2s,
         answer: heroAnswerOf(sourceRows),
         answerEditable: true,
         pageRows: p.page_rows || [],
         draftPageRows: p.draft_page_rows || null,
-        aiSummary: p.ai_summary || "",
+        aiSummary: editedSearchValue(p, "ai_summary"),
         bodyText: rowsToPlainText(sourceRows),
       };
     });
@@ -396,25 +402,28 @@ const HeadingsAudit = () => {
     if (answer === row.answer) return;
     const patch = { answer };
     if (row.source === "cms_page") {
-      const page_rows = mergeWidgetDataByType((row.pageRows || []) as never, "hero", patch);
-      const draft_page_rows = row.draftPageRows ? mergeWidgetDataByType(row.draftPageRows as never, "hero", patch) : null;
+      // US11: on a live page the answer waits in the draft rows for Publish.
+      const draft_page_rows = mergeWidgetDataByType(((row.draftPageRows ?? row.pageRows) || []) as never, "hero", patch);
+      const page_rows = row.live ? ((row.pageRows || []) as never) : mergeWidgetDataByType((row.pageRows || []) as never, "hero", patch);
       await runDbAction({
         action: async () => {
-          const res = await supabase.from("cms_pages").update({ page_rows: page_rows as never, ...(draft_page_rows ? { draft_page_rows: draft_page_rows as never } : {}) }).eq("id", row.id);
+          const res = await supabase.from("cms_pages").update(row.live ? { draft_page_rows: draft_page_rows as never } : { page_rows: page_rows as never, draft_page_rows: draft_page_rows as never }).eq("id", row.id);
           return { data: res.data, error: res.error };
         },
-        successMessage: "Plain answer saved",
+        successMessage: row.live ? "Plain answer saved. It goes live when you publish the page." : "Plain answer saved",
       });
       setRows((prev) => prev.map((r) => (r.id === row.id && r.source === row.source ? { ...r, answer, pageRows: page_rows as unknown[], draftPageRows: draft_page_rows as unknown[] | null } : r)));
     } else if (row.source === "home") {
-      const content = { ...(row.homeContent || {}), rows: mergeWidgetDataByType(((row.homeContent?.rows as unknown[]) || []) as never, "hero", patch) };
-      const draft = row.homeDraft && Array.isArray(row.homeDraft.rows) ? { ...row.homeDraft, rows: mergeWidgetDataByType(row.homeDraft.rows as never, "hero", patch) } : row.homeDraft;
+      // US11: Home is always live, so the answer waits in its draft for Publish.
+      const content = row.homeContent || {};
+      const base = row.homeDraft && Array.isArray(row.homeDraft.rows) ? row.homeDraft : content;
+      const draft = { ...base, rows: mergeWidgetDataByType(((base.rows as unknown[]) || []) as never, "hero", patch) };
       await runDbAction({
         action: async () => {
-          const res = await supabase.from("site_content").update({ content: content as never, ...(draft ? { draft_content: draft as never } : {}) }).eq("section_key", "page_rows");
+          const res = await supabase.from("site_content").update({ draft_content: draft as never }).eq("section_key", "page_rows");
           return { data: res.data, error: res.error };
         },
-        successMessage: "Plain answer saved",
+        successMessage: "Plain answer saved. It goes live when you publish Home.",
       });
       invalidateSiteContent("page_rows");
       setRows((prev) => prev.map((r) => (r.source === "home" ? { ...r, answer, homeContent: content, homeDraft: draft as Record<string, unknown> | null } : r)));
@@ -432,9 +441,9 @@ const HeadingsAudit = () => {
       if (value === row.metaTitle) return;
       const action =
         row.source === "cms_page"
-          ? () => updateCmsPageMeta(row.id, "meta_title", value)
+          ? () => updateCmsPageMeta(row.id, "meta_title", value, !!row.live)
           : () => updateBlogPost(row.id, { meta_title: value });
-      await runDbAction({ action, successMessage: "Meta title updated" });
+      await runDbAction({ action, successMessage: row.live ? "Search title saved. It goes live when you publish the page." : "Search title saved" });
       // Reflect the new value locally so the input stays in sync without a refetch.
       setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, metaTitle: value } : r)));
     },
@@ -455,9 +464,9 @@ const HeadingsAudit = () => {
       });
       const action =
         row.source === "cms_page"
-          ? () => updateCmsPageMeta(row.id, "ai_summary", summary)
+          ? () => updateCmsPageMeta(row.id, "ai_summary", summary, !!row.live)
           : () => updateBlogPost(row.id, { ai_summary: summary });
-      await runDbAction({ action, successMessage: "AI summary saved" });
+      await runDbAction({ action, successMessage: row.live ? "AI summary saved. It goes live when you publish the page." : "AI summary saved" });
       setRows((prev) => prev.map((r) => (r.id === row.id && r.source === row.source ? { ...r, aiSummary: summary } : r)));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to generate summary");
