@@ -27,9 +27,9 @@ const PILLAR_OPTIONS = [
 
 const STYLE_OPTIONS = [
   { label: "The item's own style", value: "" },
-  { label: "Photo", value: "photo" },
-  { label: "Number", value: "number" },
-  { label: "Dark", value: "dark" },
+  { label: "Light, with picture", value: "photo" },
+  { label: "Dark, with picture (draws the eye)", value: "dark" },
+  { label: "Big number", value: "number" },
   { label: "Quote", value: "quote" },
 ];
 

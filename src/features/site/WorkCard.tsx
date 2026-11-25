@@ -8,7 +8,8 @@
  *
  *   photo  — cover image on top, the metric in the foot line
  *   number — the metric as a big number above the title
- *   dark   — deep plum glass, light text, the pull line on top
+ *   dark   — the photo card on deep plum glass, for the pieces that
+ *            should draw the eye (the pull line stands in without a cover)
  *   quote  — the pull line as a quote above the title
  *
  * Rules from the spec:
@@ -76,8 +77,10 @@ const WorkCard = ({ item, style, proofApproved, className }: Props) => {
   const wanted = style || item.card_style || "photo";
   const known = STYLES.has(wanted) ? wanted : "photo";
   // A photo card with no cover becomes a number card (spec: never a
-  // broken image).
+  // broken image). A dark card shows its cover too: dark is the light
+  // card's eye-catching twin, switched on per piece (owner, 25 Nov 2026).
   const resolved = known === "photo" && !cover ? "number" : known;
+  const showCover = Boolean(cover) && (resolved === "photo" || resolved === "dark");
   const pillarColor = pillarColorFromKey(item.pillar);
   // A number linked to a proof point shows only while that proof is
   // approved; a typed metric (no link) always shows.
@@ -99,7 +102,7 @@ const WorkCard = ({ item, style, proofApproved, className }: Props) => {
   // quote or number on top, then the categories, the title, the text and
   // the foot line.
   const visual =
-    resolved === "photo" && cover ? (
+    showCover ? (
       <img
         src={transformImageUrl(cover, { width: 640, aspectRatio: 16 / 9, quality: 70 })}
         alt={item.cover_image_alt || ""}
@@ -117,8 +120,8 @@ const WorkCard = ({ item, style, proofApproved, className }: Props) => {
         <span className="work-card-number">{item.metric}</span>
       </span>
     ) : resolved === "dark" && item.pull_line ? (
-      // A dark card leads with its pull line, so the top row is never a
-      // blank space beside a neighbour's picture (owner: no dead space).
+      // A dark card without a cover leads with its pull line, so the top
+      // row is never a blank space beside a neighbour's picture.
       <span className="work-card-visual">
         <span className="work-card-quote">{item.pull_line}</span>
       </span>
