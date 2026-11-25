@@ -11,7 +11,7 @@ const ctx = {
   path: "/work/town-halls/",
   brandName: "The Magic Coffin",
   origin,
-  person: { "@id": `${origin}/#founder`, name: "Robert-Marian Stănescu", url: abs("/about-us/") },
+  person: { "@id": `${origin}/#founder`, name: "Robert Stănescu", url: abs("/about-us/") },
 };
 
 /** A work_items row as Supabase returns it, from the portfolio data. */
@@ -44,7 +44,7 @@ describe("work SEO data", () => {
   it("ties the piece to its author, its service and the Work collection", () => {
     const ld = workItemArticleLd(asRow(), ctx);
     expect(ld["@type"]).toBe("Article");
-    expect(ld.author.name).toBe("Robert-Marian Stănescu");
+    expect(ld.author.name).toBe("Robert Stănescu");
     expect(ld.about).toMatchObject({ "@type": "Service", name: "Internal Communications", url: abs("/services/internal-communications/") });
     expect(ld.isPartOf["@id"]).toBe(abs("/work/"));
     expect(ld.abstract).toContain("South Pole");

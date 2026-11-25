@@ -26,3 +26,19 @@ describe("safeHref", () => {
     expect(safeHref({} as unknown)).toBe("#");
   });
 });
+
+describe("safeHref trailing slash (US10)", () => {
+  it("ends site paths with a slash before any query or anchor", () => {
+    expect(safeHref("/services/pay-transparency")).toBe("/services/pay-transparency/");
+    expect(safeHref("/blog?category=General")).toBe("/blog/?category=General");
+    expect(safeHref("/services/x#faq")).toBe("/services/x/#faq");
+  });
+
+  it("leaves the root, anchors, files and other sites alone", () => {
+    expect(safeHref("/")).toBe("/");
+    expect(safeHref("/#contact")).toBe("/#contact");
+    expect(safeHref("/llms.txt")).toBe("/llms.txt");
+    expect(safeHref("https://example.com/a")).toBe("https://example.com/a");
+    expect(safeHref("#contact")).toBe("#contact");
+  });
+});

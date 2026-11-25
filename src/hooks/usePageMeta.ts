@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { fetchPublicSiteContentValue } from "@/services/publicSiteContent";
 import { fetchBrandIdentity } from "@/hooks/useBrandSettings";
+import { buildPageTitle } from "../../scripts/lib/seoTitle.mjs";
+import { getConsentStatus } from "@/services/analytics";
 
 /**
  * Resolve the canonical origin for outbound links / meta tags. We
@@ -19,38 +21,9 @@ const resolveCanonicalOrigin = (configured: string | undefined): string => {
 const ensureTrailingSlash = (path: string) =>
   path.endsWith("/") ? path : `${path}/`;
 
-/** Search engines truncate titles past ~60 characters. */
-const TITLE_MAX = 60;
-
-/** Trim to `max` chars on a word boundary, adding an ellipsis when cut. */
-const clampTitle = (value: string, max = TITLE_MAX): string => {
-  if (value.length <= max) return value;
-  const cut = value.slice(0, max - 1);
-  const space = cut.lastIndexOf(" ");
-  return `${(space > max * 0.6 ? cut.slice(0, space) : cut).trimEnd()}…`;
-};
-
-/**
- * Compose `title | suffix` while staying inside the 60-char SEO budget.
- * Falls back progressively: full suffix → bare brand name → title alone.
- */
-const buildTitle = (title: string | undefined, suffix: string, brandName: string): string => {
-  const page = (title || "").trim();
-  if (!page) return clampTitle(suffix);
-  // A search title that already ends with the brand ("Our Services |
-  // The Magic Coffin") is used as it is; appending again gave
-  // "… | The Magic Coffin | The Magic Coffin" on the live site.
-  const brand = brandName.trim();
-  if (brand && new RegExp(`\\|\\s*${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "i").test(page)) return clampTitle(page);
-  const candidates = [suffix, brand].filter(Boolean);
-  for (const tail of candidates) {
-    const combined = `${page} | ${tail}`;
-    if (combined.length <= TITLE_MAX) return combined;
-  }
-  return clampTitle(page);
-};
-
-
+/* Titles come from the ONE builder the prerender also uses (search plan
+   US04): brand once at the end, 60 characters at most, search title then
+   page title. */
 interface PageMetaProps {
   title?: string;
   description?: string;
@@ -144,8 +117,15 @@ const injectScript = (id: string, attrs: Record<string, string>, body?: string) 
   document.head.appendChild(s);
 };
 
-const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
-  if (scriptsInjected) return;
+/**
+ * US07: GA4, the Meta Pixel and the LinkedIn tag load only after the
+ * visitor presses Accept on the cookie panel. "Reject" (or no answer yet)
+ * loads nothing; the choice is kept in localStorage by `setConsentStatus`.
+ * Accepting later, on any page, loads them at once through the panel's
+ * `tmc:consent-changed` event.
+ */
+export const injectTrackers = (tags: GlobalTags) => {
+  if (scriptsInjected || getConsentStatus() !== "accepted") return;
   scriptsInjected = true;
 
   const ga4 = tags.tracking?.ga4?.trim();
@@ -181,6 +161,22 @@ const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
     );
   }
 
+};
+
+let consentListening = false;
+/** Load the trackers the moment the visitor accepts, without a reload. */
+const listenForConsent = () => {
+  if (consentListening || typeof window === "undefined") return;
+  consentListening = true;
+  window.addEventListener("tmc:consent-changed", () => {
+    if (globalTagsCache) injectTrackers(globalTagsCache);
+  });
+};
+
+const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
+  injectTrackers(tags);
+  listenForConsent();
+
   // JSON-LD Organization schema (auto-built from structured fields if no override)
   const org = tags.organization;
   let jsonLd = tags.json_ld_organization?.trim();
@@ -195,7 +191,9 @@ const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
         : {}),
     });
   }
-  if (jsonLd && !document.getElementById("mc-jsonld-org")) {
+  // The server's entity graph already names the company (US05).
+  const hasGraph = !!document.querySelector('script[type="application/ld+json"][data-prerender="graph"]');
+  if (jsonLd && !hasGraph && !document.getElementById("mc-jsonld-org")) {
     const s = document.createElement("script");
     s.id = "mc-jsonld-org";
     s.type = "application/ld+json";
@@ -203,6 +201,22 @@ const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
     s.text = jsonLd;
     document.head.appendChild(s);
   }
+};
+
+/**
+ * Decide what happens to the server's per-page JSON-LD (US03). When every
+ * block was written for `path`, they stay and the caller adds nothing.
+ * Otherwise (a later page, or an older build's unmarked blocks) they go.
+ * The sitewide entity graph (`data-prerender="graph"`) always stays.
+ */
+export const keepPrerenderedLd = (path: string): boolean => {
+  const blocks = Array.from(
+    document.querySelectorAll<HTMLScriptElement>('script[type="application/ld+json"][data-prerender]'),
+  ).filter((n) => n.getAttribute("data-prerender") !== "graph");
+  if (!blocks.length) return false;
+  if (blocks.every((n) => n.getAttribute("data-prerender") === "page" && n.getAttribute("data-path") === path)) return true;
+  blocks.forEach((n) => n.remove());
+  return false;
 };
 
 const SERVICE_JSONLD_ID = "mc-jsonld-service";
@@ -221,10 +235,11 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", 
   useEffect(() => {
     if (typeof document === "undefined") return;
 
-    // The prerendered HTML carries the same structured data for crawlers
-    // that never run the app. Once the app runs it owns those blocks, so
-    // the static copies go, or every page would carry each block twice.
-    document.querySelectorAll('script[type="application/ld+json"][data-prerender]').forEach((n) => n.remove());
+    // US03: on the page the visitor opened, the server's structured data
+    // stays exactly as it was served, so a crawler that runs the app sees
+    // the same @ids and types as one that does not. After a move to another
+    // page those blocks go and the app writes its own.
+    const keepServerLd = keepPrerenderedLd(ensureTrailingSlash(canonicalPath ?? location.pathname));
 
     let cancelled = false;
 
@@ -233,15 +248,9 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", 
       const canonicalOrigin = resolveCanonicalOrigin(identity.canonicalOrigin);
       injectGlobalScripts(tags, canonicalOrigin);
 
-      // Resolve the title suffix from props → brand identity → bare brand
-      // name. We never fall back to a brand-specific string here.
-      const resolvedSuffix =
-        suffix?.trim() ||
-        (identity.tagline ? `${identity.brandName} — ${identity.tagline}` : identity.brandName) ||
-        "";
-
       const prefix = tags.social_prefix?.trim() || "";
-      const pageTitle = buildTitle(title, resolvedSuffix, identity.brandName);
+      // `suffix` replaces the brand only when a page asks for it.
+      const pageTitle = buildPageTitle({ searchTitle: title, brand: suffix?.trim() || identity.brandName });
 
       const socialTitle = prefix ? `${prefix}${pageTitle}` : pageTitle;
       document.title = pageTitle;
@@ -284,6 +293,9 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", 
       if (description) setMeta("twitter:description", description);
       setMeta("twitter:image", socialImage);
 
+      // The server's blocks already describe this page: add nothing beside them.
+      if (keepServerLd) return;
+
       // Per-page Service schema (only while this page actually is one —
       // removed again the moment the route navigates away from it).
       let serviceScript = document.getElementById(SERVICE_JSONLD_ID) as HTMLScriptElement | null;
@@ -301,7 +313,7 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", 
           name: serviceSchema.name,
           ...(serviceSchema.description ? { description: serviceSchema.description } : {}),
           url: canonicalUrl,
-          provider: { "@type": "Organization", name: identity.brandName, url: canonicalOrigin },
+          provider: { "@id": `${canonicalOrigin}/#organization` },
           ...(areas.length ? { areaServed: areas.map((name) => ({ "@type": "Place", name })) } : {}),
         });
       } else {

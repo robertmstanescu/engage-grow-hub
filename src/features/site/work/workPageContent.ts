@@ -33,7 +33,7 @@ export const WORK_PAGE_DEFAULTS: WorkPageContent = {
   header_subtitle:
     "Real work from in-house roles, sample deliverables and how we would tackle the problems scale-ups keep calling about. Every piece carries a label that says what it is.",
   answer:
-    "Case studies, artefacts and playbooks by Robert-Marian Stănescu, founder of The Magic Coffin, in internal communications, employee experience, people operations, HR business partnering, pay transparency and manager enablement. Each piece says whether it is real work from South Pole or Klarna, a recreation with dummy data or an illustrative playbook.",
+    "Case studies, artefacts and playbooks by Robert Stănescu, founder of The Magic Coffin, in internal communications, employee experience, people operations, HR business partnering, pay transparency and manager enablement. Each piece says whether it is real work from South Pole or Klarna, a recreation with dummy data or an illustrative playbook.",
   meta_title: "",
   meta_description: "",
   featured_label: "Start with these three",

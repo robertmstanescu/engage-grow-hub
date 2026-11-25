@@ -59,7 +59,7 @@ const CardCover = ({ post, heightClass }: { post: BlogPost; heightClass: string 
 const LeadCard = ({ post }: { post: BlogPost }) => (
   <article className="group min-w-0">
     <Link
-      to={`/blog/${post.slug}`}
+      to={`/blog/${post.slug}/`}
       className="glass rounded-3xl overflow-hidden grid lg:grid-cols-12 transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent"
     >
       <div className="lg:col-span-7">
@@ -98,7 +98,7 @@ const GridCard = ({ post }: { post: BlogPost }) => (
   // line starts its title and its excerpt at the same height.
   <article className="group h-full min-w-0 align-card" style={{ ["--slots" as string]: 4 }}>
     <Link
-      to={`/blog/${post.slug}`}
+      to={`/blog/${post.slug}/`}
       className="align-card-inner glass rounded-3xl overflow-hidden flex flex-col h-full min-w-0 transition-all duration-300 hover:-translate-y-0.5 hover:glow-accent [overflow-wrap:anywhere]"
     >
       {post.cover_image ? <CardCover post={post} heightClass="h-[200px]" /> : <span className="align-empty" aria-hidden />}

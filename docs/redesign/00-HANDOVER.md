@@ -1,6 +1,6 @@
 # The Magic Coffin: design rebrand handover (design only)
 
-Owner: Robert-Marian Stănescu · Project: themagiccoffin.com (this Lovable project, repo engage-grow-hub) · 10 Nov 2026
+Owner: Robert Stănescu · Project: themagiccoffin.com (this Lovable project, repo engage-grow-hub) · 10 Nov 2026
 
 ## 0. Read this first: the four rules of this job
 

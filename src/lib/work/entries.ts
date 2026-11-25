@@ -17,7 +17,7 @@ const SPECIALIST = "Global People, Culture and Communications Specialist";
 const CLIMATE = "South Pole, a climate consultancy of 800 to 1,300 people in 36 countries";
 const PLAYBOOK_LABEL = "Illustrative example, not client work";
 const RECREATED_LABEL = "Recreated with dummy data";
-const ROBERT = "Robert-Marian Stănescu, founder of The Magic Coffin";
+const ROBERT = "Robert Stănescu, founder of The Magic Coffin";
 
 export const WORK_PORTFOLIO: PortfolioEntry[] = [
   /* ── 01 ─────────────────────────────────────────────────────────── */
@@ -33,7 +33,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How monthly Town Halls for a climate business line in 36 countries held around 60% live attendance, with one session for each time zone.",
     aiSummary:
-      "Case study. From 2024 to January 2026, Robert-Marian Stănescu (founder of The Magic Coffin) set up and ran monthly Town Halls for the Certificates business line at South Pole, a climate consultancy of 800 to 1,300 people in 36 countries. He took the work on himself, ran sessions for APAC, EMEA and the Americas on Google Meet with Google Slides and Google Forms, and measured live attendance at around 60% of headcount per time zone. He also supported the quarterly global CEO Town Halls and ghostwrote for the executive committee.",
+      "Case study. From 2024 to January 2026, Robert Stănescu (founder of The Magic Coffin) set up and ran monthly Town Halls for the Certificates business line at South Pole, a climate consultancy of 800 to 1,300 people in 36 countries. He took the work on himself, ran sessions for APAC, EMEA and the Americas on Google Meet with Google Slides and Google Forms, and measured live attendance at around 60% of headcount per time zone. He also supported the quarterly global CEO Town Halls and ghostwrote for the executive committee.",
     honestyLabel: "Real work, South Pole, 2024 to 2026",
     roleTitle: SPECIALIST,
     year: "2024 to 2026",
@@ -140,7 +140,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How an internal newsroom on LumApps published four stories a month in articles, audio and video, and passed 300,000 page views a year.",
     aiSummary:
-      `Case study. At ${CLIMATE}, Robert-Marian Stănescu ran an internal newsroom on the LumApps intranet: about four stories a month, around 50 a year, as articles, audio and video. The newsroom passed 300,000 page views a year, measured.`,
+      `Case study. At ${CLIMATE}, Robert Stănescu ran an internal newsroom on the LumApps intranet: about four stories a month, around 50 a year, as articles, audio and video. The newsroom passed 300,000 page views a year, measured.`,
     honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
@@ -226,7 +226,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How a 36-country company moved to LumApps: migration, information architecture, landing pages, segments, training and an adoption campaign.",
     aiSummary:
-      `Case study. At ${CLIMATE}, Robert-Marian Stănescu helped rebuild the company intranet on LumApps. He worked on the migration, the information architecture, landing pages, navigation and audience segmentation, trained people to use it, ran an adoption campaign and set up an org chart that updates itself from HiBob through Google.`,
+      `Case study. At ${CLIMATE}, Robert Stănescu helped rebuild the company intranet on LumApps. He worked on the migration, the information architecture, landing pages, navigation and audience segmentation, trained people to use it, ran an adoption campaign and set up an org chart that updates itself from HiBob through Google.`,
     honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
@@ -310,7 +310,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "Three LinkedIn campaigns that celebrated employees for a company's 18th anniversary, with carousel graphics, plus the in-office celebrations.",
     aiSummary:
-      "Artefact. For the 18th anniversary of South Pole, a climate consultancy, Robert-Marian Stănescu conceived and produced three employee recognition campaigns on South Pole's LinkedIn page, with carousel graphics he designed, and ran the in-office celebrations across several offices with the CEO joining live across time zones.",
+      "Artefact. For the 18th anniversary of South Pole, a climate consultancy, Robert Stănescu conceived and produced three employee recognition campaigns on South Pole's LinkedIn page, with carousel graphics he designed, and ran the in-office celebrations across several offices with the CEO joining live across time zones.",
     honestyLabel: "Real work, South Pole, linked at the source",
     roleTitle: SPECIALIST,
     year: "2024",
@@ -388,7 +388,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How policy explainer videos are scripted, produced and edited, with a recreated sample script for a fictional policy. Recreated with dummy data.",
     aiSummary:
-      "Artefact, recreated with dummy data. At South Pole, a climate consultancy, Robert-Marian Stănescu scripted, produced and edited a series of policy explainer videos, including volunteering leave and time off, and video became the standard format for policy communication there. The sample on this page uses a fictional policy.",
+      "Artefact, recreated with dummy data. At South Pole, a climate consultancy, Robert Stănescu scripted, produced and edited a series of policy explainer videos, including volunteering leave and time off, and video became the standard format for policy communication there. The sample on this page uses a fictional policy.",
     honestyLabel: RECREATED_LABEL,
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
@@ -622,7 +622,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How a global onboarding redesign used HowNow learning journeys and an automated HiBob Buddy Programme for around 300 new hires.",
     aiSummary:
-      `Case study. From October 2022 to March 2023, as Global People and Culture Trainee at ${CLIMATE}, Robert-Marian Stănescu led the redesign of global onboarding: role-specific learning journeys in HowNow LMS and a renamed Buddy Programme with automated workflows in HiBob and adoption targets that were met. Around 300 new hires went through it, and the social integration workflow ran the same way in every business unit.`,
+      `Case study. From October 2022 to March 2023, as Global People and Culture Trainee at ${CLIMATE}, Robert Stănescu led the redesign of global onboarding: role-specific learning journeys in HowNow LMS and a renamed Buddy Programme with automated workflows in HiBob and adoption targets that were met. Around 300 new hires went through it, and the social integration workflow ran the same way in every business unit.`,
     honestyLabel: "Real work, South Pole, 2022 to 2023",
     roleTitle: "Global People and Culture Trainee",
     year: "2022 to 2023",
@@ -707,7 +707,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How an eNPS programme across 36 countries kept participation above 70% in 2025, and how each team took ownership of its own actions.",
     aiSummary:
-      `Case study. At ${CLIMATE}, Robert-Marian Stănescu designed and administered the eNPS surveys and built the presentations and takeaways. The people analytics team ran the official analysis, his manager presented the findings to leadership, and the two of them agreed with leadership that each team would own its own actions. Participation stayed above 70% through every 2025 cycle.`,
+      `Case study. At ${CLIMATE}, Robert Stănescu designed and administered the eNPS surveys and built the presentations and takeaways. The people analytics team ran the official analysis, his manager presented the findings to leadership, and the two of them agreed with leadership that each team would own its own actions. Participation stayed above 70% through every 2025 cycle.`,
     honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
@@ -789,7 +789,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How a company-wide kudos tool was built in Google Apps Script, Chat and Workspace with Gemini, and mapped each kudos to the company values.",
     aiSummary:
-      `Case study. In 2025, at ${CLIMATE}, Robert-Marian Stănescu built a peer recognition platform from scratch in Google Apps Script, Google Chat and Google Workspace, using Gemini to speed up the build. A kudos form fed a Google Chat broadcast with reply threads, emailed the person's manager and mapped each kudos to a company value for performance reviews.`,
+      `Case study. In 2025, at ${CLIMATE}, Robert Stănescu built a peer recognition platform from scratch in Google Apps Script, Google Chat and Google Workspace, using Gemini to speed up the build. A kudos form fed a Google Chat broadcast with reply threads, emailed the person's manager and mapped each kudos to a company value for performance reviews.`,
     honestyLabel: "Real work, South Pole, 2025",
     roleTitle: SPECIALIST,
     year: "2025",
@@ -866,7 +866,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "The Work for the World employer brand campaign: concept, design lead, careers page copy and every video edit, still live in 2026.",
     aiSummary:
-      "Artefact. Robert-Marian Stănescu came up with the Work for the World employer brand campaign for South Pole, a climate consultancy, led the design behind it and the careers page content, and edited all the campaign videos. The careers page was still live in August 2026.",
+      "Artefact. Robert Stănescu came up with the Work for the World employer brand campaign for South Pole, a climate consultancy, led the design behind it and the careers page content, and edited all the campaign videos. The careers page was still live in August 2026.",
     honestyLabel: "Real work, South Pole, linked at the source",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
@@ -923,7 +923,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
       },
     ],
     faq: [
-      { q: "Who made Work for the World?", a: "Robert-Marian Stănescu came up with the concept, led the design, wrote the careers page content and edited all the videos." },
+      { q: "Who made Work for the World?", a: "Robert Stănescu came up with the concept, led the design, wrote the careers page content and edited all the videos." },
     ],
     questions: ["Is the careers page still live today, so the link works?", "Which year did it launch?"],
   },
@@ -941,7 +941,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How a Tier 0 self-service layer in Jira answered routine questions for Legal, IT and Risk, and People and Culture across 36 countries.",
     aiSummary:
-      `Case study. At ${CLIMATE}, Robert-Marian Stănescu designed and ran Tier 0 of a tiered employee query system in Jira, covering Legal, IT and Risk, and People and Culture, with self-service answers for routine questions before they reached a person. It ran company-wide. No deflection figure was measured.`,
+      `Case study. At ${CLIMATE}, Robert Stănescu designed and ran Tier 0 of a tiered employee query system in Jira, covering Legal, IT and Risk, and People and Culture, with self-service answers for routine questions before they reached a person. It ran company-wide. No deflection figure was measured.`,
     honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
@@ -1022,7 +1022,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How recurring compliance training in HowNow covered phishing, data protection, KYC, GDPR and inclusion, with completion tracked in 36 countries.",
     aiSummary:
-      `Case study. At ${CLIMATE}, Robert-Marian Stănescu built and switched on recurring mandatory training modules in HowNow LMS on phishing, data protection, KYC and GDPR, plus inclusion modules, and tracked completion and accuracy rates. Some inclusion training was written in-house, some outsourced and some licensed from OpenSesame.`,
+      `Case study. At ${CLIMATE}, Robert Stănescu built and switched on recurring mandatory training modules in HowNow LMS on phishing, data protection, KYC and GDPR, plus inclusion modules, and tracked completion and accuracy rates. Some inclusion training was written in-house, some outsourced and some licensed from OpenSesame.`,
     honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
@@ -1100,7 +1100,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How an intranet org chart stays current by itself: people data flows from HiBob to Google and on to LumApps, company-wide.",
     aiSummary:
-      `Case study. At ${CLIMATE}, Robert-Marian Stănescu set up an integration chain from HiBob to Google and from Google to LumApps, so the org chart on the intranet updates itself from the HR system. It ran company-wide as part of the LumApps rollout.`,
+      `Case study. At ${CLIMATE}, Robert Stănescu set up an integration chain from HiBob to Google and from Google to LumApps, so the org chart on the intranet updates itself from the HR system. It ran company-wide as part of the LumApps rollout.`,
     honestyLabel: "Real work, South Pole, 2023 to 2026",
     roleTitle: SPECIALIST,
     year: "2023 to 2026",
@@ -1636,7 +1636,7 @@ export const WORK_PORTFOLIO: PortfolioEntry[] = [
     metaDescription:
       "How a two-week curriculum and audit-led coaching trained about 30 support agents at Klarna, using Freshdesk Quality, QlikSense and Splunk.",
     aiSummary:
-      "Case study. As Quality Process Analyst and Training Specialist at Klarna, the Swedish fintech (2021 to 2022), Robert-Marian Stănescu designed a two-week onboarding curriculum for new support cohorts on investigation skills and customer empathy, and coached about 30 agents one to one from quality audits in Freshdesk Quality, QlikSense and Splunk. The work also changed a write-off routine so agents could settle more standard cases without a manager's sign-off.",
+      "Case study. As Quality Process Analyst and Training Specialist at Klarna, the Swedish fintech (2021 to 2022), Robert Stănescu designed a two-week onboarding curriculum for new support cohorts on investigation skills and customer empathy, and coached about 30 agents one to one from quality audits in Freshdesk Quality, QlikSense and Splunk. The work also changed a write-off routine so agents could settle more standard cases without a manager's sign-off.",
     honestyLabel: "Real work, Klarna, 2021 to 2022",
     roleTitle: "Quality Process Analyst and Training Specialist",
     year: "2021 to 2022",

@@ -707,7 +707,7 @@ export const HeroView = ({
                 return (
                   <li key={i} className="flex">
                     {isPillar ? (
-                      <a href={safeHref(`/services/${key}`)} className="lg-light hero-chip inline-flex items-center gap-2 rounded-full font-body" style={chipStyle}>{inner}</a>
+                      <a href={safeHref(`/services/${key}/`)} className="lg-light hero-chip inline-flex items-center gap-2 rounded-full font-body" style={chipStyle}>{inner}</a>
                     ) : (
                       <span className="lg-light inline-flex items-center gap-2 rounded-full font-body" style={chipStyle}>{inner}</span>
                     )}

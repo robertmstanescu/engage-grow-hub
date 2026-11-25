@@ -35,8 +35,16 @@ import {
   workItemArticleLd,
   workItemMeta,
   workLlmsLines,
-  workReadable,
 } from "./lib/workSeo.mjs";
+import { htmlToBlocks, linkListHtml, readableMain, rowsHeading, rowsToHtml } from "./lib/readableHtml.mjs";
+import { buildPageTitle } from "./lib/seoTitle.mjs";
+import { buildLlmsTxt } from "./lib/llmsTxt.mjs";
+/** The public booking page (ContactRow DEFAULT_BOOKING_URL). */
+const BOOKING_URL = "https://calendar.app.google/rCZX6w2RUWKpsKfRA";
+import { buildEntityGraph, founderId, orgId, FOUNDER_NAME, COMPANY_DEFINITION } from "./lib/entityGraph.mjs";
+
+/** /work/ when its search title is empty (US08); the brand is added once. */
+const WORK_FALLBACK_TITLE = "Work: case studies and playbooks";
 
 /* ── Config ─────────────────────────────────────────────────────────── */
 
@@ -207,27 +215,30 @@ function renderPage(shell, meta) {
 
   // JSON-LD: one object or several (Organization + Person + FAQPage…).
   const blocks = (Array.isArray(jsonLd) ? jsonLd : [jsonLd]).filter(Boolean);
+  // US03: the app keeps these on the first load. The sitewide graph is
+  // marked "graph" and never removed; the page's own blocks carry the
+  // canonical path so the app knows they belong to the page it opened on.
   if (blocks.length) {
+    const pagePath = escapeHtml(new URL(url).pathname);
     html = html.replace(
       "</head>",
-      `${blocks
-        .map((b) => `  <script type="application/ld+json" data-prerender="1">${JSON.stringify(b).replace(/</g, "\\u003c")}</script>`)
-        .join("\n")}\n  </head>`,
+      () =>
+        `${blocks
+          .map((b) => {
+            const mark = b === meta.graph ? 'data-prerender="graph"' : `data-prerender="page" data-path="${pagePath}"`;
+            return `  <script type="application/ld+json" ${mark}>${JSON.stringify(b).replace(/</g, "\\u003c")}</script>`;
+          })
+          .join("\n")}\n  </head>`,
     );
   }
 
   // Real copy for crawlers that never run the app. Sits in <noscript> so
   // it never conflicts with React taking over #root for real visitors.
-  if (readable && (readable.heading || readable.paragraphs.length)) {
-    const body = [
-      readable.heading ? `<h1>${escapeHtml(readable.heading)}</h1>` : "",
-      ...readable.paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`),
-    ]
-      .filter(Boolean)
-      .join("\n      ");
+  // `readable` is the whole page text, already made safe by readableHtml.mjs (US02).
+  if (readable) {
     html = html.replace(
       /<\/body>/i,
-      `  <noscript>\n    <main>\n      ${body}\n    </main>\n  </noscript>\n  </body>`,
+      () => `  <noscript>\n    <main>\n${readable}\n    </main>\n  </noscript>\n  </body>`,
     );
   }
   return html;
@@ -295,59 +306,44 @@ async function main() {
   }
   const brandName = identity.brandName || "";
   const tagline = identity.tagline || "";
-  const defaultSuffix = tagline && brandName ? `${brandName} — ${tagline}` : brandName;
   const defaultImage = `${origin}${DEFAULT_OG_IMAGE_PATH}`;
 
   const abs = (path) => `${origin}${path}`;
   const absImage = (v) =>
     !v ? defaultImage : /^https?:\/\//i.test(v) ? v : `${origin}${v.startsWith("/") ? "" : "/"}${v}`;
-  const titleFor = (metaTitle, pageTitle) =>
-    (metaTitle || "").trim() ||
-    [pageTitle, defaultSuffix || brandName].filter(Boolean).join(" | ") ||
-    brandName;
+  // Same builder as the browser head (usePageMeta), so the two agree.
+  const titleFor = (metaTitle, pageTitle) => buildPageTitle({ searchTitle: metaTitle, pageTitle, brand: brandName });
 
   /* ── Sitewide entities ───────────────────────────────────────────── */
 
-  /** Organization — only fields we can verify from CMS data. */
-  const organizationLd = brandName
-    ? {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        "@id": `${origin}/#organization`,
-        name: brandName,
-        url: `${origin}/`,
-        logo: defaultImage,
-        ...(homeSeo.meta_description || tagline
-          ? { description: homeSeo.meta_description || tagline }
-          : {}),
-        ...(serviceAreas.length
-          ? { areaServed: serviceAreas.map((name) => ({ "@type": "Place", name })) }
-          : {}),
-      }
-    : null;
-
-  /**
-   * Person — the founder, taken from the About page's own content rather
-   * than hardcoded here. No address or geography is asserted.
-   */
+  /* One graph for the company, the site and the founder (US05), on every
+     page; everything else points at it by @id. The founder's name, photo
+     and LinkedIn come from the admin's Profile screen. */
   const aboutPage = cmsPages.find((p) => p.slug === "about-us");
-  const founderName = (() => {
-    const raw = JSON.stringify(aboutPage?.page_rows || "");
-    const match = raw.match(/Robert\s+St[^\s"<,.|]{0,12}/);
-    return match ? match[0] : "";
-  })();
-  const personLd =
-    aboutPage && founderName
-      ? {
-          "@context": "https://schema.org",
-          "@type": "Person",
-          "@id": `${origin}/#founder`,
-          name: founderName,
-          jobTitle: "Founder",
-          url: abs(cmsPagePath(aboutPage.slug)),
-          ...(brandName ? { worksFor: { "@id": `${origin}/#organization` } } : {}),
-        }
-      : null;
+  const social = section("social_links");
+  const entityGraph = buildEntityGraph({
+    origin,
+    brandName,
+    description: COMPANY_DEFINITION,
+    logo: section("branding").logo_url,
+    sameAs: [social.linkedin, social.instagram, social.youtube, social.tiktok],
+    bookingUrl: BOOKING_URL,
+    aboutPath: aboutPage ? cmsPagePath(aboutPage.slug) : "",
+    founder: { name: authorProfile.name, photo: authorProfile.photo, linkedin: authorProfile.linkedin },
+  });
+  const founderName = (authorProfile.name || "").trim() || FOUNDER_NAME;
+  /** The founder as Work items reference him (by @id). */
+  const personLd = {
+    "@id": founderId(origin),
+    name: founderName,
+    url: aboutPage ? abs(cmsPagePath(aboutPage.slug)) : abs("/"),
+  };
+  /** A post's author: the founder by @id, or a named person for older posts by someone else. */
+  const authorFor = (post) => {
+    const name = authorNameFor(post);
+    if (!name) return null;
+    return name === founderName ? { "@type": "Person", "@id": founderId(origin), name } : { "@type": "Person", name };
+  };
 
   /** BreadcrumbList from a list of [name, url] pairs. */
   const breadcrumbLd = (crumbs) => ({
@@ -388,8 +384,8 @@ async function main() {
       description: homeSeo.meta_description || tagline,
       url: abs("/"),
       image: defaultImage,
-      jsonLd: [organizationLd, faqLd(homeRows)].filter(Boolean),
-      readable: extractReadableContent(homeRows),
+      jsonLd: [faqLd(homeRows)].filter(Boolean),
+      readable: readableMain(rowsHeading(homeRows) || brandName, [rowsToHtml(homeRows)]),
     },
     sitemap: { lastmod: sectionUpdatedAt("main_page_seo"), changefreq: "weekly", priority: "1.0" },
   });
@@ -405,6 +401,17 @@ async function main() {
       jsonLd: breadcrumbLd([
         ["Home", `${origin}/`],
         [blogSeo.header_title || "Blog", abs("/blog/")],
+      ]),
+      // US06: the header, the intro and every post with its one-line summary.
+      readable: readableMain(blogSeo.header_title || "Blog", [
+        htmlToBlocks(blogSeo.header_subtitle),
+        linkListHtml(
+          blogPosts.map((post) => ({
+            href: `/blog/${trailing(post.slug || "")}`,
+            title: post.title,
+            summary: plain(post.excerpt || post.meta_description, 240),
+          })),
+        ),
       ]),
     },
     sitemap: { lastmod: latestPostTimestamp, changefreq: "weekly", priority: "0.8" },
@@ -449,7 +456,7 @@ async function main() {
       description,
       url: abs(path),
       image: absImage(page.og_image),
-      readable: extractReadableContent(rows),
+      readable: readableMain(rowsHeading(rows) || page.title, [rowsToHtml(rows)]),
       jsonLd: [
         isServicePage
           ? {
@@ -460,13 +467,12 @@ async function main() {
               // Service schema; keep the two in lock-step.
               ...((heroAnswer || description) ? { description: heroAnswer || description } : {}),
               url: abs(path),
-              provider: { "@type": "Organization", name: brandName, url: origin },
+              provider: { "@id": orgId(origin) },
               ...(serviceAreas.length
                 ? { areaServed: serviceAreas.map((name) => ({ "@type": "Place", name })) }
                 : {}),
             }
           : null,
-        page.slug === "about-us" ? personLd : null,
         faqLd(rows),
         breadcrumbLd(crumbs),
       ].filter(Boolean),
@@ -506,8 +512,8 @@ async function main() {
             url: abs(path),
             datePublished: post.published_at || undefined,
             dateModified: post.updated_at || post.published_at || undefined,
-            ...(authorNameFor(post) ? { author: { "@type": "Person", name: authorNameFor(post) } } : {}),
-            ...(brandName ? { publisher: { "@type": "Organization", name: brandName } } : {}),
+            ...(authorFor(post) ? { author: authorFor(post) } : {}),
+            ...(brandName ? { publisher: { "@id": orgId(origin) } } : {}),
           },
           breadcrumbLd([
             ["Home", `${origin}/`],
@@ -515,10 +521,8 @@ async function main() {
             [post.title, abs(path)],
           ]),
         ],
-        readable: {
-          heading: post.title,
-          paragraphs: [plain(post.excerpt, 300), plain(post.content, 1500)].filter(Boolean),
-        },
+        // The whole article, not a cut (US02).
+        readable: readableMain(post.title, [htmlToBlocks(post.excerpt), htmlToBlocks(post.content)]),
       },
 
       sitemap: {
@@ -541,7 +545,7 @@ async function main() {
     routes.push({
       path: "/work/",
       meta: {
-        title: titleFor(workPage.meta_title, `Work — ${brandName}`),
+        title: titleFor(workPage.meta_title, WORK_FALLBACK_TITLE),
         description: plain(workPage.meta_description, 300) || plain(workPage.answer, 300) || workIndexDescription(workItems, brandName),
         url: abs("/work/"),
         image: defaultImage,
@@ -564,6 +568,20 @@ async function main() {
             ["Work", abs("/work/")],
           ]),
         ],
+        // US06: the header, the plain answer and every piece with its one-liner.
+        readable: readableMain(workPage.header_title || "Work", [
+          htmlToBlocks(workPage.header_subtitle),
+          htmlToBlocks(workPage.answer),
+          rowsToHtml(workPage.rows_above),
+          linkListHtml(
+            workItems.map((item) => ({
+              href: `/work/${trailing(item.slug || "")}`,
+              title: item.title,
+              summary: plain(item.summary, 240),
+            })),
+          ),
+          rowsToHtml(workPage.rows_below),
+        ]),
       },
       sitemap: { lastmod: latestWorkTimestamp, changefreq: "weekly", priority: "0.8" },
     });
@@ -592,7 +610,7 @@ async function main() {
               [item.title, abs(path)],
             ]),
           ].filter(Boolean),
-          readable: workReadable(item, extractReadableContent(rows)),
+          readable: readableMain(item.title, [htmlToBlocks(item.summary), rowsToHtml(rows)]),
         },
         sitemap: { lastmod: item.updated_at, changefreq: "monthly", priority: "0.6" },
       });
@@ -624,29 +642,43 @@ async function main() {
   if (existsSync(DIST)) writeFileSync(resolve(DIST, "sitemap.xml"), sitemapXml);
 
   // ── 2. llms.txt ────────────────────────────────────────────────────
-  const lines = [`# ${brandName}`, ""];
-  if (tagline) lines.push(`> ${tagline}`, "");
-  if (homeSeo.meta_description) lines.push(homeSeo.meta_description, "");
-  lines.push("## Pages", "");
-  lines.push(`- [Home](${abs("/")}): ${homeSeo.meta_description || tagline}`);
-  for (const page of cmsPages) {
-    if (!page.slug) continue;
-    lines.push(
-      `- [${page.title}](${abs(cmsPagePath(page.slug))}): ${plain(page.meta_description) || page.title}`,
-    );
-  }
-  lines.push("", "## Articles", "");
-  for (const post of blogPosts.slice(0, 100)) {
-    if (!post.slug) continue;
-    lines.push(
-      `- [${post.title}](${abs(`/blog/${trailing(post.slug)}`)}): ${plain(post.excerpt || post.meta_description || post.content, 160)}`,
-    );
-  }
-  if (workItems.length) {
-    // Work pieces, with their plain-facts summary, so AI answers can cite them.
-    lines.push("", "## Work", "", ...workLlmsLines(workItems, abs));
-  }
-  const llmsTxt = `${lines.join("\n")}\n`;
+  // US09: the company definition first, then the founder, the place and
+  // the booking link, then every page with its plain summary.
+  const heroAnswerOf = (rows) => plain(flattenWidgets(rows).find((w) => w.type === "hero")?.data?.answer, 400);
+  const llmsTxt = buildLlmsTxt({
+    brandName,
+    founderName,
+    bookingUrl: BOOKING_URL,
+    sections: [
+      {
+        title: "Pages",
+        entries: [
+          { title: "Home", url: abs("/"), summary: heroAnswerOf(homeRows) || homeSeo.meta_description || tagline },
+          ...cmsPages
+            .filter((page) => page.slug)
+            .map((page) => ({
+              title: page.title,
+              url: abs(cmsPagePath(page.slug)),
+              summary: heroAnswerOf(page.page_rows) || plain(page.meta_description, 400) || page.title,
+            })),
+          ...(workItems.length
+            ? [{ title: "Work", url: abs("/work/"), summary: plain(workPage.answer, 400) || workIndexDescription(workItems, brandName) }]
+            : []),
+          { title: blogSeo.header_title || "Blog", url: abs("/blog/"), summary: plain(blogSeo.meta_description || blogSeo.header_subtitle, 400) },
+        ],
+      },
+      // Work pieces, with their plain-facts summary, so AI answers can cite them.
+      { title: "Work", lines: workLlmsLines(workItems, abs) },
+      {
+        title: "Articles",
+        entries: blogPosts.slice(0, 100).filter((post) => post.slug).map((post) => ({
+          title: post.title,
+          url: abs(`/blog/${trailing(post.slug)}`),
+          summary: plain(post.excerpt || post.meta_description || post.content, 240),
+        })),
+      },
+    ],
+  });
   writeFileSync(resolve("public", "llms.txt"), llmsTxt);
   if (existsSync(DIST)) writeFileSync(resolve(DIST, "llms.txt"), llmsTxt);
 
@@ -654,15 +686,22 @@ async function main() {
   const shellPath = resolve(DIST, "index.html");
   if (existsSync(shellPath)) {
     const shell = readFileSync(shellPath, "utf8");
+    // The entity graph leads every page's structured data (US05).
+    const withGraph = (meta) => ({
+      ...meta,
+      defaultImage,
+      graph: entityGraph,
+      jsonLd: [entityGraph, ...(Array.isArray(meta.jsonLd) ? meta.jsonLd : [meta.jsonLd])].filter(Boolean),
+    });
     for (const route of routes) {
-      writePage(route.path, renderPage(shell, { ...route.meta, defaultImage }));
+      writePage(route.path, renderPage(shell, withGraph(route.meta)));
     }
     // Bare-slug fallback files — real content for crawlers, canonical
     // tag still points at the preferred /p/ URL (see fallbackRoutes note
     // above). Not counted in the "wrote N pages" total below since they
     // aren't a distinct indexable page, just a non-canonical mirror.
     for (const route of fallbackRoutes) {
-      writePage(route.path, renderPage(shell, { ...route.meta, defaultImage }));
+      writePage(route.path, renderPage(shell, withGraph(route.meta)));
     }
   }
 
