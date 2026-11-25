@@ -157,6 +157,16 @@ every PR, then runs the visual suite.
   function by the Vite plugin.
 - `scripts/prerender-seo.mjs` runs `postbuild` only. Do not wire it to
   `predev`/`prebuild`; it needs `dist/` and hits the database.
+  It bakes the copy from the database into the HTML at build time, so
+  a copy change written straight to the database reaches the
+  prerendered HTML, meta descriptions, FAQ schema and llms.txt only on
+  the next build. Publishing again without a new commit can reuse the
+  last build (25 Nov 2026: a data-only publish kept the old HTML), so
+  land a commit on main before publishing a copy bundle.
+  A copy bundle also moves the visual shots (the suite renders live
+  content, so a longer hero is a taller shot): refresh the Linux
+  baseline with the visual-baseline workflow on the next PR, then push
+  a real commit so `check` and `visual` run against it.
 - `playwright.config.ts` belongs to Lovable's test runner; the visual
   suite has its own `playwright.visual.config.ts`.
 - Brand colours for the four service pillars live in
