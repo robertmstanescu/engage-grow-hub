@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { fetchPublicSiteContentValue } from "@/services/publicSiteContent";
 import { fetchBrandIdentity } from "@/hooks/useBrandSettings";
 import { buildPageTitle } from "../../scripts/lib/seoTitle.mjs";
+import { getConsentStatus } from "@/services/analytics";
 
 /**
  * Resolve the canonical origin for outbound links / meta tags. We
@@ -116,8 +117,15 @@ const injectScript = (id: string, attrs: Record<string, string>, body?: string) 
   document.head.appendChild(s);
 };
 
-const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
-  if (scriptsInjected) return;
+/**
+ * US07: GA4, the Meta Pixel and the LinkedIn tag load only after the
+ * visitor presses Accept on the cookie panel. "Reject" (or no answer yet)
+ * loads nothing; the choice is kept in localStorage by `setConsentStatus`.
+ * Accepting later, on any page, loads them at once through the panel's
+ * `tmc:consent-changed` event.
+ */
+export const injectTrackers = (tags: GlobalTags) => {
+  if (scriptsInjected || getConsentStatus() !== "accepted") return;
   scriptsInjected = true;
 
   const ga4 = tags.tracking?.ga4?.trim();
@@ -152,6 +160,22 @@ const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
       `(function(l){if(!l){window.lintrk=function(a,b){window.lintrk.q.push([a,b])};window.lintrk.q=[]}var s=document.getElementsByTagName("script")[0];var b=document.createElement("script");b.type="text/javascript";b.async=true;b.src="https://snap.licdn.com/li.lms-analytics/insight.min.js";s.parentNode.insertBefore(b,s)})(window.lintrk);`,
     );
   }
+
+};
+
+let consentListening = false;
+/** Load the trackers the moment the visitor accepts, without a reload. */
+const listenForConsent = () => {
+  if (consentListening || typeof window === "undefined") return;
+  consentListening = true;
+  window.addEventListener("tmc:consent-changed", () => {
+    if (globalTagsCache) injectTrackers(globalTagsCache);
+  });
+};
+
+const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
+  injectTrackers(tags);
+  listenForConsent();
 
   // JSON-LD Organization schema (auto-built from structured fields if no override)
   const org = tags.organization;
