@@ -177,6 +177,12 @@ every PR, then runs the visual suite.
   (`splitTierTitle` in `site/tierText.ts`, used by `TierCard`). The h3
   still reads as the full name to screen readers. Short names elsewhere
   (FAQs, price notes) are written without the descriptor.
+- Prices are written with "+ VAT" everywhere a price shows. A hero badge
+  written "Name · From €900 + VAT" puts the price on its own line in the
+  heading face (`splitBadgePrice` in `site/heroBadgeText.ts`, used by
+  `HeroSection`). It splits at the last " · " only when the tail starts
+  with "From", so other badges stay whole. Tier cards split their own
+  price line with `splitPriceLine`.
 
 ## Redirect access
 
