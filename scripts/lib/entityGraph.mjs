@@ -9,6 +9,10 @@
  * Only facts the business has stated go in: the name, the definition,
  * Stockholm in Sweden, the six services, the booking link, the LinkedIn
  * pages and the founder's name and photo. No phone, street or price.
+ *
+ * The Facts page (/p/facts/, search plan F6) states the same facts in
+ * words. FACTS below holds the ones the schema repeats; when the page
+ * changes, change them here in the same words and the same day.
  */
 
 /** The company in one sentence, word for word from the search plan (US09). */
@@ -27,6 +31,22 @@ export const SERVICES = [
   ["Fractional HRBP", "/services/fractional-hrbp/"],
   ["Manager Enablement", "/services/manager-enablement/"],
 ];
+
+/** Facts as the Facts page states them (checked 25 Nov 2026). */
+export const FACTS = {
+  /** The long name, as the copyright line prints it. */
+  longName: "The Magic Coffin for Silly Vampires",
+  /** "Started: February 2026." */
+  foundingDate: "2026-02",
+  /** "Working languages: English and Romanian." (BCP 47 codes) */
+  languages: ["en", "ro"],
+  /** "Who it works with: start-ups and scale-ups of around 10 to 2,000 people." */
+  audience: "Start-ups and scale-ups of around 10 to 2,000 people",
+  /** The address the footer already shows on every page. */
+  email: "hello@themagiccoffin.com",
+  /** The page that states all of the above. */
+  factsPath: "/p/facts/",
+};
 
 export const orgId = (origin) => `${origin}/#organization`;
 export const websiteId = (origin) => `${origin}/#website`;
@@ -56,8 +76,15 @@ export function buildEntityGraph(input) {
     "@type": "Organization",
     "@id": orgId(origin),
     name: brandName,
+    alternateName: FACTS.longName,
     url: `${origin}/`,
     description: text(input.description) || COMPANY_DEFINITION,
+    foundingDate: FACTS.foundingDate,
+    email: FACTS.email,
+    knowsLanguage: FACTS.languages,
+    audience: { "@type": "BusinessAudience", audienceType: FACTS.audience },
+    // The page that states these facts in words, each with its checked date.
+    subjectOf: { "@type": "WebPage", name: "Facts", url: `${origin}${FACTS.factsPath}` },
     ...(isUrl(input.logo) ? { logo: { "@type": "ImageObject", url: input.logo.trim() } } : {}),
     ...(sameAs.length ? { sameAs } : {}),
     founder: { "@id": founderId(origin) },
