@@ -1199,6 +1199,13 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      lookup_public_redirect: {
+        Args: { _from_path: string }
+        Returns: {
+          status_code: number
+          to_path: string
+        }[]
+      }
       merge_widget_data_by_type: {
         Args: { patch: Json; rows: Json; target_type: string }
         Returns: Json

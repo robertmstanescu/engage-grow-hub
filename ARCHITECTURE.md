@@ -152,6 +152,15 @@ every PR, then runs the visual suite.
 - Brand colours for the four service pillars live in
   `src/lib/constants/pillarColors.ts` and nowhere else.
 
+## Redirect access
+
+`services/redirects.ts` keeps table listing and writes on the admin-only
+path. Public 404 and missing-post handling share `useRedirectLookup`,
+which calls `lookup_public_redirect` for one exact normalised path. That
+function returns only destination and status, not administration metadata.
+The table itself is not publicly readable; its existing admin policy
+continues to protect listing, renaming and deleting redirects.
+
 ## Admin editing surfaces (Phase 4b)
 
 - **Title**: `site-editor/TitleEditor.tsx` is one TipTap box for the whole

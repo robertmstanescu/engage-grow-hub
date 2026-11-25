@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Fix the selected redirect-record exposure only; verify public link resolution and administrator management.
+
 - [ ] Redesign themagiccoffin.com per `docs/redesign/00-HANDOVER.md` — plan approved first, then build in per-page bundles (see `.lovable/plan.md`)
   - [x] Phase 1: Wiring faults
   - [x] Phase 2: Foundations (tokens, six pillars, box variants, chrome)

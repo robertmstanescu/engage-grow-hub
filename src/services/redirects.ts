@@ -1,5 +1,5 @@
 /**
- * Redirects service — `redirects` table CRUD.
+ * Redirects service — admin-only table CRUD and public exact-path lookup.
  *
  * A redirect maps an old public path to a new target so renaming or
  * deleting a CMS page / blog post never silently 404s a live URL (see
@@ -22,9 +22,7 @@ export const fetchAllRedirects = () =>
 
 export const lookupRedirect = (pathname: string) =>
   supabase
-    .from("redirects")
-    .select("to_path, status_code")
-    .eq("from_path", normalizePath(pathname))
+    .rpc("lookup_public_redirect", { _from_path: normalizePath(pathname) })
     .maybeSingle();
 
 /**
