@@ -1,0 +1,10 @@
+export declare function escapeHtml(s: unknown): string;
+export declare function decodeEntities(s: unknown): string;
+export declare function safeHref(href: unknown): string;
+export declare function htmlToBlocks(input: unknown, opts?: { level?: number }): string;
+export declare function plainText(v: unknown): string;
+export declare function flattenWidgets(rows: unknown): { type: string; data: Record<string, unknown> }[];
+export declare function rowsToHtml(rows: unknown): string;
+export declare function rowsHeading(rows: unknown): string;
+export declare function linkListHtml(entries: { href?: string; title?: string; summary?: string }[] | null | undefined): string;
+export declare function readableMain(heading: unknown, parts: (string | null | undefined)[]): string;

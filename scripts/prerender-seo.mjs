@@ -35,8 +35,8 @@ import {
   workItemArticleLd,
   workItemMeta,
   workLlmsLines,
-  workReadable,
 } from "./lib/workSeo.mjs";
+import { htmlToBlocks, linkListHtml, readableMain, rowsHeading, rowsToHtml } from "./lib/readableHtml.mjs";
 import { buildPageTitle } from "./lib/seoTitle.mjs";
 /** The public booking page (ContactRow DEFAULT_BOOKING_URL). */
 const BOOKING_URL = "https://calendar.app.google/rCZX6w2RUWKpsKfRA";
@@ -225,16 +225,11 @@ function renderPage(shell, meta) {
 
   // Real copy for crawlers that never run the app. Sits in <noscript> so
   // it never conflicts with React taking over #root for real visitors.
-  if (readable && (readable.heading || readable.paragraphs.length)) {
-    const body = [
-      readable.heading ? `<h1>${escapeHtml(readable.heading)}</h1>` : "",
-      ...readable.paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`),
-    ]
-      .filter(Boolean)
-      .join("\n      ");
+  // `readable` is the whole page text, already made safe by readableHtml.mjs (US02).
+  if (readable) {
     html = html.replace(
       /<\/body>/i,
-      `  <noscript>\n    <main>\n      ${body}\n    </main>\n  </noscript>\n  </body>`,
+      () => `  <noscript>\n    <main>\n${readable}\n    </main>\n  </noscript>\n  </body>`,
     );
   }
   return html;
@@ -381,7 +376,7 @@ async function main() {
       url: abs("/"),
       image: defaultImage,
       jsonLd: [faqLd(homeRows)].filter(Boolean),
-      readable: extractReadableContent(homeRows),
+      readable: readableMain(rowsHeading(homeRows) || brandName, [rowsToHtml(homeRows)]),
     },
     sitemap: { lastmod: sectionUpdatedAt("main_page_seo"), changefreq: "weekly", priority: "1.0" },
   });
@@ -397,6 +392,17 @@ async function main() {
       jsonLd: breadcrumbLd([
         ["Home", `${origin}/`],
         [blogSeo.header_title || "Blog", abs("/blog/")],
+      ]),
+      // US06: the header, the intro and every post with its one-line summary.
+      readable: readableMain(blogSeo.header_title || "Blog", [
+        htmlToBlocks(blogSeo.header_subtitle),
+        linkListHtml(
+          blogPosts.map((post) => ({
+            href: `/blog/${trailing(post.slug || "")}`,
+            title: post.title,
+            summary: plain(post.excerpt || post.meta_description, 240),
+          })),
+        ),
       ]),
     },
     sitemap: { lastmod: latestPostTimestamp, changefreq: "weekly", priority: "0.8" },
@@ -441,7 +447,7 @@ async function main() {
       description,
       url: abs(path),
       image: absImage(page.og_image),
-      readable: extractReadableContent(rows),
+      readable: readableMain(rowsHeading(rows) || page.title, [rowsToHtml(rows)]),
       jsonLd: [
         isServicePage
           ? {
@@ -506,10 +512,8 @@ async function main() {
             [post.title, abs(path)],
           ]),
         ],
-        readable: {
-          heading: post.title,
-          paragraphs: [plain(post.excerpt, 300), plain(post.content, 1500)].filter(Boolean),
-        },
+        // The whole article, not a cut (US02).
+        readable: readableMain(post.title, [htmlToBlocks(post.excerpt), htmlToBlocks(post.content)]),
       },
 
       sitemap: {
@@ -555,6 +559,20 @@ async function main() {
             ["Work", abs("/work/")],
           ]),
         ],
+        // US06: the header, the plain answer and every piece with its one-liner.
+        readable: readableMain(workPage.header_title || "Work", [
+          htmlToBlocks(workPage.header_subtitle),
+          htmlToBlocks(workPage.answer),
+          rowsToHtml(workPage.rows_above),
+          linkListHtml(
+            workItems.map((item) => ({
+              href: `/work/${trailing(item.slug || "")}`,
+              title: item.title,
+              summary: plain(item.summary, 240),
+            })),
+          ),
+          rowsToHtml(workPage.rows_below),
+        ]),
       },
       sitemap: { lastmod: latestWorkTimestamp, changefreq: "weekly", priority: "0.8" },
     });
@@ -583,7 +601,7 @@ async function main() {
               [item.title, abs(path)],
             ]),
           ].filter(Boolean),
-          readable: workReadable(item, extractReadableContent(rows)),
+          readable: readableMain(item.title, [htmlToBlocks(item.summary), rowsToHtml(rows)]),
         },
         sitemap: { lastmod: item.updated_at, changefreq: "monthly", priority: "0.6" },
       });
