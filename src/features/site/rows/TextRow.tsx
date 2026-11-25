@@ -5,7 +5,7 @@ import { sanitizeHtml } from "@/services/sanitize";
 import EditableText from "@/features/admin/EditableText";
 import type { Alignment, VAlign } from "./PageRows";
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
-import { isTextRowEmpty } from "./textRowContent";
+import { hasText, isTextRowEmpty } from "./textRowContent";
 import { RowEyebrow, RowTitle, RowSubtitle, RowBody, RowSection } from "./typography";
 import { applyUnderlineWord } from "@/lib/titleAccent";
 // EPIC 1 / US 1.1 — atomic-node selection on text-row fields.
@@ -119,6 +119,35 @@ const TextRow = ({ row, rowIndex, align = "left", vAlign = "middle" }: { row: Pa
               </CanvasEditable>
             </div>
           </SelectableWrapper>
+        )}
+
+        {/* Optional closed fold (owner, 25 Nov 2026: the shorter site).
+            body, then a closed <details> holding folded_body under
+            fold_label, then body_after. The folded words stay in the
+            HTML (like Q&A answers), so the prerender, search and AI
+            tools read every word while the page stays short. */}
+        {hasText(c.folded_body) && (
+          <details className={`text-fold measure mt-rhythm-tight ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`} style={revealStyle(isVisible, 2.2)}>
+            <summary className="text-fold-summary font-body font-semibold" style={{ fontSize: "var(--fs-body)" }}>
+              <span>{(typeof c.fold_label === "string" && c.fold_label.trim()) || "Read more"}</span>
+              <span aria-hidden className="text-fold-toggle" />
+            </summary>
+            <div
+              data-row-part="folded_body"
+              className="font-body font-normal leading-[var(--lh-body)] [&_p]:my-[var(--para-space)]"
+              style={{ color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--body))"), fontSize: "var(--fs-body)" }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.folded_body) }}
+            />
+          </details>
+        )}
+
+        {hasText(c.body_after) && (
+          <div
+            data-row-part="body_after"
+            className={`font-body font-normal leading-[var(--lh-body)] measure mt-rhythm-tight [&_p]:my-[var(--para-space)] ${!isMultiCol && align === "right" ? "ml-auto" : !isMultiCol && align === "center" ? "mx-auto" : ""}`}
+            style={{ ...revealStyle(isVisible, 2.4), color: c.color_body || (isLight ? "hsl(var(--light-fg) / 0.75)" : "hsl(var(--body))"), fontSize: "var(--fs-body)" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(c.body_after) }}
+          />
         )}
 
         {c.note && (

@@ -6,7 +6,7 @@
  * widget-level Inspector panel.
  */
 
-import { RichField, EyebrowField, NoteField } from "./FieldComponents";
+import { RichField, EyebrowField, NoteField, Field, MoreFields } from "./FieldComponents";
 import { CoverImageField } from "./CoverImageField";
 import SubtitleEditor from "./SubtitleEditor";
 import TitleLinesEditor from "../editors/TitleLinesEditor";
@@ -35,6 +35,12 @@ const TextRowEditor = ({ content, onChange, bgColor }: Props) => {
       <RichField label="Body" value={content.body || ""} onChange={(v) => onChange("body", v)} bgColor={bgColor} />
       <NoteField value={content.note || ""} onChange={(v) => onChange("note", v)} />
       <CoverImageField content={content} onChange={onChange} shape />
+      {/* The fold: words kept on the page but closed until a reader opens them. */}
+      <MoreFields label="Fold (text that opens on click)">
+        <Field label="Fold button text" value={content.fold_label || ""} onChange={(v) => onChange("fold_label", v)} hint="For example: Read the whole story" />
+        <RichField label="Text inside the fold" value={content.folded_body || ""} onChange={(v) => onChange("folded_body", v)} bgColor={bgColor} />
+        <RichField label="Text after the fold" value={content.body_after || ""} onChange={(v) => onChange("body_after", v)} bgColor={bgColor} />
+      </MoreFields>
     </div>
   );
 };

@@ -177,6 +177,11 @@ every PR, then runs the visual suite.
   (`splitTierTitle` in `site/tierText.ts`, used by `TierCard`). The h3
   still reads as the full name to screen readers. Short names elsewhere
   (FAQs, price notes) are written without the descriptor.
+- A text block can fold (25 Nov 2026): `body`, then a closed `<details>`
+  with `fold_label` as its summary and `folded_body` inside, then
+  `body_after` (`TextRow`, fields under "Fold" in the editor). The folded
+  words stay in the HTML and in `readableHtml.mjs`'s TEXT_KEYS, so the
+  prerender and AI tools read them. Empty fields render as before.
 - Prices are written with "+ VAT" everywhere a price shows. A hero badge
   written "Name · From €900 + VAT" puts the price on its own line in the
   heading face (`splitBadgePrice` in `site/heroBadgeText.ts`, used by

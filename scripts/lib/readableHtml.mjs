@@ -184,6 +184,8 @@ const TEXT_KEYS = [
   "value",
   "label",
   "body",
+  "folded_body",
+  "body_after",
   "text",
   "content",
   "description",
