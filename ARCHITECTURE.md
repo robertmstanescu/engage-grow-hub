@@ -161,6 +161,12 @@ every PR, then runs the visual suite.
   suite has its own `playwright.visual.config.ts`.
 - Brand colours for the four service pillars live in
   `src/lib/constants/pillarColors.ts` and nowhere else.
+- A tier name written "Brand: plain descriptor" (for example "The
+  Autopsy: internal comms audit") renders on two lines: the brand at
+  title size and the descriptor as a small body-face line under it
+  (`splitTierTitle` in `site/tierText.ts`, used by `TierCard`). The h3
+  still reads as the full name to screen readers. Short names elsewhere
+  (FAQs, price notes) are written without the descriptor.
 
 ## Redirect access
 

@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { safeHref } from "@/services/safeHref";
 import { useTagColors } from "@/hooks/useTagColors";
-import { splitDoneLooksLike, splitPriceLine } from "./tierText";
+import { splitDoneLooksLike, splitPriceLine, splitTierTitle } from "./tierText";
 
 /**
  * TierCard: one engagement tier, shown three across on a service page
@@ -46,6 +46,7 @@ const TierCard = memo(({
     ? { lead: description, label: "Done looks like:", done: doneLooksLike }
     : splitDoneLooksLike(description);
   const priceLine = splitPriceLine(time);
+  const name = splitTierTitle(title ?? "");
   const items = Array.isArray(deliverables) ? deliverables.filter((d) => typeof d === "string" && d.trim()) : [];
 
   /* Sizes, gaps and colours are the tier card of the service artboards
@@ -82,7 +83,20 @@ const TierCard = memo(({
       {(title || subtitle) ? (
         <div className="flex flex-col" style={{ gap: 4 }}>
           {title ? (
-            <h3 className="font-display font-extrabold" style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-tier-title)", lineHeight: 1.1 }}>{title}</h3>
+            /* A title written "Brand: plain descriptor" (owner, 25 Nov 2026)
+               shows the brand at title size and the descriptor on its own
+               line in the old subtitle's look. The colon stays in the
+               heading's text (visually hidden), so search engines, llms.txt
+               and screen readers read one name. */
+            <h3 className="font-display font-extrabold" style={{ color: "hsl(var(--heading))", fontSize: "var(--fs-tier-title)", lineHeight: 1.1 }}>
+              {name.descriptor ? (
+                <>
+                  {name.brand}
+                  <span className="sr-only">: </span>
+                  <span className="tier-title-descriptor block font-body font-semibold" style={{ color: "hsl(var(--body))", fontSize: 14, lineHeight: 1.5, marginTop: 4 }}>{name.descriptor}</span>
+                </>
+              ) : title}
+            </h3>
           ) : null}
           {subtitle ? (
             <p className="font-body font-semibold" style={{ color: "hsl(var(--body))", fontSize: 14, lineHeight: 1.5 }}>{subtitle}</p>

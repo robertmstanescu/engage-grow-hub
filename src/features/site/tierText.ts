@@ -23,3 +23,16 @@ export const splitPriceLine = (time: string): { price: string; detail: string } 
   if (at < 0) return { price: text, detail: "" };
   return { price: text.slice(0, at).trim(), detail: text.slice(at + 1).trim() };
 };
+
+/**
+ * Split a tier title written as "Brand: plain descriptor" (owner, 25 Nov
+ * 2026, e.g. "The Autopsy: Internal Comms Audit") into the brand name and
+ * the descriptor. A title without ": " comes back whole, descriptor empty.
+ */
+export const splitTierTitle = (title: string): { brand: string; descriptor: string } => {
+  const text = typeof title === "string" ? title.trim() : "";
+  const at = text.indexOf(": ");
+  if (at <= 0) return { brand: text, descriptor: "" };
+  const descriptor = text.slice(at + 2).trim();
+  return descriptor ? { brand: text.slice(0, at).trim(), descriptor } : { brand: text, descriptor: "" };
+};
