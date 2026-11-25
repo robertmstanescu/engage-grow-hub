@@ -265,8 +265,8 @@ Rules that are easy to get wrong:
   Daughter are read as the new faces (`lib/typefaces.ts`).
 - Long reference text goes in the text block's fold, never a second
   row: `fold_label`, `folded_body` and `body_after` render a closed
-  `<details>` (`.text-fold`) that stays in the HTML and the prerender, so
-  search and AI still read it. The Pay Transparency country list and the
+  `<details>` (`.text-fold`) on the live page; the prerendered noscript
+  HTML carries the folded text flat, so search and AI still read it. The Pay Transparency country list and the
   About story (paragraphs 3 to 5) use it; the About words are Robert's own
   and every one is kept.
 - A page with no hero is a document page (Privacy): `CmsPage` lifts the
