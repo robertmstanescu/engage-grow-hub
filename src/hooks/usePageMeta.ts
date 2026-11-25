@@ -167,7 +167,9 @@ const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
         : {}),
     });
   }
-  if (jsonLd && !document.getElementById("mc-jsonld-org")) {
+  // The server's entity graph already names the company (US05).
+  const hasGraph = !!document.querySelector('script[type="application/ld+json"][data-prerender="graph"]');
+  if (jsonLd && !hasGraph && !document.getElementById("mc-jsonld-org")) {
     const s = document.createElement("script");
     s.id = "mc-jsonld-org";
     s.type = "application/ld+json";
@@ -175,6 +177,22 @@ const injectGlobalScripts = (tags: GlobalTags, canonicalOrigin: string) => {
     s.text = jsonLd;
     document.head.appendChild(s);
   }
+};
+
+/**
+ * Decide what happens to the server's per-page JSON-LD (US03). When every
+ * block was written for `path`, they stay and the caller adds nothing.
+ * Otherwise (a later page, or an older build's unmarked blocks) they go.
+ * The sitewide entity graph (`data-prerender="graph"`) always stays.
+ */
+export const keepPrerenderedLd = (path: string): boolean => {
+  const blocks = Array.from(
+    document.querySelectorAll<HTMLScriptElement>('script[type="application/ld+json"][data-prerender]'),
+  ).filter((n) => n.getAttribute("data-prerender") !== "graph");
+  if (!blocks.length) return false;
+  if (blocks.every((n) => n.getAttribute("data-prerender") === "page" && n.getAttribute("data-path") === path)) return true;
+  blocks.forEach((n) => n.remove());
+  return false;
 };
 
 const SERVICE_JSONLD_ID = "mc-jsonld-service";
@@ -193,10 +211,11 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", 
   useEffect(() => {
     if (typeof document === "undefined") return;
 
-    // The prerendered HTML carries the same structured data for crawlers
-    // that never run the app. Once the app runs it owns those blocks, so
-    // the static copies go, or every page would carry each block twice.
-    document.querySelectorAll('script[type="application/ld+json"][data-prerender]').forEach((n) => n.remove());
+    // US03: on the page the visitor opened, the server's structured data
+    // stays exactly as it was served, so a crawler that runs the app sees
+    // the same @ids and types as one that does not. After a move to another
+    // page those blocks go and the app writes its own.
+    const keepServerLd = keepPrerenderedLd(ensureTrailingSlash(canonicalPath ?? location.pathname));
 
     let cancelled = false;
 
@@ -250,6 +269,9 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", 
       if (description) setMeta("twitter:description", description);
       setMeta("twitter:image", socialImage);
 
+      // The server's blocks already describe this page: add nothing beside them.
+      if (keepServerLd) return;
+
       // Per-page Service schema (only while this page actually is one —
       // removed again the moment the route navigates away from it).
       let serviceScript = document.getElementById(SERVICE_JSONLD_ID) as HTMLScriptElement | null;
@@ -267,7 +289,7 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", 
           name: serviceSchema.name,
           ...(serviceSchema.description ? { description: serviceSchema.description } : {}),
           url: canonicalUrl,
-          provider: { "@type": "Organization", name: identity.brandName, url: canonicalOrigin },
+          provider: { "@id": `${canonicalOrigin}/#organization` },
           ...(areas.length ? { areaServed: areas.map((name) => ({ "@type": "Place", name })) } : {}),
         });
       } else {

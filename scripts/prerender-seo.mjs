@@ -214,12 +214,20 @@ function renderPage(shell, meta) {
 
   // JSON-LD: one object or several (Organization + Person + FAQPage…).
   const blocks = (Array.isArray(jsonLd) ? jsonLd : [jsonLd]).filter(Boolean);
+  // US03: the app keeps these on the first load. The sitewide graph is
+  // marked "graph" and never removed; the page's own blocks carry the
+  // canonical path so the app knows they belong to the page it opened on.
   if (blocks.length) {
+    const pagePath = escapeHtml(new URL(url).pathname);
     html = html.replace(
       "</head>",
-      `${blocks
-        .map((b) => `  <script type="application/ld+json" data-prerender="1">${JSON.stringify(b).replace(/</g, "\\u003c")}</script>`)
-        .join("\n")}\n  </head>`,
+      () =>
+        `${blocks
+          .map((b) => {
+            const mark = b === meta.graph ? 'data-prerender="graph"' : `data-prerender="page" data-path="${pagePath}"`;
+            return `  <script type="application/ld+json" ${mark}>${JSON.stringify(b).replace(/</g, "\\u003c")}</script>`;
+          })
+          .join("\n")}\n  </head>`,
     );
   }
 
@@ -667,6 +675,7 @@ async function main() {
     const withGraph = (meta) => ({
       ...meta,
       defaultImage,
+      graph: entityGraph,
       jsonLd: [entityGraph, ...(Array.isArray(meta.jsonLd) ? meta.jsonLd : [meta.jsonLd])].filter(Boolean),
     });
     for (const route of routes) {
