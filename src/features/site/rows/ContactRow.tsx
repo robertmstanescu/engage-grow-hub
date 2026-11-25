@@ -28,7 +28,7 @@ const ContactRow = ({ row, align = "left", vAlign = "middle" }: { row: PageRow; 
   const titleLines: string[] = (c.title_lines || []).map((l: unknown) =>
     typeof l === "string" ? l.startsWith("<") ? l : `<p>${l}</p>` : `<p>${l}</p>`
   );
-  const buttonText = c.booking_button_text || "Book a discovery call";
+  const buttonText = c.booking_button_text || "Book a free call";
   const bookingUrl = safeLink(c.booking_url);
   const embedUrl = safeEmbed(c.calendar_embed_url);
   const showCalendar = c.show_calendar !== false;

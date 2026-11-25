@@ -10,7 +10,7 @@
  *      place (the "In short" strip shows the hero's plain answer; a
  *      service page's contact block repeats the homepage's; the hero
  *      badge names the page's own first tier).
- *   2. Button labels: "Book a free consultation" and one arrow link.
+ *   2. Button labels: "Book a free call" and one arrow link.
  *   3. New copy: the homepage proof strip. Its four numbers are the ones
  *      already published on the site (About page and homepage cards).
  *
@@ -45,7 +45,7 @@ export interface GapNote {
   kind: "reused" | "label" | "new";
 }
 
-const BOOK_LABEL = "Book a free consultation";
+const BOOK_LABEL = "Book a free call";
 /** Small labels from the Main artboard. */
 /** Small labels from the service artboards. */
 export const SERVICE_LABELS = {

@@ -40,14 +40,20 @@ const COOKIE_INVENTORY: { name: string; purpose: string; lifespan: string }[] = 
   {
     name: "Anonymous Page-View ID",
     purpose:
-      "Set on every visit, regardless of your choice below — it's what lets us count how many separate people visit (instead of over-counting one person who changes networks). It's a random ID stored on this device only, never sent anywhere with your name or email attached, and we can't use it to identify you.",
+      "Set on every visit, whatever you choose below: it's what lets us count how many separate people visit (instead of over-counting one person who changes networks). It's a random ID stored on this device only, never sent anywhere with your name or email attached, and we can't use it to identify you.",
     lifespan: "Until cleared",
   },
   {
     name: "Visitor ID",
     purpose:
-      "Only set if you accept below. Lets us connect a download or contact form back to the campaign or article that brought you to the site, so we can see which content is genuinely useful. Cleared immediately if you reject or later withdraw consent.",
+      "Set only if you accept below. Connects a download or a click on the booking button back to the article or campaign that brought you here, so we can see which content helps. Cleared at once if you reject or later withdraw consent.",
     lifespan: "12 months",
+  },
+  {
+    name: "Google Analytics, Meta Pixel and LinkedIn Insight",
+    purpose:
+      "Loaded only if you accept below. Each sets its own cookies to count visits and to show which pages people reach from Google, Meta and LinkedIn. Nothing from them loads if you reject.",
+    lifespan: "Set by each provider",
   },
   {
     name: "Consent Given",
@@ -203,9 +209,9 @@ const CookieConsent = () => {
                 />
                 <span className="font-body text-mini">
                   {isAccepted
-                    ? "Accepted — campaign attribution is active, on top of the anonymous page-view counting that's always on."
+                    ? "Accepted: campaign attribution, Google Analytics, the Meta Pixel and LinkedIn Insight are on, on top of the anonymous page-view counting that's always on."
                     : currentStatus === "rejected"
-                    ? "Rejected — no campaign or marketing tracking is stored. Anonymous, non-identifying page-view counts still happen (see below)."
+                    ? "Rejected: no campaign or marketing tracking is stored. Anonymous, non-identifying page-view counts still happen (see below)."
                     : "Not yet decided."}
                 </span>
               </div>
@@ -217,8 +223,11 @@ const CookieConsent = () => {
               style={{ color: "hsl(var(--muted-foreground))" }}
             >
               We use a small number of cookies to understand which of our articles
-              actually help people. We never sell your data, never run ad-tracking,
-              and never share what we collect with third parties.
+              help people. Google Analytics, the Meta Pixel and LinkedIn Insight load
+              only if you accept. We never sell your data.{" "}
+              <a href="/p/privacy-policy/" className="underline underline-offset-2">
+                Read the privacy policy
+              </a>
             </p>
 
             {/* Cookie inventory — one card per stored value */}
@@ -337,8 +346,11 @@ const CookieConsent = () => {
             </h2>
             <p className="font-body text-mini leading-relaxed mt-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
               {view === "compact"
-                ? "We use a simple cookie to remember how you found us. This helps us understand which of our links are most helpful. We never store personal information without your explicit consent. 😊"
-                : "Accept lets us remember you across visits so your form submissions enrich our content insights. Reject keeps every page view fully anonymous — you'll still get the same site."}
+                ? "With your OK, we remember which link or article brought you here and load Google Analytics, the Meta Pixel and LinkedIn Insight, so we know which pages help. We count visits with an anonymous number, kept on this device only. 😊"
+                : "Accept lets us remember which link or article brought you here, across visits, and loads Google Analytics, the Meta Pixel and LinkedIn Insight. Reject keeps every page view anonymous. The site works exactly the same either way."}{" "}
+              <a href="/p/privacy-policy/" className="underline underline-offset-2">
+                Privacy policy
+              </a>
             </p>
 
             {view === "compact" ? (

@@ -28,7 +28,7 @@ registerWidget({
   defaultData: {
     title_lines: [],
     body: "",
-    booking_button_text: "Book a discovery call",
+    booking_button_text: "Book a free call",
     show_calendar: true,
   },
   adminComponent: ContactAdmin,
