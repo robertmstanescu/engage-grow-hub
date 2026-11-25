@@ -16,7 +16,11 @@ import usePageMeta from "@/hooks/usePageMeta";
 import { fetchPublishedWorkItems, type WorkItemRecord } from "@/services/workItems";
 import { fetchApprovedProofPoints } from "@/services/proofPoints";
 import WorkCard, { type WorkCardItem } from "@/features/site/WorkCard";
+import { WORK_CARD_SLOTS } from "@/features/site/work/workCardSlots";
 import WorkTypeChip from "@/features/site/work/WorkTypeChip";
+import { useSiteContent } from "@/hooks/useSiteContent";
+import { RowsRenderer } from "@/features/site/rows/PageRows";
+import { WORK_PAGE_DEFAULTS, WORK_PAGE_KEY, readWorkPage } from "@/features/site/work/workPageContent";
 import { PILLAR_NAMES, TYPE_PLURAL, TYPE_MEANING } from "@/features/site/work/workLabels";
 import { pillarColorFromKey } from "@/lib/constants/pillarColors";
 
@@ -33,9 +37,13 @@ const Work = () => {
   const [pillar, setPillar] = useState("");
   const [type, setType] = useState("");
 
+  // The header, plain answer, search fields and extra rows are edited
+  // under Admin, Pages, Work (site content `work_page`).
+  const page = readWorkPage(useSiteContent(WORK_PAGE_KEY, WORK_PAGE_DEFAULTS));
+
   usePageMeta({
-    title: "Work",
-    description: "Selected work from The Magic Coffin: case studies, artefacts and playbooks across the six service pillars.",
+    title: page.meta_title || "Work",
+    description: page.meta_description || page.answer || page.header_subtitle || undefined,
     canonicalPath: "/work/",
   });
 
@@ -68,19 +76,10 @@ const Work = () => {
       <main className="work-page">
         <header className="work-header">
           <div className="work-column work-header-stack">
-            <p className="work-eyebrow">The work</p>
-            <h1 className="work-title">
-              The work, with the lid{" "}
-              <span className="work-underline">
-                off.
-                <svg aria-hidden="true" viewBox="0 0 100 20" preserveAspectRatio="none">
-                  <path d="M1 13 C 22 5 48 9 70 12 C 81 13 90 14 99 8" fill="none" strokeWidth="4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-                </svg>
-              </span>
-            </h1>
-            <p className="work-lede">
-              Real work from in-house roles, sample deliverables and how we would tackle the problems scale-ups keep calling about. Every piece carries a label that says what it is.
-            </p>
+            {page.header_label && <p className="work-eyebrow">{page.header_label}</p>}
+            {/* No hand-drawn underline: the owner calls title underlines a tell. */}
+            <h1 className="work-title">{page.header_title}</h1>
+            {page.header_subtitle && <p className="work-lede">{page.header_subtitle}</p>}
             <ul className="work-legend">
               {TYPE_ORDER.map((t) => (
                 <li key={t}>
@@ -91,6 +90,8 @@ const Work = () => {
             </ul>
           </div>
         </header>
+
+        {page.rows_above.length > 0 && <RowsRenderer rows={page.rows_above} promoteHeading={false} />}
 
         {items.length > 0 && (
           <section aria-label="Filter the work" className="work-gutter">
@@ -141,9 +142,9 @@ const Work = () => {
                 </span>
               </div>
             ) : (
-              <ul className="work-grid">
+              <ul className="work-grid align-cards">
                 {visible.map((item) => (
-                  <li key={item.slug}>
+                  <li key={item.slug} className="align-card" style={WORK_CARD_SLOTS}>
                     <WorkCard
                       item={item as WorkCardItem}
                       proofApproved={item.proof_point_id ? approved.has(item.proof_point_id) : undefined}
@@ -154,8 +155,9 @@ const Work = () => {
             )}
           </div>
         </section>
+        {page.rows_below.length > 0 && <RowsRenderer rows={page.rows_below} promoteHeading={false} />}
       </main>
-      <Footer breadcrumbTrail={[{ name: "Home", path: "/" }, { name: "Work" }]} />
+      <Footer breadcrumbTrail={[{ name: "Home", path: "/" }, { name: "Work" }]} pageAnswer={page.answer} />
     </div>
   );
 };

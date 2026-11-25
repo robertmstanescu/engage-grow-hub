@@ -763,7 +763,8 @@
     font-size: 15px;
     line-height: 1;
     background-color: hsl(var(--deep));
-    color: hsl(var(--deep-fg));
+    /* Pure white text on the dark pill (owner, 25 Nov 2026). */
+    color: #fff;
     border: 1px solid transparent;
     text-decoration: none;
     transition: background-color 160ms ease-out, transform 160ms ease-out, box-shadow 160ms ease-out;
@@ -1228,7 +1229,6 @@
     --nav-dropdown-bg: 0 0% 100%;
     --nav-dropdown-hover: 288 30% 95%;
     --nav-cta-bg: 280 57% 16%;
-    --nav-cta-text: 0 0% 100%;
     --nav-border: 285 22% 89%;
   }
 
@@ -2312,9 +2312,6 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
   letter-spacing: -0.025em;
   color: hsl(var(--heading));
 }
-.work-underline { position: relative; display: inline-block; }
-.work-underline svg { display: none; position: absolute; left: -2%; bottom: -0.14em; width: 104%; height: 0.26em; overflow: visible; }
-.work-underline path { stroke: hsl(var(--gold-decor)); }
 .work-lede { max-width: 680px; font-size: var(--fs-lede); line-height: 1.7; color: hsl(var(--body)); }
 .case-header .work-lede { max-width: 700px; line-height: 1.65; }
 .work-legend { display: flex; flex-wrap: wrap; gap: 12px 28px; padding-top: 8px; }
@@ -2395,19 +2392,30 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
 }
 .work-empty strong { font-family: var(--font-title); font-size: var(--fs-card-title); font-weight: 700; color: hsl(var(--heading)); }
 
+/* A Work card is five parts in a column: picture, quote or number on
+   top, then the categories, the title, the text and the foot line. In an
+   `.align-cards` grid the parts sit on rows shared with the other cards
+   in the line (owner, 25 Nov 2026), so a quote takes the place of a
+   picture and every title, text and foot line starts level. */
 .work-card {
   display: flex;
   flex-direction: column;
+  gap: 12px;
   height: 100%;
   min-width: 0;
+  padding-bottom: 26px;
   overflow: hidden;
   overflow-wrap: anywhere;
   color: inherit;
   text-decoration: none;
 }
+.work-card > :not(.work-card-cover) { padding-inline: 26px; }
 .work-card-cover { display: block; width: 100%; height: 220px; object-fit: cover; }
-.work-card-body { display: flex; flex-direction: column; flex-grow: 1; gap: 12px; padding: 26px; }
-.work-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+/* The quote or number fills the picture's place, centred in it. */
+.work-card-visual { display: flex; flex-direction: column; justify-content: center; padding-top: 26px; }
+.work-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-top: 14px; }
+/* No picture, quote or number outside an aligned grid: the categories lead. */
+.work-card-visual.align-empty + .work-card-meta { padding-top: 26px; }
 .work-card-pillar { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-card-label); color: hsl(var(--body)); }
 .work-card-title { font-family: var(--font-title); font-size: var(--fs-card-title); font-weight: 700; line-height: 1.18; color: hsl(var(--heading)); }
 .work-card-summary { flex-grow: 1; font-size: var(--fs-card-body); line-height: 1.6; color: hsl(var(--body)); }
@@ -2429,7 +2437,10 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
   min-height: 40px;
   padding-top: 14px;
   border-top: 1px solid hsl(var(--line-2));
+  /* The line and the text under it sit at the bottom of the card. */
+  align-self: stretch;
 }
+.work-card-foot.align-empty { border-top: 0; }
 .work-card-metric {
   max-width: 100%;
   font-family: var(--font-title);
@@ -2440,6 +2451,15 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden;
 }
 .work-card-note { font-size: var(--fs-card-label); color: hsl(var(--body)); }
+@supports (grid-template-rows: subgrid) {
+  /* On shared rows the empty-picture rule above would push one card's
+     categories lower than its neighbours'; the row height does the work. */
+  .align-cards .work-card-visual.align-empty + .work-card-meta { padding-top: 14px; }
+  /* The picture slot is as tall as the tallest in the line; the cover fills it. */
+  .align-cards .work-card-cover { height: 100%; min-height: 220px; }
+  /* The foot line rides the bottom of its row. */
+  .align-cards .work-card-foot { align-self: end; }
+}
 /* Dark style: light text on the deep plum card. */
 .work-card.mc-card-dark :is(.work-card-title, .work-card-quote, .work-card-number, .work-card-metric) { color: hsl(var(--deep-fg)); }
 .work-card.mc-card-dark :is(.work-card-summary, .work-card-note, .work-card-pillar) { color: hsl(var(--deep-fg) / 0.8); }
@@ -2460,11 +2480,23 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
   letter-spacing: -0.025em;
   color: hsl(var(--heading));
 }
-.case-glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px; }
-.case-glance > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 20px 22px; border-radius: 20px; }
+/* At a glance: every tile has its label on one shared line and its value
+   on the next, centred, so words and big numbers sit level across the
+   strip (owner, 25 Nov 2026). */
+.case-glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-top: 16px; }
+.case-glance > div {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  min-width: 0; padding: 22px 20px; border-radius: 20px; text-align: center;
+}
 .case-glance dt { font-size: var(--fs-chip); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: hsl(var(--gold-text)); }
-.case-glance dd { margin: 0; font-size: var(--fs-card-body); line-height: 1.5; color: hsl(var(--foreground)); }
-.case-glance dd.case-glance-number { order: -1; font-family: var(--font-title); font-size: var(--fs-stat); font-weight: 800; line-height: 1; color: hsl(var(--heading)); }
+.case-glance dd { margin: 0; font-size: var(--fs-card-body); line-height: 1.45; color: hsl(var(--foreground)); }
+.case-glance dd.work-card-pillar { justify-content: center; }
+.case-glance dd.case-glance-number { font-family: var(--font-title); font-size: var(--fs-stat); font-weight: 800; line-height: 1; color: hsl(var(--heading)); }
+@supports (grid-template-rows: subgrid) {
+  .case-glance > div { display: grid; grid-row: span 2; grid-template-rows: subgrid; justify-items: center; row-gap: 10px; }
+  .case-glance dt { align-self: end; }
+  .case-glance dd { align-self: center; }
+}
 .case-cover { display: block; width: 100%; height: clamp(240px, 32vw, 460px); object-fit: cover; border-radius: var(--radius-card); }
 .case-body-section { padding-top: clamp(56px, 7vw, 112px); padding-bottom: clamp(56px, 7vw, 112px); }
 .case-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; align-items: start; }
@@ -2814,6 +2846,16 @@ section.snap-section .contact-title[data-row-part="title"] {
 /* The menu once the page has scrolled under it: nearly solid, so the
    links stay easy to read over any row. */
 .lg-light[data-solid="true"] { background: var(--lg-light-bg-solid); }
+/* The menu bar is more see-through than other glass (a strong blur keeps
+   its links readable) and the services dropdown nearly solid, so its
+   links never mix with the row behind (owner, 25 Nov 2026). */
+.nav-bar.lg-light {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.5), rgb(255 255 255 / 0.3));
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  backdrop-filter: blur(32px) saturate(180%);
+}
+.nav-bar.lg-light[data-solid="true"] { background: linear-gradient(180deg, rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.52)); }
+[data-nav-dropdown].lg-light { background: linear-gradient(180deg, rgb(255 255 255 / 0.98), rgb(255 255 255 / 0.94)); }
 .btn-ghost-ink:hover,
 .work-pill:hover,
 .tmc-replay:hover,
@@ -2835,12 +2877,21 @@ section.snap-section .contact-title[data-row-part="title"] {
   backdrop-filter: none;
 }
 .btn-ink:hover { box-shadow: var(--lg-dark-shadow); }
+/* A dark Work card is dark glass. The light glass above paints every
+   `.work-card`, which once left a dark card's light text on a light
+   ground, unreadable (owner, 25 Nov 2026). */
+.work-card.mc-card-dark {
+  background: var(--lg-dark-sheen), hsl(var(--deep));
+  border: 1px solid rgb(255 255 255 / 0.28);
+  box-shadow: var(--lg-dark-shadow);
+}
 /* The menu's Contact pill behaves like every other action pill: deep plum
    that lifts to the heading plum on hover (owner, 11 Nov 2026). It used
    an inline background, which no hover rule could reach. */
 .nav-cta {
   background-color: hsl(var(--nav-cta-bg, var(--deep)));
-  color: hsl(var(--nav-cta-text, var(--deep-fg)));
+  /* Pure white text, like every dark pill (owner, 25 Nov 2026). */
+  color: #fff;
   transition: background-color 160ms ease-out, transform 160ms ease-out;
 }
 .nav-cta:hover,
@@ -2856,6 +2907,17 @@ section.snap-section .contact-title[data-row-part="title"] {
   background-image: linear-gradient(180deg, rgb(255 255 255 / 0.24), rgb(255 255 255 / 0) 60%);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 6px 14px -8px rgb(42 14 51 / 0.35);
 }
+/* The Playbook chip is raised liquid glass like the others, a white
+   bead with a bright rim, not a flat outlined pill (owner, 25 Nov 2026). */
+.work-chip[data-type="playbook"] {
+  background-color: rgb(255 255 255 / 0.5);
+  background-image: var(--lg-light-bg), linear-gradient(180deg, rgb(255 255 255 / 0.5), rgb(255 255 255 / 0) 60%);
+  border-color: var(--lg-rim);
+  color: hsl(var(--heading));
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  box-shadow: var(--lg-light-shadow), inset 0 0 0 1px rgb(42 14 51 / 0.08);
+}
 
 /* A handwritten note that must wrap splits evenly instead of leaving
    one word alone on the second line. */
@@ -2870,7 +2932,8 @@ section.snap-section .contact-title[data-row-part="title"] {
 
 /* 3D dots (owner, 10 Nov 2026): a small glass bead. The dot keeps its
    own background-color; a highlight and a soft inner shade sit on top. */
-.dot-3d {
+.dot-3d,
+.work-dot {
   background-image: radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.75), rgb(255 255 255 / 0) 52%);
   box-shadow: inset 0 -1.5px 2px rgb(0 0 0 / 0.35), 0 1px 2px rgb(42 14 51 / 0.3);
 }

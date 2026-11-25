@@ -5,7 +5,8 @@ import ActionMenu from "./ui/ActionMenu";
 import { MENU_DIVIDER } from "./ui/menu";
 import { toast } from "sonner";
 import RowsManager from "./site-editor/RowsManager";
-import { SectionBox, Field } from "./site-editor/FieldComponents";
+import { SectionBox, Field, TextArea } from "./site-editor/FieldComponents";
+import { WORK_PAGE_DEFAULTS, WORK_PAGE_KEY, readWorkPage, type WorkPageContent } from "@/features/site/work/workPageContent";
 import SeoFields from "./site-editor/SeoFields";
 import type { PageRow } from "@/types/rows";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
@@ -98,6 +99,9 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   /* Home lives in site_content; "unpublished changes" = its draft differs from live. */
   const [homeChanges, setHomeChanges] = useState(false);
   const [editingBlog, setEditingBlog] = useState(false);
+  // The /work index: its header, plain answer, search fields and extra rows.
+  const [editingWork, setEditingWork] = useState(false);
+  const [workContent, setWorkContent] = useState<WorkPageContent>(WORK_PAGE_DEFAULTS);
   // Which error-page editor is open (null = none).
   const [editingError, setEditingError] = useState<"404" | "boundary" | null>(null);
   const [error404, setError404] = useState<Error404Content>(ERROR_404_DEFAULTS);
@@ -144,11 +148,26 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   }, [pageNum]);
 
   useEffect(() => { load(); }, [load]);
-  useEffect(() => { loadBlogPage(); loadErrorPages(); loadHome(); }, []);
+  useEffect(() => { loadBlogPage(); loadWorkPage(); loadErrorPages(); loadHome(); }, []);
 
   const loadHome = async () => {
     const { data } = await supabase.from("site_content").select("content, draft_content").eq("section_key", "page_rows").maybeSingle();
     if (data) setHomeChanges(data.draft_content != null && JSON.stringify(data.draft_content) !== JSON.stringify(data.content));
+  };
+
+  const loadWorkPage = async () => {
+    const { data } = await fetchSection(WORK_PAGE_KEY);
+    if (data?.content) setWorkContent(readWorkPage(data.content));
+  };
+
+  const saveWorkPage = (updates: Partial<WorkPageContent>) => {
+    const next = { ...workContent, ...updates };
+    setWorkContent(next);
+    return runDbAction({
+      action: () => publishSection(WORK_PAGE_KEY, next),
+      successMessage: "Saved",
+      errorMessage: "Save failed",
+    });
   };
 
   const loadBlogPage = async () => {
@@ -394,6 +413,56 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   }
 
 
+  if (editingWork) {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setEditingWork(false)}
+          className="font-body text-xs uppercase tracking-wider hover:opacity-70"
+          style={{ color: "hsl(var(--primary))" }}>
+          ← Back to Pages
+        </button>
+        <h2 className="font-display text-lg font-bold" style={{ color: "hsl(var(--foreground))" }}>
+          Work
+          <span className="font-body text-xs font-normal ml-2" style={{ color: "hsl(var(--muted-foreground))" }}>/work</span>
+        </h2>
+        <p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+          The cards come from the pieces under Work in the menu on the left. Here you edit the page around them.
+        </p>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Small label above the title" value={workContent.header_label} onChange={(v) => saveWorkPage({ header_label: v })} />
+          <Field label="Header Title" value={workContent.header_title} onChange={(v) => saveWorkPage({ header_title: v })} />
+        </div>
+        <TextArea label="Header Subtitle" value={workContent.header_subtitle} onChange={(v) => saveWorkPage({ header_subtitle: v })} />
+        <TextArea
+          label="Plain answer (shown in the footer under In plain words)"
+          value={workContent.answer}
+          onChange={(v) => saveWorkPage({ answer: v })}
+        />
+
+        <SeoFields
+          metaTitle={workContent.meta_title}
+          metaDescription={workContent.meta_description}
+          onTitleChange={(v) => saveWorkPage({ meta_title: v })}
+          onDescriptionChange={(v) => saveWorkPage({ meta_description: v })}
+        />
+
+        <SectionBox label="Rows above the work cards">
+          <RowsManager rows={workContent.rows_above} onChange={(rows) => saveWorkPage({ rows_above: rows })} />
+        </SectionBox>
+
+        <div className="p-4 rounded-lg border-2 border-dashed text-center" style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
+          <span className="font-body text-xs uppercase tracking-wider">⬇ Work cards and filters (from the published pieces) ⬇</span>
+        </div>
+
+        <SectionBox label="Rows below the work cards">
+          <RowsManager rows={workContent.rows_below} onChange={(rows) => saveWorkPage({ rows_below: rows })} />
+        </SectionBox>
+      </div>
+    );
+  }
+
   if (editingBlog) {
     return (
       <div className="space-y-4">
@@ -504,6 +573,24 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
                 items={[
                   { key: "edit", label: "Edit", onSelect: () => onEditPage?.(null) },
                   { key: "view", label: "View live", onSelect: () => window.open("/", "_blank") },
+                ]}
+              />
+            </td>
+          </tr>
+          {/* The Work index is built from the work items; its own words are edited here. */}
+          <tr>
+            <td className="n">Work<span className="admin-tag">portfolio</span></td>
+            <td className="m addr"><code>/work</code></td>
+            <td className="r">{workContent.rows_above.length + workContent.rows_below.length || "—"}</td>
+            <td><span className="admin-st live">Live</span></td>
+            <td className="m">—</td>
+            <td className="act">
+              <button type="button" className="admin-link" onClick={() => setEditingWork(true)}>Edit</button>
+              <ActionMenu
+                label="Actions for Work"
+                items={[
+                  { key: "edit", label: "Edit", onSelect: () => setEditingWork(true) },
+                  { key: "view", label: "View live", onSelect: () => window.open("/work/", "_blank", "noopener,noreferrer") },
                 ]}
               />
             </td>

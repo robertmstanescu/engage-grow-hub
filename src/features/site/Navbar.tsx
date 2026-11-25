@@ -262,7 +262,7 @@ const Navbar = () => {
       <nav
         ref={railRef}
         data-solid={scrolled ? "true" : undefined}
-        className="lg-light hidden lg:grid fixed left-1/2 -translate-x-1/2 z-50 w-[calc(100vw-2*clamp(16px,5vw,96px))] max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 pl-7 pr-3 transition-all duration-300"
+        className="nav-bar lg-light hidden lg:grid fixed left-1/2 -translate-x-1/2 z-50 w-[calc(100vw-2*clamp(16px,5vw,96px))] max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 pl-7 pr-3 transition-all duration-300"
         style={{
           top: scrolled ? "10px" : "16px",
           paddingTop: scrolled ? "8px" : "12px",
@@ -417,7 +417,7 @@ const Navbar = () => {
       {/* Mobile/tablet — compact floating island, content passes under */}
       <nav
         data-solid="true"
-        className="lg-light lg:hidden fixed top-2 left-2 right-2 z-50 h-14 flex items-center justify-between px-4"
+        className="nav-bar lg-light lg:hidden fixed top-2 left-2 right-2 z-50 h-14 flex items-center justify-between px-4"
         style={{
           borderRadius: "calc(var(--radius) * 1.4)",
         }}
