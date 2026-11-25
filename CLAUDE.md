@@ -164,8 +164,10 @@ Rules that are easy to get wrong:
   beside the Connect column. Visible text, never hidden; it doubles as
   the search description and Service schema description when those are
   empty. Blog pages pass nothing (owner's choice). A hero can also print
-  it as an "In short" strip under the headline (`content.answer_strip`,
-  on by default on service pages after the restyle).
+  it as an "In short" strip under the headline (`content.answer_strip`).
+  The owner switched it off on the six service pages and Prices on
+  25 Nov 2026 (shorter site), because the footer already prints the
+  answer; leave it off unless he asks.
 - The public bundle must stay free of admin code: widget editors are
   `lazy()`, dnd-kit lives only in `*Live.tsx` / `CellDropTargets.tsx`
   loaded inside a builder, icons load per name through
