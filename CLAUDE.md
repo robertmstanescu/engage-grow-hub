@@ -115,7 +115,12 @@ Rules that are easy to get wrong:
   call-to-action band (`cta_band` with `band_style: "room"`, its words
   read from the site's `contact` content) and three more posts
   (`from_the_blog`, which leaves out the post being read). They are
-  ordinary rows; a post with saved rows shows exactly what was saved.
+  ordinary rows; a post with saved rows shows exactly what was saved,
+  plus one thing: a post in a service category gets the next step
+  (`withNextStep`, a boxed row before its call-to-action band) holding
+  that service page's bold "Try this" paragraph, read live from the
+  page (`useServiceTryThis`), and an "Explore <service>" link. General
+  posts get none. Never copy the paragraph into a post.
   Dates on cards and posts go through `lib/shortDate.ts`.
 - Recent posts are a row, not a page fixture: the `from_the_blog` row
   type (`src/features/widgets/from_the_blog/`) is placed on a page like

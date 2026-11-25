@@ -3,7 +3,7 @@ import { render } from "@testing-library/react";
 import "@/widgets";
 import { ArticleContext } from "../articleContext";
 import ArticleRow from "../ArticleRow";
-import { ensureArticleRow, postRowsFor, hasArticleRow, makeArticleRow } from "../postRows";
+import { ensureArticleRow, postRowsFor, hasArticleRow, makeArticleRow, tryThisFromRows, withNextStep, NEXT_STEP_ROW_ID } from "../postRows";
 import type { PageRow } from "@/types/rows";
 
 const row = (type: string, id = type): PageRow => ({ id, type, content: {} } as PageRow);
@@ -54,5 +54,37 @@ describe("article block", () => {
     expect(ensureArticleRow([seededV3], 0, html).map((r) => r.type)).toEqual(["article"]);
     const other = { id: "t", type: "text", content: { body: "<p>Different words.</p>" } } as unknown as PageRow;
     expect(ensureArticleRow([other], 0, html).map((r) => r.type)).toEqual(["article", "text"]);
+  });
+
+  describe("next step under a service post (25 Nov 2026)", () => {
+    const tip = "<p><strong>Try this before your next pay review:</strong> pick one role.</p>";
+    const servicePage = [
+      { id: "r", schema_version: 3, columns: [{ id: "c", cells: [{ id: "ce", widgets: [{ id: "w", type: "image_text", data: { description: "<p>Lead.</p>" + tip + "<p>After.</p>" } }] }] }] },
+    ];
+
+    it("reads the Try this paragraph from the service page", () => {
+      expect(tryThisFromRows(servicePage)).toBe(tip);
+      expect(tryThisFromRows([])).toBe("");
+      expect(tryThisFromRows(null)).toBe("");
+    });
+
+    it("puts the paragraph and the service link between the article and the band", () => {
+      const fresh = postRowsFor(null, "<p>Hi</p>", {}, "Pay Transparency", tip);
+      expect(fresh.map((r) => r.type)).toEqual(["article", "boxed", "cta_band", "from_the_blog"]);
+      const card = fresh[1].content.cards[0];
+      expect(card.body).toBe(tip);
+      expect(card.cta_label).toBe("Explore Pay Transparency");
+      expect(card.cta_url).toBe("/services/pay-transparency/");
+    });
+
+    it("adds the same row to saved rows, before their band, and leaves General posts alone", () => {
+      const saved = [makeArticleRow("a"), row("text"), row("cta_band")];
+      expect(postRowsFor(saved, "", {}, "Pay Transparency", tip).map((r) => r.type)).toEqual(["article", "text", "boxed", "cta_band"]);
+      expect(withNextStep([makeArticleRow("a"), row("text")], "Pay Transparency", tip).map((r) => r.type)).toEqual(["article", "boxed", "text"]);
+      expect(postRowsFor(saved, "", {}, "General", tip)).toEqual(saved);
+      const twice = withNextStep(withNextStep(saved, "Pay Transparency", ""), "Pay Transparency", tip);
+      expect(twice.filter((r) => r.id === NEXT_STEP_ROW_ID)).toHaveLength(1);
+      expect(twice.find((r) => r.id === NEXT_STEP_ROW_ID)?.content.cards[0].body).toBe(tip);
+    });
   });
 });

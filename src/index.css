@@ -2151,6 +2151,14 @@
    the number of parts; each part is one direct child. Browsers without
    subgrid keep the plain column. */
 .align-empty { display: none; }
+/* Work teaser with one or two cards: same width as in a row of three,
+   centred (owner, 25 Nov 2026). gap-5 = 1.25rem, two gaps in a row of three. */
+@media (min-width: 768px) {
+  .align-cards.work-teaser-few {
+    grid-template-columns: repeat(var(--cards), calc((100% - 2.5rem) / 3));
+    justify-content: center;
+  }
+}
 @supports (grid-template-rows: subgrid) {
   .align-cards > .align-card {
     display: grid;

@@ -177,6 +177,12 @@ every PR, then runs the visual suite.
   (`splitTierTitle` in `site/tierText.ts`, used by `TierCard`). The h3
   still reads as the full name to screen readers. Short names elsewhere
   (FAQs, price notes) are written without the descriptor.
+- Prices are written with "+ VAT" everywhere a price shows. A hero badge
+  written "Name · From €900 + VAT" puts the price on its own line in the
+  heading face (`splitBadgePrice` in `site/heroBadgeText.ts`, used by
+  `HeroSection`). It splits at the last " · " only when the tail starts
+  with "From", so other badges stay whole. Tier cards split their own
+  price line with `splitPriceLine`.
 
 ## Redirect access
 
@@ -214,7 +220,13 @@ as a centred reading column, reading it from `ArticleContext`, which
 rows renders `[article]`; the builder seeds `[article]` and puts the
 block back if a change removes it. The tray offers the Article block
 only inside a post (`BlockVariant.postsOnly`). Rows are extras placed
-above or below the article.
+above or below the article. A post in a service category also gets the
+next step at render time (`withNextStep`): a boxed row before the
+call-to-action band with that service page's bold "Try this" paragraph,
+read from the page by `useServiceTryThis` (`tryThisFromRows` finds it in
+the page's image-and-text block), and an "Explore <service>" link.
+Until the paragraph loads, or if it is missing, the row is the plain
+related-service card. The builder does not show it on saved rows.
 
 ## Analytics
 

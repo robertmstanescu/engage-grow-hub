@@ -1,4 +1,5 @@
 import { PILLAR_COLORS } from "@/lib/constants/pillarColors";
+import { splitBadgePrice } from "./heroBadgeText";
 import { useEffect, useRef } from "react";
 import { safeHref } from "@/services/safeHref";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -770,9 +771,24 @@ export const HeroView = ({
                 {c.visual_badge_title && (
                   <p className="font-display font-bold" style={{ fontSize: 20, lineHeight: 1.3, color: "hsl(var(--heading))" }}>{c.visual_badge_title}</p>
                 )}
-                {c.visual_badge_text && (
-                  <p className="font-body leading-[1.5]" style={{ fontSize: 14, color: "hsl(var(--body))" }}>{c.visual_badge_text}</p>
-                )}
+                {c.visual_badge_text && (() => {
+                  /* "Name · From €900 + VAT": the price takes its own
+                     line in the heading face, a third larger than the
+                     14px text (owner, 25 Nov 2026). The separator stays
+                     in the text for screen readers and search. */
+                  const badge = splitBadgePrice(c.visual_badge_text);
+                  return (
+                    <p className="font-body leading-[1.5]" style={{ fontSize: 14, color: "hsl(var(--body))" }}>
+                      {badge.lead}
+                      {badge.price ? (
+                        <>
+                          <span className="sr-only"> · </span>
+                          <span className="hero-badge-price block font-display font-bold" style={{ fontSize: 19, lineHeight: 1.3, color: "hsl(var(--heading))", marginTop: 2 }}>{badge.price}</span>
+                        </>
+                      ) : null}
+                    </p>
+                  );
+                })()}
               </div>
             )}
           </div>

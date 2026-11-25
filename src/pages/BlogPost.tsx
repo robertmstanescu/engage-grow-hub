@@ -21,6 +21,7 @@ import { readLivePreviewState, subscribeLivePreview } from "@/services/livePrevi
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import { ArticleContext } from "@/features/widgets/article/articleContext";
 import { articleRowIndex, postRowsFor, type ClosingWords } from "@/features/widgets/article/postRows";
+import { useServiceTryThis } from "@/features/widgets/article/useServiceTryThis";
 import type { PageRow } from "@/types/rows";
 import { shortDate } from "@/lib/shortDate";
 
@@ -54,6 +55,9 @@ const BlogPost = () => {
   /* The closing words of the call-to-action band are the site's own
      contact words, so they are written in one place. */
   const closingWords = useSiteContent<ClosingWords>("contact", {});
+  /* The next step under a service post is that service page's own
+     "Try this" paragraph, read from the page (written in one place). */
+  const tryThis = useServiceTryThis(article?.category);
   const { getCategoryColors } = useTagColors();
   // BlogPost has its own bespoke "not found" branch below — it does NOT
   // render <NotFound/>, so it needs its own redirect check (NotFound.tsx's
@@ -167,7 +171,7 @@ const BlogPost = () => {
   /* Rows: what the owner saved, or the article with its default extras
      (call-to-action band and three more posts). The download block, when
      a post has one, sits straight after the article. */
-  const rows = postRowsFor(((isPreview && article.draft_page_rows) || article.page_rows) as PageRow[] | null, article.content, closingWords, article.category);
+  const rows = postRowsFor(((isPreview && article.draft_page_rows) || article.page_rows) as PageRow[] | null, article.content, closingWords, article.category, tryThis);
   const articleAt = articleRowIndex(rows);
   const cut = articleAt >= 0 ? articleAt + 1 : rows.length;
   const authorHref = authorLinkedin ? safeHref(authorLinkedin) : "";

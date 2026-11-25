@@ -99,7 +99,9 @@ const TierCard = memo(({
             </h3>
           ) : null}
           {subtitle ? (
-            <p className="font-body font-semibold" style={{ color: "hsl(var(--body))", fontSize: 14, lineHeight: 1.5 }}>{subtitle}</p>
+            /* The reward line (owner, 25 Nov 2026) sits in regular weight
+               so it reads apart from the semibold descriptor above it. */
+            <p className="tier-reward font-body font-normal" style={{ color: "hsl(var(--body))", fontSize: 14, lineHeight: 1.5 }}>{subtitle}</p>
           ) : null}
         </div>
       ) : <div aria-hidden className="align-empty" />}
