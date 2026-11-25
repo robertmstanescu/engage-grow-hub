@@ -38,6 +38,7 @@ import {
 } from "./lib/workSeo.mjs";
 import { htmlToBlocks, linkListHtml, readableMain, rowsHeading, rowsToHtml } from "./lib/readableHtml.mjs";
 import { buildPageTitle } from "./lib/seoTitle.mjs";
+import { buildLlmsTxt } from "./lib/llmsTxt.mjs";
 /** The public booking page (ContactRow DEFAULT_BOOKING_URL). */
 const BOOKING_URL = "https://calendar.app.google/rCZX6w2RUWKpsKfRA";
 import { buildEntityGraph, founderId, orgId, FOUNDER_NAME, COMPANY_DEFINITION } from "./lib/entityGraph.mjs";
@@ -641,29 +642,43 @@ async function main() {
   if (existsSync(DIST)) writeFileSync(resolve(DIST, "sitemap.xml"), sitemapXml);
 
   // ── 2. llms.txt ────────────────────────────────────────────────────
-  const lines = [`# ${brandName}`, ""];
-  if (tagline) lines.push(`> ${tagline}`, "");
-  if (homeSeo.meta_description) lines.push(homeSeo.meta_description, "");
-  lines.push("## Pages", "");
-  lines.push(`- [Home](${abs("/")}): ${homeSeo.meta_description || tagline}`);
-  for (const page of cmsPages) {
-    if (!page.slug) continue;
-    lines.push(
-      `- [${page.title}](${abs(cmsPagePath(page.slug))}): ${plain(page.meta_description) || page.title}`,
-    );
-  }
-  lines.push("", "## Articles", "");
-  for (const post of blogPosts.slice(0, 100)) {
-    if (!post.slug) continue;
-    lines.push(
-      `- [${post.title}](${abs(`/blog/${trailing(post.slug)}`)}): ${plain(post.excerpt || post.meta_description || post.content, 160)}`,
-    );
-  }
-  if (workItems.length) {
-    // Work pieces, with their plain-facts summary, so AI answers can cite them.
-    lines.push("", "## Work", "", ...workLlmsLines(workItems, abs));
-  }
-  const llmsTxt = `${lines.join("\n")}\n`;
+  // US09: the company definition first, then the founder, the place and
+  // the booking link, then every page with its plain summary.
+  const heroAnswerOf = (rows) => plain(flattenWidgets(rows).find((w) => w.type === "hero")?.data?.answer, 400);
+  const llmsTxt = buildLlmsTxt({
+    brandName,
+    founderName,
+    bookingUrl: BOOKING_URL,
+    sections: [
+      {
+        title: "Pages",
+        entries: [
+          { title: "Home", url: abs("/"), summary: heroAnswerOf(homeRows) || homeSeo.meta_description || tagline },
+          ...cmsPages
+            .filter((page) => page.slug)
+            .map((page) => ({
+              title: page.title,
+              url: abs(cmsPagePath(page.slug)),
+              summary: heroAnswerOf(page.page_rows) || plain(page.meta_description, 400) || page.title,
+            })),
+          ...(workItems.length
+            ? [{ title: "Work", url: abs("/work/"), summary: plain(workPage.answer, 400) || workIndexDescription(workItems, brandName) }]
+            : []),
+          { title: blogSeo.header_title || "Blog", url: abs("/blog/"), summary: plain(blogSeo.meta_description || blogSeo.header_subtitle, 400) },
+        ],
+      },
+      // Work pieces, with their plain-facts summary, so AI answers can cite them.
+      { title: "Work", lines: workLlmsLines(workItems, abs) },
+      {
+        title: "Articles",
+        entries: blogPosts.slice(0, 100).filter((post) => post.slug).map((post) => ({
+          title: post.title,
+          url: abs(`/blog/${trailing(post.slug)}`),
+          summary: plain(post.excerpt || post.meta_description || post.content, 240),
+        })),
+      },
+    ],
+  });
   writeFileSync(resolve("public", "llms.txt"), llmsTxt);
   if (existsSync(DIST)) writeFileSync(resolve(DIST, "llms.txt"), llmsTxt);
 
