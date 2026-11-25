@@ -42,6 +42,18 @@ describe("buildEntityGraph", () => {
     expect(org.contactPoint.url).toBe("https://calendar.app.google/x");
   });
 
+  it("repeats the Facts page: long name, start date, languages, audience, email", () => {
+    const org = node("Organization");
+    expect(org.alternateName).toBe("The Magic Coffin for Silly Vampires");
+    expect(org.foundingDate).toBe("2026-02");
+    expect(org.knowsLanguage).toEqual(["en", "ro"]);
+    expect(org.audience.audienceType).toContain("10 to 2,000 people");
+    expect(org.email).toBe("hello@themagiccoffin.com");
+    expect(org.subjectOf.url).toBe(`${origin}/p/facts/`);
+    expect(org).not.toHaveProperty("telephone");
+    expect(org).not.toHaveProperty("priceRange");
+  });
+
   it("names the founder once, with no alternate name", () => {
     const p = node("Person");
     expect(p.name).toBe("Robert Stănescu");
