@@ -2455,7 +2455,8 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
   text-decoration: none;
 }
 .work-card > :not(.work-card-cover) { padding-inline: 26px; }
-.work-card-cover { display: block; width: 100%; height: 220px; object-fit: cover; }
+/* Pictures are widescreen 16:9 ("HD"), owner 25 Nov 2026. */
+.work-card-cover { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
 /* The quote or number fills the picture's place, centred in it. */
 .work-card-visual { display: flex; flex-direction: column; justify-content: center; padding-top: 26px; }
 .work-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-top: 14px; }
@@ -2501,13 +2502,81 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
      categories lower than its neighbours'; the row height does the work. */
   .align-cards .work-card-visual.align-empty + .work-card-meta { padding-top: 14px; }
   /* The picture slot is as tall as the tallest in the line; the cover fills it. */
-  .align-cards .work-card-cover { height: 100%; min-height: 220px; }
+  .align-cards .work-card-cover { height: auto; aspect-ratio: 16 / 9; align-self: start; }
   /* The foot line rides the bottom of its row. */
   .align-cards .work-card-foot { align-self: end; }
 }
 /* Dark style: light text on the deep plum card. */
 .work-card.mc-card-dark :is(.work-card-title, .work-card-quote, .work-card-number, .work-card-metric) { color: hsl(var(--deep-fg)); }
 .work-card.mc-card-dark :is(.work-card-summary, .work-card-note, .work-card-pillar) { color: hsl(var(--deep-fg) / 0.8); }
+
+/* Featured band: the top three under the /work header, one wide glass
+   card at a time that moves on by itself (owner, 25 Nov 2026). Slides
+   stack in one grid cell and cross-fade; the active dot fills over the
+   slide's time so visitors see when it will move. */
+.work-featured-section { padding-bottom: clamp(32px, 4vw, 56px); }
+.work-featured-label { margin-bottom: 14px; }
+.work-featured { position: relative; overflow: hidden; border-radius: 28px; }
+.work-featured-track { display: grid; }
+.work-featured-slide {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(16px);
+  transition: opacity 600ms ease, transform 700ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 700ms;
+}
+.work-featured-slide[data-active="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 600ms ease, transform 700ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
+}
+.work-featured-cover { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.work-featured-cover-empty { background: hsl(var(--deep) / 0.08); }
+.work-featured-text { display: flex; flex-direction: column; gap: 12px; padding: 26px; }
+.work-featured-text .work-card-meta { padding-top: 0; }
+.work-featured-title { font-family: var(--font-title); font-size: var(--fs-h3); font-weight: 700; line-height: 1.15; color: hsl(var(--heading)); margin: 0; }
+.work-featured-summary { font-size: var(--fs-card-body); line-height: 1.6; color: hsl(var(--body)); margin: 0; }
+.work-featured-result { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin: 0; font-size: var(--fs-card-body); color: hsl(var(--body)); }
+.work-featured-metric { font-family: var(--font-title); font-size: var(--fs-h3); font-weight: 700; color: hsl(var(--heading)); }
+.work-featured-link { align-self: flex-start; margin-top: 6px; }
+/* Controls sit centred under the card, so the card stays as short as its picture. */
+.work-featured-controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px; }
+.work-featured-dots { display: flex; gap: 8px; }
+.work-featured-dot {
+  position: relative; width: 44px; height: 24px; padding: 0; background: none; border: 0; cursor: pointer;
+}
+.work-featured-dot::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 4px; margin-top: -2px;
+  border-radius: 999px; background: hsl(var(--heading) / 0.18);
+}
+.work-featured-dot-fill {
+  position: absolute; left: 0; top: 50%; height: 4px; margin-top: -2px; width: 0;
+  border-radius: 999px; background: hsl(var(--heading));
+}
+.work-featured-dot[aria-current="true"] .work-featured-dot-fill { width: 100%; }
+.work-featured-dot[data-running="true"] .work-featured-dot-fill { animation: work-featured-fill var(--featured-ms, 6500ms) linear both; }
+@keyframes work-featured-fill { from { width: 0; } to { width: 100%; } }
+.work-featured-dot:focus-visible, .work-featured-pause:focus-visible { outline: 2px solid hsl(var(--heading)); outline-offset: 3px; }
+.work-featured-pause {
+  width: 40px; height: 40px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; color: hsl(var(--heading)); cursor: pointer;
+  background: var(--lg-light-bg); -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur);
+  border: 1px solid var(--lg-rim); box-shadow: var(--lg-light-shadow);
+}
+@media (min-width: 900px) {
+  .work-featured-slide { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: stretch; }
+  /* The picture fills its side; its 16:9 box sets the card's height. */
+  .work-featured-cover { height: 100%; }
+  .work-featured-text { justify-content: center; padding: clamp(24px, 2.6vw, 40px); }
+  .work-featured-summary { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .work-featured-slide, .work-featured-slide[data-active="true"] { transform: none; transition: none; }
+  .work-featured-dot[data-running="true"] .work-featured-dot-fill { animation: none; width: 100%; }
+}
 .work-card.mc-card-dark .work-dot { box-shadow: 0 0 0 1.5px hsl(var(--deep-fg) / 0.7); }
 .work-card.mc-card-dark .work-card-foot { border-top-color: hsl(var(--deep-fg) / 0.2); }
 

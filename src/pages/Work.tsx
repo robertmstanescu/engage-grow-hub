@@ -18,6 +18,7 @@ import { fetchApprovedProofPoints } from "@/services/proofPoints";
 import WorkCard, { type WorkCardItem } from "@/features/site/WorkCard";
 import { WORK_CARD_SLOTS } from "@/features/site/work/workCardSlots";
 import WorkTypeChip from "@/features/site/work/WorkTypeChip";
+import WorkFeatured from "@/features/site/work/WorkFeatured";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import { WORK_PAGE_DEFAULTS, WORK_PAGE_KEY, readWorkPage } from "@/features/site/work/workPageContent";
@@ -65,6 +66,11 @@ const Work = () => {
   // Only known pillars and types become pills; anything else still shows under "All".
   const pillarsPresent = useMemo(() => PILLAR_ORDER.filter((p) => items.some((i) => i.pillar === p)), [items]);
   const typesPresent = useMemo(() => TYPE_ORDER.filter((t) => items.some((i) => i.type === t)), [items]);
+  // The top three, in the owner's order; a slug that is not published is skipped.
+  const featured = useMemo(
+    () => page.featured_slugs.map((s) => items.find((i) => i.slug === s)).filter((i): i is CardRecord => Boolean(i)),
+    [items, page.featured_slugs],
+  );
   const visible = useMemo(
     () => items.filter((i) => (!pillar || i.pillar === pillar) && (!type || i.type === type)),
     [items, pillar, type],
@@ -90,6 +96,10 @@ const Work = () => {
             </ul>
           </div>
         </header>
+
+        {featured.length > 0 && (
+          <WorkFeatured items={featured as WorkCardItem[]} label={page.featured_label} approved={approved} />
+        )}
 
         {page.rows_above.length > 0 && <RowsRenderer rows={page.rows_above} promoteHeading={false} />}
 
