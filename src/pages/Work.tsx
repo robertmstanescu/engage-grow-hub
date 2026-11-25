@@ -43,7 +43,8 @@ const Work = () => {
   const page = readWorkPage(useSiteContent(WORK_PAGE_KEY, WORK_PAGE_DEFAULTS));
 
   usePageMeta({
-    title: page.meta_title || "Work",
+    // Same fallback as the server copy (search plan US08); the brand is added once.
+    title: page.meta_title || "Work: case studies and playbooks",
     description: page.meta_description || page.answer || page.header_subtitle || undefined,
     canonicalPath: "/work/",
   });

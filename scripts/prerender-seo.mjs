@@ -37,6 +37,10 @@ import {
   workLlmsLines,
   workReadable,
 } from "./lib/workSeo.mjs";
+import { buildPageTitle } from "./lib/seoTitle.mjs";
+
+/** /work/ when its search title is empty (US08); the brand is added once. */
+const WORK_FALLBACK_TITLE = "Work: case studies and playbooks";
 
 /* ── Config ─────────────────────────────────────────────────────────── */
 
@@ -295,16 +299,13 @@ async function main() {
   }
   const brandName = identity.brandName || "";
   const tagline = identity.tagline || "";
-  const defaultSuffix = tagline && brandName ? `${brandName} — ${tagline}` : brandName;
   const defaultImage = `${origin}${DEFAULT_OG_IMAGE_PATH}`;
 
   const abs = (path) => `${origin}${path}`;
   const absImage = (v) =>
     !v ? defaultImage : /^https?:\/\//i.test(v) ? v : `${origin}${v.startsWith("/") ? "" : "/"}${v}`;
-  const titleFor = (metaTitle, pageTitle) =>
-    (metaTitle || "").trim() ||
-    [pageTitle, defaultSuffix || brandName].filter(Boolean).join(" | ") ||
-    brandName;
+  // Same builder as the browser head (usePageMeta), so the two agree.
+  const titleFor = (metaTitle, pageTitle) => buildPageTitle({ searchTitle: metaTitle, pageTitle, brand: brandName });
 
   /* ── Sitewide entities ───────────────────────────────────────────── */
 
@@ -541,7 +542,7 @@ async function main() {
     routes.push({
       path: "/work/",
       meta: {
-        title: titleFor(workPage.meta_title, `Work — ${brandName}`),
+        title: titleFor(workPage.meta_title, WORK_FALLBACK_TITLE),
         description: plain(workPage.meta_description, 300) || plain(workPage.answer, 300) || workIndexDescription(workItems, brandName),
         url: abs("/work/"),
         image: defaultImage,

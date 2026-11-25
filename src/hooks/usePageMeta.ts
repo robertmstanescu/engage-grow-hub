@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { fetchPublicSiteContentValue } from "@/services/publicSiteContent";
 import { fetchBrandIdentity } from "@/hooks/useBrandSettings";
+import { buildPageTitle } from "../../scripts/lib/seoTitle.mjs";
 
 /**
  * Resolve the canonical origin for outbound links / meta tags. We
@@ -19,38 +20,9 @@ const resolveCanonicalOrigin = (configured: string | undefined): string => {
 const ensureTrailingSlash = (path: string) =>
   path.endsWith("/") ? path : `${path}/`;
 
-/** Search engines truncate titles past ~60 characters. */
-const TITLE_MAX = 60;
-
-/** Trim to `max` chars on a word boundary, adding an ellipsis when cut. */
-const clampTitle = (value: string, max = TITLE_MAX): string => {
-  if (value.length <= max) return value;
-  const cut = value.slice(0, max - 1);
-  const space = cut.lastIndexOf(" ");
-  return `${(space > max * 0.6 ? cut.slice(0, space) : cut).trimEnd()}…`;
-};
-
-/**
- * Compose `title | suffix` while staying inside the 60-char SEO budget.
- * Falls back progressively: full suffix → bare brand name → title alone.
- */
-const buildTitle = (title: string | undefined, suffix: string, brandName: string): string => {
-  const page = (title || "").trim();
-  if (!page) return clampTitle(suffix);
-  // A search title that already ends with the brand ("Our Services |
-  // The Magic Coffin") is used as it is; appending again gave
-  // "… | The Magic Coffin | The Magic Coffin" on the live site.
-  const brand = brandName.trim();
-  if (brand && new RegExp(`\\|\\s*${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "i").test(page)) return clampTitle(page);
-  const candidates = [suffix, brand].filter(Boolean);
-  for (const tail of candidates) {
-    const combined = `${page} | ${tail}`;
-    if (combined.length <= TITLE_MAX) return combined;
-  }
-  return clampTitle(page);
-};
-
-
+/* Titles come from the ONE builder the prerender also uses (search plan
+   US04): brand once at the end, 60 characters at most, search title then
+   page title. */
 interface PageMetaProps {
   title?: string;
   description?: string;
@@ -233,15 +205,9 @@ const usePageMeta = ({ title, description, ogImage, suffix, ogType = "website", 
       const canonicalOrigin = resolveCanonicalOrigin(identity.canonicalOrigin);
       injectGlobalScripts(tags, canonicalOrigin);
 
-      // Resolve the title suffix from props → brand identity → bare brand
-      // name. We never fall back to a brand-specific string here.
-      const resolvedSuffix =
-        suffix?.trim() ||
-        (identity.tagline ? `${identity.brandName} — ${identity.tagline}` : identity.brandName) ||
-        "";
-
       const prefix = tags.social_prefix?.trim() || "";
-      const pageTitle = buildTitle(title, resolvedSuffix, identity.brandName);
+      // `suffix` replaces the brand only when a page asks for it.
+      const pageTitle = buildPageTitle({ searchTitle: title, brand: suffix?.trim() || identity.brandName });
 
       const socialTitle = prefix ? `${prefix}${pageTitle}` : pageTitle;
       document.title = pageTitle;
