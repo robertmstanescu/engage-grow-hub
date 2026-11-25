@@ -133,6 +133,10 @@ every PR, then runs the visual suite.
   locally for `darwin`, and the `visual-baseline` workflow (Actions →
   Run workflow on your branch) for `linux`; it commits the new PNGs to
   the branch. It also runs by itself on PRs that touch `tests/visual/`.
+  Its commit is pushed with the workflow token, and GitHub starts no
+  workflow for that push, so `check` does not run on it. Push the
+  next real commit on the branch (or a docs note like this one) to get
+  `check` green on the refreshed baseline.
   Never refresh a baseline to make an unexpected red job green.
 - **strictNullChecks** is on. `noImplicitAny` is not yet.
 
