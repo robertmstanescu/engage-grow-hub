@@ -6,7 +6,10 @@
  *
  * Allowed: http(s), mailto, tel, site paths ("/blog/"), page anchors
  * ("#contact") and query-only links. Anything else becomes "#".
+ * A site path comes back ending in "/" ("/blog" → "/blog/").
  */
+import { withTrailingSlash } from "../../scripts/lib/sitePath.mjs";
+
 const ALLOWED = /^(https?:\/\/|mailto:|tel:|\/(?!\/)|#|\?)/i;
 
 export const safeHref = (value: unknown, fallback = "#"): string => {
@@ -16,5 +19,6 @@ export const safeHref = (value: unknown, fallback = "#"): string => {
   // eslint-disable-next-line no-control-regex
   const cleaned = value.replace(/[\u0000-\u001F\u007F]/g, "").trim();
   if (!cleaned) return fallback;
-  return ALLOWED.test(cleaned) ? cleaned : fallback;
+  // Site paths gain their trailing slash (US10) so no click lands on a redirect.
+  return ALLOWED.test(cleaned) ? withTrailingSlash(cleaned) : fallback;
 };

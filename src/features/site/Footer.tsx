@@ -197,7 +197,7 @@ const Footer = ({ breadcrumbTrail, pageAnswer }: { breadcrumbTrail?: BreadcrumbE
               </>
             ) : null}
             <a
-              href="/privacy-policy"
+              href="/p/privacy-policy/"
               className="transition-colors duration-300 hover:text-[hsl(var(--heading))]"
             >
               Privacy Policy

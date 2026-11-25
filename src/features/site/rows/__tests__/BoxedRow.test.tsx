@@ -61,7 +61,7 @@ describe("BoxedRow", () => {
 
     const { container } = render(<BoxedRow row={row} />);
 
-    const ctaAnchor = container.querySelector('a[href="/services/book"]');
+    const ctaAnchor = container.querySelector('a[href="/services/book/"]');
     expect(ctaAnchor).not.toBeNull();
     expect(ctaAnchor?.textContent).toBe("Book now");
     expect(container.querySelector("button")).toBeNull();

@@ -289,7 +289,7 @@ const WorkCase = () => {
         <section aria-labelledby="case-next" className="work-gutter case-next-section">
           <div className="work-column case-next">
             {pillar && serviceSlug && (
-              <Link to={`/services/${serviceSlug}`} className="mc-card-glass mc-card-lift case-next-card">
+              <Link to={`/services/${serviceSlug}/`} className="mc-card-glass mc-card-lift case-next-card">
                 <span className="work-filter-name">Related service</span>
                 <span className="case-next-service">{pillar}</span>
                 <span className="case-next-link">

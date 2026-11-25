@@ -12,6 +12,8 @@
  * scripts, colours, layout and ids. Everything it prints is escaped.
  */
 
+import { withTrailingSlash } from "./sitePath.mjs";
+
 /** Escape text for an HTML text node or a double-quoted attribute. */
 export const escapeHtml = (s) =>
   String(s ?? "")
@@ -37,7 +39,7 @@ export function decodeEntities(s) {
 export function safeHref(href) {
   const h = decodeEntities(String(href ?? "")).trim();
   if (!h) return "";
-  if (h.startsWith("/") && !h.startsWith("//")) return h;
+  if (h.startsWith("/") && !h.startsWith("//")) return withTrailingSlash(h);
   if (/^https:\/\/[^\s"'<>]+$/i.test(h)) return h;
   if (/^mailto:[^\s"'<>]+$/i.test(h)) return h;
   return "";
