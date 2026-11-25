@@ -102,7 +102,7 @@ const settle = async (page: Page) => {
   await page.evaluate(async () => {
     const fonts = (document as Document & { fonts: FontFaceSet }).fonts;
     await Promise.all(
-      ["400 20px 'Playwrite CU'", "700 40px 'Funnel Display'", "400 16px 'Inter'", "600 16px 'Inter'"].map((f) =>
+      ["400 20px 'Playwrite CU'", "700 40px 'Funnel Display'", "400 16px 'Inter'", "600 16px 'Inter'", "400 20px 'Literata'", "500 32px 'Literata'"].map((f) =>
         fonts.load(f).catch(() => []),
       ),
     );

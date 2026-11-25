@@ -84,6 +84,8 @@
     --font-title: "Funnel Display", sans-serif;
     --font-header: "Funnel Display", sans-serif;
     --font-body: "Inter", sans-serif;
+    /* Quotes (owner, 25 Nov 2026): Literata, a serif that reads as a person speaking. */
+    --font-quote: "Literata", Georgia, serif;
 
     /* ── Pillar/service tokens ── */
     --pillar-label: 40 68% 30%;
@@ -811,6 +813,9 @@
 
   /* Handwritten asides (redesign): notes, captions, "start here". */
   .font-hand { font-family: 'Playwrite CU', cursive; font-weight: 400; }
+  /* Every quote is Literata: quote bands, testimonials, Work pull lines and
+     any blockquote in an article or text block. Handwriting stays Playwrite. */
+  .font-quote, blockquote { font-family: var(--font-quote); }
 
   .link-arrow-mc:hover { color: hsl(var(--heading)); text-decoration: underline; text-underline-offset: 4px; }
 
@@ -1816,6 +1821,8 @@
     --font-title: "Funnel Display", sans-serif;
     --font-header: "Funnel Display", sans-serif;
     --font-body: "Inter", sans-serif;
+    /* Quotes (owner, 25 Nov 2026): Literata, a serif that reads as a person speaking. */
+    --font-quote: "Literata", Georgia, serif;
     --pillar-label: 40 68% 30%;
     --pillar-heading: 282 40% 13%;
     --pillar-heading-sub: 281 20% 32%;
@@ -2468,7 +2475,7 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
 .work-card-pillar { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-card-label); color: hsl(var(--body)); }
 .work-card-title { font-family: var(--font-title); font-size: var(--fs-card-title); font-weight: 700; line-height: 1.18; color: hsl(var(--heading)); }
 .work-card-summary { flex-grow: 1; font-size: var(--fs-card-body); line-height: 1.6; color: hsl(var(--body)); }
-.work-card-quote { font-family: var(--font-title); font-size: var(--fs-step-title); font-weight: 700; line-height: 1.25; color: hsl(var(--heading)); }
+.work-card-quote { font-family: var(--font-quote); font-size: var(--fs-step-title); font-weight: 500; line-height: 1.25; color: hsl(var(--heading)); }
 .work-card-number {
   font-family: var(--font-title);
   font-size: var(--fs-stat);
@@ -2514,27 +2521,26 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
 .work-card.mc-card-dark :is(.work-card-summary, .work-card-note, .work-card-pillar) { color: hsl(var(--deep-fg) / 0.8); }
 
 /* Featured band: the top three under the /work header, one wide glass
-   card at a time that moves on by itself (owner, 25 Nov 2026). Slides
-   stack in one grid cell and cross-fade; the active dot fills over the
-   slide's time so visitors see when it will move. */
+   card at a time that moves on by itself (owner, 25 Nov 2026). The
+   slides sit side by side on one strip that glides sideways, so the
+   next card pushes the last one out in one smooth movement (owner, 25 Nov
+   2026: the old cross-fade "swapping effect" had both cards on top of each
+   other mid-change). The active dot fills over the slide's time so
+   visitors see when it will move. */
 .work-featured-section { padding-bottom: clamp(32px, 4vw, 56px); }
 .work-featured-label { margin-bottom: 14px; }
 .work-featured { position: relative; overflow: hidden; border-radius: 28px; }
-.work-featured-track { display: grid; }
+.work-featured-track {
+  display: flex;
+  transform: translate3d(calc(var(--featured-index, 0) * -100%), 0, 0);
+  transition: transform 1100ms cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
+}
 .work-featured-slide {
-  grid-area: 1 / 1;
+  flex: 0 0 100%;
+  min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(16px);
-  transition: opacity 600ms ease, transform 700ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 700ms;
-}
-.work-featured-slide[data-active="true"] {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
-  transition: opacity 600ms ease, transform 700ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
 }
 .work-featured-cover { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
 .work-featured-cover-empty { background: hsl(var(--deep) / 0.08); }
@@ -2577,7 +2583,7 @@ section.snap-section[data-space-bottom="none"] { padding-bottom: 0; }
   .work-featured-summary { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .work-featured-slide, .work-featured-slide[data-active="true"] { transform: none; transition: none; }
+  .work-featured-track { transition: none; }
   .work-featured-dot[data-running="true"] .work-featured-dot-fill { animation: none; width: 100%; }
 }
 .work-card.mc-card-dark .work-dot { box-shadow: 0 0 0 1.5px hsl(var(--deep-fg) / 0.7); }

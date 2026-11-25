@@ -133,7 +133,17 @@ every PR, then runs the visual suite.
   locally for `darwin`, and the `visual-baseline` workflow (Actions →
   Run workflow on your branch) for `linux`; it commits the new PNGs to
   the branch. It also runs by itself on PRs that touch `tests/visual/`.
+  Its commit is pushed with the workflow token, and GitHub starts no
+  workflow for that push, so `check` does not run on it. Push the
+  next real commit on the branch (or a docs note like this one) to get
+  `check` green on the refreshed baseline.
+  Do not dispatch it while the PR-triggered run is still going: both
+  try to push, and the second one fails with a rejected push (harmless,
+  but it shows as a red `baseline` check).
   Never refresh a baseline to make an unexpected red job green.
+  `settle()` loads every face the site uses before a shot (Playwrite
+  CU, Funnel Display, Inter and Literata for quotes); a new face goes on
+  that list in the same change, or its rows get shot in the fallback.
 - **strictNullChecks** is on. `noImplicitAny` is not yet.
 
 ## Conventions and things not to touch

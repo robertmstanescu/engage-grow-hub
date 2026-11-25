@@ -3,7 +3,8 @@
  * header (owner, 25 Nov 2026: "a hero widget too with like the best top
  * 3 … that like scrolls by itself").
  *
- * One wide glass card at a time: the 16:9 picture on one side, the type
+ * One wide glass card at a time, on a strip that glides sideways to the
+ * next one: the 16:9 picture on one side, the type
  * chip, service, title, summary and result on the other. It moves on by
  * itself every few seconds and stops while a visitor points at it or
  * tabs into it, when the tab is hidden, or for good once they press
@@ -66,7 +67,10 @@ const Slide = ({ item, approved, index, total, active }: { item: WorkCardItem; a
         <img
           src={transformImageUrl(cover, { width: 1200, aspectRatio: 16 / 9, quality: 75 })}
           alt={item.cover_image_alt || ""}
-          loading={index === 0 ? "eager" : "lazy"}
+          // Every slide loads up front (low priority after the first), so a
+          // picture is ready before the strip glides it into view.
+          loading="eager"
+          {...({ fetchpriority: index === 0 ? "high" : "low" } as Record<string, unknown>)}
           decoding="async"
           onError={() => setCoverFailed(true)}
           className="work-featured-cover"
@@ -167,7 +171,11 @@ const WorkFeatured = ({ items, label, approved }: Props) => {
         {label && <p className="work-eyebrow work-featured-label">{label}</p>}
         <div className="work-featured mc-card-glass">
           {/* Polite announcements only while it is still, so it never talks over a visitor. */}
-          <div className="work-featured-track" aria-live={running ? "off" : "polite"}>
+          <div
+            className="work-featured-track"
+            aria-live={running ? "off" : "polite"}
+            style={{ ["--featured-index" as string]: current }}
+          >
             {items.map((item, i) => (
               <Slide key={item.slug} item={item} approved={approved} index={i} total={total} active={i === current} />
             ))}

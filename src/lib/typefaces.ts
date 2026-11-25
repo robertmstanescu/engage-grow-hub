@@ -9,6 +9,8 @@
  */
 export const HEADING_FACE = "Funnel Display";
 export const HAND_FACE = "Playwrite CU";
+/** Every quote (owner, 25 Nov 2026). Handwritten notes keep HAND_FACE. */
+export const QUOTE_FACE = "Literata";
 
 const RETIRED: [RegExp, string][] = [
   [/Bricolage Grotesque/g, HEADING_FACE],
