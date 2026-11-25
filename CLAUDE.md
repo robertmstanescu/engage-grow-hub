@@ -122,6 +122,11 @@ Rules that are easy to get wrong:
   page (`useServiceTryThis`), and an "Explore <service>" link. General
   posts get none. Never copy the paragraph into a post.
   Dates on cards and posts go through `lib/shortDate.ts`.
+  `blog_posts` has two BEFORE UPDATE triggers that stamp `updated_at =
+  now()`, and `updated_at` is the BlogPosting `dateModified`. A copy-only
+  fix the owner wants kept off the date (excerpts, 25 Nov 2026) disables
+  `blog_posts_set_updated_at` and `update_blog_posts_updated_at` inside the
+  same transaction and enables them again before commit.
 - Recent posts are a row, not a page fixture: the `from_the_blog` row
   type (`src/features/widgets/from_the_blog/`) is placed on a page like
   any other block and edited there (heading, categories, how many,
