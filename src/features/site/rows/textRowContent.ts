@@ -7,6 +7,7 @@ export const hasText = (v: unknown): boolean =>
 
 const columnHasContent = (c: Record<string, unknown>) =>
   hasText(c.eyebrow) || hasText(c.subtitle) || hasText(c.body) || hasText(c.note) ||
+  hasText(c.folded_body) || hasText(c.body_after) ||
   (Array.isArray(c.title_lines) && c.title_lines.some(hasText)) ||
   hasText(c.cta_label);
 

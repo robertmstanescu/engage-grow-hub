@@ -2229,6 +2229,15 @@
 }
 
 /* Tier card: "What's inside" opens on a click; the note sits under the card. */
+/* Text block fold (owner, 25 Nov 2026): a closed <details> under the
+   body. The summary reads as a link line with a +/− marker; the words
+   inside stay in the HTML. */
+.text-fold { border-top: 1px solid hsl(var(--line-1)); border-bottom: 1px solid hsl(var(--line-1)); padding: 10px 0; }
+.text-fold > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; color: hsl(var(--link)); }
+.text-fold > summary::-webkit-details-marker { display: none; }
+.text-fold-toggle::before { content: "+"; font-size: 20px; line-height: 1; }
+.text-fold[open] .text-fold-toggle::before { content: "\2212"; }
+.text-fold > summary:focus-visible { outline: 2px solid hsl(var(--link)); outline-offset: 4px; }
 .tier-inside > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; padding: 4px 0; }
 .tier-inside > summary::-webkit-details-marker { display: none; }
 .tier-inside-toggle::before { content: "+"; font-size: 18px; letter-spacing: 0; line-height: 1; }
