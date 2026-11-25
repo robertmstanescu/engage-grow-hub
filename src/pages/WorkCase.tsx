@@ -23,6 +23,7 @@ import usePageMeta from "@/hooks/usePageMeta";
 import { fetchPublishedWorkItems, fetchWorkItemBySlug, type WorkItemRecord } from "@/services/workItems";
 import { fetchApprovedProofPoints, fetchProofPointsByIds, type ProofPointRecord } from "@/services/proofPoints";
 import WorkCard, { type WorkCardItem } from "@/features/site/WorkCard";
+import { WORK_CARD_SLOTS } from "@/features/site/work/workCardSlots";
 import { pickRelatedWork } from "@/features/site/work/relatedWork";
 import { RowsRenderer } from "@/features/site/rows/PageRows";
 import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
@@ -274,9 +275,9 @@ const WorkCase = () => {
           <section aria-labelledby="case-more" className="work-gutter case-more-section">
             <div className="work-column">
               <h2 id="case-more" className="case-more-title">More work in this area</h2>
-              <ul className="work-grid">
+              <ul className="work-grid align-cards">
                 {related.map((r) => (
-                  <li key={r.slug}>
+                  <li key={r.slug} className="align-card" style={WORK_CARD_SLOTS}>
                     <WorkCard item={r} proofApproved={r.proof_point_id ? approvedIds.has(r.proof_point_id) : undefined} />
                   </li>
                 ))}
@@ -306,7 +307,10 @@ const WorkCase = () => {
           </div>
         </section>
       </main>
-      <Footer breadcrumbTrail={[{ name: "Home", path: "/" }, { name: "Work", path: "/work/" }, { name: item.title }]} />
+      <Footer
+        breadcrumbTrail={[{ name: "Home", path: "/" }, { name: "Work", path: "/work/" }, { name: item.title }]}
+        pageAnswer={item.meta_description || item.summary || undefined}
+      />
     </div>
   );
 };

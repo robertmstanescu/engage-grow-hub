@@ -3,7 +3,7 @@
  * case study). One list, so a pillar or type is never spelled two ways.
  *
  * The chip is the page's honesty label (redesign: Work artboard):
- *   CASE      gold, filled   — real past work, anonymised
+ *   CASE      gold, filled   — real past work, with the employer named
  *   ARTEFACT  lilac, outline — a real deliverable or a faithful recreation
  *   PLAYBOOK  gold outline   — how we would do it, on a fictional company
  * An unknown type prints nothing: a chip never shows raw data.
@@ -20,7 +20,7 @@ export const PILLAR_NAMES: Record<string, string> = {
 export const TYPE_CHIP: Record<string, string> = { case: "Case", artefact: "Artefact", playbook: "Playbook" };
 export const TYPE_PLURAL: Record<string, string> = { case: "Cases", artefact: "Artefacts", playbook: "Playbooks" };
 export const TYPE_MEANING: Record<string, string> = {
-  case: "real past work, anonymised",
+  case: "real past work, with the employer named",
   artefact: "a real deliverable, or a faithful recreation",
   playbook: "how we would do it, on a fictional company",
 };

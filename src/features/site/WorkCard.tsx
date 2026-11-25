@@ -1,12 +1,15 @@
 /**
  * WorkCard — the one card every work surface shares (Work index, work
- * teaser row, admin preview). A glass card with the pillar's colour on
- * its top edge, a type chip, the title, the summary and a foot line.
+ * teaser row, admin preview). A glass card with a type chip, the title,
+ * the summary and a foot line. Inside an `.align-cards` grid, wrap each
+ * card in `<li className="align-card" style={WORK_CARD_SLOTS}>` so the
+ * five parts line up across the row.
  * Four styles (redesign §3):
  *
  *   photo  — cover image on top, the metric in the foot line
  *   number — the metric as a big number above the title
- *   dark   — deep plum ground, light text
+ *   dark   — the photo card on deep plum glass, for the pieces that
+ *            should draw the eye (the pull line stands in without a cover)
  *   quote  — the pull line as a quote above the title
  *
  * Rules from the spec:
@@ -74,8 +77,10 @@ const WorkCard = ({ item, style, proofApproved, className }: Props) => {
   const wanted = style || item.card_style || "photo";
   const known = STYLES.has(wanted) ? wanted : "photo";
   // A photo card with no cover becomes a number card (spec: never a
-  // broken image).
+  // broken image). A dark card shows its cover too: dark is the light
+  // card's eye-catching twin, switched on per piece (owner, 25 Nov 2026).
   const resolved = known === "photo" && !cover ? "number" : known;
+  const showCover = Boolean(cover) && (resolved === "photo" || resolved === "dark");
   const pillarColor = pillarColorFromKey(item.pillar);
   // A number linked to a proof point shows only while that proof is
   // approved; a typed metric (no link) always shows.
@@ -91,45 +96,73 @@ const WorkCard = ({ item, style, proofApproved, className }: Props) => {
   const footMetric = showMetric && resolved !== "number";
   const hasFoot = footMetric || Boolean(item.metric_label) || Boolean(note);
 
+  // Five parts, always in the same order and always rendered (an empty
+  // one as `.align-empty`), so a grid with `.align-cards` lines every
+  // card's parts up on shared rows (owner, 25 Nov 2026): the picture,
+  // quote or number on top, then the categories, the title, the text and
+  // the foot line.
+  const visual =
+    showCover ? (
+      <img
+        src={transformImageUrl(cover, { width: 640, aspectRatio: 16 / 9, quality: 70 })}
+        alt={item.cover_image_alt || ""}
+        loading="lazy"
+        decoding="async"
+        onError={() => setCoverFailed(true)}
+        className="work-card-cover"
+      />
+    ) : resolved === "quote" && item.pull_line ? (
+      <span className="work-card-visual">
+        <span className="work-card-quote">“{item.pull_line}”</span>
+      </span>
+    ) : resolved === "number" && showMetric ? (
+      <span className="work-card-visual">
+        <span className="work-card-number">{item.metric}</span>
+      </span>
+    ) : resolved === "dark" && item.pull_line ? (
+      // A dark card without a cover leads with its pull line, so the top
+      // row is never a blank space beside a neighbour's picture.
+      <span className="work-card-visual">
+        <span className="work-card-quote">{item.pull_line}</span>
+      </span>
+    ) : (
+      <span aria-hidden className="work-card-visual align-empty" />
+    );
+
   const body = (
     <>
-      {resolved === "photo" && cover && (
-        <img
-          src={transformImageUrl(cover, { width: 640, aspectRatio: 16 / 9, quality: 70 })}
-          alt={item.cover_image_alt || ""}
-          loading="lazy"
-          decoding="async"
-          onError={() => setCoverFailed(true)}
-          className="work-card-cover"
-        />
-      )}
-      <span className="work-card-body">
-        <span className="work-card-meta">
-          <WorkTypeChip type={item.type} />
-          {pillar && (
-            <span className="work-card-pillar">
-              {pillarColor && <span aria-hidden className="work-dot" style={{ background: pillarColor }} />}
-              {pillar}
-            </span>
-          )}
-        </span>
-        {resolved === "quote" && item.pull_line ? (
-          <span className="work-card-quote">“{item.pull_line}”</span>
-        ) : null}
-        {resolved === "number" && showMetric ? <span className="work-card-number">{item.metric}</span> : null}
-        {item.title && <span className="work-card-title line-clamp-3">{item.title}</span>}
-        {item.summary ? <span className="work-card-summary line-clamp-3">{item.summary}</span> : <span className="flex-grow" />}
-        {hasFoot && (
-          <span className="work-card-foot">
-            {footMetric && <span className="work-card-metric">{item.metric}</span>}
-            <span className="work-card-note line-clamp-2">{item.metric_label || note}</span>
+      {visual}
+      <span className="work-card-meta">
+        <WorkTypeChip type={item.type} />
+        {pillar && (
+          <span className="work-card-pillar">
+            {pillarColor && <span aria-hidden className="work-dot" style={{ background: pillarColor }} />}
+            {pillar}
           </span>
         )}
       </span>
+      {item.title ? (
+        <span className="work-card-title line-clamp-3">{item.title}</span>
+      ) : (
+        <span aria-hidden className="work-card-title align-empty" />
+      )}
+      {item.summary ? (
+        <span className="work-card-summary line-clamp-3">{item.summary}</span>
+      ) : (
+        <span aria-hidden className="work-card-summary align-empty" />
+      )}
+      {hasFoot ? (
+        <span className="work-card-foot">
+          {footMetric && <span className="work-card-metric">{item.metric}</span>}
+          <span className="work-card-note line-clamp-2">{item.metric_label || note}</span>
+        </span>
+      ) : (
+        <span aria-hidden className="work-card-foot align-empty" />
+      )}
     </>
   );
 
-  const cardClass = `work-card ${isDark ? "mc-card-dark" : "mc-card-glass"} ${href ? "mc-card-lift" : ""} ${className ?? ""}`;
+  const cardClass = `work-card align-card-inner ${isDark ? "mc-card-dark" : "mc-card-glass"} ${href ? "mc-card-lift" : ""} ${className ?? ""}`;
   const cardStyle = pillarColor ? ({ ["--pillar" as string]: pillarColor } as React.CSSProperties) : undefined;
 
   if (!href) {

@@ -267,6 +267,8 @@ async function main() {
   const identity = brand.identity || {};
   const homeSeo = section("main_page_seo");
   const blogSeo = section("blog_page");
+  // The /work index's own search fields and plain answer (Admin, Pages, Work).
+  const workPage = section("work_page");
   /* The author block is set once on the admin's Profile screen
      (site content "author_profile"); a post's own author_name is the
      fallback for anything written before that move. Mirrors
@@ -539,8 +541,8 @@ async function main() {
     routes.push({
       path: "/work/",
       meta: {
-        title: titleFor(null, `Work — ${brandName}`),
-        description: workIndexDescription(workItems, brandName),
+        title: titleFor(workPage.meta_title, `Work — ${brandName}`),
+        description: plain(workPage.meta_description, 300) || plain(workPage.answer, 300) || workIndexDescription(workItems, brandName),
         url: abs("/work/"),
         image: defaultImage,
         jsonLd: [

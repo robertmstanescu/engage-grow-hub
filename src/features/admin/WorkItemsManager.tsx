@@ -37,9 +37,9 @@ const TYPE_OPTIONS = [
   { label: "Playbook", value: "playbook" },
 ];
 const STYLE_OPTIONS = [
-  { label: "Photo", value: "photo" },
-  { label: "Number", value: "number" },
-  { label: "Dark", value: "dark" },
+  { label: "Light, with picture", value: "photo" },
+  { label: "Dark, with picture (draws the eye)", value: "dark" },
+  { label: "Big number", value: "number" },
   { label: "Quote", value: "quote" },
 ];
 

@@ -24,6 +24,7 @@ import { RowEyebrow, RowTitle, RowSection } from "@/features/site/rows/typograph
 import { useScrollReveal, revealStyle } from "@/hooks/useScrollReveal";
 import { useBuilder } from "@/features/admin/builder/BuilderContext";
 import WorkCard, { type WorkCardItem } from "@/features/site/WorkCard";
+import { WORK_CARD_SLOTS } from "@/features/site/work/workCardSlots";
 import { workTeaserSchema, type WorkTeaserContent } from "./schema";
 
 type CardRecord = Pick<
@@ -142,9 +143,9 @@ const WorkTeaserRow = ({ row }: { row: PageRow }) => {
             </span>
           )}
         </div>
-        <ul className="grid grid-cols-1 md:grid-cols-3 gap-5" style={revealStyle(isVisible, 0.3)}>
+        <ul className="grid grid-cols-1 md:grid-cols-3 gap-5 align-cards" style={revealStyle(isVisible, 0.3)}>
           {cards.map((card) => (
-            <li key={card.item.slug}>
+            <li key={card.item.slug} className="align-card" style={WORK_CARD_SLOTS}>
               <WorkCard item={card.item} style={card.style} proofApproved={card.proofApproved} />
             </li>
           ))}

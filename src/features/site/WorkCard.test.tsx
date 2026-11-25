@@ -43,6 +43,13 @@ describe("WorkCard", () => {
     expect(c.querySelector("img")).not.toBeNull();
   });
 
+  it("draws a dark card with its cover, so dark is the eye-catching twin of a photo card", () => {
+    const c = draw({ card_style: "dark" });
+    expect(c.querySelector("[data-card-style]")!.getAttribute("data-card-style")).toBe("dark");
+    expect(c.querySelector("img")).not.toBeNull();
+    expect(c.querySelector(".mc-card-dark")).not.toBeNull();
+  });
+
   it("falls back to the number style without a usable cover", () => {
     for (const cover of ["", "javascript:alert(1)", null as unknown as string]) {
       const c = draw({ cover_image: cover });
