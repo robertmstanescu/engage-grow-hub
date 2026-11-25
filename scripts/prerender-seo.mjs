@@ -38,6 +38,9 @@ import {
   workReadable,
 } from "./lib/workSeo.mjs";
 import { buildPageTitle } from "./lib/seoTitle.mjs";
+/** The public booking page (ContactRow DEFAULT_BOOKING_URL). */
+const BOOKING_URL = "https://calendar.app.google/rCZX6w2RUWKpsKfRA";
+import { buildEntityGraph, founderId, orgId, FOUNDER_NAME, COMPANY_DEFINITION } from "./lib/entityGraph.mjs";
 
 /** /work/ when its search title is empty (US08); the brand is added once. */
 const WORK_FALLBACK_TITLE = "Work: case studies and playbooks";
@@ -309,46 +312,34 @@ async function main() {
 
   /* ── Sitewide entities ───────────────────────────────────────────── */
 
-  /** Organization — only fields we can verify from CMS data. */
-  const organizationLd = brandName
-    ? {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        "@id": `${origin}/#organization`,
-        name: brandName,
-        url: `${origin}/`,
-        logo: defaultImage,
-        ...(homeSeo.meta_description || tagline
-          ? { description: homeSeo.meta_description || tagline }
-          : {}),
-        ...(serviceAreas.length
-          ? { areaServed: serviceAreas.map((name) => ({ "@type": "Place", name })) }
-          : {}),
-      }
-    : null;
-
-  /**
-   * Person — the founder, taken from the About page's own content rather
-   * than hardcoded here. No address or geography is asserted.
-   */
+  /* One graph for the company, the site and the founder (US05), on every
+     page; everything else points at it by @id. The founder's name, photo
+     and LinkedIn come from the admin's Profile screen. */
   const aboutPage = cmsPages.find((p) => p.slug === "about-us");
-  const founderName = (() => {
-    const raw = JSON.stringify(aboutPage?.page_rows || "");
-    const match = raw.match(/Robert\s+St[^\s"<,.|]{0,12}/);
-    return match ? match[0] : "";
-  })();
-  const personLd =
-    aboutPage && founderName
-      ? {
-          "@context": "https://schema.org",
-          "@type": "Person",
-          "@id": `${origin}/#founder`,
-          name: founderName,
-          jobTitle: "Founder",
-          url: abs(cmsPagePath(aboutPage.slug)),
-          ...(brandName ? { worksFor: { "@id": `${origin}/#organization` } } : {}),
-        }
-      : null;
+  const social = section("social_links");
+  const entityGraph = buildEntityGraph({
+    origin,
+    brandName,
+    description: COMPANY_DEFINITION,
+    logo: section("branding").logo_url,
+    sameAs: [social.linkedin, social.instagram, social.youtube, social.tiktok],
+    bookingUrl: BOOKING_URL,
+    aboutPath: aboutPage ? cmsPagePath(aboutPage.slug) : "",
+    founder: { name: authorProfile.name, photo: authorProfile.photo, linkedin: authorProfile.linkedin },
+  });
+  const founderName = (authorProfile.name || "").trim() || FOUNDER_NAME;
+  /** The founder as Work items reference him (by @id). */
+  const personLd = {
+    "@id": founderId(origin),
+    name: founderName,
+    url: aboutPage ? abs(cmsPagePath(aboutPage.slug)) : abs("/"),
+  };
+  /** A post's author: the founder by @id, or a named person for older posts by someone else. */
+  const authorFor = (post) => {
+    const name = authorNameFor(post);
+    if (!name) return null;
+    return name === founderName ? { "@type": "Person", "@id": founderId(origin), name } : { "@type": "Person", name };
+  };
 
   /** BreadcrumbList from a list of [name, url] pairs. */
   const breadcrumbLd = (crumbs) => ({
@@ -389,7 +380,7 @@ async function main() {
       description: homeSeo.meta_description || tagline,
       url: abs("/"),
       image: defaultImage,
-      jsonLd: [organizationLd, faqLd(homeRows)].filter(Boolean),
+      jsonLd: [faqLd(homeRows)].filter(Boolean),
       readable: extractReadableContent(homeRows),
     },
     sitemap: { lastmod: sectionUpdatedAt("main_page_seo"), changefreq: "weekly", priority: "1.0" },
@@ -461,13 +452,12 @@ async function main() {
               // Service schema; keep the two in lock-step.
               ...((heroAnswer || description) ? { description: heroAnswer || description } : {}),
               url: abs(path),
-              provider: { "@type": "Organization", name: brandName, url: origin },
+              provider: { "@id": orgId(origin) },
               ...(serviceAreas.length
                 ? { areaServed: serviceAreas.map((name) => ({ "@type": "Place", name })) }
                 : {}),
             }
           : null,
-        page.slug === "about-us" ? personLd : null,
         faqLd(rows),
         breadcrumbLd(crumbs),
       ].filter(Boolean),
@@ -507,8 +497,8 @@ async function main() {
             url: abs(path),
             datePublished: post.published_at || undefined,
             dateModified: post.updated_at || post.published_at || undefined,
-            ...(authorNameFor(post) ? { author: { "@type": "Person", name: authorNameFor(post) } } : {}),
-            ...(brandName ? { publisher: { "@type": "Organization", name: brandName } } : {}),
+            ...(authorFor(post) ? { author: authorFor(post) } : {}),
+            ...(brandName ? { publisher: { "@id": orgId(origin) } } : {}),
           },
           breadcrumbLd([
             ["Home", `${origin}/`],
@@ -655,15 +645,21 @@ async function main() {
   const shellPath = resolve(DIST, "index.html");
   if (existsSync(shellPath)) {
     const shell = readFileSync(shellPath, "utf8");
+    // The entity graph leads every page's structured data (US05).
+    const withGraph = (meta) => ({
+      ...meta,
+      defaultImage,
+      jsonLd: [entityGraph, ...(Array.isArray(meta.jsonLd) ? meta.jsonLd : [meta.jsonLd])].filter(Boolean),
+    });
     for (const route of routes) {
-      writePage(route.path, renderPage(shell, { ...route.meta, defaultImage }));
+      writePage(route.path, renderPage(shell, withGraph(route.meta)));
     }
     // Bare-slug fallback files — real content for crawlers, canonical
     // tag still points at the preferred /p/ URL (see fallbackRoutes note
     // above). Not counted in the "wrote N pages" total below since they
     // aren't a distinct indexable page, just a non-canonical mirror.
     for (const route of fallbackRoutes) {
-      writePage(route.path, renderPage(shell, { ...route.meta, defaultImage }));
+      writePage(route.path, renderPage(shell, withGraph(route.meta)));
     }
   }
 
