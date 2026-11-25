@@ -11,6 +11,9 @@
  *     on every Save Draft).
  *   • `cms_pages.page_rows` is the live copy that the public site
  *     reads. Publish copies draft → live.
+ *   • Search title and description follow the same rule (US11): on a
+ *     live page they save to `draft_meta_*` and reach the live columns
+ *     only on Publish (`services/searchDrafts.ts`).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +34,7 @@ import { confirmUnsavedExit } from "@/components/ConfirmDialog";
 import { createRedirect } from "@/services/redirects";
 import { notifyIndexNow } from "@/services/searchEngines";
 import { cmsPagePath } from "@/lib/cmsPagePath";
+import { editedSearchValue, searchFieldsPublish, searchFieldsSave, type SearchFieldsRecord } from "@/services/searchDrafts";
 
 interface CmsPageRecord {
   id: string;
@@ -41,6 +45,12 @@ interface CmsPageRecord {
   draft_page_rows: PageRow[] | null;
   meta_title: string | null;
   meta_description: string | null;
+  ai_summary: string | null;
+  og_image: string | null;
+  draft_meta_title: string | null;
+  draft_meta_description: string | null;
+  draft_ai_summary: string | null;
+  draft_og_image: string | null;
   publish_at: string | null;
   expiry_at: string | null;
 }
@@ -79,7 +89,7 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
   const load = useCallback(async () => {
     const { data, error } = await supabase
       .from("cms_pages")
-      .select("id, slug, title, status, page_rows, draft_page_rows, meta_title, meta_description, publish_at, expiry_at")
+      .select("id, slug, title, status, page_rows, draft_page_rows, meta_title, meta_description, ai_summary, og_image, draft_meta_title, draft_meta_description, draft_ai_summary, draft_og_image, publish_at, expiry_at")
       .eq("id", pageId)
       .maybeSingle();
     if (error || !data) {
@@ -91,8 +101,8 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
     // US 2.2 — Normalize to v3 on read so the builder + inspector see
     // the Atomic Node Tree exclusively.
     setDraftRows(normalizeRowsToV3(rec.draft_page_rows || rec.page_rows || []) as unknown as PageRow[]);
-    setSeoTitle(rec.meta_title || "");
-    setSeoDescription(rec.meta_description || "");
+    setSeoTitle(editedSearchValue(rec as SearchFieldsRecord, "meta_title"));
+    setSeoDescription(editedSearchValue(rec as SearchFieldsRecord, "meta_description"));
     setPageTitle(rec.title || "");
     setPageSlug(rec.slug || "");
     setVisibility(contentState(rec.status, rec.publish_at));
@@ -108,8 +118,8 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
     if (!record) return null;
     return {
       rows: record.draft_page_rows || record.page_rows || [],
-      meta_title: record.meta_title || "",
-      meta_description: record.meta_description || "",
+      meta_title: editedSearchValue(record as SearchFieldsRecord, "meta_title"),
+      meta_description: editedSearchValue(record as SearchFieldsRecord, "meta_description"),
       title: record.title || "",
       slug: record.slug || "",
       visibility: contentState(record.status, record.publish_at),
@@ -148,12 +158,14 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
    *  address and visibility stay manual (they need validation). */
   const onAutosave = useCallback(async (): Promise<boolean> => {
     if (!record) return false;
+    // US11: a live page's search text waits for Publish.
+    const searchSave = searchFieldsSave(record.status === "published", { meta_title: seoTitle, meta_description: seoDescription });
     const { error } = await supabase
       .from("cms_pages")
-      .update({ draft_page_rows: draftRows as never, meta_title: seoTitle, meta_description: seoDescription })
+      .update({ draft_page_rows: draftRows as never, ...searchSave })
       .eq("id", record.id);
     if (error) return false;
-    setRecord((prev) => (prev ? { ...prev, draft_page_rows: draftRows, meta_title: seoTitle, meta_description: seoDescription } : prev));
+    setRecord((prev) => (prev ? { ...prev, draft_page_rows: draftRows, ...searchSave } : prev));
     return true;
   }, [record, draftRows, seoTitle, seoDescription]);
 
@@ -216,13 +228,14 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
     if (!slugOk) return;
 
     setPublishing(true);
+    // US11: Publish is the only path from the draft search fields to live.
+    const publishSearch = searchFieldsPublish(record as SearchFieldsRecord, { meta_title: seoTitle, meta_description: seoDescription });
     const { error } = await supabase
       .from("cms_pages")
       .update({
         page_rows: draftRows as any,
         draft_page_rows: draftRows as any,
-        meta_title: seoTitle,
-        meta_description: seoDescription,
+        ...publishSearch,
         title: pageTitle,
         slug: pageSlug,
         status: "published",
@@ -245,8 +258,7 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
         ...record,
         page_rows: draftRows,
         draft_page_rows: draftRows,
-        meta_title: seoTitle,
-        meta_description: seoDescription,
+        ...publishSearch,
         title: pageTitle,
         slug: pageSlug,
         status: "published",
@@ -284,12 +296,12 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
       return true;
     }
     setSaving(true);
+    const searchSave = searchFieldsSave(record.status === "published", { meta_title: seoTitle, meta_description: seoDescription });
     const { error } = await supabase
       .from("cms_pages")
       .update({
         draft_page_rows: draftRows as any,
-        meta_title: seoTitle,
-        meta_description: seoDescription,
+        ...searchSave,
         title: pageTitle,
         slug: pageSlug,
         status: stateToStatus(visibility),
@@ -305,8 +317,7 @@ const CmsPageBuilder = ({ pageId, onExit, onDirtyChange, onRegisterSave }: Props
       setRecord({
         ...record,
         draft_page_rows: draftRows,
-        meta_title: seoTitle,
-        meta_description: seoDescription,
+        ...searchSave,
         title: pageTitle,
         slug: pageSlug,
         status: stateToStatus(visibility),

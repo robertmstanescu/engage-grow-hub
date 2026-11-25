@@ -2,10 +2,10 @@
  * What the Overview shows: the things that need the owner today.
  * Pure derivation so it is unit-tested without Supabase.
  */
-export interface PageLite {
+export type PageLite = {
   id: string; title: string; slug: string; status: string; updated_at: string;
   meta_description: string | null; page_rows: unknown; draft_page_rows: unknown;
-}
+} & SearchFieldsRecord;
 export interface PostLite { id: string; title: string; slug: string; status: string; updated_at: string }
 export interface LeadLite { id: string; full_name: string; created_at: string }
 export interface HomeLite { content: unknown; draft_content: unknown; updated_at: string }
@@ -25,12 +25,14 @@ import { normalizeRowsToV3 } from "@/lib/migrations/rowMigrations";
 import { heroAnswerOf } from "./seoHeadings";
 import { findMissingAltViolations } from "@/services/contentAccessibility";
 import type { PageRow } from "@/types/rows";
+import { hasSearchDrafts, type SearchFieldsRecord } from "@/services/searchDrafts";
 const hasHero = (rows: unknown): boolean => Array.isArray(rows) && findWidgetsByType(normalizeRowsToV3(rows) as never, "hero").length > 0;
 
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
-export const hasUnpublishedChanges = (page: Pick<PageLite, "page_rows" | "draft_page_rows">) =>
-  page.draft_page_rows != null && !sameJson(page.page_rows, page.draft_page_rows);
+/** Rows or search fields (US11) that wait for Publish. */
+export const hasUnpublishedChanges = (page: Pick<PageLite, "page_rows" | "draft_page_rows"> & SearchFieldsRecord) =>
+  (page.draft_page_rows != null && !sameJson(page.page_rows, page.draft_page_rows)) || hasSearchDrafts(page);
 
 export const relativeTime = (iso: string, now = Date.now()): string => {
   const ms = now - new Date(iso).getTime();

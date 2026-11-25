@@ -19,7 +19,9 @@ import {
   togglePublishCmsPage, duplicateCmsPage, renameCmsPage, RESERVED_SLUGS,
 } from "@/services/cmsPages";
 import { DEFAULT_PAGE_SIZE } from "@/services/pagination";
-import { fetchSection, publishSection } from "@/services/siteContent";
+import { fetchSection, publishSection, saveDraft } from "@/services/siteContent";
+import { hasUnpublishedChanges } from "./overviewTasks";
+import { notifyIndexNow } from "@/services/searchEngines";
 import { useListFilters } from "@/hooks/useListFilters";
 import { createRedirect } from "@/services/redirects";
 import ListFilters from "@/components/ui/list-filters";
@@ -103,6 +105,9 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
   // The /work index: its header, plain answer, search fields and extra rows.
   const [editingWork, setEditingWork] = useState(false);
   const [workContent, setWorkContent] = useState<WorkPageContent>(WORK_PAGE_DEFAULTS);
+  /** What /work shows now; the editor works on the draft (US11). */
+  const [workLive, setWorkLive] = useState<WorkPageContent>(WORK_PAGE_DEFAULTS);
+  const [workPublishing, setWorkPublishing] = useState(false);
   // Published pieces offered for the top three on the Work page.
   const [workOptions, setWorkOptions] = useState<{ label: string; value: string }[]>([]);
   // Which error-page editor is open (null = none).
@@ -160,7 +165,10 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
 
   const loadWorkPage = async () => {
     const [{ data }, { data: pieces }] = await Promise.all([fetchSection(WORK_PAGE_KEY), fetchPublishedWorkItems()]);
-    if (data?.content) setWorkContent(readWorkPage(data.content));
+    if (data?.content) {
+      setWorkLive(readWorkPage(data.content));
+      setWorkContent(readWorkPage(data.draft_content ?? data.content));
+    }
     setWorkOptions(
       (Array.isArray(pieces) ? (pieces as { slug?: string; title?: string }[]) : [])
         .filter((p) => typeof p.slug === "string" && p.slug)
@@ -168,15 +176,31 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
     );
   };
 
+  /** Edits save to the draft; /work changes only on Publish (US11). */
   const saveWorkPage = (updates: Partial<WorkPageContent>) => {
     const next = { ...workContent, ...updates };
     setWorkContent(next);
     return runDbAction({
-      action: () => publishSection(WORK_PAGE_KEY, next),
-      successMessage: "Saved",
+      action: () => saveDraft(WORK_PAGE_KEY, next),
+      successMessage: "Draft saved",
       errorMessage: "Save failed",
     });
   };
+
+  const publishWorkPage = async () => {
+    setWorkPublishing(true);
+    await runDbAction({
+      action: () => publishSection(WORK_PAGE_KEY, workContent),
+      successMessage: "Published",
+      errorMessage: "Publish failed",
+      onSuccess: () => {
+        setWorkLive(workContent);
+        notifyIndexNow(["/work/"]);
+      },
+    });
+    setWorkPublishing(false);
+  };
+  const workChanges = JSON.stringify(workContent) !== JSON.stringify(workLive);
 
   const loadBlogPage = async () => {
     const { data } = await fetchSection("blog_page");
@@ -437,6 +461,12 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
         <p className="font-body text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
           The cards come from the pieces under Work in the menu on the left. Here you edit the page around them.
         </p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className={`admin-st ${workChanges ? "changes" : "live"}`}>{workChanges ? "Unpublished changes" : "Live"}</span>
+          <SpinnerButton type="button" className="admin-btn primary" isLoading={workPublishing} loadingLabel="Publishing…" disabled={!workChanges} onClick={publishWorkPage}>
+            Publish
+          </SpinnerButton>
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Small label above the title" value={workContent.header_label} onChange={(v) => saveWorkPage({ header_label: v })} />
@@ -534,7 +564,7 @@ const PagesManager = ({ onEditPage, autoOpenCreate, onAutoOpenConsumed }: Props)
 
   const status = (p: CmsPage) => {
     const st = contentState(p.status, p.publish_at);
-    const changes = st === "live" && p.draft_page_rows != null && JSON.stringify(p.draft_page_rows) !== JSON.stringify(p.page_rows);
+    const changes = st === "live" && hasUnpublishedChanges(p as never);
     return changes ? { cls: "changes", label: "Unpublished changes" } : { cls: st, label: STATE_LABEL[st] };
   };
   const when = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });

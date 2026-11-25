@@ -9,6 +9,7 @@
  * {@link runDbAction} for toasts + loading state.
  */
 
+import { searchFieldsSave } from "@/services/searchDrafts";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Json } from "@/integrations/supabase/types";
 import type { PageRow } from "@/types/rows";
@@ -86,12 +87,17 @@ export const togglePublishCmsPage = (id: string, newStatus: "published" | "draft
   return supabase.from("cms_pages").update(update).eq("id", id);
 };
 
+/**
+ * Save one search field. On a live page it waits in its draft column
+ * until Publish (US11); on a page that is not live it is saved as is.
+ */
 export const updateCmsPageMeta = (
   id: string,
   field: "meta_title" | "meta_description" | "ai_summary",
   value: string,
+  isLive: boolean,
 ) => {
-  const update: CmsPageUpdate = { [field]: value };
+  const update = searchFieldsSave(isLive, { [field]: value }) as CmsPageUpdate;
   return supabase.from("cms_pages").update(update).eq("id", id);
 };
 
