@@ -23,7 +23,7 @@ const useIsMobileViewport = () => {
 };
 
 /**
- * TopRightSettingsCog
+ * BottomLeftSettingsCog
  * ───────────────────
  * Single floating control for admins on the live front-end. The previous
  * "Select" / "Edit" pill buttons were removed (per the Premium Mobile UI
@@ -31,8 +31,8 @@ const useIsMobileViewport = () => {
  * conflicted with the cookie consent toast. All editing is now reached
  * via the cogwheel → /admin dashboard.
  *
- * Positioning: fixed top-right with a high z-index so it stays clear of
- * navbars, modals, and the consent gate. A subtle backdrop-blur keeps
+ * Positioning: fixed bottom-left (owner, 25 Nov 2026) so it never sits on
+ * the floating menu bar or beside the cookie toast (bottom-right). A subtle backdrop-blur keeps
  * the icon legible over hero imagery and dark gradients alike.
  */
 const AdminToolbar = () => {
@@ -51,8 +51,8 @@ const AdminToolbar = () => {
       aria-label="Open admin dashboard"
       style={{
         position: "fixed",
-        top: "20px",
-        right: "20px",
+        bottom: "20px",
+        left: "20px",
         zIndex: 9999,
         width: 40,
         height: 40,
